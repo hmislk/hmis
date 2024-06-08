@@ -100,20 +100,31 @@
                                         <p:outputLabel value="#{bs.bill.creditCompany.institutionCode}"/>
                                     </p:column>
                                     <p:column headerText="Actions">
-                                        <p:commandButton 
-                                            icon="pi pi-user-plus" 
-                                            title="OPD" 
-                                            ajax="false" 
-                                            action="#{bookingControllerViewScope.navigateToOpdBilling(bs)}" 
-                                            class="ui-button-text-icon-left mx-1">
-                                        </p:commandButton>
-                                        <p:commandButton 
-                                            icon="pi pi-cog" 
-                                            title="Manage Booking" 
-                                            ajax="false" 
-                                            action="#{bookingControllerViewScope.navigateToManageBooking(bs)}" 
-                                            class="ui-button-text-icon-left mx-1">
-                                        </p:commandButton>
+                                        <div class="d-flex">
+                                            <p:commandButton 
+                                                icon="fa-solid fa-book" 
+                                                title="Past Channel Bookings"
+                                                class="ui-button-flat"
+                                                action="#{patientController.navigateToPatientPastChannelBiiking()}"
+                                                ajax="false">
+                                                <f:setPropertyActionListener target="#{patientController.patient}" value="#{bs.bill.patient}"/>
+                                            </p:commandButton>
+                                            <p:commandButton 
+                                                icon="pi pi-user-plus" 
+                                                title="OPD" 
+                                                ajax="false" 
+                                                action="#{bookingControllerViewScope.navigateToOpdBilling(bs)}" 
+                                                class="ui-button-flat">
+                                            </p:commandButton>
+                                            <p:commandButton 
+                                                icon="pi pi-cog" 
+                                                title="Manage Booking" 
+                                                ajax="false" 
+                                                action="#{bookingControllerViewScope.navigateToManageBooking(bs)}" 
+                                                class="ui-button-text-icon-left mx-1">
+                                            </p:commandButton>
+
+                                        </div>
                                         <h:panelGroup rendered="#{bs.markedToCancel}">
                                             <i class="fas fa-ban text-danger" title="Cancel"></i>
                                         </h:panelGroup>
