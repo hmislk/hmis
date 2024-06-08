@@ -16,13 +16,14 @@
 
             <p:panel>
                 <f:facet name="header">
+
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h:outputText styleClass="fa fa-stethoscope " style="margin-right: 16px;"/>
-                            <h7 onclick="toggleFullScreen()" ><h:outputText value="#{bookingController.selectedSessionInstance.staff.person.nameWithTitle}" style="margin-right: 16px;"/></h7><br/>
-                            
-                            <h:outputText value="#{bookingController.selectedSessionInstance.originatingSession.name}" style="margin-right: 16px;font-size: 10pt"/><br/>
-                            
+                            <h7 onclick="toggleFullScreen()" ><h:outputText value="#{bookingController.selectedSessionInstance.staff.person.nameWithTitle}" style="margin-right: 16px;"/></h7>
+
+                            <h:outputText value="#{bookingController.selectedSessionInstance.originatingSession.name}" style="margin-right: 16px;font-size: 10pt"/>
+
                             <!-- Session Status Indicators -->
                             <h:outputText styleClass="#{bookingController.selectedSessionInstance.started ? (bookingController.selectedSessionInstance.completed ? 'fa fa-check-circle text-success ' : 'fa fa-hourglass-start text-warning') : 'fa fa-times-circle text-danger'}" style=";margin-right: 0px" />
                             <h:outputText class="mx-2" value="#{bookingController.selectedSessionInstance.started ? (bookingController.selectedSessionInstance.completed ? 'Completed' : 'Ongoing') : 'Not Started'}" 
@@ -30,7 +31,7 @@
                         </div>
 
                         <div class="d-flex justify-content-center align-items-center">
-                            <!-- Start Session Button -->
+
                             <p:commandButton ajax="false" 
                                              value="Start " 
                                              icon="fa fa-play" 
@@ -39,7 +40,7 @@
                                              oncomplete="PF('startSessionWarn').show()" 
                                              disabled="#{bookingController.selectedSessionInstance.started}" />
 
-                            <!-- Complete Session Button -->
+
                             <p:commandButton ajax="false" 
                                              value="Complete "
                                              icon="fa fa-stop" 
@@ -48,31 +49,30 @@
                                              oncomplete="PF('completeSessionWarn').show()" 
                                              disabled="#{!bookingController.selectedSessionInstance.started || bookingController.selectedSessionInstance.completed}" />
 
-                            <!-- Todays Sessions Button -->
+
                             <p:commandButton ajax="false" 
                                              value="Today's "
                                              icon="fa fa-calendar-alt" 
                                              styleClass="ui-button-info mx-1" 
                                              action="#{bookingController.navigateToChannelQueueFromConsultantRoom()}" />
 
-                            <!-- Reopen Session Button -->
                             <p:commandButton ajax="false" 
-                                             value="Reopen Session" 
+                                             value="Reopen" 
                                              icon="fa fa-undo" 
                                              styleClass="ui-button-warning mx-1" 
                                              action="#{bookingController.reopenSessionInstance()}"
                                              oncomplete="PF('reopenSessionWarn').show()" 
                                              disabled="#{bookingController.selectedSessionInstance.completed ne true}" />
 
-                            <!-- Reload Session Button -->
+
                             <p:commandButton ajax="false" 
-                                             value="Reload Session" 
+                                             value="Reload" 
                                              icon="fa fa-sync-alt" 
                                              styleClass="ui-button-secondary mx-1" 
                                              action="#{bookingController.reloadSessionInstance()}"
                                              oncomplete="PF('reloadSessionWarn').show()" 
                                              disabled="#{bookingController.selectedSessionInstance == null}" />
-                        
+
                         </div>
                     </div>
                 </f:facet>
@@ -89,263 +89,127 @@
                     </h:panelGrid>
                 </p:dialog>
 
-                <div class="row" >
-                    <div class="col-5">
-                        <p:watermark for="lstBookings" value="Select Booking" ></p:watermark>
-                        <h:outputText id="test" value="#{bookingController.selectedBillSession}" rendered="false"></h:outputText>
-                        <p:selectOneListbox 
-                            id="lstBookings" 
-                            value="#{bookingController.selectedBillSession}" 
-                            filter="true" 
-                            var="bs" 
-                            scrollHeight="400"
-                            class="w-100 fullHeightListbox" >
-                            <f:selectItems value="#{bookingController.billSessions}" var="item" itemValue="#{item}" />
-                            <p:ajax process="lstBookings" update="panelSessionDetails groupSelectionBillSessionDetails"></p:ajax>
-
-                            <p:column style="width: 5px!important;text-align: center;">
-                                <h:outputText value="#{bs.serialNo}" />
-                            </p:column>
-
-                            <p:column style="width: 60px!important;">
-                                <h:outputText value="#{bs.bill.patient.person.nameWithTitle}" />
-                            </p:column>
-
-                            <p:column style="width: 20px!important;">
-                                <p:outputLabel class="badge badge-light" value="Credit" rendered="#{bs.bill.paidAmount eq 0}" style="color: green;"/>
-                                <p:outputLabel value="-On Call" rendered="#{bs.bill.paidAmount eq 0 and bs.bill.paymentMethod eq 'OnCall'}" style="color: green;"/>
-                                <p:outputLabel value="-Staff" rendered="#{bs.bill.paidAmount eq 0 and bs.bill.paymentMethod eq 'Staff'}" style="color: green;"/>
-                                <p:outputLabel value="Paid" rendered="#{bs.bill.paidAmount ne 0}"/>
-                                <p:outputLabel value="-Agent" rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'Agent'}"/>
-                                <p:outputLabel value="-On Call" rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'OnCall'}"/>
-                                <p:outputLabel value="-Staff" rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'Staff'}"/>
-                            </p:column>
-
-                            <p:column style="width: 10px!important;">
-                                <p:outputLabel value="Completed" rendered="#{bs.completed}"/>
-                                <p:outputLabel value="Cancelled" rendered="#{bs.bill.cancelled==true}"/>
-                                <p:outputLabel value="Refunded" rendered="#{bs.bill.refunded==true}"/>
-                            </p:column>
-
-                            <p:column style="width: 5px!important;">
-                                <p:outputLabel value="#{bs.bill.creditCompany.institutionCode}"/>
-                            </p:column>
-
-                            <p:column style="width: 10px!important;">
-                                <p:outputLabel value="Absent" rendered="#{bs.absent}"/>
-                            </p:column>
-
-
-                        </p:selectOneListbox>
-                    </div>
-                    <div class="col-3">
-                        <h:panelGrid columns="1">
-                            <p:commandButton 
-                                id="btnCallNextToCurrent"
-                                value="Start First" 
-                                action="#{bookingController.startFirstSession}"
-                                icon="pi pi-step-forward"
-                                styleClass="ui-button-info w-100"
-                                process="@this"
-                                update="panelSessionDetails lstBookings"
-                                ajax="true" />
-
-                            <p:commandButton 
-                                id="btnNext"
-                                value="Complete &amp; Next" 
-                                action="#{bookingController.markCurrentCompleteAndCallNext}"
-                                icon="pi pi-check"
-                                styleClass="ui-button-success w-100 my-1"
-                                process="btnNext"
-                                update="panelSessionDetails lstBookings"
-                                ajax="true" />
-
-                            <p:commandButton 
-                                value="Reverse &amp; Previous" 
-                                actionListener="#{bookingController.reverseCurrentCompleteAndCallPrevious}"
-                                icon="pi pi-undo" styleClass="ui-button-warning w-100 "
-                                update="panelSessionDetails lstBookings" ajax="true" />
-
-                            <p:commandButton 
-                                id="btnMarkLastCompleted"
-                                value="Mark Last Completed" 
-                                action="#{bookingController.markSelectedAsLastCompleted}"
-                                icon="pi pi-flag" 
-                                styleClass="ui-button-info w-100 my-1"
-                                process="@this"
-                                update="panelSessionDetails lstBookings"
-                                ajax="true" />
-
-                            <p:commandButton 
-                                id="btnMarkNextInLine"
-                                value="Mark Next In Line" 
-                                action="#{bookingController.markSelectedAsNextInLine}"
-                                icon="pi pi-forward" 
-                                styleClass="ui-button-info w-100 "
-                                process="@this"
-                                update="panelSessionDetails lstBookings"
-                                ajax="true" />
-
-                            <p:commandButton 
-                                id="btnSetCurrentSession"
-                                value="Set as Current Session" 
-                                action="#{bookingController.markSelectedAsCurrentSession}"
-                                icon="pi pi-user-edit" 
-                                styleClass="ui-button-info w-100 my-1"
-                                process="@this"
-                                update="panelSessionDetails lstBookings"
-                                ajax="true" />
-
-                            <p:commandButton 
-                                value="Reset &amp; Set Current" 
-                                actionListener="#{bookingController.resetAndSetSelectedAsCurrentlyConsulted}"
-                                icon="pi pi-refresh" styleClass="ui-button-info w-100 "
-                                update="panelSessionDetails lstBookings" ajax="true" />
-                        </h:panelGrid>
-                    </div>
-                    <div class="col-4  ">
-                        <h:panelGroup  id="panelSessionDetails" class=" w-100 p-2 text-white">
-
-                            <div class="d-flex justify-content-between align-items-center mb-2" style="border-radius: 20px">
-                                <div class="col-3 text-center text-white d-flex align-items-center justify-content-center" style="border-right: 1px solid white">
-                                    <h:panelGrid class="text-center" columns="1">
-                                        <h:outputText style="font-size: 10pt;font-weight: bold" value="Selected" ></h:outputText>
-                                        <h:outputText style="font-size: 10pt;font-weight: bold;text-align: center" 
-                                                      rendered="#{bookingController.selectedBillSession.bill.singleBillSession.serialNo eq null}"
-                                                      value="00"> 
-                                        </h:outputText>
-                                        <h:outputText style="font-size: 10pt;font-weight: bold;text-align: center"
-                                                      value="#{bookingController.selectedBillSession.bill.singleBillSession.serialNo}" >
-                                            <f:convertNumber pattern="#,##00"/>
-                                        </h:outputText>
-                                    </h:panelGrid>
-                                </div>
-                                <div class="col-3 text-center  text-white d-flex align-items-center justify-content-center" style="border-right: 1px solid white">
-                                    <h:panelGrid class="text-center" columns="1">
-                                        <h:outputText style="font-size: 10pt;font-weight: bold"  value="Next " ></h:outputText>
-                                        <h:outputText style="font-size: 10pt;font-weight: bold;text-align: center" 
-                                                      rendered="#{bookingController.selectedSessionInstance.nextInLineBillSession.bill.singleBillSession.serialNo eq null}"
-                                                      value="00"> 
-                                        </h:outputText>
-                                        <h:outputText style="font-size: 10pt;font-weight: bold;text-align: center" 
-                                                      value="#{bookingController.selectedSessionInstance.nextInLineBillSession.bill.singleBillSession.serialNo}" >
-                                            <f:convertNumber pattern="#,##00"/>
-                                        </h:outputText>
-                                    </h:panelGrid>
-                                </div>
-                                <div class="col-3 text-center  text-white d-flex align-items-center justify-content-center" style="border-right: 1px solid white">
-                                    <h:panelGrid class="text-center" columns="1">
-                                        <h:outputText style="font-size: 10pt;font-weight: bold"  value="Current" ></h:outputText>
-                                        <h:outputText style="font-size: 10pt;font-weight: bold;text-align: center" 
-                                                      rendered="#{bookingController.selectedSessionInstance.currentlyConsultingBillSession.bill.singleBillSession.serialNo eq null}"
-                                                      value="00"> 
-                                        </h:outputText>
-                                        <h:outputText 
-                                            style="font-size: 10pt;font-weight: bold;text-align: center"
-                                            value="#{bookingController.selectedSessionInstance.currentlyConsultingBillSession.bill.singleBillSession.serialNo}" >
-                                            <f:convertNumber pattern="#,##00"/>
-                                        </h:outputText>
-                                    </h:panelGrid>
-                                </div>
-                                <div class="col-3 text-center  text-white d-flex align-items-center justify-content-center">
-                                    <h:panelGrid class="text-center" columns="1">
-                                        <h:outputText style="font-size: 10pt;font-weight: bold"  value=" Completed" ></h:outputText>
-                                        <h:outputText  style="font-size: 10pt;font-weight: bold;text-align: center" 
-                                                       rendered="#{bookingController.selectedSessionInstance.lastCompletedBillSession.bill.singleBillSession.serialNo eq null}"
-                                                       value="00"> 
-                                        </h:outputText>
-                                        <h:outputText
-                                            style="font-size: 10pt;font-weight: bold;text-align: center"
-                                            value="#{bookingController.selectedSessionInstance.lastCompletedBillSession.bill.singleBillSession.serialNo}" >
-                                            <f:convertNumber pattern="#,##00"/>
-                                        </h:outputText>
-                                    </h:panelGrid>
-                                </div>
-                            </div>
-
-                            <h:panelGroup rendered="#{bookingController.selectedBillSession.id ne null}" id="groupSelectionBillSessionDetails" class="d-flex justify-content-center align-items-center">
-                                <div class="card shadow-lg mt-2 " style="min-width: 300px">
-                                    <div class="card-header">
-                                        <h:outputText value="Manage Booking" style="margin-right: 16px;"/>
-                                    </div>
-                                    <div class="card-body">
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <div style="background-color: orange;
-                                                 margin-right: 16px;
-                                                 box-sizing: border-box;
-                                                 width: 30px;
-                                                 height: 30px;
-                                                 border-radius: 50px;
-                                                 display: flex;
-                                                 justify-content: center;
-                                                 align-items: center">
-                                                <h:outputText value="#{bookingController.selectedBillSession.serialNo}" />
+                <div class="row">
+                    <h:panelGroup id="lstBillSessions">
+                        <ui:repeat value="#{bookingController.billSessions}" var="bs">
+                            <div class="card p-2 my-1">
+                                <div class="row">
+                                    <div class="col-1">
+                                        <div>
+                                            <div style="box-sizing: border-box;width: 35px;height: 35px;border: 2px solid black;border-radius: 50%;" class="d-flex align-items-center justify-content-center mx-2 bg-dark">
+                                                <div>
+                                                    <h5 class="text-white">#{bs.serialNo}</h5>
+                                                </div>
                                             </div>
-                                            <h:outputText value="#{bookingController.selectedBillSession.bill.patient.person.nameWithTitle}" style="margin-right: 12px;"/>
                                         </div>
-                                        <h:panelGroup rendered="#{bookingController.selectedBillSession.markedToCancel}">
-                                            <i class="fas fa-ban" style="color: red; font-size: 16px; margin-right: 4px;"></i>
-                                            <h:outputText value="Marked to Cancel" style="color: red;" />
-                                        </h:panelGroup>
-                                        <h:panelGroup rendered="#{bookingController.selectedBillSession.markedToRefund}">
-                                            <i class="fas fa-undo-alt" style="color: green; font-size: 16px; margin-right: 4px;"></i>
-                                            <h:outputText value="Marked to Refund" style="color: green;" />
-                                        </h:panelGroup>
                                     </div>
-                                    <div class="card-footer">
-                                        <p:commandButton 
-                                            value="Mark to Cancel"
-                                            process="@this"
-                                            update="groupSelectionBillSessionDetails"
-                                            icon="fas fa-ban"
-                                            iconPos="left"
-                                            styleClass="w-100 ui-button-Danger m-1"
-                                            rendered="#{bookingController.selectedBillSession.markedToCancel ne true and bookingController.selectedBillSession.markedToRefund ne true}"
-                                            action="#{bookingController.markToCancel()}">
-                                        </p:commandButton>
-                                        <p:commandButton 
-                                            value="Mark to Refund"
-                                            process="@this"
-                                            update="groupSelectionBillSessionDetails"
-                                            icon="fas fa-undo-alt"
-                                            iconPos="left"
-                                            styleClass="w-100 ui-button-Danger m-1"
-                                            rendered="#{bookingController.selectedBillSession.markedToRefund ne true and bookingController.selectedBillSession.markedToCancel ne true}"
-                                            action="#{bookingController.markToRefund()}">
-                                        </p:commandButton>
-                                        <p:commandButton 
-                                            value="Reverse Mark to Cancel"
-                                            process="@this"
-                                            update="groupSelectionBillSessionDetails"
-                                            icon="fas fa-reply"
-                                            iconPos="left"
-                                            styleClass="w-100 ui-button-Danger m-1"
-                                            rendered="#{bookingController.selectedBillSession.markedToCancel eq true}"
-                                            action="#{bookingController.markToCancelReversed()}">
-                                        </p:commandButton>
-                                        <p:commandButton 
-                                            value="Reverse Mark to Refund"
-                                            process="@this"
-                                            update="groupSelectionBillSessionDetails"
-                                            icon="fas fa-redo-alt"
-                                            iconPos="left"
-                                            styleClass="w-100 ui-button-Danger m-1"
-                                            rendered="#{bookingController.selectedBillSession.markedToRefund eq true}"
-                                            action="#{bookingController.markToRefundReversed()}">
-                                        </p:commandButton>
+                                    <div class="col-2">
+                                        <div class="mx-2">
+                                            <h6>#{bs.bill.patient.person.nameWithTitle}</h6>
+                                        </div>
+                                    </div>
+                                    <div class="col-3">
+                                        <div class="d-flex align-items-center">
 
-                                        <p:commandButton
-                                            value="Action"
-                                            icon="fas fa-redo-alt"
-                                            iconPos="left"
-                                            styleClass="w-100 ui-button-Danger m-1"
-                                            onclick="PF('dlg2').show();"
-                                            >
+                                            <div class="mx-4">
+                                                <p:badge value="Credit" severity="light" rendered="#{bs.bill.paidAmount eq 0}" styleClass="p-badge-green mx-1" />
+                                                <p:badge value="On Call" severity="light" rendered="#{bs.bill.paidAmount eq 0 and bs.bill.paymentMethod eq 'OnCall'}" styleClass="p-badge-green" />
+                                                <p:badge value="Staff" severity="light" rendered="#{bs.bill.paidAmount eq 0 and bs.bill.paymentMethod eq 'Staff'}" styleClass="p-badge-green" />
+                                                <p:badge value="Paid" class="mx-1" severity="success" rendered="#{bs.bill.paidAmount ne 0}" />
+                                                <p:badge value="Agent" severity="success" rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'Agent'}" />
+                                                <p:badge value="On Call" severity="success" rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'OnCall'}" />
+                                                <p:badge value="Staff" severity="success" rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'Staff'}" />
+                                            </div>
+                                            <div>
+                                                <h:panelGroup id="pnlAct">
+                                                    <div class="d-flex align-items-center">
+                                                        <div class="m-1">
+                                                            <p:badge value="Attend" severity="info" rendered="#{bs.currentlyConsulted and bs.completed eq false}" />
+                                                            <p:badge value="Completed" severity="primary" rendered="#{bs.completed}" />
+                                                            <p:badge value="R" class="m-1" severity="warning" rendered="#{bs.markedToRefund}"  />
+                                                        </div>
 
-                                        </p:commandButton>
+                                                    </div>
+                                                </h:panelGroup>
+                                            </div>
+                                            <div>
+                                                <p:outputLabel value="#{bs.bill.creditCompany.institutionCode}"/>
+                                            </div>
+                                            <div>
+                                                <p:outputLabel value="Absent" rendered="#{bs.absent}"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div>
+                                            <h:panelGroup id="pnlActionButton" class="w-100 bg-danger">
+                                                <div class="d-flex align-items-center">
+                                                    <p:commandButton 
+                                                        id="btnCall"
+                                                        value="Attend"
+                                                        rendered="#{!bs.currentlyConsulted}"
+                                                        disabled="#{!bookingController.selectedSessionInstance.started}"
+                                                        action="#{bookingController.patientAttend()}"
+                                                        icon="fas fa-clipboard-user"
+                                                        styleClass="ui-button-info w-100 mx-1"
+                                                        process="btnCall"
+                                                        update="pnlAct pnlActionButton">
+                                                        <f:setPropertyActionListener target="#{bookingController.selectedBillSession}" value="#{bs}"/>
+                                                    </p:commandButton>
+                                                    <p:commandButton 
+                                                        id="btnCallundo"
+                                                        rendered="#{bs.currentlyConsulted}"
+                                                        action="#{bookingController.patientAttendUndo()}"
+                                                        icon="fas fa-undo"
+                                                        styleClass="ui-button-info w-100 mx-1"
+                                                        process="btnCallundo"
+                                                        update="pnlAct pnlActionButton">
+                                                        <f:setPropertyActionListener target="#{bookingController.selectedBillSession}" value="#{bs}"/>
+                                                    </p:commandButton>
+-
+                                                    <p:commandButton 
+                                                        id="btnActions"
+                                                        value="Services"
+                                                        disabled="#{!bs.currentlyConsulted}"
+                                                        icon="fas fa-cogs"
+                                                        styleClass="ui-button-info w-100 mx-1"
+                                                        onclick="PF('dlg2').show();">
+                                                        <f:setPropertyActionListener target="#{bookingController.selectedBillSession}" value="#{bs}"/>
+                                                    </p:commandButton>
+                                                    <p:commandButton 
+                                                        id="btnRefund"
+                                                        value="Refund"
+                                                        disabled="#{!bs.currentlyConsulted}"
+                                                        rendered="#{!bs.markedToRefund}"
+                                                        action="#{bookingController.markToRefund()}"
+                                                        icon="fas fa-dollar-sign"
+                                                        styleClass="ui-button-info w-100 mx-1"
+                                                        process="btnRefund"
+                                                        update="pnlActionButton pnlAct">
+                                                        <f:setPropertyActionListener target="#{bookingController.selectedBillSession}" value="#{bs}"/>
+                                                    </p:commandButton>
+                                                    <p:commandButton 
+                                                        id="btnRefundUndo"
+                                                        disabled="#{!bs.currentlyConsulted}"
+                                                        rendered="#{bs.markedToRefund}"
+                                                        action="#{bookingController.markToRefundUndo()}"
+                                                        icon="fas fa-dollar-sign"
+                                                        styleClass="ui-button-info w-100"
+                                                        process="btnRefundUndo"
+                                                        update="pnlActionButton pnlAct">
+                                                        <f:setPropertyActionListener target="#{bookingController.selectedBillSession}" value="#{bs}"/>
+                                                    </p:commandButton>
+
+                                                </div>
+                                            </h:panelGroup>
+
+                                        </div>
                                     </div>
                                 </div>
-                                <p:dialog header="Manage Booking" widgetVar="dlg2" modal="true" height="200" width="500">
+
+                            </div>
+                            <p:dialog header="Manage Booking" widgetVar="dlg2" modal="true" height="200" width="500">
+                                <h:panelGroup id="pnlActivities">
                                     <ui:repeat value="#{bookingController.selectedAppointmentActivities}" var="activity" >
                                         <div style="box-sizing: border-box;width: 100%;background-color: white;height: 60px" class="my-1 shadow-lg p-1">
                                             <div class="row d-flex align-items-center">
@@ -362,14 +226,18 @@
                                                     <div class="d-flex justify-content-between">
 
                                                         <p:commandButton 
+                                                            id="actMark"
                                                             value="Mark"
-                                                            ajax="false"
+                                                            process="actMark"
+                                                            update=":#{p:resolveFirstComponentWithId('pnlActivities',view).clientId}"
                                                             action="#{bookingController.markActivity(activity, bookingController.selectedBillSession)}"
                                                             disabled="#{bookingController.getActivityStatus(activity, bookingController.selectedBillSession)}"
                                                             styleClass="ui-button ui-button-primary ui-button-rounded mx-1"/>
                                                         <p:commandButton 
+                                                            id="actUnMark"
                                                             value="Unmark"
-                                                            ajax="false"
+                                                            process="actUnMark"
+                                                            update=":#{p:resolveFirstComponentWithId('pnlActivities',view).clientId}"
                                                             action="#{bookingController.unmarkActivity(activity, bookingController.selectedBillSession)}"
                                                             disabled="#{!bookingController.getActivityStatus(activity, bookingController.selectedBillSession)}"
                                                             styleClass="ui-button ui-button-secondary ui-button-rounded mx-1"/>
@@ -381,19 +249,325 @@
                                                 </div>
                                             </div>
                                         </div>
-
-
                                     </ui:repeat>
+                                </h:panelGroup>
+                                <f:facet name="footer">
+                                    <p:commandButton id="apComplete" process="apComplete" update="pnlActionButton pnlAct" action="#{bookingController.completeSelectedBillSession()}" value="Complete" >
+                                        <f:setPropertyActionListener target="#{bookingController.selectedBillSession}" value="#{bs}"/>
+                                    </p:commandButton>
+                                </f:facet>
+                            </p:dialog>
+                        </ui:repeat>
+                    </h:panelGroup>
+                    <p:poll interval="10" listener="#{bookingController.fillBillSessions()}" update="lstBillSessions" />
 
-                                </p:dialog>
-
-                            </h:panelGroup>
-                        </h:panelGroup>
-
-
-
-                    </div>
                 </div>
+
+                <!--                <div class="row" >
+                                    <div class="col-5">
+                                        <p:watermark for="lstBookings" value="Select Booking" ></p:watermark>
+                                        <h:outputText id="test" value="#{bookingController.selectedBillSession}" rendered="false"></h:outputText>
+                                        <p:selectOneListbox 
+                                            id="lstBookings" 
+                                            value="#{bookingController.selectedBillSession}" 
+                                            filter="true" 
+                                            var="bs" 
+                                            scrollHeight="400"
+                                            class="w-100 fullHeightListbox" >
+                                            <f:selectItems value="#{bookingController.billSessions}" var="item" itemValue="#{item}" />
+                                            <p:ajax process="lstBookings" update="panelSessionDetails groupSelectionBillSessionDetails"></p:ajax>
+                
+                                            <p:column style="width: 5px!important;text-align: center;">
+                                                <h:outputText value="#{bs.serialNo}" />
+                                            </p:column>
+                
+                                            <p:column style="width: 60px!important;">
+                                                <h:outputText value="#{bs.bill.patient.person.nameWithTitle}" />
+                                            </p:column>
+                
+                                            <p:column style="width: 20px!important;">
+                                                <p:outputLabel class="badge badge-light" value="Credit" rendered="#{bs.bill.paidAmount eq 0}" style="color: green;"/>
+                                                <p:outputLabel value="-On Call" rendered="#{bs.bill.paidAmount eq 0 and bs.bill.paymentMethod eq 'OnCall'}" style="color: green;"/>
+                                                <p:outputLabel value="-Staff" rendered="#{bs.bill.paidAmount eq 0 and bs.bill.paymentMethod eq 'Staff'}" style="color: green;"/>
+                                                <p:outputLabel value="Paid" rendered="#{bs.bill.paidAmount ne 0}"/>
+                                                <p:outputLabel value="-Agent" rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'Agent'}"/>
+                                                <p:outputLabel value="-On Call" rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'OnCall'}"/>
+                                                <p:outputLabel value="-Staff" rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'Staff'}"/>
+                                            </p:column>
+                
+                                            <p:column style="width: 10px!important;">
+                                                <p:outputLabel value="Completed" rendered="#{bs.completed}"/>
+                                                <p:outputLabel value="Cancelled" rendered="#{bs.bill.cancelled==true}"/>
+                                                <p:outputLabel value="Refunded" rendered="#{bs.bill.refunded==true}"/>
+                                            </p:column>
+                
+                                            <p:column style="width: 5px!important;">
+                                                <p:outputLabel value="#{bs.bill.creditCompany.institutionCode}"/>
+                                            </p:column>
+                
+                                            <p:column style="width: 10px!important;">
+                                                <p:outputLabel value="Absent" rendered="#{bs.absent}"/>
+                                            </p:column>
+                
+                
+                                        </p:selectOneListbox>
+                                    </div>
+                                    <div class="col-3">
+                                        <h:panelGrid columns="1">
+                                            <p:commandButton 
+                                                id="btnCallNextToCurrent"
+                                                value="Start First" 
+                                                action="#{bookingController.startFirstSession}"
+                                                icon="pi pi-step-forward"
+                                                styleClass="ui-button-info w-100"
+                                                process="@this"
+                                                update="panelSessionDetails lstBookings"
+                                                ajax="true" />
+                
+                                            <p:commandButton 
+                                                id="btnNext"
+                                                value="Complete &amp; Next" 
+                                                action="#{bookingController.markCurrentCompleteAndCallNext}"
+                                                icon="pi pi-check"
+                                                styleClass="ui-button-success w-100 my-1"
+                                                process="btnNext"
+                                                update="panelSessionDetails lstBookings"
+                                                ajax="true" />
+                
+                                            <p:commandButton 
+                                                value="Reverse &amp; Previous" 
+                                                actionListener="#{bookingController.reverseCurrentCompleteAndCallPrevious}"
+                                                icon="pi pi-undo" styleClass="ui-button-warning w-100 "
+                                                update="panelSessionDetails lstBookings" ajax="true" />
+                
+                                            <p:commandButton 
+                                                id="btnMarkLastCompleted"
+                                                value="Mark Last Completed" 
+                                                action="#{bookingController.markSelectedAsLastCompleted}"
+                                                icon="pi pi-flag" 
+                                                styleClass="ui-button-info w-100 my-1"
+                                                process="@this"
+                                                update="panelSessionDetails lstBookings"
+                                                ajax="true" />
+                
+                                            <p:commandButton 
+                                                id="btnMarkNextInLine"
+                                                value="Mark Next In Line" 
+                                                action="#{bookingController.markSelectedAsNextInLine}"
+                                                icon="pi pi-forward" 
+                                                styleClass="ui-button-info w-100 "
+                                                process="@this"
+                                                update="panelSessionDetails lstBookings"
+                                                ajax="true" />
+                
+                                            <p:commandButton 
+                                                id="btnSetCurrentSession"
+                                                value="Set as Current Session" 
+                                                action="#{bookingController.markSelectedAsCurrentSession}"
+                                                icon="pi pi-user-edit" 
+                                                styleClass="ui-button-info w-100 my-1"
+                                                process="@this"
+                                                update="panelSessionDetails lstBookings"
+                                                ajax="true" />
+                
+                                            <p:commandButton 
+                                                value="Reset &amp; Set Current" 
+                                                actionListener="#{bookingController.resetAndSetSelectedAsCurrentlyConsulted}"
+                                                icon="pi pi-refresh" styleClass="ui-button-info w-100 "
+                                                update="panelSessionDetails lstBookings" ajax="true" />
+                                        </h:panelGrid>
+                                    </div>
+                                    <div class="col-4  ">
+                                        <h:panelGroup  id="panelSessionDetails" class=" w-100 p-2 text-white">
+                
+                                            <div class="d-flex justify-content-between align-items-center mb-2" style="border-radius: 20px">
+                                                <div class="col-3 text-center text-white d-flex align-items-center justify-content-center" style="border-right: 1px solid white">
+                                                    <h:panelGrid class="text-center" columns="1">
+                                                        <h:outputText style="font-size: 10pt;font-weight: bold" value="Selected" ></h:outputText>
+                                                        <h:outputText style="font-size: 10pt;font-weight: bold;text-align: center" 
+                                                                      rendered="#{bookingController.selectedBillSession.bill.singleBillSession.serialNo eq null}"
+                                                                      value="00"> 
+                                                        </h:outputText>
+                                                        <h:outputText style="font-size: 10pt;font-weight: bold;text-align: center"
+                                                                      value="#{bookingController.selectedBillSession.bill.singleBillSession.serialNo}" >
+                                                            <f:convertNumber pattern="#,##00"/>
+                                                        </h:outputText>
+                                                    </h:panelGrid>
+                                                </div>
+                                                <div class="col-3 text-center  text-white d-flex align-items-center justify-content-center" style="border-right: 1px solid white">
+                                                    <h:panelGrid class="text-center" columns="1">
+                                                        <h:outputText style="font-size: 10pt;font-weight: bold"  value="Next " ></h:outputText>
+                                                        <h:outputText style="font-size: 10pt;font-weight: bold;text-align: center" 
+                                                                      rendered="#{bookingController.selectedSessionInstance.nextInLineBillSession.bill.singleBillSession.serialNo eq null}"
+                                                                      value="00"> 
+                                                        </h:outputText>
+                                                        <h:outputText style="font-size: 10pt;font-weight: bold;text-align: center" 
+                                                                      value="#{bookingController.selectedSessionInstance.nextInLineBillSession.bill.singleBillSession.serialNo}" >
+                                                            <f:convertNumber pattern="#,##00"/>
+                                                        </h:outputText>
+                                                    </h:panelGrid>
+                                                </div>
+                                                <div class="col-3 text-center  text-white d-flex align-items-center justify-content-center" style="border-right: 1px solid white">
+                                                    <h:panelGrid class="text-center" columns="1">
+                                                        <h:outputText style="font-size: 10pt;font-weight: bold"  value="Current" ></h:outputText>
+                                                        <h:outputText style="font-size: 10pt;font-weight: bold;text-align: center" 
+                                                                      rendered="#{bookingController.selectedSessionInstance.currentlyConsultingBillSession.bill.singleBillSession.serialNo eq null}"
+                                                                      value="00"> 
+                                                        </h:outputText>
+                                                        <h:outputText 
+                                                            style="font-size: 10pt;font-weight: bold;text-align: center"
+                                                            value="#{bookingController.selectedSessionInstance.currentlyConsultingBillSession.bill.singleBillSession.serialNo}" >
+                                                            <f:convertNumber pattern="#,##00"/>
+                                                        </h:outputText>
+                                                    </h:panelGrid>
+                                                </div>
+                                                <div class="col-3 text-center  text-white d-flex align-items-center justify-content-center">
+                                                    <h:panelGrid class="text-center" columns="1">
+                                                        <h:outputText style="font-size: 10pt;font-weight: bold"  value=" Completed" ></h:outputText>
+                                                        <h:outputText  style="font-size: 10pt;font-weight: bold;text-align: center" 
+                                                                       rendered="#{bookingController.selectedSessionInstance.lastCompletedBillSession.bill.singleBillSession.serialNo eq null}"
+                                                                       value="00"> 
+                                                        </h:outputText>
+                                                        <h:outputText
+                                                            style="font-size: 10pt;font-weight: bold;text-align: center"
+                                                            value="#{bookingController.selectedSessionInstance.lastCompletedBillSession.bill.singleBillSession.serialNo}" >
+                                                            <f:convertNumber pattern="#,##00"/>
+                                                        </h:outputText>
+                                                    </h:panelGrid>
+                                                </div>
+                                            </div>
+                
+                                            <h:panelGroup rendered="#{bookingController.selectedBillSession.id ne null}" id="groupSelectionBillSessionDetails" class="d-flex justify-content-center align-items-center">
+                                                <div class="card shadow-lg mt-2 " style="min-width: 300px">
+                                                    <div class="card-header">
+                                                        <h:outputText value="Manage Booking" style="margin-right: 16px;"/>
+                                                    </div>
+                                                    <div class="card-body">
+                                                        <div class="d-flex justify-content-between align-items-center">
+                                                            <div style="background-color: orange;
+                                                                 margin-right: 16px;
+                                                                 box-sizing: border-box;
+                                                                 width: 30px;
+                                                                 height: 30px;
+                                                                 border-radius: 50px;
+                                                                 display: flex;
+                                                                 justify-content: center;
+                                                                 align-items: center">
+                                                                <h:outputText value="#{bookingController.selectedBillSession.serialNo}" />
+                                                            </div>
+                                                            <h:outputText value="#{bookingController.selectedBillSession.bill.patient.person.nameWithTitle}" style="margin-right: 12px;"/>
+                                                        </div>
+                                                        <h:panelGroup rendered="#{bookingController.selectedBillSession.markedToCancel}">
+                                                            <i class="fas fa-ban" style="color: red; font-size: 16px; margin-right: 4px;"></i>
+                                                            <h:outputText value="Marked to Cancel" style="color: red;" />
+                                                        </h:panelGroup>
+                                                        <h:panelGroup rendered="#{bookingController.selectedBillSession.markedToRefund}">
+                                                            <i class="fas fa-undo-alt" style="color: green; font-size: 16px; margin-right: 4px;"></i>
+                                                            <h:outputText value="Marked to Refund" style="color: green;" />
+                                                        </h:panelGroup>
+                                                    </div>
+                                                    <div class="card-footer">
+                                                        <p:commandButton 
+                                                            value="Mark to Cancel"
+                                                            process="@this"
+                                                            update="groupSelectionBillSessionDetails"
+                                                            icon="fas fa-ban"
+                                                            iconPos="left"
+                                                            styleClass="w-100 ui-button-Danger m-1"
+                                                            rendered="#{bookingController.selectedBillSession.markedToCancel ne true and bookingController.selectedBillSession.markedToRefund ne true}"
+                                                            action="#{bookingController.markToCancel()}">
+                                                        </p:commandButton>
+                                                        <p:commandButton 
+                                                            value="Mark to Refund"
+                                                            process="@this"
+                                                            update="groupSelectionBillSessionDetails"
+                                                            icon="fas fa-undo-alt"
+                                                            iconPos="left"
+                                                            styleClass="w-100 ui-button-Danger m-1"
+                                                            rendered="#{bookingController.selectedBillSession.markedToRefund ne true and bookingController.selectedBillSession.markedToCancel ne true}"
+                                                            action="#{bookingController.markToRefund()}">
+                                                        </p:commandButton>
+                                                        <p:commandButton 
+                                                            value="Reverse Mark to Cancel"
+                                                            process="@this"
+                                                            update="groupSelectionBillSessionDetails"
+                                                            icon="fas fa-reply"
+                                                            iconPos="left"
+                                                            styleClass="w-100 ui-button-Danger m-1"
+                                                            rendered="#{bookingController.selectedBillSession.markedToCancel eq true}"
+                                                            action="#{bookingController.markToCancelReversed()}">
+                                                        </p:commandButton>
+                                                        <p:commandButton 
+                                                            value="Reverse Mark to Refund"
+                                                            process="@this"
+                                                            update="groupSelectionBillSessionDetails"
+                                                            icon="fas fa-redo-alt"
+                                                            iconPos="left"
+                                                            styleClass="w-100 ui-button-Danger m-1"
+                                                            rendered="#{bookingController.selectedBillSession.markedToRefund eq true}"
+                                                            action="#{bookingController.markToRefundReversed()}">
+                                                        </p:commandButton>
+                
+                                                        <p:commandButton
+                                                            value="Action"
+                                                            icon="fas fa-redo-alt"
+                                                            iconPos="left"
+                                                            styleClass="w-100 ui-button-Danger m-1"
+                                                            onclick="PF('dlg2').show();"
+                                                            >
+                
+                                                        </p:commandButton>
+                                                    </div>
+                                                </div>
+                                                <p:dialog header="Manage Booking" widgetVar="dlg2" modal="true" height="200" width="500">
+                                                    <ui:repeat value="#{bookingController.selectedAppointmentActivities}" var="activity" >
+                                                        <div style="box-sizing: border-box;width: 100%;background-color: white;height: 60px" class="my-1 shadow-lg p-1">
+                                                            <div class="row d-flex align-items-center">
+                                                                <div class="col-3">
+                                                                    <p:outputLabel class="mx-2" style="font-size: 8pt;font-weight: bold" value="#{activity.name}" />
+                                                                </div>
+                                                                <div class="col-2 d-flex justify-content-center align-items-center">
+                                                                    <div class="square-image">
+                                                                        <p:graphicImage url="#{activity.imageLink}"
+                                                                                        styleClass="#{bookingController.getActivityStatus(activity, bookingController.selectedBillSession) ? 'w-75 h-75 img-prominent' : 'w-75 h-75 img-light'}" />
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col-7">
+                                                                    <div class="d-flex justify-content-between">
+                
+                                                                        <p:commandButton 
+                                                                            value="Mark"
+                                                                            ajax="false"
+                                                                            action="#{bookingController.markActivity(activity, bookingController.selectedBillSession)}"
+                                                                            disabled="#{bookingController.getActivityStatus(activity, bookingController.selectedBillSession)}"
+                                                                            styleClass="ui-button ui-button-primary ui-button-rounded mx-1"/>
+                                                                        <p:commandButton 
+                                                                            value="Unmark"
+                                                                            ajax="false"
+                                                                            action="#{bookingController.unmarkActivity(activity, bookingController.selectedBillSession)}"
+                                                                            disabled="#{!bookingController.getActivityStatus(activity, bookingController.selectedBillSession)}"
+                                                                            styleClass="ui-button ui-button-secondary ui-button-rounded mx-1"/>
+                                                                        <p:commandButton 
+                                                                            value="List"
+                                                                            action="#{bookingController.navigateToListSessionInstanceActivities(activity, bookingController.selectedSessionInstance)}"
+                                                                            styleClass="ui-button ui-button-info ui-button-rounded mx-1"/>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                
+                
+                                                    </ui:repeat>
+                
+                                                </p:dialog>
+                
+                                            </h:panelGroup>
+                                        </h:panelGroup>
+                
+                
+                
+                                    </div>
+                                </div>-->
 
             </p:panel>
         </h:form>
@@ -425,6 +599,8 @@
                     }
                 }
             }
+
+
             //]]>
         </script>
     </ui:define>
