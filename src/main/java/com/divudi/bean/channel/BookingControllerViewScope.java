@@ -460,7 +460,26 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             JsfUtil.addErrorMessage("No Session Instance is selected");
             return null;
         }
+        if (selectedSessionInstance.getOriginatingSession() == null) {
+            JsfUtil.addErrorMessage("No Originating Session is available");
+            return null;
+        }
+        if (selectedSessionInstance.getOriginatingSession().getStaff() == null) {
+            JsfUtil.addErrorMessage("No Staff linked to the Originating Session");
+            return null;
+        }
+        if (selectedSessionInstance.getOriginatingSession().getStaff().getSpeciality() == null) {
+            JsfUtil.addErrorMessage("Staff member has no Speciality defined");
+            return null;
+        }
+        channelScheduleController.setSpeciality(selectedSessionInstance.getStaff().getSpeciality());
+        channelScheduleController.getSpecialityStaff();
+        channelScheduleController.setCurrentStaff(selectedSessionInstance.getStaff());
+        channelScheduleController.getItems();
+        channelScheduleController.setCurrent(selectedSessionInstance.getOriginatingSession());
+        channelScheduleController.fillSessionInstance();
         channelScheduleController.setCurrentSessionInstance(selectedSessionInstance);
+//        channelScheduleController.fillFees();
         return channelScheduleController.navigateToChannelScheduleManagement();
     }
 
@@ -482,8 +501,12 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             return null;
         }
         channelScheduleController.setSpeciality(selectedSessionInstance.getStaff().getSpeciality());
+        channelScheduleController.getSpecialityStaff();
         channelScheduleController.setCurrentStaff(selectedSessionInstance.getStaff());
+        channelScheduleController.getItems();
+        channelScheduleController.fillSessionInstance();
         channelScheduleController.setCurrent(selectedSessionInstance.getOriginatingSession());
+        channelScheduleController.fillFees();
         return channelScheduleController.navigateToChannelSchedule();
     }
 

@@ -233,7 +233,7 @@ public class ChannelScheduleController implements Serializable {
     private ItemFeeFacade itemFeeFacade;
 
     public String navigateToChannelSchedule() {
-        itemController.fillItemsForInward();
+//        itemController.fillItemsForInward();
         return "/channel/channel_shedule?faces-redirect=true";
     }
 
