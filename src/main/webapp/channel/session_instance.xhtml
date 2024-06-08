@@ -147,11 +147,34 @@
                                         <h:outputText class="mx-4" value="Session Details" />
                                     </f:facet>
                                     <h:panelGrid columns="3" class="d-flex justify-content-end my-1">
-                                        <p:commandButton ajax="false" id="btnSave" value="Save"  
-                                                         action="#{bookingControllerViewScope.saveSessionInstanceDetails()}"
-                                                         class="ui-button-warning" icon="fas fa-save" >
+                                        <p:commandButton 
+                                            ajax="false" 
+                                            id="btnSave" 
+                                            value="Save"  
+                                            action="#{bookingControllerViewScope.saveSessionInstanceDetails()}"
+                                            class="ui-button ui-button-warning" 
+                                            icon="pi pi-save">
+                                        </p:commandButton>
+
+                                        <p:commandButton 
+                                            ajax="false" 
+                                            id="btnEditSession" 
+                                            value="To Edit"  
+                                            action="#{bookingControllerViewScope.navigateToEditSessionInstance()}"
+                                            class="ui-button ui-button-info" 
+                                            icon="pi pi-pencil">
+                                        </p:commandButton>
+
+                                        <p:commandButton 
+                                            ajax="false" 
+                                            id="btnEditOriginSession" 
+                                            value="To Edit Originating Session"  
+                                            action="#{bookingControllerViewScope.navigateToEditOriginatingSession()}"
+                                            class="ui-button ui-button-secondary" 
+                                            icon="pi pi-external-link">
                                         </p:commandButton>
                                     </h:panelGrid>
+
                                     <p:tabView style="width: 100%!important;">
                                         <p:tab title="Details">
                                             <h:panelGrid id="gpDetails" columns="2" cellpadding="10">

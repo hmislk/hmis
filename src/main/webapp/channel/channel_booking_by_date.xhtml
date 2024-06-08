@@ -328,9 +328,15 @@
                                                 <p:outputLabel value="Payment Method"/>
 
                                                 <h:panelGroup>
-                                                    <p:selectOneMenu class="w-75" autoWidth="false" id="cmbPs" value="#{bookingControllerViewScope.paymentMethod}">
+                                                    <p:selectOneMenu 
+                                                        class="w-75"
+                                                        autoWidth="false"
+                                                        id="cmbPs"
+                                                        filter="true"
+                                                        filterMatchMode="contains"
+                                                        value="#{bookingControllerViewScope.paymentMethod}">
                                                         <f:selectItem itemLabel="Select Payment Method" ></f:selectItem>
-                                                        <f:selectItems value="#{enumController.paymentMethodsForOpdBilling}"/>
+                                                        <f:selectItems value="#{enumController.paymentMethodsForChanneling}"/>
                                                         <f:ajax execute="@this" render="gdManageBookings :#{p:resolveFirstComponentWithId('lblSessionTotal',view).clientId} paymentDetails lstItems" event="change" listener="#{bookingControllerViewScope.generateSessions}" />
                                                     </p:selectOneMenu>
                                                     <h:outputScript>
