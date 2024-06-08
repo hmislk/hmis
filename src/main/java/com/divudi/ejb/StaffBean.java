@@ -28,9 +28,10 @@ public class StaffBean {
         if (staff.getCreditLimitQualified() >= staff.getCurrentCreditValue() + value) {
             staff.setCurrentCreditValue(staff.getCurrentCreditValue() + value);
             getFacade().edit(staff);
-        }
-        JsfUtil.addErrorMessage("Staff credit limit exceeded. The current credit value cannot exceed the credit limit qualified by the staff member.");
 
+        } else {
+            JsfUtil.addErrorMessage("Staff credit limit exceeded. The current credit value cannot exceed the credit limit qualified by the staff member.");
+        }
     }
 
     public void updateStaffWelfare(Staff staff, double value) {
