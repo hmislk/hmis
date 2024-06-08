@@ -413,7 +413,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         if (selectedSessionInstance == null) {
             return;
         }
-        
+
         for (BillSession bs : billSessions) {
             if (bs.getBill() == null) {
                 continue;
@@ -1829,14 +1829,19 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
         List<ItemFee> itemFeesofTheAddingItem = billBeanController.fillFees(itemToAddToBooking);
         List<BillFee> billFeesToAdd = null;
+        System.out.println("itemFeesofTheAddingItem = " + itemFeesofTheAddingItem);
         if (itemFeesofTheAddingItem != null) {
             billFeesToAdd = billBeanController.createNewBillFeesAndReturnThem(newBillItem, addedItemFees, sessionController.getLoggedUser(), null, null, foriegn);
         }
 
         selectedBillSession.getBillItem().getBill().getBillItems().add(newBillItem);
-
+        System.out.println("billFeesToAdd = " + billFeesToAdd);
+        if (billFeesToAdd != null) {
+            selectedBillSession.getBillItem().getBill().getBillFees().addAll(billFeesToAdd);
+        }
+        System.out.println("selectedBillSession.getBillItem().getBill().getBillFees() = " + selectedBillSession.getBillItem().getBill().getBillFees());
         itemToAddToBooking = null;
-        fillFees();
+//        fillFees();
     }
 
     public boolean errorCheckForSerial() {

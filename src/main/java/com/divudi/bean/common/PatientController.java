@@ -1523,6 +1523,22 @@ public class PatientController implements Serializable, ControllerWithPatient {
         controller.setPatientDetailsEditable(false);
         quickSearchPatientList = null;
     }
+    
+    public void selectQuickSearchOneFromQuickSearchPatient(ControllerWithPatient controller, Patient pt) {
+        if (controller == null) {
+            JsfUtil.addErrorMessage("Programming Error. Controller is null.");
+            return;
+        }
+        if(pt==null){
+            JsfUtil.addErrorMessage("Programming Error. Controller is null.");
+            return;
+        }
+        current=pt;
+        controller.setPatient(current);
+        admissionController.fillCurrentPatientAllergies(current);
+        controller.setPatientDetailsEditable(false);
+        quickSearchPatientList = null;
+    }
 
     public void listAllPatients() {
         String j = "select p from Patient p where p.retired=false order by p.person.name";
@@ -2413,6 +2429,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
         return current;
     }
 
+    
+    
     public void setCurrent(Patient current) {
         this.current = current;
         getYearMonthDay();
