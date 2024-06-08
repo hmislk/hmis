@@ -402,7 +402,40 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         selectedSessionInstance.setCancelledAt(new Date());
         selectedSessionInstance.setCancelledBy(sessionController.getLoggedUser());
         sessionInstanceFacade.edit(selectedSessionInstance);
+        sendSmsChannelSessionCancelNotification();
         JsfUtil.addErrorMessage("Cancelled");
+
+    }
+
+    public void sendSmsChannelSessionCancelNotification() {
+        String smsTemplateForchannelSessionCancellation = configOptionController.getLongTextValueByKey("Template for SMS Sent on Channel Booking Session Cancellation", OptionScope.APPLICATION, null, null, null);
+        fillBillSessions();
+        if (selectedSessionInstance == null) {
+            return;
+        }
+        
+        for (BillSession bs : billSessions) {
+            if (bs.getBill() == null) {
+                continue;
+            }
+            if (bs.getBill().getPatient().getPerson().getSmsNumber() == null) {
+                continue;
+            }
+            Sms e = new Sms();
+            e.setCreatedAt(new Date());
+            e.setCreater(sessionController.getLoggedUser());
+            e.setBill(bs.getBill());
+            e.setReceipientNumber(bs.getBill().getPatient().getPerson().getSmsNumber());
+            e.setSendingMessage(createSmsForChannelBooking(bs.getBill(), smsTemplateForchannelSessionCancellation));
+            e.setDepartment(getSessionController().getLoggedUser().getDepartment());
+            e.setInstitution(getSessionController().getLoggedUser().getInstitution());
+            e.setPending(false);
+            e.setSmsType(MessageType.ChannelDoctorArrival);
+            smsFacade.create(e);
+            Boolean sent = smsManager.sendSms(e);
+
+        }
+        JsfUtil.addSuccessMessage("SMS Sent to all Patients.");
     }
 
     public void reopenSession() {
