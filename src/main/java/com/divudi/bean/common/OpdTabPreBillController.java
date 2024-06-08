@@ -850,6 +850,7 @@ public class OpdTabPreBillController implements Serializable, ControllerWithPati
 //        return opdTokenController.navigateToOpdQueue();
 //    }
     public String settleBill() {
+        System.out.println("settleBill = " + this);
         if (errorCheck()) {
             return null;
         }
@@ -1144,13 +1145,15 @@ public class OpdTabPreBillController implements Serializable, ControllerWithPati
     }
 
     private boolean errorCheck() {
-
+        System.out.println("errorCheck");
         if (getLstBillEntries().isEmpty()) {
             JsfUtil.addErrorMessage("No Items added to the bill.");
             return true;
         }
+        System.out.println("getLstBillEntries() = " + getLstBillEntries());
         if (!getLstBillEntries().get(0).getBillItem().getItem().isPatientNotRequired()) {
             if (getPatient() == null) {
+                JsfUtil.addErrorMessage("No Patient");
                 return true;
             }
             boolean checkAge = false;
@@ -1161,6 +1164,7 @@ public class OpdTabPreBillController implements Serializable, ControllerWithPati
                 }
             }
             if (checkAge && checkPatientAgeSex()) {
+                System.out.println("checkAge = " + checkAge);
                 return true;
             }
         }
