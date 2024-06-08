@@ -706,16 +706,20 @@ public class OpdTabPreBillController implements Serializable, ControllerWithPati
     }
 
     public boolean putToBills() {
+        System.out.println("putToBills = " );
         bills = new ArrayList<>();
         Set<Department> billDepts = new HashSet<>();
         for (BillEntry e : lstBillEntries) {
+            System.out.println("e = " + e);
             billDepts.add(e.getBillItem().getItem().getDepartment());
         }
 
         for (Department d : billDepts) {
+            System.out.println("d = " + d);
             PreBill newPreBill = new PreBill();
+            System.out.println("newPreBill = " + newPreBill);
             newPreBill = saveBill(d, newPreBill);
-
+            System.out.println("newPreBill = " + newPreBill);
             if (newPreBill == null) {
                 return false;
             }
@@ -723,6 +727,7 @@ public class OpdTabPreBillController implements Serializable, ControllerWithPati
             List<BillEntry> tmp = new ArrayList<>();
 
             for (BillEntry e : lstBillEntries) {
+                System.out.println("e = " + e);
                 if (Objects.equals(e.getBillItem().getItem().getDepartment().getId(), d.getId())) {
                     BillItem bi = getBillBean().saveBillItem(newPreBill, e, getSessionController().getLoggedUser());
                     //getBillBean().calculateBillItem(myBill, e);
@@ -853,23 +858,27 @@ public class OpdTabPreBillController implements Serializable, ControllerWithPati
     public String settleBill() {
         System.out.println("settleBill = " + this);
         if (errorCheck()) {
+            System.out.println("an error");
             return null;
         }
+        System.out.println("before saving pt");
         savePatient(getPatient());
+        System.out.println("after saving pt " );
         if (getBillBean().checkDepartment(getLstBillEntries()) == 1) {
             System.out.println("getBillBean().checkDepartment");
             PreBill newPreBill = new PreBill();
             PreBill b = saveBill(lstBillEntries.get(0).getBillItem().getItem().getDepartment(), newPreBill);
-
+            System.out.println("b = " + b);
             if (b == null) {
                 return null;
             }
 
             List<BillItem> list = new ArrayList<>();
             for (BillEntry billEntry : getLstBillEntries()) {
+                System.out.println("billEntry = " + billEntry);
                 list.add(getBillBean().saveBillItem(b, billEntry, getSessionController().getLoggedUser()));
             }
-
+            System.out.println("list = " + list);
             b.setBillItems(list);
             getBillFacade().edit(b);
             getBillBean().calculateBillItems(b, getLstBillEntries());
@@ -1178,7 +1187,6 @@ public class OpdTabPreBillController implements Serializable, ControllerWithPati
         System.out.println("getPaymentMethod() == null");
         if (getPaymentMethod() == null) {
             setPaymentMethod(PaymentMethod.Cash);
-            return true;
         }
         return false;
     }
