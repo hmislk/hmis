@@ -35,6 +35,9 @@ public class SessionInstanceController implements Serializable {
     private static final long serialVersionUID = 1L;
     @Inject
     SessionController sessionController;
+    @Inject
+    ChannelScheduleController ChannelScheduleController;
+    
     @EJB
     private SessionInstanceFacade ejbFacade;
 
