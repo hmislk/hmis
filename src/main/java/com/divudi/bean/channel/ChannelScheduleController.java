@@ -127,7 +127,7 @@ public class ChannelScheduleController implements Serializable {
     @Inject
     ConfigOptionController configOptionController;
 
-    private DoctorSpeciality speciality;
+    private Speciality speciality;
     ServiceSession current;
     private Item additionalItemToAdd;
     private ItemForItem additionalItemToRemove;
@@ -248,7 +248,7 @@ public class ChannelScheduleController implements Serializable {
     private ItemFeeFacade itemFeeFacade;
 
     public String navigateToChannelSchedule() {
-        itemController.fillItemsForInward();
+//        itemController.fillItemsForInward();
         return "/channel/channel_shedule?faces-redirect=true";
     }
 
@@ -707,11 +707,11 @@ public class ChannelScheduleController implements Serializable {
         this.tabIndex = tabIndex;
     }
 
-    public DoctorSpeciality getSpeciality() {
+    public Speciality getSpeciality() {
         return speciality;
     }
 
-    public void setSpeciality(DoctorSpeciality speciality) {
+    public void setSpeciality(Speciality speciality) {
         this.speciality = speciality;
     }
 

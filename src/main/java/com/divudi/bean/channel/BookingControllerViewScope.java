@@ -488,6 +488,61 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         JsfUtil.addSuccessMessage("Updated");
     }
 
+    public String navigateToEditSessionInstance() {
+        if (selectedSessionInstance == null) {
+            JsfUtil.addErrorMessage("No Session Instance is selected");
+            return null;
+        }
+        if (selectedSessionInstance.getOriginatingSession() == null) {
+            JsfUtil.addErrorMessage("No Originating Session is available");
+            return null;
+        }
+        if (selectedSessionInstance.getOriginatingSession().getStaff() == null) {
+            JsfUtil.addErrorMessage("No Staff linked to the Originating Session");
+            return null;
+        }
+        if (selectedSessionInstance.getOriginatingSession().getStaff().getSpeciality() == null) {
+            JsfUtil.addErrorMessage("Staff member has no Speciality defined");
+            return null;
+        }
+        channelScheduleController.setSpeciality(selectedSessionInstance.getStaff().getSpeciality());
+        channelScheduleController.getSpecialityStaff();
+        channelScheduleController.setCurrentStaff(selectedSessionInstance.getStaff());
+        channelScheduleController.getItems();
+        channelScheduleController.setCurrent(selectedSessionInstance.getOriginatingSession());
+        channelScheduleController.fillSessionInstance();
+        channelScheduleController.setCurrentSessionInstance(selectedSessionInstance);
+//        channelScheduleController.fillFees();
+        return channelScheduleController.navigateToChannelScheduleManagement();
+    }
+
+    public String navigateToEditOriginatingSession() {
+        if (selectedSessionInstance == null) {
+            JsfUtil.addErrorMessage("No Session Instance is selected");
+            return null;
+        }
+        if (selectedSessionInstance.getOriginatingSession() == null) {
+            JsfUtil.addErrorMessage("No Originating Session is available");
+            return null;
+        }
+        if (selectedSessionInstance.getOriginatingSession().getStaff() == null) {
+            JsfUtil.addErrorMessage("No Staff linked to the Originating Session");
+            return null;
+        }
+        if (selectedSessionInstance.getOriginatingSession().getStaff().getSpeciality() == null) {
+            JsfUtil.addErrorMessage("Staff member has no Speciality defined");
+            return null;
+        }
+        channelScheduleController.setSpeciality(selectedSessionInstance.getStaff().getSpeciality());
+        channelScheduleController.getSpecialityStaff();
+        channelScheduleController.setCurrentStaff(selectedSessionInstance.getStaff());
+        channelScheduleController.getItems();
+        channelScheduleController.fillSessionInstance();
+        channelScheduleController.setCurrent(selectedSessionInstance.getOriginatingSession());
+        channelScheduleController.fillFees();
+        return channelScheduleController.navigateToChannelSchedule();
+    }
+
     public void addSingleDateToToDate() {
         Calendar cal = Calendar.getInstance();
         cal.setTime(getFromDate());
@@ -811,6 +866,15 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     public String navigateToChannelBookingFromMenuByDate() {
         Boolean opdBillingAfterShiftStart = sessionController.getApplicationPreference().isOpdBillingAftershiftStart();
+
+        viewScopeDataTransferController.setFromDate(fromDate);
+        viewScopeDataTransferController.setToDate(toDate);
+
+        viewScopeDataTransferController.setNeedToFillBillSessions(false);
+        viewScopeDataTransferController.setNeedToFillBillSessionDetails(false);
+        viewScopeDataTransferController.setNeedToFillSessionInstances(true);
+        viewScopeDataTransferController.setNeedToFillSessionInstanceDetails(true);
+
         if (opdBillingAfterShiftStart) {
             financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
             if (financialTransactionController.getNonClosedShiftStartFundBill() != null) {
