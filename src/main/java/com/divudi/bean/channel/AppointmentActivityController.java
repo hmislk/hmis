@@ -190,7 +190,6 @@ public class AppointmentActivityController implements Serializable {
         }
         String[] lines = input.split("\\r?\\n"); // Split input into lines, supporting both UNIX and Windows line endings
         for (String line : lines) {
-            System.out.println("input = " + input);
             if (line.trim().isEmpty()) {
                 continue; // Skip empty lines
             }

@@ -183,7 +183,7 @@ public class UserNotificationController implements Serializable {
             if (items == null) {
                 return;
             }
-            System.out.println("iterator 1 seenedNotifiaction = " + items.size());
+
             Iterator<UserNotification> iterator = items.iterator();
             while (iterator.hasNext()) {
                 UserNotification notification = iterator.next();
@@ -195,7 +195,7 @@ public class UserNotificationController implements Serializable {
                     iterator.remove();
                 }
             }
-            System.out.println("iterator 2 seenedNotifiaction = " + items.size());
+
         }
 
         if (todayNotification) {

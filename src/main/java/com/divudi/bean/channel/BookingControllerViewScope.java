@@ -333,7 +333,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
             int arrSize = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().size();
             ComponentDetail pm = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().get(arrSize - 1);
-            System.out.println("pm = " + pm.getPaymentMethod().getLabel());
             if (pm.getPaymentMethod() == PaymentMethod.Cash) {
                 pm.getPaymentMethodData().getCash().setTotalValue(remainAmount);
             } else if (pm.getPaymentMethod() == PaymentMethod.Card) {
@@ -655,16 +654,12 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public void fillSessionInstanceDetails() {
-        System.out.println("sessionInstanceSelected");
-        System.out.println("1 = " + (new Date().getTime()));
-        System.out.println("selectedSessionInstance = " + selectedSessionInstance);
         if (selectedSessionInstance == null) {
             return;
         }
         if (selectedSessionInstance.getOriginatingSession() == null) {
             return;
         }
-        System.out.println("2 = " + (new Date().getTime()));
         fillItemAvailableToAdd();
         fillFees();
         fillReservedNumbers();
@@ -1003,7 +998,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public void fillBillSessionDetails() {
-        System.out.println("fillBillSessionDetails");
         if (selectedBillSession == null) {
             JsfUtil.addErrorMessage("Selected Bill Session is Null");
             return;
@@ -1830,17 +1824,14 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
         List<ItemFee> itemFeesofTheAddingItem = billBeanController.fillFees(itemToAddToBooking);
         List<BillFee> billFeesToAdd = null;
-        System.out.println("itemFeesofTheAddingItem = " + itemFeesofTheAddingItem);
         if (itemFeesofTheAddingItem != null) {
             billFeesToAdd = billBeanController.createNewBillFeesAndReturnThem(newBillItem, addedItemFees, sessionController.getLoggedUser(), null, null, foriegn);
         }
 
         selectedBillSession.getBillItem().getBill().getBillItems().add(newBillItem);
-        System.out.println("billFeesToAdd = " + billFeesToAdd);
         if (billFeesToAdd != null) {
             selectedBillSession.getBillItem().getBill().getBillFees().addAll(billFeesToAdd);
         }
-        System.out.println("selectedBillSession.getBillItem().getBill().getBillFees() = " + selectedBillSession.getBillItem().getBill().getBillFees());
         itemToAddToBooking = null;
 //        fillFees();
     }
@@ -1979,7 +1970,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public boolean patientErrorPresent(Patient p) {
-        System.out.println("patientErrorPresent");
         if (p == null) {
             JsfUtil.addErrorMessage("No Current. Error. NOT SAVED");
             return true;
