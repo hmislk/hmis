@@ -3685,6 +3685,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             savingBill.setBalance(savingBill.getNetTotal());
         } else if (savingBill.getBillType() == BillType.ChannelStaff) {
             savingBill.setBalance(savingBill.getNetTotal());
+            savingBillSession.setPaidBillSession(savingBillSession);
         }
 
         savingBill.setSingleBillItem(savingBillItem);
