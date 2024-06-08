@@ -3,9 +3,9 @@
  * Dr M H B Ariyaratne
  * buddhika.ari@gmail.com
  */
-
 package com.divudi.ejb;
 
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.entity.Staff;
 import com.divudi.facade.StaffFacade;
 import javax.ejb.EJB;
@@ -20,17 +20,21 @@ public class StaffBean {
 
     @EJB
     StaffFacade facade;
-    
+
     public void updateStaffCredit(Staff staff, double value) {
-        if(staff==null || staff.getId()==null){
+        if (staff == null || staff.getId() == null) {
             return;
         }
-        staff.setCurrentCreditValue(staff.getCurrentCreditValue() + value);
-        getFacade().edit(staff);
+        if (staff.getCreditLimitQualified() >= staff.getCurrentCreditValue() + value) {
+            staff.setCurrentCreditValue(staff.getCurrentCreditValue() + value);
+            getFacade().edit(staff);
+        }
+        JsfUtil.addErrorMessage("Staff credit limit exceeded. The current credit value cannot exceed the credit limit qualified by the staff member.");
+
     }
-    
+
     public void updateStaffWelfare(Staff staff, double value) {
-        if(staff==null || staff.getId()==null){
+        if (staff == null || staff.getId() == null) {
             return;
         }
         staff.setAnnualWelfareUtilized(staff.getAnnualWelfareUtilized() + value);
@@ -45,8 +49,4 @@ public class StaffBean {
         this.facade = facade;
     }
 
-    
-    
-    
-    
 }
