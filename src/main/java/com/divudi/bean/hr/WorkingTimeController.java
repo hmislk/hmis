@@ -141,7 +141,6 @@ public class WorkingTimeController implements Serializable {
     }
 
     public String selectStaffForOpdPaymentForShifts() {
-        System.out.println("selectStaffForOpdPayment");
         if (staff == null) {
             JsfUtil.addErrorMessage("Select staff");
             return "";

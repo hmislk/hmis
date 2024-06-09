@@ -385,7 +385,6 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
             int arrSize = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().size();
             ComponentDetail pm = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().get(arrSize - 1);
-            System.out.println("pm = " + pm.getPaymentMethod().getLabel());
             if (pm.getPaymentMethod() == PaymentMethod.Cash) {
                 pm.getPaymentMethodData().getCash().setTotalValue(remainAmount);
             } else if (pm.getPaymentMethod() == PaymentMethod.Card) {

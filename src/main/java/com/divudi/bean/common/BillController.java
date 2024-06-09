@@ -1612,7 +1612,6 @@ public class BillController implements Serializable {
     }
 
     public List<BillFee> findBillFees(Staff staff, Date fromDate, Date toDate) {
-        System.out.println("findBillFees");
         List<BillFee> tmpFees;
         String jpql;
         List<BillTypeAtomic> btcs = new ArrayList<>();

@@ -924,7 +924,6 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
         double tmpBatchBillTotalOfDiscounts = 0.0;
         double tmpBatchBillTotalOfNetTotals = 0.0;
 
-        System.out.println("Start accumulating totals");
 
         for (Bill b : bills) {
 
