@@ -18,7 +18,7 @@
 
         <h:outputStylesheet library="css" name="pharmacypos_header.css" ></h:outputStylesheet>
         <p:commandButton class="ui-button-info" icon="fas fa-print" value="Print" onclick="printBill()"/>
-        <div id="printAll" class="posbillheader" style="page-break-after: always!important; max-width: 72mm">
+        <div id="printAll" class="posbillheader" style="page-break-after: always!important; max-width: 72mm; width: 72mm;">
             <div style="display: flex; align-items: center;">
                 <div>
                     <p:graphicImage library="image" name="CompanyLogo/#{configOptionApplicationController.getLongTextValueByKey('Pharmacy Bill Company Logo')}.png" height="110" width="100"/>
@@ -46,7 +46,7 @@
             </div>
 
             <div class="billDetails1" >
-                <div class="d-flex align-items-center justify-content-between">
+                <div style="display: flex; align-items: center; justify-content: space-between;">
                     <div>
                         <h:panelGrid columns="3">
                             <h:outputLabel value="Date &nbsp;&nbsp;"/>
