@@ -773,7 +773,7 @@
                                             </p:row>
                                             <p:row>
                                                 <p:column colspan="2">
-                                                    <p:dataTable value="#{bookingControllerViewScope.selectedItemFees}" var="i" >
+                                                    <p:dataTable value="#{bookingControllerViewScope.selectedItemFeesWithouZeros}" var="i" >
                                                         <p:column headerText="Name">
                                                             <h:outputLabel value="#{i.item.name}"/> 
                                                             <h:outputLabel class="mr-4" value="("/> 

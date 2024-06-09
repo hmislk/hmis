@@ -5991,6 +5991,22 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     public List<ItemFee> getSelectedItemFees() {
         return selectedItemFees;
     }
+    
+    public List<ItemFee> getSelectedItemFeesWithouZeros() {
+        if (selectedItemFees == null) {
+            return null;
+        }
+        List<ItemFee> feesWithoutZeros = new ArrayList<>();
+        if (selectedItemFees.isEmpty()) {
+            return feesWithoutZeros;
+        }
+        for (ItemFee bf : selectedItemFees) {
+            if (bf.getFee() > 0) {
+                feesWithoutZeros.add(bf);
+            }
+        }
+        return feesWithoutZeros;
+    }
 
     public List<ItemFee> getFilteredSelectedItemFees() {
         if (selectedItemFees == null) {
