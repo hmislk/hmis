@@ -811,6 +811,8 @@ public class ChannelScheduleController implements Serializable {
 
     public void saveNewSessioninstance() {
         currentSessionInstance.setOriginatingSession(current);
+        currentSessionInstance.setEditedAt(new Date());
+        currentSessionInstance.setEditer(sessionController.getLoggedUser());
         sessionInstanceController.save(currentSessionInstance);
         updatedSessionInstance = currentSessionInstance;
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd");

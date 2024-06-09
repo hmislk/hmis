@@ -3658,7 +3658,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         List<BillFee> savingBillFeesFromAdditionalItems = new ArrayList<>();
         if (!additionalBillItems.isEmpty()) {
             for (BillItem abi : additionalBillItems) {
-               savingBillFeesFromAdditionalItems= createBillFeeForSessions(savingBill, abi, true);
+                savingBillFeesFromAdditionalItems = createBillFeeForSessions(savingBill, abi, true);
             }
         }
 
@@ -3709,8 +3709,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         if (collectingCentre != null) {
             savingBill.setCollectingCentre(collectingCentre);
         }
-        
-        
+
         calculateBillTotalsFromBillFees(savingBill, savingBillFees);
 
         getBillFacade().edit(savingBill);
@@ -5110,6 +5109,11 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             return true;
         }
 
+        if (settlePaymentMethod == paymentMethod.OnCall) {
+            JsfUtil.addErrorMessage("Settlement using 'On Call' is not allowed. Please select a different payment method.");
+            return true;
+        }
+
         if (getBillSession().getBill().getPaymentMethod() == PaymentMethod.Credit) {
             if (getBillSession().getBill().getFromInstitution() != null
                     && getBillSession().getBill().getFromInstitution().getBallance()
@@ -5534,7 +5538,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                     updateBallance(rb.getCreditCompany(), refundableTotal, HistoryType.ChannelBooking, rb, rBilItm, rSession, rSession.getBillItem().getAgentRefNo());
                 }
             }
-
+            rb.setPaymentMethod(refundPaymentMethod);
             bill.setRefunded(true);
             bill.setRefundedBill(rb);
             getBillFacade().edit(bill);
@@ -5667,6 +5671,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public void refund1(Bill bill, BillItem billItem, List<BillFee> billFees, BillSession billSession) {
+        System.out.println("refund1 = 1");
         calRefundTotal();
 
         if ((bill.getBillType() == BillType.ChannelCash || bill.getBillType() == BillType.ChannelAgent) && bill.getPaidBill() == null) {
@@ -5688,17 +5693,17 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             billSessionFacade.edit(billSession);
 
             if (bill.getPaymentMethod() == PaymentMethod.Agent) {
-                rb.setPaymentMethod(refundPaymentMethod);
                 if (refundPaymentMethod == PaymentMethod.Agent) {
                     updateBallance(rb.getCreditCompany(), refundableTotal, HistoryType.ChannelBooking, rb, rBilItm, rSession, rSession.getBillItem().getAgentRefNo());
                 }
             }
-
+            rb.setPaymentMethod(refundPaymentMethod);
             bill.setRefunded(true);
             bill.setRefundedBill(rb);
             getBillFacade().edit(bill);
 
         } else {
+            System.out.println("bill.getPaidBill().equals(bill)");
             RefundBill rb = (RefundBill) createRefundBill1(bill);
             BillItem rBilItm = refundBillItems(billItem, rb);
             createReturnBillFee(billFees, rb, rBilItm);
@@ -5991,7 +5996,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     public List<ItemFee> getSelectedItemFees() {
         return selectedItemFees;
     }
-    
+
     public List<ItemFee> getSelectedItemFeesWithouZeros() {
         if (selectedItemFees == null) {
             return null;
@@ -6451,7 +6456,5 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     public void setCreditCompany(Institution creditCompany) {
         this.creditCompany = creditCompany;
     }
-    
-    
 
 }
