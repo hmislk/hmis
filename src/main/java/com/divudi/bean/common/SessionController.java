@@ -7,6 +7,7 @@
  */
 package com.divudi.bean.common;
 
+import com.divudi.bean.channel.BookingController;
 import com.divudi.bean.pharmacy.PharmacySaleController;
 import com.divudi.data.InstitutionType;
 import com.divudi.data.Privileges;
@@ -112,6 +113,9 @@ public class SessionController implements Serializable, HttpSessionListener {
     /**
      * Properties
      */
+    TokenController tokenController;
+    OpdTokenController opdTokenController;
+    BookingController bookingController;
     private static final long serialVersionUID = 1L;
     WebUser loggedUser = null;
     @Deprecated
@@ -700,7 +704,7 @@ public class SessionController implements Serializable, HttpSessionListener {
             return "";
         }
     }
-    
+
     public String loginForChannelingTabView() {
         department = null;
         institution = null;
@@ -1221,10 +1225,34 @@ public class SessionController implements Serializable, HttpSessionListener {
 
         setLoggedPreference(departmentPreference);
         recordLogin();
-        return "/home?faces-redirect=true";
+        return navigateToLoginPageByUsersDefaultLoginPage();
     }
-    
-     public String selectDepartmentForChannelingTabView() {
+
+    public String navigateToLoginPageByUsersDefaultLoginPage() {
+        if (loggedUser == null) {
+            return null;
+        }
+        if (loggedUser.getLoginPage() == null) {
+            return "/home?faces-redirect=true";
+        }
+        switch (loggedUser.getLoginPage()) {
+            case CHANNELLING_QUEUE_PAGE:
+                return bookingController.navigateToChannelQueueFromMenu();
+            case CHANNELLING_TV_DISPLAY:
+                return bookingController.navigateToChannelDisplayFromMenu();
+            case OPD_QUEUE_PAGE:
+                return opdTokenController.navigateToOpdQueue();
+            case OPD_TOKEN_DISPLAY:
+                return opdTokenController.navigateToManageOpdTokensCalled();
+            case PHARMACY_TOKEN_DISPLAY:
+                return tokenController.navigateToManagePharmacyTokensCalled();
+            case HOME:
+            default:
+                return "/home?faces-redirect=true";
+        }
+    }
+
+    public String selectDepartmentForChannelingTabView() {
         if (loggedUser == null) {
             return "/login?faces-redirect=true";
         }
@@ -1789,7 +1817,7 @@ public class SessionController implements Serializable, HttpSessionListener {
 
         if (thisLogin.getId() == null) {
             getLoginsFacade().create(thisLogin);
-        }else{
+        } else {
             getLoginsFacade().edit(thisLogin);
         }
         getApplicationController().addToLoggins(this);

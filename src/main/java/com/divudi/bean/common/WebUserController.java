@@ -28,6 +28,7 @@ import com.divudi.facade.WebUserFacade;
 import com.divudi.facade.WebUserPrivilegeFacade;
 import com.divudi.facade.WebUserRoleFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.LoginPage;
 import com.divudi.entity.UserNotification;
 import com.divudi.entity.WebUserRole;
 import com.divudi.facade.UserNotificationFacade;
@@ -137,6 +138,8 @@ public class WebUserController implements Serializable {
     private List<Department> departmentsOfSelectedUsersInstitution;
     
     private WebUserRole webUserRole;
+    
+    private LoginPage loginPage;
 
     boolean testRun = true;
 
@@ -427,6 +430,7 @@ public class WebUserController implements Serializable {
         staff = null;
         department = null;
         institution = null;
+        loginPage=null;
         return "/admin/users/user_add_new";
     }
 
@@ -477,6 +481,9 @@ public class WebUserController implements Serializable {
         getCurrent().setActivator(getSessionController().getLoggedUser());
         getCurrent().getWebUserPerson().setCreatedAt(new Date());
         getCurrent().getWebUserPerson().setCreater(getSessionController().getLoggedUser());
+        
+        getCurrent().setLoginPage(loginPage);
+        
         getPersonFacade().create(getCurrent().getWebUserPerson());
         if (createOnlyUserForExsistingUser) {
             getCurrent().getWebUserPerson().setName(getStaff().getPerson().getName());
@@ -1071,6 +1078,14 @@ public class WebUserController implements Serializable {
         this.webUserRole = webUserRole;
     }
 
+    public LoginPage getLoginPage() {
+        return loginPage;
+    }
+
+    public void setLoginPage(LoginPage loginPage) {
+        this.loginPage = loginPage;
+    }
+
     @FacesConverter(forClass = WebUser.class)
     public static class WebUserControllerConverter implements Converter {
 
@@ -1129,4 +1144,6 @@ public class WebUserController implements Serializable {
     public void setUserNotificationCount(int userNotificationCount) {
         this.userNotificationCount = userNotificationCount;
     }
+    
+    
 }
