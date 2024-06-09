@@ -384,9 +384,6 @@
                             </div>
 
                             <div class="d-flex justify-content-center mt-4">
-
-                                <h1>#{bookingControllerViewScope.selectedBillSession.billItem.bill.id}</h1>
-
                                 <h:panelGroup id="gpADSettleBillPreview">
                                     <ui:repeat value="#{sessionController.departmentPreference.channellingBillCopiesList}" var="copy">
                                         <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'PosPaper'}" >
@@ -881,7 +878,7 @@
                                 <h:outputLabel value="Refundable Total : "/>
                                 <h:outputLabel id="tot" value="#{bookingControllerViewScope.refundableTotal}"/>
                             </h:panelGrid>
-                            <p:dataTable value="#{bookingControllerViewScope.billSession.bill.billFees}" var="bi">
+                            <p:dataTable value="#{bookingControllerViewScope.billSession.bill.billFeesWIthoutZeroValue}" var="bi">
                                 <p:column headerText="Fee Name">
                                     <p:outputLabel value="#{bi.fee.name}"/>
                                 </p:column>
