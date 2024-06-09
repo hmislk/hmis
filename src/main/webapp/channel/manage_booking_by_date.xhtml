@@ -34,11 +34,13 @@
                 </f:facet>
                 <p:tabView id="detail">
                     <p:tab title="Settle" id="settle">
+\
 
-                        <p:panel  id="set" rendered="#{!configOptionApplicationController.getBooleanValueByKey('Channel Credit Booking Settle Requires Additional Information')}">
 
+                        <p:panel  
+                            id="set" 
+                            rendered="#{!configOptionApplicationController.getBooleanValueByKey('Channel Credit Booking Settle Requires Additional Information')}">
                             <ch:bill_fees bill="#{bookingControllerViewScope.selectedBillSession.billItem.bill}" />
-
                             <p:outputLabel rendered="false" value="Payment Method"/>
                             <p:selectOneMenu  
                                 class="mx-2"
@@ -271,8 +273,32 @@
                                                 icon="fas fa-plus"
                                                 class="ui-button-success"
                                                 action="#{bookingControllerViewScope.addItemToBookingAtSettling()}"
-                                                update="ccFees lstItems"
+                                                update="ccFees lstItems tblBillItemsForAddingNewItem tblBillFeesForAddingNewItem"
                                                 ></p:commandButton>
+
+
+                                            <p:dataTable id="tblBillItemsForAddingNewItem" 
+                                                         value="#{bookingControllerViewScope.selectedBillSession.billItem.bill.billItems}" 
+                                                         var="bi" >
+                                                <p:column >
+                                                    <h:outputText value="#{bi.item.name}" ></h:outputText>
+                                                </p:column>
+                                                <p:column >
+                                                    <h:outputText value="#{bi.netValue}" ></h:outputText>
+                                                </p:column>
+                                            </p:dataTable>
+                                            
+                                            <p:dataTable id="tblBillFeesForAddingNewItem" 
+                                                         value="#{bookingControllerViewScope.selectedBillSession.billItem.bill.billFees}" 
+                                                         var="bf" >
+                                                <p:column >
+                                                    <h:outputText value="#{bf.fee.item.name}" ></h:outputText>
+                                                    <h:outputText value="#{bf.fee.name}" ></h:outputText>
+                                                </p:column>
+                                                <p:column >
+                                                    <h:outputText value="#{bf.feeValue}" ></h:outputText>
+                                                </p:column>
+                                            </p:dataTable>
 
                                             <!--update="lblSessionTotal paymentDetails :#{p:resolveFirstComponentWithId('gpFeeTotal',view).clientId} :#{p:resolveFirstComponentWithId('lstAddedItems',view).clientId} lstItems panelBookingDetails"-->
                                         </p:panel>
@@ -287,7 +313,7 @@
                                                     <p:selectOneMenu
                                                         id="pay"
                                                         class="w-100"
-                                                        value="#{bookingControllerViewScope.paymentMethod}"
+                                                        value="#{bookingControllerViewScope.settlePaymentMethod}"
                                                         >
                                                         <f:selectItems
                                                             value="#{enumController.paymentMethodsForChanneling}"
@@ -492,14 +518,15 @@
                                         </p:panel>
                                     </div>
                                     <div class="col-md-12 my-2">
-                                        
+
                                         <ch:bill_fees id="ccFees" bill="#{bookingControllerViewScope.selectedBillSession.billItem.bill}" />
                                     </div>
                                 </div>
                             </h:panelGroup>
                             <h:panelGroup id="gpSettlePrintAD" rendered="#{bookingControllerViewScope.printPreview}" >
                                 <div class="d-flex justify-content-between">
-                                    <h:outputLabel value="" />
+                                    
+                                    
 
                                     <div class="d-flex  gap-2">
                                         <p:outputLabel value="Paper Type" class="m-2"></p:outputLabel>
@@ -532,6 +559,9 @@
                                 </div>
 
                                 <div class="d-flex justify-content-center mt-4">
+                                    
+                                    <h1>#{bookingControllerViewScope.selectedBillSession.billItem.bill.id}</h1>
+                                    
                                     <h:panelGroup id="gpADSettleBillPreview">
                                         <ui:repeat value="#{sessionController.departmentPreference.channellingBillCopiesList}" var="copy">
                                             <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'PosPaper'}" >

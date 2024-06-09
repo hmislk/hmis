@@ -22,6 +22,10 @@
         <h:outputStylesheet library="css" name="opd_five_five.css" ></h:outputStylesheet>
         <div style="page-break-after: always; width: 100%; height: 100%; margin : 10px;  margin-top: 12px; text-transform: capitalize!important;" >
 
+            <h1>
+                sdfsdf
+            </h1>
+
             <h:panelGroup rendered="#{!bookingController.chackNull(sessionController.departmentPreference.channelingBillHeaderTemplate)}" >
                 <h:outputText value="#{bookingController.fillDataForChannelingBillHeader(sessionController.departmentPreference.channelingBillHeaderTemplate,cc.attrs.bill)}" escape="false" ></h:outputText>
             </h:panelGroup>
@@ -76,9 +80,7 @@
                     </td>
                     <td>
                         <b>
-                            <ui:repeat value="#{cc.attrs.bill.billItems}" var="cbi" >
-                                <h:outputLabel value="#{cbi.billSession.staff.person.nameWithTitle}" ></h:outputLabel>
-                            </ui:repeat>
+                            <h:outputLabel value="#{cc.attrs.bill.staff.person.nameWithTitle}" ></h:outputLabel>
                         </b>
                     </td>
 
@@ -181,6 +183,7 @@
                 <ui:repeat value="#{cc.attrs.bill.billFees}" var="cbif" >
                     <tr>
                         <td>
+                            <!--<h:outputLabel value="#{cbif.billItem.item.name}" rendered="#{cbif.feeGrossValue ne 0.0}"></h:outputLabel>-->
                             <h:outputLabel value="#{cbif.fee.name}" rendered="#{cbif.feeGrossValue ne 0.0}"></h:outputLabel>
                         </td>
                         <td>
