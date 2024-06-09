@@ -84,7 +84,7 @@
                                                         itemLabel="#{pm.label}"
                                                         itemValue="#{pm}"/>
                                                     <p:ajax process="#{p:resolveFirstComponentWithId('cmbPs',view).clientId} @this"
-                                                            update="#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} #{p:resolveFirstComponentWithId('tblBillItem',view).clientId} paymentDetails"
+                                                            update="#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} #{p:resolveFirstComponentWithId('tblBillItem',view).clientId} #{p:resolveFirstComponentWithId('paymentDetails',view).clientId}"
                                                             event="change"
                                                             />
                                                 </p:selectOneMenu>
@@ -110,11 +110,11 @@
                                         </div>
 
                                         <div  >
-                                            <h:panelGroup id="paymentDetails">
+                                            <h:panelGroup id="paymentDetails"  >
                                                 <h:panelGroup
                                                     class="row"
                                                     layout="block"
-                                                    rendered="#{bookingControllerViewScope.settlePaymentMethod eq 'Credit'}" >
+                                                    rendered="#{bookingControllerViewScope.paymentMethod eq 'Credit'}" >
                                                     <div class="my-1" id="credit">
                                                         <div class="row">
                                                             <div class="col-12 d-flex ">
@@ -152,7 +152,7 @@
                                                 <h:panelGroup
                                                     class="row"
                                                     layout="block"
-                                                    rendered="#{bookingControllerViewScope.settlePaymentMethod eq 'Staff'}" >
+                                                    rendered="#{bookingControllerViewScope.paymentMethod eq 'Staff'}" >
                                                     <div class="my-1" id="staffCredit">
                                                         <div class="row mt-1">
                                                             <div class="col-12">
@@ -196,7 +196,7 @@
                                                 <h:panelGroup
                                                     class="row"
                                                     layout="block"
-                                                    rendered="#{bookingControllerViewScope.settlePaymentMethod eq 'Staff_Welfare'}" >
+                                                    rendered="#{bookingControllerViewScope.paymentMethod eq 'Staff_Welfare'}" >
                                                     <div class="my-1" id="credit">
                                                         <div class="row mt-1">
                                                             <div class="col-12">
@@ -240,37 +240,37 @@
                                                 <h:panelGroup
                                                     class="row my-1"
                                                     layout="block"
-                                                    id="creditCard" rendered="#{bookingControllerViewScope.settlePaymentMethod eq 'Card'}" >
+                                                    id="creditCard" rendered="#{bookingControllerViewScope.paymentMethod eq 'Card'}" >
                                                     <pa:creditCard paymentMethodData="#{bookingControllerViewScope.paymentMethodData}"/>
                                                 </h:panelGroup>
                                                 <h:panelGroup
                                                     class="row my-1"
                                                     layout="block"
-                                                    id="eWallet"  rendered="#{bookingControllerViewScope.settlePaymentMethod eq 'ewallet'}" >
+                                                    id="eWallet"  rendered="#{bookingControllerViewScope.paymentMethod eq 'ewallet'}" >
                                                     <pa:ewallet paymentMethodData="#{bookingControllerViewScope.paymentMethodData}"/>
                                                 </h:panelGroup>
                                                 <h:panelGroup
                                                     class="row my-1"
                                                     layout="block"
-                                                    id="cheque"  rendered="#{bookingControllerViewScope.settlePaymentMethod eq 'Cheque'}" >
+                                                    id="cheque"  rendered="#{bookingControllerViewScope.paymentMethod eq 'Cheque'}" >
                                                     <pa:cheque paymentMethodData="#{bookingControllerViewScope.paymentMethodData}"/>
                                                 </h:panelGroup>
                                                 <h:panelGroup
                                                     class="row my-1"
                                                     layout="block"
-                                                    id="slip"  rendered="#{bookingControllerViewScope.settlePaymentMethod eq 'Slip'}" >
+                                                    id="slip"  rendered="#{bookingControllerViewScope.paymentMethod eq 'Slip'}" >
                                                     <pa:slip paymentMethodData="#{bookingControllerViewScope.paymentMethodData}"/>
                                                 </h:panelGroup>
                                                 <h:panelGroup
                                                     class="row my-1"
                                                     layout="block"
-                                                    id="patientDeposit"  rendered="#{bookingControllerViewScope.settlePaymentMethod eq 'PatientDeposit'}" >
+                                                    id="patientDeposit"  rendered="#{bookingControllerViewScope.paymentMethod eq 'PatientDeposit'}" >
                                                     <pa:patient_deposit paymentMethodData="#{bookingControllerViewScope.paymentMethodData}"/>
                                                 </h:panelGroup>
                                                 <h:panelGroup
                                                     class="row my-1 w-100"
                                                     layout="block"
-                                                    id="multiplePaymentMethods"  rendered="#{bookingControllerViewScope.settlePaymentMethod eq 'MultiplePaymentMethods'}"
+                                                    id="multiplePaymentMethods"  rendered="#{bookingControllerViewScope.paymentMethod eq 'MultiplePaymentMethods'}"
                                                     >
                                                     <pa:multiple_payment_methods controller="#{bookingControllerViewScope}" class="w-100"/>
 
@@ -371,20 +371,46 @@
                                         class="ui-button"
                                         title="Redraw Bill">
                                     </p:commandButton>
-                                    <p:commandButton
-                                        value="Print"
-                                        ajax="false"
-                                        action="#"
-                                        class="ui-button-info"
-                                        icon="fa fa-print"
-                                        disabled="#{bookingControllerViewScope.selectedBillSession.billItem.bill.balance ne 0.0}">
-                                        <p:printer target="gpADSettleBillPreview" ></p:printer>
+                                    <p:commandButton value="Print"
+                                                     ajax="false"
+                                                     action="#{bookingControllerViewScope.markSettlingBillAsPrinted()}"
+                                                     class="ui-button-info"
+                                                     icon="fa fa-print"
+                                                     disabled="#{bookingControllerViewScope.selectedBillSession.billItem.bill.balance ne 0.0}">
+                                        <p:printer target="gpADSettleBillPreview" />
                                     </p:commandButton>
+
+                                    <p:commandButton value="Print"
+                                                     ajax="false"
+                                                     action="#{bookingControllerViewScope.markSettlingBillAsPrinted()}"
+                                                     class="ui-button-info"
+                                                     icon="fa fa-print"
+                                                     disabled="#{bookingControllerViewScope.selectedBillSession.billItem.bill.balance ne 0.0}">
+
+                                    </p:commandButton>
+
+
+                                    <p:commandButton value="Print 1" update="@form" oncomplete="handlePrint()">
+                                        <f:ajax listener="#{bookingControllerViewScope.markSettlingBillAsPrinted}" />
+                                        <p:printer target="gpADSettleBillPreview" />
+                                    </p:commandButton>
+                                    <script type="text/javascript">
+                                        function handlePrint() {
+                                            if (args &amp;&amp; !args.validationFailed) {
+                                                PF('printer').print();
+                                            }
+                                        }
+                                    </script>
+
+
+
+
+
+
                                 </div>
                             </div>
 
                             <div class="d-flex justify-content-center mt-4">
-
                                 <h:panelGroup id="gpADSettleBillPreview">
                                     <ui:repeat value="#{sessionController.departmentPreference.channellingBillCopiesList}" var="copy">
                                         <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'PosPaper'}" >
@@ -393,9 +419,6 @@
                                         <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'FiveFivePaper'}" >
                                             <ez:bms5x5ChannelBill bill="#{bookingControllerViewScope.selectedBillSession.billItem.bill}"/>
         <!--                                <bg:fiveFiveCCBill_CC bill="#{bookingControllerViewScope.printingBill}"/>  -->
-                                        </h:panelGroup>
-                                        <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'FiveFivePrintedPaper'}" >
-                                            <ez:bms5x5WIthoutHeaderChannelBill bill="#{bookingControllerViewScope.selectedBillSession.billItem.bill}"/>
                                         </h:panelGroup>
                                     </ui:repeat>
                                 </h:panelGroup>
@@ -645,7 +668,7 @@
 
                     <p:tab title="Reprint" id="rePrint" >
                         <div class="row">
-                            <h:panelGroup>
+                            <h:panelGroup rendered="#{webUserController.hasPrivilege('ChannellingReprintOriginalBill')}">
                                 <div class="col-6">
                                     <p:panel>
                                         <div class="row">
@@ -704,8 +727,7 @@
                                     </p:panel>
                                 </div>
                                 <div class="col-6">
-                                    <h1>#{webUserController.hasPrivilege('ChannellingReprintOriginalBill')}</h1>
-                                    <p:panel rendered="#{webUserController.hasPrivilege('ChannellingReprintOriginalBill')}">
+                                    <p:panel>
                                         <div class="row">
                                             <f:facet name="header">
                                                 <div class="d-flex justify-content-between align-items-center">
@@ -883,7 +905,7 @@
                                 <h:outputLabel value="Refundable Total : "/>
                                 <h:outputLabel id="tot" value="#{bookingControllerViewScope.refundableTotal}"/>
                             </h:panelGrid>
-                            <p:dataTable value="#{bookingControllerViewScope.billSession.bill.billFees}" var="bi">
+                            <p:dataTable value="#{bookingControllerViewScope.billSession.bill.billFeesWIthoutZeroValue}" var="bi">
                                 <p:column headerText="Fee Name">
                                     <p:outputLabel value="#{bi.fee.name}"/>
                                 </p:column>
@@ -902,13 +924,7 @@
                                 </p:column>
                             </p:dataTable>
                         </h:panelGroup>
-                        <h:panelGroup class="mx-2">
-                            <p:selectOneMenu id="cmbPs" value="#{bookingControllerViewScope.refundPaymentMethod}">
-                                <f:selectItem itemLabel="Select paymentMethod"/>
-                                <f:selectItems value="#{enumController.paymentMethods}"/>
-                            </p:selectOneMenu>
 
-                        </h:panelGroup>
                         <p:commandButton value="Refund Booking" class="ui-button-warning my-2" icon="fas fa-reply"
                                          disabled="#{bookingControllerViewScope.billSession.bill.refunded==true
                                                      or bookingControllerViewScope.billSession.bill.cancelled==true or bookingControllerViewScope.disableRefund==true}"
@@ -939,7 +955,8 @@
                                     value="Yes"
                                     action="#{bookingControllerViewScope.channelBookingRefund()}"
                                     ajax="false"
-                                    onclick="PF('refundBillPrintDialog').show();PF('confirmationRefundDialog').hide();" />
+                                    onclick="PF('refundBillPrintDialog').show();
+                                            PF('confirmationRefundDialog').hide();" />
                                 <p:commandButton
                                     value="No"
                                     onclick="PF('confirmationRefundDialog').hide();" />

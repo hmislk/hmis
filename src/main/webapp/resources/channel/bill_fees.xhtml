@@ -12,7 +12,7 @@
 
     <!-- IMPLEMENTATION -->        
     <cc:implementation>
-        <p:dataTable value="#{cc.attrs.bill.billFees}" var="bi" id="tbl" rendered="#{cc.attrs.bill.billFees ne null}">
+        <p:dataTable value="#{cc.attrs.bill.billFeesWIthoutZeroValue}" var="bi" id="tbl" rendered="#{cc.attrs.bill.billFeesWIthoutZeroValue ne null}">
 
             <p:column headerText="Fee Name">
                 <p:outputLabel value="#{bi.fee.name}"/>
