@@ -45,91 +45,27 @@
                                         </f:facet>
                                         <ezcommon:patient patient="#{bookingControllerViewScope.selectedBillSession.bill.patient}" ></ezcommon:patient>
                                     </p:panel>
-                                    <p:panelGrid columns="2">
+                                    <p:panelGrid id="panelBillDetailsForSettling" columns="2">
                                         <f:facet name="header">
                                             <h:outputText styleClass="fas fa-user" />
                                             <h:outputLabel class="mx-4" value="Billl Details" />
                                         </f:facet>
                                         <h:outputLabel value="Total" ></h:outputLabel>
                                         <h:outputLabel value="#{bookingControllerViewScope.selectedBillSession.billItem.bill.total}" >
-                                            <f:convertDateTime pattern="#,##0.00" ></f:convertDateTime>
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                         </h:outputLabel>
                                         <h:outputLabel value="Discount" ></h:outputLabel>
                                         <h:outputLabel value="#{bookingControllerViewScope.selectedBillSession.billItem.bill.discount}" >
-                                            <f:convertDateTime pattern="#,##0.00" ></f:convertDateTime>
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                         </h:outputLabel>
                                         <h:outputLabel value="Total" ></h:outputLabel>
                                         <h:outputLabel value="#{bookingControllerViewScope.selectedBillSession.billItem.bill.netTotal}" >
-                                            <f:convertDateTime pattern="#,##0.00" ></f:convertDateTime>
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                         </h:outputLabel>
                                     </p:panelGrid>
 
                                 </div>
                                 <div class="col-6">
-
-                                    <p:panel header="Additional Items" >
-                                        <p:selectOneMenu 
-                                            class="w-75 mx-1" 
-                                            autoWidth="false" 
-                                            id="lstItems" 
-                                            value="#{bookingControllerViewScope.itemToAddToBooking}" >
-                                            <f:selectItem itemLabel="Select" ></f:selectItem>
-                                            <f:selectItems  value="#{bookingControllerViewScope.itemsAvailableToAddToBooking}" var="iata" itemValue="#{iata}"  itemLabel="#{iata.name}" ></f:selectItems>
-                                            <!--<p:ajax event="change" process="lstItems" update="lblSessionTotal :#{p:resolveFirstComponentWithId('gpFeeTotal',view).clientId}" listener="#{bookingControllerViewScope.fillFees}" ></p:ajax>-->
-                                        </p:selectOneMenu>
-
-
-                                        <p:commandButton 
-                                            id="btnAddItem"
-                                            process="lstItems btnAddItem"
-                                            value="Add Item" 
-                                            icon="fas fa-plus"
-                                            class="ui-button-success"
-                                            action="#{bookingControllerViewScope.addItemToBookingAtSettling()}"
-                                            update="lstItems tblBillItemsForAddingNewItem tblBillFeesForAddingNewItem"
-                                            ></p:commandButton>
-
-
-                                        <p:dataTable id="tblBillItemsForAddingNewItem" 
-                                                     value="#{bookingControllerViewScope.selectedBillSession.billItem.bill.billItems}" 
-                                                     var="bi" >
-                                            <p:column >
-                                                <h:outputText value="#{bi.item.name}" ></h:outputText>
-                                            </p:column>
-                                            <p:column >
-                                                <h:outputText value="#{bi.netValue}" ></h:outputText>
-                                            </p:column>
-                                        </p:dataTable>
-
-                                        <p:dataTable 
-                                            id="tblBillFeesForAddingNewItem" 
-                                            value="#{bookingControllerViewScope.selectedBillSession.billItem.bill.billFeesWIthoutZeroValue}" 
-                                            var="bf" >
-                                            <f:facet name="header" >
-                                                <h:outputLabel value="Fees" ></h:outputLabel>
-                                            </f:facet>
-                                            <p:column headerText="Fee">
-                                                <h:outputText value="#{bf.fee.item.name}" ></h:outputText>
-                                                <h:outputText value="#{bf.fee.name}" ></h:outputText>
-                                            </p:column>
-                                            <p:column headerText="Gross Fee">
-                                                <h:outputText value="#{bf.fee.fee}" >
-                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                </h:outputText>
-                                            </p:column>
-                                            <p:column headerText="Discount">
-                                                <h:outputText value="#{bf.feeDiscount}" >
-                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                </h:outputText>
-                                            </p:column>
-                                            <p:column headerText="Value" >
-                                                <h:outputText value="#{bf.feeValue}" >
-                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                </h:outputText>
-                                            </p:column>
-                                        </p:dataTable>
-                                    </p:panel>
-
                                     <p:panel class="m-1">
                                         <f:facet name="header" >
                                             <h:outputText styleClass="fa fa-money-bill-wave" /> <!-- FontAwesome Icon -->
@@ -343,6 +279,71 @@
                                             </h:panelGroup>
                                         </div>
                                     </p:panel>
+
+                                    <p:panel header="Additional Items" >
+                                        <p:selectOneMenu 
+                                            class="w-75 mx-1" 
+                                            autoWidth="false" 
+                                            id="lstItems" 
+                                            value="#{bookingControllerViewScope.itemToAddToBooking}" >
+                                            <f:selectItem itemLabel="Select" ></f:selectItem>
+                                            <f:selectItems  value="#{bookingControllerViewScope.itemsAvailableToAddToBooking}" var="iata" itemValue="#{iata}"  itemLabel="#{iata.name}" ></f:selectItems>
+                                            <!--<p:ajax event="change" process="lstItems" update="lblSessionTotal :#{p:resolveFirstComponentWithId('gpFeeTotal',view).clientId}" listener="#{bookingControllerViewScope.fillFees}" ></p:ajax>-->
+                                        </p:selectOneMenu>
+
+
+                                        <p:commandButton 
+                                            id="btnAddItem"
+                                            process="lstItems btnAddItem"
+                                            value="Add Item" 
+                                            icon="fas fa-plus"
+                                            class="ui-button-success"
+                                            action="#{bookingControllerViewScope.addItemToBookingAtSettling()}"
+                                            update="lstItems tblBillItemsForAddingNewItem tblBillFeesForAddingNewItem panelBillDetailsForSettling"
+                                            ></p:commandButton>
+
+
+                                        <p:dataTable id="tblBillItemsForAddingNewItem" 
+                                                     value="#{bookingControllerViewScope.selectedBillSession.billItem.bill.billItems}" 
+                                                     var="bi" >
+                                            <p:column >
+                                                <h:outputText value="#{bi.item.name}" ></h:outputText>
+                                            </p:column>
+                                            <p:column >
+                                                <h:outputText value="#{bi.netValue}" ></h:outputText>
+                                            </p:column>
+                                        </p:dataTable>
+
+                                        <p:dataTable 
+                                            id="tblBillFeesForAddingNewItem" 
+                                            value="#{bookingControllerViewScope.selectedBillSession.billItem.bill.billFeesWIthoutZeroValue}" 
+                                            var="bf" >
+                                            <f:facet name="header" >
+                                                <h:outputLabel value="Fees" ></h:outputLabel>
+                                            </f:facet>
+                                            <p:column headerText="Fee">
+                                                <h:outputText value="#{bf.fee.item.name}" ></h:outputText>
+                                                <h:outputText value="#{bf.fee.name}" ></h:outputText>
+                                            </p:column>
+                                            <p:column headerText="Gross Fee">
+                                                <h:outputText value="#{bf.fee.fee}" >
+                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                </h:outputText>
+                                            </p:column>
+                                            <p:column headerText="Discount">
+                                                <h:outputText value="#{bf.feeDiscount}" >
+                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                </h:outputText>
+                                            </p:column>
+                                            <p:column headerText="Value" >
+                                                <h:outputText value="#{bf.feeValue}" >
+                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                </h:outputText>
+                                            </p:column>
+                                        </p:dataTable>
+                                    </p:panel>
+
+
                                 </div>
 
                             </div>

@@ -21,6 +21,7 @@ import com.divudi.data.InvestigationItemType;
 import com.divudi.data.InvestigationItemValueType;
 import com.divudi.data.ItemListingStrategy;
 import com.divudi.data.ItemType;
+import com.divudi.data.LoginPage;
 import com.divudi.data.PaperType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.ReportItemType;
@@ -153,6 +154,10 @@ public class EnumController implements Serializable {
         return sessionNumberTypes;
     }
 
+    public List<LoginPage> getLoginPages() {
+        return Arrays.asList(LoginPage.values());
+    }
+    
     public ItemListingStrategy[] getItemListingStrategys() {
         return ItemListingStrategy.values();
     }
