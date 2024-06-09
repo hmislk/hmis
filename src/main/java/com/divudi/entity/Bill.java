@@ -1520,6 +1520,23 @@ public class Bill implements Serializable {
         return billFees;
     }
 
+    @Transient
+    public List<BillFee> getBillFeesWIthoutZeroValue() {
+        if (billFees == null) {
+            return null;
+        }
+        List<BillFee> feesWithoutZeros = new ArrayList<>();
+        if (billFees.isEmpty()) {
+            return feesWithoutZeros;
+        }
+        for (BillFee bf : billFees) {
+            if (bf.getFeeValue() > 0 || bf.getFeeDiscount() > 0) {
+                feesWithoutZeros.add(bf);
+            }
+        }
+        return feesWithoutZeros;
+    }
+
     public void setBillFees(List<BillFee> billFees) {
         this.billFees = billFees;
     }

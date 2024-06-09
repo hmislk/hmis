@@ -1760,7 +1760,6 @@ public class ChannelBillController implements Serializable {
                 rb.setPaymentMethod(refundPaymentMethod);
         }
         
-        System.out.println("rb = " + rb.getPaymentMethod());
         getBillFacade().edit(rb);
 
 //Need To Update Agent BAllance

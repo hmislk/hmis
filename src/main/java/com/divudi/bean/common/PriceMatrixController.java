@@ -361,9 +361,6 @@ public class PriceMatrixController implements Serializable {
             category = item.getCategory();
         }
 
-        System.err.println(paymentMethod);
-        System.err.println(paymentScheme);
-        System.err.println(department);
         //Get Discount From Item        
         paymentSchemeDiscount = fetchPaymentSchemeDiscount(paymentScheme, paymentMethod, item);
 
@@ -469,7 +466,6 @@ public class PriceMatrixController implements Serializable {
     }
 
     public PaymentSchemeDiscount fetchPaymentSchemeDiscount(PaymentScheme paymentScheme, PaymentMethod paymentMethod, Item item) {
-        System.out.println("fetchPaymentSchemeDiscount");
         String jpql;
         HashMap params = new HashMap();
         params.put("p", paymentMethod);

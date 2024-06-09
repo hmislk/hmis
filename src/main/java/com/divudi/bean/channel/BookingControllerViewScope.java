@@ -333,7 +333,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
             int arrSize = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().size();
             ComponentDetail pm = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().get(arrSize - 1);
-            System.out.println("pm = " + pm.getPaymentMethod().getLabel());
             if (pm.getPaymentMethod() == PaymentMethod.Cash) {
                 pm.getPaymentMethodData().getCash().setTotalValue(remainAmount);
             } else if (pm.getPaymentMethod() == PaymentMethod.Card) {
@@ -655,16 +654,12 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public void fillSessionInstanceDetails() {
-        System.out.println("sessionInstanceSelected");
-        System.out.println("1 = " + (new Date().getTime()));
-        System.out.println("selectedSessionInstance = " + selectedSessionInstance);
         if (selectedSessionInstance == null) {
             return;
         }
         if (selectedSessionInstance.getOriginatingSession() == null) {
             return;
         }
-        System.out.println("2 = " + (new Date().getTime()));
         fillItemAvailableToAdd();
         fillFees();
         fillReservedNumbers();
@@ -1003,7 +998,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public void fillBillSessionDetails() {
-        System.out.println("fillBillSessionDetails");
         if (selectedBillSession == null) {
             JsfUtil.addErrorMessage("Selected Bill Session is Null");
             return;
@@ -1826,21 +1820,26 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         newBillItem.setNetRate(0);
         newBillItem.setNetValue(newBillItem.getGrossValue() - newBillItem.getDiscount());
 
-        newBillItem.setBillFees(listBillFees);
+        if (newBillItem.getId() == null) {
+            billItemFacade.create(newBillItem);
+        } else {
+            billItemFacade.edit(newBillItem);
+        }
 
         List<ItemFee> itemFeesofTheAddingItem = billBeanController.fillFees(itemToAddToBooking);
         List<BillFee> billFeesToAdd = null;
-        System.out.println("itemFeesofTheAddingItem = " + itemFeesofTheAddingItem);
         if (itemFeesofTheAddingItem != null) {
-            billFeesToAdd = billBeanController.createNewBillFeesAndReturnThem(newBillItem, addedItemFees, sessionController.getLoggedUser(), null, null, foriegn);
+            billFeesToAdd = billBeanController.createNewBillFeesAndReturnThem(newBillItem, itemFeesofTheAddingItem, sessionController.getLoggedUser(), null, null, foriegn);
         }
 
         selectedBillSession.getBillItem().getBill().getBillItems().add(newBillItem);
-        System.out.println("billFeesToAdd = " + billFeesToAdd);
         if (billFeesToAdd != null) {
             selectedBillSession.getBillItem().getBill().getBillFees().addAll(billFeesToAdd);
+            newBillItem.setBillFees(billFeesToAdd);
         }
-        System.out.println("selectedBillSession.getBillItem().getBill().getBillFees() = " + selectedBillSession.getBillItem().getBill().getBillFees());
+
+        calculateBillTotalsFromBillFees(selectedBillSession.getBillItem().getBill());
+
         itemToAddToBooking = null;
 //        fillFees();
     }
@@ -1979,7 +1978,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public boolean patientErrorPresent(Patient p) {
-        System.out.println("patientErrorPresent");
         if (p == null) {
             JsfUtil.addErrorMessage("No Current. Error. NOT SAVED");
             return true;
@@ -2159,7 +2157,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         }
 
         if (configOptionApplicationController.getBooleanValueByKey("Allow Tenderd amount for channel booking")) {
-            if (strTenderedValue=="" || strTenderedValue.isEmpty()) {
+            if (strTenderedValue == "" || strTenderedValue.isEmpty()) {
                 JsfUtil.addErrorMessage("Please Enter Tenderd Amount");
                 return;
             }
@@ -3660,7 +3658,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         List<BillFee> savingBillFeesFromAdditionalItems = new ArrayList<>();
         if (!additionalBillItems.isEmpty()) {
             for (BillItem abi : additionalBillItems) {
-                createBillFeeForSessions(savingBill, abi, true);
+               savingBillFeesFromAdditionalItems= createBillFeeForSessions(savingBill, abi, true);
             }
         }
 
@@ -3711,6 +3709,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         if (collectingCentre != null) {
             savingBill.setCollectingCentre(collectingCentre);
         }
+        
+        
         calculateBillTotalsFromBillFees(savingBill, savingBillFees);
 
         getBillFacade().edit(savingBill);
@@ -4213,18 +4213,51 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     private void calculateBillTotalsFromBillFees(Bill billToCaclculate, List<BillFee> billfeesAvailable) {
+        System.out.println("calculateBillTotalsFromBillFees");
+        System.out.println("billToCaclculate = " + billToCaclculate);
+        System.out.println("billfeesAvailable = " + billfeesAvailable);
         double calculatingGrossBillTotal = 0.0;
         double calculatingNetBillTotal = 0.0;
 
         for (BillFee iteratingBillFee : billfeesAvailable) {
-            Fee currentItemFee;
+            System.out.println("iteratingBillFee = " + iteratingBillFee);
             if (iteratingBillFee.getFee() == null) {
                 continue;
             }
 
             calculatingGrossBillTotal += iteratingBillFee.getFeeGrossValue();
+            System.out.println("calculatingGrossBillTotal = " + calculatingGrossBillTotal);
             calculatingNetBillTotal += iteratingBillFee.getFeeValue();
+            System.out.println("calculatingNetBillTotal = " + calculatingNetBillTotal);
 
+        }
+        billToCaclculate.setDiscount(calculatingGrossBillTotal - calculatingNetBillTotal);
+        billToCaclculate.setNetTotal(calculatingNetBillTotal);
+        billToCaclculate.setTotal(calculatingGrossBillTotal);
+        getBillFacade().edit(billToCaclculate);
+    }
+
+    private void calculateBillTotalsFromBillFees(Bill billToCaclculate) {
+        double calculatingGrossBillTotal = 0.0;
+        double calculatingNetBillTotal = 0.0;
+        List<BillFee> billfeesAvailable = billToCaclculate.getBillFees();
+        if (billfeesAvailable == null || billfeesAvailable.isEmpty()) {
+            billfeesAvailable = billBeanController.getBillFee(billToCaclculate);
+        }
+        if (billfeesAvailable == null || billfeesAvailable.isEmpty()) {
+            billToCaclculate.setDiscount(0.0);
+            billToCaclculate.setNetTotal(0.0);
+            billToCaclculate.setTotal(0.0);
+            getBillFacade().edit(billToCaclculate);
+            return;
+        }
+
+        for (BillFee iteratingBillFee : billfeesAvailable) {
+            if (iteratingBillFee.getFee() == null) {
+                continue;
+            }
+            calculatingGrossBillTotal += iteratingBillFee.getFeeGrossValue();
+            calculatingNetBillTotal += iteratingBillFee.getFeeValue();
         }
         billToCaclculate.setDiscount(calculatingGrossBillTotal - calculatingNetBillTotal);
         billToCaclculate.setNetTotal(calculatingNetBillTotal);
@@ -5071,6 +5104,11 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     private boolean errorCheckForSettle() {
+
+        if (settlePaymentMethod == null) {
+            JsfUtil.addErrorMessage("Settle Payment Method for Settling");
+            return true;
+        }
 
         if (getBillSession().getBill().getPaymentMethod() == PaymentMethod.Credit) {
             if (getBillSession().getBill().getFromInstitution() != null
@@ -5952,6 +5990,22 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     public List<ItemFee> getSelectedItemFees() {
         return selectedItemFees;
+    }
+    
+    public List<ItemFee> getSelectedItemFeesWithouZeros() {
+        if (selectedItemFees == null) {
+            return null;
+        }
+        List<ItemFee> feesWithoutZeros = new ArrayList<>();
+        if (selectedItemFees.isEmpty()) {
+            return feesWithoutZeros;
+        }
+        for (ItemFee bf : selectedItemFees) {
+            if (bf.getFee() > 0) {
+                feesWithoutZeros.add(bf);
+            }
+        }
+        return feesWithoutZeros;
     }
 
     public List<ItemFee> getFilteredSelectedItemFees() {
