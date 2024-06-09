@@ -45,22 +45,22 @@
                                         </f:facet>
                                         <ezcommon:patient patient="#{bookingControllerViewScope.selectedBillSession.bill.patient}" ></ezcommon:patient>
                                     </p:panel>
-                                    <p:panelGrid columns="2">
+                                    <p:panelGrid id="panelBillDetailsForSettling" columns="2">
                                         <f:facet name="header">
                                             <h:outputText styleClass="fas fa-user" />
                                             <h:outputLabel class="mx-4" value="Billl Details" />
                                         </f:facet>
                                         <h:outputLabel value="Total" ></h:outputLabel>
                                         <h:outputLabel value="#{bookingControllerViewScope.selectedBillSession.billItem.bill.total}" >
-                                            <f:convertDateTime pattern="#,##0.00" ></f:convertDateTime>
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                         </h:outputLabel>
                                         <h:outputLabel value="Discount" ></h:outputLabel>
                                         <h:outputLabel value="#{bookingControllerViewScope.selectedBillSession.billItem.bill.discount}" >
-                                            <f:convertDateTime pattern="#,##0.00" ></f:convertDateTime>
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                         </h:outputLabel>
                                         <h:outputLabel value="Total" ></h:outputLabel>
                                         <h:outputLabel value="#{bookingControllerViewScope.selectedBillSession.billItem.bill.netTotal}" >
-                                            <f:convertDateTime pattern="#,##0.00" ></f:convertDateTime>
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                         </h:outputLabel>
                                     </p:panelGrid>
 
@@ -86,7 +86,7 @@
                                             icon="fas fa-plus"
                                             class="ui-button-success"
                                             action="#{bookingControllerViewScope.addItemToBookingAtSettling()}"
-                                            update="lstItems tblBillItemsForAddingNewItem tblBillFeesForAddingNewItem"
+                                            update="lstItems tblBillItemsForAddingNewItem tblBillFeesForAddingNewItem panelBillDetailsForSettling"
                                             ></p:commandButton>
 
 
