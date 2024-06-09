@@ -284,7 +284,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     private PaymentMethod refundPaymentMethod;
 
     private Institution settleInstitution;
-    private Institution creditCompany;
     private double refundableTotal = 0;
     private boolean disableRefund;
     private List<Patient> quickSearchPatientList;
@@ -304,6 +303,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     private Doctor referredBy;
     private Institution collectingCentre;
     private double netPlusVat;
+    private Institution creditCompany;
 
     public void removeAddedAditionalItems(Item item) {
         itemsAddedToBooking.remove(item);
@@ -6443,5 +6443,15 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     public void setNetPlusVat(double netPlusVat) {
         this.netPlusVat = netPlusVat;
     }
+
+    public Institution getCreditCompany() {
+        return creditCompany;
+    }
+
+    public void setCreditCompany(Institution creditCompany) {
+        this.creditCompany = creditCompany;
+    }
+    
+    
 
 }
