@@ -371,15 +371,42 @@
                                         class="ui-button"
                                         title="Redraw Bill">
                                     </p:commandButton>
-                                    <p:commandButton
-                                        value="Print"
-                                        ajax="false"
-                                        action="#"
-                                        class="ui-button-info"
-                                        icon="fa fa-print"
-                                        disabled="#{bookingControllerViewScope.selectedBillSession.billItem.bill.balance ne 0.0}">
-                                        <p:printer target="gpADSettleBillPreview" ></p:printer>
+                                    <p:commandButton value="Print"
+                                                     ajax="false"
+                                                     action="#{bookingControllerViewScope.markSettlingBillAsPrinted()}"
+                                                     class="ui-button-info"
+                                                     icon="fa fa-print"
+                                                     disabled="#{bookingControllerViewScope.selectedBillSession.billItem.bill.balance ne 0.0}">
+                                        <p:printer target="gpADSettleBillPreview" />
                                     </p:commandButton>
+
+                                    <p:commandButton value="Print"
+                                                     ajax="false"
+                                                     action="#{bookingControllerViewScope.markSettlingBillAsPrinted()}"
+                                                     class="ui-button-info"
+                                                     icon="fa fa-print"
+                                                     disabled="#{bookingControllerViewScope.selectedBillSession.billItem.bill.balance ne 0.0}">
+
+                                    </p:commandButton>
+
+
+                                    <p:commandButton value="Print 1" update="@form" oncomplete="handlePrint()">
+                                        <f:ajax listener="#{bookingControllerViewScope.markSettlingBillAsPrinted}" />
+                                        <p:printer target="gpADSettleBillPreview" />
+                                    </p:commandButton>
+                                    <script type="text/javascript">
+                                        function handlePrint() {
+                                            if (args &amp;&amp; !args.validationFailed) {
+                                                PF('printer').print();
+                                            }
+                                        }
+                                    </script>
+
+
+
+
+
+
                                 </div>
                             </div>
 
@@ -939,7 +966,8 @@
                                     value="Yes"
                                     action="#{bookingControllerViewScope.channelBookingRefund()}"
                                     ajax="false"
-                                    onclick="PF('refundBillPrintDialog').show();PF('confirmationRefundDialog').hide();" />
+                                    onclick="PF('refundBillPrintDialog').show();
+                                            PF('confirmationRefundDialog').hide();" />
                                 <p:commandButton
                                     value="No"
                                     onclick="PF('confirmationRefundDialog').hide();" />

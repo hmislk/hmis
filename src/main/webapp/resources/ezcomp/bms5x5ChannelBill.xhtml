@@ -352,6 +352,29 @@
                     </td>
                 </tr>
 
+
+                <h:panelGroup rendered="#{cc.attrs.bill.paidBill.printed}" >
+                    <tr>
+                        <td>
+                            <h:outputLabel value="Printed By" ></h:outputLabel>
+                        </td>
+                        <td>
+                            <p:spacer width="10" ></p:spacer>
+                        </td>
+                        <td>
+                            <h:outputLabel value=":" ></h:outputLabel>
+                        </td>
+                        <td>
+                            <h:outputLabel value="#{cc.attrs.bill.paidBill.printedUser.webUserPerson.name}"></h:outputLabel>
+                            <p:spacer height="1" width="10" ></p:spacer>
+                            <h:outputLabel value="#{cc.attrs.bill.paidBill.printedAt}">
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></f:convertDateTime>
+                            </h:outputLabel>
+                        </td>
+                    </tr>
+                </h:panelGroup>
+
+
             </table>
 
             <div style="margin-left: 6%; margin-right: 8%;">

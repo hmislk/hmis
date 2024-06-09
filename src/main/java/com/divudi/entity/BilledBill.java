@@ -19,11 +19,11 @@ import javax.persistence.OrderBy;
  */
 @Entity
 public class BilledBill extends Bill implements Serializable {
-     static final long serialVersionUID = 1L;
-    
-    @OneToMany(mappedBy = "bill", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @OrderBy("inwardChargeType, searialNo")
-    List<BillItem> billItems;
+//     static final long serialVersionUID = 1L;
+//    
+//    @OneToMany(mappedBy = "bill", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+//    @OrderBy("inwardChargeType, searialNo")
+//    List<BillItem> billItems;
 
     public BilledBill() {
         billClassType = BillClassType.BilledBill;
