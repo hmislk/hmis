@@ -569,6 +569,46 @@
 
                                                 </p:row>
 
+                                                <h:panelGroup
+                                                    class="row"
+                                                    layout="block"  
+                                                    rendered="#{bookingControllerViewScope.paymentMethod eq 'Credit'}" >
+                                                    <div class="my-1" id="credit">
+                                                        <div class="row">
+                                                            <div class="col-12 d-flex ">
+                                                                <p:autoComplete 
+                                                                    id="creditCompany" 
+                                                                    class="w-100 -mx-2"
+                                                                    inputStyleClass="form-control"
+                                                                    forceSelection="true"
+                                                                    value="#{bookingControllerViewScope.creditCompany}"  
+                                                                    completeMethod="#{creditCompanyController.completeCredit}" 
+                                                                    var="ix"
+                                                                    minQueryLength="4"
+                                                                    placeholder="Company (Type at least 4 letters to search)"
+                                                                    itemLabel="#{ix.name}" 
+                                                                    itemValue="#{ix}" 
+                                                                    size="10"  >
+
+                                                                    <f:ajax  
+                                                                        event="itemSelect" 
+                                                                        listener="#{bookingControllerViewScope.calTotals()}"
+                                                                        execute="@this" 
+                                                                        render=":#{p:resolveFirstComponentWithId('paymentDetails',view).clientId}" />
+                                                                </p:autoComplete> 
+                                                                <p:commandLink 
+                                                                    id="btnAddNewCreditCom" 
+                                                                    value="(+)"
+                                                                    class="mx-3 mt-1"
+                                                                    title="Add New Credit Company"
+                                                                    ajax="false" 
+                                                                    action="#{navigationController.navigateToCreditCompany()}"
+                                                                    actionListener="#{creditCompanyController.prepareAdd()}" />  
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </h:panelGroup>
+
                                             </h:panelGroup>
 
 
