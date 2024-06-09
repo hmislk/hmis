@@ -110,12 +110,16 @@ public class SessionController implements Serializable, HttpSessionListener {
     PersonController personController;
     @Inject
     UserIconController userIconController;
+    @Inject
+    TokenController tokenController;
+    @Inject
+    OpdTokenController opdTokenController;
+    @Inject
+    BookingController bookingController;
     /**
      * Properties
      */
-    TokenController tokenController;
-    OpdTokenController opdTokenController;
-    BookingController bookingController;
+
     private static final long serialVersionUID = 1L;
     WebUser loggedUser = null;
     @Deprecated
