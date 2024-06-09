@@ -644,7 +644,7 @@
 
                     <p:tab title="Reprint" id="rePrint" >
                         <div class="row">
-                            <h:panelGroup rendered="#{webUserController.hasPrivilege('ChannellingReprintOriginalBill')}">
+                            <h:panelGroup>
                                 <div class="col-6">
                                     <p:panel>
                                         <div class="row">
@@ -703,7 +703,8 @@
                                     </p:panel>
                                 </div>
                                 <div class="col-6">
-                                    <p:panel>
+                                    <h1>#{webUserController.hasPrivilege('ChannellingReprintOriginalBill')}</h1>
+                                    <p:panel rendered="#{webUserController.hasPrivilege('ChannellingReprintOriginalBill')}">
                                         <div class="row">
                                             <f:facet name="header">
                                                 <div class="d-flex justify-content-between align-items-center">
@@ -900,7 +901,13 @@
                                 </p:column>
                             </p:dataTable>
                         </h:panelGroup>
+                        <h:panelGroup class="mx-2">
+                            <p:selectOneMenu id="cmbPs" value="#{bookingControllerViewScope.refundPaymentMethod}">
+                                <f:selectItem itemLabel="Select paymentMethod"/>
+                                <f:selectItems value="#{enumController.paymentMethods}"/>
+                            </p:selectOneMenu>
 
+                        </h:panelGroup>
                         <p:commandButton value="Refund Booking" class="ui-button-warning my-2" icon="fas fa-reply"
                                          disabled="#{bookingControllerViewScope.billSession.bill.refunded==true
                                                      or bookingControllerViewScope.billSession.bill.cancelled==true or bookingControllerViewScope.disableRefund==true}"
