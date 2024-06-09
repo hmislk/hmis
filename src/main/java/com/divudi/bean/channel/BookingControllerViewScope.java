@@ -240,6 +240,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     private List<Staff> consultants;
     private List<BillSession> getSelectedBillSession;
     private boolean printPreview;
+    private boolean printPreviewForSettle;
     private double absentCount;
     private int serealNo;
     private Date fromDate;
@@ -310,6 +311,11 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         fillFees();
     }
 
+    public void closePrinting() {
+        printPreview=false;
+        printPreviewForSettle=false;
+    }
+    
     public void markSettlingBillAsPrinted() {
         System.out.println("markSettlingBillAsPrinted");
         System.out.println("selectedBillSession.getBillItem().getBill() = " + selectedBillSession.getBillItem().getBill());
@@ -320,6 +326,15 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             billFacade.edit(selectedBillSession.getBillItem().getBill());
         }else{
             System.out.println("Can not mark as Printed = " + selectedBillSession.getBillItem().getBill());
+        }
+        if (selectedBillSession != null && selectedBillSession.getBillItem() != null && selectedBillSession.getBillItem().getBill() != null
+                 && selectedBillSession.getBillItem().getBill().getPaidBill() != null) {
+            selectedBillSession.getBillItem().getBill().getPaidBill().setPrinted(true);
+            selectedBillSession.getBillItem().getBill().getPaidBill().setPrintedAt(new Date());
+            selectedBillSession.getBillItem().getBill().getPaidBill().setPrintedUser(sessionController.getLoggedUser());
+            billFacade.edit(selectedBillSession.getBillItem().getBill().getPaidBill());
+        }else{
+            System.out.println("Can not mark Paid Bill as Printed = " + selectedBillSession.getBillItem().getBill().getPaidBill());
         }
     }
 
@@ -5204,11 +5219,11 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             }
             getPatientFacade().edit(getBillSession().getBill().getPatient());
         }
-
+        markSettlingBillAsPrinted();
         printPreview = true;
+        printPreviewForSettle=true;
         creditCompany = null;
         toStaff = null;
-
         JsfUtil.addSuccessMessage("On Call Channel Booking Settled");
     }
 
@@ -6463,5 +6478,15 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     public void setCreditCompany(Institution creditCompany) {
         this.creditCompany = creditCompany;
     }
+
+    public boolean isPrintPreviewForSettle() {
+        return printPreviewForSettle;
+    }
+
+    public void setPrintPreviewForSettle(boolean printPreviewForSettle) {
+        this.printPreviewForSettle = printPreviewForSettle;
+    }
+    
+    
 
 }
