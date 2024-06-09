@@ -53,6 +53,8 @@ public class Bill implements Serializable {
     @GeneratedValue(strategy = GenerationType.AUTO)
     Long id;
     
+    static final long serialVersionUID = 1L;
+    
     @ManyToOne
     private MembershipScheme membershipScheme;
     @OneToOne
@@ -77,14 +79,14 @@ public class Bill implements Serializable {
     private List<Bill> refundBills = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
-    private BillClassType billClassType;
+    protected BillClassType billClassType;
 
     @ManyToOne(fetch = FetchType.LAZY)
     private Category category;
     @Transient
     boolean transError;
 
-    static final long serialVersionUID = 1L;
+    
     
 
     @OneToMany(mappedBy = "bill", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
@@ -1157,6 +1159,7 @@ public class Bill implements Serializable {
     public void setPatientEncounter(PatientEncounter patientEncounter) {
         this.patientEncounter = patientEncounter;
     }
+
 
     public Long getId() {
         return id;

@@ -310,6 +310,19 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         fillFees();
     }
 
+    public void markSettlingBillAsPrinted() {
+        System.out.println("markSettlingBillAsPrinted");
+        System.out.println("selectedBillSession.getBillItem().getBill() = " + selectedBillSession.getBillItem().getBill());
+        if (selectedBillSession != null && selectedBillSession.getBillItem() != null && selectedBillSession.getBillItem().getBill() != null) {
+            selectedBillSession.getBillItem().getBill().setPrinted(true);
+            selectedBillSession.getBillItem().getBill().setPrintedAt(new Date());
+            selectedBillSession.getBillItem().getBill().setPrintedUser(sessionController.getLoggedUser());
+            billFacade.edit(selectedBillSession.getBillItem().getBill());
+        }else{
+            System.out.println("Can not mark as Printed = " + selectedBillSession.getBillItem().getBill());
+        }
+    }
+
     public double calculatRemainForMultiplePaymentTotal() {
 
         if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
@@ -3658,7 +3671,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         List<BillFee> savingBillFeesFromAdditionalItems = new ArrayList<>();
         if (!additionalBillItems.isEmpty()) {
             for (BillItem abi : additionalBillItems) {
-               savingBillFeesFromAdditionalItems= createBillFeeForSessions(savingBill, abi, true);
+                savingBillFeesFromAdditionalItems = createBillFeeForSessions(savingBill, abi, true);
             }
         }
 
@@ -3709,8 +3722,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         if (collectingCentre != null) {
             savingBill.setCollectingCentre(collectingCentre);
         }
-        
-        
+
         calculateBillTotalsFromBillFees(savingBill, savingBillFees);
 
         getBillFacade().edit(savingBill);
@@ -5991,7 +6003,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     public List<ItemFee> getSelectedItemFees() {
         return selectedItemFees;
     }
-    
+
     public List<ItemFee> getSelectedItemFeesWithouZeros() {
         if (selectedItemFees == null) {
             return null;
@@ -6451,7 +6463,5 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     public void setCreditCompany(Institution creditCompany) {
         this.creditCompany = creditCompany;
     }
-    
-    
 
 }
