@@ -17,13 +17,13 @@
     <cc:implementation>
 
         <h:outputStylesheet library="css" name="pharmacypos_header.css" ></h:outputStylesheet>
-        <h:commandButton value="Print Bill" onclick="printBill()"/>
+        <p:commandButton class="ui-button-info" icon="fas fa-print" value="Print" onclick="printBill()"/>
         <div id="printAll" class="posbillheader" style="page-break-after: always!important; max-width: 72mm">
-            <div class="d-flex align-items-center">
+            <div style="display: flex; align-items: center;">
                 <div>
                     <p:graphicImage library="image" name="CompanyLogo/#{configOptionApplicationController.getLongTextValueByKey('Pharmacy Bill Company Logo')}.png" height="110" width="100"/>
                 </div>
-                <div class="ml-2" style="text-align: center;">
+                <div  style="text-align: center; margin-left: 2px; font-size: 12px;">
                     <h:outputLabel value="#{cc.attrs.bill.institution.name}"></h:outputLabel><br/>
                     <h:outputLabel value="#{cc.attrs.bill.institution.address}"></h:outputLabel><br/>
                     <h:outputLabel value="#{cc.attrs.bill.department.printingName}"></h:outputLabel><br/>
@@ -39,18 +39,18 @@
             </div>-->
         
 
-            <div class="headingBill1 mt-2">
-                <h:outputLabel value="SALE BILL"   />   
-                <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
-                <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
+            <div class="headingBill1" style="text-align: center">
+                <h:outputLabel class="SaleBillheader" value="SALE BILL"   />   
+                <h:outputLabel class="SaleBillheader" value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
+                <h:outputLabel class="SaleBillheader" value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
             </div>
 
-            <div class="billDetails1 mt-2" >
+            <div class="billDetails1" >
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
                         <h:panelGrid columns="3">
                             <h:outputLabel value="Date &nbsp;&nbsp;"/>
-                            <h:outputLabel class="mx-2" value=":"/>
+                            <h:outputLabel style="margin: 2%" value=":"/>
                             <h:outputLabel value="#{cc.attrs.bill.createdAt}" class="billDetails1" >
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
                             </h:outputLabel>
@@ -59,7 +59,7 @@
                     <div>
                         <h:panelGrid columns="3">
                             <h:outputLabel value="Time"/>
-                             <h:outputLabel class="mx-2" value=":"/>
+                             <h:outputLabel style="margin: 2%" value=":"/>
                             <h:outputLabel value="#{cc.attrs.bill.createdAt}" class="billDetails1">
                                 <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}"  ></f:convertDateTime>
                             </h:outputLabel>
@@ -69,7 +69,7 @@
                 <div>
                     <h:panelGrid columns="3">
                         <h:outputLabel value="Bill No"/>
-                        <h:outputLabel class="mx-2" value=":"/>
+                        <h:outputLabel style="margin: 2%" value=":"/>
                         <h:outputLabel value="#{cc.attrs.bill.deptId}" class="billDetails1" />
                     </h:panelGrid>
                 </div>
@@ -77,7 +77,7 @@
                 <div>
                     <h:panelGrid columns="3">
                         <h:outputLabel value="Patient"/>
-                        <h:outputLabel class="mx-2" value=":"/>
+                        <h:outputLabel style="margin: 2%" value=":"/>
                         <h:outputLabel value="#{cc.attrs.bill.patient.person.nameWithTitle}" class="billDetails1" />
                     </h:panelGrid>
                 </div>
@@ -86,7 +86,7 @@
                 <div>
                     <h:panelGrid columns="3">
                         <h:outputLabel value="Staff Name"/>
-                        <h:outputLabel class="mx-2" value=":"/>
+                        <h:outputLabel style="margin: 2%" value=":"/>
                         <h:outputLabel value="#{cc.attrs.bill.toStaff.person.nameWithTitle}" class="billDetails1" />
                     </h:panelGrid>
                 </div>
@@ -95,7 +95,7 @@
                 <div>
                     <h:panelGrid columns="3">
                         <h:outputLabel value="To Unit"/>
-                        <h:outputLabel class="mx-2" value=":"/>
+                        <h:outputLabel style="margin: 2%" value=":"/>
                         <h:outputLabel value="#{cc.attrs.bill.toDepartment.name}" class="billDetails1" />
                     </h:panelGrid>
                 </div>
@@ -104,7 +104,7 @@
                 <div>
                     <h:panelGrid columns="3">
                         <h:outputLabel value="Company"/>
-                        <h:outputLabel class="mx-2" value=":"/>
+                        <h:outputLabel style="margin: 2%" value=":"/>
                         <h:outputLabel value="#{cc.attrs.bill.toInstitution.name}" class="billDetails1" />
                     </h:panelGrid>
                 </div>
@@ -322,8 +322,6 @@
     // Write the HTML content along with CSS styles into the print window
     printWindow.document.open();
     printWindow.document.write('<html><head><title>Print Bill</title>');
-    // Include Bootstrap CSS file
-    printWindow.document.write('<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"/>');
     printWindow.document.write('<link rel="stylesheet" href="../../resources/css/pharmacypos_header.css"/>');
     // Include your custom CSS files here if any
     // printWindow.document.write('<link rel="stylesheet" href="your_custom_stylesheet.css"/>');
