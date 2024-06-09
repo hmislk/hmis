@@ -76,9 +76,7 @@
                     </td>
                     <td>
                         <b>
-                            <ui:repeat value="#{cc.attrs.bill.billItems}" var="cbi" >
-                                <h:outputLabel value="#{cbi.billSession.staff.person.nameWithTitle}" ></h:outputLabel>
-                            </ui:repeat>
+                            <h:outputLabel value="#{cc.attrs.bill.staff.person.nameWithTitle}" ></h:outputLabel>
                         </b>
                     </td>
 
@@ -181,6 +179,7 @@
                 <ui:repeat value="#{cc.attrs.bill.billFees}" var="cbif" >
                     <tr>
                         <td>
+                            <!--<h:outputLabel value="#{cbif.billItem.item.name}" rendered="#{cbif.feeGrossValue ne 0.0}"></h:outputLabel>-->
                             <h:outputLabel value="#{cbif.fee.name}" rendered="#{cbif.feeGrossValue ne 0.0}"></h:outputLabel>
                         </td>
                         <td>
