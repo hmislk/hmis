@@ -5109,6 +5109,11 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             return true;
         }
 
+        if (settlePaymentMethod == paymentMethod.OnCall) {
+            JsfUtil.addErrorMessage("Settlement using 'On Call' is not allowed. Please select a different payment method.");
+            return true;
+        }
+
         if (getBillSession().getBill().getPaymentMethod() == PaymentMethod.Credit) {
             if (getBillSession().getBill().getFromInstitution() != null
                     && getBillSession().getBill().getFromInstitution().getBallance()
