@@ -543,7 +543,7 @@
                                     <h:outputLabel value="Refundable Total : "/>
                                     <h:outputLabel id="tot" value="#{channelBillController.refundableTotal}"/>
                                 </h:panelGrid>
-                                <p:dataTable value="#{channelBillController.billSession.bill.billFees}" var="bi">
+                                <p:dataTable value="#{channelBillController.billSession.bill.billFeesWIthoutZeroValue}" var="bi">
                                     <p:column headerText="Fee Name">
                                         <p:outputLabel value="#{bi.fee.name}"/>
                                     </p:column>
