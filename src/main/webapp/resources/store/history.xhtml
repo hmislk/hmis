@@ -13,10 +13,32 @@
     <!-- IMPLEMENTATION -->
     <cc:implementation>
         <p:panel id="tab"  >
-            <h:panelGroup style="font-weight: bold;">
-                <h:outputLabel value="History of : "/>
-                    <h:outputLabel value="#{storeController1.pharmacyItem.name}"/>
-            </h:panelGroup><br/><br/>
+            <f:facet name="header">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <h:outputLabel styleClass="fas fa-file-invoice " />
+                        <h:outputLabel value="History of : " style="margin-left: 30px"/>
+                        <h:outputLabel class="mx-1" value="#{storeController1.pharmacyItem.name}"/>
+                    </div>
+                    <div>
+                        <h:outputLabel value="From Date"/>
+                        <p:calendar class="mx-2" id="frmDate" value="#{storeController1.fromDate}" 
+                                    navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+
+                        </p:calendar>
+
+                        <h:outputLabel value="To Date"/>
+                        <p:calendar class="mx-2" id="toDate" value="#{storeController1.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+
+                        </p:calendar>
+                        <p:commandButton 
+                            process="@this frmDate toDate" 
+                            update=":#{p:resolveFirstComponentWithId('grn',view).clientId} :#{p:resolveFirstComponentWithId('po',view).clientId} :#{p:resolveFirstComponentWithId('dp',view).clientId} :#{p:resolveFirstComponentWithId('depIssue',view).clientId}" 
+                            action="#{storeController1.createTable()}"
+                            class="ui-button-info" icon="far fa-eye" value="View Detail"/>
+                    </div>
+                </div>
+            </f:facet>
             <h:panelGrid columns="5" style="min-width: 100%;">
                 <h:outputLabel value="From Date"/>
                 <p:calendar id="frmDate" value="#{storeController1.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
@@ -27,8 +49,8 @@
                 <p:calendar id="toDate" value="#{storeController1.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                     <f:ajax event="dateSelect" execute="@this toDate" render="tab"/>
                 </p:calendar>
-                <p:commandButton update=":#{p:resolveFirstComponentWithId('grn',view).clientId} :#{p:resolveFirstComponentWithId('po',view).clientId} :#{p:resolveFirstComponentWithId('dp',view).clientId} :#{p:resolveFirstComponentWithId('depIssue',view).clientId}}" 
-                                action="#{storeController1.createTable()}" value="View Detail"/>
+                <p:commandButton update=":#{p:resolveFirstComponentWithId('grn',view).clientId} :#{p:resolveFirstComponentWithId('po',view).clientId} :#{p:resolveFirstComponentWithId('dp',view).clientId} :#{p:resolveFirstComponentWithId('depIssue',view).clientId}" 
+                                 action="#{storeController1.createTable()}" value="View Detail"/>
             </h:panelGrid>
             <p:tabView  style="min-height: 250px;"   activeIndex="0" >
                 <p:tab   title="Stock"    >
@@ -176,7 +198,7 @@
 
                     </p:dataTable>                
                 </p:tab>
-                
+
                 <p:tab   title="BHT ISSUE"    >
                     <p:dataTable styleClass="noBorder" value="#{storeController1.institutionBhtIssue}" var="ins">
                         <p:columnGroup type="header">
@@ -432,7 +454,7 @@
 
                     </p:dataTable>                
                 </p:tab>
-                
+
                 <p:tab   title="Department Issue"    >
                     <p:dataTable styleClass="noBorder" id="depIssue"
                                  value="#{storeController1.institutionIssue}" var="ins">
