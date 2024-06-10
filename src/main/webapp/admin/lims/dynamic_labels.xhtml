@@ -15,10 +15,10 @@
                 <h:form>
                     <p:panelGrid columns="1" >
                         <p:panel header="Select Investigation and Field" >
-                            <f:facet name="header">
+                             <f:facet name="header">
                                 <div class="d-flex align-items-center justify-content-between">
                                     <div>
-                                        
+                                        <h:outputLabel value="Select Investigation and Field" />
                                     </div>
                                     <div>
                                         <p:commandButton 
@@ -30,12 +30,8 @@
                                 </div>
                                 
                             </f:facet>
-                            <p:panelGrid columns="2" >
-
-
-                                <p:selectBooleanCheckbox itemLabel="Master Items Only" value="#{investigationController.listMasterItemsOnly}">
-                                    <p:ajax event="change" process="@this" update="acPt" />
-                                </p:selectBooleanCheckbox>
+                            <h:panelGrid columns="4" class="mx-4" >
+                                <h:outputLabel value="Select Investigation" class="mx-2" />
                                 <p:autoComplete widgetVar="aPt" id="acPt" forceSelection="true"
                                                 value="#{investigationItemDynamicLabelController.investigation}" 
                                                 completeMethod="#{investigationController.completeInvest}" 
@@ -58,19 +54,25 @@
                                     </p:column>
                                     <p:ajax process="acPt iif" update="iif tbl" event="itemSelect"/>
                                 </p:autoComplete> 
-
-                                <h:outputLabel value="Select Dynamic Label" ></h:outputLabel>
+                                
+                                <p:selectBooleanCheckbox itemLabel="Master Items Only" value="#{investigationController.listMasterItemsOnly}">
+                                    <p:ajax event="change" process="@this" update="acPt" />
+                                </p:selectBooleanCheckbox>
+                                
+                                <h:outputLabel value="" ></h:outputLabel>
+                                <h:outputLabel value="Select Dynamic Label" class="mx-2" ></h:outputLabel>
                                 <p:selectOneMenu style="min-width: 230px;" id="iif" value="#{investigationItemDynamicLabelController.investigationItemofDynamicLabelType}" >
                                     <f:selectItem itemLabel="Select Item" />
                                     <f:selectItems value="#{investigationItemDynamicLabelController.investigationItemsOfDynamicLabelType}" var="iifs" itemLabel="#{iifs.name}" itemValue="#{iifs}" />
                                     <p:ajax event="change" process="iif" update="tbl" />
                                 </p:selectOneMenu>
 
-                            </p:panelGrid>
+                            </h:panelGrid>
                         </p:panel>
                         <p:panel header="Adding new dynamic label" >
-                            <p:panelGrid columns="2" >
+                            <h:panelGrid columns="3" class="w-100" >
                                 <h:outputLabel value="Sex" ></h:outputLabel>
+                                 <h:outputLabel value=":" ></h:outputLabel>
                                 <p:selectOneMenu id="txtNewSex"  value="#{investigationItemDynamicLabelController.sex}" style="width: 200px;">
                                     <f:selectItem itemLabel="Select Sex"/>
                                     <f:selectItem itemLabel="Male" itemValue="Male"/>
@@ -78,6 +80,7 @@
                                 </p:selectOneMenu>
 
                                 <h:outputLabel value="From Age" ></h:outputLabel>
+                                 <h:outputLabel value=":" ></h:outputLabel>
                                 <h:panelGrid columns="2">
                                     <p:inputText autocomplete="off" value="#{investigationItemDynamicLabelController.fromAge}"></p:inputText>
                                     <h:selectOneMenu value="#{investigationItemDynamicLabelController.fromAgeUnit}" >
@@ -87,6 +90,7 @@
                                     </h:selectOneMenu>
                                 </h:panelGrid>
                                 <h:outputLabel value="To Age" ></h:outputLabel>
+                                 <h:outputLabel value=":" ></h:outputLabel>
                                 <h:panelGrid columns="2">
                                     <p:inputText autocomplete="off" value="#{investigationItemDynamicLabelController.toAge}"></p:inputText>
                                     <h:selectOneMenu value="#{investigationItemDynamicLabelController.toAgeUnit}" >
@@ -96,21 +100,30 @@
                                     </h:selectOneMenu>
                                 </h:panelGrid>
                                 <h:outputLabel value="Label" ></h:outputLabel>
+                                <h:outputLabel value=":" ></h:outputLabel>
                                 <p:inputTextarea value="#{investigationItemDynamicLabelController.flagMessage}" ></p:inputTextarea>
-                                <h:outputLabel value="Label" ></h:outputLabel>
-                                <p:commandButton value="Save" ajax="false" action="#{investigationItemDynamicLabelController.saveForDynamicLabel()}"   >
+                                
+                                <p:commandButton class="ui-button-warning" icon="fas fa-save" value="Save" ajax="false" action="#{investigationItemDynamicLabelController.saveForDynamicLabel()}"   >
                                 </p:commandButton>
 
 
-                            </p:panelGrid>
+                            </h:panelGrid>
                         </p:panel>
                         <p:panel header="Already added Labels" >
-                            <p:panelGrid columns="1" >
-                                <f:facet name="header" >
-                                    <p:commandButton value="Excel" ajax="false">
+                            <f:facet name="header" >
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <h:outputLabel value="Already added Labels" />
+                                    </div>
+                                    <div>
+                                        <p:commandButton value="Excel" ajax="false" class="mx-2 ui-button-success" icon="fas fa-file-excel">
                                         <p:dataExporter type="xlsx" target="tbl" fileName="/lab/dianamic_lables"  />
                                     </p:commandButton>
+                                    </div>
+                                </div>
+                                    
                                 </f:facet>
+                            <p:panelGrid columns="1" >
                                 <p:dataTable id="tbl" value="#{investigationItemDynamicLabelController.dynamicLabels}" var="f" >
                                     <f:facet name="header" >
                                         <p:outputLabel value="#{investigationItemDynamicLabelController.investigation.name} - " />
