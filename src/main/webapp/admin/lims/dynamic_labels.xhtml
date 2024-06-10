@@ -103,7 +103,7 @@
                                 <h:outputLabel value=":" ></h:outputLabel>
                                 <p:inputTextarea value="#{investigationItemDynamicLabelController.flagMessage}" ></p:inputTextarea>
                                 
-                                <p:commandButton class="ui-button-warning" icon="fas fa-save" value="Save" ajax="false" action="#{investigationItemDynamicLabelController.saveForDynamicLabel()}"   >
+                                <p:commandButton class="ui-button-warning" icon="fas fa-save" process="@this" update="tbl" value="Save" ajax="false" action="#{investigationItemDynamicLabelController.saveForDynamicLabel()}"   >
                                 </p:commandButton>
 
 
