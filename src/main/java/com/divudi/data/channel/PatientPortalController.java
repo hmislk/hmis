@@ -308,6 +308,7 @@ public class PatientPortalController implements Serializable {
         e.setPending(false);
         e.setOtp(otp);
         getSmsFacade().create(e);
+        System.out.println("otp = " + otp);
         Boolean sent = smsManager.sendSms(e);
         if (sent) {
             JsfUtil.addSuccessMessage("SMS Sent");
