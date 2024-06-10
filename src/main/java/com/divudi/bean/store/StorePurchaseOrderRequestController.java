@@ -280,7 +280,7 @@ public class StorePurchaseOrderRequestController implements Serializable {
 
         JsfUtil.addSuccessMessage("Request Succesfully Created");
 
-        recreate();
+        printPreview = true;
         
         
 

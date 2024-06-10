@@ -39,19 +39,6 @@
                     </div>
                 </div>
             </f:facet>
-            <h:panelGrid columns="5" style="min-width: 100%;">
-                <h:outputLabel value="From Date"/>
-                <p:calendar id="frmDate" value="#{storeController1.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
-                    <f:ajax event="dateSelect" execute="@this toDate" render="tab"/>
-                </p:calendar>
-
-                <h:outputLabel value="To Date"/>
-                <p:calendar id="toDate" value="#{storeController1.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
-                    <f:ajax event="dateSelect" execute="@this toDate" render="tab"/>
-                </p:calendar>
-                <p:commandButton update=":#{p:resolveFirstComponentWithId('grn',view).clientId} :#{p:resolveFirstComponentWithId('po',view).clientId} :#{p:resolveFirstComponentWithId('dp',view).clientId} :#{p:resolveFirstComponentWithId('depIssue',view).clientId}" 
-                                 action="#{storeController1.createTable()}" value="View Detail"/>
-            </h:panelGrid>
             <p:tabView  style="min-height: 250px;"   activeIndex="0" >
                 <p:tab   title="Stock"    >
                     <p:dataTable styleClass="noBorder" value="#{storeController1.institutionStocks}" var="ins">
