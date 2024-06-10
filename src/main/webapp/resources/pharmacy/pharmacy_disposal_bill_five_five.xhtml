@@ -298,12 +298,12 @@
                                     </h:outputLabel>
                                 </td>
                                 <td style="width:10%!important;text-align: right; padding-right: 15px!important">
-                                    <h:outputLabel class="itemHeadingsFiveFive" value="#{bip.netValue/bip.qty}" >
+                                    <h:outputLabel class="itemHeadingsFiveFive" value="#{bip.rate}" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </td>
                                 <td style="width:10%!important; text-align: right;">
-                                    <h:outputLabel class="itemHeadingsFiveFive" value="#{bip.netValue}">
+                                    <h:outputLabel class="itemHeadingsFiveFive" value="#{bip.rate*bip.qty}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </td>
@@ -383,7 +383,7 @@
                                 <h:outputLabel value="Total" style="font-size: 15px; font-weight: bold;"/>
                             </td>
                             <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 0px;">
-                                <h:outputLabel value="#{cc.attrs.bill.netTotal}" style="font-size: 15px; font-weight: bold;">
+                                <h:outputLabel value="#{cc.attrs.bill.total}" style="font-size: 15px; font-weight: bold;">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </td>
@@ -414,7 +414,7 @@
                         </td>
                     </tr>
 
-                    <tr>
+<!--                    <tr>
                         <td class="totalsBlock" style="text-align: left; width: 60%;">
                             <h:outputLabel value="Balance" />
                         </td>
@@ -423,7 +423,7 @@
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
                         </td>
-                    </tr>
+                    </tr>-->
 
                     <!--                    <tr>
                                             <td class="totalsBlock" style="text-align: left; width: 60%;">
@@ -453,7 +453,7 @@
             </div>
 
             <div style="text-decoration: overline;">
-                <h:outputLabel value="Cashier : #{cc.attrs.bill.creater.code}"/>
+                <h:outputLabel value="Cashier : #{cc.attrs.bill.creater.name}"/>
             </div>
             <div class="footer" style="text-align: center;">
                 <br/>
