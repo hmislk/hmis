@@ -2633,26 +2633,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             }
         }
 
-        if (getSessionController().getApplicationPreference().isPartialPaymentOfOpdBillsAllowed()) {
-            ////// // System.out.println("cashPaid = " + cashPaid);
-            ////// // System.out.println("billNet = " + billNet);
-            if (cashPaid >= (billNet + billVat)) {
-                ////// // System.out.println("fully paid = ");
-                setDiscount(billDiscount);
-                setTotal(billGross);
-                setNetTotal(billNet + billVat);
-                setCashBalance(cashPaid - (billNet + billVat) - billDiscount);
-                ////// // System.out.println("cashBalance = " + cashBalance);
-            } else {
-                ////// // System.out.println("half paid = ");
-                setDiscount(billDiscount);
-                setTotal(billGross);
-                setNetTotal(cashPaid);
-                setCashBalance((billNet + billVat) - cashPaid - billDiscount);
-                ////// // System.out.println("cashBalance = " + cashBalance);
-            }
-            cashRemain = cashPaid;
-        }
+        
 
     }
 
