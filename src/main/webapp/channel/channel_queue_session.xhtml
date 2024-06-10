@@ -177,7 +177,7 @@
                                                     </p:commandButton>
                                                     <p:commandButton 
                                                         id="btnRefund"
-                                                        value="Refund"
+                                                        value="Mark as Refund"
                                                         disabled="#{!bs.currentlyConsulted}"
                                                         rendered="#{!bs.markedToRefund}"
                                                         action="#{bookingController.markToRefund()}"
@@ -192,7 +192,7 @@
                                                         disabled="#{!bs.currentlyConsulted}"
                                                         rendered="#{bs.markedToRefund}"
                                                         action="#{bookingController.markToRefundUndo()}"
-                                                        icon="fas fa-dollar-sign"
+                                                        icon="fas fa-undo"
                                                         styleClass="ui-button-info w-100"
                                                         process="btnRefundUndo"
                                                         update="pnlActionButton pnlAct">
@@ -258,7 +258,6 @@
                                         update="pnlActionButton pnlAct" 
                                         action="#{bookingController.completeSelectedBillSession()}" 
                                         value="Complete" >
-                                        <f:setPropertyActionListener target="#{bookingController.selectedBillSession}" value="#{bs}"/>
                                     </p:commandButton>
                                 </f:facet>
                             </p:dialog>
