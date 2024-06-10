@@ -32,7 +32,7 @@
                             </f:facet>
                             <h:panelGrid columns="4" class="mx-4" >
                                 <h:outputLabel value="Select Investigation" class="mx-2" />
-                                <p:autoComplete widgetVar="aPt" id="acPt" forceSelection="true"
+                                <p:autoComplete class="mx-4" widgetVar="aPt" id="acPt" forceSelection="true"
                                                 value="#{investigationItemDynamicLabelController.investigation}" 
                                                 completeMethod="#{investigationController.completeInvest}" 
                                                 var="apt" itemLabel="#{apt.name}" 
@@ -61,7 +61,7 @@
                                 
                                 <h:outputLabel value="" ></h:outputLabel>
                                 <h:outputLabel value="Select Dynamic Label" class="mx-2" ></h:outputLabel>
-                                <p:selectOneMenu style="min-width: 230px;" id="iif" value="#{investigationItemDynamicLabelController.investigationItemofDynamicLabelType}" >
+                                <p:selectOneMenu class="mx-4 w-75 mt-1" id="iif" value="#{investigationItemDynamicLabelController.investigationItemofDynamicLabelType}" >
                                     <f:selectItem itemLabel="Select Item" />
                                     <f:selectItems value="#{investigationItemDynamicLabelController.investigationItemsOfDynamicLabelType}" var="iifs" itemLabel="#{iifs.name}" itemValue="#{iifs}" />
                                     <p:ajax event="change" process="iif" update="tbl" />
