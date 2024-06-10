@@ -458,6 +458,9 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
     }
 
     public Token getCurrentToken() {
+        if(currentToken==null){
+            currentToken = new Token();
+        }
         return currentToken;
     }
 

@@ -240,6 +240,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     private List<Staff> consultants;
     private List<BillSession> getSelectedBillSession;
     private boolean printPreview;
+    private boolean printPreviewForSettle;
+    private boolean printPreviewForReprintingAsOriginal;
+    private boolean printPreviewForReprintingAsDuplicate;
     private double absentCount;
     private int serealNo;
     private Date fromDate;
@@ -284,7 +287,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     private PaymentMethod refundPaymentMethod;
 
     private Institution settleInstitution;
-    private Institution creditCompany;
     private double refundableTotal = 0;
     private boolean disableRefund;
     private List<Patient> quickSearchPatientList;
@@ -304,10 +306,76 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     private Doctor referredBy;
     private Institution collectingCentre;
     private double netPlusVat;
+    private Institution creditCompany;
 
     public void removeAddedAditionalItems(Item item) {
         itemsAddedToBooking.remove(item);
         fillFees();
+    }
+
+    public void closePrinting() {
+        printPreview = false;
+        printPreviewForSettle = false;
+        printPreviewForReprintingAsDuplicate = false;
+        printPreviewForReprintingAsOriginal = false;
+    }
+
+    public void toReprintAsOriginal() {
+        markBillAsRePrinted();
+        printPreview = true;
+        printPreviewForSettle = false;
+        printPreviewForReprintingAsDuplicate = false;
+        printPreviewForReprintingAsOriginal = true;
+    }
+
+    public void toReprintAsDuplicate() {
+        markBillAsRePrinted();
+        printPreview = true;
+        printPreviewForSettle = false;
+        printPreviewForReprintingAsDuplicate = true;
+        printPreviewForReprintingAsOriginal = false;
+    }
+
+    public void markSettlingBillAsPrinted() {
+        System.out.println("markSettlingBillAsPrinted");
+        System.out.println("selectedBillSession.getBillItem().getBill() = " + selectedBillSession.getBillItem().getBill());
+        if (selectedBillSession != null && selectedBillSession.getBillItem() != null && selectedBillSession.getBillItem().getBill() != null) {
+            selectedBillSession.getBillItem().getBill().setPrinted(true);
+            selectedBillSession.getBillItem().getBill().setPrintedAt(new Date());
+            selectedBillSession.getBillItem().getBill().setPrintedUser(sessionController.getLoggedUser());
+            billFacade.edit(selectedBillSession.getBillItem().getBill());
+        } else {
+            System.out.println("Can not mark as Printed = " + selectedBillSession.getBillItem().getBill());
+        }
+        if (selectedBillSession != null && selectedBillSession.getBillItem() != null && selectedBillSession.getBillItem().getBill() != null
+                && selectedBillSession.getBillItem().getBill().getPaidBill() != null) {
+            selectedBillSession.getBillItem().getBill().getPaidBill().setPrinted(true);
+            selectedBillSession.getBillItem().getBill().getPaidBill().setPrintedAt(new Date());
+            selectedBillSession.getBillItem().getBill().getPaidBill().setPrintedUser(sessionController.getLoggedUser());
+            billFacade.edit(selectedBillSession.getBillItem().getBill().getPaidBill());
+        } else {
+            System.out.println("Can not mark Paid Bill as Printed = " + selectedBillSession.getBillItem().getBill().getPaidBill());
+        }
+    }
+
+    public void markBillAsRePrinted() {
+        if (selectedBillSession != null && selectedBillSession.getBillItem() != null && selectedBillSession.getBillItem().getBill() != null) {
+            selectedBillSession.getBillItem().getBill().setDuplicatePrintedAt(new Date());
+            selectedBillSession.getBillItem().getBill().setDuplicatedPrinted(true);
+            selectedBillSession.getBillItem().getBill().setDuplicatePrintedUser(sessionController.getLoggedUser());
+            billFacade.edit(selectedBillSession.getBillItem().getBill());
+        } else {
+            System.out.println("Can not mark as Printed = " + selectedBillSession.getBillItem().getBill());
+        }
+        if (selectedBillSession != null && selectedBillSession.getBillItem() != null && selectedBillSession.getBillItem().getBill() != null
+                && selectedBillSession.getBillItem().getBill().getPaidBill() != null) {
+            selectedBillSession.getBillItem().getBill().getPaidBill().setDuplicatedPrinted(true);
+            selectedBillSession.getBillItem().getBill().getPaidBill().setDuplicatePrintedAt(new Date());
+            selectedBillSession.getBillItem().getBill().getPaidBill().setDuplicatePrintedUser(sessionController.getLoggedUser());
+            billFacade.edit(selectedBillSession.getBillItem().getBill().getPaidBill());
+        } else {
+            System.out.println("Can not mark Paid Bill as Printed = " + selectedBillSession.getBillItem().getBill().getPaidBill());
+        }
     }
 
     public double calculatRemainForMultiplePaymentTotal() {
@@ -3658,7 +3726,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         List<BillFee> savingBillFeesFromAdditionalItems = new ArrayList<>();
         if (!additionalBillItems.isEmpty()) {
             for (BillItem abi : additionalBillItems) {
-               savingBillFeesFromAdditionalItems= createBillFeeForSessions(savingBill, abi, true);
+                savingBillFeesFromAdditionalItems = createBillFeeForSessions(savingBill, abi, true);
             }
         }
 
@@ -3709,8 +3777,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         if (collectingCentre != null) {
             savingBill.setCollectingCentre(collectingCentre);
         }
-        
-        
+
         calculateBillTotalsFromBillFees(savingBill, savingBillFees);
 
         getBillFacade().edit(savingBill);
@@ -5110,6 +5177,11 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             return true;
         }
 
+        if (settlePaymentMethod == paymentMethod.OnCall) {
+            JsfUtil.addErrorMessage("Settlement using 'On Call' is not allowed. Please select a different payment method.");
+            return true;
+        }
+
         if (getBillSession().getBill().getPaymentMethod() == PaymentMethod.Credit) {
             if (getBillSession().getBill().getFromInstitution() != null
                     && getBillSession().getBill().getFromInstitution().getBallance()
@@ -5192,11 +5264,13 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             }
             getPatientFacade().edit(getBillSession().getBill().getPatient());
         }
-
+        markSettlingBillAsPrinted();
         printPreview = true;
+        printPreviewForSettle = true;
+        printPreviewForReprintingAsDuplicate = false;
+        printPreviewForReprintingAsOriginal = false;
         creditCompany = null;
         toStaff = null;
-
         JsfUtil.addSuccessMessage("On Call Channel Booking Settled");
     }
 
@@ -5534,7 +5608,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                     updateBallance(rb.getCreditCompany(), refundableTotal, HistoryType.ChannelBooking, rb, rBilItm, rSession, rSession.getBillItem().getAgentRefNo());
                 }
             }
-
+            rb.setPaymentMethod(refundPaymentMethod);
             bill.setRefunded(true);
             bill.setRefundedBill(rb);
             getBillFacade().edit(bill);
@@ -5667,6 +5741,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public void refund1(Bill bill, BillItem billItem, List<BillFee> billFees, BillSession billSession) {
+        System.out.println("refund1 = 1");
         calRefundTotal();
 
         if ((bill.getBillType() == BillType.ChannelCash || bill.getBillType() == BillType.ChannelAgent) && bill.getPaidBill() == null) {
@@ -5688,17 +5763,17 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             billSessionFacade.edit(billSession);
 
             if (bill.getPaymentMethod() == PaymentMethod.Agent) {
-                rb.setPaymentMethod(refundPaymentMethod);
                 if (refundPaymentMethod == PaymentMethod.Agent) {
                     updateBallance(rb.getCreditCompany(), refundableTotal, HistoryType.ChannelBooking, rb, rBilItm, rSession, rSession.getBillItem().getAgentRefNo());
                 }
             }
-
+            rb.setPaymentMethod(refundPaymentMethod);
             bill.setRefunded(true);
             bill.setRefundedBill(rb);
             getBillFacade().edit(bill);
 
         } else {
+            System.out.println("bill.getPaidBill().equals(bill)");
             RefundBill rb = (RefundBill) createRefundBill1(bill);
             BillItem rBilItm = refundBillItems(billItem, rb);
             createReturnBillFee(billFees, rb, rBilItm);
@@ -5991,7 +6066,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     public List<ItemFee> getSelectedItemFees() {
         return selectedItemFees;
     }
-    
+
     public List<ItemFee> getSelectedItemFeesWithouZeros() {
         if (selectedItemFees == null) {
             return null;
@@ -6442,6 +6517,38 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     public void setNetPlusVat(double netPlusVat) {
         this.netPlusVat = netPlusVat;
+    }
+
+    public Institution getCreditCompany() {
+        return creditCompany;
+    }
+
+    public void setCreditCompany(Institution creditCompany) {
+        this.creditCompany = creditCompany;
+    }
+
+    public boolean isPrintPreviewForSettle() {
+        return printPreviewForSettle;
+    }
+
+    public void setPrintPreviewForSettle(boolean printPreviewForSettle) {
+        this.printPreviewForSettle = printPreviewForSettle;
+    }
+
+    public boolean isPrintPreviewForReprintingAsOriginal() {
+        return printPreviewForReprintingAsOriginal;
+    }
+
+    public void setPrintPreviewForReprintingAsOriginal(boolean printPreviewForReprintingAsOriginal) {
+        this.printPreviewForReprintingAsOriginal = printPreviewForReprintingAsOriginal;
+    }
+
+    public boolean isPrintPreviewForReprintingAsDuplicate() {
+        return printPreviewForReprintingAsDuplicate;
+    }
+
+    public void setPrintPreviewForReprintingAsDuplicate(boolean printPreviewForReprintingAsDuplicate) {
+        this.printPreviewForReprintingAsDuplicate = printPreviewForReprintingAsDuplicate;
     }
 
 }
