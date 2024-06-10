@@ -712,6 +712,7 @@
                                     value="Print" 
                                     ajax="false"
                                     icon="fa fa-print"
+                                    rendered="#{!configOptionApplicationController.getBooleanValueByKey('Pharmacy Bill Support for Native Printers')}"
                                     class="ui-button-info"
                                     action="#" >
                                     <p:printer target="gpBillPreview" ></p:printer>
@@ -807,6 +808,14 @@
                                     </h:panelGroup>
                                 </div>
                             </h:panelGroup>
+                            
+                            <h:panelGroup id="gpBillPreviewPosHeader" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'PosHeaderPaper'}"> 
+                                <div >
+                                    <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}" > 
+                                        <phi:saleBill_Header bill="#{pharmacySaleController.printBill}"></phi:saleBill_Header>
+                                    </h:panelGroup>
+                                </div>
+                            </h:panelGroup>  
 
                         </h:panelGroup>
                     </p:panel>
