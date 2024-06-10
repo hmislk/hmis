@@ -14,6 +14,7 @@
 
     <h:head>
         <title>Channel Booking By Date</title>
+
     </h:head>
 
     <h:body>
@@ -328,9 +329,15 @@
                                                 <p:outputLabel value="Payment Method"/>
 
                                                 <h:panelGroup>
-                                                    <p:selectOneMenu class="w-75" autoWidth="false" id="cmbPs" value="#{bookingControllerViewScope.paymentMethod}">
+                                                    <p:selectOneMenu 
+                                                        class="w-75"
+                                                        autoWidth="false"
+                                                        id="cmbPs"
+                                                        filter="true"
+                                                        filterMatchMode="contains"
+                                                        value="#{bookingControllerViewScope.paymentMethod}">
                                                         <f:selectItem itemLabel="Select Payment Method" ></f:selectItem>
-                                                        <f:selectItems value="#{enumController.paymentMethodsForOpdBilling}"/>
+                                                        <f:selectItems value="#{enumController.paymentMethodsForChanneling}"/>
                                                         <f:ajax execute="@this" render="gdManageBookings :#{p:resolveFirstComponentWithId('lblSessionTotal',view).clientId} paymentDetails lstItems" event="change" listener="#{bookingControllerViewScope.generateSessions}" />
                                                     </p:selectOneMenu>
                                                     <h:outputScript>
@@ -360,211 +367,225 @@
                                                 </p:selectOneMenu>
                                             </h:panelGrid>
 
-                                            <h:panelGroup id="paymentDetails" class="my-2">
+                                            <h:panelGroup id="paymentDetails" class="payment-details">
 
-                                                <p:row rendered="#{bookingControllerViewScope.paymentMethod eq 'Agent'}">
-                                                    <p:column colspan="2" >
-                                                        <h:outputLabel id="agent" value="Agent"   />
-                                                    </p:column>
-                                                </p:row>
-                                                <p:row  rendered="#{bookingControllerViewScope.paymentMethod eq 'Agent'}">
-                                                    <p:column >
-                                                        <h:outputLabel  value="Agent Details"   />
-                                                    </p:column>
-                                                    <p:column  >
-                                                        <p:autoComplete class="w-75" id="agent2" forceSelection="true"
-                                                                        value="#{bookingControllerViewScope.institution}"  completeMethod="#{agencyController.completeAgency}" var="ix"
-                                                                        itemLabel="#{ix.name}" itemValue="#{ix}" size="38" >
-                                                            <f:ajax  event="itemSelect" execute="@this"  render=" ballance2 lblSessionTotal agRefLbl agRefTxt :#{p:resolveFirstComponentWithId('agRefLbl',view).clientId} :#{p:resolveFirstComponentWithId('tblAgentBooks',view).clientId} gdManageBookings" listener="#{bookingControllerViewScope.validateAgentBalance()}"/>
-                                                            <!--<p:ajax event="click" process="@this" update=":#{p:resolveFirstComponentWithId('agRefLbl',view).clientId} :#{p:resolveFirstComponentWithId('tblAgentBooks',view).clientId} gdManageBookings" />-->
-                                                            <p:column>#{ix.institutionCode}</p:column>
-                                                            <p:column>#{ix.name}</p:column>
-                                                        </p:autoComplete>
-                                                    </p:column>
-                                                </p:row>
+                                                <!-- Agent Payment Method -->
+                                                <p:panelGrid columns="1" rendered="#{bookingControllerViewScope.paymentMethod eq 'Agent'}" >
+                                                    <f:facet name="header">
+                                                        <div class="d-flex align-items-center justify-content-between">
+                                                            <h:outputLabel id="agent" value="Agent" />
+                                                            <div class=" mx-4">
+                                                                <p:outputLabel class="mx-2" value="Agent Balance" />
+                                                                <h:outputLabel id="balance2" value="#{empty bookingControllerViewScope.institution.balance ? '00.00' : bookingControllerViewScope.institution.balance}" />
+                                                            </div>
+                                                        </div>
+                                                    </f:facet>
 
-                                                <p:row  rendered="#{bookingControllerViewScope.paymentMethod eq 'Agent'}">
-                                                    <p:column>
-                                                        <p:outputLabel for="agRefTxt" value="Agent Ref No"/>
-                                                    </p:column>
-                                                    <p:column >
-                                                        <p:inputText size="38" autocomplete="off" id="agRefTxt" value="#{bookingControllerViewScope.agentRefNo}"
-                                                                     style="display: #{bookingControllerViewScope.paymentMethod eq 'Agent' ? 'block' : 'none'} ; "/>
-                                                    </p:column>
-                                                </p:row>
-
-                                                <p:row  rendered="#{bookingControllerViewScope.paymentMethod eq 'Agent'}">
-                                                    <p:column>
-                                                        <p:outputLabel  value="Agent Balance"/>
-                                                    </p:column>
-                                                    <p:column >
-                                                        <h:outputLabel id="ballance2" value="#{bookingControllerViewScope.institution.ballance}"
-                                                                       style="display: #{bookingControllerViewScope.paymentMethod eq 'Agent' ? 'block' : 'none'} ; "/>
-                                                    </p:column>
-                                                </p:row>
-
-                                                <p:row  rendered="#{bookingControllerViewScope.paymentMethod eq 'Agent'}">
-                                                    <p:column colspan="2">
-                                                        <p:dataTable class="w-100" id="tblAgentBooks"
-                                                                     emptyMessage="No Referance Books"
-                                                                     value="#{bookingControllerViewScope.institution.agentReferenceBooks}" var="a">
-                                                            <f:facet name="header" >
-                                                                <p:outputLabel value="Agent Referance Number Details" ></p:outputLabel>
-                                                            </f:facet>
-                                                            <p:column headerText="S.R.N.">
-                                                                <p:outputLabel value="#{a.startingReferenceNumber}">
-                                                                    <f:convertNumber pattern="00000" />
-                                                                </p:outputLabel>
-                                                            </p:column>
-                                                            <p:column headerText="E.R.N.">
-                                                                <p:outputLabel value="#{a.endingReferenceNumber}">
-                                                                    <f:convertNumber pattern="00000" />
-                                                                </p:outputLabel>
-                                                            </p:column>
-                                                        </p:dataTable>
-
-                                                    </p:column>
-                                                </p:row>
-
-                                                <p:row rendered="#{bookingControllerViewScope.paymentMethod eq 'Card'}">
-                                                    <p:column colspan="2" >
-                                                        <h:outputLabel id="card" value="Card Payment"   />
-                                                    </p:column>
-                                                </p:row>
-
-                                                <p:row  rendered="#{bookingControllerViewScope.paymentMethod eq 'Card'}">
-                                                    <p:column><p:outputLabel id="creditCardbnkLbl" value="Select Bank" /></p:column>
-                                                    <p:column>
-                                                        <p:selectOneMenu class="w-75" autoWidth="false" id="creditCardSlc" value="#{bookingControllerViewScope.paymentMethodData.creditCard.institution}">
-                                                            <f:selectItem itemLabel="Select Bank" noSelectionOption="true"/>
-                                                            <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}" />
-                                                        </p:selectOneMenu>
-                                                    </p:column>
-                                                </p:row>
-
-                                                <p:row rendered="#{bookingControllerViewScope.paymentMethod eq 'Card'}">
-                                                    <p:column>
-                                                        <p:outputLabel for="creditCardTxt" value="Card Ref. No"/>
-                                                    </p:column>
-                                                    <p:column>
-                                                        <p:inputText class="w-75" id="creditCardTxt" autocomplete="off" value="#{bookingControllerViewScope.paymentMethodData.creditCard.no}"
-                                                                     style="display: #{bookingControllerViewScope.paymentMethod ne 'Card' ? 'none' : 'block'} ;"/>
-                                                    </p:column>
-                                                </p:row>
-
-                                                <p:row rendered="#{bookingControllerViewScope.paymentMethod eq 'Cheque'}">
-                                                    <p:column colspan="2" >
-                                                        <h:outputLabel  value="Cheque Payment"   />
-                                                    </p:column>
-                                                </p:row>
-
-                                                <p:row rendered="#{bookingControllerViewScope.paymentMethod eq 'Cheque'}">
-                                                    <p:column><p:outputLabel id="lblCheque" value="Cheque No" /></p:column>
-                                                    <p:column >
-                                                        <p:inputText size="38" id="chequNo" autocomplete="off" value="#{bookingControllerViewScope.paymentMethodData.cheque.no}"
-                                                                     style="display: #{bookingControllerViewScope.paymentMethod ne 'Cheque' ? 'none' : 'block'};" />
-                                                    </p:column>
-                                                </p:row>
-
-                                                <p:row rendered="#{bookingControllerViewScope.paymentMethod eq 'Cheque'}">
-                                                    <p:column><p:outputLabel id="lblBank" value="Select Bank" /></p:column>
-                                                    <p:column >
-                                                        <p:selectOneMenu style="width: 335px" autoWidth="false" id="bankSel" value="#{bookingControllerViewScope.paymentMethodData.cheque.institution}">
-                                                            <f:selectItem itemLabel="Select Bank" noSelectionOption="true"/>
-                                                            <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}" />
-                                                        </p:selectOneMenu>
-                                                    </p:column>
-                                                </p:row>
-
-                                                <p:row rendered="#{bookingControllerViewScope.paymentMethod eq 'Cheque'}">
-                                                    <p:column><p:outputLabel id="lblChequeDate" value="Cheque Date" /></p:column>
-                                                    <p:column >
-                                                        <p:calendar size="38" id="ChequeDate" value="#{bookingControllerViewScope.paymentMethodData.cheque.date}" pattern="dd MMMM yyyy"
-                                                                    style="display: #{bookingControllerViewScope.paymentMethod ne 'Cheque' ? 'none' : 'block'};" />
-                                                    </p:column>
-                                                </p:row>
-
-
-
-
-                                                <p:row rendered="#{bookingControllerViewScope.paymentMethod eq 'Staff'}">
-                                                    <p:column><p:outputLabel id="staff" value="Staff" /></p:column>
-                                                    <p:column>
-                                                        <h:panelGroup id="autoStaff" style="display: #{bookingControllerViewScope.paymentMethod eq 'Staff' ? 'block' : 'none'};">
-
-                                                            <p:autoComplete  
-                                                                minQueryLength="2"
-                                                                forceSelection="true" 
-                                                                value="#{bookingControllerViewScope.toStaff}" 
-                                                                id="creditStaff"
-                                                                completeMethod="#{staffController.completeStaff}" 
-                                                                var="mys" 
-                                                                class="w-100"
-                                                                placeholder="Staff (Type at least 4 letters to search)"
-                                                                inputStyleClass="form-control"
-                                                                itemLabel="#{mys.person.name}" 
-                                                                itemValue="#{mys}"
-                                                                size="10">
-                                                                <p:column headerText="Name" style="padding: 2px;">
-                                                                    <h:outputText value="#{mys.person.nameWithTitle}" ></h:outputText>
-                                                                </p:column>
-                                                                <p:column headerText="EPF" style="padding: 2px;">
-                                                                    <h:outputText value="#{mys.epfNo}" ></h:outputText>
-                                                                </p:column>
-                                                                <p:column headerText="Credit Entitlement" style="padding: 2px;">
-                                                                    <h:outputText value="#{mys.creditLimitQualified}" >
-                                                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                                    </h:outputText>
-                                                                </p:column>
-                                                                <p:column  headerText="Credit Utilized" style="padding: 2px;">
-                                                                    <h:outputText value="#{mys.currentCreditValue}" >
-                                                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                                    </h:outputText>
-                                                                </p:column>
-
+                                                    <p:row>
+                                                        <p:column>
+                                                            <h:outputLabel value="Agent Details" />
+                                                        </p:column>
+                                                        <p:column>
+                                                            <p:autoComplete class="w-75 mx-2" id="agent2" forceSelection="true"
+                                                                            value="#{bookingControllerViewScope.institution}" completeMethod="#{agencyController.completeAgency}" var="ix"
+                                                                            itemLabel="#{ix.name}" itemValue="#{ix}" size="38">
+                                                                <f:ajax event="itemSelect" execute="@this" render="balance2 lblSessionTotal agRefLbl agRefTxt :#{p:resolveFirstComponentWithId('agRefLbl',view).clientId} :#{p:resolveFirstComponentWithId('tblAgentBooks',view).clientId} gdManageBookings" listener="#{bookingControllerViewScope.validateAgentBalance()}"/>
+                                                                <p:column>#{ix.institutionCode}</p:column>
+                                                                <p:column>#{ix.name}</p:column>
                                                             </p:autoComplete>
-                                                        </h:panelGroup>
-                                                    </p:column>
-                                                </p:row>
+                                                        </p:column>
+                                                    </p:row>
+                                                    <p:row>
+                                                        <p:column>
+                                                            <p:outputLabel for="agRefTxt" value="Agent Ref No" />
+                                                        </p:column>
+                                                        <p:column>
+                                                            <p:inputText size="38" class="mx-2" autocomplete="off" id="agRefTxt" value="#{bookingControllerViewScope.agentRefNo}" />
+                                                        </p:column>
+                                                    </p:row>
+                                                    <p:row>
+                                                        <p:column colspan="2">
+                                                            <p:dataTable class="w-100" id="tblAgentBooks" emptyMessage="No Reference Books"
+                                                                         value="#{bookingControllerViewScope.institution.agentReferenceBooks}" var="a">
+                                                                <f:facet name="header">
+                                                                    <p:outputLabel value="Agent Reference Number Details" />
+                                                                </f:facet>
+                                                                <p:column headerText="S.R.N.">
+                                                                    <p:outputLabel value="#{a.startingReferenceNumber}">
+                                                                        <f:convertNumber pattern="00000" />
+                                                                    </p:outputLabel>
+                                                                </p:column>
+                                                                <p:column headerText="E.R.N.">
+                                                                    <p:outputLabel value="#{a.endingReferenceNumber}">
+                                                                        <f:convertNumber pattern="00000" />
+                                                                    </p:outputLabel>
+                                                                </p:column>
+                                                            </p:dataTable>
+                                                        </p:column>
+                                                    </p:row>
+                                                </p:panelGrid>
 
+                                                <!-- Card Payment Method -->
+                                                <p:panelGrid columns="1" class="w-100" rendered="#{bookingControllerViewScope.paymentMethod eq 'Card'}">
+                                                    <f:facet name="header">
+                                                        <div class="d-flex align-items-center justify-content-between">
+                                                            <h:outputLabel id="card" value="Card" />
+                                                        </div>
+                                                    </f:facet>
 
+                                                    <p:row>
+                                                        <p:column>
+                                                            <p:outputLabel id="creditCardbnkLbl" value="Select Bank" />
+                                                        </p:column>
+                                                        <p:column>
+                                                            <p:selectOneMenu class="w-75 mx-2" autoWidth="false" id="creditCardSlc" value="#{bookingControllerViewScope.paymentMethodData.creditCard.institution}">
+                                                                <f:selectItem itemLabel="Select Bank" noSelectionOption="true"/>
+                                                                <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}" />
+                                                            </p:selectOneMenu>
+                                                        </p:column>
+                                                    </p:row>
+                                                    <p:row>
+                                                        <p:column>
+                                                            <p:outputLabel for="creditCardTxt" value="Card Ref. No" />
+                                                        </p:column>
+                                                        <p:column>
+                                                            <p:inputText class="w-75 mx-2" id="creditCardTxt" autocomplete="off" value="#{bookingControllerViewScope.paymentMethodData.creditCard.no}" />
+                                                        </p:column>
+                                                    </p:row>
+                                                </p:panelGrid>
 
-                                                <p:row rendered="#{bookingControllerViewScope.paymentMethod eq 'Slip'}">
-                                                    <p:column colspan="2" >
-                                                        <h:outputLabel  value="Slip Payment"   />
-                                                    </p:column>
-                                                </p:row>
+                                                <!-- Cheque Payment Method -->
+                                                <p:panelGrid columns="1" class="w-100" rendered="#{bookingControllerViewScope.paymentMethod eq 'Cheque'}">
+                                                    <f:facet name="header">
+                                                        <h:outputLabel value="Cheque Payment" />
+                                                    </f:facet>
 
-                                                <p:row rendered="#{bookingControllerViewScope.paymentMethod eq 'Slip'}">
-                                                    <p:column><p:outputLabel id="slipLblBank" value="Select Bank" /></p:column>
-                                                    <p:column>
-                                                        <p:selectOneMenu class="w-75" autoWidth="false" id="slipSelBank" value="#{bookingControllerViewScope.paymentMethodData.slip.institution}">
-                                                            <f:selectItem itemLabel="Select Bank" noSelectionOption="true"/>
-                                                            <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}" />
-                                                        </p:selectOneMenu>
-                                                    </p:column>
-                                                </p:row>
+                                                    <p:row>
+                                                        <p:column>
+                                                            <p:outputLabel id="lblCheque" value="Cheque No" />
+                                                        </p:column>
+                                                        <p:column>
+                                                            <p:inputText size="38" class="mx-2" id="chequeNo" autocomplete="off" value="#{bookingControllerViewScope.paymentMethodData.cheque.no}" />
+                                                        </p:column>
+                                                    </p:row>
+                                                    <p:row>
+                                                        <p:column>
+                                                            <p:outputLabel id="lblBank" value="Select Bank" />
+                                                        </p:column>
+                                                        <p:column>
+                                                            <p:selectOneMenu class="mx-2" style="width: 335px" autoWidth="false" id="bankSel" value="#{bookingControllerViewScope.paymentMethodData.cheque.institution}">
+                                                                <f:selectItem itemLabel="Select Bank" noSelectionOption="true"/>
+                                                                <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}" />
+                                                            </p:selectOneMenu>
+                                                        </p:column>
+                                                    </p:row>
+                                                    <p:row>
+                                                        <p:column>
+                                                            <p:outputLabel id="lblChequeDate" value="Cheque Date" />
+                                                        </p:column>
+                                                        <p:column>
+                                                            <p:calendar class="mx-2" size="38" id="ChequeDate" value="#{bookingControllerViewScope.paymentMethodData.cheque.date}" pattern="dd MMMM yyyy" />
+                                                        </p:column>
+                                                    </p:row>
+                                                </p:panelGrid>
 
-                                                <p:row rendered="#{bookingControllerViewScope.paymentMethod eq 'Slip'}">
-                                                    <p:column><p:outputLabel id="slipLblDate" value="Slip Date" /></p:column>
-                                                    <p:column>
-                                                        <p:datePicker  class="w-100"
-                                                                       showTime="true"
-                                                                       showButtonBar="true"
-                                                                       timeInput="true" id="date" value="#{bookingControllerViewScope.paymentMethodData.slip.date}" pattern="dd MMMM yyyy"
-                                                                       style="display: #{bookingControllerViewScope.paymentMethod ne 'Slip' ? 'none' : 'block'};" />
-                                                    </p:column>
-                                                </p:row>
+                                                <!-- Staff Payment Method -->
+                                                <p:panelGrid columns="1" class="w-100" rendered="#{bookingControllerViewScope.paymentMethod eq 'Staff'}">
+                                                    <f:facet name="header">
+                                                        <p:outputLabel id="staff" value="Staff" />
+                                                    </f:facet>
 
-                                                <p:row
-                                                    class="row my-1 w-100" rendered="#{bookingControllerViewScope.paymentMethod eq 'MultiplePaymentMethods'}" 
-                                                    >
-                                                    <pa:multiple_payment_methods controller="#{bookingControllerViewScope}" class="w-100"/>
+                                                    <p:row>
 
-                                                </p:row>
+                                                        <p:column>
+                                                            <h:panelGroup id="autoStaff">
+                                                                <p:autoComplete minQueryLength="2" forceSelection="true" value="#{bookingControllerViewScope.toStaff}" id="creditStaff"
+                                                                                completeMethod="#{staffController.completeStaff}" var="mys" class="w-100"
+                                                                                placeholder="Staff (Type at least 4 letters to search)" inputStyleClass="form-control"
+                                                                                itemLabel="#{mys.person.name}" itemValue="#{mys}" size="10">
+                                                                    <p:column headerText="Name" style="padding: 2px;">
+                                                                        <h:outputText value="#{mys.person.nameWithTitle}" />
+                                                                    </p:column>
+                                                                    <p:column headerText="EPF" style="padding: 2px;">
+                                                                        <h:outputText value="#{mys.epfNo}" />
+                                                                    </p:column>
+                                                                    <p:column headerText="Credit Entitlement" style="padding: 2px;">
+                                                                        <h:outputText value="#{mys.creditLimitQualified}">
+                                                                            <f:convertNumber pattern="#,##0.00" />
+                                                                        </h:outputText>
+                                                                    </p:column>
+                                                                    <p:column headerText="Credit Utilized" style="padding: 2px;">
+                                                                        <h:outputText value="#{mys.currentCreditValue}">
+                                                                            <f:convertNumber pattern="#,##0.00" />
+                                                                        </h:outputText>
+                                                                    </p:column>
+                                                                </p:autoComplete>
+                                                            </h:panelGroup>
+                                                        </p:column>
+                                                    </p:row>
+                                                </p:panelGrid>
+
+                                                <!-- Slip Payment Method -->
+                                                <p:panelGrid columns="2" rendered="#{bookingControllerViewScope.paymentMethod eq 'Slip'}">
+                                                    <p:row>
+                                                        <p:column colspan="2">
+                                                            <h:outputLabel value="Slip Payment" />
+                                                        </p:column>
+                                                    </p:row>
+                                                    <p:row>
+                                                        <p:column>
+                                                            <p:outputLabel id="slipLblBank" value="Select Bank" />
+                                                        </p:column>
+                                                        <p:column>
+                                                            <p:selectOneMenu class="w-75" autoWidth="false" id="slipSelBank" value="#{bookingControllerViewScope.paymentMethodData.slip.institution}">
+                                                                <f:selectItem itemLabel="Select Bank" noSelectionOption="true"/>
+                                                                <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}" />
+                                                            </p:selectOneMenu>
+                                                        </p:column>
+                                                    </p:row>
+                                                    <p:row>
+                                                        <p:column>
+                                                            <p:outputLabel id="slipLblDate" value="Slip Date" />
+                                                        </p:column>
+                                                        <p:column>
+                                                            <p:datePicker class="w-100" showTime="true" showButtonBar="true" timeInput="true" id="date" value="#{bookingControllerViewScope.paymentMethodData.slip.date}" pattern="dd MMMM yyyy" />
+                                                        </p:column>
+                                                    </p:row>
+                                                </p:panelGrid>
+
+                                                <!-- Multiple Payment Methods -->
+                                                <p:panelGrid columns="1" rendered="#{bookingControllerViewScope.paymentMethod eq 'MultiplePaymentMethods'}">
+                                                    <p:row>
+                                                        <p:column>
+                                                            <pa:multiple_payment_methods controller="#{bookingControllerViewScope}" class="w-100" />
+                                                        </p:column>
+                                                    </p:row>
+                                                </p:panelGrid>
+
+                                                <!-- Credit Payment Method -->
+                                                <p:panelGrid columns="1" rendered="#{bookingControllerViewScope.paymentMethod eq 'Credit'}">
+                                                    <p:row>
+                                                        <p:column>
+                                                            <h:panelGroup class="row" layout="block">
+                                                                <div class="my-1" id="credit">
+                                                                    <div class="row">
+                                                                        <div class="col-12 d-flex">
+                                                                            <p:autoComplete id="creditCompany" class="w-100 -mx-2" inputStyleClass="form-control" forceSelection="true"
+                                                                                            value="#{bookingControllerViewScope.creditCompany}" completeMethod="#{creditCompanyController.completeCredit}" var="ix"
+                                                                                            minQueryLength="4" placeholder="Company (Type at least 4 letters to search)" itemLabel="#{ix.name}" itemValue="#{ix}" size="10">
+                                                                                <f:ajax event="itemSelect" listener="#{bookingControllerViewScope.calTotals()}" execute="@this" render=":#{p:resolveFirstComponentWithId('paymentDetails',view).clientId}" />
+                                                                            </p:autoComplete>
+                                                                            <p:commandLink id="btnAddNewCreditCom" value="(+)" class="mx-3 mt-1" title="Add New Credit Company"
+                                                                                           ajax="false" action="#{navigationController.navigateToCreditCompany()}" actionListener="#{creditCompanyController.prepareAdd()}" />
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </h:panelGroup>
+                                                        </p:column>
+                                                    </p:row>
+                                                </p:panelGrid>
 
                                             </h:panelGroup>
-
 
                                         </p:panel>
                                         <h:panelGroup id="gpAdditionalItems" >
@@ -767,7 +788,7 @@
                                             </p:row>
                                             <p:row>
                                                 <p:column colspan="2">
-                                                    <p:dataTable value="#{bookingControllerViewScope.selectedItemFees}" var="i" >
+                                                    <p:dataTable value="#{bookingControllerViewScope.selectedItemFeesWithouZeros}" var="i" >
                                                         <p:column headerText="Name">
                                                             <h:outputLabel value="#{i.item.name}"/> 
                                                             <h:outputLabel class="mr-4" value="("/> 

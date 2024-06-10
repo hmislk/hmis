@@ -715,7 +715,6 @@ public class OpdTabPreBillController implements Serializable, ControllerWithPati
         for (Department d : billDepts) {
             PreBill newPreBill = new PreBill();
             newPreBill = saveBill(d, newPreBill);
-
             if (newPreBill == null) {
                 return false;
             }
@@ -744,18 +743,15 @@ public class OpdTabPreBillController implements Serializable, ControllerWithPati
     }
 
     public void setPrintigBill() {
-        ////// // System.out.println("In Print");
         billPrint = bill;
         billsPrint = bills;
         lstBillComponentsPrint = lstBillComponents;
         lstBillEntriesPrint = lstBillEntries;
         lstBillFeesPrint = lstBillFees;
         lstBillItemsPrint = lstBillItems;
-        ////// // System.out.println("Out Print");
     }
 
     private Patient savePatient(Patient p) {
-
         if (p == null) {
             return null;
         }
@@ -857,7 +853,6 @@ public class OpdTabPreBillController implements Serializable, ControllerWithPati
         if (getBillBean().checkDepartment(getLstBillEntries()) == 1) {
             PreBill newPreBill = new PreBill();
             PreBill b = saveBill(lstBillEntries.get(0).getBillItem().getItem().getDepartment(), newPreBill);
-
             if (b == null) {
                 return null;
             }
@@ -866,7 +861,6 @@ public class OpdTabPreBillController implements Serializable, ControllerWithPati
             for (BillEntry billEntry : getLstBillEntries()) {
                 list.add(getBillBean().saveBillItem(b, billEntry, getSessionController().getLoggedUser()));
             }
-
             b.setBillItems(list);
             getBillFacade().edit(b);
             getBillBean().calculateBillItems(b, getLstBillEntries());
@@ -886,7 +880,6 @@ public class OpdTabPreBillController implements Serializable, ControllerWithPati
         JsfUtil.addSuccessMessage("Bill Saved");
         setPrintigBill();
         checkBillValues();
-
         return opdTokenController.navigateToOpdQueue();
     }
 
@@ -1144,13 +1137,13 @@ public class OpdTabPreBillController implements Serializable, ControllerWithPati
     }
 
     private boolean errorCheck() {
-
         if (getLstBillEntries().isEmpty()) {
             JsfUtil.addErrorMessage("No Items added to the bill.");
             return true;
         }
         if (!getLstBillEntries().get(0).getBillItem().getItem().isPatientNotRequired()) {
             if (getPatient() == null) {
+                JsfUtil.addErrorMessage("No Patient");
                 return true;
             }
             boolean checkAge = false;
@@ -1164,10 +1157,8 @@ public class OpdTabPreBillController implements Serializable, ControllerWithPati
                 return true;
             }
         }
-
         if (getPaymentMethod() == null) {
             setPaymentMethod(PaymentMethod.Cash);
-            return true;
         }
         return false;
     }
@@ -1273,7 +1264,7 @@ public class OpdTabPreBillController implements Serializable, ControllerWithPati
                 return;
             }
         }
-        
+
 //        New Session
         //   getCurrentBillItem().setBillSession(getServiceSessionBean().createBillSession(getCurrentBillItem()));
         lastBillItem = getCurrentBillItem();

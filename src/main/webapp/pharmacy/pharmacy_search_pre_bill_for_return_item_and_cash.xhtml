@@ -39,7 +39,23 @@
                                     class="w-100 ui-button-warning mt-2 mb-3"
                                     value="Search" 
                                     action="#{searchController.createPreBillsForReturn}"/>
-
+                                <h:outputLabel value="Item Name"/>    
+                                <p:autoComplete 
+                                    id="item"
+                                    value="#{searchController.searchKeyword.item}"
+                                    forceSelection="true"
+                                    class="w-100"
+                                    maxResults="50"
+                                    scrollHeight="600"
+                                    inputStyleClass="w-100"
+                                    completeMethod="#{itemController.completeAmpItem}" var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
+                                    <p:column headerText="Item" style="padding: 6px;">
+                                        <h:outputLabel value="#{vt.name}"></h:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Code" style="padding: 6px;">
+                                        <h:outputLabel value="#{vt.code}"></h:outputLabel>
+                                    </p:column>
+                                </p:autoComplete>
                                 <h:outputLabel value="Bill No"/>
                                 <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" class="w-100"/> 
                                 <h:outputLabel value="Net Total"/>

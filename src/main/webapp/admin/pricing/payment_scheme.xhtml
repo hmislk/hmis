@@ -12,11 +12,11 @@
 
         <h:panelGroup >
             <h:form  >
-                <p:growl />
+                <p:growl id="growl"/>
                 <p:focus id="selectFocus" context="gpSelect" />
                 <p:focus id="detailFocus" context="gpDetail" />
 
-
+               
 
                 <p:panel header="Manage Discount Scheme" style="height: 1000px" >
                     <h:panelGrid id ="gpVeda" columns="10" styleClass="alignTop">
@@ -34,7 +34,12 @@
                                 
                                 <h:panelGrid id="gpSelectButtons" columns="3"  >
 
-                                    <p:commandButton ajax="false" id="btnAdd" value="Add" action="#{paymentSchemeController.prepareAdd()}" styleClass="buttons" />                                      
+                                    <p:commandButton 
+                                        id="btnAdd"
+                                        value="Add"
+                                        action="#{paymentSchemeController.prepareAdd()}" 
+                                        process="btnAdd"
+                                        update="gpDetail"/>                                      
 
                                     <p:commandButton ajax="false" id="btnDelete" onclick="if (!confirm('Are you sure you want to delete this record?'))
                                                 return false;" action="#{paymentSchemeController.delete()}"  value="Delete"  >
@@ -74,8 +79,14 @@
                                 </h:panelGrid>
                                 <h:panelGrid id="gpDetailButtons" columns="2">
 
-                                    <h:commandButton id="btnSave" value="Save" action="#{paymentSchemeController.saveSelected()}" styleClass="buttons">                                        
-                                    </h:commandButton>
+                                    <p:commandButton 
+                                        id="btnSave"
+                                        value="Save"
+                                        action="#{paymentSchemeController.saveSelected()}" 
+                                        process="btnSave gpDetail"
+                                        update="lstSelect growl selectFocus"
+                                        >                                        
+                                    </p:commandButton>
                                     <p:defaultCommand target="btnSave"/>
                                 </h:panelGrid>
                             </h:panelGrid>

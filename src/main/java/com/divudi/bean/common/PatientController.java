@@ -282,36 +282,18 @@ public class PatientController implements Serializable, ControllerWithPatient {
         if (current == null) {
             return;
         }
-//        List<BillTypeAtomic> billTypesAtomics=new ArrayList<>();
-//        billTypesAtomics.add(BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT);
-//        billTypesAtomics.add(BillTypeAtomic.CHANNEL_BOOKING_WITHOUT_PAYMENT);
-//        billTypesAtomics.add(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
-//        billTypesAtomics.add(BillTypeAtomic.CHANNEL_CANCELLATION_WITHOUT_PAYMENT);
-//        billTypesAtomics.add(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT);
-//        billTypesAtomics.add(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT_FOR_CREDIT_SETTLED_BOOKINGS);
-//        billTypesAtomics.add(BillTypeAtomic.CHANNEL_REFUND);
-//        billTypesAtomics.add(BillTypeAtomic.CHANNEL_REFUND_WITH_PAYMENT);
-//        billTypesAtomics.add(BillTypeAtomic.CHANNEL_REFUND_WITH_PAYMENT_FOR_CREDIT_SETTLED_BOOKINGS);
-//        List<BillTypeAtomic> billTypesAtomics=new ArrayList<>();
-//        billTypesAtomics.add(BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT);
-//        billTypesAtomics.add(BillTypeAtomic.CHANNEL_BOOKING_WITHOUT_PAYMENT);
-//        billTypesAtomics.add(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
-//        billTypesAtomics.add(BillTypeAtomic.CHANNEL_CANCELLATION_WITHOUT_PAYMENT);
-//        billTypesAtomics.add(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT);
-//        billTypesAtomics.add(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT_FOR_CREDIT_SETTLED_BOOKINGS);
-//        billTypesAtomics.add(BillTypeAtomic.CHANNEL_REFUND);
-//        billTypesAtomics.add(BillTypeAtomic.CHANNEL_REFUND_WITH_PAYMENT);
-//        billTypesAtomics.add(BillTypeAtomic.CHANNEL_REFUND_WITH_PAYMENT_FOR_CREDIT_SETTLED_BOOKINGS);
 
         List<BillType> billTypes = new ArrayList<>();
         billTypes.add(BillType.ChannelCash);
         billTypes.add(BillType.ChannelOnCall);
         billTypes.add(BillType.ChannelPaid);
         Map m = new HashMap<>();
-        String jpql = "Select b from Bill b where b.retired=:ret and b.billType in :btas and b.patient=:pt";
+        String jpql = "Select b from Bill b where b.retired=:ret and b.billType in :btas and b.patient=:pt and b.createdAt between :fd and :td ";
         m.put("ret", false);
         m.put("btas", billTypes);
         m.put("pt", current);
+        m.put("fd", fromDate);
+        m.put("td", toDate);
         patientsPastChannelBookings = billFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
     }
 
@@ -1541,6 +1523,22 @@ public class PatientController implements Serializable, ControllerWithPatient {
         controller.setPatientDetailsEditable(false);
         quickSearchPatientList = null;
     }
+    
+    public void selectQuickSearchOneFromQuickSearchPatient(ControllerWithPatient controller, Patient pt) {
+        if (controller == null) {
+            JsfUtil.addErrorMessage("Programming Error. Controller is null.");
+            return;
+        }
+        if(pt==null){
+            JsfUtil.addErrorMessage("Programming Error. Controller is null.");
+            return;
+        }
+        current=pt;
+        controller.setPatient(current);
+        admissionController.fillCurrentPatientAllergies(current);
+        controller.setPatientDetailsEditable(false);
+        quickSearchPatientList = null;
+    }
 
     public void listAllPatients() {
         String j = "select p from Patient p where p.retired=false order by p.person.name";
@@ -2431,6 +2429,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
         return current;
     }
 
+    
+    
     public void setCurrent(Patient current) {
         this.current = current;
         getYearMonthDay();
