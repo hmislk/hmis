@@ -1,0 +1,206 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/admin/items/index.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui">
+    <ui:define name="item">
+
+        <p:panel>
+            <f:facet name="header">
+                <div class="d-flex justify-content-between">
+                    <h:outputLabel value="Upload Investigation and Fees for OutSource Department"/>
+                    <p:commandButton 
+                        value="Download Template" 
+                        ajax="false"
+                        class="ui-button-success m-1"
+                        onclick="PrimeFaces.monitorDownload(start, stop);" 
+                        icon="fa fa-download">
+                        <p:fileDownload value="#{dataUploadController.getTemplateForOutSourceItemWithFeeUpload()}" />
+                    </p:commandButton>
+                </div>
+
+            </f:facet>
+
+            <div >
+                <h:form enctype="multipart/form-data">
+                    <p:fileUpload 
+                        value="#{dataUploadController.file}"
+                        mode="simple"
+                        label="Choose File">
+                    </p:fileUpload>
+                    
+                    <p:commandButton 
+                        value="Upload"
+                        icon="fa fa-upload"
+                        class="ui-button-warning m-1"
+                        action="#{dataUploadController.uploadOutSourceDepartmentItemsAndFees()}"
+                        ajax="false">
+                    </p:commandButton>
+
+                    <h:panelGroup id="gpPoll" >
+                        <h:panelGroup rendered="#{dataUploadController.pollActive}" >
+                            <p:poll interval="10" process="@this" update="tbls gpPoll" ></p:poll>
+                        </h:panelGroup>
+                    </h:panelGroup>
+
+                    <p:dialog modal="true" widgetVar="statusDialog" header="Status" draggable="false" closable="false" resizable="false">
+                    </p:dialog>
+                    <script type="text/javascript">
+                        function start() {
+                            PF('statusDialog').show();
+                        }
+
+                        function stop() {
+                            PF('statusDialog').hide();
+                        }
+                    </script>
+
+                    <h:panelGroup id="tbls" >
+
+
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Column</th>
+                                    <th>Title</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>A</td>
+                                    <td>Name</td>
+                                    <td>Name. Required</td>
+                                </tr>
+                                <tr>
+                                    <td>B</td>
+                                    <td>Printing Name</td>
+                                    <td>Printing Name name. Optional.</td>
+                                </tr>
+                                <tr>
+                                    <td>C</td>
+                                    <td>Full Name</td>
+                                    <td>Full Name Optional</td>
+                                </tr>
+                                <tr>
+                                    <td>D</td>
+                                    <td>Item Code</td>
+                                    <td>Item Code  Optional</td>
+                                </tr>
+                                <tr>
+                                    <td>E</td>
+                                    <td>Category</td>
+                                    <td>Category name.  Required.</td>
+                                </tr>
+                                <tr>
+                                    <td>F</td>
+                                    <td>Institution</td>
+                                    <td>Institution. Optional.</td>
+                                </tr>
+                                <tr>
+                                    <td>G</td>
+                                    <td>Department</td>
+                                    <td>Department. Optional.</td>
+                                </tr>
+                                <tr>
+                                    <td>H</td>
+                                    <td>Inward Charge Category</td>
+                                    <td>Inward Charge Category. Optional.</td>
+                                </tr>
+                                <tr>
+                                    <td>I</td>
+                                    <td>Item Type</td>
+                                    <td>Optional. Default is Investigation. Other options include Service.</td>
+                                </tr>
+
+                                <tr>
+                                    <td>J</td>
+                                    <td>Sample</td>
+                                    <td>Sample Required. Please check the current samples before adding</td>
+                                </tr>
+                                <tr>
+                                    <td>K</td>
+                                    <td>Container</td>
+                                    <td>Container Required. Please check the current containers before adding.</td>
+                                </tr>
+                                <tr>
+                                    <td>L</td>
+                                    <td>Hospital Fee</td>
+                                    <td>Mandatory. Created for Logged Department and Institution</td>
+                                </tr>
+                                <tr>
+                                    <td>M</td>
+                                    <td>Out Source Fee</td>
+                                    <td>Optional. Created for Institution in Institution Column and Department in Department Column.</td>
+                                </tr>
+                                <tr>
+                                    <td>N</td>
+                                    <td>Comment</td>
+                                    <td>Optional.</td>
+                                </tr>
+
+                            </tbody>
+                        </table>
+                    </h:panelGroup>
+
+                </h:form>
+
+            </div>
+        </p:panel>
+
+
+
+
+        <p:tabView >
+            <p:tab title="Uploaded Items" >
+                <p:poll update="tbl"></p:poll>
+                <p:dataTable
+                    paginator="true"
+                    rows="10"
+                    rowKey="#{item.id}"
+                    id="tbl" value="#{dataUploadController.itemsToSave}" var="item" >
+                    <f:facet name="header" >
+                        <p:outputLabel value="Items Saved" ></p:outputLabel>
+                    </f:facet>
+                    <p:column >
+                        #{item.name}
+                    </p:column>
+                    <p:column >
+                        #{item.total}
+                    </p:column>
+
+                </p:dataTable>        
+            </p:tab>
+            <p:tab title="Rejected Items" >
+
+                <p:dataTable 
+                    id="tbl2" 
+                    paginator="true"
+                    rows="10"
+                    rowKey="#{item.id}"
+
+                    value="#{dataUploadController.itemsSkipped}" var="item" >
+                    <f:facet name="header" >
+                        <p:outputLabel value="Items Skipped" ></p:outputLabel>
+                    </f:facet>
+                    <p:column >
+                        #{item.name}
+                    </p:column>
+                    <p:column >
+                        #{item.total}
+                    </p:column>
+
+                </p:dataTable>
+
+            </p:tab>
+        </p:tabView>
+
+
+
+
+
+    </ui:define>
+</ui:composition>

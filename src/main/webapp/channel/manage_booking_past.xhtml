@@ -15,9 +15,6 @@
     <ui:define name="content">
         <h:form id="form">
             <!--            
-            #{pastBookingController.selectedBillSession.bill.billItems}
-            #{pastBookingController.selectedBillSession.bill.billFees}
-            
             <ui:repeat value="#{pastBookingController.selectedBillSession.bill.billItems}" var="bi" >
                 Bill Item : #{bi} <br/>
                 <ui:repeat value="#{bi.billFees}" var="bf" >
@@ -382,7 +379,7 @@
                                 <h:outputLabel value="Refundable Total : "/>
                                 <h:outputLabel id="tot" value="#{channelBillController.refundableTotal}"/>
                             </h:panelGrid>
-                            <p:dataTable value="#{channelBillController.billSession.bill.billFees}" var="bi">
+                            <p:dataTable value="#{channelBillController.billSession.bill.billFeesWIthoutZeroValue}" var="bi">
                                 <p:column headerText="Fee Name">
                                     <p:outputLabel value="#{bi.fee.name}"/>
                                 </p:column>
