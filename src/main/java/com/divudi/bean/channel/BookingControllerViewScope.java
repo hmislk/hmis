@@ -241,6 +241,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     private List<BillSession> getSelectedBillSession;
     private boolean printPreview;
     private boolean printPreviewForSettle;
+    private boolean printPreviewForReprintingAsOriginal;
+    private boolean printPreviewForReprintingAsDuplicate;
     private double absentCount;
     private int serealNo;
     private Date fromDate;
@@ -312,10 +314,28 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public void closePrinting() {
-        printPreview=false;
-        printPreviewForSettle=false;
+        printPreview = false;
+        printPreviewForSettle = false;
+        printPreviewForReprintingAsDuplicate = false;
+        printPreviewForReprintingAsOriginal = false;
     }
-    
+
+    public void toReprintAsOriginal() {
+        markBillAsRePrinted();
+        printPreview = true;
+        printPreviewForSettle = false;
+        printPreviewForReprintingAsDuplicate = false;
+        printPreviewForReprintingAsOriginal = true;
+    }
+
+    public void toReprintAsDuplicate() {
+        markBillAsRePrinted();
+        printPreview = true;
+        printPreviewForSettle = false;
+        printPreviewForReprintingAsDuplicate = true;
+        printPreviewForReprintingAsOriginal = false;
+    }
+
     public void markSettlingBillAsPrinted() {
         System.out.println("markSettlingBillAsPrinted");
         System.out.println("selectedBillSession.getBillItem().getBill() = " + selectedBillSession.getBillItem().getBill());
@@ -324,16 +344,36 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             selectedBillSession.getBillItem().getBill().setPrintedAt(new Date());
             selectedBillSession.getBillItem().getBill().setPrintedUser(sessionController.getLoggedUser());
             billFacade.edit(selectedBillSession.getBillItem().getBill());
-        }else{
+        } else {
             System.out.println("Can not mark as Printed = " + selectedBillSession.getBillItem().getBill());
         }
         if (selectedBillSession != null && selectedBillSession.getBillItem() != null && selectedBillSession.getBillItem().getBill() != null
-                 && selectedBillSession.getBillItem().getBill().getPaidBill() != null) {
+                && selectedBillSession.getBillItem().getBill().getPaidBill() != null) {
             selectedBillSession.getBillItem().getBill().getPaidBill().setPrinted(true);
             selectedBillSession.getBillItem().getBill().getPaidBill().setPrintedAt(new Date());
             selectedBillSession.getBillItem().getBill().getPaidBill().setPrintedUser(sessionController.getLoggedUser());
             billFacade.edit(selectedBillSession.getBillItem().getBill().getPaidBill());
-        }else{
+        } else {
+            System.out.println("Can not mark Paid Bill as Printed = " + selectedBillSession.getBillItem().getBill().getPaidBill());
+        }
+    }
+
+    public void markBillAsRePrinted() {
+        if (selectedBillSession != null && selectedBillSession.getBillItem() != null && selectedBillSession.getBillItem().getBill() != null) {
+            selectedBillSession.getBillItem().getBill().setDuplicatePrintedAt(new Date());
+            selectedBillSession.getBillItem().getBill().setDuplicatedPrinted(true);
+            selectedBillSession.getBillItem().getBill().setDuplicatePrintedUser(sessionController.getLoggedUser());
+            billFacade.edit(selectedBillSession.getBillItem().getBill());
+        } else {
+            System.out.println("Can not mark as Printed = " + selectedBillSession.getBillItem().getBill());
+        }
+        if (selectedBillSession != null && selectedBillSession.getBillItem() != null && selectedBillSession.getBillItem().getBill() != null
+                && selectedBillSession.getBillItem().getBill().getPaidBill() != null) {
+            selectedBillSession.getBillItem().getBill().getPaidBill().setDuplicatedPrinted(true);
+            selectedBillSession.getBillItem().getBill().getPaidBill().setDuplicatePrintedAt(new Date());
+            selectedBillSession.getBillItem().getBill().getPaidBill().setDuplicatePrintedUser(sessionController.getLoggedUser());
+            billFacade.edit(selectedBillSession.getBillItem().getBill().getPaidBill());
+        } else {
             System.out.println("Can not mark Paid Bill as Printed = " + selectedBillSession.getBillItem().getBill().getPaidBill());
         }
     }
@@ -5226,7 +5266,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         }
         markSettlingBillAsPrinted();
         printPreview = true;
-        printPreviewForSettle=true;
+        printPreviewForSettle = true;
+        printPreviewForReprintingAsDuplicate = false;
+        printPreviewForReprintingAsOriginal = false;
         creditCompany = null;
         toStaff = null;
         JsfUtil.addSuccessMessage("On Call Channel Booking Settled");
@@ -6492,7 +6534,21 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     public void setPrintPreviewForSettle(boolean printPreviewForSettle) {
         this.printPreviewForSettle = printPreviewForSettle;
     }
-    
-    
+
+    public boolean isPrintPreviewForReprintingAsOriginal() {
+        return printPreviewForReprintingAsOriginal;
+    }
+
+    public void setPrintPreviewForReprintingAsOriginal(boolean printPreviewForReprintingAsOriginal) {
+        this.printPreviewForReprintingAsOriginal = printPreviewForReprintingAsOriginal;
+    }
+
+    public boolean isPrintPreviewForReprintingAsDuplicate() {
+        return printPreviewForReprintingAsDuplicate;
+    }
+
+    public void setPrintPreviewForReprintingAsDuplicate(boolean printPreviewForReprintingAsDuplicate) {
+        this.printPreviewForReprintingAsDuplicate = printPreviewForReprintingAsDuplicate;
+    }
 
 }
