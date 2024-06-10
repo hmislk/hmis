@@ -356,9 +356,6 @@ public class SmsManagerEjb {
             String userName = configOptionApplicationController.getShortTextValueByKey("OAuth2 SMS Gateway - Username");
             String password = configOptionApplicationController.getShortTextValueByKey("OAuth2 SMS Gateway - Password");
             URL url = new URL(smsGatewayUrl);
-            System.out.println("loginUrl = " + loginUrl);
-            System.out.println("refreshTokenUrl = " + refreshTokenUrl);
-            System.out.println("smsGatewayUrl = " + smsGatewayUrl);
 
             String accessToken = configOptionApplicationController.getShortTextValueByKey("OAuth2 SMS Gateway - Access Token");
             if (accessToken == null || accessToken.trim().equals("")) {

@@ -67,7 +67,7 @@
                                         <h:outputLabel  value="Sessions" ></h:outputLabel>
                                         <h:panelGroup id="gpSelectTextsi" >
                                             <div style="overflow-y: auto;">
-                                                <p:selectOneListbox  id="lstSelect" converter="sscon"  value="#{channelScheduleController.current}" class="mx-2 w-100" >
+                                                <p:selectOneListbox filter="true" id="lstSelect" converter="sscon"  value="#{channelScheduleController.current}" class="mx-2 w-100" >
                                                     <f:selectItems  value="#{channelScheduleController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
                                                     <f:ajax render="gpDetail lstSelectSi" execute="lstSelect"  event="click" listener="#{channelScheduleController.fillSessionInstance}" >
                                                     </f:ajax>
@@ -103,7 +103,9 @@
                                                     render="gpDetail lstSelectSi" 
                                                     execute="lstSelectSi" 
                                                     event="click" 
+                                                    listener="#{channelScheduleController.assignOlddateAndOldTimFromCurrentSessionInstance()}"
                                                     >
+                                                    
                                                 </f:ajax>
 
                                                 <p:column headerText="Name">
@@ -163,12 +165,6 @@
 
                                         </p:commandButton>
 
-                                        <p:commandButton value="Send SMS"
-                                                         icon="fa-solid fa-location-arrow"
-                                                         class="ui-button-primary"
-                                                         rendered="#{webUserController.hasPrivilege('Developers')}"
-                                                         action="#{channelScheduleController.sendSmsOnChannelDoctorArrival()}" 
-                                                         ajax="false"  />
                                     </h:panelGrid>
 
 
@@ -453,10 +449,7 @@
                                         <p:tab title="Log">
                                             <h:panelGrid columns="2">
                                                 <p:outputLabel value="Id" rendered="#{channelScheduleController.currentSessionInstance ne null}"/>
-                                                <p:outputLabel value="#{channelScheduleController.currentSessionInstance.id}" rendered="#{channelScheduleController.current ne null}"/>
-
-
-                                                <p:outputLabel value="Created by"></p:outputLabel>
+                                                <p:outputLabel value="#{channelScheduleController.currentSessionInstance.id}" rendered="#{channelScheduleController.current ne null}"/><p:outputLabel value="Created by"></p:outputLabel>
                                                 <p:outputLabel value="#{channelScheduleController.currentSessionInstance.creater.webUserPerson.name}"></p:outputLabel>
                                                 <p:outputLabel value="created At"></p:outputLabel>
                                                 <p:outputLabel value="#{channelScheduleController.currentSessionInstance.createdAt}">

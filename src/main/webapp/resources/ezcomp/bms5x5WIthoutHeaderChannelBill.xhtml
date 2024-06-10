@@ -176,7 +176,7 @@
                     </td>
                 </tr>
 
-                <ui:repeat value="#{cc.attrs.bill.billFees}" var="cbif" >
+                <ui:repeat value="#{cc.attrs.bill.billFeesWIthoutZeroValue}" var="cbif" >
                     <tr>
                         <td>
                             <h:outputLabel value="#{cbif.fee.name}" ></h:outputLabel>

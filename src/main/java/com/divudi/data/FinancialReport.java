@@ -155,7 +155,6 @@ public class FinancialReport {
     }
 
     public void calculateTotal() {
-        System.out.println("Starting calculation of totals.");
 
         // Update and sum up all the transaction types
         netCashTotal = getNetCashTotal();
@@ -174,30 +173,22 @@ public class FinancialReport {
 
         // Calculate the overall total starting from the float my safe value and adjusting with all other totals
         total = shiftStartFunds;  // Start with the float my safe value
-        System.out.println("Initial Total (Float My Safe): " + total);
 
         // Add net totals of all transaction types
         total += netCashTotal;
-        System.out.println("Total after adding Net Cash: " + total);
 
         total += netCreditTotal;
-        System.out.println("Total after adding Net Credit: " + total);
 
         total += netCreditCardTotal;
-        System.out.println("Total after adding Net Credit Card: " + total);
 
         total += netOtherNonCreditTotal;
-        System.out.println("Total after adding Net Other Non-Credit: " + total);
 
         total += netVoucherTotal;
-        System.out.println("Total after adding Net Voucher: " + total);
 
         // Adjust float and handover transactions
         total += floatReceived;
-        System.out.println("Total after adding Float Collected: " + total);
 
         total -= floatHandover;
-        System.out.println("Total after adding Float Handover: " + total);
 
         total -= shiftEndFunds;
 

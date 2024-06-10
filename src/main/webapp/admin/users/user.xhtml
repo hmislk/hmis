@@ -58,6 +58,21 @@
                                 <f:selectItems value="#{webUserController.departmentsOfSelectedUsersInstitution}"/>
                             </p:selectOneMenu>
 
+                            <p:outputLabel for="loginPage" value="Login Page" />
+                            <p:outputLabel value=":" style="width: 20px;"/>
+                            <p:selectOneMenu 
+                                id="loginPage"
+                                filterMatchMode="contains"
+                                styleClass="w-100 mt-1 form-control"
+                                value="#{webUserController.current.loginPage}"
+                                rendered="#{!webUserController.createOnlyUserForExsistingUser}">
+                                <f:selectItem itemLabel="-- Select Login Page --" itemValue="" />
+                                <f:selectItems value="#{enumController.loginPages}"
+                                               var="lp"
+                                               itemLabel="#{lp.label}"
+                                               itemValue="#{lp}" />
+                            </p:selectOneMenu>
+
                             <p:outputLabel value="Email " style="width: 100px;" for="email" />
                             <p:outputLabel value=":" style="width: 20px;"/>
                             <p:inputText id="email" value="#{webUserController.current.email}" title="Email" style="width: 300px;"/>
