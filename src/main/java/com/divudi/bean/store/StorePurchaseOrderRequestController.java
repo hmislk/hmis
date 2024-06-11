@@ -66,6 +66,7 @@ public class StorePurchaseOrderRequestController implements Serializable {
     //private List<PharmaceuticalBillItem> pharmaceuticalBillItems;   
     @Inject
     StoreCalculation storeCalculation;
+    private boolean printPreview;
 
     public void removeSelected() {
         //  //System.err.println("1");
@@ -92,6 +93,7 @@ public class StorePurchaseOrderRequestController implements Serializable {
         currentBill = null;
         currentBillItem = null;
         billItems = null;
+        printPreview = false;
     }
 
     public void addItem() {
@@ -278,7 +280,7 @@ public class StorePurchaseOrderRequestController implements Serializable {
 
         JsfUtil.addSuccessMessage("Request Succesfully Created");
 
-        recreate();
+        printPreview = true;
         
         
 
@@ -448,6 +450,14 @@ public class StorePurchaseOrderRequestController implements Serializable {
 
     public void setCommonController(CommonController commonController) {
         this.commonController = commonController;
+    }
+
+    public boolean isPrintPreview() {
+        return printPreview;
+    }
+
+    public void setPrintPreview(boolean printPreview) {
+        this.printPreview = printPreview;
     }
 
 }
