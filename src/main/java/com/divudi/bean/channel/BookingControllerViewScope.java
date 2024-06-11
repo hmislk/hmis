@@ -3762,7 +3762,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         } else if (savingBill.getBillType() == BillType.ChannelOnCall) {
             savingBill.setBalance(savingBill.getNetTotal());
         } else if (savingBill.getBillType() == BillType.ChannelStaff) {
-            savingBill.setBalance(savingBill.getNetTotal());
+            savingBill.setBalance(0.0);
             savingBillSession.setPaidBillSession(savingBillSession);
         }
 

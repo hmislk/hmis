@@ -198,7 +198,7 @@
                 <h:panelGroup rendered="#{cc.attrs.bill.discount lt 1}" >
                     <tr>
                         <td>
-                            <h:outputLabel value="Total" ></h:outputLabel>
+                            <h:outputLabel style="font-weight: bolder" value="Total" ></h:outputLabel>
                         </td>
                         <td>
                             <p:spacer width="10" ></p:spacer>
@@ -207,7 +207,7 @@
                             <h:outputLabel value=":" ></h:outputLabel>
                         </td>
                         <td>
-                            <h:outputLabel value="#{cc.attrs.bill.total}" >
+                            <h:outputLabel style="font-weight: bolder" value="#{cc.attrs.bill.total}" >
                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                             </h:outputLabel>
                         </td>
@@ -316,24 +316,6 @@
 
                 <tr>
                     <td>
-                        <h:outputLabel value="Issued By" ></h:outputLabel>
-                    </td>
-                    <td>
-                        <p:spacer width="10" ></p:spacer>
-                    </td>
-                    <td>
-                        <h:outputLabel value=":" ></h:outputLabel>
-                    </td>
-                    <td>
-                        <h:outputLabel value="#{cc.attrs.bill.creater.webUserPerson.name}"></h:outputLabel>
-                        <p:spacer height="1" width="10" ></p:spacer>
-                        <h:outputLabel value="#{cc.attrs.bill.billTime}">
-                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></f:convertDateTime>
-                        </h:outputLabel>     
-                    </td>
-                </tr>
-                <tr>
-                    <td>
                         <h:outputLabel value="Billed By" ></h:outputLabel>
                     </td>
                     <td>
@@ -350,6 +332,26 @@
                         </h:outputLabel>
                     </td>
                 </tr>
+
+                <tr>
+                    <td>
+                        <h:outputLabel value="Printed By" ></h:outputLabel>
+                    </td>
+                    <td>
+                        <p:spacer width="10" ></p:spacer>
+                    </td>
+                    <td>
+                        <h:outputLabel value=":" ></h:outputLabel>
+                    </td>
+                    <td>
+                        <h:outputLabel value="#{cc.attrs.bill.creater.webUserPerson.name}"></h:outputLabel>
+                        <p:spacer height="1" width="10" ></p:spacer>
+                        <h:outputLabel value="#{cc.attrs.bill.billTime}">
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></f:convertDateTime>
+                        </h:outputLabel>     
+                    </td>
+                </tr>
+
 
             </table>
 
