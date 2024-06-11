@@ -13,7 +13,7 @@
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
-
+                <h:outputStylesheet library="css" name="lab.css" ></h:outputStylesheet>
                 <h:panelGroup rendered="#{!(webUserController.hasPrivilege('LabAutherizing') eq true or webUserController.hasPrivilege('LabDataentry') eq true or webUserController.hasPrivilege('LabPrinting') eq true)}" >
                     You are NOT authorized
                 </h:panelGroup>
@@ -36,13 +36,9 @@
                         <h:panelGroup id="divPrint" >
 
                             <h:panelGroup rendered="#{patientReportController.currentPatientReport.item.reportType ne 'Microbiology'}"  >
-                                <div id="divReport"  class="labReport" style="width:21cm;
-                                     height: 28cm;
-                                     position: relative;
-                                     background-color: whitesmoke;
-                                     border: 1px solid black;" >
+                                <div id="divReport"  class="labReport1" >
                                     <ez:common_report 
-                                        showBackground="false"
+                                        showBackground="true"
                                         commonReportFormat="#{patientReportController.currentPatientReport.reportFormat}"
                                         patientReport="#{patientReportController.currentPatientReport}"/>
 
