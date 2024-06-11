@@ -22,6 +22,10 @@
       <property name="eclipselink.logging.level.sql" value="SEVERE"/>
       <property name="eclipselink.logging.parameters" value="false"/>
       <property name="javax.persistence.schema-generation.database.action" value="create-or-extend-tables"/>
+      <!--      <property name="eclipselink.ddl-generation" value="create-or-extend-tables"/>
+            <property name="eclipselink.logging.level.sql" value="SEVERE"/>
+            <property name="eclipselink.logging.parameters" value="true"/>
+            <property name="eclipselink.ddl-generation.index-foreign-keys" value="false"/>-->
     </properties>
   </persistence-unit>
 </persistence>
