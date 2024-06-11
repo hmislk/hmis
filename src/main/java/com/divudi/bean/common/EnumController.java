@@ -67,6 +67,7 @@ public class EnumController implements Serializable {
     ConfigOptionApplicationController configOptionApplicationController;
     List<PaymentMethod> paymentMethodsForOpdBilling;
     List<PaymentMethod> paymentMethodsForChanneling;
+    List<PaymentMethod> paymentMethodsForPharmacyBilling;
     SessionNumberType[] sessionNumberTypes;
 
     @PostConstruct
@@ -113,6 +114,23 @@ public class EnumController implements Serializable {
             boolean include = configOptionApplicationController.getBooleanValueByKey(pm.getLabel() + " is available for Channeling", true);
             if (include) {
                 paymentMethodsForChanneling.add(pm);
+            }
+        }
+    }
+    
+    public List<PaymentMethod> getPaymentMethodsForPharmacyBilling() {
+        if (paymentMethodsForPharmacyBilling == null) {
+            fillPaymentMethodsForPharmacyBilling();
+        }
+        return paymentMethodsForPharmacyBilling;
+    }
+    
+    public void fillPaymentMethodsForPharmacyBilling() {
+        paymentMethodsForPharmacyBilling = new ArrayList<>();
+        for (PaymentMethod pm : PaymentMethod.values()) {
+            boolean include = configOptionApplicationController.getBooleanValueByKey(pm.getLabel() + " is available for Pharmacy Billing", true);
+            if (include) {
+                paymentMethodsForPharmacyBilling.add(pm);
             }
         }
     }
