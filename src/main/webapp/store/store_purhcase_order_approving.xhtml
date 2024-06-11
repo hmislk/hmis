@@ -113,6 +113,13 @@
                                 <f:ajax event="focus" render=":#{p:resolveFirstComponentWithId('tab',view).clientId}" listener="#{storePurchaseOrderController.onFocus(bi)}" />
                             </p:inputText>
                         </p:column>  
+                        
+                        <p:column headerText="Free Qty" style="width:25px!important;">                         
+                            <p:inputText autocomplete="off" id="freeQty" value="#{bi.pharmaceuticalBillItem.freeQty}" style="width:100%" label="freeQty">
+
+                               
+                            </p:inputText>
+                        </p:column>  
 
                         <p:column headerText="Purchse Price" style="width:25px!important;" >  
                             <h:panelGroup id="price">
