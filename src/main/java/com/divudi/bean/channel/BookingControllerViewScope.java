@@ -307,6 +307,10 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     private Institution collectingCentre;
     private double netPlusVat;
     private Institution creditCompany;
+    
+    public void navigateToNurseViewFromChannelBookingByDate(){
+        
+    }
 
     public void removeAddedAditionalItems(Item item) {
         itemsAddedToBooking.remove(item);
@@ -1168,7 +1172,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     public String navigateToNurseView() {
         if (preSet()) {
             getChannelReportController().fillNurseView();
-            return "/channel/channel_nurse_view?faces-redirect=true";
+            return "/channel/channel_views/channel_nurse_view?faces-redirect=true";
         } else {
             return "";
         }
@@ -1177,7 +1181,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     public String navigateToDoctorView() {
         if (preSet()) {
             getChannelReportController().fillDoctorView();
-            return "/channel/channel_doctor_view?faces-redirect=true";
+            return "/channel/channel_views/channel_doctor_view?faces-redirect=true";
         } else {
             return "";
         }
@@ -1204,14 +1208,14 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     public String navigateToUserView() {
         if (preSet()) {
             getChannelReportController().fillDoctorView();
-            return "/channel/channel_user_view?faces-redirect=true";
+            return "/channel/channel_views/channel_user_view?faces-redirect=true";
         } else {
             return "";
         }
     }
 
     public String navigateToAllDoctorView() {
-        return "/channel/channel_patient_view_today?faces-redirect=true";
+        return "/channel/channel_views/channel_patient_view_today?faces-redirect=true";
     }
 
     public String navigateToAllPatientView() {
@@ -3762,7 +3766,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         } else if (savingBill.getBillType() == BillType.ChannelOnCall) {
             savingBill.setBalance(savingBill.getNetTotal());
         } else if (savingBill.getBillType() == BillType.ChannelStaff) {
-            savingBill.setBalance(savingBill.getNetTotal());
+            savingBill.setBalance(0.0);
             savingBillSession.setPaidBillSession(savingBillSession);
         }
 
