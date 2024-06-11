@@ -209,13 +209,31 @@ public class StorePurchaseOrderController implements Serializable {
 
             PharmaceuticalBillItem phItem = i.getPharmaceuticalBillItem();
             i.setPharmaceuticalBillItem(null);
-            getBillItemFacade().create(i);
+            try {
+                if (i.getId() == null) {
+                    getBillItemFacade().create(i);
+                } else {
+                    getBillItemFacade().edit(i);
+                }
+            } catch (Exception e) {
+            }
 
             phItem.setBillItem(i);
-            getPharmaceuticalBillItemFacade().create(phItem);
+            try {
+                if (phItem.getId() == null) {
+                    getPharmaceuticalBillItemFacade().create(phItem);
+                } else {
+                    getPharmaceuticalBillItemFacade().edit(phItem);
+                }
+            } catch (Exception e) {
+            }
 
             i.setPharmaceuticalBillItem(phItem);
-            getBillItemFacade().edit(i);
+            try {
+                getBillItemFacade().edit(i);
+            } catch (Exception e) {
+
+            }
 
             getAprovedBill().getBillItems().add(i);
         }

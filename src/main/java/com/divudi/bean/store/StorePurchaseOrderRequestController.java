@@ -216,25 +216,20 @@ public class StorePurchaseOrderRequestController implements Serializable {
             b.setCreatedAt(new Date());
             b.setCreater(getSessionController().getLoggedUser());
 
-            PharmaceuticalBillItem tmpPh = b.getPharmaceuticalBillItem();
-            b.setPharmaceuticalBillItem(null);
+//            PharmaceuticalBillItem tmpPh = b.getPharmaceuticalBillItem();
+//            b.setPharmaceuticalBillItem(null);
 
             if (b.getId() == null) {
                 getBillItemFacade().create(b);
             } else {
-                billItemFacade.edit(b);
+                getBillItemFacade().edit(b);
             }
 
-            tmpPh.setBillItem(b);
-
-            if (tmpPh.getId() == null) {
-                getPharmaceuticalBillItemFacade().create(tmpPh);
+            if (b.getPharmaceuticalBillItem().getId() == null) {
+                getPharmaceuticalBillItemFacade().create(b.getPharmaceuticalBillItem());
             } else {
-                pharmaceuticalBillItemFacade.edit(tmpPh);
+                getPharmaceuticalBillItemFacade().edit(b.getPharmaceuticalBillItem());
             }
-
-            b.setPharmaceuticalBillItem(tmpPh);
-            getPharmaceuticalBillItemFacade().edit(tmpPh);
         }
     }
 

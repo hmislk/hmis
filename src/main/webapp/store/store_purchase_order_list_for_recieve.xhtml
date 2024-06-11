@@ -89,9 +89,14 @@
                                 </h:commandLink>
                             </p:column>
                             <p:column width="15%">
-                                <p:commandButton ajax="false" value="Recieve" class="w-100 ui-button-warning" action="store_grn" disabled="#{p.cancelled}" actionListener="#{storeGrnController.clearList()}">
-                                    <f:setPropertyActionListener target="#{storeGrnController.approveBill}" value="#{p}"/>
-                                </p:commandButton>
+                                <p:commandButton 
+                                            ajax="false"
+                                            value="Recieve"
+                                            class="w-100 ui-button-warning"
+                                            action="#{storeGrnController.navigateToRecieve()}" 
+                                            disabled="#{p.cancelled}">
+                                            <f:setPropertyActionListener target="#{storeGrnController.approveBill}" value="#{p}"/>
+                                        </p:commandButton>
                             </p:column>
                             <p:column headerText="GRNS" width="28em;">                   
                                 <p:dataTable var="b" value="#{p.listOfBill}">                        

@@ -133,7 +133,8 @@ public class StoreGrnController implements Serializable {
         grns = null;
         currentExpense = null;
         billExpenses = null;
-        ////// // System.out.println("clear");
+        billItems = null;
+          System.out.println("clear");
 
     }
 
@@ -438,20 +439,23 @@ public class StoreGrnController implements Serializable {
         }
     }
 
-    private void createBillItems(PharmaceuticalBillItem i, double qty) {
+    private void createBillItems(PharmaceuticalBillItem i, double qty, double freeQty) {
         BillItem bi = new BillItem();
         bi.setSearialNo(getBillItems().size());
         bi.setItem(i.getBillItem().getItem());
         bi.setReferanceBillItem(i.getBillItem());
         bi.setQty(qty);
         bi.setTmpQty(qty);
+        bi.setTmpFreeQty(freeQty);
         //Set Suggession
 //                bi.setTmpSuggession(getPharmacyCalculation().getSuggessionOnly(bi.getItem()));
 
         PharmaceuticalBillItem ph = new PharmaceuticalBillItem();
         ph.setBillItem(bi);
         double tmpQty = bi.getQty();
+        double tmpFreeQty = bi.getTmpFreeQty();
         ph.setQtyInUnit((double) tmpQty);
+        ph.setFreeQtyInUnit((double) tmpFreeQty);
         ph.setPurchaseRate(i.getPurchaseRate());
         ph.setRetailRate(i.getRetailRate());
         ph.setLastPurchaseRate(getStoreBean().getLastPurchaseRate(bi.getItem(), getSessionController().getDepartment()));
@@ -487,21 +491,24 @@ public class StoreGrnController implements Serializable {
 //    }
 
     public void generateBillComponent() {
+        List<PharmaceuticalBillItem> tmpPharmaceuticalBillItemList = getPharmaceuticalBillItemFacade().getPharmaceuticalBillItems(getApproveBill());
 
-        for (PharmaceuticalBillItem i : getPharmaceuticalBillItemFacade().getPharmaceuticalBillItems(getApproveBill())) {
-
+        for (PharmaceuticalBillItem i : tmpPharmaceuticalBillItemList) {
+//            System.out.println("i = " + i.getBillItem().getItem().getName());
             double remains = i.getQtyInUnit() - storeCalculation.calQtyInTwoSql(i);
-            if (remains > 0) {
-                if (i.getBillItem().getItem().getDepartmentType() == DepartmentType.Inventry) {
-                    for (int index = (int) remains; index > 0; index--) {
-                        createBillItems(i, 1);
-                    }
-                } else {
-                    createBillItems(i, remains);
-                }
+            double remainFreeQty = i.getFreeQty() - storeCalculation.calFreeQtyInTwoSql(i);
+            if (remains > 0 || remainFreeQty > 0) {
+                createBillItems(i, remains, remainFreeQty);
+
             }
 
         }
+    }
+    
+    public String navigateToRecieve() {
+        clearList();
+        createGrn();
+        return "/store/store_grn?faces-redirect=true";
     }
 
     public void createSerialNumber() {
@@ -594,7 +601,8 @@ public class StoreGrnController implements Serializable {
     public void createGrn() {
         getGrnBill().setPaymentMethod(getApproveBill().getPaymentMethod());
         getGrnBill().setFromInstitution(getApproveBill().getToInstitution());
-        ////// // System.out.println("in");
+        getGrnBill().setReferenceInstitution(getSessionController().getLoggedUser().getInstitution());
+//        System.out.println("in");
         generateBillComponent();
         calTotal();
         ////// // System.out.println("out");
@@ -607,11 +615,34 @@ public class StoreGrnController implements Serializable {
         return (double) getPharmaceuticalBillItemFacade().findDoubleByJpql(sql, hm);
     }
 
+    public void setBatch(BillItem pid) {
+        if (pid.getPharmaceuticalBillItem().getDoe() == null) {
+            return;
+        }
+
+        if (pid.getPharmaceuticalBillItem().getDoe() != null) {
+            if (pid.getPharmaceuticalBillItem().getDoe().getTime() < Calendar.getInstance().getTimeInMillis()) {
+                pid.getPharmaceuticalBillItem().setStringValue(null);
+                return;
+                //    return;
+            }
+        }
+
+        if (pid.getPharmaceuticalBillItem().getStringValue().trim().equals("")) {
+            Date date = pid.getPharmaceuticalBillItem().getDoe();
+            DateFormat df = new SimpleDateFormat("ddMMyyyy");
+            String reportDate = df.format(date);
+// Print what date is today!
+            //       //System.err.println("Report Date: " + reportDate);
+            pid.getPharmaceuticalBillItem().setStringValue(reportDate);
+        }
+    }
+
     public void onEdit(RowEditEvent event) {
         BillItem tmp = (BillItem) event.getObject();
         onEdit(tmp);
         //   onEditPurchaseRate(tmp);
-        // setBatch(tmp);
+        setBatch(tmp);
     }
 
     public void onEdit(BillItem tmp) {
@@ -638,6 +669,7 @@ public class StoreGrnController implements Serializable {
 //                //    return;
 //            }
 //        }
+        setBatch(tmp);
         calTotal();
     }
 
