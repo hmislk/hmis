@@ -22,11 +22,11 @@
             <link rel="stylesheet" href="../../resources/css/pharmacypos_header.css"/>
             <div style="display: flex; align-items: center;">
                 <div>
-                    <p:graphicImage library="image" name="CompanyLogo/#{configOptionApplicationController.getLongTextValueByKey('Pharmacy Bill Company Logo')}.png" height="110" width="100"/>
+                    <p:graphicImage library="image" name="CompanyLogo/#{configOptionApplicationController.getLongTextValueByKey('Pharmacy Bill Company Logo')}.png" height="80" width="80"/>
                 </div>
                 <div class="billtop" style="text-align: center; margin-left: 2px; font-size: 12px;">
                     <h:outputLabel value="#{cc.attrs.bill.institution.name}"></h:outputLabel><br/>
-                    <h:outputLabel value="#{cc.attrs.bill.institution.address}"></h:outputLabel><br/>
+                    <h:outputLabel style="font-size: 10px!important;" value="#{cc.attrs.bill.institution.address}"></h:outputLabel><br/>
                     <h:outputLabel value="#{cc.attrs.bill.department.printingName}"></h:outputLabel><br/>
                      <h:outputLabel value="#{cc.attrs.bill.department.telephone1} "></h:outputLabel><br/>
                 </div>

@@ -15,15 +15,25 @@
                 <h:form>
                     <p:panel >
                         <f:facet name="header" >
-                            <h:outputLabel value="Purchase Order Reprint" ></h:outputLabel>
-                            <hr/>
-                            <p:commandButton value="Reprint" ajax="false" >
-                                <p:printer target="gpBillPreview" ></p:printer>
-                            </p:commandButton>
-                            <p:commandButton ajax="false" value="Cancel" action="store_cancel_po"
-                                             disabled="#{storeBillSearch.bill.cancelled or
-                                                         !webUserController.hasPrivilege('PharmacyOrderCancellation')}">                           
-                            </p:commandButton>                          
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div>
+                                    <h:outputLabel value="Purchase Order Reprint" ></h:outputLabel>                        
+                                </div>
+                                <div>
+                                    <p:commandButton ajax="false" value="Back To PO List" rendered="#{webUserController.hasPrivilege('Pharmacy')}" action="store_purhcase_order_list_to_approve" class="ui-button-warning" icon="fas fa-arrow-left"/>
+<!--                                    <p:commandButton ajax="false" value="Back To Good Recipt" rendered="#{webUserController.hasPrivilege('PharmacyGoodReceive')}"
+                                                     action="/pharmacy/pharmacy_purchase_order_list_for_recieve?faces-redirect=true"   class="ui-button-warning mx-2" icon="fas fa-arrow-left"/>-->
+                                    <p:commandButton class="ui-button-info mx-2" icon="fas fa-print" value="Reprint" ajax="false" >
+                                        <p:printer target="gpBillPreview" ></p:printer>
+                                    </p:commandButton>
+                                    <p:commandButton class="ui-button-danger" icon="fas fa-ban" ajax="false" value="Cancel" action="store_cancel_po"
+                                                     disabled="#{storeBillSearch.bill.cancelled or
+                                                                 !webUserController.hasPrivilege('PharmacyOrderCancellation')}">                           
+
+                                    </p:commandButton>  
+                                </div>
+                            </div>
+
                         </f:facet>
 
                     </p:panel>
@@ -34,8 +44,9 @@
                     <h:panelGroup >
 
                         <h:panelGroup id="gpBillPreview" >
-                            <st:po bill="#{storeBillSearch.bill}"/>
-
+                            <div class="d-flex justify-content-center border border-light boder-1">
+                                <st:po bill="#{storeBillSearch.bill}"/>
+                            </div>
                         </h:panelGroup>
 
                     </h:panelGroup>
