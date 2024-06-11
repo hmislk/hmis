@@ -50,29 +50,30 @@
                         <p:commandButton 
                             ajax="false" 
                             action="#{opdBillController.navigateToNewOpdBillWithPaymentScheme(patientController.current, patientController.current.person.membershipScheme.paymentScheme)}" 
-                            value="OPD" 
-                            disabled="#{!webUserController.hasPrivilege('OpdBilling')}" 
-                            icon="fa fa-fw fa-notes-medical" >
-                        </p:commandButton>
-                        
-                        <p:commandButton 
-                            ajax="false" 
-                            action="#{opdPreBillController.navigateToBillingForCashierFromMembership(patientController.current, patientController.current.person.membershipScheme.paymentScheme)}" 
-                            value="OPD" 
+                            value="OPD Billing" 
+                            class="mx-2"
                             disabled="#{!webUserController.hasPrivilege('OpdBilling')}" 
                             icon="fa fa-fw fa-notes-medical" >
                         </p:commandButton>
 
                         <p:commandButton 
                             ajax="false" 
-                            action="/channel/channel_booking" 
+                            action="#{opdPreBillController.navigateToBillingForCashierFromMembership(patientController.current, patientController.current.person.membershipScheme.paymentScheme)}" 
+                            value="OPD Billing for Cashier" 
+                            class="mx-2"
+                            disabled="#{!webUserController.hasPrivilege('OpdBilling')}" 
+                            icon="fa fa-fw fa-cash-register"  >
+                        </p:commandButton>
+
+                        <p:commandButton 
+                            ajax="false" 
                             icon="fa fa-fw fa-calendar-check" 
-                            class="mx-1"
-                            actionListener="#{channelBillController.prepareForNewChannellingBillForMember()}" 
+                            class="mx-2"
+                            action="#{bookingControllerViewScope.navigateToChannelBookingFromMembershipByDate(patientController.current, patientController.current.person.membershipScheme.paymentScheme)}" 
                             value="Channelling" disabled="#{!webUserController.hasPrivilege('ChannellingChannelBooking')}" >
                             <f:setPropertyActionListener value="#{patientController.current}" target="#{channelBillController.searchPatient}" ></f:setPropertyActionListener>
                         </p:commandButton>
-                        
+
 
 
                     </p:panel>

@@ -436,6 +436,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         viewScopeDataTransferController.setNeedToFillBillSessions(true);
         viewScopeDataTransferController.setNeedToFillSessionInstanceDetails(true);
         viewScopeDataTransferController.setNeedToFillBillSessionDetails(false);
+        viewScopeDataTransferController.setNeedToFillMembershipDetails(false);
+        viewScopeDataTransferController.setNeedToPrepareForNewBooking(false);
 
         return "/channel/session_instance?faces-redirect=true";
     }
@@ -454,6 +456,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         viewScopeDataTransferController.setNeedToFillBillSessionDetails(false);
         viewScopeDataTransferController.setNeedToFillSessionInstances(false);
         viewScopeDataTransferController.setNeedToFillSessionInstanceDetails(true);
+        viewScopeDataTransferController.setNeedToFillMembershipDetails(false);
+        viewScopeDataTransferController.setNeedToPrepareForNewBooking(false);
         return "/channel/session_instance?faces-redirect=true";
     }
 
@@ -930,6 +934,15 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             fillFees();
         }
 
+        if (viewScopeDataTransferController.getNeedToPrepareForNewBooking()) {
+            prepareForNewChannellingBill();
+        }
+
+        if (viewScopeDataTransferController.getNeedToFillMembershipDetails()) {
+            patient = viewScopeDataTransferController.getPatient();
+            paymentScheme = viewScopeDataTransferController.getPaymentScheme();
+        }
+
     }
 
     public String navigateToChannelBookingFromMenuByDate() {
@@ -942,6 +955,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         viewScopeDataTransferController.setNeedToFillBillSessionDetails(false);
         viewScopeDataTransferController.setNeedToFillSessionInstances(true);
         viewScopeDataTransferController.setNeedToFillSessionInstanceDetails(true);
+        viewScopeDataTransferController.setNeedToFillMembershipDetails(false);
+        viewScopeDataTransferController.setNeedToPrepareForNewBooking(true);
 
         if (opdBillingAfterShiftStart) {
             financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
@@ -965,13 +980,13 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     }
 
-    public String navigateToChannelBookingFromMembershipByDate(Patient pt, MembershipScheme ms) {
+    public String navigateToChannelBookingFromMembershipByDate(Patient pt, PaymentScheme ps) {
 
         if (pt == null) {
             JsfUtil.addErrorMessage("No Patient Selected");
             return "";
         }
-        if (ms == null) {
+        if (ps == null) {
             JsfUtil.addErrorMessage("No Membership");
             return "";
         }
@@ -980,19 +995,15 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
         viewScopeDataTransferController.setFromDate(fromDate);
         viewScopeDataTransferController.setToDate(toDate);
+        viewScopeDataTransferController.setPatient(pt);
+        viewScopeDataTransferController.setPaymentScheme(ps);
 
         viewScopeDataTransferController.setNeedToFillBillSessions(false);
         viewScopeDataTransferController.setNeedToFillBillSessionDetails(false);
         viewScopeDataTransferController.setNeedToFillSessionInstances(true);
         viewScopeDataTransferController.setNeedToFillSessionInstanceDetails(true);
-
-        fromDate = new Date();
-        toDate = new Date();
-        listAllSesionInstances();
-        prepareForNewChannellingBill();
-
-        patient = pt;
-        paymentScheme = ms.getPaymentScheme();
+        viewScopeDataTransferController.setNeedToFillMembershipDetails(true);
+        viewScopeDataTransferController.setNeedToPrepareForNewBooking(true);
 
         if (opdBillingAfterShiftStart) {
             financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
@@ -1094,6 +1105,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         viewScopeDataTransferController.setNeedToFillBillSessionDetails(false);
         viewScopeDataTransferController.setNeedToFillSessionInstances(false);
         viewScopeDataTransferController.setNeedToFillSessionInstanceDetails(true);
+        viewScopeDataTransferController.setNeedToFillMembershipDetails(false);
+        viewScopeDataTransferController.setNeedToPrepareForNewBooking(false);
 
         return "/channel/manage_booking_by_date?faces-redirect=true";
     }
@@ -1109,6 +1122,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         viewScopeDataTransferController.setNeedToCreateOpdBillForChannellingBillSession(true);
         viewScopeDataTransferController.setNeedToFillBillSessions(false);
         viewScopeDataTransferController.setNeedToFillBillSessionDetails(false);
+        viewScopeDataTransferController.setNeedToFillMembershipDetails(false);
+        viewScopeDataTransferController.setNeedToPrepareForNewBooking(false);
+
         return opdBillController.navigateToNewOpdBillFromChannelling();
     }
 
@@ -1160,6 +1176,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         viewScopeDataTransferController.setNeedToFillBillSessionDetails(false);
         viewScopeDataTransferController.setNeedToFillSessionInstances(true);
         viewScopeDataTransferController.setNeedToFillSessionInstanceDetails(true);
+        viewScopeDataTransferController.setNeedToFillMembershipDetails(false);
+        viewScopeDataTransferController.setNeedToPrepareForNewBooking(true);
 
         return "/channel/channel_booking_by_date?faces-redirect=true";
     }
@@ -1176,6 +1194,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         viewScopeDataTransferController.setNeedToFillBillSessionDetails(false);
         viewScopeDataTransferController.setNeedToFillSessionInstances(true);
         viewScopeDataTransferController.setNeedToFillSessionInstanceDetails(true);
+        viewScopeDataTransferController.setNeedToFillMembershipDetails(false);
+        viewScopeDataTransferController.setNeedToPrepareForNewBooking(true);
 
         return "/channel/channel_booking_by_date?faces-redirect=true";
     }

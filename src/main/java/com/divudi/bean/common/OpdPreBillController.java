@@ -1165,12 +1165,12 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
 
     }
 
-    public String navigateToBillingForCashierFromMembership(Patient pt, MembershipScheme ms) {
+    public String navigateToBillingForCashierFromMembership(Patient pt, PaymentScheme ps) {
         if (pt == null) {
             JsfUtil.addErrorMessage("No Patient Selected");
             return "";
         }
-        if (ms == null) {
+        if (ps == null) {
             JsfUtil.addErrorMessage("No Membership");
             return "";
         }
@@ -1181,7 +1181,7 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
         }
         opdPreBillController.prepareNewBill();
         patient = pt;
-        paymentScheme = ms.getPaymentScheme();
+        paymentScheme = ps;
         opdPreBillController.setPatient(getPatient());
         return "/opd/opd_pre_bill?faces-redirect=true";
     }
