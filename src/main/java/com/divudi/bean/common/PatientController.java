@@ -1670,6 +1670,15 @@ public class PatientController implements Serializable, ControllerWithPatient {
             JsfUtil.addErrorMessage("No Patient to Save or Update");
             return "";
         }
+        if(current.getPerson().getPhone()==null && current.getPerson().getMobile()==null){
+            JsfUtil.addErrorMessage("No Phone Number");
+            return "";
+        }
+        if(current.getPerson().getPhone()!=null){
+            currentFamily.setPhoneNo(current.getPerson().getPhone());
+        }else if(current.getPerson().getMobile()!=null){
+            currentFamily.setPhoneNo(current.getPerson().getMobile());
+        }
         saveIndividualMembership();
         JsfUtil.addSuccessMessage("Individual Membership Added to Family");
         return navigateToManageIndividualMembership();
