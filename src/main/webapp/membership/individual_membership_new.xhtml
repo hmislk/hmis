@@ -7,23 +7,31 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
 
-
-
-
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
-
                 <h:panelGroup >
                     <h:form  >
                         <p:growl />
                         <p:panel >
                             <f:facet name="header">
-                                <h:outputText styleClass="fa-solid fa-people-group" /> <!-- FontAwesome Icon -->
+                                <h:outputText styleClass="fa-solid fa-people-group" />
                                 <p:outputLabel value="Add Individual Mambership" class="m-2"/>
                                 <div style="float: right;">
-                                    <p:commandButton value="Save Member &amp; Manage" action="#{patientController.saveIndividualMembershipAndNavigateToManageIndividual()}" ajax="false" class="ui-button-warning mx-1" icon="fas fa-save"></p:commandButton>
-                                    <p:commandButton value="Save &amp; Clear for a new Membership" action="#{patientController.saveAndClearForNewIndividual()}" class="ui-button-danger" icon="fas fa-eraser" ajax="false"></p:commandButton>
+                                    <p:commandButton 
+                                        value="Save Member &amp; Manage" 
+                                        action="#{patientController.saveIndividualMembershipAndNavigateToManageIndividual()}" 
+                                        ajax="false" 
+                                        class="ui-button-warning mx-1"
+                                        icon="fas fa-save">
+                                    </p:commandButton>
+                                    <p:commandButton
+                                        value="Save &amp; Clear for a new Membership" 
+                                        action="#{patientController.saveAndClearForNewIndividual()}" 
+                                        class="ui-button-danger mx-1" 
+                                        icon="fas fa-eraser"
+                                        ajax="false">
+                                    </p:commandButton>
                                 </div>
                             </f:facet>
                             <div class="row">
@@ -47,6 +55,33 @@
                                                     var="m" 
                                                     itemLabel="#{m.name}" itemValue="#{m}"/>
                                             </p:selectOneMenu>
+
+                                            <p:outputLabel value="Institution:" for="institution" />
+                                            <p:autoComplete 
+                                                id="institution"
+                                                value="#{patientController.currentFamily.createdInstitution}"
+                                                completeMethod="#{institutionController.completeIns}"
+                                                var="ins"
+                                                itemLabel="#{ins.name}"
+                                                itemValue="#{ins}"
+                                                >
+                                                <p:ajax process="institution" update="department" ></p:ajax>
+                                            </p:autoComplete>
+
+
+                                            <p:outputLabel value="Department:" for="department" />
+                                            <p:selectOneMenu 
+                                                id="department"
+                                                value="#{patientController.currentFamily.createdDepartment}"
+                                                >
+                                                <f:selectItem itemLabel="Select" ></f:selectItem>
+                                                <f:selectItems 
+                                                    value="#{departmentController.getInstitutionDepatrments(patientController.currentFamily.createdInstitution)}"
+                                                    var="dept"
+                                                    itemLabel="#{dept.name}"
+                                                    itemValue="#{dept}"></f:selectItems>
+                                            </p:selectOneMenu>
+
                                             <p:outputLabel value="Comments:" for="comments" />
                                             <p:inputTextarea rows="4" cols="30" class="w-100" id="comments" value="#{patientController.currentFamily.comments}" title="Comments" />
                                         </h:panelGrid>

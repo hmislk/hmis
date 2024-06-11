@@ -55,6 +55,7 @@ import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.WebUserFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.entity.Department;
 import com.divudi.java.CommonFunctions;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -241,6 +242,9 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
     private List<PatientInvestigation> patientInvestigations;
     private List<Patient> quickSearchPatientList;
+    
+    private Institution institution;
+    private Department department;
 
     /**
      *
@@ -1576,6 +1580,15 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
     public String navigateToAddNewIndividualMembership() {
         currentFamily = new Family();
+        if(institution==null){
+            institution = sessionController.getInstitution();
+        }
+        if(department==null){
+            department=sessionController.getDepartment();
+        }
+        currentFamily.setCreatedInstitution(institution);
+        currentFamily.setCreatedDepartment(department);
+        currentFamily.setMembershipScheme(membershipScheme);
         return "/membership/individual_membership_new?faces-redirect=true";
     }
 
@@ -1720,6 +1733,9 @@ public class PatientController implements Serializable, ControllerWithPatient {
         getFamilyMemberFacade().create(tfm);
         currentFamily.getFamilyMembers().add(tfm);
         saveFamily();
+        department = currentFamily.getCreatedDepartment();
+        institution=currentFamily.getCreatedInstitution();
+        membershipScheme = currentFamily.getMembershipScheme();
     }
 
     public String saveAndClearForNewFamilyMembership() {
@@ -2945,6 +2961,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
     private void searchBySampleId(String sampleId) {
         // Logic to search by sample ID
     }
+    
+    
 
     public void setPersonFacade(PersonFacade personFacade) {
         this.personFacade = personFacade;
@@ -3455,6 +3473,22 @@ public class PatientController implements Serializable, ControllerWithPatient {
     @Override
     public void toggalePatientEditable() {
         patientDetailsEditable = !patientDetailsEditable;
+    }
+
+    public Institution getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
+    }
+
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
     }
 
     /**
