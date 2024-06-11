@@ -70,6 +70,8 @@ import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillTypeAtomic;
+import com.divudi.entity.Family;
+import com.divudi.entity.FamilyMember;
 import com.divudi.entity.Token;
 import com.divudi.facade.TokenFacade;
 import com.divudi.java.CommonFunctions;
@@ -924,7 +926,6 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
         double tmpBatchBillTotalOfDiscounts = 0.0;
         double tmpBatchBillTotalOfNetTotals = 0.0;
 
-
         for (Bill b : bills) {
 
             double preGrossTotal = tmpBatchBillTotalOfGrossTotals;
@@ -935,12 +936,10 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
             tmpBatchBillTotalOfDiscounts += b.getDiscount();
             tmpBatchBillTotalOfNetTotals += b.getNetTotal();
 
-
             b.setBackwardReferenceBill(newlyCreatingBatchBillPre);
             getBillFacade().edit(b);
             newlyCreatingBatchBillPre.getForwardReferenceBills().add(b);
         }
-
 
         newlyCreatingBatchBillPre.setNetTotal(tmpBatchBillTotalOfNetTotals);
         newlyCreatingBatchBillPre.setDiscount(tmpBatchBillTotalOfDiscounts);
@@ -1164,6 +1163,27 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
         opdPreBillController.setPatient(getPatient());
         return "/opd/opd_pre_bill?faces-redirect=true";
 
+    }
+
+    public String navigateToBillingForCashierFromMembership(Patient pt, MembershipScheme ms) {
+        if (pt == null) {
+            JsfUtil.addErrorMessage("No Patient Selected");
+            return "";
+        }
+        if (ms == null) {
+            JsfUtil.addErrorMessage("No Membership");
+            return "";
+        }
+        if (patient == null) {
+            JsfUtil.addErrorMessage("No patient selected");
+            patient = new Patient();
+            patientDetailsEditable = true;
+        }
+        opdPreBillController.prepareNewBill();
+        patient = pt;
+        paymentScheme = ms.getPaymentScheme();
+        opdPreBillController.setPatient(getPatient());
+        return "/opd/opd_pre_bill?faces-redirect=true";
     }
 
     public PaymentSchemeController getPaymentSchemeController() {

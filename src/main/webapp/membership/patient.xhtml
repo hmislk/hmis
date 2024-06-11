@@ -54,6 +54,14 @@
                             disabled="#{!webUserController.hasPrivilege('OpdBilling')}" 
                             icon="fa fa-fw fa-notes-medical" >
                         </p:commandButton>
+                        
+                        <p:commandButton 
+                            ajax="false" 
+                            action="#{opdPreBillController.navigateToBillingForCashierFromMembership(patientController.current, patientController.current.person.membershipScheme.paymentScheme)}" 
+                            value="OPD" 
+                            disabled="#{!webUserController.hasPrivilege('OpdBilling')}" 
+                            icon="fa fa-fw fa-notes-medical" >
+                        </p:commandButton>
 
                         <p:commandButton 
                             ajax="false" 
@@ -64,18 +72,7 @@
                             value="Channelling" disabled="#{!webUserController.hasPrivilege('ChannellingChannelBooking')}" >
                             <f:setPropertyActionListener value="#{patientController.current}" target="#{channelBillController.searchPatient}" ></f:setPropertyActionListener>
                         </p:commandButton>
-                        <p:commandButton ajax="false" action="/pharmacy/pharmacy_bill_retail_sale" 
-                                         actionListener="#{pharmacySaleController.prepareNewPharmacyBillForMembers()}" 
-                                         icon="fa-solid fa-prescription-bottle-medical" 
-                                         class="my-1"
-                                         value="Phamacy" disabled="#{!webUserController.hasPrivilege('PharmacySale')}" >
-                            <f:setPropertyActionListener value="#{patientController.current}" target="#{pharmacySaleController.patient}" ></f:setPropertyActionListener>
-                        </p:commandButton>
-                        <p:commandButton ajax="false" action="#{admissionController.toAdmitAMember()}" 
-                                         icon="fa-solid fa-bed" 
-                                         value="Admit" disabled="#{!webUserController.hasPrivilege('InwardAdmissionsAdmission')}" >
-                            <f:setPropertyActionListener value="#{patientController.current}" target="#{admissionController.current.patient}" ></f:setPropertyActionListener>
-                        </p:commandButton>
+                        
 
 
                     </p:panel>

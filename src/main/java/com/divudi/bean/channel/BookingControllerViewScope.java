@@ -307,9 +307,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     private Institution collectingCentre;
     private double netPlusVat;
     private Institution creditCompany;
-    
-    public void navigateToNurseViewFromChannelBookingByDate(){
-        
+
+    public void navigateToNurseViewFromChannelBookingByDate() {
+
     }
 
     public void removeAddedAditionalItems(Item item) {
@@ -960,6 +960,49 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             toDate = new Date();
             listAllSesionInstances();
             prepareForNewChannellingBill();
+            return "/channel/channel_booking_by_date?faces-redirect=true";
+        }
+
+    }
+
+    public String navigateToChannelBookingFromMembershipByDate(Patient pt, MembershipScheme ms) {
+
+        if (pt == null) {
+            JsfUtil.addErrorMessage("No Patient Selected");
+            return "";
+        }
+        if (ms == null) {
+            JsfUtil.addErrorMessage("No Membership");
+            return "";
+        }
+
+        Boolean opdBillingAfterShiftStart = sessionController.getApplicationPreference().isOpdBillingAftershiftStart();
+
+        viewScopeDataTransferController.setFromDate(fromDate);
+        viewScopeDataTransferController.setToDate(toDate);
+
+        viewScopeDataTransferController.setNeedToFillBillSessions(false);
+        viewScopeDataTransferController.setNeedToFillBillSessionDetails(false);
+        viewScopeDataTransferController.setNeedToFillSessionInstances(true);
+        viewScopeDataTransferController.setNeedToFillSessionInstanceDetails(true);
+
+        fromDate = new Date();
+        toDate = new Date();
+        listAllSesionInstances();
+        prepareForNewChannellingBill();
+
+        patient = pt;
+        paymentScheme = ms.getPaymentScheme();
+
+        if (opdBillingAfterShiftStart) {
+            financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
+            if (financialTransactionController.getNonClosedShiftStartFundBill() != null) {
+                return "/channel/channel_booking_by_date?faces-redirect=true";
+            } else {
+                JsfUtil.addErrorMessage("Start Your Shift First !");
+                return "/cashier/index?faces-redirect=true";
+            }
+        } else {
             return "/channel/channel_booking_by_date?faces-redirect=true";
         }
 

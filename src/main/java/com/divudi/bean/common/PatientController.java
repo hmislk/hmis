@@ -242,7 +242,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
     private List<PatientInvestigation> patientInvestigations;
     private List<Patient> quickSearchPatientList;
-    
+
     private Institution institution;
     private Department department;
 
@@ -1580,11 +1580,11 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
     public String navigateToAddNewIndividualMembership() {
         currentFamily = new Family();
-        if(institution==null){
+        if (institution == null) {
             institution = sessionController.getInstitution();
         }
-        if(department==null){
-            department=sessionController.getDepartment();
+        if (department == null) {
+            department = sessionController.getDepartment();
         }
         currentFamily.setCreatedInstitution(institution);
         currentFamily.setCreatedDepartment(department);
@@ -1683,13 +1683,16 @@ public class PatientController implements Serializable, ControllerWithPatient {
             JsfUtil.addErrorMessage("No Patient to Save or Update");
             return "";
         }
-        if(current.getPerson().getPhone()==null && current.getPerson().getMobile()==null){
+        // Check if both phone and mobile are either null or empty
+        if ((current.getPerson().getPhone() == null || current.getPerson().getPhone().isEmpty())
+                && (current.getPerson().getMobile() == null || current.getPerson().getMobile().isEmpty())) {
             JsfUtil.addErrorMessage("No Phone Number");
             return "";
         }
-        if(current.getPerson().getPhone()!=null){
+        // Prefer non-empty phone number, else take non-empty mobile number
+        if (current.getPerson().getPhone() != null && !current.getPerson().getPhone().isEmpty()) {
             currentFamily.setPhoneNo(current.getPerson().getPhone());
-        }else if(current.getPerson().getMobile()!=null){
+        } else if (current.getPerson().getMobile() != null && !current.getPerson().getMobile().isEmpty()) {
             currentFamily.setPhoneNo(current.getPerson().getMobile());
         }
         saveIndividualMembership();
@@ -1734,7 +1737,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         currentFamily.getFamilyMembers().add(tfm);
         saveFamily();
         department = currentFamily.getCreatedDepartment();
-        institution=currentFamily.getCreatedInstitution();
+        institution = currentFamily.getCreatedInstitution();
         membershipScheme = currentFamily.getMembershipScheme();
     }
 
@@ -2961,8 +2964,6 @@ public class PatientController implements Serializable, ControllerWithPatient {
     private void searchBySampleId(String sampleId) {
         // Logic to search by sample ID
     }
-    
-    
 
     public void setPersonFacade(PersonFacade personFacade) {
         this.personFacade = personFacade;
