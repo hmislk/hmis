@@ -176,6 +176,21 @@ public class StoreCalculation {
         //System.err.println("GETTING TOTAL QTY " + value);
         return value;
     }
+    
+    public double getTotalFreeQty(BillItem b, BillType billType) {
+        String sql = "Select sum(p.pharmaceuticalBillItem.freeQty) from BillItem p where"
+                + "  p.creater is not null and"
+                + " p.referanceBillItem=:bt and p.bill.billType=:btp";
+
+        HashMap hm = new HashMap();
+        hm.put("bt", b);
+        hm.put("btp", billType);
+
+        double value = getPharmaceuticalBillItemFacade().findDoubleByJpql(sql, hm);
+
+        //System.err.println("GETTING TOTAL QTY " + value);
+        return value;
+    }
 
     public double getBilledIssuedByRequestedItem(BillItem b, BillType billType) {
         String sql = "Select sum(p.pharmaceuticalBillItem.qty) from BillItem p where"
@@ -260,6 +275,19 @@ public class StoreCalculation {
         return getPharmaceuticalBillItemFacade().findDoubleByJpql(sql, hm);
 
     }
+    
+    public double getReturnedTotalFreeQty(BillItem b, BillType billType) {
+        String sql = "Select sum(p.pharmaceuticalBillItem.freeQty) from BillItem p where"
+                + "  p.bill.creater is not null and"
+                + " p.referanceBillItem.referanceBillItem=:bt and p.bill.billType=:btp";
+
+        HashMap hm = new HashMap();
+        hm.put("bt", b);
+        hm.put("btp", billType);
+
+        return getPharmaceuticalBillItemFacade().findDoubleByJpql(sql, hm);
+
+    }
 
     public double calQty(PharmaceuticalBillItem po) {
 
@@ -285,6 +313,16 @@ public class StoreCalculation {
 
         double grns = getTotalQty(po.getBillItem(), BillType.StoreGrnBill);
         double grnReturn = getReturnedTotalQty(po.getBillItem(), BillType.StoreGrnReturn);
+
+        double netQty = grns - grnReturn;
+
+
+        return netQty;
+    }
+    public double calFreeQtyInTwoSql(PharmaceuticalBillItem po) {
+
+        double grns = getTotalFreeQty(po.getBillItem(), BillType.StoreGrnBill);
+        double grnReturn = getReturnedTotalFreeQty(po.getBillItem(), BillType.StoreGrnReturn);
 
         double netQty = grns - grnReturn;
 
