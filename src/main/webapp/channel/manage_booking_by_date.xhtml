@@ -125,15 +125,15 @@
                                                         disabled="#{bookingControllerViewScope.selectedBillSession.billItem.bill.balance ne 0.0}">
                                                         <p:printer target="groupChannelBillReprintAsOriginal" ></p:printer>
                                                     </p:commandButton>
-                                                    
-                                                     <p:commandButton 
+
+                                                    <p:commandButton 
                                                         value="Close Print"
                                                         ajax="false"
                                                         action="#{bookingControllerViewScope.closePrinting()}"
                                                         class="ui-button-warning m-2"
                                                         icon="fa fa-close">
                                                     </p:commandButton>
-                                                    
+
                                                 </div>
                                             </div>
                                         </f:facet>
@@ -1200,12 +1200,36 @@
                                 </h:panelGrid>
                             </p:panel>
                         </p:tab>
+                        <p:tab title="Reshedule">
+                            <p:panel>
+                                <f:facet name="header">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <h:outputLabel value="Reshedule"/>
+                                        <p:commandButton value="Reshedule" />
+                                    </div>
+                                </f:facet>
+                                <h:panelGroup>
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <p:panel header="Patient Details">
+                                                <ezcommon:patient patient="#{bookingControllerViewScope.selectedBillSession.bill.patient}" ></ezcommon:patient>
+                                            </p:panel>
+                                        </div>
+                                        <div class="col-6">
+                                            <p:panel header="Other Sessions">
+                                                <p:selectOneListbox  id="lstSelect"  value="#{bookingControllerViewScope.selectedSessionInstanceForRechedule}" class="w-100" filter="true">
+                                                    <f:selectItems  value="#{bookingControllerViewScope.sessionInstanceByDoctor}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
+                    
+                                                </p:selectOneListbox>
+                                            </p:panel>
+                                        </div>
+                                    </div>
+                                </h:panelGroup>
+                            </p:panel>
+                        </p:tab>
                     </p:tabView>
-
                 </h:panelGroup>
-
             </p:panel>
-
         </h:form>
     </ui:define>
 </ui:composition>

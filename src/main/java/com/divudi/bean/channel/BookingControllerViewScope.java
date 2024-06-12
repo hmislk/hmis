@@ -307,9 +307,26 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     private Institution collectingCentre;
     private double netPlusVat;
     private Institution creditCompany;
+<<<<<<< HEAD
+    
+    private List<SessionInstance> sessionInstanceByDoctor;
+    private Staff selectedConsultant;
+    private SessionInstance selectedSessionInstanceForRechedule;
+
+    public void fillSessionInstancebyDoctor() {
+        String jpql;
+        Map m = new HashMap<>();
+        jpql = "select si from SessionInstance si where si.retired=:false and si.staff=:fromStaff";
+        m.put("fromStaff", selectedBillSession.getSessionInstance().getOriginatingSession().getStaff());
+        //m.put("os", selectedBillSession.getSessionInstance().getOriginatingSession());
+        sessionInstanceByDoctor = sessionInstanceFacade.findByJpql(jpql,m);
+        System.out.println("selectedBillSession.getSessionInstance().getStaff() = " + selectedBillSession.getSessionInstance().getStaff().getName());
+        System.out.println("sessionInstanceByDoctor = " + sessionInstanceByDoctor.size());
+=======
 
     public void navigateToNurseViewFromChannelBookingByDate() {
 
+>>>>>>> 97fef8cdd9ced940ef007a0b8fc04478ff4c7636
     }
 
     public void removeAddedAditionalItems(Item item) {
@@ -1093,7 +1110,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             JsfUtil.addErrorMessage("Please select a Patient");
             return "";
         }
-
+        
+        fillSessionInstancebyDoctor();
         // Setting the properties in the viewScopeDataTransferController
         viewScopeDataTransferController.setSelectedBillSession(selectedBillSession);
         viewScopeDataTransferController.setSelectedSessionInstance(selectedSessionInstance);
@@ -6616,6 +6634,30 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     public void setPrintPreviewForReprintingAsDuplicate(boolean printPreviewForReprintingAsDuplicate) {
         this.printPreviewForReprintingAsDuplicate = printPreviewForReprintingAsDuplicate;
+    }
+
+    public List<SessionInstance> getSessionInstanceByDoctor() {
+        return sessionInstanceByDoctor;
+    }
+
+    public void setSessionInstanceByDoctor(List<SessionInstance> sessionInstanceByDoctor) {
+        this.sessionInstanceByDoctor = sessionInstanceByDoctor;
+    }
+
+    public Staff getSelectedConsultant() {
+        return selectedConsultant;
+    }
+
+    public void setSelectedConsultant(Staff selectedConsultant) {
+        this.selectedConsultant = selectedConsultant;
+    }
+
+    public SessionInstance getSelectedSessionInstanceForRechedule() {
+        return selectedSessionInstanceForRechedule;
+    }
+
+    public void setSelectedSessionInstanceForRechedule(SessionInstance selectedSessionInstanceForRechedule) {
+        this.selectedSessionInstanceForRechedule = selectedSessionInstanceForRechedule;
     }
 
 }
