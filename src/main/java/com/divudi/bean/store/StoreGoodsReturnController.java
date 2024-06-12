@@ -204,6 +204,14 @@ public class StoreGoodsReturnController implements Serializable {
     }
 
     public void settle() {
+        if (getReturnBill().getToInstitution() == null) {
+            JsfUtil.addErrorMessage("Select Dealor");
+            return;
+        }
+        if (getReturnBill().getComments() == null || getReturnBill().getComments().trim().equals("")) {
+            JsfUtil.addErrorMessage("Please enter a comment");
+            return;
+        }
         if (checkGrnItems()) {
             JsfUtil.addErrorMessage("ITems for this GRN Already issued so you can't Return ");
             return;

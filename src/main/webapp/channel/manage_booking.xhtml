@@ -511,9 +511,22 @@
                         </h:panelGroup>
                         <p:dialog minHeight="100" width="800" header="Confirmation" widgetVar="confirmationDialog" modal="true" resizable="false">
                             <p>Are you sure you want to cancel the channel booking?</p>
-                            <p:inputText class="w-100"
-                                         value="#{channelBillController.comment}"
-                                         placeholder="Please provide a comment for the cancel Channel Booking" />
+                            <p:selectOneMenu
+                                id="commentsMenuCancel"
+                                value="#{channelBillController.comment}"
+                                editable="true"
+                                filter="true"
+                                placeholder="Select or enter a comment"
+                                filterMatchMode="contains"
+                                style="float: right; width: 100%"
+                                class="p-2">
+                                <f:selectItem itemLabel="Select or enter a comment" itemValue="" noSelectionOption="true"/>
+                                <f:selectItems
+                                    value="#{configOptionApplicationController.getListOfCustomOptions('Channel Bill Canceling Comments')}"
+                                    var="option"
+                                    itemLabel="#{option}"
+                                    itemValue="#{option}"/>
+                            </p:selectOneMenu>
 
                             <f:facet name="footer">
                                 <p:commandButton
