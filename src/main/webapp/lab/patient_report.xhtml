@@ -478,7 +478,8 @@
                     </h:form>
                     <h:form id="formPrint">
 
-                        <div class="my-1" >
+                        <div class="my-1 row" >
+                            <div class="col-3">
                             <h:panelGroup rendered="false" >
                                 <p:commandButton value="Print" 
                                                  icon="ui-icon-print" 
@@ -487,26 +488,22 @@
                                     <p:printer target="divPrint" />
                                 </p:commandButton>
                             </h:panelGroup>
-                            <h:panelGrid columns="3" >
+                            <h:panelGrid columns="2" >
                                 <p:commandButton value="Print" ajax="false" actionListener="#{patientReportController.printPatientReport()}"
                                                  icon="fa-solid fa-print"
                                                  class="mx-1 ui-button-info"
                                                  rendered="#{patientReportController.currentPatientReport.approved or userPreferenceController.userPreference.canPrintWithoutPermission }" >
+                                    <f:setPropertyActionListener target="#{patientReportController.showBackground}" value="false"/>
                                     <p:printer target="divPrint" ></p:printer>
-                                </p:commandButton>
 
-                                <p:commandButton value="Print Panel" icon="fa-solid fa-print"
-                                                 disabled="#{!patientReportController.currentPatientReport.approved or userPreferenceController.userPreference.canPrintWithoutPermission}"
-                                                 class="mx-1 ui-button-info">
-                                    <p:printer target="divPrint" />
                                 </p:commandButton>
 
                                 <p:commandButton  ajax="false" 
                                                   rendered="false"
                                                   value="Process" 
                                                   icon="fa-solid fa-file-pdf"
-                                                  class="mx-1 ui-button-danger"
-                                                  />
+                                                  class="ui-button-danger"
+                                                  ></p:commandButton>
 
                                 <p:commandButton  ajax="false" 
                                                   value="PDF" 
@@ -514,7 +511,16 @@
                                                   class="mx-1 ui-button-danger"
                                                   action="#{patientReportController.createPDFAndSaveAsaFile()}" 
                                                   rendered="#{(patientReportController.currentPatientReport.approved or userPreferenceController.userPreference.canPrintWithoutPermission)}" />
+
                             </h:panelGrid>
+                            </div>
+                            <div class="col-4">
+                                <h:outputLabel value="Show Background" class="mx-1" style="font-weight: bold; font-size: 20px;"></h:outputLabel>
+                                <p:selectBooleanButton class="mt-1 mx-4" offLabel="No" onLabel="Yes"  value="#{patientReportController.showBackground}" >
+                                    <p:ajax process="@this" update="divPrint" event="change"/>
+                                </p:selectBooleanButton>
+                            </div>
+
 
                         </div>
 
@@ -533,11 +539,10 @@
 
 
                         <h:panelGroup  id="divPrint" >
-
                             <h:panelGroup rendered="#{patientReportController.currentPatientReport.item.reportType ne 'Microbiology'}"  >
                                 <div id="divReport"  class="labReport"  >
                                     <ez:common_report 
-                                        showBackground="false"
+                                        showBackground="#{patientReportController.showBackground}"
                                         commonReportFormat="#{patientReportController.currentPatientReport.reportFormat}"
                                         patientReport="#{patientReportController.currentPatientReport}"/>
 
@@ -590,7 +595,7 @@
 
                             <h:panelGroup rendered="#{patientReportController.currentPatientReport.item.reportType eq 'Microbiology'}"  >
                                 <div id="divReportM"  class="labReport"   >
-                                    <ez:common_report commonReportFormat="#{patientReportController.currentPatientReport.reportFormat}"
+                                    <ez:common_report showBackground="#{patientReportController.showBackground}" commonReportFormat="#{patientReportController.currentPatientReport.reportFormat}"
                                                       patientReport="#{patientReportController.currentPatientReport}"/>
                                     <div style="position: absolute; top: 27%; width: 97%; left: 1%; text-align: center; font-family:Cambria, Georgia, serif; font-size: 14px; height: 70%; vertical-align: top;" >
                                         <div id="ixName" >
