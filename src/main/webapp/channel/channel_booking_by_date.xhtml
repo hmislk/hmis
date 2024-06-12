@@ -301,9 +301,24 @@
                                                     </p:outputLabel>
                                                     <p:outputLabel
                                                         value="#{bookingControllerViewScope.feeTotalForSelectedBill}"
-                                                        rendered="#{!bookingControllerViewScope.foriegn}">
-
+                                                        rendered="#{!bookingControllerViewScope.foriegn or true}">
                                                     </p:outputLabel>
+                                                    <br/>
+                                                    Total
+                                                    <p:outputLabel
+                                                        value="#{bookingControllerViewScope.feeTotalForSelectedBill}" >
+                                                    </p:outputLabel>
+                                                    <br/>
+                                                    Discount
+                                                    <p:outputLabel
+                                                        value="#{bookingControllerViewScope.feeDiscountForSelectedBill}">
+                                                    </p:outputLabel>
+                                                    <br/>
+                                                    Net
+                                                    <p:outputLabel
+                                                        value="#{bookingControllerViewScope.feeNetTotalForSelectedBill}">
+                                                    </p:outputLabel>
+
                                                 </h:panelGroup>
                                                 <p:outputLabel value="Tenderd Amount"/>
 
@@ -361,7 +376,7 @@
                                                     <f:selectItems value="#{paymentSchemeController.paymentSchemesForChannel}"
                                                                    var="paysch" itemLabel="#{paysch.name}" itemValue="#{paysch}"  />
                                                     <p:ajax process="@this"
-                                                            update="lblSessionTotal"
+                                                            update="gdManageBookings :#{p:resolveFirstComponentWithId('lblSessionTotal',view).clientId} paymentDetails lstItems"
                                                             event="change"
                                                             listener="#{bookingControllerViewScope.changeListener()}"/>
                                                 </p:selectOneMenu>
