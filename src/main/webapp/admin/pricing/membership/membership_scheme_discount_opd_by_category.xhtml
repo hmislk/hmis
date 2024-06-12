@@ -53,7 +53,7 @@
                                 <p:inputText autocomplete="off" value="#{opdMemberShipDiscountController.margin}" />
                                 <h:outputLabel value="" ></h:outputLabel>
                                 <p:commandButton id="btnAdd" value="Add" ajax="false"
-                                                action="#{opdMemberShipDiscountController.saveOpdCategory()}" >
+                                                 action="#{opdMemberShipDiscountController.saveOpdCategory()}" >
                                 </p:commandButton>
 
                                 <p:defaultCommand target="btnAdd"/>
@@ -62,7 +62,7 @@
                                 <p:dataExporter type="xlsx" target="inwd" fileName="Price_metrix_investigation"  />
                             </p:commandButton>
                             <p:commandButton ajax="false" value="Fill"
-                                            action="#{opdMemberShipDiscountController.createItemsCategoryOpd()}" />
+                                             action="#{opdMemberShipDiscountController.createItemsCategoryOpd()}" />
                             <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" >                                         
                                 <p:printer target="reportPrint"/>
                             </p:commandButton>
@@ -83,11 +83,16 @@
                                     </p:autoComplete>
                                 </p:column>
 
-                                <p:column headerText="Category Name"
-                                          filterBy="#{a.category.name}" filterMatchMode="contains">
-                                    <p:autoComplete forceSelection="true" value="#{a.category}"
-                                                    completeMethod="#{categoryController.completeCategoryInvestigation}" 
-                                                    var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" >
+                                <p:column 
+                                    headerText="Category Name"
+                                    filterBy="#{a.category.name}" 
+                                    filterMatchMode="contains">
+                                    <p:autoComplete 
+                                        forceSelection="true" value="#{a.category}"
+                                        completeMethod="#{categoryController.completeCategory}" 
+                                        var="cat" 
+                                        itemLabel="#{cat.name}" 
+                                        itemValue="#{cat}" >
                                         <p:column>
                                             <h:outputLabel value="#{cat.name}"/>
                                         </p:column>

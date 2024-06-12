@@ -171,10 +171,15 @@ public class OpdMemberShipDiscountController implements Serializable {
             JsfUtil.addErrorMessage("Please select Payment Method");
             return;
         }
+        if (category == null) {
+            JsfUtil.addErrorMessage("Please select Category");
+            return;
+        }
 
         PaymentSchemeDiscount a = new PaymentSchemeDiscount();
         a.setPaymentScheme(paymentScheme);
         a.setPaymentMethod(paymentMethod);
+        a.setCategory(category);
         a.setBillType(BillType.ChannelCash);
         a.setDiscountPercent(margin);
         a.setCreatedAt(new Date());
@@ -664,7 +669,8 @@ public class OpdMemberShipDiscountController implements Serializable {
         filterItems = null;
         String sql;
         HashMap hm = new HashMap();
-        sql = "select a from PaymentSchemeDiscount a "
+        sql = "select a "
+                + " from PaymentSchemeDiscount a "
                 + " where a.retired=false"
                 + " and a.paymentScheme=:pm "
                 + " and a.category is null"
