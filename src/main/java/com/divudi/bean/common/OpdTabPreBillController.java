@@ -1050,7 +1050,7 @@ public class OpdTabPreBillController implements Serializable, ControllerWithPati
         updatingPreBill.setBillTime(new Date());
         updatingPreBill.setPatient(getPatient());
 
-        updatingPreBill.setMembershipScheme(membershipSchemeController.fetchPatientMembershipScheme(getPatient(), getSessionController().getApplicationPreference().isMembershipExpires()));
+//        updatingPreBill.setMembershipScheme(membershipSchemeController.fetchPatientMembershipScheme(getPatient(), getSessionController().getApplicationPreference().isMembershipExpires()));
 
         updatingPreBill.setPaymentScheme(getPaymentScheme());
         updatingPreBill.setPaymentMethod(paymentMethod);

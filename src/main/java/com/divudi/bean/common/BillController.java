@@ -2112,7 +2112,7 @@ public class BillController implements Serializable {
         temp.setBillTime(new Date());
         temp.setPatient(tmpPatient);
 
-        temp.setMembershipScheme(membershipSchemeController.fetchPatientMembershipScheme(tmpPatient, getSessionController().getApplicationPreference().isMembershipExpires()));
+//        temp.setMembershipScheme(membershipSchemeController.fetchPatientMembershipScheme(tmpPatient, getSessionController().getApplicationPreference().isMembershipExpires()));
 
         temp.setPaymentScheme(getPaymentScheme());
         temp.setPaymentMethod(paymentMethod);
@@ -2773,7 +2773,7 @@ public class BillController implements Serializable {
         double billNet = 0.0;
         double billVat = 0.0;
 
-        MembershipScheme membershipScheme = membershipSchemeController.fetchPatientMembershipScheme(getSearchedPatient(), getSessionController().getApplicationPreference().isMembershipExpires());
+//        MembershipScheme membershipScheme = membershipSchemeController.fetchPatientMembershipScheme(getSearchedPatient(), getSessionController().getApplicationPreference().isMembershipExpires());
 
         for (BillEntry be : getLstBillEntries()) {
             //////// // System.out.println("bill item entry");

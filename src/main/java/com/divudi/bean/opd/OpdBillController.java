@@ -1905,7 +1905,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         newBill.setBillTime(new Date());
         newBill.setPatient(patient);
 
-        newBill.setMembershipScheme(membershipSchemeController.fetchPatientMembershipScheme(patient, getSessionController().getApplicationPreference().isMembershipExpires()));
+//        newBill.setMembershipScheme(membershipSchemeController.fetchPatientMembershipScheme(patient, getSessionController().getApplicationPreference().isMembershipExpires()));
 
         newBill.setPaymentScheme(getPaymentScheme());
         newBill.setPaymentMethod(paymentMethod);
@@ -1983,7 +1983,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         newBill.setBillTime(new Date());
         newBill.setPatient(patient);
 
-        newBill.setMembershipScheme(membershipSchemeController.fetchPatientMembershipScheme(patient, getSessionController().getApplicationPreference().isMembershipExpires()));
+//        newBill.setMembershipScheme(membershipSchemeController.fetchPatientMembershipScheme(patient, getSessionController().getApplicationPreference().isMembershipExpires()));
 
         newBill.setPaymentScheme(getPaymentScheme());
         newBill.setPaymentMethod(paymentMethod);
@@ -2554,7 +2554,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         double billNet = 0.0;
         double billVat = 0.0;
 
-        MembershipScheme membershipScheme = membershipSchemeController.fetchPatientMembershipScheme(getPatient(), getSessionController().getApplicationPreference().isMembershipExpires());
+//        MembershipScheme membershipScheme = membershipSchemeController.fetchPatientMembershipScheme(getPatient(), getSessionController().getApplicationPreference().isMembershipExpires());
 
         for (BillEntry be : getLstBillEntries()) {
             //////// // System.out.println("bill item entry");
