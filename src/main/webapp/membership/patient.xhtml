@@ -47,29 +47,33 @@
 
 
 
-                        <p:commandButton ajax="false" action="/opd/opd_bill"  actionListener="#{billController.prepareNewBillForMember()}" 
-                                         value="OPD" disabled="#{!webUserController.hasPrivilege('OpdBilling')}" icon="fa fa-fw fa-notes-medical" >
-                            <f:setPropertyActionListener value="#{patientController.current}" target="#{billController.searchedPatient}" ></f:setPropertyActionListener>
+                        <p:commandButton 
+                            ajax="false" 
+                            action="#{opdBillController.navigateToNewOpdBillWithPaymentScheme(patientController.current, patientController.current.person.membershipScheme.paymentScheme)}" 
+                            value="OPD Billing" 
+                            class="mx-2"
+                            disabled="#{!webUserController.hasPrivilege('OpdBilling')}" 
+                            icon="fa fa-fw fa-notes-medical" >
                         </p:commandButton>
-                        <p:commandButton ajax="false" action="/channel/channel_booking" 
-                                         icon="fa fa-fw fa-calendar-check" 
-                                         class="mx-1"
-                                         actionListener="#{channelBillController.prepareForNewChannellingBillForMember()}" 
-                                         value="Channelling" disabled="#{!webUserController.hasPrivilege('ChannellingChannelBooking')}" >
+
+                        <p:commandButton 
+                            ajax="false" 
+                            action="#{opdPreBillController.navigateToBillingForCashierFromMembership(patientController.current, patientController.current.person.membershipScheme.paymentScheme)}" 
+                            value="OPD Billing for Cashier" 
+                            class="mx-2"
+                            disabled="#{!webUserController.hasPrivilege('OpdBilling')}" 
+                            icon="fa fa-fw fa-cash-register"  >
+                        </p:commandButton>
+
+                        <p:commandButton 
+                            ajax="false" 
+                            icon="fa fa-fw fa-calendar-check" 
+                            class="mx-2"
+                            action="#{bookingControllerViewScope.navigateToChannelBookingFromMembershipByDate(patientController.current, patientController.current.person.membershipScheme.paymentScheme)}" 
+                            value="Channelling" disabled="#{!webUserController.hasPrivilege('ChannellingChannelBooking')}" >
                             <f:setPropertyActionListener value="#{patientController.current}" target="#{channelBillController.searchPatient}" ></f:setPropertyActionListener>
                         </p:commandButton>
-                        <p:commandButton ajax="false" action="/pharmacy/pharmacy_bill_retail_sale" 
-                                         actionListener="#{pharmacySaleController.prepareNewPharmacyBillForMembers()}" 
-                                         icon="fa-solid fa-prescription-bottle-medical" 
-                                         class="my-1"
-                                         value="Phamacy" disabled="#{!webUserController.hasPrivilege('PharmacySale')}" >
-                            <f:setPropertyActionListener value="#{patientController.current}" target="#{pharmacySaleController.patient}" ></f:setPropertyActionListener>
-                        </p:commandButton>
-                        <p:commandButton ajax="false" action="#{admissionController.toAdmitAMember()}" 
-                                         icon="fa-solid fa-bed" 
-                                         value="Admit" disabled="#{!webUserController.hasPrivilege('InwardAdmissionsAdmission')}" >
-                            <f:setPropertyActionListener value="#{patientController.current}" target="#{admissionController.current.patient}" ></f:setPropertyActionListener>
-                        </p:commandButton>
+
 
 
                     </p:panel>

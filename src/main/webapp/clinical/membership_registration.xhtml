@@ -286,19 +286,19 @@
                             <p:panelGrid columns="2" id="panGrid2">
 
                                 <h:outputLabel value=" Full Name"/>
-                                <p:inputText autocomplete="off"  style="width: 200px;text-transform:capitalize;" value="#{patientController.familyMember.fullName}"  requiredMessage="please enter full name">
+                                <p:inputText autocomplete="off"  style="width: 200px;text-transform:capitalize;" value="#{patientController.familyMember.patient.person.name}"  requiredMessage="please enter full name">
                                 </p:inputText>
                                 <h:outputLabel value="Gender"/>
-                                <p:selectOneMenu value="#{patientController.familyMember.sex}" style="width: 200px;"  requiredMessage="please select gender">
+                                <p:selectOneMenu value="#{patientController.familyMember.patient.person.sex}" style="width: 200px;"  requiredMessage="please select gender">
                                     <f:selectItem itemLabel="Select Sex"/>
                                     <f:selectItems value="#{patientController.sexs}" />
                                 </p:selectOneMenu>
 
                                 <h:outputLabel value="NIC"/>
-                                <p:inputText value="#{patientController.familyMember.nic}"  requiredMessage="please enter NIC no"/>
+                                <p:inputText value="#{patientController.familyMember.patient.person.nic}"  requiredMessage="please enter NIC no"/>
 
                                 <h:outputLabel value="Date of Birth"/>
-                                <p:calendar  value="#{patientController.familyMember.dob}"  navigator="true" pattern="#{sessionController.applicationPreference.shortDateFormat}"  requiredMessage="please enter date of birth"/>
+                                <p:calendar  value="#{patientController.familyMember.patient.person.dob}"  navigator="true" pattern="#{sessionController.applicationPreference.shortDateFormat}"  requiredMessage="please enter date of birth"/>
 
                                 <p:commandButton value=" Add Member" actionListener="#{patientController.createFamilymembers}" update=":#{p:resolveFirstComponentWithId('familyDetails',view).clientId} pan2" oncomplete="handleLoginRequest(xhr, status, args)"/>
                                 <p:commandButton value="Cancel" onclick="PF('dlg').hide()" actionListener="#{patientController.listnerFamilyMember()}" ajax="false"/>

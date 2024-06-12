@@ -29,7 +29,7 @@
                                         action="#{bookingControllerViewScope.navigateToChannelBookingFromMenuByDate()}" 
                                         value="Back to Channel Booking" >
                                     </p:commandButton>
-                                   
+
                                 </div>
                             </div>
                         </f:facet>
@@ -87,14 +87,32 @@
 
                             </f:facet>
 
-                            <p:column headerText="No" style="width: 5px!important;" exportable="false">
+                            <p:column headerText="Appointment No" style="width: 5px!important;" exportable="false">
                                 #{bs.serialNo}
                             </p:column>
 
                             <p:column headerText="Patient Name" width="50%">
                                 #{bs.bill.patient.person.nameWithTitle}
                             </p:column>
+                            <p:column headerText="Appointment time" width="50%">
+                                <p:outputLabel value="#{bs.createdAt}">
+                                    <f:convertDateTime pattern="HH:mm a"/>
+                                </p:outputLabel>
 
+                            </p:column>
+                            <p:column headerText="Mobile Number" width="50%">
+                                #{bs.bill.patient.person.phone}
+                            </p:column>
+                            <p:column headerText="Remark" width="50%">
+                                <p:outputLabel rendered="#{bs.bill.balance ne 0.0}" value="Credit" style="color: red;font-size: 10pt;font-weight: bold" />
+                                <p:outputLabel rendered="#{bs.bill.balance eq 0.0}" value="Paid" style="color: green;font-size: 10pt;font-weight: bold"/>
+                            </p:column>
+                            <p:column headerText="Creater" width="50%">
+                                <p:outputLabel value="#{bs.creater.name}" style="font-size: 10pt;font-weight: bold" />
+                            </p:column>
+                            <p:column headerText="billed by" width="50%">
+                                <p:outputLabel value="#{bs.bill.creater.name}" style="font-size: 10pt;font-weight: bold" />
+                            </p:column>
                             <p:column headerText="Comment" rendered="#{sessionController.loggedPreference.applicationInstitution ne 'Cooperative'}" exportable="false">
                                 <p:inputText class="w-100"/>
                             </p:column>
@@ -103,12 +121,6 @@
                                 <p:outputLabel value="#{bs.bill.deptId}" rendered="#{bs.bill.paidBill eq null}" />
                                 <p:outputLabel value="#{bs.bill.paidBill.deptId}" rendered="#{bs.bill.paidBill ne null}" />
                             </p:column>
-
-                            <p:column headerText="Remark" style="width: 50px;">
-                                <p:outputLabel rendered="#{bs.bill.paidAmount eq 0}" value="Credit" style="color: red;"/>
-                                <p:outputLabel rendered="#{bs.bill.paidAmount ne 0}" value="Paid" style="color: green;"/>
-                            </p:column>
-
 
                             <p:column headerText="C / R" style="text-align: center; width: 50px;">
                                 <p:outputLabel value="C" rendered="#{bs.bill.cancelled eq true}" style="color: red;"/>
