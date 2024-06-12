@@ -52,7 +52,7 @@
                                 <p:commandButton 
                                     action="#{opdBillController.navigateToNewOpdBillWithPaymentScheme(f.patient, f.family.membershipScheme.paymentScheme)}" 
                                     ajax="false"
-                                    class="w-100 mx-2"
+                                    class="mx-2"
                                     icon="fa fa-fw fa-file-medical"
                                     title="OPD Billing">
                                 </p:commandButton>
@@ -60,7 +60,7 @@
                                 <p:commandButton 
                                     action="#{opdPreBillController.navigateToBillingForCashierFromMembership(f.patient, f.family.membershipScheme.paymentScheme)}" 
                                     ajax="false"
-                                    class="w-100 mx-2"
+                                    class="mx-2"
                                     icon="fa fa-fw fa-cash-register"
                                     title="OPD Billing for Cashier">
                                 </p:commandButton>
@@ -69,7 +69,7 @@
                                     ajax="false"
                                     action="#{bookingControllerViewScope.navigateToChannelBookingFromMembershipByDate(f.patient, f.family.membershipScheme.paymentScheme)}" 
                                     icon="fa fa-fw fa-calendar-check" 
-                                    class="w-100 mx-1"
+                                    class="mx-1"
                                     title="Channelling"
                                     disabled="#{!webUserController.hasPrivilege('ChannellingChannelBooking')}">
                                 </p:commandButton>
