@@ -34,11 +34,15 @@
                         </f:facet>
 
                         <h:panelGroup id="divPrint" >
+                             <h:outputLabel value="Show Background" class="mx-1 my-1" style="font-weight: bold; font-size: 20px;"></h:outputLabel>
+                                <p:selectBooleanButton class="mt-1 mx-4 my-1" offLabel="No" onLabel="Yes"  value="#{patientReportController.showBackground}" >
+                                    <p:ajax process="@this" update="divPrint" event="change"/>
+                                </p:selectBooleanButton>
 
-                            <h:panelGroup rendered="#{patientReportController.currentPatientReport.item.reportType ne 'Microbiology'}"  >
+                             <h:panelGroup rendered="#{patientReportController.currentPatientReport.item.reportType ne 'Microbiology'}" >
                                 <div id="divReport"  class="labReport1" >
                                     <ez:common_report 
-                                        showBackground="false"
+                                        showBackground="#{patientReportController.showBackground}"
                                         commonReportFormat="#{patientReportController.currentPatientReport.reportFormat}"
                                         patientReport="#{patientReportController.currentPatientReport}"/>
 
@@ -92,6 +96,7 @@
                             <h:panelGroup rendered="#{patientReportController.currentPatientReport.item.reportType eq 'Microbiology'}"  >
                                 <div id="divReportM"  class="labReport"   >
                                     <ez:common_report commonReportFormat="#{patientReportController.currentPatientReport.reportFormat}"
+                                                      showBackground="#{patientReportController.showBackground}"
                                                       patientReport="#{patientReportController.currentPatientReport}"/>
                                     <div style="position: absolute; top: 27%; width: 97%; left: 1%; text-align: center; font-family:Cambria, Georgia, serif; font-size: 14px; height: 70%; vertical-align: top;" >
                                         <div id="ixName" >

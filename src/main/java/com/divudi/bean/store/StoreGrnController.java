@@ -31,6 +31,9 @@ import com.divudi.facade.ItemFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
 import com.divudi.facade.StockFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.BillTypeAtomic;
+import com.divudi.entity.Payment;
+import com.divudi.facade.PaymentFacade;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.text.DateFormat;
@@ -74,6 +77,8 @@ public class StoreGrnController implements Serializable {
     StoreBean storeBean;
     @EJB
     private AmpFacade ampFacade;
+    @EJB
+    PaymentFacade paymentFacade;
 
     private CommonFunctions commonFunctions;
     @Inject
@@ -341,6 +346,8 @@ public class StoreGrnController implements Serializable {
             getBillItemFacade().create(i);
             getGrnBill().getBillExpenses().add(i);
         }
+        
+        Payment p = createPayment(getGrnBill(), getGrnBill().getPaymentMethod());
 
         getGrnBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.StoreGrnBill, BillClassType.BilledBill, BillNumberSuffix.GRN));
         getGrnBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.StoreGrnBill, BillClassType.BilledBill, BillNumberSuffix.GRN));
@@ -367,6 +374,29 @@ public class StoreGrnController implements Serializable {
 
         //  getPharmacyBillBean().editBill(, , getSessionController());
         printPreview = true;
+
+    }
+    
+    public Payment createPayment(Bill bill, PaymentMethod pm) {
+        Payment p = new Payment();
+        p.setBill(bill);
+        setPaymentMethodData(p, pm);
+        return p;
+    }
+    
+    public void setPaymentMethodData(Payment p, PaymentMethod pm) {
+
+        p.setInstitution(getSessionController().getInstitution());
+        p.setDepartment(getSessionController().getDepartment());
+        p.setCreatedAt(new Date());
+        p.setCreater(getSessionController().getLoggedUser());
+        p.setPaymentMethod(pm);
+
+        p.setPaidValue(p.getBill().getNetTotal());
+
+        if (p.getId() == null) {
+            paymentFacade.create(p);
+        }
 
     }
 
@@ -428,6 +458,7 @@ public class StoreGrnController implements Serializable {
         getGrnBill().setFromInstitution(getApproveBill().getToInstitution());
         getGrnBill().setDepartment(getSessionController().getDepartment());
         getGrnBill().setInstitution(getSessionController().getInstitution());
+        getGrnBill().setBillTypeAtomic(BillTypeAtomic.STORE_GRN);
         //   getGrnBill().setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyGrnBill, BillNumberSuffix.GRN));
         //   getGrnBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getGrnBill(), BillType.PharmacyGrnBill, BillNumberSuffix.GRN));
 
@@ -832,6 +863,7 @@ public class StoreGrnController implements Serializable {
         if (grnBill == null) {
             grnBill = new BilledBill();
             grnBill.setBillType(BillType.StoreGrnBill);
+            grnBill.setBillTypeAtomic(BillTypeAtomic.STORE_GRN);
         }
         return grnBill;
     }

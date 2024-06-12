@@ -125,7 +125,7 @@
                                     ajax="false"
                                     icon="fas fa-check-circle"
                                     class="ui-button-success mx-2"
-                                    action="store_purhcase_order_approving?faces-redirect=true"
+                                    action="#{storePurchaseOrderController.navigateToPurchaseOrderApproval()}"
                                     disabled="#{b.referenceBill.creater ne null or b.referenceBill.cancelled eq false or b.cancelled eq true or !webUserController.hasPrivilege('StorePurchaseOrderApprove')}">
                                     <f:setPropertyActionListener target="#{storePurchaseOrderController.requestedBill}" value="#{b}"/>
                                 </p:commandButton>
