@@ -189,8 +189,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
     private Patient current;
     private Person currentPerson;
     Long patientId;
-    private Person familyMember;
-    private List<Person> familyMembers;
+    private FamilyMember familyMember;
+    private List<FamilyMember> familyMembers;
     Family currentFamily;
     private List<Family> families;
     FamilyMember currentFamilyMember;
@@ -1605,6 +1605,12 @@ public class PatientController implements Serializable, ControllerWithPatient {
         return "/membership/family_membership_search?faces-redirect=true";
     }
 
+    public String navigateToSearchIndividualMembership() {
+        currentFamily = null;
+        currentFamilyMember = null;
+        return "/membership/individual_membership_search?faces-redirect=true";
+    }
+
     public String searchFamily() {
         families = null;
         String j = "Select f from Family f where f.retired=false and f.phoneNo = :pn or f.membershipCardNo = :mcn";
@@ -1629,6 +1635,43 @@ public class PatientController implements Serializable, ControllerWithPatient {
             families = fs;
             searchText = "";
             return "/membership/search_family?faces-redirect=true;";
+        }
+    }
+
+    public String searchFamilyMember() {
+        familyMembers = null;
+        String j = "Select fm "
+                + " from FamilyMember fm"
+                + " where fm.retired=false "
+                + " and fm.family.retired=false "
+                + " and (fm.family.phoneNo=:pn or fm.family.membershipCardNo=:mcn or fm.patient.person.mobile=:mobile or fm.patient.person.phone=:phone) ";
+        Map m = new HashMap();
+        Long mcn;
+        try {
+            mcn = Long.parseLong(searchText);
+        } catch (Exception e) {
+            mcn = 0L;
+        }
+        m.put("pn", searchText);
+        m.put("mcn", mcn);
+        m.put("mobile", searchText);
+        m.put("phone", searchText);
+
+        List<FamilyMember> fs = familyMemberFacade.findByJpql(j, m);
+        if (fs == null) {
+            JsfUtil.addErrorMessage("No matches");
+            return "";
+        } else if (fs.size() == 1) {
+            currentFamilyMember = fs.get(0);
+            current = currentFamilyMember.getPatient();
+            searchText = "";
+            return navigateToManageIndividualMembership();
+        } else {
+            familyMembers = fs;
+            familyMember = null;
+            current = null;
+            searchText = "";
+            return "";
         }
     }
 
@@ -1939,36 +1982,39 @@ public class PatientController implements Serializable, ControllerWithPatient {
     public void createFamilymembers(ActionEvent event) {
         FacesMessage message = null;
         boolean loggedIn;
-
-        if (familyMember.getFullName() == null || familyMember.getFullName().equals("")) {
+        if (familyMember == null) {
             loggedIn = false;
             JsfUtil.addErrorMessage("Please enter full name");
             return;
 
         }
-        if (familyMember.getSex() == null) {
+        if (familyMember.getPatient() == null) {
+            loggedIn = false;
+            JsfUtil.addErrorMessage("Please enter full name");
+            return;
+
+        }
+        if (familyMember.getPatient().getPerson().getName() == null || familyMember.getPatient().getPerson().getName().equals("")) {
+            loggedIn = false;
+            JsfUtil.addErrorMessage("Please enter full name");
+            return;
+
+        }
+        if (familyMember.getPatient().getPerson().getSex() == null) {
             loggedIn = false;
             JsfUtil.addErrorMessage("Please enter gender");
             return;
 
         }
-        if (familyMember.getNic() == null || familyMember.getNic().equals("")) {
-            loggedIn = false;
-            JsfUtil.addErrorMessage("Please enter NIC no");
-            return;
-        }
-        if (familyMember.getDob() == null) {
+       
+        if (familyMember.getPatient().getPerson().getDob() == null) {
             loggedIn = false;
             JsfUtil.addErrorMessage("Please enter Date Of Birth");
             return;
         }
-        familyMember.setSerealNumber(familyMembers.size());
         familyMembers.add(familyMember);
         loggedIn = true;
-
         familyMember = null;
-
-//        context.addCallbackParam("loggedIn", loggedIn);
         PrimeRequestContext.getCurrentInstance().getCallbackParams().put("loggedIn", loggedIn);
     }
 
@@ -1976,8 +2022,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
         familyMembers.remove(p.getSerealNumber());
         int i = 0;
-        for (Person familyMember1 : familyMembers) {
-            familyMember1.setSerealNumber(i);
+        for (FamilyMember familyMember1 : familyMembers) {
+            familyMember1.getPatient().getPerson().setSerealNumber(i);
             i++;
         }
     }
@@ -3001,25 +3047,27 @@ public class PatientController implements Serializable, ControllerWithPatient {
         this.membershipTypeListner = membershipTypeListner;
     }
 
-    public Person getFamilyMember() {
+    public FamilyMember getFamilyMember() {
         if (familyMember == null) {
-            familyMember = new Person();
+            familyMember = new FamilyMember();
+            Patient pt = new Patient();
+            familyMember.setPatient(pt);
         }
         return familyMember;
     }
 
-    public void setFamilyMember(Person familyMember) {
+    public void setFamilyMember(FamilyMember familyMember) {
         this.familyMember = familyMember;
     }
 
-    public List<Person> getFamilyMembers() {
+    public List<FamilyMember> getFamilyMembers() {
         if (familyMembers == null) {
             familyMembers = new ArrayList<>();
         }
         return familyMembers;
     }
 
-    public void setFamilyMembers(List<Person> familyMembers) {
+    public void setFamilyMembers(List<FamilyMember> familyMembers) {
         this.familyMembers = familyMembers;
     }
 

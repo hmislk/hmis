@@ -934,11 +934,11 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             fillFees();
         }
 
-        if (viewScopeDataTransferController.getNeedToPrepareForNewBooking()) {
+        if (viewScopeDataTransferController.getNeedToPrepareForNewBooking() != null && viewScopeDataTransferController.getNeedToPrepareForNewBooking()) {
             prepareForNewChannellingBill();
         }
 
-        if (viewScopeDataTransferController.getNeedToFillMembershipDetails()) {
+        if (viewScopeDataTransferController.getNeedToFillMembershipDetails() != null && viewScopeDataTransferController.getNeedToFillMembershipDetails()) {
             patient = viewScopeDataTransferController.getPatient();
             paymentScheme = viewScopeDataTransferController.getPaymentScheme();
         }
