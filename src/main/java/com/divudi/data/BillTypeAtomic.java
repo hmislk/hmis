@@ -22,6 +22,20 @@ public enum BillTypeAtomic {
     INWARD_SERVICE_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION("Opd Bill Cancellation with Batch Bill", BillCategory.CANCELLATION, ServiceType.INWARD, BillFinanceType.NO_FINANCE_TRANSACTIONS),
     INWARD_SERVICE_BATCH_BILL_REFUND("Opd Bill Refund", BillCategory.REFUND, ServiceType.INWARD, BillFinanceType.NO_FINANCE_TRANSACTIONS),
     INWARD_SERVICE_PROFESSIONAL_PAYMENT_BILL("OPD Professional Payment bill", BillCategory.BILL, ServiceType.INWARD, BillFinanceType.NO_FINANCE_TRANSACTIONS),
+    //Store
+    STORE_ORDER("Store Order", BillCategory.BILL, ServiceType.STORE, BillFinanceType.CASH_IN),
+    STORE_ORDER_PRE("Store Order Pre", BillCategory.BILL, ServiceType.STORE, BillFinanceType.NO_FINANCE_TRANSACTIONS),
+    STORE_ORDER_CANCELLED("Store Order Cancelled", BillCategory.CANCELLATION, ServiceType.STORE, BillFinanceType.CASH_OUT),
+    STORE_ORDER_APPROVAL("Store Order Approval", BillCategory.BILL, ServiceType.STORE, BillFinanceType.CASH_IN),
+    STORE_ORDER_APPROVAL_CANCELLED("Store Order Approval Cancelled", BillCategory.CANCELLATION, ServiceType.STORE, BillFinanceType.CASH_OUT),
+    STORE_DIRECT_PURCHASE("Store Direct Purchase", BillCategory.BILL, ServiceType.STORE, BillFinanceType.CASH_IN),
+    STORE_DIRECT_PURCHASE_CANCELLED("Store Direct Purchase Cancelled", BillCategory.CANCELLATION, ServiceType.STORE, BillFinanceType.CASH_OUT),
+    STORE_DIRECT_PURCHASE_REFUND("Store Direct Purchase Refund", BillCategory.REFUND, ServiceType.STORE, BillFinanceType.CASH_OUT),
+    STORE_GRN("Store GRN", BillCategory.PAYMENTS, ServiceType.STORE, BillFinanceType.CASH_OUT),
+    STORE_GRN_CANCELLED("Store GRN Cancelled", BillCategory.CANCELLATION, ServiceType.STORE, BillFinanceType.CASH_OUT),
+    STORE_GRN_REFUND("Store GRN Refund", BillCategory.REFUND, ServiceType.STORE, BillFinanceType.CASH_OUT),
+    STORE_GRN_RETURN("Store GRN Return", BillCategory.REFUND, ServiceType.STORE, BillFinanceType.CASH_IN),
+    
     // Pharmacy
     PHARMACY_RETAIL_SALE("Pharmacy Retail Sale", BillCategory.BILL, ServiceType.PHARMACY, BillFinanceType.CASH_IN),
     PHARMACY_RETAIL_SALE_PRE("Pharmacy Retail Sale Pre", BillCategory.BILL, ServiceType.PHARMACY, BillFinanceType.NO_FINANCE_TRANSACTIONS),

@@ -23,6 +23,7 @@ import com.divudi.facade.ItemFacade;
 import com.divudi.facade.ItemsDistributorsFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.BillTypeAtomic;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -175,7 +176,7 @@ public class StorePurchaseOrderRequestController implements Serializable {
 
         getCurrentBill().setFromDepartment(getSessionController().getLoggedUser().getDepartment());
         getCurrentBill().setFromInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
-
+        getCurrentBill().setBillTypeAtomic(BillTypeAtomic.STORE_ORDER_PRE);
         if (getCurrentBill().getId() == null) {
             getBillFacade().create(getCurrentBill());
         } else {

@@ -31,6 +31,7 @@ import com.divudi.facade.ItemFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
 import com.divudi.facade.StockFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.BillTypeAtomic;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.text.DateFormat;
@@ -428,6 +429,7 @@ public class StoreGrnController implements Serializable {
         getGrnBill().setFromInstitution(getApproveBill().getToInstitution());
         getGrnBill().setDepartment(getSessionController().getDepartment());
         getGrnBill().setInstitution(getSessionController().getInstitution());
+        getGrnBill().setBillTypeAtomic(BillTypeAtomic.STORE_GRN);
         //   getGrnBill().setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyGrnBill, BillNumberSuffix.GRN));
         //   getGrnBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getGrnBill(), BillType.PharmacyGrnBill, BillNumberSuffix.GRN));
 
