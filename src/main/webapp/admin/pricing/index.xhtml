@@ -93,21 +93,19 @@
 
                                     <p:tab title="Manage Discount Schemes">
                                         <div class="d-grid gap-2">
-                                            <p:commandButton class="w-100"
-                                                             ajax="false" value="Discount Schemes"
-                                                             action="/admin/pricing/payment_scheme"/>
+                                            <p:commandButton 
+                                                class="w-100" 
+                                                action="#{paymentSchemeController.navigateToPaymentScheme()}" 
+                                                value="Discount Schemes" 
+                                                ajax="false" 
+                                                rendered="#{webUserController.hasPrivilege('MembershipSchemes')}"/>   
                                             <p:commandButton 
                                                 class="w-100" 
                                                 action="#{membershipSchemeController.navigateToMembershipScheme()}" 
                                                 value="Membership Schemes" 
                                                 ajax="false" 
                                                 rendered="#{webUserController.hasPrivilege('MembershipSchemes')}"/>
-                                            <p:commandButton 
-                                                class="w-100" 
-                                                action="#{paymentSchemeController.navigateToPaymentScheme()}" 
-                                                value="Discount Schemes" 
-                                                ajax="false" 
-                                                rendered="#{webUserController.hasPrivilege('MembershipSchemes')}"/>                                       
+
                                             <p:commandButton 
                                                 class="w-100" 
                                                 action="#{navigationController.navigateToPaymentMethodAllowed()}"   
@@ -135,7 +133,7 @@
                                                 value="OPD Discount by Category" 
                                                 actionListener="#{opdMemberShipDiscountController.recreateModel()}"  
                                                 ajax="false"/>
-                                            
+
                                             <p:commandButton 
                                                 class="w-100"
                                                 action="#{navigationController.navigateToPaymentSchemeDiscountOpdByItem()}" 

@@ -33,22 +33,8 @@
                                                 forceSelection="true"
                                                 completeMethod="#{categoryController.completeCategoryServiceInvestigation}"
                                                 var="cat" itemLabel="#{cat.name} #{cat.parentCategory}" itemValue="#{cat}" >
-                                    <p:column headerText="Category">
-                                        <h:outputLabel value="#{cat.name}"/>
-                                    </p:column>
-                                    <p:column headerText="Parent Category">
-                                        <h:outputLabel value="#{cat.parentCategory.name}"/>
-                                    </p:column> 
-                                    <p:column headerText="TYPE">
-                                        <h:outputLabel value="Parent Category" 
-                                                       rendered="#{cat.categoryClass eq 'class com.divudi.entity.ServiceCategory'}"/>
-                                        <h:outputLabel value="Child Category" 
-                                                       rendered="#{cat.categoryClass eq 'class com.divudi.entity.ServiceSubCategory'}"/>
-                                        <h:outputLabel value="Investigation Category" 
-                                                       rendered="#{cat.categoryClass eq 'class com.divudi.entity.InventoryCategory'}"/>
-                                    </p:column> 
                                 </p:autoComplete>
-                                
+
                                 <h:outputLabel value="Discount" ></h:outputLabel>
                                 <p:inputText autocomplete="off" value="#{opdMemberShipDiscountController.margin}" />
                                 <h:outputLabel value="" />
@@ -57,7 +43,7 @@
 
                                 <p:defaultCommand target="btnAdd"/>
                             </h:panelGrid>
-                            
+
                             <p:commandButton ajax="false" value="Fill" 
                                              action="#{opdMemberShipDiscountController.createItemsChannelPaymentScheme()}" />
                             <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton">
@@ -71,9 +57,13 @@
 
                         <p:panel header="Price Matrix" >
 
-                            <p:dataTable id="inwd" value="#{opdMemberShipDiscountController.items}"
-                                         filteredValue="#{opdMemberShipDiscountController.filterItems}"
-                                         var="a" editable="true" scrollable="true" scrollHeight="500">
+                            <p:dataTable 
+                                id="inwd" 
+                                value="#{opdMemberShipDiscountController.items}"
+                                var="a" 
+                                editable="true" 
+                                scrollable="true" 
+                                scrollHeight="500">
                                 <p:column headerText="Discount Scheme">
                                     <p:autoComplete forceSelection="true" 
                                                     value="#{a.paymentScheme}" 
