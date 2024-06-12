@@ -33,8 +33,8 @@ import javax.inject.Named;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- * Acting Consultant (Health Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -81,7 +81,6 @@ public class MembershipSchemeController implements Serializable {
 //        }
 //        return membershipScheme;
 //    }
-
     public List<MembershipScheme> completeMembershipScheme(String qry) {
         List<MembershipScheme> c;
         HashMap hm = new HashMap();
@@ -104,6 +103,11 @@ public class MembershipSchemeController implements Serializable {
     public void prepareAdd() {
         current = new MembershipScheme();
         fillItems();
+    }
+
+    public String navigateToMembershipScheme() {
+        prepareAdd();
+        return "/admin/pricing/membership/membership_scheme?faces-redirect=true";
     }
 
     public void setSelectedItems(List<MembershipScheme> selectedItems) {
@@ -267,5 +271,4 @@ public class MembershipSchemeController implements Serializable {
     /**
      *
      */
-    
 }
