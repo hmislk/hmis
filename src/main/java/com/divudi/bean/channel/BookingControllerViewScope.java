@@ -306,9 +306,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     private Doctor referredBy;
     private Institution collectingCentre;
     private double netPlusVat;
-    private Institution creditCompany;
-<<<<<<< HEAD
-    
+    private Institution creditCompany;   
     private List<SessionInstance> sessionInstanceByDoctor;
     private Staff selectedConsultant;
     private SessionInstance selectedSessionInstanceForRechedule;
@@ -322,11 +320,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         sessionInstanceByDoctor = sessionInstanceFacade.findByJpql(jpql,m);
         System.out.println("selectedBillSession.getSessionInstance().getStaff() = " + selectedBillSession.getSessionInstance().getStaff().getName());
         System.out.println("sessionInstanceByDoctor = " + sessionInstanceByDoctor.size());
-=======
-
-    public void navigateToNurseViewFromChannelBookingByDate() {
-
->>>>>>> 97fef8cdd9ced940ef007a0b8fc04478ff4c7636
     }
 
     public void removeAddedAditionalItems(Item item) {

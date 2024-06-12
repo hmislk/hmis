@@ -33,7 +33,7 @@
                                         class="ui-button-danger"
                                         action="#{serviceController.removeSelectedItems()}">
                                     </p:commandButton>
-                                    
+
                                     <p:commandButton 
                                         ajax="false" 
                                         icon="fas fa-print"
@@ -41,7 +41,7 @@
                                         class="mx-2 ui-button-success" >
                                         <p:printer target="panIx" />
                                     </p:commandButton>
-                                    
+
                                     <p:commandButton 
                                         ajax="false" 
                                         icon="fas fa-file-excel"
@@ -51,7 +51,7 @@
                                     </p:commandButton>
                                 </div>
                             </div>
-                            
+
 
                         </f:facet>
 
@@ -64,7 +64,13 @@
                                      >
                             <p:column id="colSelect"  selectionMode="multiple" >
                             </p:column>
-
+                            <p:column headerText="Item Code" filterMatchMode="contains" filterBy="#{sv.code}" 
+                                      style="font-weight:normal ;color: black;text-align: left;" >
+                                <f:facet name="header" >
+                                    <h:outputText value="Item Code" />
+                                </f:facet>
+                                <h:outputLabel value="#{sv.code}" />
+                            </p:column>
                             <p:column headerText="Category" 
                                       style="font-weight:normal ;color: black;text-align: left;" >
                                 <f:facet name="header" >
@@ -74,7 +80,7 @@
                             </p:column>
                             <p:column headerText="Chargers" style="font-weight:normal ;color: black;text-align: left;">
                                 <f:facet name="header" >
-                                    <h:outputText value="sub Category" />
+                                    <h:outputText value="Fees" />
                                 </f:facet>
                                 <h:outputLabel value="#{sv.total}"  />
                             </p:column>
