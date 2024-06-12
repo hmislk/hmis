@@ -176,6 +176,21 @@ public class StoreCalculation {
         //System.err.println("GETTING TOTAL QTY " + value);
         return value;
     }
+    public double getTotalFreeQty(BillItem b, BillType billType, Bill bill) {
+        String sql = "Select sum(p.pharmaceuticalBillItem.freeQty) from BillItem p where"
+                + "  type(p.bill)=:class and p.creater is not null and"
+                + " p.referanceBillItem=:bt and p.bill.billType=:btp";
+
+        HashMap hm = new HashMap();
+        hm.put("bt", b);
+        hm.put("btp", billType);
+        hm.put("class", bill.getClass());
+
+        double value = getPharmaceuticalBillItemFacade().findDoubleByJpql(sql, hm);
+
+        //System.err.println("GETTING TOTAL QTY " + value);
+        return value;
+    }
     
     public double getTotalFreeQty(BillItem b, BillType billType) {
         String sql = "Select sum(p.pharmaceuticalBillItem.freeQty) from BillItem p where"
@@ -305,6 +320,18 @@ public class StoreCalculation {
         //System.err.println("Refunded Cancelld " + returnedC);
         //System.err.println("retuernedNet " + retuernedNet);
         //System.err.println("Cal Qty " + (Math.abs(recieveNet) - Math.abs(retuernedNet)));
+
+        return (Math.abs(recieveNet) - Math.abs(retuernedNet));
+    }
+    public double calFreeQty(PharmaceuticalBillItem po) {
+
+        double billed = getTotalFreeQty(po.getBillItem(), BillType.StoreGrnBill, new BilledBill());
+        double cancelled = getTotalFreeQty(po.getBillItem(), BillType.StoreGrnBill, new CancelledBill());;
+        double returnedB = getTotalFreeQty(po.getBillItem(), BillType.StoreGrnReturn, new BilledBill());
+        double returnedC = getTotalFreeQty(po.getBillItem(), BillType.StoreGrnReturn, new CancelledBill());
+
+        double recieveNet = Math.abs(billed) - Math.abs(cancelled);
+        double retuernedNet = Math.abs(returnedB) - Math.abs(returnedC);
 
         return (Math.abs(recieveNet) - Math.abs(retuernedNet));
     }
