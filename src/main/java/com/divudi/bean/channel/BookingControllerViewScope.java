@@ -739,6 +739,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     public void sessionInstanceSelected() {
         fillSessionInstanceDetails();
+        calculateSelectedBillSessionTotal();
     }
 
     public void fillSessionInstanceDetails() {
@@ -6091,16 +6092,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         return navigateToManageBooking(selectedBillSession);
     }
 
-    public void changeListener() {
-        getSelectedSessionInstance().getOriginatingSession().setTotalFee(0.0);
-        getSelectedSessionInstance().getOriginatingSession().setTotalFfee(0.0);
-        for (ItemFee f : getSelectedSessionInstance().getOriginatingSession().getItemFees()) {
-            getSelectedSessionInstance().getOriginatingSession().setTotalFee(getSelectedSessionInstance().getOriginatingSession().getTotalFee() + f.getFee());
-            getSelectedSessionInstance().getOriginatingSession().setTotalFfee(getSelectedSessionInstance().getOriginatingSession().getTotalFfee() + f.getFfee());
-        }
+    public void calculateSelectedBillSessionTotal() {
         PaymentSchemeDiscount paymentSchemeDiscount = priceMatrixController.fetchChannellingMemberShipDiscount(paymentMethod, paymentScheme, getSelectedSessionInstance().getOriginatingSession().getCategory());
-        System.out.println("paymentSchemeDiscount = " + paymentSchemeDiscount);
-        double discount = 0;
         feeTotalForSelectedBill = 0.0;
         feeDiscountForSelectedBill = 0.0;
         feeNetTotalForSelectedBill = 0.0;
@@ -6108,26 +6101,25 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             for (ItemFee itmf : getSelectedItemFees()) {
                 System.out.println("itmf = " + itmf);
                 if (foriegn) {
-                    System.out.println("itmf.getFfee() = " + itmf.getFfee());
-                    System.out.println("paymentSchemeDiscount.getDiscountPercent() = " + paymentSchemeDiscount.getDiscountPercent());
-                    feeTotalForSelectedBill = itmf.getFfee();
-                    feeDiscountForSelectedBill = itmf.getFfee() * (paymentSchemeDiscount.getDiscountPercent() / 100);
-                    discount += itmf.getFfee() * (paymentSchemeDiscount.getDiscountPercent() / 100);
+                    feeTotalForSelectedBill += itmf.getFfee();
+                    feeDiscountForSelectedBill += itmf.getFfee() * (paymentSchemeDiscount.getDiscountPercent() / 100);
                 } else {
-                    System.out.println("itmf.getFee() = " + itmf.getFee());
-                    System.out.println("paymentSchemeDiscount.getDiscountPercent() = " + paymentSchemeDiscount.getDiscountPercent());
-                    feeTotalForSelectedBill = itmf.getFee();
-                    feeDiscountForSelectedBill = itmf.getFee() * (paymentSchemeDiscount.getDiscountPercent() / 100);
-                    discount += itmf.getFee() * (paymentSchemeDiscount.getDiscountPercent() / 100);
+                    feeTotalForSelectedBill += itmf.getFee();
+                    feeDiscountForSelectedBill += itmf.getFee() * (paymentSchemeDiscount.getDiscountPercent() / 100);
                 }
             }
+        }else{
+            for (ItemFee itmf : getSelectedItemFees()) {
+                System.out.println("itmf = " + itmf);
+                if (foriegn) {
+                    feeTotalForSelectedBill += itmf.getFfee();
+                } else {
+                    feeTotalForSelectedBill = itmf.getFee();
+                }
+            }
+            
         }
         feeNetTotalForSelectedBill = feeTotalForSelectedBill - feeDiscountForSelectedBill;
-        System.out.println("feeNetTotalForSelectedBill = " + feeNetTotalForSelectedBill);
-        System.out.println("feeTotalForSelectedBill = " + feeTotalForSelectedBill);
-        System.out.println("feeDiscountForSelectedBill = " + feeDiscountForSelectedBill);
-        getSelectedSessionInstance().getOriginatingSession().setTotalFee(getSelectedSessionInstance().getOriginatingSession().getTotalFee() - discount);
-        getSelectedSessionInstance().getOriginatingSession().setTotalFfee(getSelectedSessionInstance().getOriginatingSession().getTotalFfee() - discount);
     }
 
     public SmsFacade getSmsFacade() {

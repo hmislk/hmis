@@ -345,7 +345,11 @@
                                                         value="#{bookingControllerViewScope.paymentMethod}">
                                                         <f:selectItem itemLabel="Select Payment Method" ></f:selectItem>
                                                         <f:selectItems value="#{enumController.paymentMethodsForChanneling}"/>
-                                                        <f:ajax execute="@this" render="gdManageBookings :#{p:resolveFirstComponentWithId('totalsPanel',view).clientId} paymentDetails lstItems" event="change" listener="#{bookingControllerViewScope.generateSessions}" />
+                                                        <p:ajax 
+                                                            process="@this"
+                                                            update="gdManageBookings :#{p:resolveFirstComponentWithId('totalsPanel',view).clientId} paymentDetails lstItems" 
+                                                            event="change" 
+                                                            listener="#{bookingControllerViewScope.calculateSelectedBillSessionTotal()}" />
                                                     </p:selectOneMenu>
                                                     <h:outputScript>
                                                         $(document.getElementById('form:cmbPs_focus')).keypress(function (event) {
@@ -377,7 +381,7 @@
                                                         process="@this"
                                                         update="gdManageBookings :#{p:resolveFirstComponentWithId('totalsPanel',view).clientId} paymentDetails lstItems"
                                                         event="change"
-                                                        listener="#{bookingControllerViewScope.changeListener()}"/>
+                                                        listener="#{bookingControllerViewScope.calculateSelectedBillSessionTotal()}"/>
                                                 </p:selectOneMenu>
                                             </h:panelGrid>
 
