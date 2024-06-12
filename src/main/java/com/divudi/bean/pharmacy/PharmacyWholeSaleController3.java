@@ -1099,7 +1099,7 @@ public class PharmacyWholeSaleController3 implements Serializable, ControllerWit
         getPreBill().setCreater(getSessionController().getLoggedUser());
 
         getPreBill().setPatient(pt);
-        getPreBill().setMembershipScheme(membershipSchemeController.fetchPatientMembershipScheme(pt, getSessionController().getApplicationPreference().isMembershipExpires()));
+//        getPreBill().setMembershipScheme(membershipSchemeController.fetchPatientMembershipScheme(pt, getSessionController().getApplicationPreference().isMembershipExpires()));
         getPreBill().setToStaff(toStaff);
         getPreBill().setToInstitution(toInstitution);
 
@@ -1665,19 +1665,19 @@ public class PharmacyWholeSaleController3 implements Serializable, ControllerWit
         double tdp = 0;
         boolean discountAllowed = bi.getItem().isDiscountAllowed();
 
-        MembershipScheme membershipScheme = membershipSchemeController.fetchPatientMembershipScheme(getPatient(), getSessionController().getApplicationPreference().isMembershipExpires());
+//        MembershipScheme membershipScheme = membershipSchemeController.fetchPatientMembershipScheme(getPatient(), getSessionController().getApplicationPreference().isMembershipExpires());
 
-        //MEMBERSHIPSCHEME DISCOUNT
-        if (membershipScheme != null && discountAllowed) {
-            PriceMatrix priceMatrix = getPriceMatrixController().getOpdMemberDisCount(getPaymentMethod(), membershipScheme, getSessionController().getDepartment(), bi.getItem().getCategory());
-
-            if (priceMatrix == null) {
-                return 0;
-            } else {
-                bi.setPriceMatrix(priceMatrix);
-                return (tr * priceMatrix.getDiscountPercent()) / 100;
-            }
-        }
+//        //MEMBERSHIPSCHEME DISCOUNT
+//        if (membershipScheme != null && discountAllowed) {
+//            PriceMatrix priceMatrix = getPriceMatrixController().getOpdMemberDisCount(getPaymentMethod(), membershipScheme, getSessionController().getDepartment(), bi.getItem().getCategory());
+//
+//            if (priceMatrix == null) {
+//                return 0;
+//            } else {
+//                bi.setPriceMatrix(priceMatrix);
+//                return (tr * priceMatrix.getDiscountPercent()) / 100;
+//            }
+//        }
 
         //PAYMENTSCHEME DISCOUNT
         if (getPaymentScheme() != null && discountAllowed) {
