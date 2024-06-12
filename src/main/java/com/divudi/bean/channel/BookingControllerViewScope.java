@@ -6110,14 +6110,14 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 if (foriegn) {
                     System.out.println("itmf.getFfee() = " + itmf.getFfee());
                     System.out.println("paymentSchemeDiscount.getDiscountPercent() = " + paymentSchemeDiscount.getDiscountPercent());
-                    feeTotalForSelectedBill = itmf.getFfee();
-                    feeDiscountForSelectedBill = itmf.getFfee() * (paymentSchemeDiscount.getDiscountPercent() / 100);
+                    feeTotalForSelectedBill += itmf.getFfee();
+                    feeDiscountForSelectedBill += itmf.getFfee() * (paymentSchemeDiscount.getDiscountPercent() / 100);
                     discount += itmf.getFfee() * (paymentSchemeDiscount.getDiscountPercent() / 100);
                 } else {
                     System.out.println("itmf.getFee() = " + itmf.getFee());
                     System.out.println("paymentSchemeDiscount.getDiscountPercent() = " + paymentSchemeDiscount.getDiscountPercent());
-                    feeTotalForSelectedBill = itmf.getFee();
-                    feeDiscountForSelectedBill = itmf.getFee() * (paymentSchemeDiscount.getDiscountPercent() / 100);
+                    feeTotalForSelectedBill += itmf.getFee();
+                    feeDiscountForSelectedBill += itmf.getFee() * (paymentSchemeDiscount.getDiscountPercent() / 100);
                     discount += itmf.getFee() * (paymentSchemeDiscount.getDiscountPercent() / 100);
                 }
             }
