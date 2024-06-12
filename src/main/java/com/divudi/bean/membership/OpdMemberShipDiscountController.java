@@ -163,6 +163,7 @@ public class OpdMemberShipDiscountController implements Serializable {
     }
 
     public void saveSelectedChannelPaymentScheme() {
+        System.out.println("saveSelectedChannelPaymentScheme");
         if (paymentScheme == null) {
             JsfUtil.addErrorMessage("Membership Scheme or Payment Scheme");
             return;
@@ -185,6 +186,7 @@ public class OpdMemberShipDiscountController implements Serializable {
         a.setCreatedAt(new Date());
         a.setCreater(getSessionController().getLoggedUser());
         getFacade().create(a);
+        System.out.println("a = " + a);
         JsfUtil.addSuccessMessage("Saved Successfully");
         createItemsChannelPaymentScheme();
         clearInstanceVars();
@@ -673,8 +675,6 @@ public class OpdMemberShipDiscountController implements Serializable {
                 + " from PaymentSchemeDiscount a "
                 + " where a.retired=false"
                 + " and a.paymentScheme=:pm "
-                + " and a.category is null"
-                + " and a.department is null "
                 + " and a.billType=:bt "
                 + " order by a.paymentScheme.name ";
         hm.put("pm", paymentScheme);
