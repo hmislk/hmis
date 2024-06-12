@@ -69,6 +69,7 @@ import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.SmsFacade;
 import com.divudi.facade.StaffFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.bean.hr.StaffController;
 import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.bean.opd.OpdBillController;
 import com.divudi.data.BillFinanceType;
@@ -213,6 +214,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     OpdBillController opdBillController;
     @Inject
     ChannelScheduleController channelScheduleController;
+    @Inject
+    StaffController StaffController;
     /**
      * Properties
      */
@@ -307,26 +310,94 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     private Institution collectingCentre;
     private double netPlusVat;
     private Institution creditCompany;
-<<<<<<< HEAD
-    
+
     private List<SessionInstance> sessionInstanceByDoctor;
     private Staff selectedConsultant;
     private SessionInstance selectedSessionInstanceForRechedule;
+    private boolean reservedBooking;
 
-    public void fillSessionInstancebyDoctor() {
-        String jpql;
-        Map m = new HashMap<>();
-        jpql = "select si from SessionInstance si where si.retired=:false and si.staff=:fromStaff";
-        m.put("fromStaff", selectedBillSession.getSessionInstance().getOriginatingSession().getStaff());
-        //m.put("os", selectedBillSession.getSessionInstance().getOriginatingSession());
-        sessionInstanceByDoctor = sessionInstanceFacade.findByJpql(jpql,m);
-        System.out.println("selectedBillSession.getSessionInstance().getStaff() = " + selectedBillSession.getSessionInstance().getStaff().getName());
+    public void sessionReschedule() {
+        if (selectedSessionInstanceForRechedule == null) {
+            JsfUtil.addErrorMessage("Pleace Select Session For Rechedule");
+            return;
+        }
+
+        if (selectedBillSession == null) {
+            JsfUtil.addErrorMessage("Bill session is not valid !");
+            return;
+        }
+        createBillSessionForReschedule(selectedBillSession, selectedSessionInstanceForRechedule);
+
+    }
+
+    private void createBillSessionForReschedule(BillSession bs, SessionInstance si) {
+        if (bs == null) {
+            return;
+        }
+
+        if (si == null) {
+            return;
+        }
+        bs.setCreatedAt(new Date());
+        bs.setCreater(getSessionController().getLoggedUser());
+        bs.setSessionInstance(getSelectedSessionInstanceForRechedule());
+        bs.setSessionDate(getSelectedSessionInstanceForRechedule().getSessionDate());
+        bs.setSessionTime(getSelectedSessionInstanceForRechedule().getSessionTime());
+        bs.setStaff(getSelectedSessionInstanceForRechedule().getStaff());
+        List<Integer> lastSessionReservedNumbers = CommonFunctions.convertStringToIntegerList(getSelectedSessionInstance().getOriginatingSession().getReserveNumbers());
+        List<Integer> reservedNumbers = CommonFunctions.convertStringToIntegerList(getSelectedSessionInstanceForRechedule().getOriginatingSession().getReserveNumbers());
+
+        Integer count = null;
+        boolean reservedSession;
+
+        if (reservedBooking) {
+            if (lastSessionReservedNumbers.isEmpty()) {
+                JsfUtil.addErrorMessage("No Reserved Numbers FInd !");
+                return;
+            }
+            for (Integer rn : lastSessionReservedNumbers) {
+                System.out.println("rn = " + rn);
+                if (bs.getSerialNo() == rn) {
+                    count = serviceSessionBean.getNextAvailableReservedNumber(getSelectedSessionInstanceForRechedule(), reservedNumbers, selectedReserverdBookingNumber);
+                    if (count == null) {
+                        count = serviceSessionBean.getNextNonReservedSerialNumber(getSelectedSessionInstanceForRechedule(), reservedNumbers);
+                        JsfUtil.addErrorMessage("No reserved numbers available. Normal number is given");
+                    }
+                }
+            }
+
+        } else {
+            count = serviceSessionBean.getNextNonReservedSerialNumber(getSelectedSessionInstanceForRechedule(), reservedNumbers);
+        }
+        if (count != null) {
+            bs.setSerialNo(count);
+            System.out.println("count = " + count);
+        } else {
+            bs.setSerialNo(1);
+            System.out.println("count serial number= " + bs.getSerialNo());
+        }
+
+        getBillSessionFacade().edit(bs);
+    }
+
+    public void fillSessionInstanceByDoctor() {
+        sessionInstanceByDoctor = new ArrayList<>();
+        Date currentDate = new Date();
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(currentDate);
+        calendar.add(Calendar.DAY_OF_MONTH, 2);
+        Map<String, Object> m = new HashMap<>();
+        selectedConsultant = selectedBillSession.getSessionInstance().getStaff();
+        String jpql = "select i from SessionInstance i where i.retired = :ret and i.sessionDate >=:cd";
+
+        if (selectedConsultant != null) {
+            jpql += " and i.originatingSession.staff =:staff";
+            m.put("staff", selectedConsultant);
+        }
+        m.put("ret", false);
+        m.put("cd", currentDate);
+        sessionInstanceByDoctor = sessionInstanceFacade.findByJpql(jpql.toString(), m, TemporalType.DATE);
         System.out.println("sessionInstanceByDoctor = " + sessionInstanceByDoctor.size());
-=======
-
-    public void navigateToNurseViewFromChannelBookingByDate() {
-
->>>>>>> 97fef8cdd9ced940ef007a0b8fc04478ff4c7636
     }
 
     public void removeAddedAditionalItems(Item item) {
@@ -1110,8 +1181,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             JsfUtil.addErrorMessage("Please select a Patient");
             return "";
         }
-        
-        fillSessionInstancebyDoctor();
         // Setting the properties in the viewScopeDataTransferController
         viewScopeDataTransferController.setSelectedBillSession(selectedBillSession);
         viewScopeDataTransferController.setSelectedSessionInstance(selectedSessionInstance);
@@ -2715,7 +2784,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
         }
 
-        Double[] dbl = Arrays.copyOf(obj, obj.length, Double[].class);
+        Double[] dbl = Arrays.copyOf(obj, obj.length, Double[].class
+        );
 //        System.err.println("Fetch Fee Values " + dbl);
         return dbl;
     }
@@ -3574,7 +3644,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 + " order by bs.serialNo ";
         HashMap<String, Object> hh = new HashMap<>();
         hh.put("bts", bts);
-        hh.put("class", BilledBill.class);
+        hh
+                .put("class", BilledBill.class
+                );
         hh.put("ss", getSelectedSessionInstance());
         billSessions = getBillSessionFacade().findByJpql(sql, hh, TemporalType.DATE);
 
@@ -6658,6 +6730,14 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     public void setSelectedSessionInstanceForRechedule(SessionInstance selectedSessionInstanceForRechedule) {
         this.selectedSessionInstanceForRechedule = selectedSessionInstanceForRechedule;
+    }
+
+    public boolean isReservedBooking() {
+        return reservedBooking;
+    }
+
+    public void setReservedBooking(boolean reservedBooking) {
+        this.reservedBooking = reservedBooking;
     }
 
 }
