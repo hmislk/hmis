@@ -281,6 +281,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     private ChannelScheduleEvent event = new ChannelScheduleEvent();
 
     private Double feeTotalForSelectedBill;
+    private Double feeDiscountForSelectedBill;
+    private Double feeNetTotalForSelectedBill;
     private PaymentMethod cancelPaymentMethod;
     private PaymentMethod settlePaymentMethod;
 
@@ -306,19 +308,99 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     private Doctor referredBy;
     private Institution collectingCentre;
     private double netPlusVat;
-    private Institution creditCompany;   
+    private Institution creditCompany;
     private List<SessionInstance> sessionInstanceByDoctor;
     private Staff selectedConsultant;
     private SessionInstance selectedSessionInstanceForRechedule;
+    private boolean reservedBooking;
 
-    public void fillSessionInstancebyDoctor() {
-        String jpql;
-        Map m = new HashMap<>();
-        jpql = "select si from SessionInstance si where si.retired=:false and si.staff=:fromStaff";
-        m.put("fromStaff", selectedBillSession.getSessionInstance().getOriginatingSession().getStaff());
-        //m.put("os", selectedBillSession.getSessionInstance().getOriginatingSession());
-        sessionInstanceByDoctor = sessionInstanceFacade.findByJpql(jpql,m);
-        System.out.println("selectedBillSession.getSessionInstance().getStaff() = " + selectedBillSession.getSessionInstance().getStaff().getName());
+    public void sessionReschedule() {
+        if (getSelectedSessionInstanceForRechedule() == null) {
+            JsfUtil.addErrorMessage("Pleace Select Session For Rechedule");
+            return;
+        }
+
+        if (selectedBillSession == null) {
+            JsfUtil.addErrorMessage("Bill session is not valid !");
+            return;
+        }
+        createBillSessionForReschedule(selectedBillSession, getSelectedSessionInstanceForRechedule());
+        JsfUtil.addSuccessMessage("Reschedule Successfully");
+
+    }
+
+    private void createBillSessionForReschedule(BillSession bs, SessionInstance si) {
+        BillSession newBillSession = new BillSession();
+        if (bs == null) {
+            return;
+        }
+        if (si == null) {
+            return;
+        }
+
+        newBillSession.copy(bs);
+        newBillSession.setBill(bs.getBill());
+        newBillSession.setBillItem(bs.getBillItem());
+        newBillSession.setReferenceBillSession(bs);
+        newBillSession.setCreatedAt(new Date());
+        newBillSession.setCreater(getSessionController().getLoggedUser());
+        newBillSession.setSessionInstance(getSelectedSessionInstanceForRechedule());
+        newBillSession.setSessionDate(getSelectedSessionInstanceForRechedule().getSessionDate());
+        newBillSession.setSessionTime(getSelectedSessionInstanceForRechedule().getSessionTime());
+        newBillSession.setStaff(getSelectedSessionInstanceForRechedule().getStaff());
+        List<Integer> lastSessionReservedNumbers = CommonFunctions.convertStringToIntegerList(getSelectedSessionInstance().getOriginatingSession().getReserveNumbers());
+        List<Integer> reservedNumbers = CommonFunctions.convertStringToIntegerList(getSelectedSessionInstanceForRechedule().getOriginatingSession().getReserveNumbers());
+
+        Integer count = null;
+        boolean reservedSession;
+
+        if (reservedBooking) {
+            if (lastSessionReservedNumbers.isEmpty()) {
+                JsfUtil.addErrorMessage("No Reserved Numbers FInd !");
+                return;
+            }
+            for (Integer rn : lastSessionReservedNumbers) {
+                System.out.println("rn = " + rn);
+                if (bs.getSerialNo() == rn) {
+                    count = serviceSessionBean.getNextAvailableReservedNumber(getSelectedSessionInstanceForRechedule(), reservedNumbers, selectedReserverdBookingNumber);
+                    if (count == null) {
+                        count = serviceSessionBean.getNextNonReservedSerialNumber(getSelectedSessionInstanceForRechedule(), reservedNumbers);
+                        JsfUtil.addErrorMessage("No reserved numbers available. Normal number is given");
+                    }
+                }
+            }
+
+        } else {
+            count = serviceSessionBean.getNextNonReservedSerialNumber(getSelectedSessionInstanceForRechedule(), reservedNumbers);
+        }
+        if (count != null) {
+            newBillSession.setSerialNo(count);
+            System.out.println("count = " + count);
+        } else {
+            newBillSession.setSerialNo(1);
+            System.out.println("count serial number= " + bs.getSerialNo());
+        }
+
+        getBillSessionFacade().create(newBillSession);
+    }
+
+    public void fillSessionInstanceByDoctor() {
+        sessionInstanceByDoctor = new ArrayList<>();
+        Date currentDate = new Date();
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(currentDate);
+        calendar.add(Calendar.DAY_OF_MONTH, 2);
+        Map<String, Object> m = new HashMap<>();
+        selectedConsultant = selectedBillSession.getSessionInstance().getStaff();
+        String jpql = "select i from SessionInstance i where i.retired = :ret and i.sessionDate >=:cd";
+
+        if (selectedConsultant != null) {
+            jpql += " and i.originatingSession.staff =:staff";
+            m.put("staff", selectedConsultant);
+        }
+        m.put("ret", false);
+        m.put("cd", currentDate);
+        sessionInstanceByDoctor = sessionInstanceFacade.findByJpql(jpql.toString(), m, TemporalType.DATE);
         System.out.println("sessionInstanceByDoctor = " + sessionInstanceByDoctor.size());
     }
 
@@ -737,6 +819,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     public void sessionInstanceSelected() {
         fillSessionInstanceDetails();
+        calculateSelectedBillSessionTotal();
     }
 
     public void fillSessionInstanceDetails() {
@@ -1103,8 +1186,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             JsfUtil.addErrorMessage("Please select a Patient");
             return "";
         }
-        
-        fillSessionInstancebyDoctor();
+
+        fillSessionInstanceByDoctor();
         // Setting the properties in the viewScopeDataTransferController
         viewScopeDataTransferController.setSelectedBillSession(selectedBillSession);
         viewScopeDataTransferController.setSelectedSessionInstance(selectedSessionInstance);
@@ -3784,8 +3867,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     private Bill saveBilledBill(boolean forReservedNumbers) {
         Bill savingBill = createBill();
         BillItem savingBillItem = createSessionItem(savingBill);
-//        BillItem additionalBillItem = createAdditionalItem(savingBill, itemToAddToBooking);
 
+        PriceMatrix priceMatrix;
         List<BillItem> additionalBillItems = new ArrayList<>();
         if (!getItemsAddedToBooking().isEmpty()) {
             for (Item ai : itemsAddedToBooking) {
@@ -3799,12 +3882,15 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
         List<BillFee> savingBillFees = new ArrayList<>();
 
-        List<BillFee> savingBillFeesFromSession = createBillFeeForSessions(savingBill, savingBillItem, false);
+        priceMatrix = priceMatrixController.fetchChannellingMemberShipDiscount(paymentMethod, paymentScheme, selectedSessionInstance.getOriginatingSession().getCategory());
+        System.out.println("priceMatrix = " + priceMatrix);
+
+        List<BillFee> savingBillFeesFromSession = createBillFeeForSessions(savingBill, savingBillItem, false, priceMatrix);
 
         List<BillFee> savingBillFeesFromAdditionalItems = new ArrayList<>();
         if (!additionalBillItems.isEmpty()) {
             for (BillItem abi : additionalBillItems) {
-                savingBillFeesFromAdditionalItems = createBillFeeForSessions(savingBill, abi, true);
+                savingBillFeesFromAdditionalItems = createBillFeeForSessions(savingBill, abi, true, priceMatrix);
             }
         }
 
@@ -4139,14 +4225,13 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         return itemFeeFacade.findByJpql(sql, m);
     }
 
-    private List<BillFee> createBillFeeForSessions(Bill bill, BillItem billItem, boolean thisIsAnAdditionalFee) {
+    private List<BillFee> createBillFeeForSessions(Bill bill, BillItem billItem, boolean thisIsAnAdditionalFee, PriceMatrix priceMatrix) {
         List<BillFee> billFeeList = new ArrayList<>();
         double tmpTotal = 0;
         double tmpDiscount = 0;
         double tmpGrossTotal = 0.0;
 
         List<ItemFee> sessionsFees = null;
-//        sessionsFees = findServiceSessionFees(getSelectedSessionInstance().getOriginatingSession());
 
         if (thisIsAnAdditionalFee) {
             sessionsFees = findItemFees(billItem.getItem());
@@ -4156,15 +4241,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             }
         }
 
-//        if (billItem.getItem() != null) {
-//            if (billItem.getItem() instanceof ServiceSession) {
-//                sessionsFees = findServiceSessionFees((ServiceSession) billItem.getItem());
-//            } else if (billItem.getItem() instanceof Item) {
-//                sessionsFees = findItemFees(billItem.getItem());
-//            }
-//        } else {
-//            sessionsFees = findServiceSessionFees(getSelectedSessionInstance().getOriginatingSession());
-//        }
         if (sessionsFees == null) {
             return billFeeList;
         }
@@ -4196,7 +4272,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
             bf.setFee(f);
             bf.setFeeAt(new Date());
-            bf.setFeeDiscount(0.0);
             bf.setOrderNo(0);
             bf.setPatient(bill.getPatient());
 
@@ -4214,8 +4289,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 bf.setInstitution(sessionController.getInstitution());
             }
 
-            PaymentSchemeDiscount paymentSchemeDiscount = priceMatrixController.fetchPaymentSchemeDiscount(paymentScheme, paymentMethod);
-
             double d = 0;
             if (foriegn) {
                 bf.setFeeValue(f.getFfee());
@@ -4225,29 +4298,20 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 bf.setFeeGrossValue(f.getFee());
             }
 
-            if (f.getFeeType() == FeeType.OwnInstitution && paymentSchemeDiscount != null) {
-                d = bf.getFeeValue() * (paymentSchemeDiscount.getDiscountPercent() / 100);
-                bf.setFeeDiscount(d);
+//            priceMatrix = priceMatrixController.fetchChannellingMemberShipDiscount(paymentMethod, paymentScheme, selectedSessionInstance.getOriginatingSession().getCategory());
+            if (priceMatrix != null) {
+                if (f.getFeeType() == FeeType.OwnInstitution) {
+                    d = bf.getFeeValue() * (priceMatrix.getDiscountPercent() / 100);
+                    bf.setFeeDiscount(d);
+                } else if (f.getFeeType() == FeeType.Staff) {
+                    bf.setFeeDiscount(0.0);
+                } else {
+                    bf.setFeeDiscount(0.0);
+                }
+
                 bf.setFeeGrossValue(bf.getFeeGrossValue());
                 bf.setFeeValue(bf.getFeeGrossValue() - bf.getFeeDiscount());
                 tmpDiscount += d;
-            } else if (bill.getPatient().getPerson().getMembershipScheme() != null && f.getFeeType() == FeeType.OwnInstitution) {
-//                MembershipScheme membershipScheme = membershipSchemeController.fetchPatientMembershipScheme(bill.getPatient());
-
-                MembershipScheme membershipScheme = bill.getPatient().getPerson().getMembershipScheme();
-
-                PriceMatrix priceMatrix = priceMatrixController.getChannellingDisCount(paymentMethod, membershipScheme, f.getDepartment());
-//                priceMatrix.getDiscountPercent();
-//                //System.out.println("priceMatrix.getDiscountPercent() = " + priceMatrix.getDiscountPercent());
-
-                if (priceMatrix != null) {
-
-                    d = bf.getFeeValue() * (priceMatrix.getDiscountPercent() / 100);
-                    bf.setFeeDiscount(d);
-                    bf.setFeeGrossValue(bf.getFeeGrossValue());
-                    bf.setFeeValue(bf.getFeeGrossValue() - bf.getFeeDiscount());
-                    tmpDiscount += d;
-                }
             }
 
             tmpGrossTotal += bf.getFeeGrossValue();
@@ -6108,29 +6172,34 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         return navigateToManageBooking(selectedBillSession);
     }
 
-    public void changeListener() {
-        getSelectedSessionInstance().getOriginatingSession().setTotalFee(0.0);
-        getSelectedSessionInstance().getOriginatingSession().setTotalFfee(0.0);
-        for (ItemFee f : getSelectedSessionInstance().getOriginatingSession().getItemFees()) {
-            getSelectedSessionInstance().getOriginatingSession().setTotalFee(getSelectedSessionInstance().getOriginatingSession().getTotalFee() + f.getFee());
-            getSelectedSessionInstance().getOriginatingSession().setTotalFfee(getSelectedSessionInstance().getOriginatingSession().getTotalFfee() + f.getFfee());
-        }
-        PaymentSchemeDiscount paymentSchemeDiscount = priceMatrixController.fetchPaymentSchemeDiscount(paymentScheme, paymentMethod);
-        double d = 0;
+    public void calculateSelectedBillSessionTotal() {
+        PaymentSchemeDiscount paymentSchemeDiscount = priceMatrixController.fetchChannellingMemberShipDiscount(paymentMethod, paymentScheme, getSelectedSessionInstance().getOriginatingSession().getCategory());
+        feeTotalForSelectedBill = 0.0;
+        feeDiscountForSelectedBill = 0.0;
+        feeNetTotalForSelectedBill = 0.0;
         if (paymentSchemeDiscount != null) {
-            for (ItemFee itmf : getSelectedSessionInstance().getOriginatingSession().getItemFees()) {
-                if (itmf.getFeeType() == FeeType.OwnInstitution) {
-                    if (foriegn) {
-                        d += itmf.getFfee() * (paymentSchemeDiscount.getDiscountPercent() / 100);
-                    } else {
-                        d += itmf.getFee() * (paymentSchemeDiscount.getDiscountPercent() / 100);
-                    }
-
+            for (ItemFee itmf : getSelectedItemFees()) {
+                System.out.println("itmf = " + itmf);
+                if (foriegn) {
+                    feeTotalForSelectedBill += itmf.getFfee();
+                    feeDiscountForSelectedBill += itmf.getFfee() * (paymentSchemeDiscount.getDiscountPercent() / 100);
+                } else {
+                    feeTotalForSelectedBill += itmf.getFee();
+                    feeDiscountForSelectedBill += itmf.getFee() * (paymentSchemeDiscount.getDiscountPercent() / 100);
                 }
             }
+        } else {
+            for (ItemFee itmf : getSelectedItemFees()) {
+                System.out.println("itmf = " + itmf);
+                if (foriegn) {
+                    feeTotalForSelectedBill += itmf.getFfee();
+                } else {
+                    feeTotalForSelectedBill += itmf.getFee();
+                }
+            }
+
         }
-        getSelectedSessionInstance().getOriginatingSession().setTotalFee(getSelectedSessionInstance().getOriginatingSession().getTotalFee() - d);
-        getSelectedSessionInstance().getOriginatingSession().setTotalFfee(getSelectedSessionInstance().getOriginatingSession().getTotalFfee() - d);
+        feeNetTotalForSelectedBill = feeTotalForSelectedBill - feeDiscountForSelectedBill;
     }
 
     public SmsFacade getSmsFacade() {
@@ -6651,6 +6720,22 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     public void setSelectedSessionInstanceForRechedule(SessionInstance selectedSessionInstanceForRechedule) {
         this.selectedSessionInstanceForRechedule = selectedSessionInstanceForRechedule;
+    }
+
+    public Double getFeeDiscountForSelectedBill() {
+        return feeDiscountForSelectedBill;
+    }
+
+    public void setFeeDiscountForSelectedBill(Double feeDiscountForSelectedBill) {
+        this.feeDiscountForSelectedBill = feeDiscountForSelectedBill;
+    }
+
+    public Double getFeeNetTotalForSelectedBill() {
+        return feeNetTotalForSelectedBill;
+    }
+
+    public void setFeeNetTotalForSelectedBill(Double feeNetTotalForSelectedBill) {
+        this.feeNetTotalForSelectedBill = feeNetTotalForSelectedBill;
     }
 
 }
