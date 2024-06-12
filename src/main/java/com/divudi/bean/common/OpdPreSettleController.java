@@ -202,10 +202,7 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
         double billDiscount = 0.0;
         double billGross = 0.0;
         double billNet = 0.0;
-        MembershipScheme membershipScheme = membershipSchemeController.fetchPatientMembershipScheme(getPreBill().getPatient(), getSessionController().getApplicationPreference().isMembershipExpires());
-
-
-
+        
         for (Bill b : billsOfBatchBillPre) {
             double entryGross = 0.0;
             double entryDis = 0.0;
@@ -225,13 +222,8 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
                 Category category = null;
                 PriceMatrix priceMatrix;
 
-                if (membershipScheme != null) {
-                    priceMatrix = priceMatrixController.getOpdMemberDisCount(getPreBill().getPaymentMethod(), membershipScheme, department, category);
-                    getBillBean().setBillFees(bff, isForeigner(), getPreBill().getPaymentMethod(), membershipScheme, bff.getBillItem().getItem(), priceMatrix);
-                } else {
-                    priceMatrix = priceMatrixController.getPaymentSchemeDiscount(getPreBill().getPaymentMethod(), paymentScheme, department, item);
-                    getBillBean().setBillFees(bff, isForeigner(), paymentMethod, paymentScheme, getCreditCompany(), priceMatrix);
-                }
+                priceMatrix = priceMatrixController.getPaymentSchemeDiscount(getPreBill().getPaymentMethod(), paymentScheme, department, item);
+                getBillBean().setBillFees(bff, isForeigner(), paymentMethod, paymentScheme, getCreditCompany(), priceMatrix);
 
                 bff.setFeeVatPlusValue(bff.getFeeValue() + bff.getFeeVat());
                 entryGross += bff.getFeeGrossValue();
@@ -242,7 +234,6 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
                 billGross += bi.getGrossValue();
                 billNet += bi.getNetValue();
                 billDiscount += bi.getDiscount();
-
 
                 bi.setDiscount(entryDis);
                 bi.setGrossValue(entryGross);
