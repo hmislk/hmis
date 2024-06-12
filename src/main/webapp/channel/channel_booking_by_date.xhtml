@@ -125,7 +125,7 @@
                                             <p:ajax 
                                                 event="rowSelect" 
                                                 process="@this"
-                                                update=":#{p:resolveFirstComponentWithId('panelBookingDetails',view).clientId} :#{p:resolveFirstComponentWithId('gdManageBookings',view).clientId} :#{p:resolveFirstComponentWithId('gpAdditionalItems',view).clientId}"
+                                                update=":#{p:resolveFirstComponentWithId('totalsPanel',view).clientId} :#{p:resolveFirstComponentWithId('panelBookingDetails',view).clientId} :#{p:resolveFirstComponentWithId('gdManageBookings',view).clientId} :#{p:resolveFirstComponentWithId('gpAdditionalItems',view).clientId}"
                                                 listener="#{bookingControllerViewScope.sessionInstanceSelected()}" />
 
 
