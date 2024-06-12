@@ -73,25 +73,6 @@
                         <p:ajax event="rowEditCancel" listener="#{storeGrnController.onEdit}" update=":#{p:resolveFirstComponentWithId('tot',view).clientId} :#{p:resolveFirstComponentWithId('txtBatch',view).clientId}"/> 
 
                         
-
-                        <p:column >
-                            <p:commandButton   value="Add Detail"
-                                               process="@this" 
-                                               update=":#{p:resolveFirstComponentWithId('dialogChannelDetail',view).clientId}"
-                                               style="float: right;" 
-                                               actionListener="#{storeGrnController.addDetailItemListener(bi)}"
-                                               oncomplete="PF('dlgDetail').show();">                        
-                            </p:commandButton>
-                        </p:column>
-
-                        <p:column >
-                            <p:commandButton   value="Add Accessories" process="@this" 
-                                               update=":#{p:resolveFirstComponentWithId('dialogChannelDetail',view).clientId}"
-                                               style="float: right;"                                        
-                                               actionListener="#{storeGrnController.addChildItemListener(bi)}"
-                                               oncomplete="PF('dlgAdd').show();">                        
-                            </p:commandButton>
-                        </p:column>
                         <p:column headerText="Item Name" style="width: 250px!important;"  > 
 
                             <h:outputText id="item" value="#{bi.item.name}" >                                   
@@ -202,6 +183,31 @@
                             </p:cellEditor>
 
                         </p:column>  
+                        
+                        <p:column headerText="Action" >
+                            <p:commandButton   icon="fas fa-wrench" process="@this" 
+                                               class="ui-button-Warning"
+                                               id="accesories"
+                                               update=":#{p:resolveFirstComponentWithId('dialogChannelDetail',view).clientId}"
+                                               style="float: right;"                                        
+                                               actionListener="#{storeGrnController.addChildItemListener(bi)}"
+                                               oncomplete="PF('dlgAdd').show();">                        
+                            </p:commandButton>
+                            
+                            <p:commandButton   icon="fas fa-file-invoice"
+                                               id="itmDetails"
+                                               process="@this" 
+                                               class="ui-button-Warning mx-1"
+                                               update=":#{p:resolveFirstComponentWithId('dialogChannelDetail',view).clientId}"
+                                               style="float: right;" 
+                                               actionListener="#{storeGrnController.addDetailItemListener(bi)}"
+                                               oncomplete="PF('dlgDetail').show();">                        
+                            </p:commandButton>
+                        
+                            
+                            <p:tooltip value="Accessories" for="accesories"/>
+                            <p:tooltip value="Additional Details" for="itmDetails"/>
+                        </p:column>
 
 
                         <p:column style="width:6%">  
