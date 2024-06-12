@@ -63,6 +63,7 @@ import com.divudi.data.dataStructure.ComponentDetail;
 import com.divudi.data.dataStructure.DailyCash;
 import com.divudi.data.dataStructure.SearchKeyword;
 import com.divudi.entity.AppEmail;
+import com.divudi.entity.FamilyMember;
 import com.divudi.entity.PreBill;
 import com.divudi.entity.RefundBill;
 import com.divudi.java.CommonFunctions;
@@ -2951,15 +2952,16 @@ public class BillController implements Serializable {
         return "/opd/opd_bill";
     }
 
-    public void prepareNewBillForMember() {
+    public String prepareNewBillForMember(FamilyMember familyMember) {
         clearBillItemValues();
         clearBillValuesForMember();
         setPrintPreview(true);
         printPreview = false;
         paymentMethodData = null;
-        paymentScheme = null;
         paymentMethod = PaymentMethod.Cash;
+        
         collectingCentreBillController.setCollectingCentre(null);
+        return "/opd/opd_bill?faces-redirect=true;";
     }
 
     public void makeNull() {
