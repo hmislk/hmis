@@ -662,7 +662,7 @@ public class DepartmentController implements Serializable {
                 return getStringKey(o.getId());
             } else {
                 throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + DepartmentController.class.getName());
+                        + object.getClass().getName() + "; expected type: " + Department.class.getName());
             }
         }
     }

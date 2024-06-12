@@ -275,6 +275,9 @@
 
                 </p:submenu>
                 <p:submenu id="smMembership"  icon="fa fa-fw fa-id-card"  rendered="#{webUserController.hasPrivilege('MemberShip')}">
+                    <p:menuitem ajax="false" action="#{patientController.navigateToAddNewIndividualMembership()}" value="Add Individual Membership" rendered="#{webUserController.hasPrivilege('MemberShip')}" ></p:menuitem>
+                    <p:menuitem ajax="false" action="#{patientController.navigateToSearchIndividualMembership()}" value="Search Individual Membership" rendered="#{webUserController.hasPrivilege('MemberShip')}" ></p:menuitem>
+                    
                     <p:menuitem ajax="false" action="#{patientController.navigateToAddNewFamilyMembership()}" value="Add Family Membership" rendered="#{webUserController.hasPrivilege('MemberShip')}" ></p:menuitem>
                     <p:menuitem ajax="false" action="#{patientController.navigateToSearchFamilyMembership()}" value="Search Family Membership" rendered="#{webUserController.hasPrivilege('MemberShip')}" ></p:menuitem>
                     <p:menuitem ajax="false" action="/membership/reports?faces-redirect=true" value="Family Membership Reports" rendered="#{webUserController.hasPrivilege('MemberShip')}" ></p:menuitem>
