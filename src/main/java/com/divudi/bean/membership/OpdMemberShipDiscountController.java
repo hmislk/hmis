@@ -668,7 +668,6 @@ public class OpdMemberShipDiscountController implements Serializable {
     }
 
     public void createItemsChannelPaymentScheme() {
-        System.out.println("createItemsChannelPaymentScheme");
         filterItems = null;
         String sql;
         HashMap hm = new HashMap();
@@ -681,7 +680,6 @@ public class OpdMemberShipDiscountController implements Serializable {
         hm.put("pm", paymentScheme);
         hm.put("bt", BillType.ChannelCash);
         items = getFacade().findByJpql(sql, hm);
-        System.out.println("items = " + items);
     }
 
     public void createItemsDepartmentsPaymentMethod() {
