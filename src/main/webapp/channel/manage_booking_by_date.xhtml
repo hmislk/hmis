@@ -1220,7 +1220,7 @@
                                             <p:panel header="Other Sessions">
                                                 <p:commandButton id="btnFill" class="m-1" value="FIll" action="#{bookingControllerViewScope.fillSessionInstanceByDoctor()}" process="btnFill" update="lstSelect" />
                                                 <h:panelGroup id="lstSelect">
-                                                    <p:dataTable value="#{bookingControllerViewScope.sessionInstanceByDoctor}" var="myItem" selection="#{bookingControllerViewScope.selectedSessionInstanceForRechedule}" selectionMode="single"  rowKey="#{myItem.id}">
+                                                    <p:dataTable value="#{bookingControllerViewScope.sessionInstanceByDoctor}" var="myItem" selection="#{bookingControllerViewScope.selectedSessionInstanceForReschedule}" selectionMode="single"  rowKey="#{myItem.id}">
                                                         <p:column>
                                                             <f:facet name="header">Name</f:facet>
                                                                 #{myItem.name}
