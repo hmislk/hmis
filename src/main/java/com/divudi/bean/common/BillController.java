@@ -1644,9 +1644,7 @@ public class BillController implements Serializable {
         m.put("ret", false);
         m.put("ft", FeeType.Staff);
 
-
         tmpFees = billFeeFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
-
 
         List<BillFee> removingBillFees = new ArrayList<>();
         for (BillFee bf : tmpFees) {
@@ -2799,17 +2797,9 @@ public class BillController implements Serializable {
                     item = bf.getBillItem().getItem();
                 }
 
-                //Membership Scheme
-                if (membershipScheme != null) {
-                    priceMatrix = getPriceMatrixController().getOpdMemberDisCount(paymentMethod, membershipScheme, department, category);
-                    getBillBean().setBillFees(bf, isForeigner(), paymentMethod, membershipScheme, bi.getItem(), priceMatrix);
-                    ////// // System.out.println("priceMetrix = " + priceMatrix);
-
-                } else {
-                    //Payment  Scheme && Credit Company
-                    priceMatrix = getPriceMatrixController().getPaymentSchemeDiscount(paymentMethod, paymentScheme, department, item);
-                    getBillBean().setBillFees(bf, isForeigner(), paymentMethod, paymentScheme, getCreditCompany(), priceMatrix);
-                }
+                //Payment  Scheme && Credit Company
+                priceMatrix = getPriceMatrixController().getPaymentSchemeDiscount(paymentMethod, paymentScheme, department, item);
+                getBillBean().setBillFees(bf, isForeigner(), paymentMethod, paymentScheme, getCreditCompany(), priceMatrix);
 
                 if (bf.getBillItem().getItem().isVatable()) {
                     if (!(bf.getFee().getFeeType() == FeeType.CollectingCentre && collectingCentreBillController.getCollectingCentre() != null)) {
@@ -2959,7 +2949,7 @@ public class BillController implements Serializable {
         printPreview = false;
         paymentMethodData = null;
         paymentMethod = PaymentMethod.Cash;
-        
+
         collectingCentreBillController.setCollectingCentre(null);
         return "/opd/opd_bill?faces-redirect=true;";
     }

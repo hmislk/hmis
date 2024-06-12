@@ -2265,7 +2265,7 @@ public class BillBeanController implements Serializable {
 
     }
 
-    public void setBillFees(BillFee bf, boolean foreign, PaymentMethod paymentMethod, MembershipScheme membershipScheme, Item item, PriceMatrix priceMatrix) {
+    public void setBillFees(BillFee bf, boolean foreign, PaymentMethod paymentMethod, Item item, PriceMatrix priceMatrix) {
 
         boolean discountAllowed = item.isDiscountAllowed();
 
@@ -3183,26 +3183,13 @@ public class BillBeanController implements Serializable {
                 bf.setFeeGrossValue(f.getFee());
             }
 
-            if (f.getFeeType() == FeeType.OwnInstitution && paymentSchemeDiscount != null) {
+            if (paymentSchemeDiscount != null) {
                 d = bf.getFeeValue() * (paymentSchemeDiscount.getDiscountPercent() / 100);
                 bf.setFeeDiscount(d);
                 bf.setFeeGrossValue(bf.getFeeGrossValue());
                 bf.setFeeValue(bf.getFeeGrossValue() - bf.getFeeDiscount());
 
-            } else if (billItemToAddFees.getBill().getPatient().getPerson().getMembershipScheme() != null && f.getFeeType() == FeeType.OwnInstitution) {
-
-                MembershipScheme membershipScheme = billItemToAddFees.getBill().getPatient().getPerson().getMembershipScheme();
-
-                if (priceMatrix != null) {
-
-                    d = bf.getFeeValue() * (priceMatrix.getDiscountPercent() / 100);
-                    bf.setFeeDiscount(d);
-                    bf.setFeeGrossValue(bf.getFeeGrossValue());
-                    bf.setFeeValue(bf.getFeeGrossValue() - bf.getFeeDiscount());
-
-                }
             }
-
             billFeeFacade.create(bf);
             newlyCreatedFees.add(bf);
         }
