@@ -7252,8 +7252,8 @@ public class SearchController implements Serializable {
         }
 
         if (department == null) {
-            jpql += " and p.bill.department=:dept";
-            params.put("dept", sessionController.getLoggedUser().getDepartment());
+//            jpql += " and p.bill.department=:dept";
+//            params.put("dept", sessionController.getLoggedUser().getDepartment());
         } else {
             jpql += " and p.bill.department=:dept";
             params.put("dept", department);
