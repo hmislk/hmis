@@ -24,7 +24,7 @@
                                             <p:commandButton class="w-100" ajax="false" value="Income By FeeType By Sessoin Date" action="/channel/channel_report_by_fee_1"/>
                                             <p:commandButton class="w-100" value="Channel Patient Counts(34)" action="/channel/channel_report_patient_count" ajax="false" actionListener="#{channelReportController.clearAll}"/>
                                             <p:commandButton class="w-100" value="Channel Hospital Income" action="/channel/channel_report_patient_count_income" ajax="false" actionListener="#{channelReportController.clearAll}"/>
-                                            <p:commandButton class="w-100" value="Channel Hospital Income With Doc Fee" action="/channel/channel_report_patient_count_income_with_doc" ajax="false" actionListener="#{channelReportController.clearAll}"/>
+                                            <p:commandButton class="w-100" value="Channel Hospital Income With Doc Fee" action="/channel/channel_report_patient_count_income_with_doc?faces-redirect=true" ajax="false" actionListener="#{channelReportController.clearAll}"/>
                                         </div>
                                     </p:tab>
                                     <p:tab title="Bill Reports">

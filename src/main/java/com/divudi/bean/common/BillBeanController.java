@@ -51,6 +51,7 @@ import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.PatientInvestigation;
 import com.divudi.entity.membership.AllowedPaymentMethod;
 import com.divudi.entity.membership.MembershipScheme;
+import com.divudi.entity.membership.PaymentSchemeDiscount;
 import com.divudi.facade.AllowedPaymentMethodFacade;
 import com.divudi.facade.BillComponentFacade;
 import com.divudi.facade.BillFacade;
@@ -355,6 +356,20 @@ public class BillBeanController implements Serializable {
         temMap.put("pms", paymentMethods);
         return getBillFeeFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
+    }
+
+    public List<ItemFee> fillFees(Item item) {
+        List<ItemFee> itemFees;
+        String sql;
+        Map<String, Object> m = new HashMap<>();
+        sql = "Select f "
+                + " from ItemFee f "
+                + " where f.retired=false "
+                + " and f.item =:item "
+                + " order by f.id";
+        m.put("item", item);
+        itemFees = itemFeeFacade.findByJpql(sql, m);
+        return itemFees;
     }
 
     public double calFeeValue(Date fromDate, Date toDate, FeeType feetype, Institution institution, Institution creditCompany, List<PaymentMethod> paymentMethods) {
@@ -2250,7 +2265,7 @@ public class BillBeanController implements Serializable {
 
     }
 
-    public void setBillFees(BillFee bf, boolean foreign, PaymentMethod paymentMethod, MembershipScheme membershipScheme, Item item, PriceMatrix priceMatrix) {
+    public void setBillFees(BillFee bf, boolean foreign, PaymentMethod paymentMethod, Item item, PriceMatrix priceMatrix) {
 
         boolean discountAllowed = item.isDiscountAllowed();
 
@@ -3127,6 +3142,58 @@ public class BillBeanController implements Serializable {
         e.getBillItem().setTransWithOutCCFee(woccfee);
 
         return list;
+    }
+
+    public List<BillFee> createNewBillFeesAndReturnThem(BillItem billItemToAddFees,
+            List<ItemFee> itemFeesToAdd,
+            WebUser loggedUser,
+            PaymentSchemeDiscount paymentSchemeDiscount,
+            PriceMatrix priceMatrix,
+            Boolean foreigner) {
+        List<BillFee> newlyCreatedFees = new ArrayList<>();
+        for (ItemFee f : itemFeesToAdd) {
+            BillFee bf = new BillFee();
+            bf.setBill(billItemToAddFees.getBill());
+            bf.setBillItem(billItemToAddFees);
+            bf.setCreatedAt(new Date());
+            bf.setCreater(loggedUser);
+            if (f.getFeeType() == FeeType.OwnInstitution) {
+                bf.setInstitution(f.getInstitution());
+                bf.setDepartment(f.getDepartment());
+            } else if (f.getFeeType() == FeeType.Staff) {
+                bf.setSpeciality(f.getSpeciality());
+                bf.setStaff(f.getStaff());
+            }
+
+            bf.setFee(f);
+            bf.setFeeAt(new Date());
+            bf.setFeeDiscount(0.0);
+            bf.setOrderNo(0);
+            bf.setPatient(billItemToAddFees.getBill().getPatient());
+            if (bf.getPatienEncounter() != null) {
+                bf.setPatienEncounter(billItemToAddFees.getBill().getPatientEncounter());
+            }
+
+            double d = 0;
+            if (foreigner) {
+                bf.setFeeValue(f.getFfee());
+                bf.setFeeGrossValue(f.getFfee());
+            } else {
+                bf.setFeeValue(f.getFee());
+                bf.setFeeGrossValue(f.getFee());
+            }
+
+            if (paymentSchemeDiscount != null) {
+                d = bf.getFeeValue() * (paymentSchemeDiscount.getDiscountPercent() / 100);
+                bf.setFeeDiscount(d);
+                bf.setFeeGrossValue(bf.getFeeGrossValue());
+                bf.setFeeValue(bf.getFeeGrossValue() - bf.getFeeDiscount());
+
+            }
+            billFeeFacade.create(bf);
+            newlyCreatedFees.add(bf);
+        }
+        return newlyCreatedFees;
     }
 
     public List<BillFee> saveBillFee(BillEntry e, Bill b, WebUser wu, Payment p) {

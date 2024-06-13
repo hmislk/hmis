@@ -204,13 +204,13 @@
                                 </h:outputLabel>
                             </td>
                             <td  styleClass="itemsBlockRight" style="text-align: right; padding-right: 0px;" >
-                                <h:outputLabel value="#{bip.netValue/bip.qty}" >
+                                <h:outputLabel value="#{bip.rate}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </td>
 
                             <td  styleClass="itemsBlockRight" style="text-align: right; padding-right: 0px;" >
-                                <h:outputLabel value="#{bip.netValue}"    >
+                                <h:outputLabel value="#{bip.rate*bip.qty}"    >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </td>
@@ -231,7 +231,7 @@
                             <h:outputLabel value="Total" />
                         </td>
                         <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 0px;">
-                            <h:outputLabel value="#{cc.attrs.bill.netTotal}" >
+                            <h:outputLabel value="#{cc.attrs.bill.total}" >
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
                         </td>

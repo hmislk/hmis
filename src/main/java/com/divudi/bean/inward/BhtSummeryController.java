@@ -656,8 +656,8 @@ public class BhtSummeryController implements Serializable {
     MembershipSchemeController membershipSchemeController;
 
     public double discountSet(ChargeItemTotal cit) {
-        MembershipScheme membershipScheme = membershipSchemeController.fetchPatientMembershipScheme(getPatientEncounter().getPatient(), getSessionController().getApplicationPreference().isMembershipExpires());
-        PriceMatrix pm = getPriceMatrixController().getInwardMemberDisCount(getPatientEncounter().getPaymentMethod(), membershipScheme, getPatientEncounter().getCreditCompany(), cit.getInwardChargeType(), getPatientEncounter().getAdmissionType());
+//        MembershipScheme membershipScheme = membershipSchemeController.fetchPatientMembershipScheme(getPatientEncounter().getPatient(), getSessionController().getApplicationPreference().isMembershipExpires());
+        PriceMatrix pm = getPriceMatrixController().getInwardMemberDisCount(getPatientEncounter().getPaymentMethod(), null, getPatientEncounter().getCreditCompany(), cit.getInwardChargeType(), getPatientEncounter().getAdmissionType());
         if (pm == null || pm.getDiscountPercent() == 0 || cit.getTotal() == 0
                 || cit.getInwardChargeType() == InwardChargeType.ProfessionalCharge
                 || cit.getInwardChargeType() == InwardChargeType.DoctorAndNurses) {
@@ -765,10 +765,9 @@ public class BhtSummeryController implements Serializable {
             return disTot;
         }
 
-        MembershipScheme membershipScheme = membershipSchemeController.fetchPatientMembershipScheme(getPatientEncounter().getPatient(), getSessionController().getApplicationPreference().isMembershipExpires());
-
+       
         PriceMatrix pm = getPriceMatrixController().getInwardMemberDisCount(getPatientEncounter().getPaymentMethod(),
-                membershipScheme,
+                null,
                 getPatientEncounter().getCreditCompany(), inwardChargeType, getPatientEncounter().getAdmissionType());
 
         if (pm == null) {
@@ -839,7 +838,6 @@ public class BhtSummeryController implements Serializable {
 
     private double updatePatientRoomCharge(InwardChargeType inwardChargeType) {
         List<PatientRoom> list = getInwardBean().fetchPatientRoomAll(getPatientEncounter());
-        MembershipScheme membershipScheme = membershipSchemeController.fetchPatientMembershipScheme(getPatientEncounter().getPatient(), getSessionController().getApplicationPreference().isMembershipExpires());
         double disTot = 0;
         if (list == null || list.isEmpty()) {
             return disTot;
@@ -847,7 +845,7 @@ public class BhtSummeryController implements Serializable {
 
         for (PatientRoom bf : list) {
             PriceMatrix pm = getPriceMatrixController().getInwardMemberDisCount(
-                    getPatientEncounter().getPaymentMethod(), membershipScheme, getPatientEncounter().getCreditCompany(), inwardChargeType, getPatientEncounter().getAdmissionType(), bf.getRoomFacilityCharge().getRoomCategory());
+                    getPatientEncounter().getPaymentMethod(), null, getPatientEncounter().getCreditCompany(), inwardChargeType, getPatientEncounter().getAdmissionType(), bf.getRoomFacilityCharge().getRoomCategory());
 
             if (pm != null) {
                 disTot += updatePatientRoomCharge(bf, pm.getDiscountPercent());
@@ -876,7 +874,6 @@ public class BhtSummeryController implements Serializable {
 
     private double updatePatientMaintainCharge(InwardChargeType inwardChargeType) {
         List<PatientRoom> list = getInwardBean().fetchPatientRoomAll(getPatientEncounter());
-        MembershipScheme membershipScheme = membershipSchemeController.fetchPatientMembershipScheme(getPatientEncounter().getPatient(), getSessionController().getApplicationPreference().isMembershipExpires());
         double disTot = 0;
         if (list == null || list.isEmpty()) {
             return disTot;
@@ -885,7 +882,7 @@ public class BhtSummeryController implements Serializable {
         PriceMatrix pm;
         for (PatientRoom bf : list) {
             pm = getPriceMatrixController().getInwardMemberDisCount(getPatientEncounter().getPaymentMethod(),
-                    membershipScheme, getPatientEncounter().getCreditCompany(), inwardChargeType, getPatientEncounter().getAdmissionType(), bf.getRoomFacilityCharge().getRoomCategory());
+                    null, getPatientEncounter().getCreditCompany(), inwardChargeType, getPatientEncounter().getAdmissionType(), bf.getRoomFacilityCharge().getRoomCategory());
 
             if (pm != null) {
                 disTot += updatePatientMaintainCharge(bf, pm.getDiscountPercent());
@@ -901,9 +898,8 @@ public class BhtSummeryController implements Serializable {
     }
 
     private double calDiscountServicePatientItems(InwardChargeType inwardChargeType) {
-        MembershipScheme membershipScheme = membershipSchemeController.fetchPatientMembershipScheme(getPatientEncounter().getPatient(), getSessionController().getApplicationPreference().isMembershipExpires());
         PriceMatrix pm = getPriceMatrixController().getInwardMemberDisCount(getPatientEncounter().getPaymentMethod(),
-                membershipScheme, getPatientEncounter().getCreditCompany(), inwardChargeType, getPatientEncounter().getAdmissionType());
+                null, getPatientEncounter().getCreditCompany(), inwardChargeType, getPatientEncounter().getAdmissionType());
         double disTot = 0;
         if (pm != null) {
             disTot += updateServiceBillFees(inwardChargeType, pm.getDiscountPercent());
@@ -937,7 +933,6 @@ public class BhtSummeryController implements Serializable {
     }
 
     private double updatePatientMoCharge(InwardChargeType inwardChargeType) {
-        MembershipScheme membershipScheme = membershipSchemeController.fetchPatientMembershipScheme(getPatientEncounter().getPatient(), getSessionController().getApplicationPreference().isMembershipExpires());
         List<PatientRoom> list = getInwardBean().fetchPatientRoomAll(getPatientEncounter());
         double disTot = 0;
         if (list == null || list.isEmpty()) {
@@ -946,7 +941,7 @@ public class BhtSummeryController implements Serializable {
 
         for (PatientRoom bf : list) {
             PriceMatrix pm = getPriceMatrixController().getInwardMemberDisCount(getPatientEncounter().getPaymentMethod(),
-                    membershipScheme, getPatientEncounter().getCreditCompany(), inwardChargeType, getPatientEncounter().getAdmissionType(), bf.getRoomFacilityCharge().getRoomCategory());
+                    null, getPatientEncounter().getCreditCompany(), inwardChargeType, getPatientEncounter().getAdmissionType(), bf.getRoomFacilityCharge().getRoomCategory());
 
             if (pm != null) {
                 disTot += updatePatientMoCharge(bf, pm.getDiscountPercent());
@@ -974,7 +969,6 @@ public class BhtSummeryController implements Serializable {
 
     private double updatePatientMedicalCareIcuCharge(InwardChargeType inwardChargeType) {
         List<PatientRoom> list = getInwardBean().fetchPatientRoomAll(getPatientEncounter());
-        MembershipScheme membershipScheme = membershipSchemeController.fetchPatientMembershipScheme(getPatientEncounter().getPatient(), getSessionController().getApplicationPreference().isMembershipExpires());
         double disTot = 0;
         if (list == null || list.isEmpty()) {
             return disTot;
@@ -982,7 +976,7 @@ public class BhtSummeryController implements Serializable {
 
         for (PatientRoom bf : list) {
             PriceMatrix pm = getPriceMatrixController().getInwardMemberDisCount(getPatientEncounter().getPaymentMethod(),
-                    membershipScheme, getPatientEncounter().getCreditCompany(), inwardChargeType, getPatientEncounter().getAdmissionType(), bf.getRoomFacilityCharge().getRoomCategory());
+                    null, getPatientEncounter().getCreditCompany(), inwardChargeType, getPatientEncounter().getAdmissionType(), bf.getRoomFacilityCharge().getRoomCategory());
 
             if (pm != null) {
                 disTot += updatePatientMedicalCareIcuCharge(bf, pm.getDiscountPercent());
@@ -1010,7 +1004,6 @@ public class BhtSummeryController implements Serializable {
 
     private double updatePatientAdministrationCharge(InwardChargeType inwardChargeType) {
         List<PatientRoom> list = getInwardBean().fetchPatientRoomAll(getPatientEncounter());
-        MembershipScheme membershipScheme = membershipSchemeController.fetchPatientMembershipScheme(getPatientEncounter().getPatient(), getSessionController().getApplicationPreference().isMembershipExpires());
         double disTot = 0;
         if (list == null || list.isEmpty()) {
             return disTot;
@@ -1018,7 +1011,7 @@ public class BhtSummeryController implements Serializable {
 
         for (PatientRoom bf : list) {
             PriceMatrix pm = getPriceMatrixController().getInwardMemberDisCount(getPatientEncounter().getPaymentMethod(),
-                    membershipScheme, getPatientEncounter().getCreditCompany(), inwardChargeType, getPatientEncounter().getAdmissionType(), bf.getRoomFacilityCharge().getRoomCategory());
+                    null, getPatientEncounter().getCreditCompany(), inwardChargeType, getPatientEncounter().getAdmissionType(), bf.getRoomFacilityCharge().getRoomCategory());
             if (pm != null) {
                 disTot += updatePatientAdministrationCharge(bf, pm.getDiscountPercent());
             } else {
@@ -1046,7 +1039,6 @@ public class BhtSummeryController implements Serializable {
 
     private double updatePatientLinenCharge(InwardChargeType inwardChargeType) {
         List<PatientRoom> list = getInwardBean().fetchPatientRoomAll(getPatientEncounter());
-        MembershipScheme membershipScheme = membershipSchemeController.fetchPatientMembershipScheme(getPatientEncounter().getPatient(), getSessionController().getApplicationPreference().isMembershipExpires());
         double disTot = 0;
         if (list == null || list.isEmpty()) {
             return disTot;
@@ -1054,7 +1046,7 @@ public class BhtSummeryController implements Serializable {
 
         for (PatientRoom bf : list) {
             PriceMatrix pm = getPriceMatrixController().getInwardMemberDisCount(getPatientEncounter().getPaymentMethod(),
-                    membershipScheme, getPatientEncounter().getCreditCompany(), inwardChargeType, getPatientEncounter().getAdmissionType(), bf.getRoomFacilityCharge().getRoomCategory());
+                    null, getPatientEncounter().getCreditCompany(), inwardChargeType, getPatientEncounter().getAdmissionType(), bf.getRoomFacilityCharge().getRoomCategory());
             if (pm != null) {
                 disTot += updatePatientLinenCharge(bf, pm.getDiscountPercent());
             } else {
@@ -1081,7 +1073,6 @@ public class BhtSummeryController implements Serializable {
 
     private double updatePatientNursingCharge(InwardChargeType inwardChargeType) {
         List<PatientRoom> list = getInwardBean().fetchPatientRoomAll(getPatientEncounter());
-        MembershipScheme membershipScheme = membershipSchemeController.fetchPatientMembershipScheme(getPatientEncounter().getPatient(), getSessionController().getApplicationPreference().isMembershipExpires());
         double disTot = 0;
         if (list == null || list.isEmpty()) {
             return disTot;
@@ -1089,7 +1080,7 @@ public class BhtSummeryController implements Serializable {
 
         for (PatientRoom bf : list) {
             PriceMatrix pm = getPriceMatrixController().getInwardMemberDisCount(getPatientEncounter().getPaymentMethod(),
-                    membershipScheme, getPatientEncounter().getCreditCompany(), inwardChargeType, getPatientEncounter().getAdmissionType(), bf.getRoomFacilityCharge().getRoomCategory());
+                    null, getPatientEncounter().getCreditCompany(), inwardChargeType, getPatientEncounter().getAdmissionType(), bf.getRoomFacilityCharge().getRoomCategory());
 
             if (pm != null) {
                 disTot += updatePatientNursingCharge(bf, pm.getDiscountPercent());
@@ -1582,7 +1573,7 @@ public class BhtSummeryController implements Serializable {
         getCurrent().setBillTime(new Date());
         getCurrent().setPatientEncounter(patientEncounter);
         getCurrent().setPatient(patientEncounter.getPatient());
-        getCurrent().setMembershipScheme(membershipSchemeController.fetchPatientMembershipScheme(patientEncounter.getPatient(), getSessionController().getApplicationPreference().isMembershipExpires()));
+//        getCurrent().setMembershipScheme(membershipSchemeController.fetchPatientMembershipScheme(patientEncounter.getPatient(), getSessionController().getApplicationPreference().isMembershipExpires()));
         getCurrent().setCreatedAt(new Date());
         getCurrent().setCreater(getSessionController().getLoggedUser());
 

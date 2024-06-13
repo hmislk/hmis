@@ -34,8 +34,8 @@ import javax.inject.Named;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- * Acting Consultant (Health Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -127,7 +127,7 @@ public class PaymentSchemeController implements Serializable {
                 return true;
             }
         }
-        
+
         return false;
     }
 
@@ -203,8 +203,8 @@ public class PaymentSchemeController implements Serializable {
     }
 
     public void saveSelectedAllowedPaymentMethod() {
-        
-        if (getCurrentAllowedPaymentMethod().getPaymentMethod()==null) {
+
+        if (getCurrentAllowedPaymentMethod().getPaymentMethod() == null) {
             JsfUtil.addErrorMessage("Please Select Payment Methord");
             return;
         }
@@ -219,7 +219,6 @@ public class PaymentSchemeController implements Serializable {
                 getCurrentAllowedPaymentMethod().setMembershipScheme(getMembershipScheme());
             }
         }
-        
 
         if (getCurrentAllowedPaymentMethod().getId() != null && getCurrentAllowedPaymentMethod().getId() > 0) {
             getAllowedPaymentMethodFacade().edit(getCurrentAllowedPaymentMethod());
@@ -307,6 +306,12 @@ public class PaymentSchemeController implements Serializable {
                 //+ " and i.membershipScheme is null "
                 + " order by i.orderNo, i.name";
         items = getFacade().findByJpql(temSql);
+    }
+
+    public String navigateToPaymentScheme() {
+        createPaymentSchemes();
+        prepareAdd();
+        return "/admin/pricing/payment_scheme?faces-redirect=true";
     }
 
     public List<PaymentScheme> getPaymentSchemesForChannel() {

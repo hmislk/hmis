@@ -202,10 +202,7 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
         double billDiscount = 0.0;
         double billGross = 0.0;
         double billNet = 0.0;
-        MembershipScheme membershipScheme = membershipSchemeController.fetchPatientMembershipScheme(getPreBill().getPatient(), getSessionController().getApplicationPreference().isMembershipExpires());
-
-        System.out.println("Starting discount calculation for batch bills");
-
+        
         for (Bill b : billsOfBatchBillPre) {
             double entryGross = 0.0;
             double entryDis = 0.0;
@@ -225,13 +222,8 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
                 Category category = null;
                 PriceMatrix priceMatrix;
 
-                if (membershipScheme != null) {
-                    priceMatrix = priceMatrixController.getOpdMemberDisCount(getPreBill().getPaymentMethod(), membershipScheme, department, category);
-                    getBillBean().setBillFees(bff, isForeigner(), getPreBill().getPaymentMethod(), membershipScheme, bff.getBillItem().getItem(), priceMatrix);
-                } else {
-                    priceMatrix = priceMatrixController.getPaymentSchemeDiscount(getPreBill().getPaymentMethod(), paymentScheme, department, item);
-                    getBillBean().setBillFees(bff, isForeigner(), paymentMethod, paymentScheme, getCreditCompany(), priceMatrix);
-                }
+                priceMatrix = priceMatrixController.getPaymentSchemeDiscount(getPreBill().getPaymentMethod(), paymentScheme, department, item);
+                getBillBean().setBillFees(bff, isForeigner(), paymentMethod, paymentScheme, getCreditCompany(), priceMatrix);
 
                 bff.setFeeVatPlusValue(bff.getFeeValue() + bff.getFeeVat());
                 entryGross += bff.getFeeGrossValue();
@@ -243,20 +235,16 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
                 billNet += bi.getNetValue();
                 billDiscount += bi.getDiscount();
 
-                System.out.println("Processed BillItem ID: " + bi.getId() + " - Gross: " + bi.getGrossValue() + ", Discount: " + bi.getDiscount() + ", Net: " + bi.getNetValue());
-
                 bi.setDiscount(entryDis);
                 bi.setGrossValue(entryGross);
                 bi.setNetValue(entryNet);
             }
-            System.out.println("Accumulated totals - Bill ID: " + b.getId() + " - Gross Total: " + billGross + ", Discount Total: " + billDiscount + ", Net Total: " + billNet);
         }
 
         getPreBill().setDiscount(billDiscount);
         getPreBill().setTotal(billGross);
         getPreBill().setNetTotal(billNet);
 
-        System.out.println("Final totals - Gross: " + billGross + ", Discount: " + billDiscount + ", Net: " + billNet);
     }
 
     private double roundOff(double d) {
@@ -403,11 +391,8 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
                 return true;
             }
         }
-        System.out.println("toStaff = " + toStaff);
         if (toStaff != null && getPaymentMethod() == PaymentMethod.Staff) {
-            System.out.println("staff" + toStaff);
             staffBean.updateStaffCredit(toStaff, netTotal);
-            System.out.println("staffBean.updateStaffCredit(toStaff, netTotal);");
             JsfUtil.addSuccessMessage("Staff Welfare Balance Updated");
         }
 
@@ -560,8 +545,7 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
     }
 
     public List<Payment> createPayment(Bill bill, PaymentMethod pm) {
-        System.out.println("pm = " + pm);
-        System.out.println("bill = " + bill);
+
         List<Payment> ps = new ArrayList<>();
         if (pm == PaymentMethod.MultiplePaymentMethods) {
             for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {

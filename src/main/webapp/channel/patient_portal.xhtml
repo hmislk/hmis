@@ -337,7 +337,7 @@
                                         <h:panelGroup rendered="#{s.started}">
                                             <h5>Ongoing</h5>
                                             <div class="scaling-circle mx-4 d-flex justify-content-center align-items-center" >
-                                                <h3 >#{s.completedPatientCount}</h3>
+                                                <h3><h:outputLabel value="#{s.currentlyConsultingBillSession.bill.singleBillSession.serialNo eq null ? '0' : s.currentlyConsultingBillSession.bill.singleBillSession.serialNo}"/></h3>
                                             </div>
                                         </h:panelGroup>
                                     </div>
@@ -345,7 +345,9 @@
                                     <div class="d-flex justify-content-center align-items-center">
                                         <h5>Total Bookings</h5>
                                         <div class="scaling-circle mx-4 d-flex justify-content-center align-items-center" >
-                                            <h3 >#{s.displayCount}</h3>
+                                            <h3>
+                                                <h:outputLabel value="#{s.bookedPatientCount eq null ? '0' : s.bookedPatientCount}"/>
+                                            </h3>
                                         </div>
                                     </div>
                                     <div class="d-flex justify-content-end  p-2">

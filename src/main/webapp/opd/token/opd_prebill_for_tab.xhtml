@@ -5,10 +5,7 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:phi="http://xmlns.jcp.org/jsf/composite/pharmacy"
-      xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill"
-      xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
-      xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
+      xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill">
 
     <h:body>
         <ui:composition template="/resources/template/template_without_menu.xhtml">
@@ -26,7 +23,7 @@
                 </style>
 
                 <h:form>
-                    <f:event listener="#{opdTabPreBillController.reloadCurrentlyWorkingStaff()}" type="preRenderView" />
+                   
                     <p:panel id='pIxAdd' >
                         <f:facet name="header" >
                             <div class="d-flex align-items-center justify-content-between">

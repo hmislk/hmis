@@ -33,30 +33,30 @@
                                                              ajax="false"
                                                              value="Item Vise Fees List"
                                                              action="#{itemFeeManager.navigateItemViseFeeList}"/>
-                                            
-                                             <p:commandButton class="w-100"
+
+                                            <p:commandButton class="w-100"
                                                              ajax="false"
                                                              value="Item Fees List"
                                                              action="#{itemFeeManager.navigateItemFeeList}"/>
-                                             
-                                              <p:commandButton class="w-100"
+
+                                            <p:commandButton class="w-100"
                                                              ajax="false"
                                                              value="Collecting Centre Item Fees List"
                                                              action="#{itemFeeManager.navigateToCollectingCentreItemFeeList}"/>
-                                             
-                                             <p:commandButton class="w-100"
+
+                                            <p:commandButton class="w-100"
                                                              ajax="false"
                                                              value="Upload Item Fees"
                                                              action="#{itemFeeManager.navigateToUploadItemFees()}"/>
-                                             
-                                             
-                                             <p:commandButton class="w-100"
+
+
+                                            <p:commandButton class="w-100"
                                                              ajax="false"
                                                              value="Upload Collecting Centre Item Fees"
                                                              action="#{itemFeeManager.navigateToUploadItemFees()}"/>
-                                             
-                                            
-                                             
+
+
+
                                             <p:commandButton class="w-100"
                                                              ajax="false"
                                                              value="Correct Item Fees"
@@ -65,30 +65,7 @@
                                     </p:tab>
 
 
-                                    <p:tab title="Manage Membership Schemes">
-                                        <div class="d-grid gap-2">
-                                            <p:commandButton class="w-100"
-                                                             ajax="false" value="Membership Schemes"
-                                                             action="/admin/pricing/membership/membership_scheme?faces-redirect=true"/>
-                                            <p:commandButton class="w-100"
-                                                             ajax="false" value="Membership Schemes Discounts"
-                                                             action="/admin/pricing/membership/membership_scheme_discount_inward"/>
-                                            <p:commandButton 
-                                                class="w-100" 
-                                                action="#{navigationController.navigateToMembershipScheme()}" 
-                                                actionListener="#{membershipSchemeController.prepareAdd()}"  value="Membership Schemes" ajax="false" rendered="#{webUserController.hasPrivilege('MembershipSchemes')}"/>
-                                            <p:commandButton class="w-100" action="#{navigationController.navigateToMembershipPaymentMethodAllowed()}" actionListener="#{membershipSchemeController.fillItems}" value="Allowed Payment Methods" ajax="false" rendered="#{webUserController.hasPrivilege('MembershipSchemes')}"/>                                       
-                                            <p:commandButton class="w-100" action="#{navigationController.navigateToMembershipSchemeDiscountInward()}" value="Inward Discounts for Memberships"  ajax="false" rendered="#{webUserController.hasPrivilege('MemberShipInwardMemberShipSchemesDicounts')}"/>
-                                            <p:commandButton class="w-100" action="#{navigationController.navigateToMembershipSchemeDiscountOpdByDepartment()}" value="OPD Discounts for Members by Department" actionListener="#{opdMemberShipDiscountController.recreateModel()}" ajax="false" rendered="#{webUserController.hasPrivilege('MemberShipOpdMemberShipDisByDepartment')}"/>
-                                            <p:commandButton class="w-100" action="#{navigationController.navigateToMembershipSchemeDiscountOpdByCategory()}" value="OPD Discounts for Members by Opd Category" actionListener="#{opdMemberShipDiscountController.recreateModel()}"  ajax="false" rendered="#{webUserController.hasPrivilege('MemberShipOpdMemberShipDisByCategory')}"/>
-                                            <p:commandButton class="w-100" action="#{navigationController.navigateToMembershipSchemeDiscountPharmacyByCategory()}" value="OPD Discounts for Members by Pharmaceutical Category " actionListener="#{opdMemberShipDiscountController.recreateModel()}"  ajax="false" rendered="#{webUserController.hasPrivilege('MemberShipOpdMemberShipDisByCategory')}"/>
 
-                                            <p:commandButton ajax="false" value="Channelling Discounts" 
-                                                             action="#{navigationController.navigateToMembershipSchemeDiscountChannelingByDepartment()}"></p:commandButton>
-
-
-                                        </div>
-                                    </p:tab>
 
 
                                     <p:tab title="Manage Packages">
@@ -102,46 +79,82 @@
                                             <p:commandButton class="w-100"
                                                              ajax="false" value="Manage Package Prices"
                                                              action="/admin/pricing/package_item_prices"/>
-<!--                                            <p:commandButton class="w-100"
-                                                             ajax="false" value="Medical Package Names"
-                                                             action="/admin/pricing/opd_medical_package_name"/>
-                                            <p:commandButton class="w-100"
-                                                             ajax="false" value="Add Item to Package"
-                                                             action="/admin/pricing/opd_medical_package_item"/>
-                                            <p:commandButton class="w-100"
-                                                             ajax="false" value="Manage Package Prices"
-                                                             action="/admin/pricing/opd_medical_package_item_prices"/>-->
+                                            <!--                                            <p:commandButton class="w-100"
+                                                                                                         ajax="false" value="Medical Package Names"
+                                                                                                         action="/admin/pricing/opd_medical_package_name"/>
+                                                                                        <p:commandButton class="w-100"
+                                                                                                         ajax="false" value="Add Item to Package"
+                                                                                                         action="/admin/pricing/opd_medical_package_item"/>
+                                                                                        <p:commandButton class="w-100"
+                                                                                                         ajax="false" value="Manage Package Prices"
+                                                                                                         action="/admin/pricing/opd_medical_package_item_prices"/>-->
                                         </div>
                                     </p:tab>
 
                                     <p:tab title="Manage Discount Schemes">
                                         <div class="d-grid gap-2">
-                                            <p:commandButton class="w-100"
-                                                             ajax="false" value="Discount Schemes"
-                                                             action="/admin/pricing/membership/payment_scheme"/>
-                                            <p:commandButton class="w-100"
-                                                             ajax="false" value="Pharmacy Discounts"
-                                                             action="/admin/pricing/membership/payment_scheme_discount_pharmacy_by_category"/>
+                                            <p:commandButton 
+                                                class="w-100" 
+                                                action="#{paymentSchemeController.navigateToPaymentScheme()}" 
+                                                value="Discount Schemes" 
+                                                ajax="false" 
+                                                rendered="#{webUserController.hasPrivilege('MembershipSchemes')}"/>   
+                                            <p:commandButton 
+                                                class="w-100" 
+                                                action="#{membershipSchemeController.navigateToMembershipScheme()}" 
+                                                value="Membership Schemes" 
+                                                ajax="false" 
+                                                rendered="#{webUserController.hasPrivilege('MembershipSchemes')}"/>
 
-                                            <p:commandButton class="w-100" action="#{navigationController.navigateToPaymentScheme()}" actionListener="#{paymentSchemeController.createPaymentSchemes()}" value="Discount Schemes" ajax="false" rendered="#{webUserController.hasPrivilege('MembershipSchemes')}"/>                                       
-                                            <p:commandButton class="w-100" action="#{navigationController.navigateToPaymentMethodAllowed()}"   value="Allowed Payment Methods" ajax="false" rendered="#{webUserController.hasPrivilege('MembershipSchemes')}"/>                                       
-                                            <p:commandButton class="w-100" action="#{navigationController.navigateToPaymentSchemeDiscountOpdByDepartment()}" value="Discount Scheme Discount by Department" actionListener="#{opdMemberShipDiscountController.recreateModel()}" ajax="false"/>
-                                            <p:commandButton class="w-100" action="#{navigationController.navigateToPaymentSchemeDiscountOpdBtCategory()}" value="Discount Scheme Discount by Opd Category" actionListener="#{opdMemberShipDiscountController.recreateModel()}"  ajax="false"/>
-                                            <p:commandButton class="w-100" action="#{navigationController.navigateToPaymentSchemeDiscountPharmacyByCategory()}" value="Discount Scheme Discount by Pharmacy Category " actionListener="#{opdMemberShipDiscountController.recreateModel()}"  ajax="false" />
-                                            <p:commandButton class="w-100" action="#{navigationController.navigateToPaymentSchemeDiscountOpdByItem()}" value="Discount Scheme Discount by Item " actionListener="#{opdMemberShipDiscountController.recreateModel()}"  ajax="false" />
-                                            <p:commandButton class="w-100" action="#{navigationController.navigateToPaymentSchemeDiscountChannel()}"   value="Discount Scheme Discount for Channelling" ajax="false" rendered="#{webUserController.hasPrivilege('MembershipSchemes')}"/>   
+                                            <p:commandButton 
+                                                class="w-100" 
+                                                action="#{navigationController.navigateToPaymentMethodAllowed()}"   
+                                                value="Allowed Payment Methods" 
+                                                ajax="false" 
+                                                rendered="#{webUserController.hasPrivilege('MembershipSchemes')}"/>                                       
+
+                                            <p:commandButton 
+                                                class="w-100"
+                                                ajax="false" value="Pharmacy Discounts"
+                                                action="/admin/pricing/membership/payment_scheme_discount_pharmacy_by_category"/>
+                                            <p:commandButton 
+                                                class="w-100" 
+                                                action="#{navigationController.navigateToPaymentSchemeDiscountPharmacyByCategory()}" 
+                                                value="Discount by Pharmceutical Category " actionListener="#{opdMemberShipDiscountController.recreateModel()}"  ajax="false" />
+                                            <p:commandButton 
+                                                class="w-100" 
+                                                action="#{navigationController.navigateToPaymentSchemeDiscountOpdByDepartment()}" 
+                                                value="OPD Discount by Department" 
+                                                actionListener="#{opdMemberShipDiscountController.recreateModel()}" 
+                                                ajax="false"/>
+                                            <p:commandButton 
+                                                class="w-100" 
+                                                action="#{navigationController.navigateToPaymentSchemeDiscountOpdBtCategory()}" 
+                                                value="OPD Discount by Category" 
+                                                actionListener="#{opdMemberShipDiscountController.recreateModel()}"  
+                                                ajax="false"/>
+
+                                            <p:commandButton 
+                                                class="w-100"
+                                                action="#{navigationController.navigateToPaymentSchemeDiscountOpdByItem()}" 
+                                                value="OPD Discount by Item " 
+                                                actionListener="#{opdMemberShipDiscountController.recreateModel()}"  
+                                                ajax="false" />
+                                            <p:commandButton 
+                                                class="w-100" 
+                                                action="#{navigationController.navigateToPaymentSchemeDiscountChannel()}"   
+                                                value="Discount for Channelling" 
+                                                ajax="false" 
+                                                rendered="#{webUserController.hasPrivilege('MembershipSchemes')}"/>   
 
                                         </div>
                                     </p:tab>
 
                                     <p:tab title="Discounts for Payment Method" >
                                         <div class="d-grid gap-2">
-
                                             <p:commandButton class="w-100" action="#{navigationController.navigateToPaymentMethodDiscountOpdByDepartment()}" value="Payment Method Discoun by Department" actionListener="#{opdMemberShipDiscountController.recreateModel()}" ajax="false" rendered="#{webUserController.hasPrivilege('MemberShipOpdMemberShipDisByDepartment')}"/>                                            
                                             <p:commandButton class="w-100" action="#{navigationController.navigateToPaymentMethodDiscountOpdByCategory()}" value="Payment Method Discoun by Opd Category" actionListener="#{opdMemberShipDiscountController.recreateModel()}"  ajax="false" rendered="#{webUserController.hasPrivilege('MemberShipOpdMemberShipDisByCategory')}"/>
-
                                             <p:commandButton class="w-100" action="#{navigationController.navigateToPaymentMethodDiscountOpdByItem()}" value="Payment Method Discoun by Item " actionListener="#{opdMemberShipDiscountController.recreateModel()}"  ajax="false" rendered="#{webUserController.hasPrivilege('MemberShipOpdMemberShipDisByCategory')}"/>
-
                                         </div>
                                     </p:tab>
 
@@ -150,6 +163,28 @@
 
                                             <p:commandButton class="w-100" action="#{navigationController.navigateToReportInward()}" value="Inward MemberShip Report"  ajax="false" rendered="#{webUserController.hasPrivilege('MemberShipInwardMemberShipInwardMemberShipReport')}"/>
                                             <p:commandButton class="w-100" action="#{navigationController.navigateToReportOpd()}" value="Opd MemberShip Report"  ajax="false" rendered="#{webUserController.hasPrivilege('MemberShipOpdMemberShipDisOpdMemberShipReport')}"/>
+
+                                        </div>
+                                    </p:tab>
+
+                                    <p:tab 
+                                        rendered="false"
+                                        title="Manage Membership Schemes">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton class="w-100"
+                                                             ajax="false" value="Membership Schemes Discounts"
+                                                             action="/admin/pricing/membership/membership_scheme_discount_inward"/>
+
+                                            <p:commandButton
+                                                class="w-100" action="#{navigationController.navigateToMembershipPaymentMethodAllowed()}" actionListener="#{membershipSchemeController.fillItems}" value="Allowed Payment Methods" ajax="false" rendered="#{webUserController.hasPrivilege('MembershipSchemes')}"/>                                       
+                                            <p:commandButton class="w-100" action="#{navigationController.navigateToMembershipSchemeDiscountInward()}" value="Inward Discounts for Memberships"  ajax="false" rendered="#{webUserController.hasPrivilege('MemberShipInwardMemberShipSchemesDicounts')}"/>
+                                            <p:commandButton class="w-100" action="#{navigationController.navigateToMembershipSchemeDiscountOpdByDepartment()}" value="OPD Discounts for Members by Department" actionListener="#{opdMemberShipDiscountController.recreateModel()}" ajax="false" rendered="#{webUserController.hasPrivilege('MemberShipOpdMemberShipDisByDepartment')}"/>
+                                            <p:commandButton class="w-100" action="#{navigationController.navigateToMembershipSchemeDiscountOpdByCategory()}" value="OPD Discounts for Members by Opd Category" actionListener="#{opdMemberShipDiscountController.recreateModel()}"  ajax="false" rendered="#{webUserController.hasPrivilege('MemberShipOpdMemberShipDisByCategory')}"/>
+                                            <p:commandButton class="w-100" action="#{navigationController.navigateToMembershipSchemeDiscountPharmacyByCategory()}" value="OPD Discounts for Members by Pharmaceutical Category " actionListener="#{opdMemberShipDiscountController.recreateModel()}"  ajax="false" rendered="#{webUserController.hasPrivilege('MemberShipOpdMemberShipDisByCategory')}"/>
+
+                                            <p:commandButton ajax="false" value="Channelling Discounts" 
+                                                             action="#{navigationController.navigateToMembershipSchemeDiscountChannelingByDepartment()}"></p:commandButton>
+
 
                                         </div>
                                     </p:tab>
