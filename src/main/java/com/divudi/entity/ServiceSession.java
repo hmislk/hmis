@@ -89,6 +89,7 @@ public class ServiceSession extends Item implements Serializable {
     //new Adittions
     private int recervedNumbers;
     private boolean paidAppointmentsOnly;
+    private boolean excludeFromPatientPortal;
     private boolean canChangePatient;
 
     @Lob
@@ -507,6 +508,14 @@ public class ServiceSession extends Item implements Serializable {
 
     public void setDataEntryForms(String dataEntryForms) {
         this.dataEntryForms = dataEntryForms;
+    }
+
+    public boolean isExcludeFromPatientPortal() {
+        return excludeFromPatientPortal;
+    }
+
+    public void setExcludeFromPatientPortal(boolean excludeFromPatientPortal) {
+        this.excludeFromPatientPortal = excludeFromPatientPortal;
     }
 
    

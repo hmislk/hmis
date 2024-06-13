@@ -244,6 +244,9 @@
 
                                                 <p:outputLabel value="Paid Appointment Only"/>
                                                 <p:selectBooleanCheckbox value="#{channelScheduleController.current.paidAppointmentsOnly}" />
+                                                
+                                                <p:outputLabel value="Exclude From Patient Portal"/>
+                                                <p:selectBooleanCheckbox value="#{channelScheduleController.current.excludeFromPatientPortal}" />
 
                                                 <p:outputLabel value="Vatable" rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Cooperative' or sessionController.loggedPreference.applicationInstitution eq 'Arogya'}" />
                                                 <p:selectBooleanCheckbox value="#{channelScheduleController.current.vatable}" disabled="#{!webUserController.hasPrivilege('ChannelActiveVat')}" rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Cooperative'or sessionController.loggedPreference.applicationInstitution eq 'Arogya'}"/>
