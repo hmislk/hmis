@@ -70,59 +70,60 @@
 
                                 <div class="d-flex gap-2">
                                     <p:outputLabel value="Consultant : "/>
-                                    <p:outputLabel value="#{bookingController.staff.person.nameWithTitle}"/>
+                                    <p:outputLabel value="#{bookingControllerViewScope.selectedSessionInstance.staff.person.nameWithTitle}"/>
                                 </div>
 
                                 <div class="d-flex gap-2">
                                     <p:outputLabel value="Session Name : "/>
-                                    <h:outputLabel value="#{bookingController.selectedSessionInstance.name}" />
+                                    <h:outputLabel value="#{bookingControllerViewScope.selectedSessionInstance.originatingSession.name}" />
                                 </div>
 
                                 <div class="d-flex gap-2">
                                     <p:outputLabel value="Date : "/>
-                                    <h:outputLabel value="#{bookingController.selectedSessionInstance.sessionDate}" >
+                                    <h:outputLabel value="#{bookingControllerViewScope.selectedSessionInstance.sessionDate}" >
                                         <f:convertDateTime pattern="dd-MM-yyyy"/>
                                     </h:outputLabel>
                                 </div>
 
                             </f:facet>
 
-                            <p:column headerText="Appointment No" style="width: 5px!important;" exportable="false">
+                            <p:column headerText="App. No" style="width: 15px!important;" exportable="false">
                                 #{bs.serialNo}
                             </p:column>
 
                             <p:column headerText="Patient Name" width="50%">
                                 #{bs.bill.patient.person.nameWithTitle}
                             </p:column>
-                            <p:column headerText="Appointment time" width="50%">
+                            <p:column headerText="Booked At" width="50%">
                                 <p:outputLabel value="#{bs.createdAt}">
-                                    <f:convertDateTime pattern="HH:mm a"/>
+                                    <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>
                                 </p:outputLabel>
 
                             </p:column>
                             <p:column headerText="Mobile Number" width="50%">
                                 #{bs.bill.patient.person.phone}
                             </p:column>
-                            <p:column headerText="Remark" width="50%">
-                                <p:outputLabel rendered="#{bs.bill.balance ne 0.0}" value="Credit" style="color: red;font-size: 10pt;font-weight: bold" />
+                            <p:column headerText="Remarks" width="50%">
+                                <p:outputLabel rendered="#{bs.bill.balance ne 0.0}" value="Not Paid" style="color: red;font-size: 10pt;font-weight: bold" />
                                 <p:outputLabel rendered="#{bs.bill.balance eq 0.0}" value="Paid" style="color: green;font-size: 10pt;font-weight: bold"/>
                             </p:column>
-                            <p:column headerText="Creater" width="50%">
-                                <p:outputLabel value="#{bs.creater.name}" style="font-size: 10pt;font-weight: bold" />
-                            </p:column>
-                            <p:column headerText="billed by" width="50%">
+                            <p:column headerText="Billed By" width="50%">
                                 <p:outputLabel value="#{bs.bill.creater.name}" style="font-size: 10pt;font-weight: bold" />
                             </p:column>
-                            <p:column headerText="Comment" rendered="#{sessionController.loggedPreference.applicationInstitution ne 'Cooperative'}" exportable="false">
-                                <p:inputText class="w-100"/>
+                            <p:column headerText="Settled By" width="50%">
+                                <p:outputLabel value="#{bs.bill.paidBill.creater.name}" style="font-size: 10pt;font-weight: bold" />
+                                <p:outputLabel rendered="#{bs.bill.paidBill.creater.name eq null}" value="-" style="font-size: 10pt;font-weight: bold" />
                             </p:column>
+<!--                            <p:column headerText="Comment" rendered="#{sessionController.loggedPreference.applicationInstitution ne 'Cooperative'}" exportable="false">
+                                <p:inputText class="w-100"/>
+                            </p:column>-->
 
-                            <p:column headerText="Bill No" style="width: 10px!important;" rendered="#{sessionController.loggedPreference.applicationInstitution ne 'Ruhuna'}">
+<!--                            <p:column headerText="Bill No" style="width: 10px!important;" rendered="#{sessionController.loggedPreference.applicationInstitution ne 'Ruhuna'}">
                                 <p:outputLabel value="#{bs.bill.deptId}" rendered="#{bs.bill.paidBill eq null}" />
                                 <p:outputLabel value="#{bs.bill.paidBill.deptId}" rendered="#{bs.bill.paidBill ne null}" />
-                            </p:column>
+                            </p:column>-->
 
-                            <p:column headerText="C / R" style="text-align: center; width: 50px;">
+<!--                            <p:column headerText="C / R" style="text-align: center; width: 50px;">
                                 <p:outputLabel value="C" rendered="#{bs.bill.cancelled eq true}" style="color: red;"/>
                                 <p:outputLabel value="R" rendered="#{bs.bill.refunded eq true}" style="color: red;"/>
                                 <p:outputLabel value="-" rendered="#{bs.bill.refunded eq false and bs.bill.cancelled eq false}"/>
@@ -147,7 +148,7 @@
                                 <p:outputLabel value="A"  rendered="#{bs.absent and(!bs.bill.cancelled and !bs.bill.refunded)}" style="color: red;"/>
                                 <p:outputLabel value="P"  rendered="#{!bs.absent and(!bs.bill.cancelled and !bs.bill.refunded)}" style="color: green;"/>
                                 <p:outputLabel value="-"  rendered="#{bs.bill.cancelled or bs.bill.refunded}"/>
-                            </p:column> 
+                            </p:column> -->
 
                         </p:dataTable>
                     </p:panel>
