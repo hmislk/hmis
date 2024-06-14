@@ -87,33 +87,33 @@
 
                             </f:facet>
 
-                            <p:column headerText="App. No" style="width: 15px!important; font-size: 12px;" exportable="false">
-                                <p:outputLabel value="#{bs.serialNo}" style="font-size: 11px;" />
+                            <p:column headerText="App. No" style="width: 60px!important; font-size: 12px; padding: 1px" exportable="false">
+                                <p:outputLabel value="#{bs.serialNo}" style="font-size: 12px;" />
                             </p:column>
 
-                            <p:column headerText="Patient Name" style="font-size: 12px; width: 80%" >
-                                <p:outputLabel value="#{bs.bill.patient.person.nameWithTitle}" style="font-size: 11px;" />
+                            <p:column headerText="Patient Name" style="font-size: 12px; width: 70%; padding: 1px" >
+                                <p:outputLabel value="#{bs.bill.patient.person.nameWithTitle}" style="font-size: 12px;" />
                             </p:column>
-                            <p:column headerText="Booked At" style="font-size: 12px; width: 22%!important;" >
-                                <p:outputLabel value="#{bs.createdAt}" style="font-size: 11px;" >
+                            <p:column headerText="Booked At" style="font-size: 12px; width: 33%!important; padding: 1px" >
+                                <p:outputLabel value="#{bs.createdAt}" style="font-size: 12px;" >
                                     <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>
                                 </p:outputLabel>
 
                             </p:column>
-                            <p:column headerText="Mobile Number" style="font-size: 12px; width: 20%!important;">
-                                <p:outputLabel value="#{bs.bill.patient.person.phone}" style="font-size: 11px;" />
+                            <p:column headerText="Mobile Number" style="font-size: 12px; width: 28%!important; padding: 1px">
+                                <p:outputLabel value="#{bs.bill.patient.person.phone}" style="font-size: 12px;" />
                             </p:column>
-                            <p:column headerText="Remarks" style="font-size: 12px; width: 10%!important;" >
-                                <p:outputLabel rendered="#{bs.bill.balance ne 0.0}" value="Not Paid" style="color: red;font-size: 11px;font-weight: bold" />
-                                <p:outputLabel rendered="#{bs.bill.balance eq 0.0}" value="Paid" style="color: green;font-size: 11px;font-weight: bold"/>
+                            <p:column headerText="Remarks" style="font-size: 12px; width: 20%!important; padding: 1px" >
+                                <p:outputLabel rendered="#{bs.bill.balance ne 0.0}" value="Not Paid" style="color: red;font-size: 12px;font-weight: bold" />
+                                <p:outputLabel rendered="#{bs.bill.balance eq 0.0}" value="Paid" style="color: green;font-size: 12px;font-weight: bold"/>
                             </p:column>
-                            <p:column headerText="Billed By" style="font-size: 12px;width: 15%!important;" >
+<!--                            <p:column headerText="Billed By" style="font-size: 12px;width: 15%!important;" >
                                 <p:outputLabel value="#{bs.bill.creater.name}" style="font-size: 11px;font-weight: bold" />
                             </p:column>
                             <p:column headerText="Settled By" style="font-size: 12px; width: 15%!important;" >
                                 <p:outputLabel value="#{bs.bill.paidBill.creater.name}" style="font-size: 11px;font-weight: bold" />
                                 <p:outputLabel rendered="#{bs.bill.paidBill.creater.name eq null}" value="-" style="font-size: 11px;font-weight: bold" />
-                            </p:column>
+                            </p:column>-->
 <!--                            <p:column headerText="Comment" rendered="#{sessionController.loggedPreference.applicationInstitution ne 'Cooperative'}" exportable="false">
                                 <p:inputText class="w-100"/>
                             </p:column>-->
