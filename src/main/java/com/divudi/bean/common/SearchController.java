@@ -253,7 +253,6 @@ public class SearchController implements Serializable {
     private Token token;
 
     private boolean duplicateBillView;
-    
 
     public String navigateTobill(Bill bill) {
         String navigateTo = "";
@@ -3138,15 +3137,8 @@ public class SearchController implements Serializable {
 
         sql += " order by b.createdAt desc  ";
 
-        if (getReportKeyWord() != null) {
-            if (getReportKeyWord().isAdditionalDetails()) {
-                bills = getBillFacade().findByJpql(sql, tmp, TemporalType.TIMESTAMP);
-            } else {
-                bills = getBillFacade().findByJpql(sql, tmp, TemporalType.TIMESTAMP, 50);
-            }
-        } else {
-            bills = getBillFacade().findByJpql(sql, tmp, TemporalType.TIMESTAMP, 50);
-        }
+        bills = getBillFacade().findByJpql(sql, tmp, TemporalType.TIMESTAMP);
+
         for (Bill b : bills) {
             b.setListOfBill(getIssudBills(b));
         }
@@ -4063,7 +4055,7 @@ public class SearchController implements Serializable {
         bills = null;
         String sql;
         HashMap tmp = new HashMap();
-        
+
         if (getSearchKeyword().getItem() == null) {
             sql = "Select b From BilledBill b where  b.retired=false and b.billType= :bTp "
                     + " and b.institution=:ins "
