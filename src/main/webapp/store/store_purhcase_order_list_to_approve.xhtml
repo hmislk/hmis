@@ -12,116 +12,134 @@
                 You are NOT authorized
             </h:panelGroup>
             <p:panel  rendered="#{webUserController.hasPrivilege('StorePurchaseOrderApproveSearch')}" >
-                <p:panel >
-                    <f:facet name="header">
-                        <p:outputLabel value="Purchase Order To Approve"/>      
-                        <h:panelGroup style="float: right;">
-                            <p:inputText autocomplete="off" value="#{searchController.maxResult}"/>
-                            <p:commandButton value="All Request" action="#{searchController.createPoRequestedAndApprovedStore()}" ajax="false" ></p:commandButton>
-                            <p:commandButton value="Approved Only" action="#{searchController.createApprovedStore()}" ajax="false" ></p:commandButton>
-                            <p:commandButton value="Not Approved" action="#{searchController.createNotApprovedStore()}" ajax="false" ></p:commandButton>
-                        </h:panelGroup>
-                        <h:panelGrid columns="6" >
-                            <h:outputLabel value="From Date"/>
-                            <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
-                            </p:calendar>
-                            <h:outputLabel value="To Date"/>
-                            <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
-                            </p:calendar>
-                            <h:outputLabel /><h:outputLabel/>
-                            <p:spacer height="30"/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/>
-
-                            <h:outputLabel value="Distributor"/>
-                            <h:outputLabel value="Requested User"/>
-                            <h:outputLabel value="Requested Department"/>
-                            <h:outputLabel value="Po Number"/>
-                            <h:outputLabel value="Requsted Value"/>    
-                            <h:outputLabel value="Approved Value"/>
-                            <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.toInstitution}" />
-                            <p:inputText autocomplete="off" value="#{searchController.searchKeyword.creator}" />
-                            <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.department}" />
-                            <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.refBillNo}" />
-                            <p:inputText autocomplete="off" value="#{searchController.searchKeyword.total}"/>
-                            <p:inputText autocomplete="off" value="#{searchController.searchKeyword.netTotal}"/>
-                        </h:panelGrid>
-                    </f:facet>
+                <f:facet name="header">
+                    <p:outputLabel value="Purchase Order To Approve"/>      
+                    <h:panelGroup style="float: right;">
 
 
-                    <p:dataTable id="tbl" value="#{searchController.bills}" var="b">
-                        <p:column>
-                            <p:commandButton ajax="false" value="View Request" action="store_reprint_order_request">
-                                <f:setPropertyActionListener value="#{b}" target="#{storeBillSearch.bill}"/>
-                            </p:commandButton>
-                        </p:column>
-                        <p:column headerText="Requested at"  >                        
-                            <h:outputLabel value="#{b.createdAt}" >
-                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                            </h:outputLabel>
-                            <br/>
-                            <h:panelGroup rendered="#{b.cancelled}" >
-                                <h:outputLabel style="color: red;" value="Cancelled at " />
-                                <h:outputLabel style="color: red;" rendered="#{b.cancelled}"
-                                               value="#{b.cancelledBill.createdAt}" >
-                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                    </h:panelGroup>
+                    <h:panelGrid columns="6" >
+
+                    </h:panelGrid>
+                </f:facet>
+                <div class="row">
+                    <div class="col-2">
+                        <h:outputLabel value="From Date"/>
+                        <p:calendar id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" class="w-100" inputStyleClass="w-100">      
+                        </p:calendar>
+                        <h:outputLabel value="To Date"/>
+                        <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" class="w-100" inputStyleClass="w-100">                                                                              
+                        </p:calendar>
+                        <h:outputLabel value="Distributor"/>
+                        <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.toInstitution}" class="w-100"/>
+                        <h:outputLabel value="Requested User"/>
+                        <p:inputText autocomplete="off" value="#{searchController.searchKeyword.creator}" class="w-100"/>
+                        <h:outputLabel value="Requested Department"/>
+                        <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.department}" class="w-100"/>
+                        <h:outputLabel value="Po Number"/>
+                        <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.refBillNo}" class="w-100"/>
+                        <h:outputLabel value="Requsted Value"/>    
+                        <p:inputText autocomplete="off" value="#{searchController.searchKeyword.total}" class="w-100"/>
+                        <h:outputLabel value="Approved Value"/>
+                        <p:inputText autocomplete="off" value="#{searchController.searchKeyword.netTotal}" class="w-100"/>
+                        <h:outputLabel value="Max Result"/>
+                        <p:inputText autocomplete="off" value="#{searchController.maxResult}" class="w-100"/>
+                        <p:commandButton value="All Request" action="#{searchController.createPoRequestedAndApprovedStore()}" ajax="false" class="w-100 ui-button-Warning my-2"></p:commandButton>
+                        <p:commandButton value="Approved Only" action="#{searchController.createApprovedStore()}" ajax="false" class="w-100 ui-button-Warning"></p:commandButton>
+                        <p:commandButton value="Not Approved" action="#{searchController.createNotApprovedStore()}" ajax="false" class="w-100 ui-button-Warning my-2"></p:commandButton>
+                    </div>
+                    <div class="col-10">
+                        <p:dataTable id="tbl" value="#{searchController.bills}" var="b">
+
+                            <p:column headerText="Requested at"  > 
+                                <h:commandLink action="store_reprint_order_request" >
+                                    <h:outputLabel value="#{b.createdAt}" >
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                    </h:outputLabel>
+                                    <f:setPropertyActionListener value="#{b}" target="#{storeBillSearch.bill}"/>
+                                </h:commandLink>
+                                <br/>
+                                <h:panelGroup rendered="#{b.cancelled}" >
+                                    <h:commandLink action="store_reprint_order_request" >
+                                        <h:outputLabel style="color: red;" value="Cancelled at " />
+                                        <h:outputLabel style="color: red;" rendered="#{b.cancelled}"
+                                                       value="#{b.cancelledBill.createdAt}" >
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                        </h:outputLabel>
+                                        <f:setPropertyActionListener value="#{b}" target="#{storeBillSearch.bill}"/>
+                                    </h:commandLink>
+                                </h:panelGroup>                       
+                            </p:column> 
+
+                            <p:column headerText="Requested by" >                      
+                                <h:outputLabel value="#{b.creater.webUserPerson.name}" >                                      
                                 </h:outputLabel>
-                            </h:panelGroup>                       
-                        </p:column> 
+                                <br/>
+                                <h:panelGroup rendered="#{b.cancelled}" >
+                                    <h:outputLabel style="color: red;" value="Cancelled by " />
+                                    <h:outputLabel style="color: red;" rendered="#{b.cancelled}"
+                                                   value="#{b.cancelledBill.creater.webUserPerson.name}" >                                       
+                                    </h:outputLabel>
+                                </h:panelGroup>
+                            </p:column>    
 
-                        <p:column headerText="Requested by" >                      
-                            <h:outputLabel value="#{b.creater.webUserPerson.name}" >                                      
-                            </h:outputLabel>
-                            <br/>
-                            <h:panelGroup rendered="#{b.cancelled}" >
-                                <h:outputLabel style="color: red;" value="Cancelled by " />
-                                <h:outputLabel style="color: red;" rendered="#{b.cancelled}"
-                                               value="#{b.cancelledBill.creater.webUserPerson.name}" >                                       
+                            <p:column headerText="Distributor" >                        
+                                #{b.toInstitution.name}
+                            </p:column>
+
+                            <p:column headerText="Requested Deprtment" > 
+                                <h:commandLink action="store_reprint_order_request" >
+                                    #{b.department.name} 
+                                    <f:setPropertyActionListener value="#{b}" target="#{storeBillSearch.bill}"/>
+                                </h:commandLink>
+                            </p:column> 
+
+                            <p:column headerText="Requested Value" >
+                                <h:commandLink action="store_reprint_order_request" >
+                                    <h:outputLabel  value="#{b.netTotal}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                    <f:setPropertyActionListener value="#{b}" target="#{storeBillSearch.bill}"/>
+                                </h:commandLink>
+                            </p:column>
+
+                            <p:column headerText="Approved Person"  >    
+                                <h:commandLink action="store_reprint_order_request" >
+                                    <h:outputLabel    value="#{b.referenceBill.creater.webUserPerson.nameWithTitle}"  rendered="#{b.referenceBill.cancelled eq false}" />                        
+                                    <f:setPropertyActionListener value="#{b}" target="#{storeBillSearch.bill}"/>
+                                </h:commandLink>
+                            </p:column>
+
+                            <p:column headerText="PO Number" >                       
+                                <h:outputLabel  value="#{b.referenceBill.deptId}" rendered="#{b.referenceBill.cancelled eq false}"/>                         
+                            </p:column>
+                            <p:column headerText="Approved Value" >
+                                <h:outputLabel  value="#{b.referenceBill.netTotal}">
+                                    <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
-                            </h:panelGroup>
-                        </p:column>    
+                            </p:column>
 
-                        <p:column headerText="Distributor" >                        
-                            #{b.toInstitution.name}
-                        </p:column>
+                            <p:column headerText="Actions" width="9em">
+                                <p:commandButton 
+                                    id="approve"
+                                    ajax="false"
+                                    icon="fas fa-check-circle"
+                                    class="ui-button-success mx-2"
+                                    action="#{storePurchaseOrderController.navigateToPurchaseOrderApproval()}"
+                                    disabled="#{b.referenceBill.creater ne null or b.referenceBill.cancelled eq false or b.cancelled eq true or !webUserController.hasPrivilege('StorePurchaseOrderApprove')}">
+                                    <f:setPropertyActionListener target="#{storePurchaseOrderController.requestedBill}" value="#{b}"/>
+                                </p:commandButton>
 
-                        <p:column headerText="Requested Deprtment" >                     
-                            #{b.department.name}                     
-                        </p:column> 
+                                <p:commandButton ajax="false" id="view" icon="fas fa-eye" action="store_reprint_po?faces-redirect=true" disabled="#{b.referenceBill.creater eq null or b.referenceBill.referenceBill eq null}">
+                                    <f:setPropertyActionListener target="#{storeBillSearch.bill}" value="#{b.referenceBill}"/>
+                                </p:commandButton>
+                                <p:tooltip for="approve" value="Go to Approve the PO"  showDelay="0" hideDelay="0"></p:tooltip>
+                                <p:tooltip for="view" value="View PO"  showDelay="0" hideDelay="0"></p:tooltip>
+                            </p:column>
+                        </p:dataTable> 
+                    </div>
+                </div>
 
-                        <p:column headerText="Requested Value" >
-                            <h:outputLabel  value="#{b.netTotal}">
-                                <f:convertNumber pattern="#,##0.00" />
-                            </h:outputLabel>
-                        </p:column>
-
-                        <p:column headerText="Approved Person"  >                        
-                            <h:outputLabel    value="#{b.referenceBill.creater.webUserPerson.nameWithTitle}"  rendered="#{b.referenceBill.cancelled eq false}" />                        
-
-                        </p:column>
-
-                        <p:column headerText="PO Number" >                       
-                            <h:outputLabel  value="#{b.referenceBill.deptId}" rendered="#{b.referenceBill.cancelled eq false}"/>                         
-                        </p:column>
-                        <p:column headerText="Approved Value" >
-                            <h:outputLabel  value="#{b.referenceBill.netTotal}">
-                                <f:convertNumber pattern="#,##0.00" />
-                            </h:outputLabel>
-                        </p:column>
-
-
-                        <p:column headerText="Approve">
-                            <p:commandButton ajax="false" value="Approve" 
-                                            action="store_purhcase_order_approving"
-                                             disabled="#{b.referenceBill.creater ne null and b.referenceBill.cancelled eq false or !webUserController.hasPrivilege('StorePurchaseOrderApprove')}" >
-                                <f:setPropertyActionListener target="#{storePurchaseOrderController.requestedBill}" value="#{b}"/>
-                            </p:commandButton>
-                        </p:column>
-                        <p:column headerText="View PO">
-                            <p:commandButton ajax="false" value="View PO" action="store_reprint_po" disabled="#{b.referenceBill.creater eq null or b.referenceBill.referenceBill eq null}">
-                                <f:setPropertyActionListener target="#{storeBillSearch.bill}" value="#{b.referenceBill}"/>
-                            </p:commandButton>
-                        </p:column>
-                    </p:dataTable>
-                </p:panel>
             </p:panel>
         </h:form>
     </ui:define>  

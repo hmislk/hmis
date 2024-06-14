@@ -259,7 +259,7 @@ public class PatientPortalController implements Serializable {
         calendar.setTime(currentDate);
         calendar.add(Calendar.DAY_OF_MONTH, 2);
         Map<String, Object> m = new HashMap<>();
-        StringBuilder jpql = new StringBuilder("select i from SessionInstance i where i.retired=:ret and i.sessionDate BETWEEN :cd AND :nextTwoDays");
+        StringBuilder jpql = new StringBuilder("select i from SessionInstance i where i.retired=:ret and i.originatingSession.excludeFromPatientPortal=:epp and i.sessionDate BETWEEN :cd AND :nextTwoDays");
 
         if (selectedConsultant != null) {
             jpql.append(" and i.originatingSession.staff=:os");
@@ -273,6 +273,7 @@ public class PatientPortalController implements Serializable {
         }
 
         m.put("ret", false);
+        m.put("epp", false);
         m.put("cd", currentDate);
         m.put("nextTwoDays", calendar.getTime());
 

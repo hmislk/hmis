@@ -42,6 +42,7 @@
                                 <p:commandButton 
                                     value="Reprint" 
                                     icon="fa fa-print"
+                                    rendered="#{!configOptionApplicationController.getBooleanValueByKey('Pharmacy Bill Support for Native Printers')}"
                                     class="ui-button-info"
                                     ajax="false" >
                                     <p:printer target="gpBillPreview" ></p:printer>
@@ -78,6 +79,10 @@
                             <h:panelGroup id="gpBillPreviewFiveFive" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'FiveFivePaper'}"> 
                                 <ph:saleBill_five_five bill="#{pharmacyBillSearch.bill}"></ph:saleBill_five_five>
                             </h:panelGroup>
+                            
+                            <h:panelGroup id="gpBillPreviewPosHeader" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'PosHeaderPaper'}">  
+                                <ph:saleBill_Header bill="#{pharmacyBillSearch.bill}"></ph:saleBill_Header>
+                            </h:panelGroup>  
 
                         </h:panelGroup>
                     </p:panel>
