@@ -2386,9 +2386,11 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         }
 
         if (configOptionApplicationController.getBooleanValueByKey("Allow Tenderd amount for channel booking")) {
-            if (strTenderedValue == "" || strTenderedValue.isEmpty()) {
+            if(paymentMethod == PaymentMethod.Cash){
+                if (strTenderedValue == "" || strTenderedValue.isEmpty()) {
                 JsfUtil.addErrorMessage("Please Enter Tenderd Amount");
                 return;
+            }
             }
         }
 
