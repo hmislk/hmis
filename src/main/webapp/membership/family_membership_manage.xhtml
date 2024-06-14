@@ -102,26 +102,26 @@
                                     <p:column headerText="Billing" rendered="true">
 
                                         <p:commandButton 
-                                            action="#{opdBillController.navigateToNewOpdBillWithPaymentScheme(fm.patient, fm.family.membershipScheme)}" 
+                                            action="#{opdBillController.navigateToNewOpdBillWithPaymentScheme(fm.patient, fm.family.membershipScheme.paymentScheme)}" 
                                             ajax="false"
-                                            class="w-100 mx-2"
+                                            class="mx-2"
                                             icon="fa fa-fw fa-file-medical"
                                             title="OPD Billing">
                                         </p:commandButton>
 
                                         <p:commandButton 
-                                            action="#{opdPreBillController.navigateToBillingForCashierFromMembership(fm.patient, fm.family.membershipScheme)}" 
+                                            action="#{opdPreBillController.navigateToBillingForCashierFromMembership(fm.patient, fm.family.membershipScheme.paymentScheme)}" 
                                             ajax="false"
-                                            class="w-100 mx-2"
+                                            class="mx-2"
                                             icon="fa fa-fw fa-cash-register"
                                             title="OPD Billing for Cashier">
                                         </p:commandButton>
 
                                         <p:commandButton 
                                             ajax="false"
-                                            action="#{bookingControllerViewScope.navigateToChannelBookingFromMembershipByDate(fm.patient, fm.family.membershipScheme)}" 
+                                            action="#{bookingControllerViewScope.navigateToChannelBookingFromMembershipByDate(fm.patient, fm.family.membershipScheme.paymentScheme)}" 
                                             icon="fa fa-fw fa-calendar-check" 
-                                            class="w-100 mx-1"
+                                            class="mx-1"
                                             title="Channelling"
                                             disabled="#{!webUserController.hasPrivilege('ChannellingChannelBooking')}">
                                         </p:commandButton>
