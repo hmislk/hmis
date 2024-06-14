@@ -316,15 +316,15 @@
                                             </h:panelGroup>
 
                                             <h:panelGrid id="gdManageBookings" class="w-100 m-2" columns="2"  >
-                                                <p:outputLabel value="Tenderd Amount"/>
-                                                <h:panelGroup class="w-100 my-2" style="font-weight: bolder">
+                                                <p:outputLabel value="Tenderd Amount" rendered="#{bookingControllerViewScope.paymentMethod eq 'Cash'}"/>
+                                                <h:panelGroup class="w-100 my-2" style="font-weight: bolder" rendered="#{bookingControllerViewScope.paymentMethod eq 'Cash'}">
                                                     <p:inputText id="paid" value="#{bookingControllerViewScope.strTenderedValue}">
                                                         <p:ajax event="keyup" process=" paid" update="balance"/>
                                                     </p:inputText>
                                                 </h:panelGroup>
 
-                                                <p:outputLabel value="Balance"/>
-                                                <h:panelGroup id="balance" class="w-100 my-2" style="font-weight: bolder">
+                                                <p:outputLabel value="Balance" rendered="#{bookingControllerViewScope.paymentMethod eq 'Cash'}"/>
+                                                <h:panelGroup id="balance" class="w-100 my-2" style="font-weight: bolder" rendered="#{bookingControllerViewScope.paymentMethod eq 'Cash'}">
                                                     <p:outputLabel value="#{bookingControllerViewScope.cashBalance}"/>
                                                 </h:panelGroup>
 
