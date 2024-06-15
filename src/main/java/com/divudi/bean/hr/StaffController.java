@@ -1091,10 +1091,10 @@ public class StaffController implements Serializable {
             JsfUtil.addErrorMessage("Nothing to save");
             return;
         }
-        if (current.getSpeciality() == null) {
-            JsfUtil.addErrorMessage("Plaese Select Speciality.");
-            return;
-        }
+//        if (current.getSpeciality() == null) {
+//            JsfUtil.addErrorMessage("Plaese Select Speciality.");
+//            return;
+//        }
 
         if (current.getPerson().getLastName() == null || current.getPerson().getLastName().isEmpty()) {
             JsfUtil.addErrorMessage("Last Name Requied To Save");

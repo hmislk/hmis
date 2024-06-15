@@ -68,7 +68,6 @@ public class StoreTransferIssueController implements Serializable {
     @EJB
     private BillNumberGenerator billNumberBean;
 
-    
     private CommonFunctions commonFunctions;
     private List<BillItem> billItems;
     UserStockContainer userStockContainer;
@@ -117,7 +116,12 @@ public class StoreTransferIssueController implements Serializable {
     public Bill getRequestedBill() {
         if (requestedBill == null) {
             requestedBill = new BilledBill();
-
+        }
+        if (requestedBill.getFromDepartment() == null) {
+            requestedBill.setFromDepartment(sessionController.getLoggedUser().getDepartment());
+        }
+        if (requestedBill.getDepartment() == null) {
+            requestedBill.setDepartment(sessionController.getLoggedUser().getDepartment());
         }
         return requestedBill;
     }
@@ -141,7 +145,6 @@ public class StoreTransferIssueController implements Serializable {
             double cancelledIssue = storeCalculation.getCancelledIssuedByRequestedItem(i.getBillItem(), BillType.StoreTransferIssue);
 
             double issuableQty = i.getQtyInUnit() - (Math.abs(billedIssue) - Math.abs(cancelledIssue));
-
 
             List<StockQty> stockQtys = getStoreBean().getStockByQty(i.getBillItem().getItem(), issuableQty, getSessionController().getDepartment());
 
