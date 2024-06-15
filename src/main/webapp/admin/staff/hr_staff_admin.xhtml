@@ -383,8 +383,8 @@
                                             <p:commandButton class="w-25 ui-button-warning"
                                                              id="btnSave"
                                                              value="Save" 
-                                                             process="btnSave gpDetail"
-                                                             update="lstSelect gpDetail panelPrint msg"
+                                                             process="btnSave gpDetail @this"
+                                                             update="lstSelect gpDetail panelPrint msg @all" 
                                                              action="#{staffController.saveSelected()}"  >
                                             </p:commandButton>
                                             <p:commandButton ajax="false" class="ui-button-info w-25 mx-1" icon="fas fa-print" value="Print" >
