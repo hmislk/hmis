@@ -2371,7 +2371,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 int maxNo = selectedSessionInstance.getMaxNo();
                 long bookedPatientCount = selectedSessionInstance.getBookedPatientCount();
                 if (maxNo <= bookedPatientCount) {
-                    JsfUtil.addErrorMessage("Error: The maximum number (" + maxNo + ") is less than the booked patient count (" + bookedPatientCount + ").");
+                    JsfUtil.addErrorMessage("Error: The maximum number of bookings (" + maxNo + ") has been Reached.");
                     return;
 
                 }
@@ -2386,9 +2386,11 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         }
 
         if (configOptionApplicationController.getBooleanValueByKey("Allow Tenderd amount for channel booking")) {
-            if (strTenderedValue == "" || strTenderedValue.isEmpty()) {
+            if(paymentMethod == PaymentMethod.Cash){
+                if (strTenderedValue == "" || strTenderedValue.isEmpty()) {
                 JsfUtil.addErrorMessage("Please Enter Tenderd Amount");
                 return;
+            }
             }
         }
 
