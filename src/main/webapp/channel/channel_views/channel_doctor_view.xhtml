@@ -1,0 +1,166 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="index.xhtml">
+            <ui:define name="subcontent">
+                <h:form>
+                    <p:panel>
+                        <f:facet name="header">
+                            <div class="d-flex justify-content-between">
+                                <p:outputLabel value="Doctor View" class="mt-2"/>
+                                <div class="d-flex gap-2">
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        value="Process"
+                                        icon="fas fa-refresh" 
+                                        class="ui-button-warning"
+                                        action="#{channelReportController.fillDoctorView()}">
+                                    </p:commandButton>
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        class="ui-button-secondary"
+                                        icon="fa-solid fa-arrow-left"
+                                        action="#{bookingControllerViewScope.navigateToChannelBookingFromMenuByDate()}" 
+                                        value="Back to Channel Booking" >
+                                    </p:commandButton>
+                                 
+                                </div>
+                            </div>
+                        </f:facet>
+
+                        <div class="d-flex justify-content-end mb-4">
+                            <p:commandButton 
+                                value="Print" 
+                                ajax="fasle" 
+                                icon="fa fa-print"
+                                class="ui-button-info"
+                                action="#">
+                                <p:printer target="doctorView"/>
+                            </p:commandButton>
+                        </div>
+
+                        <p:dataTable 
+                            id="doctorView" 
+                            value="#{channelReportController.doctorViewSessions}" 
+                            style="margin-left: 1%; margin-right: 1%;"
+                            var="bs" 
+                            sortBy="#{bs.bill.billClass}">
+                            <f:facet name="header">
+                                <div style="text-align: center;">
+                                    <p:outputLabel value="#{sessionController.loggedUser.institution.name}" />
+                                    <br/>
+                                    <p:outputLabel value="#{sessionController.loggedUser.institution.address}" />
+                                    <br/>
+                                    <p:outputLabel value="Doctor View" style="font-size: 22px; font-weight: 700;" />
+                                </div>
+
+                                <div class="d-flex gap-2">
+                                    <p:outputLabel value="Consultant : "/>
+                                    <p:outputLabel value="#{bookingController.staff.person.nameWithTitle}"/>
+                                </div>
+
+                                <div class="d-flex gap-2">
+                                    <p:outputLabel value="Session Name : "/>
+                                    <h:outputLabel value="#{bookingController.selectedSessionInstance.name}" />
+                                </div>
+
+                                <div class="d-flex gap-2">
+                                    <p:outputLabel value="Date : "/>
+                                    <h:outputLabel value="#{bookingController.selectedSessionInstance.sessionDate}" >
+                                        <f:convertDateTime pattern="dd-MM-yyyy"/>
+                                    </h:outputLabel>
+                                </div>
+
+                            </f:facet>
+                            <p:column headerText="No" width="1%;">
+                                <p:outputLabel value="#{bs.serialNo}" />
+                            </p:column>               
+                            <p:column headerText="Patient Name" width="22%;">
+                                <p:outputLabel value="#{bs.bill.patient.person.nameWithTitle}" style="font-size: 8pt;font-weight: bold" />
+                            </p:column>
+                            <p:column headerText="Bill No" exportable="false">
+                                <p:outputLabel value="#{bs.bill.deptId}" rendered="#{bs.bill.paidBill eq null}"  style="font-size: 8pt;font-weight: bold"/>
+                                <p:outputLabel value="#{bs.bill.paidBill.deptId}" rendered="#{bs.bill.paidBill ne null}"  style="font-size: 8pt;font-weight: bold"/>
+                            </p:column>
+                            <p:column headerText="Agent" width="8%" exportable="false" style="text-align: center;">
+                                <p:outputLabel value="#{bs.bill.creditCompany}" rendered="#{bs.bill.creditCompany.institutionCode} ne null" style="font-size: 8pt;font-weight: bold; text-align: center;"/>
+                                <p:outputLabel value="-" rendered="#{bs.bill.creditCompany eq null}" style="text-align: center;"/>
+                            </p:column> 
+
+                            <p:column headerText="Paid or Not" >
+                                <p:outputLabel rendered="#{bs.bill.balance ne 0.0}" value="Credit" style="color: red;font-size: 10pt;font-weight: bold" />
+                                <p:outputLabel rendered="#{bs.bill.balance eq 0.0}" value="Paid" style="color: green;font-size: 10pt;font-weight: bold"/>
+                            </p:column> 
+
+                            <p:column headerText="C / R" style="text-align: center;" >
+
+                                <p:outputLabel value="CANCELLED" rendered="#{bs.bill.cancelled eq true}" style="color: red;font-size: 10pt;font-weight: bold"/>
+                                <p:outputLabel value="REFUNDED" rendered="#{bs.bill.refunded eq true}" style="color: red;font-size: 10pt;font-weight: bold"/>
+                                <p:outputLabel value="-" rendered="#{bs.bill.refunded eq false and bs.bill.cancelled eq false}"/>
+                            </p:column>
+                            <p:column headerText="P / A">
+                                <p:outputLabel value="ABSENT"  rendered="#{bs.absent and(!bs.bill.cancelled and !bs.bill.refunded)}" style="color: red;font-size: 10pt;font-weight: bold"/>
+                                <p:outputLabel value="PRESENT"  rendered="#{!bs.absent and(!bs.bill.cancelled and !bs.bill.refunded)}" style="color: green;font-size: 10pt;font-weight: bold"/>
+                                <p:outputLabel value="-"  rendered="#{bs.bill.cancelled or bs.bill.refunded}"/>
+                            </p:column>
+
+                            <p:column headerText="Bill Type" rendered="false">
+                                <p:outputLabel value="#{bs.bill.billType}"/>
+                            </p:column>
+
+                            <p:column headerText="Doctor Fee" styleClass="numberCol" width="10%;" style="text-align: right;">
+                                <h:outputLabel value="#{bs.bill.staffFee}" rendered="#{bs.bill.balance eq 0.0 and bs.bill.cancelled ne true and bs.bill.refunded ne true and bs.serviceSession.originatingSession.refundable eq false}" style="float: right;text-align: center">
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </h:outputLabel>
+                                <h:outputLabel value="#{bs.bill.staffFee}" rendered="#{bs.bill.balance eq 0.0 and bs.bill.cancelled ne true and bs.bill.refunded ne true and bs.absent eq false and bs.serviceSession.originatingSession.refundable ne false}" style="float: right;text-align: center">
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </h:outputLabel>
+                                <h:outputLabel value="#{bs.bill.staffFee+bs.bill.billedBill.staffFee}" rendered="#{bs.bill.cancelled eq true}" style="float: right;text-align: center">
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </h:outputLabel>
+                                <h:outputLabel value="#{bs.bill.staffFee+bs.bill.billedBill.staffFee}" rendered="#{bs.bill.refunded eq true}" style="float: right;text-align: center">
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </h:outputLabel>
+                                <p:outputLabel rendered="#{bs.bill.balance ne 0.0 or(bs.absent ne false and bs.serviceSession.originatingSession.refundable ne false)}" value="0.00" style="float: right;text-align: center"/>
+                                <f:facet name="footer" >
+                                    <h:outputLabel value="#{channelReportController.netTotal}" style="float: right;">
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column headerText="Total Amount" styleClass="numberCol" rendered="#{webUserController.hasPrivilege('Developers')}" width="10%;" style="text-align: right;">
+                                <h:outputLabel value="#{bs.bill.netTotal}" rendered="#{bs.bill.balance eq 0.0 and bs.bill.cancelled ne true and bs.bill.refunded ne true and bs.serviceSession.originatingSession.refundable eq false}" style="float: right;text-align: center">
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </h:outputLabel>
+                                <h:outputLabel value="#{bs.bill.netTotal}" rendered="#{bs.bill.balance eq 0.0 and bs.bill.cancelled ne true and bs.bill.refunded ne true and bs.absent eq false and bs.serviceSession.originatingSession.refundable ne false}" style="float: right;text-align: center">
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </h:outputLabel>
+                                <h:outputLabel value="#{bs.bill.netTotal+bs.bill.billedBill.netTotal}" rendered="#{bs.bill.cancelled eq true}" style="float: right;text-align: center">
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </h:outputLabel>
+                                <h:outputLabel value="#{bs.bill.netTotal+bs.bill.billedBill.netTotal}" rendered="#{bs.bill.refunded eq true}" style="float: right;text-align: center">
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </h:outputLabel>
+                                <p:outputLabel rendered="#{bs.bill.balance ne 0.0 or(bs.absent ne false and bs.serviceSession.originatingSession.refundable ne false)}" value="0.00"/>
+                                <f:facet name="footer" >
+                                    <h:outputLabel value="#{channelReportController.grantNetTotal}" style="float: right;text-align: center">
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+
+                        </p:dataTable>
+
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

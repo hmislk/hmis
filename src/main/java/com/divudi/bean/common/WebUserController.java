@@ -141,7 +141,7 @@ public class WebUserController implements Serializable {
     
     private LoginPage loginPage;
 
-    boolean testRun = true;
+    boolean testRun = false;
 
     private List<UserNotification> userNotifications;
     private int userNotificationCount;

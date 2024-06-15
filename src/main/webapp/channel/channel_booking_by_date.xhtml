@@ -125,7 +125,7 @@
                                             <p:ajax 
                                                 event="rowSelect" 
                                                 process="@this"
-                                                update=":#{p:resolveFirstComponentWithId('panelBookingDetails',view).clientId} :#{p:resolveFirstComponentWithId('gdManageBookings',view).clientId} :#{p:resolveFirstComponentWithId('gpAdditionalItems',view).clientId}"
+                                                update=":#{p:resolveFirstComponentWithId('totalsPanel',view).clientId} :#{p:resolveFirstComponentWithId('panelBookingDetails',view).clientId} :#{p:resolveFirstComponentWithId('gdManageBookings',view).clientId} :#{p:resolveFirstComponentWithId('gpAdditionalItems',view).clientId}"
                                                 listener="#{bookingControllerViewScope.sessionInstanceSelected()}" />
 
 
@@ -220,7 +220,7 @@
                                                                 </span>
                                                                 <span class="text-center mx-1" > 
                                                                     <h:outputText style="font-weight: bolder" value="C"/><br/>
-                                                                    <p:badge value="#{s.completedPatientCount != null ? s.completedPatientCount : ' '}" severity="danger" size="large" styleClass="mr-2"></p:badge>
+                                                                    <p:badge value="#{s.completedPatientCount != null ? s.completedPatientCount : ' '}" severity="success" size="large" styleClass="mr-2"></p:badge>
                                                                 </span>
                                                                 <span class="text-center mx-1" > 
                                                                     <h:outputLabel /><br/>
@@ -249,64 +249,74 @@
                                             controller="#{bookingControllerViewScope}"/>
 
                                         <p:panel class="my-1">
-                                            <h:panelGrid id="gdManageBookings" class="w-100 m-2" columns="2"  >
-                                                <f:facet name="header">
-                                                    <p:row>
-                                                        <p:column  colspan="2" >
-                                                            <h:outputText styleClass="fa-solid fa-money-bill-wave"/>
-                                                            <h:outputText class="mx-4" value="Payment Details"/>
-                                                        </p:column>
-                                                    </p:row>
-                                                </f:facet>
-                                                <f:facet name="footer">
-                                                    <p:row>
-                                                        <p:column colspan="4" >
-                                                            <p:commandButton
-                                                                id="btnAdd"
-                                                                value="Add Normal Booking"
-                                                                ajax="false"
-                                                                update="gpThisBookingDetails"
-                                                                class="ui-button-info "
-                                                                icon="pi pi-check"
-                                                                action="#{bookingControllerViewScope.addNormalChannelBooking}" >
-                                                            </p:commandButton>
-                                                            <p:spacer height="1" width="10" ></p:spacer>
-                                                            <p:spacer height="1" width="10" ></p:spacer>
-                                                            <p:selectOneMenu value="#{bookingControllerViewScope.selectedReserverdBookingNumber}" >
-                                                                <f:selectItem itemLabel="Next Number" ></f:selectItem>
-                                                                <f:selectItems value="#{bookingControllerViewScope.reservedBookingNumbers}" ></f:selectItems>
-                                                            </p:selectOneMenu>
-                                                            <p:commandButton
-                                                                id="btnAddReserved"
-                                                                value="Add Reserved Booking"
-                                                                ajax="false"
-                                                                update="gpThisBookingDetails"
-                                                                class="ui-button-warning m-2"
-                                                                icon="pi pi-bookmark"
-                                                                action="#{bookingControllerViewScope.addReservedChannelBooking}" > <!-- Assuming a different action for reserved booking -->
-                                                            </p:commandButton>
-                                                        </p:column>
-                                                    </p:row>
-                                                </f:facet>
+                                            <f:facet name="header">
+                                                <p:row>
+                                                    <p:column  colspan="2" >
+                                                        <h:outputText styleClass="fa-solid fa-money-bill-wave"/>
+                                                        <h:outputText class="mx-4" value="Payment Details"/>
+                                                    </p:column>
+                                                </p:row>
+                                            </f:facet>
+                                            <f:facet name="footer">
+                                                <p:row>
+                                                    <p:column colspan="4" >
+                                                        <p:commandButton
+                                                            id="btnAdd"
+                                                            value="Add Normal Booking"
+                                                            ajax="false"
+                                                            update="gpThisBookingDetails"
+                                                            class="ui-button-info "
+                                                            icon="pi pi-check"
+                                                            action="#{bookingControllerViewScope.addNormalChannelBooking}" >
+                                                        </p:commandButton>
+                                                        <p:spacer height="1" width="10" ></p:spacer>
+                                                        <p:spacer height="1" width="10" ></p:spacer>
+                                                        <p:selectOneMenu value="#{bookingControllerViewScope.selectedReserverdBookingNumber}" >
+                                                            <f:selectItem itemLabel="Next Number" ></f:selectItem>
+                                                            <f:selectItems value="#{bookingControllerViewScope.reservedBookingNumbers}" ></f:selectItems>
+                                                        </p:selectOneMenu>
+                                                        <p:commandButton
+                                                            id="btnAddReserved"
+                                                            value="Add Reserved Booking"
+                                                            ajax="false"
+                                                            update="gpThisBookingDetails"
+                                                            class="ui-button-warning m-2"
+                                                            icon="pi pi-bookmark"
+                                                            action="#{bookingControllerViewScope.addReservedChannelBooking}" > <!-- Assuming a different action for reserved booking -->
+                                                        </p:commandButton>
+                                                    </p:column>
+                                                </p:row>
+                                            </f:facet>
 
+                                            <h:panelGroup style="display: flex; flex-direction: column; align-items: start;" id="totalsPanel">
 
-
-                                                <p:outputLabel value="Amount" class="py-2"/>
-
-                                                <h:panelGroup class="mx-2 my-2" id="lblSessionTotal" style="font-weight: bolder">
-                                                    <p:outputLabel
-                                                        value="#{bookingControllerViewScope.selectedSessionInstance.originatingSession.totalForForeigner}"
-                                                        rendered="#{bookingControllerViewScope.foriegn}">
-                                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                    </p:outputLabel>
-                                                    <p:outputLabel
-                                                        value="#{bookingControllerViewScope.feeTotalForSelectedBill}"
-                                                        rendered="#{!bookingControllerViewScope.foriegn}">
-
-                                                    </p:outputLabel>
+                                                <!-- Total -->
+                                                <h:panelGroup style="display: flex; justify-content: space-between; width: 100%; font-weight: bolder;">
+                                                    <h:outputText value="Total:" />
+                                                    <h:outputText value="#{bookingControllerViewScope.feeTotalForSelectedBill}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
                                                 </h:panelGroup>
-                                                <p:outputLabel value="Tenderd Amount"/>
 
+                                                <!-- Discount -->
+                                                <h:panelGroup style="display: flex; justify-content: space-between; width: 100%;">
+                                                    <h:outputText value="Discount:" />
+                                                    <h:outputText value="#{bookingControllerViewScope.feeDiscountForSelectedBill}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </h:panelGroup>
+
+                                                <!-- Net Total -->
+                                                <h:panelGroup style="display: flex; justify-content: space-between; width: 100%;">
+                                                    <h:outputText value="Net Total:" />
+                                                    <h:outputText value="#{bookingControllerViewScope.feeNetTotalForSelectedBill}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </h:panelGroup>
+                                            </h:panelGroup>
+
+                                            <h:panelGrid id="gdManageBookings" class="w-100 m-2" columns="2"  >
+                                                <p:outputLabel value="Tenderd Amount"/>
                                                 <h:panelGroup class="w-100 my-2" style="font-weight: bolder">
                                                     <p:inputText id="paid" value="#{bookingControllerViewScope.strTenderedValue}">
                                                         <p:ajax event="keyup" process=" paid" update="balance"/>
@@ -314,20 +324,17 @@
                                                 </h:panelGroup>
 
                                                 <p:outputLabel value="Balance"/>
-
                                                 <h:panelGroup id="balance" class="w-100 my-2" style="font-weight: bolder">
                                                     <p:outputLabel value="#{bookingControllerViewScope.cashBalance}"/>
                                                 </h:panelGroup>
 
                                                 <h:outputLabel value="Foriegner"/>
                                                 <p:selectBooleanCheckbox class="w-75" id="f" value="#{bookingControllerViewScope.foriegn}">
-                                                    <f:ajax event="change" execute="@this" render="lblSessionTotal panelBookingDetails"/>
+                                                    <f:ajax event="change" execute="@this" render="totalsPanel panelBookingDetails"/>
                                                 </p:selectBooleanCheckbox>
 
 
-
                                                 <p:outputLabel value="Payment Method"/>
-
                                                 <h:panelGroup>
                                                     <p:selectOneMenu 
                                                         class="w-75"
@@ -338,7 +345,11 @@
                                                         value="#{bookingControllerViewScope.paymentMethod}">
                                                         <f:selectItem itemLabel="Select Payment Method" ></f:selectItem>
                                                         <f:selectItems value="#{enumController.paymentMethodsForChanneling}"/>
-                                                        <f:ajax execute="@this" render="gdManageBookings :#{p:resolveFirstComponentWithId('lblSessionTotal',view).clientId} paymentDetails lstItems" event="change" listener="#{bookingControllerViewScope.generateSessions}" />
+                                                        <p:ajax 
+                                                            process="@this"
+                                                            update="gdManageBookings :#{p:resolveFirstComponentWithId('totalsPanel',view).clientId} paymentDetails lstItems" 
+                                                            event="change" 
+                                                            listener="#{bookingControllerViewScope.calculateSelectedBillSessionTotal()}" />
                                                     </p:selectOneMenu>
                                                     <h:outputScript>
                                                         $(document.getElementById('form:cmbPs_focus')).keypress(function (event) {
@@ -355,15 +366,22 @@
 
 
                                                 <p:outputLabel value="Discount Scheme"/>
-
-                                                <p:selectOneMenu class="w-75" autoWidth="false" id="cmbPs2" value="#{bookingControllerViewScope.paymentScheme}">
+                                                <p:selectOneMenu 
+                                                    class="w-75" 
+                                                    autoWidth="false" 
+                                                    id="cmbPs2" 
+                                                    value="#{bookingControllerViewScope.paymentScheme}">
                                                     <f:selectItem itemLabel="Select Discount Scheme"/>
-                                                    <f:selectItems value="#{paymentSchemeController.paymentSchemesForChannel}"
-                                                                   var="paysch" itemLabel="#{paysch.name}" itemValue="#{paysch}"  />
-                                                    <p:ajax process="@this"
-                                                            update="lblSessionTotal"
-                                                            event="change"
-                                                            listener="#{bookingControllerViewScope.changeListener()}"/>
+                                                    <f:selectItems 
+                                                        value="#{paymentSchemeController.paymentSchemesForChannel}"
+                                                        var="paysch" 
+                                                        itemLabel="#{paysch.name}" 
+                                                        itemValue="#{paysch}"  />
+                                                    <p:ajax 
+                                                        process="@this"
+                                                        update="gdManageBookings :#{p:resolveFirstComponentWithId('totalsPanel',view).clientId} paymentDetails lstItems"
+                                                        event="change"
+                                                        listener="#{bookingControllerViewScope.calculateSelectedBillSessionTotal()}"/>
                                                 </p:selectOneMenu>
                                             </h:panelGrid>
 
@@ -389,7 +407,7 @@
                                                             <p:autoComplete class="w-75 mx-2" id="agent2" forceSelection="true"
                                                                             value="#{bookingControllerViewScope.institution}" completeMethod="#{agencyController.completeAgency}" var="ix"
                                                                             itemLabel="#{ix.name}" itemValue="#{ix}" size="38">
-                                                                <f:ajax event="itemSelect" execute="@this" render="balance2 lblSessionTotal agRefLbl agRefTxt :#{p:resolveFirstComponentWithId('agRefLbl',view).clientId} :#{p:resolveFirstComponentWithId('tblAgentBooks',view).clientId} gdManageBookings" listener="#{bookingControllerViewScope.validateAgentBalance()}"/>
+                                                                <f:ajax event="itemSelect" execute="@this" render="balance2 totalsPanel agRefLbl agRefTxt :#{p:resolveFirstComponentWithId('agRefLbl',view).clientId} :#{p:resolveFirstComponentWithId('tblAgentBooks',view).clientId} gdManageBookings" listener="#{bookingControllerViewScope.validateAgentBalance()}"/>
                                                                 <p:column>#{ix.institutionCode}</p:column>
                                                                 <p:column>#{ix.name}</p:column>
                                                             </p:autoComplete>
@@ -598,7 +616,7 @@
                                                         <p:selectOneMenu class="w-75 mx-1" autoWidth="false" id="lstItems" value="#{bookingControllerViewScope.itemToAddToBooking}" >
                                                             <f:selectItem itemLabel="Select" ></f:selectItem>
                                                             <f:selectItems  value="#{bookingControllerViewScope.itemsAvailableToAddToBooking}" var="iata" itemValue="#{iata}"  itemLabel="#{iata.name}" ></f:selectItems>
-                                                            <p:ajax event="change" process="lstItems" update="lblSessionTotal :#{p:resolveFirstComponentWithId('gpFeeTotal',view).clientId}" listener="#{bookingControllerViewScope.fillFees}" ></p:ajax>
+                                                            <p:ajax event="change" process="lstItems" update="totalsPanel :#{p:resolveFirstComponentWithId('gpFeeTotal',view).clientId}" listener="#{bookingControllerViewScope.fillFees}" ></p:ajax>
                                                         </p:selectOneMenu>
                                                     </p:column>
                                                     <p:column >
@@ -609,7 +627,7 @@
                                                             icon="fas fa-plus"
                                                             class="ui-button-success"
                                                             action="#{bookingControllerViewScope.addItemToBooking}"
-                                                            update="lblSessionTotal paymentDetails :#{p:resolveFirstComponentWithId('gpFeeTotal',view).clientId} :#{p:resolveFirstComponentWithId('lstAddedItems',view).clientId} lstItems panelBookingDetails"
+                                                            update="totalsPanel paymentDetails :#{p:resolveFirstComponentWithId('gpFeeTotal',view).clientId} :#{p:resolveFirstComponentWithId('lstAddedItems',view).clientId} lstItems panelBookingDetails"
                                                             ></p:commandButton>
                                                     </p:column>
                                                 </p:row>

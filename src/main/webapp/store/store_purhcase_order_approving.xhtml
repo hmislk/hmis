@@ -22,7 +22,7 @@
                             <p:commandButton ajax="false"  value="Approve" 
                                              class="ui-button-success mx-2" 
                                              icon="fas fa-check"
-                                             style="float: right;" actionListener="#{storePurchaseOrderController.approve}" action="store_purhcase_order_list_to_approve"/>
+                                             style="float: right;" actionListener="#{storePurchaseOrderController.approve}"/>
                             <p:commandButton ajax="false"  value="Back To Po List" style="float: right;"
                                              icon="fas fa-arrow-left" 
                                              class="ui-button-warning" 
@@ -114,6 +114,13 @@
                             </p:inputText>
                         </p:column>  
 
+                        <p:column headerText="Free Qty" style="width:25px!important;">                         
+                            <p:inputText autocomplete="off" id="freeQty" value="#{bi.pharmaceuticalBillItem.freeQty}" style="width:100%" label="freeQty">
+
+
+                            </p:inputText>
+                        </p:column>  
+
                         <p:column headerText="Purchse Price" style="width:25px!important;" >  
                             <h:panelGroup id="price">
                                 <p:inputText autocomplete="off" value="#{bi.pharmaceuticalBillItem.purchaseRate}">   
@@ -150,16 +157,28 @@
                     <st:history/>
                 </p:panel>
                 <p:panel rendered="#{storePurchaseOrderController.printPreview}">
-                    <p:commandButton ajax="false" action="#{storePurchaseOrderController.viewRequestedList()}" value="Requested List"/>                    
-                    <p:commandButton value="Print" ajax="false" action="#" >
-                        <p:printer target="gpBillPreview" ></p:printer>
-                    </p:commandButton>
+                    <f:facet name="header">
+                        <p:commandButton ajax="false"  value="Back To Po List"
+                                         style="float: right;"
+                                         icon="fas fa-arrow-left" 
+                                         class="mx-1 ui-button-warning" 
+                                         action="#{storePurchaseOrderController.viewRequestedList()}"/>
 
-                    <p:panel   id="gpBillPreview">
 
-                        <st:po bill="#{storePurchaseOrderController.aprovedBill}"/>
+                        <p:commandButton value="Print" ajax="false"
+                                         style="float: right;"
+                                         action="#" class="ui-button-info" icon="fas fa-print">
+                            <p:printer target="gpBillPreview" ></p:printer>
+                        </p:commandButton>
+                    </f:facet>
 
-                    </p:panel>
+                    <h:panelGroup id="gpBillPreview">
+                        <div  class="justify-content-between">
+                            <st:po bill="#{storePurchaseOrderController.aprovedBill}"/>
+                        </div>
+                        
+
+                    </h:panelGroup>
 
                 </p:panel>
             </p:panel>            
