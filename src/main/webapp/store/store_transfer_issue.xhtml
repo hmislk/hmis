@@ -5,14 +5,111 @@
                 xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://xmlns.jcp.org/jsf/core"
-                xmlns:ph="http://xmlns.jcp.org/jsf/composite/pharmacy">
+                xmlns:st="http://xmlns.jcp.org/jsf/composite/store">
 
     <ui:define name="content">
         <h:form>
 
             <p:panel rendered="#{!storeTransferIssueController.printPreview}">
+                <f:facet name="header" >  
+                    <h:outputLabel value="Pharmacy Issue" />
+                </f:facet>
+                
+                <div class="row" >
+                    <div class="col-8" >
+                        <p:panel >
+                            <f:facet name="header" >  
+                                <h:outputLabel styleClass="fas fa-list" />
+                                <h:outputLabel value="Requested Items" class="mx-4" />
+                            </f:facet>
+                            <p:dataTable 
+                                styleClass="noBorder" 
+                                var="bItm" 
+                                scrollable="true" 
+                                scrollHeight="250" 
+                                value="#{storeTransferIssueController.billItems}" 
+                                id="itemList" 
+                                sortBy="#{bItm.searialNo}"  
+                                editable="true"> 
 
-                <f:facet name="header" >                                  
+                                <p:ajax event="rowEdit" listener="#{storeTransferIssueController.onEditDepartmentTransfer(bItm)}"  />  
+                                <p:ajax event="rowEditCancel" listener="#{storeTransferIssueController.onEditDepartmentTransfer(bItm)}" /> 
+
+                                <p:column headerText="Item Name">                     
+                                    <h:outputText id="item" value="#{bItm.item.name}" >                                   
+                                    </h:outputText>
+                                </p:column>  
+
+                                <p:column headerText="Batch No" width="100px;">  
+                                    <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.batchNo}"/>                        
+                                </p:column>
+
+                                <p:column headerText="Sale Rate" width="100px;">  
+                                    <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate}" style="text-align: right;">                        
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Cost Rate" width="100px;">  
+                                    <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.purcahseRate}" style="text-align: right;">                        
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </p:column>  
+
+                                <p:column headerText="Qty" width="70px;">                   
+                                    <p:inputText autocomplete="off" id="qty" value="#{bItm.pharmaceuticalBillItem.qty}" class="w-100">
+                                        <f:ajax event="focus" render=":#{p:resolveFirstComponentWithId('tab',view).clientId}" execute="@this" listener="#{storeTransferIssueController.onFocus(bItm)}"/>
+                                    </p:inputText>
+                                </p:column> 
+
+                                <p:column width="35px;">
+                                    <p:commandButton  
+                                        icon="fas fa-trash-alt"
+                                        ajax="false" 
+                                        class="ui-button-danger justify-content-center"
+                                        action="#{storeTransferIssueController.remove(bItm)}">
+                                    </p:commandButton>
+                                </p:column>
+
+                            </p:dataTable>  
+                        </p:panel>
+                    </div>
+                    <div class="col-4" >
+                        <p:panel >
+                            <f:facet name="header" >                                  
+                                <h:outputText value="Issue Details" ></h:outputText>
+                                <p:commandButton  value="Issue" icon="fas fa-check" action="#{storeTransferIssueController.settle}" style="float: right;" ajax="false" class="ui-button-success mx-2" >
+                                </p:commandButton>  
+                            </f:facet>
+                            <h:panelGrid columns="3">
+                                <h:outputLabel value="Items will be issued from &nbsp;" />
+                                <h:outputLabel value=": &nbsp;"/>
+                                <p:autoComplete value="#{storeTransferIssueController.requestedBill.fromDepartment}" disabled="true"
+                                                var="vt" itemLabel="#{vt.name}" itemValue="#{vt}"/>
+
+                                <h:outputLabel value="Items will be issued to"/>
+                                <h:outputLabel value=": &nbsp;"/>
+                                <p:autoComplete value="#{storeTransferIssueController.requestedBill.toDepartment}" class="mb-1"
+                                                var="to" itemLabel="#{to.name}" itemValue="#{to}"
+                                                disabled="#{storeTransferIssueController.issuedBill.toDepartment ne null}"
+                                                completeMethod="#{departmentController.completeDept}"/>
+
+
+
+
+                                <h:outputLabel value="Select Staff Name" />
+                                <h:outputLabel value=": &nbsp;"/>
+                                <p:autoComplete  completeMethod="#{staffController.completeStaffWithoutDoctors}" 
+                                                 forceSelection="true" 
+                                                 var="w" itemLabel="#{w.person.name}" itemValue="#{w}"
+                                                 value="#{storeTransferIssueController.issuedBill.toStaff}" ></p:autoComplete>
+
+                            </h:panelGrid>
+                        </p:panel>
+                    </div>
+                </div>
+
+<!--                <f:facet name="header" >                                  
                     <h:panelGrid columns="4">
                         <f:facet name="header">
                             <h:outputLabel value="Department :#{storeTransferIssueController.requestedBill.department.name}" />
@@ -75,10 +172,10 @@
                         <p:commandButton value="Remove" ajax="false" action="#{storeTransferIssueController.remove(bItm)}">
                         </p:commandButton>
                     </p:column>
-                </p:dataTable>  
+                </p:dataTable>  -->
 
                 <p:spacer height="50"/>
-                <ph:history/>
+                <st:history/>
 
             </p:panel>
             <p:panel rendered="#{storeTransferIssueController.printPreview}">
@@ -89,7 +186,7 @@
 
                 <p:panel   id="gpBillPreview">
 
-                    <ph:transferIssue bill="#{storeTransferIssueController.issuedBill}"/>
+                    <st:transferIssue bill="#{storeTransferIssueController.issuedBill}"/>
 
                 </p:panel>
 
