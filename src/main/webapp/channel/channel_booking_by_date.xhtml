@@ -325,7 +325,7 @@
                                                     </p:inputText>
                                                 </h:panelGroup>
 
-                                                <p:outputLabel value="Balance" rendered="#{bookingControllerViewScope.paymentMethod eq 'Cash'}"/>
+                                                <p:outputLabel value="Balance " rendered="#{bookingControllerViewScope.paymentMethod eq 'Cash'}"/>
                                                 <h:panelGroup id="balance" class="w-100 my-2" style="font-weight: bolder" rendered="#{bookingControllerViewScope.paymentMethod eq 'Cash'}">
                                                     <p:outputLabel value="#{-bookingControllerViewScope.cashBalance}"/>
                                                 </h:panelGroup>
