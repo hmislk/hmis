@@ -2371,7 +2371,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 int maxNo = selectedSessionInstance.getMaxNo();
                 long bookedPatientCount = selectedSessionInstance.getBookedPatientCount();
                 if (maxNo <= bookedPatientCount) {
-                    JsfUtil.addErrorMessage("Error: The maximum number (" + maxNo + ") is less than the booked patient count (" + bookedPatientCount + ").");
+                    JsfUtil.addErrorMessage("Error: The maximum number of bookings (" + maxNo + ") has been Reached.");
                     return;
 
                 }
