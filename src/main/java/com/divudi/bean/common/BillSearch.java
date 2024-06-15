@@ -2786,7 +2786,7 @@ public class BillSearch implements Serializable {
             case OPD_BILL_REFUND:
                 return navigateToViewOpdBill();
 
-            case CC_BILL_CANCELLATION:
+            case OPD_BILL_CANCELLATION:
                 return navigateToViewOpdBill();
 
             case OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER:
