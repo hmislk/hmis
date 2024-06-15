@@ -2780,7 +2780,7 @@ public class BillSearch implements Serializable {
     public String navigateViewBillByBillTypeAtomic() {
         BillTypeAtomic billTypeAtomic = bill.getBillTypeAtomic();
         switch (billTypeAtomic) {
-            case PHARMACY_GRN:
+            case PHARMACY_RETAIL_SALE_CANCELLED:
                 pharmacyBillSearch.setBill(bill);
                 return pharmacyBillSearch.navigateToViewPharmacyGrn();
             case OPD_BILL_REFUND:
