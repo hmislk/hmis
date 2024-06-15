@@ -2236,7 +2236,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             return true;
         }
 
-        if (paymentMethod == PaymentMethod.OnCall) {
+        if (!(paymentMethod == PaymentMethod.Cash || paymentMethod == PaymentMethod.Card || paymentMethod == PaymentMethod.MultiplePaymentMethods)) {
             if (selectedSessionInstance.getOriginatingSession().isPaidAppointmentsOnly()) {
                 JsfUtil.addErrorMessage("This session is only available for paid appointments.");
                 return true;
@@ -6184,10 +6184,14 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 System.out.println("itmf = " + itmf);
                 if (foriegn) {
                     feeTotalForSelectedBill += itmf.getFfee();
-                    feeDiscountForSelectedBill += itmf.getFfee() * (paymentSchemeDiscount.getDiscountPercent() / 100);
+                    if(itmf.isDiscountAllowed()){
+                      feeDiscountForSelectedBill += itmf.getFfee() * (paymentSchemeDiscount.getDiscountPercent() / 100);  
+                    }              
                 } else {
                     feeTotalForSelectedBill += itmf.getFee();
-                    feeDiscountForSelectedBill += itmf.getFee() * (paymentSchemeDiscount.getDiscountPercent() / 100);
+                    if(itmf.isDiscountAllowed()){
+                        feeDiscountForSelectedBill += itmf.getFee() * (paymentSchemeDiscount.getDiscountPercent() / 100);
+                    }
                 }
             }
         } else {
@@ -6571,7 +6575,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     public double getCashBalance() {
         if (feeTotalForSelectedBill != null) {
-            cashBalance = feeTotalForSelectedBill - cashPaid;
+            cashBalance = feeNetTotalForSelectedBill - cashPaid;
         }
         return cashBalance;
     }
