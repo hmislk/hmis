@@ -20,44 +20,44 @@
 
                 <p:panel id ="gpVeda" class="w-100" >
                     <f:facet name="header" >
-                        <h:outputText value="Manage Memership Schemes" ></h:outputText>
+                        <h:outputText value="Manage Membership Schemes" ></h:outputText>
                     </f:facet>
+                    <div class="d-flex gap-2 mb-2">
+                        <p:commandButton
+                            id="btnAdd" 
+                            value="Add"
+                            action="#{membershipSchemeController.prepareAdd()}"
+                            process="btnAdd"
+                            icon="pi pi-plus"  
+                            class="ui-button-Warning "
+                            update="lstSelect gpDetailText detailFocus">
+                            <p:ajax
+                                event="click" 
+                                update="gpDetailText detailFocus" 
+                                process="@this" >
+                            </p:ajax>
+                        </p:commandButton>
+                        <p:commandButton 
+                            id="btnDelete"
+                            icon="pi pi-trash" 
+                            class="ui-button-danger "
+                            onclick="if (!confirm('Are you sure you want to delete this record?'))
+                                        return false;" action="#{membershipSchemeController.delete()}"  value="Delete" ajax="false"  >
+                        </p:commandButton>
+
+                        <p:commandButton  
+                            value="Reload"
+                            action="#{membershipSchemeController.fillItems()}" 
+                            class="ui-button-info" 
+                            icon="pi pi-refresh" 
+                            >
+                            <f:ajax event="click" render="btnAdd  btnDelete btnSave lstSelect :#{p:resolveFirstComponentWithId('gpDetailText',view).clientId} detailFocus" execute="@this" >
+                            </f:ajax>
+                        </p:commandButton>
+                    </div>
+
                     <div class="row" >
-                        <div class="col-4" >
-
-                            <p:commandButton
-                                id="btnAdd" 
-                                value="Add"
-                                action="#{membershipSchemeController.prepareAdd()}"
-                                process="btnAdd"
-                                icon="pi pi-plus"  
-                                class="ui-button-Warning m-2"
-                                update="lstSelect gpDetailText detailFocus">
-                                <p:ajax
-                                    event="click" 
-                                    update="gpDetailText detailFocus" 
-                                    process="@this" >
-                                </p:ajax>
-                            </p:commandButton>
-                            <p:commandButton 
-                                id="btnDelete"
-                                icon="pi pi-trash" 
-                                class="ui-button-danger  m-2"
-                                onclick="if (!confirm('Are you sure you want to delete this record?'))
-                                            return false;" action="#{membershipSchemeController.delete()}"  value="Delete" ajax="false"  >
-                            </p:commandButton>
-
-                            <p:commandButton  
-                                value="Reload"
-                                action="#{membershipSchemeController.fillItems()}" 
-                                class="mx-2 ui-button-info" 
-                                icon="pi pi-refresh" 
-                                >
-                                <f:ajax event="click" render="btnAdd  btnDelete btnSave lstSelect :#{p:resolveFirstComponentWithId('gpDetailText',view).clientId} detailFocus" execute="@this" >
-                                </f:ajax>
-                            </p:commandButton>
-
-
+                        <div class="col-5" >
                             <p:selectOneListbox  
                                 id="lstSelect"  
                                 class="w-100" 
@@ -72,59 +72,55 @@
 
 
                         </div>
-                        <div class="col-8" >
-                            <p:commandButton 
-                                id="btnSave" 
-                                value="Save"
-                                icon="pi pi-save" 
-                                class="ui-button-success m-2"
-                                action="#{membershipSchemeController.saveSelected()}" 
-                                process="btnSave gpDetailText " 
-                                update="lstSelect selectFocus msg"
-                                >
-                            </p:commandButton>
+                        <div class="col-7" >
+                            <p:panel >
+                                <f:facet name="header">
+                                    <h:outputText value="Details of the Membership Scheme" class="mt-2"></h:outputText>
+                                    <p:commandButton 
+                                        id="btnSave" 
+                                        value="Save"
+                                        icon="pi pi-save" 
+                                        style="float: right;"
+                                        class="ui-button-success"
+                                        action="#{membershipSchemeController.saveSelected()}" 
+                                        process="btnSave gpDetailText " 
+                                        update="lstSelect selectFocus msg"
+                                        >
+                                    </p:commandButton>
+                                </f:facet>
+                                <h:panelGrid id="gpDetailText" columns="2">
+                                    <p:outputLabel for="txtName" id="lblName" value="Name"></p:outputLabel>
+                                    <p:inputText autocomplete="off" required="true" class="mb-1" id="txtName" value="#{membershipSchemeController.current.name}"  ></p:inputText>
+                                    
+                                    <p:outputLabel for="txtCode" id="lblCode" value="Code" ></p:outputLabel>
+                                    <p:inputText autocomplete="off" id="txtCode" class="mb-1" value="#{membershipSchemeController.current.code}" ></p:inputText>
 
-                            <p:panelGrid id="gpDetailText" columns="2">
-                                <p:outputLabel for="txtName" id="lblName" value="Name" ></p:outputLabel>
-                                <p:inputText autocomplete="off" required="true" id="txtName" value="#{membershipSchemeController.current.name}"  ></p:inputText>
-                                
-                                <p:outputLabel for="txtCode" id="lblCode" value="Code" ></p:outputLabel>
-                                <p:inputText autocomplete="off" id="txtCode" value="#{membershipSchemeController.current.code}" ></p:inputText>
-                                
-                                <p:outputLabel for="txtPoints" id="lblPoints" value="Pointes for 1000" ></p:outputLabel>
-                                <p:inputText autocomplete="off" id="txtPoints" value="#{membershipSchemeController.current.pointesForThousand}"  ></p:inputText>
-                                
-                                
-                                <p:outputLabel for="lstDiscountScheme" id="lblDs" value="Discount Scheme" ></p:outputLabel>
-                                <p:selectOneMenu
-                                    filter="true"
-                                    filterMatchMode="contains"
-                                    id="lstDiscountScheme"   
-                                    class="w-100" 
-                                    value="#{membershipSchemeController.current.paymentScheme}" >
-                                    <f:selectItem itemLabel="Select" ></f:selectItem>
-                                    <f:selectItems  value="#{paymentSchemeController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
-                                    <f:ajax render="gpDetail" execute="lstSelect" >
-                                    </f:ajax>
-                                </p:selectOneMenu>
-                            </p:panelGrid>
+                                    <p:outputLabel for="txtPoints" id="lblPoints" value="Pointes for 1000" ></p:outputLabel>
+                                    <p:inputText autocomplete="off" id="txtPoints" class="mb-1" value="#{membershipSchemeController.current.pointesForThousand}"  ></p:inputText>
 
+
+                                    <p:outputLabel for="lstDiscountScheme" id="lblDs" value="Discount Scheme" ></p:outputLabel>
+                                    <p:selectOneMenu
+                                        filter="true"
+                                        filterMatchMode="contains"
+                                        id="lstDiscountScheme"   
+                                        class="w-100 mb-1"
+                                        value="#{membershipSchemeController.current.paymentScheme}" >
+                                        <f:selectItem itemLabel="Select" ></f:selectItem>
+                                        <f:selectItems  value="#{paymentSchemeController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
+                                        <f:ajax render="gpDetail" execute="lstSelect" >
+                                        </f:ajax>
+                                    </p:selectOneMenu>
+                                </h:panelGrid>
+                            </p:panel>
 
                             <p:messages id="msg"  />
                             <p:defaultCommand target="btnSave"/>
                         </div>
                     </div>
 
-
-
-
-
-
                 </p:panel>
-
-
             </h:form>
-
         </h:panelGroup>
 
     </ui:define>
