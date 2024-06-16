@@ -84,12 +84,12 @@
                             <h:panelGrid columns="3">
                                 <h:outputLabel value="Items will be issued from &nbsp;" />
                                 <h:outputLabel value=": &nbsp;"/>
-                                <p:autoComplete value="#{storeTransferIssueController.requestedBill.fromDepartment}" disabled="true"
+                                <p:autoComplete value="#{storeTransferIssueController.issuedBill.fromDepartment}" disabled="true"
                                                 var="vt" itemLabel="#{vt.name}" itemValue="#{vt}"/>
 
                                 <h:outputLabel value="Items will be issued to"/>
                                 <h:outputLabel value=": &nbsp;"/>
-                                <p:autoComplete value="#{storeTransferIssueController.requestedBill.toDepartment}" class="mb-1"
+                                <p:autoComplete value="#{storeTransferIssueController.issuedBill.toDepartment}" class="mb-1"
                                                 var="to" itemLabel="#{to.name}" itemValue="#{to}"
                                                 disabled="#{storeTransferIssueController.issuedBill.toDepartment ne null}"
                                                 completeMethod="#{departmentController.completeDept}"/>
@@ -179,8 +179,8 @@
 
             </p:panel>
             <p:panel rendered="#{storeTransferIssueController.printPreview}">
-                <p:commandButton ajax="false" action="store_transfer_request_list" actionListener="#{storeTransferIssueController.makeNull()}" value="Requested List"/>                    
-                <p:commandButton value="Print" ajax="false" action="#" >
+                <p:commandButton ajax="false" action="store_transfer_request_list" class="ui-button-warning" icon="fas fa-list" actionListener="#{storeTransferIssueController.makeNull()}" value="Requested List"/>                    
+                <p:commandButton value="Print" ajax="false" action="#" class="ui-button-info mx-1" icon="fas fa-print" >
                     <p:printer target="gpBillPreview" ></p:printer>
                 </p:commandButton>
 
