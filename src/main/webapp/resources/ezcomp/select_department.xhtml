@@ -13,21 +13,12 @@
     <!-- IMPLEMENTATION -->
     <cc:implementation class="w-100">
         <div class="d-flex justify-content-center align-items-center w-100" style="background-color: rgba(211, 211, 211,0.7); height: 100vh;">
-
             <h:form id="formDept" class="my-5 p-5">
-
-
-
-
                 <div class="card shadow-lg p-5 w-100" style="background-color: rgba(255, 255, 255, 0.9);">
-
-
                     <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Display the payment notice')}" >
                         <iframe src="#{configOptionApplicationController.getLongTextValueByKey('Payment Notice URL')}" 
                                 width="600" height="400" frameborder="0"></iframe>
-
                     </h:panelGroup>
-
                     <div class="text-black text-center p-3 w-100" style="font-size: 16pt;font-weight: bolder" >
                         <div class=" w-100 d-flex justify-content-center align-items-center my-2 p-1">
                             <img src="https://cdn-icons-png.flaticon.com/512/1642/1642357.png" alt="Department Icon" style="width: 100px;"/>
