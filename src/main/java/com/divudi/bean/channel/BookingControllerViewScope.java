@@ -2236,7 +2236,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             return true;
         }
 
-        if (paymentMethod == PaymentMethod.OnCall) {
+        if (!(paymentMethod == PaymentMethod.Cash || paymentMethod == PaymentMethod.Card || paymentMethod == PaymentMethod.MultiplePaymentMethods)) {
             if (selectedSessionInstance.getOriginatingSession().isPaidAppointmentsOnly()) {
                 JsfUtil.addErrorMessage("This session is only available for paid appointments.");
                 return true;
@@ -2371,7 +2371,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 int maxNo = selectedSessionInstance.getMaxNo();
                 long bookedPatientCount = selectedSessionInstance.getBookedPatientCount();
                 if (maxNo <= bookedPatientCount) {
-                    JsfUtil.addErrorMessage("Error: The maximum number (" + maxNo + ") is less than the booked patient count (" + bookedPatientCount + ").");
+                    JsfUtil.addErrorMessage("Error: The maximum number of bookings (" + maxNo + ") has been Reached.");
                     return;
 
                 }
@@ -2386,9 +2386,11 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         }
 
         if (configOptionApplicationController.getBooleanValueByKey("Allow Tenderd amount for channel booking")) {
-            if (strTenderedValue == "" || strTenderedValue.isEmpty()) {
+            if(paymentMethod == PaymentMethod.Cash){
+                if (strTenderedValue == "" || strTenderedValue.isEmpty()) {
                 JsfUtil.addErrorMessage("Please Enter Tenderd Amount");
                 return;
+            }
             }
         }
 
@@ -6182,10 +6184,14 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 System.out.println("itmf = " + itmf);
                 if (foriegn) {
                     feeTotalForSelectedBill += itmf.getFfee();
-                    feeDiscountForSelectedBill += itmf.getFfee() * (paymentSchemeDiscount.getDiscountPercent() / 100);
+                    if(itmf.isDiscountAllowed()){
+                      feeDiscountForSelectedBill += itmf.getFfee() * (paymentSchemeDiscount.getDiscountPercent() / 100);  
+                    }              
                 } else {
                     feeTotalForSelectedBill += itmf.getFee();
-                    feeDiscountForSelectedBill += itmf.getFee() * (paymentSchemeDiscount.getDiscountPercent() / 100);
+                    if(itmf.isDiscountAllowed()){
+                        feeDiscountForSelectedBill += itmf.getFee() * (paymentSchemeDiscount.getDiscountPercent() / 100);
+                    }
                 }
             }
         } else {
@@ -6569,7 +6575,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     public double getCashBalance() {
         if (feeTotalForSelectedBill != null) {
-            cashBalance = feeTotalForSelectedBill - cashPaid;
+            cashBalance = feeNetTotalForSelectedBill - cashPaid;
         }
         return cashBalance;
     }
