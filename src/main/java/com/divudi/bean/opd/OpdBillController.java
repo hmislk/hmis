@@ -1847,9 +1847,11 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         }
 
         newBatchBill.setNetTotal(dbl);
-        System.out.println("reminingCashPaid = " + reminingCashPaid);
+        if (reminingCashPaid < 0 ){
+            newBatchBill.setBalance(Math.abs(reminingCashPaid));
+        }
         newBatchBill.setCashBalance(reminingCashPaid);
-        newBatchBill.setBalance(reminingCashPaid);
+        newBatchBill.setCashPaid(cashPaid);
         getBillFacade().edit(newBatchBill);
         setBatchBill(newBatchBill);
     }
