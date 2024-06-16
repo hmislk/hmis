@@ -340,16 +340,14 @@
                                         class="ui-button-success"
                                         icon=" fa-solid fa-eye"
                                         value="View Bill" 
-                                        action="#{billSearch.navigateToViewOpdBill}"
+                                        ajax="false"
+                                        action="#{billSearch.navigateViewBillByBillTypeAtomic()}"
                                         >
                                         <f:setPropertyActionListener value="#{bp.bill}" target="#{billSearch.bill}"/>
                                     </p:commandButton>
                                 </p:column>
                             </p:dataTable>
-
-
                         </h:panelGroup>
-
 
 
                         <p:panelGrid 
@@ -357,8 +355,6 @@
                             rendered="#{financialTransactionController.nonClosedShiftStartFundBill eq null}"
                             >
                             <p:outputLabel value="No Shift Start Fund Bill Available to Close" ></p:outputLabel>
-
-
                         </p:panelGrid>
                     </p:panel>
 
