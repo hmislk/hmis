@@ -1,5 +1,6 @@
-package com.divudi.bean.opd;
+package com.divudi.bean.Ophthalmology;
 
+import com.divudi.bean.opd.*;
 import com.divudi.bean.cashTransaction.FinancialTransactionController;
 import com.divudi.bean.common.*;
 import com.divudi.bean.collectingCentre.CollectingCentreBillController;
@@ -98,7 +99,7 @@ import javax.persistence.TemporalType;
  */
 @Named
 @SessionScoped
-public class OpdBillController implements Serializable, ControllerWithPatient, ControllerWithMultiplePayments {
+public class OphthalmologyRepairBillController implements Serializable, ControllerWithPatient, ControllerWithMultiplePayments {
 
     private static final long serialVersionUID = 1L;
 
@@ -318,7 +319,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     public String navigateToSearchOpdBills() {
         batchBill = null;
         bills = null;
-        return "/opd/opd_bill_search?faces-redirect=true";
+        return "/Ophthalmology/repair_bill_search?faces-redirect=true";
     }
 
     public void fillOpdBillItems() {
@@ -1826,20 +1827,17 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             b.setBackwardReferenceBill(newBatchBill);
             dbl += b.getNetTotal();
 
-//            if (getSessionController().getDepartmentPreference().isPartialPaymentOfOpdBillsAllowed()) {
-//                b.setCashPaid(reminingCashPaid);
-//                System.out.println("reminingCashPaid ***= " + reminingCashPaid);
-//                System.out.println("b.getTransSaleBillTotalMinusDiscount() **= " + b.getTransSaleBillTotalMinusDiscount());
-//                if (reminingCashPaid > b.getTransSaleBillTotalMinusDiscount()) {
-//                    b.setBalance(0.0);
-//                    b.setNetTotal(b.getTransSaleBillTotalMinusDiscount());
-//                } else {
-//                    b.setBalance(b.getTotal() - b.getCashPaid());
-//                    b.setNetTotal(reminingCashPaid);
-//                }
-//            }
-            
-            System.out.println("b.getNet = " + b.getNetTotal());
+            if (getSessionController().getApplicationPreference().isPartialPaymentOfOpdBillsAllowed()) {
+                b.setCashPaid(reminingCashPaid);
+
+                if (reminingCashPaid > b.getTransSaleBillTotalMinusDiscount()) {
+                    b.setBalance(0.0);
+                    b.setNetTotal(b.getTransSaleBillTotalMinusDiscount());
+                } else {
+                    b.setBalance(b.getTotal() - b.getCashPaid());
+                    b.setNetTotal(reminingCashPaid);
+                }
+            }
             reminingCashPaid = reminingCashPaid - b.getNetTotal();
             getBillFacade().edit(b);
 
@@ -1847,11 +1845,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         }
 
         newBatchBill.setNetTotal(dbl);
-        if (reminingCashPaid < 0 ){
-            newBatchBill.setBalance(Math.abs(reminingCashPaid));
-        }
+
         newBatchBill.setCashBalance(reminingCashPaid);
-        newBatchBill.setCashPaid(cashPaid);
         getBillFacade().edit(newBatchBill);
         setBatchBill(newBatchBill);
     }
@@ -1912,6 +1907,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         newBill.setPatient(patient);
 
 //        newBill.setMembershipScheme(membershipSchemeController.fetchPatientMembershipScheme(patient, getSessionController().getApplicationPreference().isMembershipExpires()));
+
         newBill.setPaymentScheme(getPaymentScheme());
         newBill.setPaymentMethod(paymentMethod);
         newBill.setCreatedAt(new Date());
@@ -1989,6 +1985,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         newBill.setPatient(patient);
 
 //        newBill.setMembershipScheme(membershipSchemeController.fetchPatientMembershipScheme(patient, getSessionController().getApplicationPreference().isMembershipExpires()));
+
         newBill.setPaymentScheme(getPaymentScheme());
         newBill.setPaymentMethod(paymentMethod);
         newBill.setCreatedAt(new Date());
@@ -2559,6 +2556,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         double billVat = 0.0;
 
 //        MembershipScheme membershipScheme = membershipSchemeController.fetchPatientMembershipScheme(getPatient(), getSessionController().getApplicationPreference().isMembershipExpires());
+
         for (BillEntry be : getLstBillEntries()) {
             //////// // System.out.println("bill item entry");
             double entryGross = 0.0;
@@ -2744,7 +2742,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                 paymentScheme = null;
                 paymentMethod = PaymentMethod.Cash;
                 collectingCentreBillController.setCollectingCentre(null);
-                return "/opd/opd_bill?faces-redirect=true";
+                return "/Ophthalmology/repair_bill?faces-redirect=true";
             } else {
                 JsfUtil.addErrorMessage("Start Your Shift First !");
                 return "/cashier/index?faces-redirect=true";
@@ -2756,7 +2754,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             paymentScheme = null;
             paymentMethod = PaymentMethod.Cash;
             collectingCentreBillController.setCollectingCentre(null);
-            return "/opd/opd_bill?faces-redirect=true";
+            return "/Ophthalmology/repair_bill?faces-redirect=true";
         }
     }
 
@@ -2772,7 +2770,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                 if (getToken() != null) {
                     setPatient(token.getPatient());
                 }
-                return "/opd/opd_bill?faces-redirect=true";
+                return "/Ophthalmology/repair_bill?faces-redirect=true";
             } else {
                 JsfUtil.addErrorMessage("Start Your Shift First !");
                 return "/cashier/index?faces-redirect=true";
@@ -2785,7 +2783,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             if (getToken() != null) {
                 setPatient(token.getPatient());
             }
-            return "/opd/opd_bill?faces-redirect=true";
+            return "/Ophthalmology/repair_bill?faces-redirect=true";
         }
     }
 
@@ -2822,11 +2820,11 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         navigateToNewOpdBill();
         patient = pt;
         paymentScheme = ps;
-        return "/opd/opd_bill?faces-redirect=true";
+        return "/Ophthalmology/repair_bill?faces-redirect=true";
     }
 
     public String toOpdBilling() {
-        return "/opd/opd_bill?faces-redirect=true";
+        return "/Ophthalmology/repair_bill?faces-redirect=true";
     }
 
     public void prepareNewBillForMember() {
@@ -3085,7 +3083,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         this.sessionController = sessionController;
     }
 
-    public OpdBillController() {
+    public OphthalmologyRepairBillController() {
     }
 
     private BillFacade getFacade() {
@@ -3423,10 +3421,16 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     }
 
     public PaymentMethod getPaymentMethod() {
-        if (!sessionController.getDepartmentPreference().isPartialPaymentOfOpdBillsAllowed()) {
-            if (paymentMethod == paymentMethod.Card) {
-                strTenderedValue = String.valueOf(netTotal);
-            }
+        if (paymentMethod == paymentMethod.Card) {
+            strTenderedValue = String.valueOf(netTotal);
+
+        } else {
+            strTenderedValue = "";
+        }
+        try {
+            cashPaid = Double.parseDouble(strTenderedValue);
+        } catch (NumberFormatException e) {
+
         }
 
         return paymentMethod;

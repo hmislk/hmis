@@ -67,7 +67,7 @@
                         </div>
                     </f:facet>
                     <div class="row">
-                        <div class="col-10">
+                        <div class="col-12">
                             <p:panel >
                                 <f:facet name="header" >  
                                     <h:outputLabel styleClass="fas fa-cube" />
@@ -78,6 +78,8 @@
                                         <p:autoComplete  value="#{storeTransferRequestController.currentBillItem.item}"
                                                          forceSelection="true"
                                                          id ="items"
+                                                         class="w-100"
+                                                         inputStyleClass="w-100"
                                                          completeMethod="#{itemController.completeStoreItem}" 
                                                          var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
                                             <p:column headerText="Items" style="width: 10px!important;">
@@ -100,7 +102,7 @@
                                         <p:commandButton 
                                             value="Add Item"
                                             icon="fas fa-plus"
-                                            class="ui-button-success w-100"
+                                            class="ui-button-success w-50"
                                             action="#{storeTransferRequestController.addItem}" 
                                             ajax="false"/>
                                     </div>
