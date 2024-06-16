@@ -69,7 +69,7 @@
                                 <p:commandButton ajax="false" 
                                                  icon="fas fa-check" 
                                                  class="mx-1 ui-button-success"
-                                                 action="store_transfer_issue"
+                                                 action="#{storeTransferIssueController.navigateToStoreIssueForRequests()}"
                                                  disabled="#{p.cancelled eq true}">
                                     <f:setPropertyActionListener target="#{storeTransferIssueController.requestedBill}" value="#{p}"/>
                                 </p:commandButton>
