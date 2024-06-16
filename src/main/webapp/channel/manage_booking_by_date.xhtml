@@ -231,7 +231,7 @@
                         </div>                        
                     </div>
                 </h:panelGroup>
-
+       
                 <h:panelGroup rendered="#{!bookingControllerViewScope.printPreview}" >
 
                     <p:tabView id="detail">
@@ -274,7 +274,7 @@
                                             </f:facet>
                                             <div class="row my-1"  >
                                                 <div class="col-5" >
-                                                    
+
                                                     <p:selectOneMenu   
                                                         id="pay"
                                                         class="w-100"
@@ -917,57 +917,44 @@
                                     </p:column>
                                 </p:dataTable>
                             </h:panelGroup>
+                            <div class="d-flex align-items-center justify-content-between mt-5">
+                                <div class="d-flex align-items-center w-100">
+                                    <p:selectOneMenu 
+                                        id="commentsMenuRefund" 
+                                        value="#{bookingControllerViewScope.commentR}" 
+                                        editable="true" 
+                                        filter="true" 
+                                        placeholder="Select or enter a comment"
+                                        filterMatchMode="contains"  
+                                        style="float: right; width: 100%" 
+                                        class="p-2">
+                                        <f:selectItem itemLabel="Select or enter a comment" itemValue="" noSelectionOption="true"/>
+                                        <f:selectItems 
+                                            value="#{configOptionApplicationController.getListOfCustomOptions('Channel Bill Refunding Comments')}" 
+                                            var="option" 
+                                            itemLabel="#{option}" 
+                                            itemValue="#{option}"/>
+                                    </p:selectOneMenu>
+                                    <p:commandButton id="btnIdRefund" value="Refund Booking" class="ui-button-warning my-2 mx-2" icon="fas fa-reply" ajax="false"
+                                                     disabled="#{bookingControllerViewScope.billSession.bill.refunded==true
+                                                                 or bookingControllerViewScope.billSession.bill.cancelled==true or bookingControllerViewScope.disableRefund==true}"
+                                                     action="#{bookingControllerViewScope.channelBookingRefund()}"/>
 
-                            <p:commandButton value="Refund Booking" class="ui-button-warning my-2" icon="fas fa-reply"
-                                             disabled="#{bookingControllerViewScope.billSession.bill.refunded==true
-                                                         or bookingControllerViewScope.billSession.bill.cancelled==true or bookingControllerViewScope.disableRefund==true}"
-                                             onclick="PF('confirmationRefundDialog').show();"/>
+                                </div>
+                            </div>
 
-                            <p:dialog minHeight="100" width="800" header="Confirmation" widgetVar="confirmationRefundDialog" modal="true" resizable="false">
-                                <p>Are you sure you want to refund the channel booking?</p>
-                                <p:selectOneMenu 
-                                    id="commentsMenuRefund" 
-                                    value="#{bookingControllerViewScope.commentR}" 
-                                    editable="true" 
-                                    filter="true" 
-                                    placeholder="Select or enter a comment"
-                                    filterMatchMode="contains"  
-                                    style="float: right; width: 100%" 
-                                    class="p-2">
-                                    <f:selectItem itemLabel="Select or enter a comment" itemValue="" noSelectionOption="true"/>
-                                    <f:selectItems 
-                                        value="#{configOptionApplicationController.getListOfCustomOptions('Channel Bill Refunding Comments')}" 
-                                        var="option" 
-                                        itemLabel="#{option}" 
-                                        itemValue="#{option}"/>
-                                </p:selectOneMenu>
-
-                                <f:facet name="footer">
+                            <h:panelGroup id="gpSettleRefundBillPreview" rendered="#{bookingControllerViewScope.selectedBillSession.bill.refunded}">
+                                <div>
                                     <p:commandButton
-                                        class="mx-2 ui-button-warning"
-                                        value="Yes"
-                                        action="#{bookingControllerViewScope.channelBookingRefund()}"
+                                        class="mx-2 ui-button-info"
+                                        icon="fas fa-print"
                                         ajax="false"
-                                        onclick="PF('refundBillPrintDialog').show();
-                                                PF('confirmationRefundDialog').hide();" />
-                                    <p:commandButton
-                                        value="No"
-                                        onclick="PF('confirmationRefundDialog').hide();" />
-                                </f:facet>
-                            </p:dialog>
+                                        value="Print">
+                                        <p:printer target="gpSettleRefundBillPreview" ></p:printer>
+                                    </p:commandButton>
+                                </div>
+                                <ez:five_five_paper_without_headings_channel_RefundBill bill="#{bookingControllerViewScope.selectedBillSession.bill}"/>
 
-                            <h:panelGroup rendered="#{bookingControllerViewScope.selectedBillSession.bill.refundedBill ne null}">
-
-                                <p:commandButton
-                                    class="mx-2 ui-button-warning"
-                                    ajax="false"
-                                    value="Print">
-                                    <p:printer target="gpSettleRefundBillPreview" ></p:printer>
-                                </p:commandButton>
-
-                                <h:panelGroup id="gpSettleRefundBillPreview">
-                                    <ez:five_five_paper_without_headings_channel_RefundBill bill="#{bookingControllerViewScope.selectedBillSession.bill}"/>
-                                </h:panelGroup>
                             </h:panelGroup>
 
                         </p:tab>

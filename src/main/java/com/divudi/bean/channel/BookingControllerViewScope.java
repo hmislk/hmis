@@ -5602,7 +5602,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                     refundCreditPaidBill();
                 }
             }
-            setPrintPreview(true);
+            setPrintPreview(false);
         } else {
             JsfUtil.addErrorMessage("Nothing to Refund");
         }
