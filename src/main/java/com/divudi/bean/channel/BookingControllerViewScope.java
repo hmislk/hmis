@@ -2393,6 +2393,13 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             }
             }
         }
+        
+        
+           if (selectedSessionInstance.isCancelled()) {
+    JsfUtil.addErrorMessage("Cannot add patient to a canceled session. Please select an active session.");
+    return;
+}
+
 
         saveSelected(patient);
         printingBill = saveBilledBill(reservedBooking);
