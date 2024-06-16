@@ -1826,17 +1826,20 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             b.setBackwardReferenceBill(newBatchBill);
             dbl += b.getNetTotal();
 
-            if (getSessionController().getApplicationPreference().isPartialPaymentOfOpdBillsAllowed()) {
-                b.setCashPaid(reminingCashPaid);
-
-                if (reminingCashPaid > b.getTransSaleBillTotalMinusDiscount()) {
-                    b.setBalance(0.0);
-                    b.setNetTotal(b.getTransSaleBillTotalMinusDiscount());
-                } else {
-                    b.setBalance(b.getTotal() - b.getCashPaid());
-                    b.setNetTotal(reminingCashPaid);
-                }
-            }
+//            if (getSessionController().getDepartmentPreference().isPartialPaymentOfOpdBillsAllowed()) {
+//                b.setCashPaid(reminingCashPaid);
+//                System.out.println("reminingCashPaid ***= " + reminingCashPaid);
+//                System.out.println("b.getTransSaleBillTotalMinusDiscount() **= " + b.getTransSaleBillTotalMinusDiscount());
+//                if (reminingCashPaid > b.getTransSaleBillTotalMinusDiscount()) {
+//                    b.setBalance(0.0);
+//                    b.setNetTotal(b.getTransSaleBillTotalMinusDiscount());
+//                } else {
+//                    b.setBalance(b.getTotal() - b.getCashPaid());
+//                    b.setNetTotal(reminingCashPaid);
+//                }
+//            }
+            
+            System.out.println("b.getNet = " + b.getNetTotal());
             reminingCashPaid = reminingCashPaid - b.getNetTotal();
             getBillFacade().edit(b);
 
@@ -1844,8 +1847,9 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         }
 
         newBatchBill.setNetTotal(dbl);
-
+        System.out.println("reminingCashPaid = " + reminingCashPaid);
         newBatchBill.setCashBalance(reminingCashPaid);
+        newBatchBill.setBalance(reminingCashPaid);
         getBillFacade().edit(newBatchBill);
         setBatchBill(newBatchBill);
     }
@@ -1906,7 +1910,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         newBill.setPatient(patient);
 
 //        newBill.setMembershipScheme(membershipSchemeController.fetchPatientMembershipScheme(patient, getSessionController().getApplicationPreference().isMembershipExpires()));
-
         newBill.setPaymentScheme(getPaymentScheme());
         newBill.setPaymentMethod(paymentMethod);
         newBill.setCreatedAt(new Date());
@@ -1984,7 +1987,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         newBill.setPatient(patient);
 
 //        newBill.setMembershipScheme(membershipSchemeController.fetchPatientMembershipScheme(patient, getSessionController().getApplicationPreference().isMembershipExpires()));
-
         newBill.setPaymentScheme(getPaymentScheme());
         newBill.setPaymentMethod(paymentMethod);
         newBill.setCreatedAt(new Date());
@@ -2555,7 +2557,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         double billVat = 0.0;
 
 //        MembershipScheme membershipScheme = membershipSchemeController.fetchPatientMembershipScheme(getPatient(), getSessionController().getApplicationPreference().isMembershipExpires());
-
         for (BillEntry be : getLstBillEntries()) {
             //////// // System.out.println("bill item entry");
             double entryGross = 0.0;
@@ -3420,16 +3421,10 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     }
 
     public PaymentMethod getPaymentMethod() {
-        if (paymentMethod == paymentMethod.Card) {
-            strTenderedValue = String.valueOf(netTotal);
-
-        } else {
-            strTenderedValue = "";
-        }
-        try {
-            cashPaid = Double.parseDouble(strTenderedValue);
-        } catch (NumberFormatException e) {
-
+        if (!sessionController.getDepartmentPreference().isPartialPaymentOfOpdBillsAllowed()) {
+            if (paymentMethod == paymentMethod.Card) {
+                strTenderedValue = String.valueOf(netTotal);
+            }
         }
 
         return paymentMethod;
