@@ -35,6 +35,7 @@
                                              ajax="false"
                                              class="ui-button-Danger mx-1" 
                                              icon="fa fa-times" 
+                                             disabled="#{bookingControllerViewScope.selectedSessionInstance.cancelled}"
                                              onclick="return confirm('Are you sure you want to cancel?');" />
 
                             <!-- Reopen Session Button -->
