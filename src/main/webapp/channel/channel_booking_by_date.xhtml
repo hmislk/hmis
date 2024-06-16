@@ -66,6 +66,14 @@
                                         <div class="d-flex align-items-center">
                                             <p:commandButton 
                                                 ajax="false" 
+                                                title="OPD Billing" 
+                                                icon="fa fa-fw fa-notes-medical" 
+                                                styleClass="ui-button-warning mx-1" 
+                                                action="#{opdBillController.navigateToNewOpdBill()}"
+                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable Navigation Button To OPD Billing From Channel Booking By Date')}"/>
+                                            
+                                            <p:commandButton 
+                                                ajax="false" 
                                                 title="Completed" 
                                                 icon="fa fa-check" 
                                                 styleClass="ui-button-secondary mx-1" 
