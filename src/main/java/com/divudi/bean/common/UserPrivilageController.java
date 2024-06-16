@@ -121,7 +121,7 @@ public class UserPrivilageController implements Serializable {
         TreeNode OpdLabReportSearchNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.OpdLabReportSearch, "Lab Report Search"), opdNode);
         TreeNode opdBillSearchEditNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.OpdBillSearchEdit, "OPD Bill Search Edit (Patient Details)"), opdNode);
         TreeNode OpdReprintOriginalBillNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.OpdReprintOriginalBill, "Reprint the Original Bill"), opdNode);
-        
+
         TreeNode inwardNode = new DefaultTreeNode(new PrivilegeHolder(null, "Inward"), allNode);
         TreeNode inwardMenuNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.Inward, "Inward Menu"), inwardNode);
         TreeNode admissionsNode = new DefaultTreeNode("Admissions", inwardNode);
@@ -261,7 +261,6 @@ public class UserPrivilageController implements Serializable {
         TreeNode pharmacyMenuNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.Pharmacy, "Pharmacy Menu"), pharmacyNode);
         TreeNode pharmacyAdministrationNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyAdministration, "Pharmacy Administration"), pharmacyNode);
 
-        
         TreeNode channellingNode = new DefaultTreeNode(new PrivilegeHolder(null, "Channelling"), allNode);
         TreeNode channellingMenuNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.Channelling, "Channelling Menu"), channellingNode);
         TreeNode channelBookingNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.ChannellingChannelBooking, "Channel Booking"), channellingNode);
@@ -540,7 +539,7 @@ public class UserPrivilageController implements Serializable {
         TreeNode pharmacyReturnReceviedGoods = new DefaultTreeNode(new PrivilegeHolder(Privileges.ReturnReceviedGoods, "Pharmacy Return Recevied Goods"), ProcumentNode);
         TreeNode pharmacyReturnWithoutRecipt = new DefaultTreeNode(new PrivilegeHolder(Privileges.ReturnWithoutRecipt, "Pharmacy Return WIthout Recipt"), ProcumentNode);
         TreeNode pharmacyOrderCancellation = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyOrderCancellation, "Pharmacy Order Cancellation"), ProcumentNode);
-        
+
         TreeNode DealerPayment = new DefaultTreeNode("Pharmacy Dealer Payment", pharmacyNode);
         TreeNode PharmacyDealerPaymentMenue = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDealerPaymentMenue, "Pharmacy Dealer Payment Menue"), DealerPayment);
         TreeNode PharmacyDealerDueSearch = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDealerDueSearch, "Pharmacy Dealer Due Search"), DealerPayment);
@@ -568,6 +567,16 @@ public class UserPrivilageController implements Serializable {
         TreeNode PharmacyDisposalSearchIssueBillItems = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDisposalSearchIssueBillItems, "Pharmacy Disposal Search Issue Return Bill"), PharmacyDisposal);
         TreeNode PharmacyDisposalSearchIssueReturnBill = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDisposalSearchIssueReturnBill, "Pharmacy Adjustment Purchase Rate"), PharmacyDisposal);
         TreeNode PharmacyDisposalUnitIssueMargin = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDisposalUnitIssueMargin, "Pharmacy Disposal Unit Issue Margin"), PharmacyDisposal);
+
+        // Adding Ophthalmology node and subnodes
+        TreeNode ophthalmologyNode = new DefaultTreeNode(new PrivilegeHolder(null, "Ophthalmology"), allNode);
+
+        TreeNode ophthalmologyPatientManagementNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.OphthalmologyPatientManagement, "Patient Management"), ophthalmologyNode);
+        TreeNode ophthalmologyAppointmentManagementNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.OphthalmologyAppointmentManagement, "Appointment Management"), ophthalmologyNode);
+        TreeNode ophthalmologyEmrNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.OphthalmologyEmr, "EMR"), ophthalmologyNode);
+        TreeNode ophthalmologyStockManagementNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.OphthalmologyStockManagement, "Stock Management"), ophthalmologyNode);
+        TreeNode ophthalmologyProductCatalogNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.OphthalmologyProductCatalog, "Product Catalog"), ophthalmologyNode);
+        TreeNode ophthalmologyRepairManagementNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.OphthalmologyRepairManagement, "Repair Management"), ophthalmologyNode);
 
         TreeNode PharmacyItemSearch = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyItemSearch, "Item Search"), pharmacyNode);
         TreeNode PharmacyGenarateReports = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyGenarateReports, "Genarate Reports"), pharmacyNode);
@@ -609,7 +618,7 @@ public class UserPrivilageController implements Serializable {
         }
         return phs;
     }
-    
+
     public List<PrivilegeHolder> createRolePrivilegeHolders(List<WebUserRolePrivilege> ps) {
         List<PrivilegeHolder> phs = new ArrayList<>();
         if (ps == null) {
@@ -624,8 +633,7 @@ public class UserPrivilageController implements Serializable {
         }
         return phs;
     }
-    
-    
+
     public void saveWebUserPrivileges(WebUser u, List<PrivilegeHolder> selected, Department dept) {
         currentWebUser = u;
         department = dept;
@@ -641,8 +649,8 @@ public class UserPrivilageController implements Serializable {
 
         List<WebUserPrivilege> newWups = new ArrayList<>();
         List<WebUserPrivilege> oldWups = new ArrayList<>();
-        
-         for (PrivilegeHolder ph : selectedPrivileges) {
+
+        for (PrivilegeHolder ph : selectedPrivileges) {
             if (ph.getPrivilege() == null) {
                 continue;
             }
@@ -669,7 +677,7 @@ public class UserPrivilageController implements Serializable {
         }
         getFacade().batchCreate(newWups);
         getFacade().batchEdit(oldWups);
-        
+
         fillUserPrivileges();
         JsfUtil.addSuccessMessage("Updated");
     }
@@ -843,11 +851,11 @@ public class UserPrivilageController implements Serializable {
         unselectTreeNodes(rootTreeNode);
         checkNodes(rootTreeNode, currentUserPrivilegeHolders);
     }
-    
-     public void fillUserRolePrivileges(WebUserRole u) {
-         webUserRole = u;
-         fillUserRolePrivileges();
-     }
+
+    public void fillUserRolePrivileges(WebUserRole u) {
+        webUserRole = u;
+        fillUserRolePrivileges();
+    }
 
     public void fillUserRolePrivileges() {
         List<WebUserRolePrivilege> wups;
@@ -898,7 +906,7 @@ public class UserPrivilageController implements Serializable {
     public void setSelectedItems(List<WebUserPrivilege> selectedItems) {
         this.selectedItems = selectedItems;
     }
-    
+
     public List<WebUserRolePrivilege> getSelectedRoleItems() {
         return selectedRoleItems;
     }
@@ -957,7 +965,7 @@ public class UserPrivilageController implements Serializable {
     public void setCurrentWebUserPrivileges(List<WebUserPrivilege> currentWebUserPrivileges) {
         this.currentWebUserPrivileges = currentWebUserPrivileges;
     }
-    
+
     public List<WebUserRolePrivilege> getCurrentWebUserRolePrivileges() {
         if (currentWebUserRolePrivileges == null) {
             currentWebUserRolePrivileges = new ArrayList<>();
@@ -968,7 +976,6 @@ public class UserPrivilageController implements Serializable {
     public void setCurrentWebUserRolePrivileges(List<WebUserRolePrivilege> currentWebUserRolePrivileges) {
         this.currentWebUserRolePrivileges = currentWebUserRolePrivileges;
     }
-    
 
     public List<Department> getDepartments() {
         return departments;
@@ -993,8 +1000,6 @@ public class UserPrivilageController implements Serializable {
     public void setRoleFacede(WebUserRolePrivilegeFacade facede) {
         this.facede = facede;
     }
-    
-    
 
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Converters">
