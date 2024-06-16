@@ -33,7 +33,6 @@ public class Department implements Serializable {
     @GeneratedValue(strategy = GenerationType.AUTO)
     //Main Properties   
     Long id;
-    @Deprecated
     String departmentCode;
     String name;
     @Lob
