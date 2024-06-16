@@ -1022,6 +1022,7 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
         }
         setPreBill(preBatchBill);
         billsOfBatchBillPre = billController.billsOfBatchBill(preBatchBill);
+        System.out.println("billsOfBatchBillPre = " + billsOfBatchBillPre.size());
         for (Bill billOfBatchBillPre : billsOfBatchBillPre) {
             if (billOfBatchBillPre.getBillItems() == null) {
                 billOfBatchBillPre.setBillItems(billController.billItemsOfBill(billOfBatchBillPre));
