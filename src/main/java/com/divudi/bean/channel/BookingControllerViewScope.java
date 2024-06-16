@@ -3892,7 +3892,10 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         List<BillFee> savingBillFeesFromAdditionalItems = new ArrayList<>();
         if (!additionalBillItems.isEmpty()) {
             for (BillItem abi : additionalBillItems) {
-                savingBillFeesFromAdditionalItems = createBillFeeForSessions(savingBill, abi, true, priceMatrix);
+                List<BillFee> blf = createBillFeeForSessions(savingBill, abi, true, priceMatrix);
+                for (BillFee bf : blf){
+                    savingBillFeesFromAdditionalItems.add(bf);
+                }
             }
         }
 
