@@ -416,6 +416,18 @@
                         style="font-size: 8pt"  
                         value="(Card Last 4 Digits:#{cc.attrs.paymentMethodData.creditCard.no})"/>
                 </h:panelGroup>
+                
+                <h:panelGroup rendered="#{cc.attrs.bill.paymentMethod eq 'Agent' }" >
+                    <h:outputText
+                        class="mx-1"
+                        style="font-size: 8pt"  
+                        value="#{cc.attrs.bill.creditCompany.name}">
+                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                    </h:outputText>
+                    <h:outputText 
+                        style="font-size: 8pt"  
+                        value="(Ref. No: #{cc.attrs.bill.agentRefNo})"/>
+                </h:panelGroup>
 
                 <h:panelGroup rendered="#{cc.attrs.bill.paymentMethod eq 'MultiplePaymentMethods'}" style="margin-top: 10px;font-size: 8pt">
                     <h:outputLabel value="Payments : #{cc.attrs.bill.paymentMethod.label}"/>

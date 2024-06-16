@@ -359,6 +359,8 @@ public class Bill implements Serializable {
     @Transient
     private Bill tmpRefBill;
     
+    private String agentRefNo;
+    
     
 
     private void generateBillPrintFromBillTemplate() {
@@ -2190,6 +2192,14 @@ public class Bill implements Serializable {
 
     public void setDuplicatePrintedAt(Date duplicatePrintedAt) {
         this.duplicatePrintedAt = duplicatePrintedAt;
+    }
+
+    public String getAgentRefNo() {
+        return agentRefNo;
+    }
+
+    public void setAgentRefNo(String agentRefNo) {
+        this.agentRefNo = agentRefNo;
     }
 
 }
