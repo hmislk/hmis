@@ -202,7 +202,7 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
         double billDiscount = 0.0;
         double billGross = 0.0;
         double billNet = 0.0;
-        
+
         for (Bill b : billsOfBatchBillPre) {
             double entryGross = 0.0;
             double entryDis = 0.0;
@@ -1015,14 +1015,12 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
         HashMap hm = new HashMap();
         hm.put("bil", preBatchBill);
         Bill b = getBillFacade().findFirstByJpql(sql, hm);
-        System.out.println("b = " + b);
         if (b != null) {
             JsfUtil.addErrorMessage("Already Paid");
             return "";
         }
         setPreBill(preBatchBill);
         billsOfBatchBillPre = billController.billsOfBatchBill(preBatchBill);
-        System.out.println("billsOfBatchBillPre = " + billsOfBatchBillPre.size());
         for (Bill billOfBatchBillPre : billsOfBatchBillPre) {
             if (billOfBatchBillPre.getBillItems() == null) {
                 billOfBatchBillPre.setBillItems(billController.billItemsOfBill(billOfBatchBillPre));
@@ -1036,7 +1034,6 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
                 billOfBatchBillPre.setBillFees(billController.billFeesOfBill(billOfBatchBillPre));
             }
         }
-        System.out.println("billsOfBatchBillPre = " + billsOfBatchBillPre.size());
         getPreBill().setPaymentMethod(preBatchBill.getPaymentMethod());
         paymentMethod = getPreBill().getPaymentMethod();
         netTotal = getPreBill().getNetTotal();
