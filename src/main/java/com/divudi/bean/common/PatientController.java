@@ -1,6 +1,8 @@
 package com.divudi.bean.common;
 
 // Modified by Dr M H B Ariyaratne with assistance from ChatGPT from OpenAI
+import com.divudi.bean.Ophthalmology.OphthalmologyRepairBillController;
+import com.divudi.bean.Ophthalmology.OphthalmologySaleController;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
@@ -145,6 +147,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
     @Inject
     PatientEncounterController patientEncounterController;
     @Inject
+    OphthalmologySaleController ophthalmologySaleController;
+    @Inject
     private CommonController commonController;
     @Inject
     private SecurityController securityController;
@@ -158,6 +162,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
     CaptureComponentController captureComponentController;
     @Inject
     OpdBillController opdBillController;
+    @Inject
+    OphthalmologyRepairBillController ophthalmologyRepairBillController;
     @Inject
     BillPackageController billPackageController;
     @Inject
@@ -778,6 +784,18 @@ public class PatientController implements Serializable, ControllerWithPatient {
         patientEncounterController.fillPatientInvestigations(current);
         return "/pharmacy/pharmacy_bill_retail_sale?faces-redirect=true;";
     }
+    
+    public String navigateToOphthalmologyBilling() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No patient selected");
+            return "";
+        }
+        ophthalmologySaleController.setPatient(current);
+        patientEncounterController.setPatient(current);
+        patientEncounterController.fillCurrentPatientLists(current);
+        patientEncounterController.fillPatientInvestigations(current);
+        return "/Ophthalmology/sale?faces-redirect=true;";
+    }
 
     public String navigateToOpdPatientProfile() {
         if (current == null) {
@@ -785,6 +803,14 @@ public class PatientController implements Serializable, ControllerWithPatient {
             return "";
         }
         return "/opd/patient?faces-redirect=true";
+    }
+
+    public String navigateToOphthalmologyProfile() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No patient selected");
+            return "";
+        }
+        return "/Ophthalmology/patient?faces-redirect=true";
     }
 
     public String navigateToAdmitFromPatientProfile() {
@@ -923,6 +949,14 @@ public class PatientController implements Serializable, ControllerWithPatient {
             return "";
         }
         return opdBillController.navigateToNewOpdBill(current);
+    }
+
+    public String navigateToSaleFromOphthalmologyRepair() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No patient selected");
+            return "";
+        }
+        return ophthalmologyRepairBillController.navigateToNewOpdBill(current);
     }
 
     public String navigateToOpdBillFromFamilyMembership() {
@@ -1155,8 +1189,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         return "";
     }
 
-    public String searchPatientForOpd() {
-
+    public Boolean searchPatientCommon() {
         boolean noSearchCriteriaWasFound = true;
 
         if (searchPhn != null && !searchPhn.trim().equals("")) {
@@ -1197,7 +1230,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
         if (noSearchCriteriaWasFound) {
             JsfUtil.addErrorMessage("No Search Criteria Found !");
-            return "";
+            return false;
         }
 
         if (searchBillId != null && !searchBillId.trim().equals("")) {
@@ -1215,13 +1248,37 @@ public class PatientController implements Serializable, ControllerWithPatient {
         } else {
             searchPatientByDetails();
         }
+
+        return true;
+    }
+
+    public String searchPatientForOpd() {
+        boolean noError = searchPatientCommon();
+        if (!noError) {
+            return "";
+        }
         if (searchedPatients == null || searchedPatients.isEmpty()) {
             JsfUtil.addErrorMessage("No Matches. Please use different criteria");
             return navigateToAddNewPatientForOpd(getSearchName(), getSearchNic(), getSearchPhone());
-
         } else if (searchedPatients.size() == 1) {
             setCurrent(searchedPatients.get(0));
             return navigateToOpdPatientProfile();
+        }
+        clearSearchDetails();
+        return "";
+    }
+
+    public String searchPatientForOphthalmology() {
+        boolean noError = searchPatientCommon();
+        if (!noError) {
+            return "";
+        }
+        if (searchedPatients == null || searchedPatients.isEmpty()) {
+            JsfUtil.addErrorMessage("No Matches. Please use different criteria");
+            return navigateToAddNewPatientForOphthalmology(getSearchName(), getSearchNic(), getSearchPhone());
+        } else if (searchedPatients.size() == 1) {
+            setCurrent(searchedPatients.get(0));
+            return navigateToOphthalmologyProfile();
         }
         clearSearchDetails();
         return "";
@@ -2006,7 +2063,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
             return;
 
         }
-       
+
         if (familyMember.getPatient().getPerson().getDob() == null) {
             loggedIn = false;
             JsfUtil.addErrorMessage("Please enter Date Of Birth");
@@ -2130,6 +2187,12 @@ public class PatientController implements Serializable, ControllerWithPatient {
         return "/opd/patient_edit?faces-redirect=true;";
     }
 
+    public String navigateToAddNewPatientForOphthalmology() {
+        current = null;
+        getCurrent();
+        return "/Ophthalmology/patient_edit?faces-redirect=true;";
+    }
+
     public String navigateToAddNewPatientForOpd(String name, String nic, String phone) {
         current = null;
         getCurrent();
@@ -2138,6 +2201,16 @@ public class PatientController implements Serializable, ControllerWithPatient {
         getCurrent().getPerson().setPhone(phone);
         getCurrent().getPerson().setMobile(phone);
         return "/opd/patient_edit?faces-redirect=true;";
+    }
+
+    public String navigateToAddNewPatientForOphthalmology(String name, String nic, String phone) {
+        current = null;
+        getCurrent();
+        getCurrent().getPerson().setName(name);
+        getCurrent().getPerson().setNic(nic);
+        getCurrent().getPerson().setPhone(phone);
+        getCurrent().getPerson().setMobile(phone);
+        return "/Ophthalmology/patient_edit?faces-redirect=true;";
     }
 
     public String navigateToAddNewPatientForOpd(String phone) {
