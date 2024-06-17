@@ -2393,6 +2393,13 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             }
             }
         }
+        
+        
+           if (selectedSessionInstance.isCancelled()) {
+    JsfUtil.addErrorMessage("Cannot add patient to a canceled session. Please select an active session.");
+    return;
+}
+
 
         saveSelected(patient);
         printingBill = saveBilledBill(reservedBooking);
@@ -3892,7 +3899,10 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         List<BillFee> savingBillFeesFromAdditionalItems = new ArrayList<>();
         if (!additionalBillItems.isEmpty()) {
             for (BillItem abi : additionalBillItems) {
-                savingBillFeesFromAdditionalItems = createBillFeeForSessions(savingBill, abi, true, priceMatrix);
+                List<BillFee> blf = createBillFeeForSessions(savingBill, abi, true, priceMatrix);
+                for (BillFee bf : blf){
+                    savingBillFeesFromAdditionalItems.add(bf);
+                }
             }
         }
 
@@ -4513,6 +4523,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             case Agent:
                 bill.setBillType(BillType.ChannelAgent);
                 bill.setCreditCompany(institution);
+                bill.setAgentRefNo(agentRefNo);
                 bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
                 break;
             case Staff:
@@ -5592,7 +5603,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                     refundCreditPaidBill();
                 }
             }
-            setPrintPreview(true);
+            setPrintPreview(false);
         } else {
             JsfUtil.addErrorMessage("Nothing to Refund");
         }

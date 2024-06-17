@@ -714,6 +714,7 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
         }
 
         for (Department d : billDepts) {
+            System.out.println("d = " + d);
             PreBill newPreBill = new PreBill();
             newPreBill = saveBill(d, newPreBill);
 
@@ -738,6 +739,7 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
             getBillFacade().edit(newPreBill);
 
             getBillBean().calculateBillItems(newPreBill, tmp);
+            System.out.println("newPreBill = " + newPreBill);
             bills.add(newPreBill);
         }
 
@@ -796,6 +798,7 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
 
             List<BillItem> list = new ArrayList<>();
             for (BillEntry billEntry : getLstBillEntries()) {
+                System.out.println("billEntry = " + billEntry);
                 list.add(getBillBean().saveBillItem(b, billEntry, getSessionController().getLoggedUser()));
             }
 
@@ -808,12 +811,6 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
             getBillFacade().edit(b);
             getBills().add(b);
 
-            if (getToken() != null) {
-                getToken().setBill(b);
-                tokenFacade.edit(getToken());
-                markToken(b);
-            }
-
         } else {
             boolean result = putToBills();
             if (result == false) {
@@ -823,10 +820,15 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
 
         saveBatchBill();
         saveBillItemSessions();
-
         JsfUtil.addSuccessMessage("Bill Saved");
-        setPrintigBill();
         checkBillValues();
+        
+        if (getToken() != null) {
+                getToken().setBill(batchBill);
+                tokenFacade.edit(getToken());
+                markToken(batchBill);
+            }
+        
         printPreview = true;
 
         return "/opd/opd_pre_bill?faces-redirect=true";
@@ -883,6 +885,7 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
 
     private void saveBillItemSessions() {
         for (BillEntry be : lstBillEntries) {
+            System.out.println("be = " + be);
             be.getBillItem().setBillSession(getServiceSessionBean().createBillSession(be.getBillItem()));
             if (be.getBillItem().getBillSession() != null) {
                 getBillSessionFacade().create(be.getBillItem().getBillSession());
@@ -927,7 +930,7 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
         double tmpBatchBillTotalOfNetTotals = 0.0;
 
         for (Bill b : bills) {
-
+            System.out.println("b backward save= " + b);
             double preGrossTotal = tmpBatchBillTotalOfGrossTotals;
             double preDiscountTotal = tmpBatchBillTotalOfDiscounts;
             double preNetTotal = tmpBatchBillTotalOfNetTotals;
