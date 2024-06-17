@@ -151,190 +151,297 @@
 
 
                     <h:panelGroup  rendered="#{billController.printPreview}">
+                        <p:panel>
+                            <f:facet name="header">
+                                <p:commandButton value="Back" class="ui-button-warning mx-2" style="float: right" icon="fas fa-arrow-left" ajax="false" action="/opd_search_bill_to_pay" actionListener="#{billController.clear()}"  >
+                                </p:commandButton>
+                                <p:commandButton value="Print" class="ui-button-info" style="float: right" icon="fas fa-print" ajax="false" action="#"  >
+                                    <p:printer target="gpBillPreview" ></p:printer>
+                                </p:commandButton>
+
+                            </f:facet>
+                            <div  class="justify-content-center" style="display: flex; justify-content: center; align-items: center; margin: auto;">
+                                <h:outputLabel value="Paper Type : "></h:outputLabel>
+                                <p:selectOneMenu value="#{sessionController.departmentPreference.opdBillPaperType}" class="m-1" style="width: 13em;">
+                                    <f:selectItem itemLabel="Please Select Paper Type" />
+                                    <f:selectItems value="#{enumController.paperTypes}" />
+                                </p:selectOneMenu>
+                                <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button m-1" title="Redraw Bill"></p:commandButton>
+                            </div>
+                            <h:panelGroup id="gpBillPreview" >
+                                <h:panelGroup rendered="#{sessionController.loggedPreference.opdBillPaperType eq 'FiveFivePaper'}">
+
+                                    <h:outputStylesheet library="css" name="opd_five_five.css" ></h:outputStylesheet>
 
 
-                        <h:panelGroup rendered="#{sessionController.loggedPreference.opdBillPaperType eq 'FiveFivePaper'}">
-                            <div id="centrewrapper">
-                                <div id="centrecell">
-                                    <div class="centrecontent my-3">
-                                        <p:commandButton value="Print" class="ui-button-info" icon="fas fa-print" ajax="false" action="#"  >
-                                            <p:printer target="gpBillPreview" ></p:printer>
-                                        </p:commandButton>
-                                        <p:commandButton class="mx-2" value="Back" ajax="false" action="/opd_search_bill_to_pay" actionListener="#{billController.clear()}"  >
-                                        </p:commandButton>
-
-
-                                        <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
-
-                                        <div style="border: 1px solid;" >
-                                            <h:panelGroup id="gpBillPreview" >
-
-                                                <div  class="fiveinchbill">
-                                                    <div class="heading h3" >
-                                                        <p:outputLabel value="OPD Payment Bill" />
-                                                    </div>
-
-                                                    <div  class="receiptno">
-                                                        <h:outputLabel value="#{billController.opdBill.insId}"  
-                                                                       /> 
-
-                                                    </div>
-
-                                                    <div  class="billdate">
-                                                        <h:outputLabel value="#{billController.opdBill.billDate}"
-                                                                       >
-                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
-                                                        </h:outputLabel>
-                                                    </div>
-
-                                                    <div class="payment">
-                                                        <h:outputLabel value="#{billController.opdBill.paymentMethod}"/>
-                                                    </div>
-
-                                                    <div class="billtime">
-                                                        <h:outputLabel value="#{billController.opdBill.billTime}" >
-                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortTimeFormat}"/>
-                                                        </h:outputLabel>
-
-                                                    </div>
-
-                                                    <h:outputLabel value="#{billController.opdBill.referenceBill.patient.person.nameWithTitle}" styleClass="ptname" /> <br/>
-
-                                                    <h:outputLabel value="#{billController.opdBill.referenceBill.patient.person.phone}" styleClass="phone" />
-
-
-                                                    <div class="items" >
-                                                        <h:dataTable value="#{billController.opdBill.referenceBill.billItems}" var="bip">
-                                                            <h:column >
-                                                                <h:outputLabel rendered="#{bip.item.department.id eq bill.toDepartment.id}" value="#{bip.item.printName}" style="margin: 4px; font-size: 11px!important;" >
-                                                                </h:outputLabel>
-                                                                <h:panelGroup rendered="#{bip.item.department.id eq bill.toDepartment.id and bip.billSession ne null }"  >
-                                                                    <br/>
-                                                                    <h:panelGroup rendered="#{bip.item.sessionNumberType eq null}">
-                                                                        <h:outputLabel value="Session No . " ></h:outputLabel>
-                                                                        <h:outputLabel value="#{bip.billSession.serialNo}" style="margin: 4px; font-size: 11px!important;" >
-                                                                        </h:outputLabel>
-                                                                    </h:panelGroup>
-                                                                </h:panelGroup>
-                                                            </h:column>
-                                                        </h:dataTable>
-                                                    </div>
-
-                                                    <div class="rates"  >
-                                                        <h:dataTable value="#{billController.opdBill.referenceBill.billItems}" var="bip1"  >
-                                                            <h:column >
-                                                                <h:outputLabel  rendered="#{bip1.bill.id eq bill.id}"  value="#{bip1.grossValue}"  style="margin: 4px; font-size: 11px!important;" >
-                                                                    <f:convertNumber pattern="#,#00.00" />
-                                                                </h:outputLabel>
-                                                            </h:column>
-                                                        </h:dataTable>
-                                                    </div>
-
-
-                                                    <!--                                                <div class="items" >
-                                                                                                        <h:outputLabel value="Paid Amount">
-                                                    
-                                                                                                        </h:outputLabel>
-                                                                                                    </div>
-                                                    
-                                                                                                    <div class="rates" >
-                                                    
-                                                                                                        <h:outputLabel value="#{billController.opdBill.paidAmount}"  style="margin: 4px;" >
-                                                                                                            <f:convertNumber pattern="#,#00.00" />
-                                                                                                        </h:outputLabel>
-                                                    
-                                                                                                    </div>-->
-
-                                                    <div class="totals">
-                                                        <table>
-                                                            <tr>
-                                                                <td>
-                                                                    <br/>
-                                                                    <br/>
-                                                                </td>
-                                                                <td>
-                                                                    <br/>
-                                                                    <br/>
-                                                                </td>
-                                                            </tr>
-
-                                                            <tr>
-                                                                <td style="text-align: left; min-width: 3cm;">
-                                                                    <h:outputLabel value="Total" style="  text-align: right!important;  font-size: 15px!important;   "/>
-                                                                </td>
-                                                                <td style="text-align: right!important; ">
-                                                                    <h:outputLabel value="#{billController.opdBill.referenceBill.total}"  style=" font-weight: bold ; text-align: right!important; font-size: 15px!important;    ">
-                                                                        <f:convertNumber pattern="#,#00.00" />
-                                                                    </h:outputLabel>
-                                                                </td>
-                                                            </tr>
-
-                                                            <tr>
-                                                                <td style="text-align: left; min-width: 3cm;">
-                                                                    <h:outputLabel value="Paying" style="  text-align: right!important;  font-size: 15px!important;   "/>
-                                                                </td>
-                                                                <td style="text-align: right!important; ">
-                                                                    <h:outputLabel value="#{billController.opdBill.total}"  style=" font-weight: bold ; text-align: right!important; font-size: 15px!important;    ">
-                                                                        <f:convertNumber pattern="#,#00.00" />
-                                                                    </h:outputLabel>
-                                                                </td>
-                                                            </tr>
-
-
-                                                            <h:panelGroup rendered="#{billController.opdBill.referenceBill.balance gt 1}" >
-                                                                <tr>
-                                                                    <td style="text-align: left; min-width: 3cm;">
-                                                                        <h:outputLabel value="Balance" style="  text-align: right!important;  font-size: 15px!important;   "/>
-                                                                    </td>
-                                                                    <td style="text-align: right!important; ">
-                                                                        <h:outputLabel value="#{billController.opdBill.referenceBill.balance}"  style=" font-weight: bold ; text-align: right!important; font-size: 15px!important;    ">
-                                                                            <f:convertNumber pattern="#,#00.00" />
-                                                                        </h:outputLabel>
-                                                                    </td>
-                                                                </tr>
-                                                            </h:panelGroup>
-
-
-                                                        </table>
-                                                    </div>
-
-                                                    <div class="cashier" >
-                                                        <h:outputLabel value="Cashier : #{billController.opdBill.creater.name}"/>
-
-
-                                                    </div>
-
-
-
-                                                </div>
-
-
-
-                                            </h:panelGroup>
+                                    <div  class="fiveinchbill">
+                                        <div class="institutionName">
+                                            <h:outputLabel value="#{billController.opdBill.department.printingName}" />
                                         </div>
+                                        <div class="institutionContact" >
+                                            <div>
+                                                <h:outputLabel value="#{billController.opdBill.department.address}"/>
+                                            </div>
+                                            <div >
+                                                <h:outputLabel value="#{billController.opdBill.department.telephone1} "/>
+                                                <h:outputLabel value=" /" style="width: 20px; text-align: center;"/>
+                                                <h:outputLabel value="#{billController.opdBill.department.telephone2}"/>
+                                            </div>
+                                            <div >
+                                                <h:outputLabel value="#{billController.opdBill.department.fax}"/>                                                 
+                                            </div>
+                                        </div>
+
+
+                                        <div class="headingBillFiveFive" style="text-align: center;font-weight: bold;">
+                                            <h:outputLabel value="OPD Payment Bill"   />    
+                                            <h:outputLabel value="**Cancelled**"  rendered="#{billController.opdBill.cancelled eq true}" /> 
+                                        </div>
+
+                                        <div class="billline">
+                                            <hr></hr>   
+                                        </div>
+
+                                        <div class="billDetailsFiveFive" >
+                                            <table style="width: 99%!important;" >
+                                                <tr>
+                                                    <td style="text-align: left;" >
+                                                        <h:outputLabel value="Name" class="billDetailsFiveFive" ></h:outputLabel>
+                                                    </td>
+                                                    <td style="width: 10px;"></td>
+                                                    <td >:</td>
+                                                    <td style="width: 5px;"></td>
+                                                    <td>
+                                                        <h:outputLabel value="#{billController.opdBill.referenceBill.patient.person.nameWithTitle}" class="billDetailsFiveFive" >
+                                                        </h:outputLabel>
+
+                                                    </td>
+                                                    <td style="width: 50px;"></td>
+                                                    <td>
+                                                        <h:outputLabel value="Bill Date" class="billDetailsFiveFive" ></h:outputLabel>
+                                                    </td>
+                                                    <td>
+                                                        <h:outputLabel value=":" class="billDetailsFiveFive" ></h:outputLabel>
+                                                    </td>
+
+                                                    <td>
+                                                        <h:outputLabel value="#{billController.opdBill.createdAt}" class="billDetailsFiveFive">
+                                                            <f:convertDateTime pattern="dd/MMM/yyyy" ></f:convertDateTime>
+                                                        </h:outputLabel>
+                                                    </td>
+
+                                                </tr>
+
+                                                <tr>
+                                                    <td style="text-align: left;" >
+                                                        <h:outputLabel value="Age" class="billDetailsFiveFive" ></h:outputLabel>
+                                                    </td>
+                                                    <td style="width: 10px;"></td>
+                                                    <td >:</td>
+                                                    <td style="width: 5px;"></td>
+                                                    <td>
+                                                        <h:outputLabel value="#{billController.opdBill.referenceBill.patient.age}" class="billDetailsFiveFive" >
+                                                        </h:outputLabel>
+
+                                                    </td>
+                                                    <td style="width: 50px;"></td>
+                                                    <td>
+                                                        <h:outputLabel value="Bill Time" class="billDetailsFiveFive" ></h:outputLabel>
+                                                    </td>
+                                                    <td>
+                                                        <h:outputLabel value=":" class="billDetailsFiveFive" ></h:outputLabel>
+                                                    </td>
+
+                                                    <td>
+                                                        <h:outputLabel value="#{billController.opdBill.createdAt}" class="billDetailsFiveFive">
+                                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm a"  ></f:convertDateTime>
+                                                        </h:outputLabel>
+                                                    </td>
+
+                                                </tr>
+
+
+                                                <tr>
+                                                    <td style="text-align: left;" >
+                                                        <h:outputLabel value="Gender" class="billDetailsFiveFive" ></h:outputLabel>
+                                                    </td>
+                                                    <td style="width: 10px;"></td>
+                                                    <td >:</td>
+                                                    <td style="width: 5px;"></td>
+                                                    <td>
+                                                        <h:outputLabel value="#{billController.opdBill.referenceBill.patient.person.sex}" class="billDetailsFiveFive" >
+                                                        </h:outputLabel>
+
+                                                    </td>
+                                                    <td style="width: 50px;"></td>
+                                                    <td>
+                                                        <h:outputLabel value="Bill No" class="billDetailsFiveFive" ></h:outputLabel>
+                                                    </td>
+                                                    <td>
+                                                        <h:outputLabel value=":" class="billDetailsFiveFive" ></h:outputLabel>
+                                                    </td>
+
+                                                    <td>
+                                                        <h:outputLabel value="#{billController.opdBill.deptId}" class="billDetailsFiveFive">
+                                                        </h:outputLabel>
+                                                    </td>
+
+                                                </tr>
+
+
+                                                <tr>
+                                                    <td style="text-align: left;" >
+                                                        <h:outputLabel value="Phone" class="billDetailsFiveFive" ></h:outputLabel>
+                                                    </td>
+                                                    <td style="width: 10px;"></td>
+                                                    <td >:</td>
+                                                    <td style="width: 5px;"></td>
+                                                    <td>
+                                                        <h:outputLabel value="#{billController.opdBill.referenceBill.patient.person.phone}" class="billDetailsFiveFive" >
+                                                        </h:outputLabel>
+
+                                                    </td>
+                                                    <td style="width: 50px;"></td>
+                                                    <td>
+                                                        <h:outputLabel value="Payment" class="billDetailsFiveFive" ></h:outputLabel>
+                                                    </td>
+                                                    <td>
+                                                        <h:outputLabel value=":" class="billDetailsFiveFive" ></h:outputLabel>
+                                                    </td>
+
+                                                    <td>
+                                                        <h:outputLabel value="#{billController.opdBill.paymentMethod}" class="billDetailsFiveFive">
+                                                        </h:outputLabel>
+                                                    </td>
+
+                                                </tr>
+
+                                                <tr>
+                                                    <td style="text-align: left;" >
+                                                        <h:outputLabel value="Patient ID" class="billDetailsFiveFive" ></h:outputLabel>
+                                                    </td>
+                                                    <td style="width: 10px;"></td>
+                                                    <td >:</td>
+                                                    <td style="width: 5px;"></td>
+                                                    <td>
+                                                        <h:outputLabel value="#{billController.opdBill.referenceBill.patient.idStr}" class="billDetailsFiveFive" >
+                                                        </h:outputLabel>
+
+                                                    </td>
+                                                    <td style="width: 50px;"></td>
+                                                    <td>
+                                                        <h:outputLabel value="Referred By" class="billDetailsFiveFive" ></h:outputLabel>
+                                                    </td>
+                                                    <td>
+                                                        <h:outputLabel value=":" class="billDetailsFiveFive" ></h:outputLabel>
+                                                    </td>
+
+                                                    <td>
+                                                        <h:outputLabel value="#{billController.opdBill.referenceBill.referredBy.person.nameWithTitle}" class="billDetailsFiveFive">
+                                                        </h:outputLabel>
+                                                    </td>
+
+                                                </tr>
+
+                                            </table>
+                                        </div>
+
+                                        <div class="billline">
+                                            <hr></hr>   
+                                        </div>
+
+
+                                        <!--                                                    <div class="items" >
+                                                                                                <h:dataTable value="#{billController.opdBill.referenceBill.billItems}" var="bip">
+                                                                                                    <h:column >
+                                                                                                        <h:outputLabel rendered="#{bip.item.department.id eq bill.toDepartment.id}" value="#{bip.item.printName}" style="margin: 4px; font-size: 11px!important;" >
+                                                                                                        </h:outputLabel>
+                                                                                                        <h:panelGroup rendered="#{bip.item.department.id eq bill.toDepartment.id and bip.billSession ne null }"  >
+                                                                                                            <br/>
+                                                                                                            <h:panelGroup rendered="#{bip.item.sessionNumberType eq null}">
+                                                                                                                <h:outputLabel value="Session No . " ></h:outputLabel>
+                                                                                                                <h:outputLabel value="#{bip.billSession.serialNo}" style="margin: 4px; font-size: 11px!important;" >
+                                                                                                                </h:outputLabel>
+                                                                                                            </h:panelGroup>
+                                                                                                        </h:panelGroup>
+                                                                                                    </h:column>
+                                                                                                </h:dataTable>
+                                                                                            </div>-->
+
+                                        <div class="rates"  >
+                                            <h:dataTable value="#{billController.opdBill.referenceBill.billItems}" var="bip1"  >
+                                                <h:column >
+                                                    <h:outputLabel  rendered="#{bip1.bill.id eq bill.id}"  value="#{bip1.grossValue}"  style="margin: 4px; font-size: 11px!important;" >
+                                                        <f:convertNumber pattern="#,#00.00" />
+                                                    </h:outputLabel>
+                                                </h:column>
+                                            </h:dataTable>
+                                        </div>
+                                        <div  >
+
+                                            <table style="width: 100%;">
+
+                                                <tr>
+                                                    <td class="totalsBlock" style="text-align: left; width: 60%;">
+                                                        <h:outputLabel value="Total" style="  text-align: right!important;  font-size: 15px!important;   "/>
+                                                    </td>
+                                                    <td class="totalsBlock" style="text-align: right; width: 40%; padding-right: 30px;">
+                                                        <h:outputLabel value="#{billController.opdBill.referenceBill.total}"  style=" font-weight: bold ; text-align: right!important; font-size: 15px!important;    ">
+                                                            <f:convertNumber pattern="#,#00.00" />
+                                                        </h:outputLabel>
+                                                    </td>
+                                                </tr>
+
+                                                <tr>
+                                                    <td class="totalsBlock" style="text-align: left; width: 60%;">
+                                                        <h:outputLabel value="Paying" style="  text-align: right!important;  font-size: 15px!important;   "/>
+                                                    </td>
+                                                    <td class="totalsBlock" style="text-align: right; width: 40%; padding-right: 30px;">
+                                                        <h:outputLabel value="#{billController.opdBill.total}"  style=" font-weight: bold ; text-align: right!important; font-size: 15px!important;    ">
+                                                            <f:convertNumber pattern="#,#00.00" />
+                                                        </h:outputLabel>
+                                                    </td>
+                                                </tr>
+
+
+                                                <h:panelGroup rendered="#{billController.opdBill.referenceBill.balance gt 1}" >
+                                                    <tr>
+                                                        <td class="totalsBlock" style="text-align: left; width: 60%;">
+                                                            <h:outputLabel value="Balance" style="  text-align: right!important;  font-size: 15px!important;   "/>
+                                                        </td>
+                                                        <td class="totalsBlock" style="text-align: right; width: 40%; padding-right: 30px;">
+                                                            <h:outputLabel value="#{billController.opdBill.referenceBill.balance}"  style=" font-weight: bold ; text-align: right!important; font-size: 15px!important;    ">
+                                                                <f:convertNumber pattern="#,#00.00" />
+                                                            </h:outputLabel>
+                                                        </td>
+                                                    </tr>
+                                                </h:panelGroup>
+
+
+                                            </table>
+                                        </div>
+
+                                        <div style="text-decoration: overline; margin-top: 10px;">
+                                            <h:outputLabel value="Cashier : #{billController.opdBill.creater.webUserPerson.name}"/>
+                                        </div>
+
+
+
                                     </div>
-                                </div>
-                            </div>
-                        </h:panelGroup>
 
-                        <h:panelGroup rendered="#{sessionController.loggedPreference.opdBillPaperType eq 'PosPaper'}">
 
-                            <div class="nonPrintBlock">
-                                <p:commandButton value="Print" ajax="false" action="#"  >
-                                    <p:printer target="gpPosBill" ></p:printer>
-                                </p:commandButton>
 
-                                <p:commandButton value="New Bill" ajax="false" action="/opd_search_bill_to_pay" actionListener="#{billController.clear()}"  >
-                                </p:commandButton>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{sessionController.loggedPreference.opdBillPaperType eq 'PosPaper'}">
 
-                            </div>
-                            <h:panelGroup id="gpPosBill">
-                                <bi:posOpdBill_bal bill="#{billController.opdBill}" duplicate="false"/>                        
-                                <div></div>
-                                <bi:posOpdBill_bal bill="#{billController.opdBill}" duplicate="false"/>
+
+                                    <bi:posOpdBill_bal bill="#{billController.opdBill}" duplicate="false"/>    
+
+                                </h:panelGroup>
+
                             </h:panelGroup>
 
-                        </h:panelGroup>
+                        </p:panel>
                     </h:panelGroup>
 
 
