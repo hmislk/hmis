@@ -798,7 +798,6 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
 
             List<BillItem> list = new ArrayList<>();
             for (BillEntry billEntry : getLstBillEntries()) {
-                System.out.println("billEntry = " + billEntry);
                 list.add(getBillBean().saveBillItem(b, billEntry, getSessionController().getLoggedUser()));
             }
 
@@ -885,7 +884,6 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
 
     private void saveBillItemSessions() {
         for (BillEntry be : lstBillEntries) {
-            System.out.println("be = " + be);
             be.getBillItem().setBillSession(getServiceSessionBean().createBillSession(be.getBillItem()));
             if (be.getBillItem().getBillSession() != null) {
                 getBillSessionFacade().create(be.getBillItem().getBillSession());

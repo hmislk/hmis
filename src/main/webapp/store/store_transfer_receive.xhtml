@@ -12,57 +12,71 @@
             <h:outputStylesheet library="css" name="pharmacyA4.css"/>
             <p:panel rendered="#{!storeTransferReceiveController.printPreview}">
                 <p:panel>
-
                     <f:facet name="header" >                                  
-                        <h:panelGrid columns="4"  >                        
-                            <p:outputLabel value="Staff :#{storeTransferReceiveController.issuedBill.toStaff.person.nameWithTitle}" />
 
-                            <p:commandButton  value="Recieve" action="#{storeTransferReceiveController.settle}" ajax="false"  style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;">
-                            </p:commandButton>
+                        <p:outputLabel value="Staff : &nbsp;#{storeTransferReceiveController.issuedBill.toStaff.person.nameWithTitle}" />
 
-                        </h:panelGrid>
+                        <p:commandButton  
+                            value="Recieve" 
+                            icon="fas fa-check"
+                            style="float: right;"
+                            class="ui-button-success mx-2"
+                            action="#{storeTransferReceiveController.settle}" 
+                            ajax="false" >
+                        </p:commandButton>
+
+
                     </f:facet>
+
+
+                    <p:dataTable styleClass="noBorder" var="ph" value="#{storeTransferReceiveController.billItems}" 
+                                 id="itemList" scrollable="true" scrollHeight="250" sortBy="#{ph.searialNo}"
+                                 editable="true">  
+
+                        <p:ajax event="rowEdit" listener="#{storeTransferReceiveController.onEdit}" />  
+                        <p:ajax event="rowEditCancel" listener="#{storeTransferReceiveController.onEdit}"/> 
+
+
+                        <f:facet name="header">
+                            <h:outputLabel styleClass="fas fa-list" />
+                            <h:outputLabel value="Requested Item " class="mx-4" />
+                        </f:facet>
+
+                        <p:column headerText="Item Name">  
+                            <h:outputText id="item" value="#{ph.item.name}" >                                   
+                            </h:outputText>
+                        </p:column>  
+
+                        
+                        <p:column headerText="Purchase Rate" >  
+                            <h:outputText id="purchasePrice" value="#{ph.pharmaceuticalBillItem.itemBatch.purcahseRate}" >                                   
+                            </h:outputText>
+                        </p:column>  
+                        <p:column headerText="Sale Rate"  >  
+                            <h:outputText id="retailPrice" value="#{ph.pharmaceuticalBillItem.itemBatch.retailsaleRate}" >                                   
+                            </h:outputText>
+                        </p:column> 
+                        <p:column headerText="Qty" style="width:25px!important;">                      
+                            <p:cellEditor>  
+                                <f:facet name="output">  
+                                    <h:outputLabel value="#{ph.pharmaceuticalBillItem.qtyInUnit}" />                               
+                                </f:facet>                        
+                                <f:facet name="input">  
+                                    <p:inputText autocomplete="off" id="qty" value="#{ph.tmpQty}" >
+                                        <f:ajax event="focus" render=":#{p:resolveFirstComponentWithId('tab',view).clientId}" execute="@this" listener="#{storeTransferReceiveController.onFocus(ph)}"/>
+                                    </p:inputText>
+                                </f:facet>
+                            </p:cellEditor>
+                        </p:column> 
+                        <p:column style="width:6%">  
+                            <p:rowEditor />  
+                        </p:column>
+
+                    </p:dataTable>  
+
+                    <p:spacer height="50"/>
+                    <st:history/>
                 </p:panel>
-
-                <p:dataTable styleClass="noBorder" var="ph" value="#{storeTransferReceiveController.billItems}" 
-                             id="itemList" scrollable="true" scrollHeight="250" sortBy="#{ph.searialNo}"
-                             editable="true">  
-
-                    <p:ajax event="rowEdit" listener="#{storeTransferReceiveController.onEdit}" />  
-                    <p:ajax event="rowEditCancel" listener="#{storeTransferReceiveController.onEdit}"/> 
-
-
-                    <f:facet name="header">  
-                        Requested Item 
-                    </f:facet>  
-
-                    <p:column headerText="Item Name"  style="width:25px!important;">  
-                        <h:outputText id="item" value="#{ph.item.name}" >                                   
-                        </h:outputText>
-                    </p:column>  
-
-                    <p:column style="width:6%">  
-                        <p:rowEditor />  
-                    </p:column>
-
-                    <p:column headerText="Qty" style="width:25px!important;">                      
-                        <p:cellEditor>  
-                            <f:facet name="output">  
-                                <h:outputLabel value="#{ph.pharmaceuticalBillItem.qtyInUnit}" />                               
-                            </f:facet>                        
-                            <f:facet name="input">  
-                                <p:inputText autocomplete="off" id="qty" value="#{ph.tmpQty}" >
-                                    <f:ajax event="focus" render=":#{p:resolveFirstComponentWithId('tab',view).clientId}" execute="@this" listener="#{storeTransferReceiveController.onFocus(ph)}"/>
-                                </p:inputText>
-                            </f:facet>
-                        </p:cellEditor>
-                    </p:column>  
-
-                </p:dataTable>  
-
-                <p:spacer height="50"/>
-                <st:history/>
-
             </p:panel>
             <p:panel rendered="#{storeTransferReceiveController.printPreview}">
                 <p:commandButton ajax="false" action="store_transfer_issued_list" actionListener="#{storeTransferReceiveController.makeNull()}" value="Issued List"/>                    

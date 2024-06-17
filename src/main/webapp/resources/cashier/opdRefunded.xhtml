@@ -13,6 +13,7 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
+        <h1>#{cc.attrs.data.bills.size()}</h1>
         <p:dataTable id="#{cc.id}" rowStyleClass="noDisplayRow" value="#{cc.attrs.data.bills}" var="b" sortBy="#{b.billType}"  rendered="#{cc.attrs.data.bills.size()>0}" >
             <f:facet name="header">  
                 <h:outputLabel value="OPD Refunded" />
