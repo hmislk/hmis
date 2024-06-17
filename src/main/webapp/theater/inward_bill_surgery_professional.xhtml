@@ -65,7 +65,16 @@
                                          style="float: right"
                                          actionListener="#{inwardProfessionalBillController.makeNull()}" />
 
-
+                        <p:commandButton
+                            ajax="false"
+                            icon="fa-solid fa-address-card"
+                            class="ui-button-secondary " 
+                            value="Inpatient Dashboard"
+                            style="float: right;"
+                            action="#{admissionController.navigateToAdmissionProfilePage}" 
+                            >
+                            <f:setPropertyActionListener value="#{inwardProfessionalBillController.batchBill.patientEncounter}" target="#{admissionController.current}" />
+                        </p:commandButton>
                     </f:facet>
 
 
