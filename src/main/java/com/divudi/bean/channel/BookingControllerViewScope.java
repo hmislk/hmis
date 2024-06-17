@@ -4543,6 +4543,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             case Agent:
                 bill.setBillType(BillType.ChannelAgent);
                 bill.setCreditCompany(institution);
+                bill.setAgentRefNo(agentRefNo);
                 bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
                 break;
             case Staff:
