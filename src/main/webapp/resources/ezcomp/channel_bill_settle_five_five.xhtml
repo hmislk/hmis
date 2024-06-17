@@ -54,7 +54,7 @@
 
             <div class="d-flex justify-content-center" style="margin-top: -1mm;">
                 <b>
-                    <ui:repeat value="#{cc.attrs.bill.billItems}" var="cbi" >
+                    <ui:repeat value="#{cc.attrs.bill.billItems[0]}" var="cbi" >
                         <h:outputLabel value="#{cbi.billSession.serialNo}" style="font-size:30px !important; font-weight: bold; color: red; text-align: center;" ></h:outputLabel>
                     </ui:repeat>
                 </b>

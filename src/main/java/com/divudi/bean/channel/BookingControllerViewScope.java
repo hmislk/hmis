@@ -4523,6 +4523,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             case Agent:
                 bill.setBillType(BillType.ChannelAgent);
                 bill.setCreditCompany(institution);
+                bill.setAgentRefNo(agentRefNo);
                 bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
                 break;
             case Staff:
@@ -5602,7 +5603,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                     refundCreditPaidBill();
                 }
             }
-            setPrintPreview(true);
+            setPrintPreview(false);
         } else {
             JsfUtil.addErrorMessage("Nothing to Refund");
         }

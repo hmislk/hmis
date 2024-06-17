@@ -25,21 +25,12 @@
                                     <h:outputText styleClass="fa-solid fa-circle-plus" />
                                     <h:outputLabel value="OPD Billing" class="mx-4"></h:outputLabel>
                                 </div>
-                                <div>
-                                     <p:commandButton 
-                                                ajax="false" 
-                                                title="Channel Booking - By Dates" 
-                                                icon="fa fa-fw fa-calendar-check" 
-                                                styleClass="ui-button-warning mx-2" 
-                                                action="#{bookingControllerViewScope.navigateToChannelBookingFromMenuByDate()}"
-                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable Navigation Button To Channel Booking By Date From OPD Billing')}"/>
                                 <p:commandButton value="New OPD Bill" 
-                                                 class="ui-button-primary m-1"
+                                                 class="ui-button-primary m-1 d-flex justify-content-end"
                                                  icon="fa fa-plus"
                                                  action="#{opdBillController.navigateToNewOpdBill()}"
                                                  ajax="false">
                                 </p:commandButton>
-                                </div>
                             </div>
                         </f:facet>
 
