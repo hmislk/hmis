@@ -792,6 +792,17 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         calTotals();
     }
 
+    public void changeBillDoctorByFee(BillFee bf) {
+        if (bf == null) {
+            return;
+        }
+        if (bf.getStaff() == null) {
+            return;
+        }
+        getCurrentlyWorkingStaff().add(bf.getStaff());
+        selectedCurrentlyWorkingStaff = bf.getStaff();
+    }
+
     public String getStrTenderedValue() {
         return strTenderedValue;
     }
@@ -1838,7 +1849,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 //                    b.setNetTotal(reminingCashPaid);
 //                }
 //            }
-            
             System.out.println("b.getNet = " + b.getNetTotal());
             reminingCashPaid = reminingCashPaid - b.getNetTotal();
             getBillFacade().edit(b);
@@ -1847,7 +1857,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         }
 
         newBatchBill.setNetTotal(dbl);
-        if (reminingCashPaid < 0 ){
+        if (reminingCashPaid < 0) {
             newBatchBill.setBalance(Math.abs(reminingCashPaid));
         }
         newBatchBill.setCashBalance(reminingCashPaid);
