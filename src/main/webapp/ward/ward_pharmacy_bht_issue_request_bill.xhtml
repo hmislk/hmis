@@ -22,9 +22,21 @@
                         rendered="#{!pharmacyRequestForBhtController.billPreview}"
                         style="width: fit-content;" >
 
-                        <p:panel 
-                            header="Start Pharmacy Request for Inpatients" 
+                        <p:panel
                             rendered="#{pharmacyRequestForBhtController.department eq null or pharmacyRequestForBhtController.patientEncounter eq null}">                                        
+                            <f:facet name="header">
+                                <h:outputLabel value="Start Pharmacy Request for Inpatients"/>
+                                <p:commandButton
+                                        ajax="false"
+                                        icon="fa-solid fa-address-card"
+                                        class="ui-button-secondary " 
+                                        value="Inpatient Dashboard"
+                                        style="float: right;"
+                                        action="#{admissionController.navigateToAdmissionProfilePage}" 
+                                        >
+                                        <f:setPropertyActionListener value="#{pharmacyRequestForBhtController.patientEncounter}" target="#{admissionController.current}" />
+                                    </p:commandButton>
+                            </f:facet>
                             <div class="d-flex gap-3">
                                 <h:outputLabel value="Requesting Department"/>
                                 <p:autoComplete  
@@ -417,7 +429,7 @@
                                         style="float: right;"
                                         action="#{admissionController.navigateToAdmissionProfilePage}" 
                                         >
-                                        <f:setPropertyActionListener value="#{pharmacyRequestForBhtController.patientEncounter.patientEncounter}" target="#{admissionController.current}" />
+                                        <f:setPropertyActionListener value="#{pharmacyRequestForBhtController.patientEncounter}" target="#{admissionController.current}" />
                                     </p:commandButton>
                                 </div>
                             </div>
