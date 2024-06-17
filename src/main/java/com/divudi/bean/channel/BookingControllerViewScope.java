@@ -2011,9 +2011,11 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         } 
           List<ItemFee> itemFeesofTheRemovingItem = billBeanController.fillFees(selectedBillItem.getItem());
           System.out.println("itemFeesofTheRemovingItem = " + itemFeesofTheRemovingItem.size());
-          List<BillFee> billFeesToRemove = null;
-         billFeesToRemove = billBeanController.createNewBillFeesAndReturnThem(selectedBillItem, itemFeesofTheRemovingItem, sessionController.getLoggedUser(), null, null, foriegn);
+          List<BillFee> billFeesToRemove = selectedBillItem.getBillFees();
          System.out.println("selectedBillSession.getBillItem().getBill().getBillFees() = " + selectedBillSession.getBillItem().getBill().getBillFees().size());
+         if(billFeesToRemove==null || billFeesToRemove.isEmpty()){
+             billFeesToRemove=billBeanController.fillBillItemFees(selectedBillItem);
+         }
          if (billFeesToRemove != null) {
              System.out.println("billFeesToRemove = " + billFeesToRemove.size());
             selectedBillSession.getBillItem().getBill().getBillFees().removeAll(billFeesToRemove);
