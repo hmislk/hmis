@@ -2393,6 +2393,13 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             }
             }
         }
+        
+        
+           if (selectedSessionInstance.isCancelled()) {
+    JsfUtil.addErrorMessage("Cannot add patient to a canceled session. Please select an active session.");
+    return;
+}
+
 
         saveSelected(patient);
         printingBill = saveBilledBill(reservedBooking);
@@ -3892,7 +3899,10 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         List<BillFee> savingBillFeesFromAdditionalItems = new ArrayList<>();
         if (!additionalBillItems.isEmpty()) {
             for (BillItem abi : additionalBillItems) {
-                savingBillFeesFromAdditionalItems = createBillFeeForSessions(savingBill, abi, true, priceMatrix);
+                List<BillFee> blf = createBillFeeForSessions(savingBill, abi, true, priceMatrix);
+                for (BillFee bf : blf){
+                    savingBillFeesFromAdditionalItems.add(bf);
+                }
             }
         }
 

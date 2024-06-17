@@ -154,6 +154,16 @@
                                     </h:outputLabel>
                                 </p:column>
                                 
+                                <p:column sortBy="#{i.printFeesForBills}" width="10"
+                                          filterMatchMode="contains" filterBy="#{i.printFeesForBills}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Print Fees For Bills" >
+                                        </h:outputLabel>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.printFeesForBills?'Yes':'No'}" >
+                                    </h:outputLabel>
+                                </p:column>
+                                
                                  <p:column sortBy="#{i.userChangable}" width="10"
                                           filterMatchMode="contains" filterBy="#{i.userChangable}">
                                     <f:facet name="header">
