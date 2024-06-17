@@ -2010,18 +2010,13 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
              JsfUtil.addErrorMessage("Pleace Select A Bill Item !");
         } 
           List<ItemFee> itemFeesofTheRemovingItem = billBeanController.fillFees(selectedBillItem.getItem());
-          System.out.println("itemFeesofTheRemovingItem = " + itemFeesofTheRemovingItem.size());
           List<BillFee> billFeesToRemove = selectedBillItem.getBillFees();
-         System.out.println("selectedBillSession.getBillItem().getBill().getBillFees() = " + selectedBillSession.getBillItem().getBill().getBillFees().size());
          if(billFeesToRemove==null || billFeesToRemove.isEmpty()){
              billFeesToRemove=billBeanController.fillBillItemFees(selectedBillItem);
          }
          if (billFeesToRemove != null) {
-             System.out.println("billFeesToRemove = " + billFeesToRemove.size());
             selectedBillSession.getBillItem().getBill().getBillFees().removeAll(billFeesToRemove);
-             System.out.println("selectedBillSession.getBillItem().getBill().getBillFees() = 3" + selectedBillSession.getBillItem().getBill().getBillFees().size());
         }
-         System.out.println("selectedBillSession.getBillItem().getBill().getBillFees() 2= " + selectedBillSession.getBillItem().getBill().getBillFees().size());
          selectedBillSession.getBillItem().getBill().getBillItems().remove(selectedBillItem);
          calculateBillTotalsFromBillFees(selectedBillSession.getBillItem().getBill());
     }
