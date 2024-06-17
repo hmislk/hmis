@@ -60,7 +60,16 @@
                 <p:panel>
                     <f:facet name="header" class="row ">  
                         <p:outputLabel value="Inward Timed Service" />
-
+                        <p:commandButton
+                            ajax="false"
+                            icon="fa-solid fa-address-card"
+                            class="ui-button-secondary " 
+                            value="Inpatient Dashboard"
+                            style="float: right;"
+                            action="#{admissionController.navigateToAdmissionProfilePage}" 
+                            >
+                            <f:setPropertyActionListener value="#{inwardTimedItemController.batchBill.patientEncounter}" target="#{admissionController.current}" />
+                        </p:commandButton>
                     </f:facet>
 
                     <div class="d-flex justify-content-end align-items-center gap-3" >
