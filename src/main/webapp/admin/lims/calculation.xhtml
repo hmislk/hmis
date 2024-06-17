@@ -74,24 +74,25 @@
                                         <h:outputLabel value="Add Values ..."></h:outputLabel>
                                     </f:facet>
 
-                                    <h:panelGrid columns="2" id="gridDetails" class="mb-2">
+                                    <h:panelGroup>
+                                        <h:outputLabel value="Type" />
+                                        <h:outputLabel value=": " style="width: 60px; text-align: center; float: right;" />
+                                    </h:panelGroup>
+                                    <p:selectOneMenu 
+                                        id="cmbCal" 
+                                        style="width: 20em;"
+                                        value="#{ixCalController.addingIxCal.calculationType}" 
+                                        required="true" 
+                                        requiredMessage="Please select a calculation type" >
+                                        <f:selectItem itemLabel="Select" />
+                                        <f:selectItems 
+                                            value="#{enumController.calculationTypes}" 
+                                            var="itv" itemLabel="#{itv.label}" 
+                                            itemValue="#{itv}" ></f:selectItems>
+                                        <f:ajax event="change" execute="@this" render="gridDetails" ></f:ajax>
+                                    </p:selectOneMenu>
 
-                                        <h:panelGroup>
-                                            <h:outputLabel value="Type" />
-                                            <h:outputLabel value=": " style="width: 60px; text-align: center; float: right;" />
-                                        </h:panelGroup>
-                                        <p:selectOneMenu 
-                                            id="cmbCal" 
-                                            style="width: 20em;"
-                                            value="#{ixCalController.addingIxCal.calculationType}" 
-                                            required="true" 
-                                            requiredMessage="Please select a calculation type" >
-                                            <f:selectItems 
-                                                value="#{enumController.calculationTypes}" 
-                                                var="itv" itemLabel="#{itv.label}" 
-                                                itemValue="#{itv}" ></f:selectItems>
-                                            <f:ajax event="change" execute="@this" render="gridDetails" ></f:ajax>
-                                        </p:selectOneMenu>
+                                    <h:panelGrid columns="2" id="gridDetails" class="mb-2">
 
                                         <h:panelGroup  id="lblVal">
                                             <h:outputLabel rendered="#{ixCalController.addingIxCal.calculationType eq 'Value'}"   value="Value" />
@@ -101,12 +102,26 @@
                                             <p:selectOneMenu 
                                                 class="w-100"
                                                 rendered="#{ixCalController.addingIxCal.calculationType eq 'Value'}"   
-                                                value="#{ixCalController.addingIxCal.valIxItem }"  
+                                                value="#{ixCalController.addingIxCal.valIxItem}"  
                                                 required="true" 
                                                 requiredMessage="Please select a Value" >
                                                 <f:selectItem itemLabel="Select Value" />
                                                 <f:selectItems value="#{ixCalController.vals}" var="v" itemLabel="#{v.name}" itemValue="#{v}" />
                                             </p:selectOneMenu>
+                                        </h:panelGroup>
+                                        
+                                         <h:panelGroup  id="lblJs">
+                                            <h:outputLabel rendered="#{ixCalController.addingIxCal.calculationType eq 'JavaScript'}"   value="Java Script" />
+                                            <h:outputLabel rendered="#{ixCalController.addingIxCal.calculationType eq 'JavaScript'}" value=": " style="width: 60px; text-align: center; float: right;"/>
+                                        </h:panelGroup>
+                                        <h:panelGroup  id="cmbJs"  >
+                                            <p:inputTextarea
+                                                class="w-100"
+                                                rendered="#{ixCalController.addingIxCal.calculationType eq 'JavaScript'}"   
+                                                value="#{ixCalController.addingIxCal.valIxItem}"  
+                                                required="true" 
+                                                requiredMessage="Please enter the  Java Script" >
+                                            </p:inputTextarea>
                                         </h:panelGroup>
 
                                         <h:panelGroup id="lblCon" >
