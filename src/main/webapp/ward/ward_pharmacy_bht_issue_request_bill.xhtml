@@ -98,8 +98,9 @@
                                         <p:commandButton 
                                             value="Back" 
                                             ajax="false"
-                                            icon="fas fa-arrow-left"
-                                            class="ui-button-secondary" 
+                                            icon="fa-solid fa-address-card"
+                                            class="ui-button-secondary " 
+                                            value="Inpatient Dashboard"
                                             action="#{bhtSummeryController.navigateToInpatientProfile()}">
                                         </p:commandButton>
 
@@ -408,6 +409,16 @@
                                         <f:setPropertyActionListener 
                                             value="#{admissionController.current.patient}" 
                                             target="#{patientController.current}" ></f:setPropertyActionListener>
+                                    </p:commandButton>
+                                    <p:commandButton
+                                        ajax="false"
+                                        icon="fa-solid fa-address-card"
+                                        class="ui-button-secondary " 
+                                        value="Inpatient Dashboard"
+                                        style="float: right;"
+                                        action="#{admissionController.navigateToAdmissionProfilePage}" 
+                                        >
+                                        <f:setPropertyActionListener value="#{pharmacyRequestForBhtController.patientEncounter.patientEncounter}" target="#{admissionController.current}" />
                                     </p:commandButton>
                                 </div>
                             </div>

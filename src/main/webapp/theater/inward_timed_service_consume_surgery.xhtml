@@ -14,6 +14,16 @@
                 <p:panel class="col-12 ">
                     <f:facet name="header">
                         <h:outputLabel value="Inward Timed Service" />
+                        <p:commandButton
+                            ajax="false"
+                            icon="fa-solid fa-address-card"
+                            class="ui-button-secondary " 
+                            value="Inpatient Dashboard"
+                            style="float: right;"
+                            action="#{admissionController.navigateToAdmissionProfilePage}" 
+                            >
+                            <f:setPropertyActionListener value="#{inwardTimedItemController.batchBill.patientEncounter}" target="#{admissionController.current}" />
+                        </p:commandButton>
                     </f:facet>
 
                     <h:outputLabel value="Type Surgery Name or BHT : "/>
@@ -50,43 +60,43 @@
                 <p:panel>
                     <f:facet name="header" class="row ">  
                         <p:outputLabel value="Inward Timed Service" />
-                        
+
                     </f:facet>
-                    
+
                     <div class="d-flex justify-content-end align-items-center gap-3" >
-                                    
 
-                                    
-                                        
-                                    
-                                    
-                                    <h:panelGrid columns="3" class="m-4">
-                                        <p:commandButton ajax="false" value="Clear" class="ui-button-danger mx-1" icon="fa fa-ban" action="#{inwardTimedItemController.makeNull}"   />
-                                        <p:commandButton 
-                                            style="float: right;"
-                                            ajax="false"
-                                            icon="fa fa-search"
-                                            value="Patient Lookup"
-                                            class="ui-button-warning " 
-                                            action="#{patientController.navigateToSearchPatients()}" 
-                                            >
-                                        </p:commandButton>
-                                        <p:commandButton 
-                                            style="float: right;"
-                                            ajax="false"
-                                            icon="fa fa-user"
-                                            value="Profile"
-                                            class="ui-button-warning mx-1" 
-                                            action="#{patientController.navigateToOpdPatientProfile()}" 
-                                            >
-                                            <f:setPropertyActionListener 
-                                                value="#{admissionController.current.patient}" 
-                                                target="#{patientController.current}" ></f:setPropertyActionListener>
-                                        </p:commandButton>
-                                        
-                                    </h:panelGrid>
 
-                                </div>
+
+
+
+
+                        <h:panelGrid columns="3" class="m-4">
+                            <p:commandButton ajax="false" value="Clear" class="ui-button-danger mx-1" icon="fa fa-ban" action="#{inwardTimedItemController.makeNull}"   />
+                            <p:commandButton 
+                                style="float: right;"
+                                ajax="false"
+                                icon="fa fa-search"
+                                value="Patient Lookup"
+                                class="ui-button-warning " 
+                                action="#{patientController.navigateToSearchPatients()}" 
+                                >
+                            </p:commandButton>
+                            <p:commandButton 
+                                style="float: right;"
+                                ajax="false"
+                                icon="fa fa-user"
+                                value="Profile"
+                                class="ui-button-warning mx-1" 
+                                action="#{patientController.navigateToOpdPatientProfile()}" 
+                                >
+                                <f:setPropertyActionListener 
+                                    value="#{admissionController.current.patient}" 
+                                    target="#{patientController.current}" ></f:setPropertyActionListener>
+                            </p:commandButton>
+
+                        </h:panelGrid>
+
+                    </div>
                     <div class="row mb-2" >
                         <div class="col-md-6">
                             <p:panel>
