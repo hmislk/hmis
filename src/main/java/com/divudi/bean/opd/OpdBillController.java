@@ -799,8 +799,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         if (bf.getStaff() == null) {
             return;
         }
-        getCurrentlyWorkingStaff().add(staff);
-        selectedCurrentlyWorkingStaff = staff;
+        getCurrentlyWorkingStaff().add(bf.getStaff());
+        selectedCurrentlyWorkingStaff = bf.getStaff();
     }
 
     public String getStrTenderedValue() {
