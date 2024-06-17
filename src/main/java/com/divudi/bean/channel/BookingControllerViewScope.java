@@ -2385,6 +2385,15 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 return;
             }
         }
+        if (configOptionApplicationController.getBooleanValueByKey("Channel Items Sessions Need to Have a Referance Doctor")) {        
+            if (!(itemsAddedToBooking == null || itemsAddedToBooking.isEmpty())) {
+                if(referredBy == null){
+                    JsfUtil.addErrorMessage("Referring Doctor is required");
+                    settleSucessFully = false;
+                    return; 
+                }
+            }
+        }
 
         if (selectedSessionInstance.getMaxNo() != 0) {
             if (selectedSessionInstance.getBookedPatientCount() != null) {

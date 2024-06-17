@@ -409,7 +409,11 @@
                                                     <p:graphicImage library="image" styleClass="standedicon" name="data_entry.png" ></p:graphicImage>
                                                 </p:commandLink>
 
-                                                <p:commandLink id="cmdOldReportPrint" ajax="false" action="/lab/patient_report_print" disabled="#{!dpr.approved}">
+                                                <p:commandLink id="cmdOldReportPrint1" ajax="false" action="/lab/patient_report_print" disabled="#{!dpr.approved}" rendered="#{!sessionController.departmentPreference.partialPaymentOfOpdBillsAllowed}">
+                                                    <p:graphicImage library="image" name="print.jpg" styleClass="standedicon" ></p:graphicImage>
+                                                    <f:setPropertyActionListener value="#{dpr}" target="#{patientReportController.currentPatientReport}"></f:setPropertyActionListener>
+                                                </p:commandLink>
+                                                <p:commandLink id="cmdOldReportPrint2" ajax="false" action="/lab/patient_report_print" disabled="#{!dpr.approved or dpr.patientInvestigation.billItem.bill.backwardReferenceBill.balance ne 0}" rendered="#{sessionController.departmentPreference.partialPaymentOfOpdBillsAllowed}">
                                                     <p:graphicImage library="image" name="print.jpg" styleClass="standedicon" ></p:graphicImage>
                                                     <f:setPropertyActionListener value="#{dpr}" target="#{patientReportController.currentPatientReport}"></f:setPropertyActionListener>
                                                 </p:commandLink>
@@ -436,7 +440,7 @@
                                                     <h:outputLabel value="Printed" styleClass="#{dpr.approved ? 'greentext':'yellowtext'}" >
                                                     </h:outputLabel>
                                                 </p:tooltip>
-                                                <p:tooltip for="cmdOldReportPrint" >
+                                                <p:tooltip for="cmdOldReportPrint1 cmdOldReportPrint2" >
                                                     <h:outputLabel value="To Print" styleClass="#{dpr.approved ? 'greentext':'yellowtext'}" >
                                                     </h:outputLabel>
                                                 </p:tooltip>

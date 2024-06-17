@@ -25,12 +25,21 @@
                                     <h:outputText styleClass="fa-solid fa-circle-plus" />
                                     <h:outputLabel value="OPD Billing" class="mx-4"></h:outputLabel>
                                 </div>
-                                <p:commandButton value="New OPD Bill" 
-                                                 class="ui-button-primary m-1 d-flex justify-content-end"
-                                                 icon="fa fa-plus"
-                                                 action="#{opdBillController.navigateToNewOpdBill()}"
-                                                 ajax="false">
-                                </p:commandButton>
+                                <div>
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        title="Channel Booking - By Dates" 
+                                        icon="fa fa-fw fa-calendar-check" 
+                                        styleClass="ui-button-warning mx-2" 
+                                        action="#{bookingControllerViewScope.navigateToChannelBookingFromMenuByDate()}"
+                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable Navigation Button To Channel Booking By Date From OPD Billing')}"/>
+                                    <p:commandButton value="New OPD Bill" 
+                                                     class="ui-button-primary m-1"
+                                                     icon="fa fa-plus"
+                                                     action="#{opdBillController.navigateToNewOpdBill()}"
+                                                     ajax="false">
+                                    </p:commandButton>
+                                </div>
                             </div>
                         </f:facet>
 
@@ -229,7 +238,7 @@
                                     </f:facet>
                                     <p:tabView id="tblBillItem" >
                                         <p:tab id="tabBillFee" title="Fees" >
-                                            <p:dataTable rowIndexVar="rowIndex" value="#{opdBillController.lstBillFees}" var="bif" class="w-100">
+                                            <p:dataTable rowIndexVar="rowIndex" value="#{opdBillController.lstBillFees}" var="bif" rowKey="#{bif.id}" class="w-100">
                                                 <p:column>
                                                     <f:facet name="header">Item Name</f:facet>
                                                     <h:outputText value="#{bif.billItem.item.name}" />
@@ -243,8 +252,18 @@
                                                     <h:panelGroup rendered="#{bif.fee.feeType eq 'Staff'}" >
 
                                                         <h:panelGroup>
-                                                            <p:outputLabel value="Speciality"  rendered="#{bif.fee.speciality!=null}"  ></p:outputLabel>
-                                                            <p:selectOneMenu style="" id="drSp" value="#{bif.fee.speciality}" rendered="#{bif.fee.speciality!=null}" filter="true" filterMatchMode="contains">
+                                                            <p:outputLabel 
+                                                                value="Speciality"  
+                                                                rendered="#{bif.fee.speciality!=null}" 
+                                                                class="mx-2">
+                                                            </p:outputLabel>
+                                                            <p:selectOneMenu
+                                                                id="drSp" 
+                                                                value="#{bif.fee.speciality}" 
+                                                                rendered="#{bif.fee.speciality!=null}" 
+                                                                filter="true" 
+                                                                filterMatchMode="contains"
+                                                                class="mx-2">
                                                                 <f:selectItems  value="#{specialityController.items}" var="bis" itemLabel="#{bis.name}" itemValue="#{bis}" />
                                                                 <p:ajax process="drSp" update="drs"/>
                                                             </p:selectOneMenu>
@@ -254,12 +273,19 @@
                                                         </h:panelGroup>
                                                         <h:panelGroup id="drs" >
                                                             <p:outputLabel value="Doctor" ></p:outputLabel>
-                                                            <p:selectOneMenu  value="#{bif.staff}" rendered="#{bif.fee.speciality ne null}" filter="true" filterMatchMode="contains">
+                                                            <p:selectOneMenu  
+                                                                value="#{bif.staff}" 
+                                                                rendered="#{bif.fee.speciality ne null}" 
+                                                                filter="true" 
+                                                                filterMatchMode="contains"
+                                                                class="mx-2">
                                                                 <f:selectItems  value="#{staffController.getSpecialityStaff(bif.fee.speciality)}" var="bifs" itemLabel="#{bifs.person.name}" itemValue="#{bifs}" />
                                                             </p:selectOneMenu>
 
+
+
                                                             <p:autoComplete 
-                                                                class="w-100"
+                                                                class="w-100 mx-2"
                                                                 inputStyleClass="w-100"
                                                                 forceSelection="true" 
                                                                 rendered="#{bif.fee.speciality eq null}" 
@@ -276,6 +302,16 @@
                                                             </p:autoComplete>
 
                                                         </h:panelGroup>
+
+                                                        <p:commandButton 
+                                                            id="btnChangeDocByFee drs"
+                                                            process="btnChangeDocByFee"
+                                                            update=":#{p:resolveFirstComponentWithId('panelWorkingStaff',view).clientId}"
+                                                            title="Set Doctor"  
+                                                            icon="fa fa-user-md" 
+                                                            action="#{opdBillController.changeBillDoctorByFee(bif)}">
+                                                        </p:commandButton>
+
 
                                                     </h:panelGroup>
 
@@ -690,7 +726,7 @@
                                     </h:panelGrid>
                                 </p:panel>
 
-                                <p:panel class="m-1">
+                                <p:panel id="panelWorkingStaff" class="m-1">
                                     <f:facet name="header" >
                                         <h:outputText styleClass="fa fa-money-bill-wave" /> <!-- FontAwesome Icon -->
                                         <h:outputText value="Doctor Details" class="mx-4"></h:outputText>

@@ -914,14 +914,13 @@
                     </p:menuitem>
                 </p:submenu>
 
-                <p:submenu id="smOpdOphthalmology"  icon="fa fa-eye" rendered="#{webUserController.hasPrivilege('Ophthalmology')}">
-                    <p:menuitem value="Patient Management" action="#{ophthalmologyController.navigateToOphthalmologyPatientManagement()}" ajax="false" icon="fa fa-users" rendered="#{webUserController.hasPrivilege('OphthalmologyPatientManagement')}"/>
-                    <p:menuitem value="Appointment Management" action="#{ophthalmologyController.navigateToOphthalmologyAppointmentManagement()}" ajax="false" icon="fa fa-calendar-alt" rendered="#{webUserController.hasPrivilege('OphthalmologyAppointmentManagement')}"/>
-                    <p:menuitem value="Retail Sale" action="#{ophthalmologySaleController.navigateToPharmacyRetailSale()}" ajax="false" icon="fa fa-shopping-cart" rendered="#{webUserController.hasPrivilege('OphthalmologyStockManagement')}"/>
-                    <p:menuitem value="Repair Management" action="#{ophthalmologyRepairBillController.navigateToNewOpdBill()}" ajax="false" icon="fa fa-tools" rendered="#{webUserController.hasPrivilege('OphthalmologyRepairManagement')}"/>
-                    <p:menuitem value="Stock Management" action="#{ophthalmologyController.navigateToOphthalmologyStockManagement()}" ajax="false" icon="fa fa-warehouse" rendered="#{webUserController.hasPrivilege('OphthalmologyStockManagement')}"/>
-                    <p:menuitem value="Product Catalog" action="#{ophthalmologyController.navigateToOphthalmologyProductCatalog()}" ajax="false" icon="fa fa-book-open" rendered="#{webUserController.hasPrivilege('OphthalmologyProductCatalog')}"/>
-
+                <p:submenu id="smOpdOphthalmology"  icon="fa fa-eye" >
+                    <p:menuitem value="Patient Management" action="#{ophthalmologyController.navigateToOphthalmologyPatientManagement()}" ajax="false" icon="fa fa-users" />
+                    <p:menuitem value="Appointment Management" action="#{ophthalmologyController.navigateToOphthalmologyAppointmentManagement()}" ajax="false" icon="fa fa-calendar-alt" />
+                    <p:menuitem value="Retail Sale" action="#{ophthalmologySaleController.navigateToPharmacyRetailSale()}" ajax="false" icon="fa fa-shopping-cart" />
+                    <p:menuitem value="Repair Management" action="#{ophthalmologyRepairBillController.navigateToNewOpdBill()}" ajax="false" icon="fa fa-tools" />
+                    <p:menuitem value="Stock Management" action="#{ophthalmologyController.navigateToOphthalmologyStockManagement()}" ajax="false" icon="fa fa-warehouse" />
+                    <p:menuitem value="Product Catalog" action="#{ophthalmologyController.navigateToOphthalmologyProductCatalog()}" ajax="false" icon="fa fa-book-open" />
                 </p:submenu>
 
 

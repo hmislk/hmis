@@ -17,6 +17,7 @@ public enum ReportItemType {
     DataEntrySignature,
     DataEntryUserName,
     DataEntryUserDetails,
+    ApprovedAt,
     ApprovedSignature,
     ApprovedUserName,
     ApprovedUserDetails,
@@ -58,6 +59,7 @@ public enum ReportItemType {
     PatientSex,
     Person,
     Phn,
+    PrintedAt,
     Phone,
     QrCodeDetails,
     QrCodeLink,
@@ -66,6 +68,7 @@ public enum ReportItemType {
     Religion,
     ReportedDate,
     ReportedTime,
+    ReceivedAt,
     SampledAt,
     SampledDate,
     SampledTime,
@@ -190,6 +193,13 @@ public enum ReportItemType {
                 return "Data Entered User's Name";
             case DataEntryUserDetails:
                 return "Data Entered User's Details";
+            case ApprovedAt:
+                return "Approved Time";
+            case PrintedAt:
+                return "Printed Time";
+            case ReceivedAt:
+                return "Sample Received Time";
+
             default:
                 return this.toString();
         }
