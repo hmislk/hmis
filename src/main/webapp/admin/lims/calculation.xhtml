@@ -92,7 +92,7 @@
                                         <f:ajax event="change" execute="@this" render="gridDetails" ></f:ajax>
                                     </p:selectOneMenu>
 
-                                    <h:panelGrid columns="2" id="gridDetails" class="mb-2">
+                                    <h:panelGrid columns="2" id="gridDetails" class="mb-2 w-100">
 
                                         <h:panelGroup  id="lblVal">
                                             <h:outputLabel rendered="#{ixCalController.addingIxCal.calculationType eq 'Value'}"   value="Value" />
@@ -117,8 +117,9 @@
                                         <h:panelGroup  id="cmbJs"  >
                                             <p:inputTextarea
                                                 class="w-100"
+                                                rows="10"
                                                 rendered="#{ixCalController.addingIxCal.calculationType eq 'JavaScript'}"   
-                                                value="#{ixCalController.addingIxCal.valIxItem}"  
+                                                value="#{ixCalController.addingIxCal.javascript}"  
                                                 required="true" 
                                                 requiredMessage="Please enter the  Java Script" >
                                             </p:inputTextarea>
