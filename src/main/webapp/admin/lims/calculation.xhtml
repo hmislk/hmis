@@ -200,6 +200,7 @@
                                         </p:column>
                                         <p:column >
                                             <h:outputLabel value="#{c.constantValue}" rendered="#{c.calculationType eq 'Constant'}"  />
+                                            <h:outputLabel value="#{c.javascript}" rendered="#{c.calculationType eq 'JavaScript'}"  />
                                             <h:outputLabel  value="#{c.valIxItem.name}"  rendered="#{c.calculationType eq 'Value'}"  />
                                             <h:outputLabel value="Males : #{c.maleConstantValue}, Females : #{c.femaleConstantValue}" rendered="#{c.calculationType eq 'GenderDependentConstant'}"  />
                                         </p:column>
