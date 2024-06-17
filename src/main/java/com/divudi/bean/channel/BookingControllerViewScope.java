@@ -313,6 +313,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     private Staff selectedConsultant;
     private SessionInstance selectedSessionInstanceForRechedule;
     private boolean reservedBooking;
+    private BillItem selectedBillItem;
 
     public void sessionReschedule() {
         if (getSelectedSessionInstanceForRechedule() == null) {
@@ -2002,6 +2003,25 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         getItemsAddedToBooking().add(itemToAddToBooking);
         itemToAddToBooking = null;
         fillFees();
+    }
+    
+    public void removeAddedAditionalItem(){
+         if (selectedBillItem==null) {
+             JsfUtil.addErrorMessage("Pleace Select A Bill Item !");
+        } 
+          List<ItemFee> itemFeesofTheRemovingItem = billBeanController.fillFees(selectedBillItem.getItem());
+          System.out.println("itemFeesofTheRemovingItem = " + itemFeesofTheRemovingItem.size());
+          List<BillFee> billFeesToRemove = null;
+         billFeesToRemove = billBeanController.createNewBillFeesAndReturnThem(selectedBillItem, itemFeesofTheRemovingItem, sessionController.getLoggedUser(), null, null, foriegn);
+         System.out.println("selectedBillSession.getBillItem().getBill().getBillFees() = " + selectedBillSession.getBillItem().getBill().getBillFees().size());
+         if (billFeesToRemove != null) {
+             System.out.println("billFeesToRemove = " + billFeesToRemove.size());
+            selectedBillSession.getBillItem().getBill().getBillFees().removeAll(billFeesToRemove);
+             System.out.println("selectedBillSession.getBillItem().getBill().getBillFees() = 3" + selectedBillSession.getBillItem().getBill().getBillFees().size());
+        }
+         System.out.println("selectedBillSession.getBillItem().getBill().getBillFees() 2= " + selectedBillSession.getBillItem().getBill().getBillFees().size());
+         selectedBillSession.getBillItem().getBill().getBillItems().remove(selectedBillItem);
+         calculateBillTotalsFromBillFees(selectedBillSession.getBillItem().getBill());
     }
 
     public void addItemToBookingAtSettling() {
@@ -6752,6 +6772,14 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     public void setFeeNetTotalForSelectedBill(Double feeNetTotalForSelectedBill) {
         this.feeNetTotalForSelectedBill = feeNetTotalForSelectedBill;
+    }
+
+    public BillItem getSelectedBillItem() {
+        return selectedBillItem;
+    }
+
+    public void setSelectedBillItem(BillItem selectedBillItem) {
+        this.selectedBillItem = selectedBillItem;
     }
 
 }
