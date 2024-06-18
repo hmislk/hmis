@@ -47,7 +47,7 @@
                     <nav class="navbar navbar-light p-2 sticky-top w-100" style="background-color: #e3f2fd;">
                         <div class="d-flex align-items-center mx-4">
                             <h:outputText styleClass="fa-solid fa-stethoscope"/>
-                            <h4 onclick="toggleFullScreen()" class="mx-4">Todays Session</h4>
+                            <h4 onclick="toggleFullScreen()" class="mx-4">Today's Session</h4>
                         </div>
 
                         <div>
@@ -85,7 +85,7 @@
                 <p:spacer height="65px" />
                 <ui:repeat var="s" 
                            id="tblSessions"
-                           value="#{bookingController.sessionInstances}" 
+                           value="#{bookingController.sortedSessionInstances}" 
                            class="w-100 mt-5">
 
                     <div class="bgCard row  w-100 p-2 shadow mt-1">
@@ -121,7 +121,7 @@
                         <div class="col-2" style="box-sizing: border-box;border-right: 2px solid black">
                             <div class="text-center ">
                                 <h:panelGroup rendered="#{s.completedPatientCount ne null and s.paidPatientCount ne null}">
-                                    <div class="d-flex justify-content-center align-items-center mt-2">
+                                    <div class="d-flex justify-content-center align-items-center mt-3">
                                         <span style="font-size: 20pt;font-weight: bold">
                                             <span class="text-success">
                                                 <span class="blink" style="font-size: 8pt">&#x25CF;</span>
@@ -169,29 +169,33 @@
                             </h:panelGroup>
                         </div>
                         <div class="col-2 ">
-                            <div class="d-flex justify-content-end align-items-center mt-2">
+                            <div class="d-flex justify-content-between align-items-center mt-3">
                                 
                                 <div>
-                                    <p:commandButton icon="fas fa-play" iconPos="right"
-                                                     styleClass="rounded-button ui-button-success" ajax="false"
-                                                     action="#{bookingController.navigateToManageSessionQueueAtConsultantRoom}"
+                                     <p:commandButton styleClass="rounded-button ui-button-success" type="button"
+                                                     value="Completed"
                                                      rendered="#{s.completed}">
-                                        <f:setPropertyActionListener value="#{s}" target="#{bookingController.selectedSessionInstance}"/>
                                     </p:commandButton>
 
 
-                                    <p:commandButton  icon="fas fa-play" iconPos="right"
-                                                      styleClass="rounded-button ui-button-warning" ajax="false"
-                                                      action="#{bookingController.navigateToManageSessionQueueAtConsultantRoom}"
+                                    <p:commandButton  value="Scheduled" styleClass="rounded-button ui-button-warning" 
+                                                      type="button"
                                                       rendered="#{not s.completed and not s.started}">
-                                        <f:setPropertyActionListener value="#{s}" target="#{bookingController.selectedSessionInstance}"/>
                                     </p:commandButton>
 
-
-                                    <p:commandButton class="mx-2" icon="fas fa-play" iconPos="right"
-                                                     styleClass="rounded-button ui-button-info " ajax="false"
-                                                     action="#{bookingController.navigateToManageSessionQueueAtConsultantRoom}"
+                                    <p:commandButton styleClass="rounded-button ui-button-success" value="Strated"
+                                                     type="button"
                                                      rendered="#{s.started and not s.completed}">
+                                    </p:commandButton>
+                                </div>
+                                
+                                <div>                                 
+                                     <p:commandButton class="mx-2" icon="fas fa-eye"
+                                                     styleClass="rounded-button ui-button-outlined ui-button-info " ajax="false"
+                                                     value="View"
+                                                     style="font-size: 1em; text-align: center"
+                                                     action="#{bookingController.navigateToManageSessionQueueAtConsultantRoom}"
+                                                    >
                                         <f:setPropertyActionListener value="#{s}" target="#{bookingController.selectedSessionInstance}"/>
                                     </p:commandButton>
                                 </div>
