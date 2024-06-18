@@ -117,7 +117,7 @@
                                         <p:commandButton ajax="false" value="View Recieve Note" 
                                                          class="ui-button-info"
                                                           icon="far fa-eye"
-                                                         action="store_reprint_transfer_receive" 
+                                                         action="store_reprint_transfer_receive?faces-redirect=true" 
                                                          disabled="#{b.creater eq null}">
                                             <f:setPropertyActionListener target="#{storeBillSearch.bill}" value="#{b}"/>
                                         </p:commandButton>
