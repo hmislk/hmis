@@ -16,6 +16,16 @@
                     <f:facet name="header" >
                         <h:outputText styleClass="fas fa-briefcase" />
                         <h:outputLabel value="Add Professional Fee" class="mx-4"></h:outputLabel>
+                        <p:commandButton
+                            ajax="false"
+                            icon="fa-solid fa-address-card"
+                            class="ui-button-secondary " 
+                            value="Inpatient Dashboard"
+                            style="float: right;"
+                            action="#{admissionController.navigateToAdmissionProfilePage}" 
+                            >
+                            <f:setPropertyActionListener value="#{inwardProfessionalBillController.batchBill.patientEncounter}" target="#{admissionController.current}" />
+                        </p:commandButton>
                     </f:facet>
 
                     <h:outputLabel value="Type Surgery Name or BHT : "/>
@@ -55,14 +65,23 @@
                                          style="float: right"
                                          actionListener="#{inwardProfessionalBillController.makeNull()}" />
 
-
+                        <p:commandButton
+                            ajax="false"
+                            icon="fa-solid fa-address-card"
+                            class="ui-button-secondary mx-2" 
+                            value="Inpatient Dashboard"
+                            style="float: right;"
+                            action="#{admissionController.navigateToAdmissionProfilePage}" 
+                            >
+                            <f:setPropertyActionListener value="#{inwardProfessionalBillController.batchBill.patientEncounter}" target="#{admissionController.current}" />
+                        </p:commandButton>
                     </f:facet>
 
 
 
                     <div class="row">
                         <div class="col-md-6">
-                            
+
                             <p:panel >
                                 <f:facet name="header">
                                     <h:outputText styleClass="fas fa-user" />
@@ -88,9 +107,9 @@
 
                                 <p:panel id='pIxAdd' style="min-height: 350px;"  >
                                     <f:facet name="header">
-                                    <h:outputText styleClass="fas fa-money-bill" />
-                                    <h:outputText value="Professional Fee" class="mx-4" />
-                                </f:facet>
+                                        <h:outputText styleClass="fas fa-money-bill" />
+                                        <h:outputText value="Professional Fee" class="mx-4" />
+                                    </f:facet>
                                     <h:panelGrid columns="2" id="profPanel">
                                         <h:outputLabel value="Perfomance"/>
                                         <p:selectOneMenu class="mx-4 my-1" style="width: 565px" value="#{inwardProfessionalBillController.proEncounterComponent.patientEncounterComponentType}" >
@@ -136,9 +155,9 @@
 
                                 <p:panel id="pBillDetails" class="w-100 my-1" >
                                     <f:facet name="header">
-                                    <h:outputText styleClass="fas fa-list" />
-                                    <h:outputText value="Bill Details" class="mx-4" />
-                                </f:facet>
+                                        <h:outputText styleClass="fas fa-list" />
+                                        <h:outputText value="Bill Details" class="mx-4" />
+                                    </f:facet>
                                     <h:panelGrid columns="2" columnClasses="numberCol, textCol"  >
                                         <h:outputLabel value="Total" ></h:outputLabel>
                                         <h:outputLabel class="mx-4 my-1" id="tot" value="#{inwardProfessionalBillController.current.total}" >
