@@ -65,44 +65,44 @@
                     </h:panelGrid>
                 </p:dialog>
 
-<!--                <p:dialog widgetVar="completeSessionWarn" modal="true" header="Session Completed" draggable="false" resizable="false">
-                    <h:panelGrid columns="1" style="width:100%">
-                        <h:outputText value="The session has been successfully completed." />
-                    </h:panelGrid>
-                </p:dialog>-->
-                
-                <p:dialog minHeight="100" width="800" header="Confirmation" widgetVar="completeSessionWarn" modal="true" resizable="false">
-                            <p>Are you sure you want to complete this channel session?</p>
+                <!--                <p:dialog widgetVar="completeSessionWarn" modal="true" header="Session Completed" draggable="false" resizable="false">
+                                    <h:panelGrid columns="1" style="width:100%">
+                                        <h:outputText value="The session has been successfully completed." />
+                                    </h:panelGrid>
+                                </p:dialog>-->
 
-                            <f:facet name="footer">
-                                <p:commandButton
-                                    class="mx-2 ui-button-success"
-                                    ajax="false"
-                                    value="Yes"
-                                     action="#{bookingController.markSessionInstanceAsCompleted()}"
-                                    onclick="PF('completeSessionWarn').hide();" />
-                                <p:commandButton
-                                    value="No"
-                                    class="mx-2 ui-button-danger"
-                                    onclick="PF('completeSessionWarn').hide();" />
-                            </f:facet>
+                <p:dialog minHeight="100" width="800" header="Confirmation" widgetVar="completeSessionWarn" modal="true" resizable="false">
+                    <p>Are you sure you want to complete this channel session?</p>
+
+                    <f:facet name="footer">
+                        <p:commandButton
+                            class="mx-2 ui-button-success"
+                            ajax="false"
+                            value="Yes"
+                            action="#{bookingController.markSessionInstanceAsCompleted()}"
+                            onclick="PF('completeSessionWarn').hide();" />
+                        <p:commandButton
+                            value="No"
+                            class="mx-2 ui-button-danger"
+                            onclick="PF('completeSessionWarn').hide();" />
+                    </f:facet>
                 </p:dialog>
 
-                 <p:dialog minHeight="100" width="800" header="Confirmation" widgetVar="startSessionWarn" modal="true" resizable="false">
-                            <p>Are you sure you want to start this channel session?</p>
+                <p:dialog minHeight="100" width="800" header="Confirmation" widgetVar="startSessionWarn" modal="true" resizable="false">
+                    <p>Are you sure you want to start this channel session?</p>
 
-                            <f:facet name="footer">
-                                <p:commandButton
-                                    class="mx-2 ui-button-success"
-                                    ajax="false"
-                                    value="Yes"
-                                    action="#{bookingController.markSessionInstanceAsStarted()}"
-                                    onclick="PF('startSessionWarn').hide();" />
-                                <p:commandButton
-                                    value="No"
-                                    class="mx-2 ui-button-danger"
-                                    onclick="PF('startSessionWarn').hide();" />
-                            </f:facet>
+                    <f:facet name="footer">
+                        <p:commandButton
+                            class="mx-2 ui-button-success"
+                            ajax="false"
+                            value="Yes"
+                            action="#{bookingController.markSessionInstanceAsStarted()}"
+                            onclick="PF('startSessionWarn').hide();" />
+                        <p:commandButton
+                            value="No"
+                            class="mx-2 ui-button-danger"
+                            onclick="PF('startSessionWarn').hide();" />
+                    </f:facet>
                 </p:dialog>
 
                 <div class="row">
@@ -122,36 +122,42 @@
                                     <f:convertNumber pattern="00"/>
                                 </h:outputLabel>
                             </div>
+
                             <div class="text-center" style="color: green; font-weight: 700" >
                                 <h:outputLabel value="Paid"/><br/>
                                 <h:outputLabel value="#{bookingController.selectedSessionInstance.paidPatientCount}">
                                     <f:convertNumber pattern="00"/>
                                 </h:outputLabel>
                             </div>
+
                             <div class="text-center" style="color: goldenrod; font-weight: 700" >
                                 <h:outputLabel value="On Call"/><br/>
                                 <h:outputLabel value="#{bookingController.selectedSessionInstance.onCallPatientCount }">
                                     <f:convertNumber pattern="00"/>
                                 </h:outputLabel>
                             </div>
+
                             <div class="text-center" style="color: forestgreen; font-weight: 700" >
                                 <h:outputLabel value="Completed"/><br/>
                                 <h:outputLabel value="#{bookingController.selectedSessionInstance.completedPatientCount}">
                                     <f:convertNumber pattern="00"/>
                                 </h:outputLabel>
                             </div>
+
                             <div class="text-center" style="color: purple; font-weight: 700" >
                                 <h:outputLabel value="Rpt. No"/><br/>
                                 <h:outputLabel value="#{bookingController.selectedSessionInstance.reportPatients}">
                                     <f:convertNumber pattern="00"/>
                                 </h:outputLabel>
                             </div>
+
                             <div class="text-center" style="color: brown; font-weight: 700" >
                                 <h:outputLabel value="Que"/><br/>
                                 <h:outputLabel value="#{(bookingController.selectedSessionInstance.paidPatientCount - bookingController.selectedSessionInstance.completedPatientCount) - bookingController.selectedSessionInstance.cancelPatientCount}">
                                     <f:convertNumber pattern="00"/>
                                 </h:outputLabel>
                             </div>
+
                             <div class="text-center" style="color: #d32f2f; font-weight: 700" >
                                 <h:outputLabel value="Cancelled"/><br/>
                                 <h:outputLabel value="#{bookingController.selectedSessionInstance.cancelPatientCount}">
