@@ -192,10 +192,12 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
 
     public void markAsForeigner() {
         setForeigner(true);
+        calculateDiscount();
     }
 
     public void markAsLocal() {
         setForeigner(false);
+        calculateDiscount();
     }
 
     public void calculateDiscount() {
