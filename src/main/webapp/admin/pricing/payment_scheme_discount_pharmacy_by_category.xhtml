@@ -45,7 +45,7 @@
                                 <h:outputLabel value="Payment Method"/>
                                 <p:selectOneMenu   value="#{opdMemberShipDiscountController.paymentMethod}"  >
                                     <f:selectItem itemLabel="Select" />                           
-                                    <f:selectItems value="#{enumController.paymentMethods}" />                                    
+                                    <f:selectItems value="#{enumController.allPaymentMethods}" />                                    
                                 </p:selectOneMenu>
                                 <h:outputLabel value="Discount" ></h:outputLabel>
                                 <p:inputText autocomplete="off" value="#{opdMemberShipDiscountController.margin}" />
