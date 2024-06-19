@@ -184,12 +184,14 @@
                                              icon="fa fa-play" 
                                              styleClass="ui-button-success mx-1" 
                                              oncomplete="PF('startSessionWarn').show()" 
+                                             rendered="#{!bookingController.selectedSessionInstance.started}"
                                              disabled="#{bookingController.selectedSessionInstance.started}" />
 
                             <p:commandButton value="Complete"
                                              icon="fa fa-stop" 
                                              styleClass="ui-button-danger mx-1"
-                                             onclick="PF('completeSessionWarn').show()" 
+                                             onclick="PF('completeSessionWarn').show()"
+                                             rendered="#{bookingController.selectedSessionInstance.started}"
                                              disabled="#{!bookingController.selectedSessionInstance.started || bookingController.selectedSessionInstance.completed}" />
 
 
