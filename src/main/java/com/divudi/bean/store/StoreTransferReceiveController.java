@@ -189,6 +189,11 @@ public class StoreTransferReceiveController implements Serializable {
 
             getReceivedBill().getBillItems().add(i);
         }
+        
+        if(getReceivedBill().getBillItems().isEmpty() || getReceivedBill().getBillItems() == null){
+            JsfUtil.addErrorMessage("Nothing to Recive, Please check Recieved Quantity");
+            return;
+        }
 
         getReceivedBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.StoreTransferReceive, BillClassType.BilledBill, BillNumberSuffix.STTR));
         getReceivedBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.StoreTransferReceive, BillClassType.BilledBill, BillNumberSuffix.STTR));
