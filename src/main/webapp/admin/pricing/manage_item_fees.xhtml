@@ -32,21 +32,22 @@
                                             var="ix" 
                                             itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  
                                             class="w-100"
+                                            maxResults="15"
                                             inputStyleClass="w-100">
                                 <p:ajax event="itemSelect" process="@this" update="gpFees lblTotal" listener="#{itemFeeManager.fillFees()}"></p:ajax>
-                                <p:column headerText="Type" >
+                                <p:column headerText="Type" style="padding: 6px;" >
                                     <p:outputLabel value="#{ix.class.simpleName}" ></p:outputLabel>
                                 </p:column>
-                                <p:column headerText="Name" >
+                                <p:column headerText="Name" style="padding: 6px;" >
                                     <p:outputLabel value="#{ix.name}" ></p:outputLabel>
                                 </p:column>
-                                <p:column headerText="Institution" >
+                                <p:column headerText="Institution" style="padding: 6px;" >
                                     <p:outputLabel value="#{ix.institution.name}" ></p:outputLabel>
                                 </p:column>
-                                <p:column headerText="Department" >
+                                <p:column headerText="Department" style="padding: 6px;" >
                                     <p:outputLabel value="#{ix.department.name}" ></p:outputLabel>
                                 </p:column>
-                                <p:column headerText="Total" >
+                                <p:column headerText="Total" style="padding: 6px;" >
                                     <p:outputLabel value="#{ix.total}" >
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </p:outputLabel>

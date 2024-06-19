@@ -88,7 +88,16 @@
                                     action="inward_bill_surgery_issue"
                                     actionListener="#{pharmacySaleBhtController.resetAll}"   >
                                 </p:commandButton>
-
+                                <p:commandButton
+                                    ajax="false"
+                                    icon="fa-solid fa-address-card"
+                                    class="ui-button-secondary " 
+                                    value="Inpatient Dashboard"
+                                    style="float: right;"
+                                    action="#{admissionController.navigateToAdmissionProfilePage}" 
+                                    >
+                                    <f:setPropertyActionListener value="#{pharmacySaleBhtController.batchBill.patientEncounter}" target="#{admissionController.current}" />
+                                </p:commandButton>
                             </div>
                             <div class="row mt-2">
                                 <div class="col-5">
@@ -191,7 +200,7 @@
                                                             class="ui-button-success"
                                                             action="#{pharmacySaleBhtController.addBillItem}"
                                                             ajax="false">
-                                                            </p:commandButton>
+                                                        </p:commandButton>
                                                     </div>
 
                                                     <p:focus id="focusQty" for="txtQty" ></p:focus>
@@ -319,9 +328,24 @@
                             <p:commandButton class="ui-button-info" icon="fas fa-print" accesskey="p" id="btnPrint" value="Print" ajax="false" action="#" >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
-                            <p:commandButton class="ui-button-warning mx-2" icon="fas fa-plus" accesskey="n" value="New Pharmacy Bill" ajax="false" 
-                                             action="inward_bill_surgery_issue"
-                                             actionListener="#{pharmacySaleBhtController.resetAll()}"  ></p:commandButton>
+                            <p:commandButton 
+                                class="ui-button-warning mx-2" 
+                                icon="fas fa-plus" 
+                                accesskey="n" value="New Pharmacy Bill" 
+                                ajax="false" 
+                                action="inward_bill_surgery_issue"
+                                actionListener="#{pharmacySaleBhtController.resetAll()}"  >
+                            </p:commandButton>
+                            <p:commandButton
+                                ajax="false"
+                                icon="fa-solid fa-address-card"
+                                class="ui-button-secondary " 
+                                value="Inpatient Dashboard"
+                                style="float: right;"
+                                action="#{admissionController.navigateToAdmissionProfilePage}" 
+                                >
+                                <f:setPropertyActionListener value="#{pharmacySaleBhtController.batchBill.patientEncounter}" target="#{admissionController.current}" />
+                            </p:commandButton>
 
                         </div>
                         <div >
@@ -330,12 +354,7 @@
                             </h:panelGroup>
                         </div>
 
-
-
                     </p:panel>
-
-
-
                 </h:form>
 
             </ui:define>

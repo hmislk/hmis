@@ -14,63 +14,54 @@
     <!-- IMPLEMENTATION -->
     <cc:implementation>
         <div class="row">
-            <div class="col-md-12">
-                <div class="row">
-                    <div class="col-md-12" style="line-height: 2.5;">
-
+            <div class="d-flex align-items-center">
+                <div>
+                    <h:panelGrid columns="2">
                         <i class="fa fa-user fa-fw" style="color: #007bff;" title="Name"></i>
-                        <p:outputLabel value="#{cc.attrs.patient.person.nameWithTitle}" style="font-weight: bold; font-size: 1.2em; margin-right: 20px;"/>
+                        <p:outputLabel value="#{cc.attrs.patient.person.nameWithTitle}" style="font-weight: bold; font-size: 1.2em; margin-left: 20px;"/>
 
                         <i class="fa fa-birthday-cake fa-fw" style="color: #28a745;" title="Age" rendered="#{not empty cc.attrs.patient.person.ageAsString}"></i>
-                        <p:outputLabel value="#{cc.attrs.patient.person.ageAsString}" rendered="#{not empty cc.attrs.patient.person.ageAsString}" style="margin-right: 20px;"/>
+                        <p:outputLabel value="#{cc.attrs.patient.person.ageAsString}" rendered="#{not empty cc.attrs.patient.person.ageAsString}" style="margin-left: 20px;"/>
 
                         <i class="fa fa-venus-mars fa-fw" style="color: #17a2b8;" title="Sex" rendered="#{not empty cc.attrs.patient.person.sex}"></i>
-                        <p:outputLabel value="#{cc.attrs.patient.person.sex}" rendered="#{not empty cc.attrs.patient.person.sex}" style="margin-right: 20px;"/>
+                        <p:outputLabel value="#{cc.attrs.patient.person.sex}" rendered="#{not empty cc.attrs.patient.person.sex}" style="margin-left: 20px;"/>
 
                         <i class="fa fa-calendar fa-fw" style="color: #fd7e14;" title="Date of Birth" rendered="#{not empty cc.attrs.patient.person.dob}"></i>
-                        <p:outputLabel value="#{cc.attrs.patient.person.dob}" rendered="#{not empty cc.attrs.patient.person.dob}" style="margin-right: 20px;">
+                        <p:outputLabel value="#{cc.attrs.patient.person.dob}" rendered="#{not empty cc.attrs.patient.person.dob}" style="margin-left: 20px;">
                             <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                         </p:outputLabel>
-
-                    </div>
-                </div>
-
-
-                <div class="row">
-                    <div class="col-md-12" style="line-height: 2.5;">
-
                         <i class="fa fa-phone fa-fw" style="color: #ffc107;" title="Phone" rendered="#{not empty cc.attrs.patient.person.phone}"></i>
-                        <p:outputLabel value="#{cc.attrs.patient.person.phone}" rendered="#{not empty cc.attrs.patient.person.phone}" style="margin-right: 20px;"/>
+                        <p:outputLabel value="#{cc.attrs.patient.person.phone}" rendered="#{not empty cc.attrs.patient.person.phone}" style="margin-left: 20px;"/>
 
                         <i class="fa fa-mobile-alt fa-fw" style="color: #007bff;" title="Mobile" rendered="#{not empty cc.attrs.patient.person.mobile}"></i>
-                        <p:outputLabel value="#{cc.attrs.patient.person.mobile}" rendered="#{not empty cc.attrs.patient.person.mobile}" style="margin-right: 20px;"/>
+                        <p:outputLabel value="#{cc.attrs.patient.person.mobile}" rendered="#{not empty cc.attrs.patient.person.mobile}" style="margin-left: 20px;"/>
 
                         <i class="fa fa-envelope fa-fw" style="color: #6c757d;" title="Email" rendered="#{not empty cc.attrs.patient.person.email}"></i>
-                        <p:outputLabel value="#{cc.attrs.patient.person.email}" rendered="#{not empty cc.attrs.patient.person.email}" style="margin-right: 20px;"/>
+                        <p:outputLabel value="#{cc.attrs.patient.person.email}" rendered="#{not empty cc.attrs.patient.person.email}" style="margin-left: 20px;"/>
+                        <p:outputLabel value="No Email" rendered="#{ empty cc.attrs.patient.person.email}" style="margin-left: 20px;"/>
 
                         <i class="fa fa-home fa-fw" style="color: #fd7e14;" title="Address" rendered="#{not empty cc.attrs.patient.person.address}"></i>
-                        <p:outputLabel value="#{cc.attrs.patient.person.address}" rendered="#{not empty cc.attrs.patient.person.address}"/>
-
-                    </div>
+                        <p:outputLabel value="#{cc.attrs.patient.person.address}" rendered="#{not empty cc.attrs.patient.person.address}" style="margin-left: 20px;"/>
+                        <p:outputLabel value="No Address" rendered="#{ empty cc.attrs.patient.person.address}" style="margin-left: 20px;"/>
+                    </h:panelGrid>   
                 </div>
 
-
-                <div class="row">
+                <div class="mx-4" style="margin-left: 20px;box-sizing: border-box;border-left: 2px solid black">
                     <div class="col-md-12" style="line-height: 2.5;">
 
                         <h:panelGroup rendered="#{not empty cc.attrs.patient.person.race.name}">
                             <i class="fa fa-flag fa-fw" style="color: #6f42c1;" title="Race"></i>
-                            <p:outputLabel value="#{cc.attrs.patient.person.race.name}" style="margin-right: 20px;"/>
+                            <p:outputLabel value="#{cc.attrs.patient.person.race.name}" style="margin-left: 20px;"/>
                         </h:panelGroup>
 
                         <h:panelGroup rendered="#{not empty cc.attrs.patient.person.religion.name}">
                             <i class="fa fa-pray fa-fw" style="color: #17a2b8;" title="Religion"></i>
-                            <p:outputLabel value="#{cc.attrs.patient.person.religion.name}" style="margin-right: 20px;"/>
+                            <p:outputLabel value="#{cc.attrs.patient.person.religion.name}" style="margin-left: 20px;"/>
                         </h:panelGroup>
 
                         <h:panelGroup rendered="#{not empty cc.attrs.patient.person.occupation.name}">
                             <i class="fa fa-briefcase fa-fw" style="color: #28a745;" title="Occupation"></i>
-                            <p:outputLabel value="#{cc.attrs.patient.person.occupation.name}" style="margin-right: 20px;"/>
+                            <p:outputLabel value="#{cc.attrs.patient.person.occupation.name}" style="margin-left: 20px;"/>
                         </h:panelGroup>
 
                         <h:panelGroup rendered="#{not empty cc.attrs.patient.person.civilStatus.name}">
@@ -82,22 +73,22 @@
                 </div>
 
 
-                <div class="row">
-                    <div class="col-md-12" style="line-height: 2.5;">
+                <div>
+                    <div>
 
                         <h:panelGroup rendered="#{not empty cc.attrs.patient.person.bloodGroup.name}">
                             <i class="fa fa-tint fa-fw" style="color: #dc3545;" title="Blood Group"></i>
-                            <p:outputLabel value="#{cc.attrs.patient.person.bloodGroup.name}" style="margin-right: 20px;"/>
+                            <p:outputLabel value="#{cc.attrs.patient.person.bloodGroup.name}" style="margin-left: 20px;"/>
                         </h:panelGroup>
 
                         <h:panelGroup rendered="#{not empty cc.attrs.patient.phn}">
                             <i class="fa fa-id-card fa-fw" style="color: #ffc107;" title="PHN"></i>
-                            <p:outputLabel value="#{cc.attrs.patient.phn}" style="margin-right: 20px;"/>
+                            <p:outputLabel value="#{cc.attrs.patient.phn}" style="margin-left: 20px;"/>
                         </h:panelGroup>
 
                         <h:panelGroup rendered="#{not empty cc.attrs.patient.person.nic}">
                             <i class="fa fa-id-card fa-fw" style="color: #17a2b8;" title="NIC"></i>
-                            <p:outputLabel value="#{cc.attrs.patient.person.nic}" style="margin-right: 20px;"/>
+                            <p:outputLabel value="#{cc.attrs.patient.person.nic}" style="margin-left: 20px;"/>
                         </h:panelGroup>
 
                         <h:panelGroup rendered="#{not empty cc.attrs.patient.code}">
@@ -107,15 +98,7 @@
 
                     </div>
                 </div>
-
-
-
-
-
-
-
             </div>
-
         </div>
 
     </cc:implementation>
