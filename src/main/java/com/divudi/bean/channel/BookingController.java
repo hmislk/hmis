@@ -85,6 +85,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -220,6 +222,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
     private BillSession managingBillSession;
     private List<SessionInstance> sessionInstances;
     private List<BillSession> billSessions;
+    private List<BillSession> filteredBillSessions;
     List<Staff> consultants;
     List<BillSession> getSelectedBillSession;
     boolean printPreview;
@@ -246,6 +249,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
     private String agentRefNo;
     private List<BillFee> listBillFees;
     private BillSession billSession;
+     private List<SessionInstance> sortedSessionInstances;
 
     private ChannelScheduleEvent event = new ChannelScheduleEvent();
 
@@ -739,6 +743,21 @@ public class BookingController implements Serializable, ControllerWithPatient {
         } else {
             billSessionFacade.edit(selectedBillSession);
         }
+    }
+    
+    private void sortSessions() {
+        sortedSessionInstances = new ArrayList<>(sessionInstances);
+        Collections.sort(sortedSessionInstances, new Comparator<SessionInstance>() {
+            @Override
+            public int compare(SessionInstance s1, SessionInstance s2) {
+                if (s1.isStarted() && !s2.isStarted()) {
+                    return -1;
+                } else if (!s1.isStarted() && s2.isStarted()) {
+                    return 1;
+                }
+                return 0;
+            }
+        });
     }
 
     public boolean patientErrorPresent(Patient p) {
@@ -1551,7 +1570,15 @@ public class BookingController implements Serializable, ControllerWithPatient {
         if (billSessions == null) {
             billSessions = new ArrayList<>();
         }
+        getFilteredBillSessions();
         return billSessions;
+    }
+    
+    public List<BillSession> getFilteredBillSessions() {
+        filteredBillSessions = billSessions;       
+        return filteredBillSessions.stream()
+            .filter(bs -> !bs.isCompleted())
+            .collect(Collectors.toList());
     }
 
 //    public void fillBillSessions(SelectEvent event) {
@@ -1873,6 +1900,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
             return;
         }
         selectedBillSession.setCompleted(true);
+        selectedBillSession.setCurrentlyConsulted(false);
         billSessionFacade.edit(selectedBillSession);
         selectedSessionInstance.setLastCompletedBillSession(selectedBillSession);
         sessionInstanceFacade.edit(selectedSessionInstance);
@@ -2206,7 +2234,10 @@ public class BookingController implements Serializable, ControllerWithPatient {
         // Initialize counts
         long bookedPatientCount = 0;
         long paidPatientCount = 0;
+        long cancelPatientCount = 0;
+        long refundedPatientCount = 0;
         long completedPatientCount = 0;
+        long onCallPatientCount = 0;
 
         if (billSessions == null) {
             selectedSessionInstance.setBookedPatientCount(0l);
@@ -2241,6 +2272,36 @@ public class BookingController implements Serializable, ControllerWithPatient {
                     // Log or handle the fact that there was an NPE checking paid status
 
                 }
+                
+                // Additional check for cancel status
+                try {
+                    if (bs.getBill().isCancelled()) {
+                        cancelPatientCount++;
+                    }
+                } catch (NullPointerException npe) {
+                    // Log or handle the fact that there was an NPE checking paid status
+
+                }
+                
+                // Additional check for cancel status
+                try {
+                    if (bs.getBill().isRefunded()) {
+                        refundedPatientCount++;
+                    }
+                } catch (NullPointerException npe) {
+                    // Log or handle the fact that there was an NPE checking paid status
+
+                }
+                
+                // Additional check for Oncall status
+                try {
+                    if (bs.getPaidBillSession() == null && !bs.getBill().isCancelled()) {
+                        onCallPatientCount++;
+                    }
+                } catch (NullPointerException npe) {
+                    // Log or handle the fact that there was an NPE checking paid status
+
+                }
             }
         }
 
@@ -2248,10 +2309,27 @@ public class BookingController implements Serializable, ControllerWithPatient {
         selectedSessionInstance.setBookedPatientCount(bookedPatientCount);
         selectedSessionInstance.setPaidPatientCount(paidPatientCount);
         selectedSessionInstance.setCompletedPatientCount(completedPatientCount);
+        selectedSessionInstance.setCancelPatientCount(cancelPatientCount);
+        selectedSessionInstance.setRefundedPatientCount(refundedPatientCount);
+        selectedSessionInstance.setOnCallPatientCount(onCallPatientCount);
 
         // Assuming remainingPatientCount is calculated as booked - completed
         selectedSessionInstance.setRemainingPatientCount(bookedPatientCount - completedPatientCount);
         sessionInstanceController.save(selectedSessionInstance);
+    }
+    
+    public void addReportPatient(){
+        int prp =  selectedSessionInstance.getReportPatients();
+        prp += 1;
+        selectedSessionInstance.setReportPatients(prp);
+        sessionInstanceController.save(selectedSessionInstance);    
+    }
+    
+    public void removeReportPatient(){
+        int prp =  selectedSessionInstance.getReportPatients();
+        prp -= 1;
+        selectedSessionInstance.setReportPatients(prp);
+        sessionInstanceController.save(selectedSessionInstance);  
     }
 
     private boolean errorCheckForAddingNewBooking() {
@@ -3915,6 +3993,15 @@ public class BookingController implements Serializable, ControllerWithPatient {
 
     public void setAppointmentActivity(AppointmentActivity appointmentActivity) {
         this.appointmentActivity = appointmentActivity;
+    }
+
+    public List<SessionInstance> getSortedSessionInstances() {
+            sortSessions();
+        return sortedSessionInstances;
+    }
+
+    public void setSortedSessionInstances(List<SessionInstance> sortedSessionInstances) {
+        this.sortedSessionInstances = sortedSessionInstances;
     }
 
 }

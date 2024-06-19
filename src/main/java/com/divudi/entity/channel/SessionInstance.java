@@ -213,6 +213,9 @@ public class SessionInstance implements Serializable {
 
     private Long bookedPatientCount;
     private Long paidPatientCount;
+    private Long cancelPatientCount;
+    private Long refundedPatientCount;
+    private Long onCallPatientCount;
     private Long completedPatientCount;
     private Long remainingPatientCount;
     
@@ -220,6 +223,8 @@ public class SessionInstance implements Serializable {
     
     @ManyToOne
     private ArrivalRecord arrivalRecord;
+    
+    private int reportPatients = 0;
 
     
     
@@ -1262,6 +1267,38 @@ public class SessionInstance implements Serializable {
 
     public void setCancelledAt(Date cancelledAt) {
         this.cancelledAt = cancelledAt;
+    }
+
+    public int getReportPatients() {
+        return reportPatients;
+    }
+
+    public void setReportPatients(int reportPatients) {
+        this.reportPatients = reportPatients;
+    }
+
+    public Long getCancelPatientCount() {
+        return cancelPatientCount;
+    }
+
+    public void setCancelPatientCount(Long cancelPatientCount) {
+        this.cancelPatientCount = cancelPatientCount;
+    }
+
+    public Long getRefundedPatientCount() {
+        return refundedPatientCount;
+    }
+
+    public void setRefundedPatientCount(Long refundedPatientCount) {
+        this.refundedPatientCount = refundedPatientCount;
+    }
+
+    public Long getOnCallPatientCount() {
+        return onCallPatientCount;
+    }
+
+    public void setOnCallPatientCount(Long onCallPatientCount) {
+        this.onCallPatientCount = onCallPatientCount;
     }
     
     

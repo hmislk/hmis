@@ -1380,7 +1380,7 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
     public void createOpdCancelRefundBillFeePayment(Bill bill, List<BillFee> billFees, Payment p) {
         calculateBillfeePaymentsForCancelRefundBill(billFees, p);
 
-        JsfUtil.addSuccessMessage("Sucessfully Paid");
+        //JsfUtil.addSuccessMessage("Sucessfully Paid");
     }
 
     public Payment createPaymentForCancellationsforOPDBill(Bill bill, PaymentMethod pm) {
