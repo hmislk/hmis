@@ -442,6 +442,17 @@
                                                 <p:column >
                                                     <h:outputText value="#{bi.netValue}" ></h:outputText>
                                                 </p:column>
+                                                <p:column >
+                                                    <p:commandButton 
+                                                        id="btnRemove"
+                                                        ajax="false"
+                                                        icon="fas fa-trash"
+                                                        class="ui-button-danger"
+                                                        action="#{bookingControllerViewScope.removeAddedAditionalItem()}"
+                                                        >
+                                                        <f:setPropertyActionListener target="#{bookingControllerViewScope.selectedBillItem}" value="#{bi}"/>
+                                                    </p:commandButton>
+                                                </p:column>
                                             </p:dataTable>
 
                                             <p:dataTable 
@@ -759,8 +770,8 @@
                                 <div class="row">
                                     <h:panelGroup class="mt-5" rendered="#{!webUserController.hasPrivilege('ChannellingReprintOriginalBill')}">
                                         <div class="text-center">
-                                             <i class="fa-solid fa-triangle-exclamation" style="font-size: 72pt"></i>
-                                             <h3>You Do Not Have Permission to Access The Requested Page</h3>
+                                            <i class="fa-solid fa-triangle-exclamation" style="font-size: 72pt"></i>
+                                            <h3>You Do Not Have Permission to Access The Requested Page</h3>
                                         </div>
                                     </h:panelGroup>
                                     <h:panelGroup rendered="#{webUserController.hasPrivilege('ChannellingReprintOriginalBill')}">
