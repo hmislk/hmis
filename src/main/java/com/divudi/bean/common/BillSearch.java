@@ -2121,10 +2121,13 @@ public class BillSearch implements Serializable {
         List<BillItem> list = cancelBillItems(getBill(), cancellationBill, p);
         cancellationBill.setBillItems(list);
         billFacade.edit(cancellationBill);
-
+        System.out.println("getBill() 1= " + getBill().getIdStr());
         getBill().setCancelled(true);
         getBill().setCancelledBill(cancellationBill);
+        System.out.println("getBill() 2= " + getBill().getIdStr());
         billController.save(getBill());
+        System.out.println("getBill() 3= " + getBill().isCancelled());
+        System.out.println("getBill() 4= " + getBill().getIdStr());
         JsfUtil.addSuccessMessage("Cancelled");
 
         if (getBill().getPaymentMethod() == PaymentMethod.Credit) {
@@ -2712,6 +2715,7 @@ public class BillSearch implements Serializable {
             JsfUtil.addErrorMessage("Nothing to cancel");
             return "";
         }
+        System.out.println("bill = " + bill.getIdStr());
         paymentMethod = bill.getPaymentMethod();
         createBillItemsAndBillFees();
         boolean flag = billController.checkBillValues(bill);
