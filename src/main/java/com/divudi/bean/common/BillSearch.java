@@ -615,19 +615,17 @@ public class BillSearch implements Serializable {
         bts.add(BillType.PharmacySale);
         bts.add(BillType.PharmacyWholeSale);
         bts.add(BillType.InwardPaymentBill);
-
         bts.add(BillType.CollectingCentrePaymentReceiveBill);
         bts.add(BillType.PaymentBill);
         bts.add(BillType.PatientPaymentReceiveBill);
-
         bts.add(BillType.CollectingCentreBill);
         bts.add(BillType.PaymentBill);
-
         bts.add(BillType.ChannelCash);
         bts.add(BillType.ChannelPaid);
         bts.add(BillType.ChannelAgent);
         bts.add(BillType.ChannelProPayment);
         bts.add(BillType.ChannelAgencyCommission);
+        bts.add(BillType.PettyCash);
 
         billSummeries = generateBillSummaries(institution, department, user, bts, billClassType, fromDate, toDate);
 
@@ -3725,7 +3723,7 @@ public class BillSearch implements Serializable {
                 return;
             }
             billTypeSummary.getPaymentSummaries().add(newPs);
-            billPaymentTotal = bs.getTotal();
+            billPaymentTotal = bs.getNetTotal();
             double biltypeSum = billTypeSummary.getBillTypeTotal() + billPaymentTotal;
             billTypeSummary.setBillTypeTotal(biltypeSum);
         }
