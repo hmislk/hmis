@@ -6,6 +6,7 @@ import java.util.Date;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -85,6 +86,11 @@ public class Token implements Serializable {
     private String idStr;
     @ManyToOne
     private Doctor doctor;
+    @ManyToOne
+    private Token referaToken;
+    private boolean restartTokenServices;
+    
+    
 // </editor-fold> 
 
     public Long getId() {
@@ -387,8 +393,23 @@ public class Token implements Serializable {
         this.doctor = doctor;
     }
 
-  
-    
+    public boolean isRestartTokenServices() {
+        return restartTokenServices;
+    }
+
+    public void setRestartTokenServices(boolean restartTokenServices) {
+        this.restartTokenServices = restartTokenServices;
+    }
+
+    public Token getReferaToken() {
+        return referaToken;
+    }
+
+    public void setReferaToken(Token referaToken) {
+        this.referaToken = referaToken;
+    }
+
+
     
     
     
