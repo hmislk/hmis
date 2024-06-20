@@ -314,6 +314,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     private SessionInstance selectedSessionInstanceForRechedule;
     private boolean reservedBooking;
     private BillItem selectedBillItem;
+    private BillSession newBillSessionForSMS;
 
     public void sessionReschedule() {
         if (getSelectedSessionInstanceForRechedule() == null) {
@@ -327,8 +328,48 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         }
         createBillSessionForReschedule(selectedBillSession, getSelectedSessionInstanceForRechedule());
         JsfUtil.addSuccessMessage("Reschedule Successfully");
-
+        sendSmsOnChannelBookingReschedule();
+        
+        
     }
+    
+    public void sendSmsOnChannelBookingReschedule() {
+        if (selectedBillSession == null) {
+            return;
+        }
+            if (selectedBillSession.getBill() == null) {
+                return;
+            }
+            if (selectedBillSession.getBill().getPatient().getPerson().getSmsNumber() == null) {
+                return;
+            }
+            if (getSelectedSessionInstanceForRechedule() == null){
+                return;
+            }
+            Sms e = new Sms();
+            e.setCreatedAt(new Date());
+            e.setCreater(sessionController.getLoggedUser());
+            e.setBill(selectedBillSession.getBill());
+            e.setReceipientNumber(selectedBillSession.getBill().getPatient().getPerson().getSmsNumber());
+            e.setSendingMessage(createChanelBookingRescheduleSms(selectedBillSession.getBill(),newBillSessionForSMS));
+            e.setDepartment(getSessionController().getLoggedUser().getDepartment());
+            e.setInstitution(getSessionController().getLoggedUser().getInstitution());
+            e.setPending(false);
+            e.setSmsType(MessageType.ChannelPatientFeedback);
+            getSmsFacade().create(e);
+            Boolean sent = smsManager.sendSms(e);
+
+//        JsfUtil.addSuccessMessage("SMS Sent to all Patients.");
+    }
+    
+    private String createChanelBookingRescheduleSms(Bill b , BillSession s) {
+//        String template = sessionController.getDepartmentPreference().getSmsTemplateForChannelBooking();
+        String template = configOptionController.getLongTextValueByKey("Template for SMS sent on Patient Feedback", OptionScope.APPLICATION, null, null, null);
+        if (template == null || template.isEmpty()) {
+            template = "Dear {patient_name}, Your appointment No. {serial_no} with {doctor} is rescheduled to appointment No. {new_serial_no} with {new_doctor} on {new_appointment_date} at {new_appointment_time} . {ins_name}";
+        }
+        return createSmsForChannelBookingReschedule(b, s, template);
+    }   
 
     private void createBillSessionForReschedule(BillSession bs, SessionInstance si) {
         BillSession newBillSession = new BillSession();
@@ -383,6 +424,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         }
 
         getBillSessionFacade().create(newBillSession);
+        newBillSessionForSMS = newBillSession;
     }
 
     public void fillSessionInstanceByDoctor() {
@@ -2600,6 +2642,58 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 .replace("{time}", sessionTime)
                 .replace("{date}", sessionDate)
                 .replace("{No}", String.valueOf(no));
+
+        return s;
+    }
+    
+    public String createSmsForChannelBookingReschedule(Bill b, BillSession b1, String template) {
+        if (b == null) {
+            return "";
+        }
+        if (b.getSingleBillSession() == null) {
+            return "";
+        }
+        if (b.getSingleBillSession().getSessionInstance() == null) {
+            return "";
+        }
+        if (b.getSingleBillSession().getSessionInstance().getOriginatingSession() == null) {
+            return "";
+        }
+        SessionInstance si = b.getSingleBillSession().getSessionInstance();
+        BillSession bs = b.getSingleBillSession();
+        ServiceSession ss = b.getSingleBillSession().getSessionInstance().getOriginatingSession();
+        String s;
+
+        String sessionTime = CommonController.getDateFormat(si.getStartingTime(), sessionController.getApplicationPreference().getShortTimeFormat());
+        String sessionDate = CommonController.getDateFormat(si.getSessionDate(), sessionController.getApplicationPreference().getLongDateFormat());
+        String doc = bs.getStaff().getPerson().getNameWithTitle();
+        String patientName = b.getPatient().getPerson().getNameWithTitle();
+        int no = b.getSingleBillSession().getSerialNo();
+        String insName = sessionController.getLoggedUser().getInstitution().getName();
+        
+        String newSessionTime = CommonController.getDateFormat(b1.getSessionTime(), sessionController.getApplicationPreference().getShortTimeFormat());
+        String newSessionDate = CommonController.getDateFormat(b1.getSessionDate(), sessionController.getApplicationPreference().getLongDateFormat());
+        String newDoc = bs.getStaff().getPerson().getNameWithTitle();
+        int newNo = b1.getSerialNo();
+        System.out.println("newNo = " + newNo);
+        System.out.println("newDoc = " + newDoc);
+        System.out.println("newSessionDate = " + newSessionDate);
+        System.out.println("newSessionTime = " + newSessionTime);
+
+        s = template.replace("{patient_name}", patientName)
+                .replace("{doctor}", doc)
+                .replace("{appointment_time}", sessionTime)
+                .replace("{appointment_date}", sessionDate)
+                .replace("{serial_no}", String.valueOf(no))
+                .replace("{doc}", doc)
+                .replace("{time}", sessionTime)
+                .replace("{date}", sessionDate)
+                .replace("{No}", String.valueOf(no)
+                .replace("{new_doctor}", newDoc)
+                .replace("{ins_name}", insName)
+                .replace("{new_appointment_time}", newSessionTime)
+                .replace("{new_appointment_date}", newSessionDate)
+                .replace("{new_serial_no}", String.valueOf(newNo)));
 
         return s;
     }
