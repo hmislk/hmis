@@ -136,8 +136,8 @@
                                     </p:column>
                                     <p:column headerText="View">
                                         <p:commandButton ajax="false" value="View Bill"
-                                                         action="pharmacy_reprint_bill_sale"  >
-                                            <f:setPropertyActionListener value="#{pi.bill.referenceBill}"
+                                                         action="/inward/pharmacy_reprint_bill_sale_bht">
+                                            <f:setPropertyActionListener value="#{pi.bill}"
                                                                          target="#{pharmacyBillSearch.bill}"/>                                     
                                         </p:commandButton>
                                     </p:column>

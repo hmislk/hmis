@@ -50,7 +50,6 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
     @GeneratedValue(strategy = GenerationType.AUTO)
     //Main Properties   
     Long id;
-    @Deprecated
     String institutionCode;
     String name;
     private String code;

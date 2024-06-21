@@ -70,6 +70,8 @@ import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillTypeAtomic;
+import com.divudi.entity.Family;
+import com.divudi.entity.FamilyMember;
 import com.divudi.entity.Token;
 import com.divudi.facade.TokenFacade;
 import com.divudi.java.CommonFunctions;
@@ -712,6 +714,7 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
         }
 
         for (Department d : billDepts) {
+            System.out.println("d = " + d);
             PreBill newPreBill = new PreBill();
             newPreBill = saveBill(d, newPreBill);
 
@@ -736,6 +739,7 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
             getBillFacade().edit(newPreBill);
 
             getBillBean().calculateBillItems(newPreBill, tmp);
+            System.out.println("newPreBill = " + newPreBill);
             bills.add(newPreBill);
         }
 
@@ -806,12 +810,6 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
             getBillFacade().edit(b);
             getBills().add(b);
 
-            if (getToken() != null) {
-                getToken().setBill(b);
-                tokenFacade.edit(getToken());
-                markToken(b);
-            }
-
         } else {
             boolean result = putToBills();
             if (result == false) {
@@ -821,10 +819,26 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
 
         saveBatchBill();
         saveBillItemSessions();
-
         JsfUtil.addSuccessMessage("Bill Saved");
-        setPrintigBill();
         checkBillValues();
+        
+        if (getToken() != null) {
+            if (getToken().getBill() == null) {
+                getToken().setBill(batchBill);
+                tokenFacade.edit(getToken());
+                markToken(batchBill);
+            }else{
+                Token t=new Token();
+                t.setPatient(getToken().getPatient());
+                t.setBill(batchBill);
+                t.setTokenNumber(getToken().getTokenNumber());
+                tokenFacade.create(t);
+                getToken().setReferaToken(t);
+                tokenFacade.edit(t);
+            }
+                
+            }
+        
         printPreview = true;
 
         return "/opd/opd_pre_bill?faces-redirect=true";
@@ -924,10 +938,8 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
         double tmpBatchBillTotalOfDiscounts = 0.0;
         double tmpBatchBillTotalOfNetTotals = 0.0;
 
-        System.out.println("Start accumulating totals");
-
         for (Bill b : bills) {
-
+            System.out.println("b backward save= " + b);
             double preGrossTotal = tmpBatchBillTotalOfGrossTotals;
             double preDiscountTotal = tmpBatchBillTotalOfDiscounts;
             double preNetTotal = tmpBatchBillTotalOfNetTotals;
@@ -936,12 +948,10 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
             tmpBatchBillTotalOfDiscounts += b.getDiscount();
             tmpBatchBillTotalOfNetTotals += b.getNetTotal();
 
-
             b.setBackwardReferenceBill(newlyCreatingBatchBillPre);
             getBillFacade().edit(b);
             newlyCreatingBatchBillPre.getForwardReferenceBills().add(b);
         }
-
 
         newlyCreatingBatchBillPre.setNetTotal(tmpBatchBillTotalOfNetTotals);
         newlyCreatingBatchBillPre.setDiscount(tmpBatchBillTotalOfDiscounts);
@@ -1009,7 +1019,7 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
         updatingPreBill.setBillTime(new Date());
         updatingPreBill.setPatient(getPatient());
 
-        updatingPreBill.setMembershipScheme(membershipSchemeController.fetchPatientMembershipScheme(getPatient(), getSessionController().getApplicationPreference().isMembershipExpires()));
+//        updatingPreBill.setMembershipScheme(membershipSchemeController.fetchPatientMembershipScheme(getPatient(), getSessionController().getApplicationPreference().isMembershipExpires()));
 
         updatingPreBill.setPaymentScheme(getPaymentScheme());
         updatingPreBill.setPaymentMethod(paymentMethod);
@@ -1165,6 +1175,27 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
         opdPreBillController.setPatient(getPatient());
         return "/opd/opd_pre_bill?faces-redirect=true";
 
+    }
+
+    public String navigateToBillingForCashierFromMembership(Patient pt, PaymentScheme ps) {
+        if (pt == null) {
+            JsfUtil.addErrorMessage("No Patient Selected");
+            return "";
+        }
+        if (ps == null) {
+            JsfUtil.addErrorMessage("No Membership");
+            return "";
+        }
+        if (patient == null) {
+            JsfUtil.addErrorMessage("No patient selected");
+            patient = new Patient();
+            patientDetailsEditable = true;
+        }
+        opdPreBillController.prepareNewBill();
+        patient = pt;
+        paymentScheme = ps;
+        opdPreBillController.setPatient(getPatient());
+        return "/opd/opd_pre_bill?faces-redirect=true";
     }
 
     public PaymentSchemeController getPaymentSchemeController() {
@@ -1354,8 +1385,7 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
         double billDiscount = 0.0;
         double billGross = 0.0;
         double billNet = 0.0;
-        MembershipScheme membershipScheme = membershipSchemeController.fetchPatientMembershipScheme(getPatient(), getSessionController().getApplicationPreference().isMembershipExpires());
-
+       
         for (BillEntry be : getLstBillEntries()) {
             //////// // System.out.println("bill item entry");
             double entryGross = 0.0;
@@ -1375,17 +1405,8 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
                     item = bf.getBillItem().getItem();
                 }
 
-                //Membership Scheme
-                if (membershipScheme != null) {
-                    priceMatrix = getPriceMatrixController().getOpdMemberDisCount(paymentMethod, membershipScheme, department, category);
-                    getBillBean().setBillFees(bf, isForeigner(), paymentMethod, membershipScheme, bi.getItem(), priceMatrix);
-                    ////// // System.out.println("priceMetrix = " + priceMatrix);
-
-                } else {
-                    //Payment  Scheme && Credit Company
-                    priceMatrix = getPriceMatrixController().getPaymentSchemeDiscount(paymentMethod, paymentScheme, department, item);
-                    getBillBean().setBillFees(bf, isForeigner(), paymentMethod, paymentScheme, getCreditCompany(), priceMatrix);
-                }
+                priceMatrix = getPriceMatrixController().getPaymentSchemeDiscount(paymentMethod, paymentScheme, department, item);
+                getBillBean().setBillFees(bf, isForeigner(), paymentMethod, paymentScheme, getCreditCompany(), priceMatrix);
 
                 entryGross += bf.getFeeGrossValue();
                 entryNet += bf.getFeeValue();

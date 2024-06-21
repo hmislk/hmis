@@ -97,34 +97,34 @@
                                         <p:outputLabel value="#{fm.relationToChh.name}" ></p:outputLabel>
                                     </p:column>
                                     <p:column headerText="Membership" rendered="false">
-                                        <p:outputLabel value="#{fm.patient.person.membershipScheme.name}" ></p:outputLabel>
+                                        <p:outputLabel value="#{fm.family.membershipScheme.name}" ></p:outputLabel>
                                     </p:column>
                                     <p:column headerText="Billing" rendered="true">
-
-                                        <p:commandButton value="OPD Bill" 
-                                                         action="#{patientController.navigateToOpdBillFromFamilyMembership()}" 
-                                                         ajax="false"
-                                                         class="w-100"
-                                                         styleClass="mx-2">
-                                            <f:setPropertyActionListener value="#{fm.patient}" target="#{patientController.current}" ></f:setPropertyActionListener>
+                                        <p:commandButton 
+                                            action="#{opdBillController.navigateToNewOpdBillWithPaymentScheme(fm.patient, fm.family.membershipScheme.paymentScheme)}" 
+                                            ajax="false"
+                                            class="mx-2"
+                                            icon="fa fa-fw fa-file-medical"
+                                            title="OPD Billing">
                                         </p:commandButton>
 
-                                        <p:commandButton value="OPD Bill for Cashier" 
-                                                         action="#{patientController.navigateToBillingForCashierFromFamilyMembership()}" 
-                                                         ajax="false"
-                                                         class="w-100"
-                                                         styleClass="mx-2">
-                                            <f:setPropertyActionListener value="#{fm.patient}" target="#{patientController.current}" ></f:setPropertyActionListener>
+                                        <p:commandButton 
+                                            action="#{opdPreBillController.navigateToBillingForCashierFromMembership(fm.patient, fm.family.membershipScheme.paymentScheme)}" 
+                                            ajax="false"
+                                            class="mx-2"
+                                            icon="fa fa-fw fa-cash-register"
+                                            title="OPD Billing for Cashier">
                                         </p:commandButton>
 
-
-                                        <p:commandButton ajax="false" action="/channel/channel_booking" 
-                                                         icon="fa fa-fw fa-calendar-check" 
-                                                         class="mx-1"
-                                                         actionListener="#{channelBillController.prepareForNewChannellingBillForMember()}" 
-                                                         value="Channelling" disabled="#{!webUserController.hasPrivilege('ChannellingChannelBooking')}" >
-                                            <f:setPropertyActionListener value="#{fm.patient}" target="#{channelBillController.searchPatient}" ></f:setPropertyActionListener>
+                                        <p:commandButton 
+                                            ajax="false"
+                                            action="#{bookingControllerViewScope.navigateToChannelBookingFromMembershipByDate(fm.patient, fm.family.membershipScheme.paymentScheme)}" 
+                                            icon="fa fa-fw fa-calendar-check" 
+                                            class="mx-1"
+                                            title="Channelling"
+                                            disabled="#{!webUserController.hasPrivilege('ChannellingChannelBooking')}">
                                         </p:commandButton>
+
 
 
 

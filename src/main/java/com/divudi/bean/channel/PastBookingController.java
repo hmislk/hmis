@@ -265,7 +265,6 @@ public class PastBookingController implements Serializable, ControllerWithPatien
 
   
     public void fillFees() {
-        System.out.println("fillFees");
         selectedItemFees = new ArrayList<>();
         sessionFees = new ArrayList<>();
         addedItemFees = new ArrayList<>();
@@ -284,14 +283,12 @@ public class PastBookingController implements Serializable, ControllerWithPatien
         m.put("ses", selectedSessionInstance.getOriginatingSession());
 
         sessionFees = itemFeeFacade.findByJpql(sql, m);
-        System.out.println("sessionFees = " + sessionFees);
         m = new HashMap();
         sql = "Select f from ItemFee f "
                 + " where f.retired=false "
                 + " and f.item=:item "
                 + " order by f.id";
         m.put("item", itemToAddToBooking);
-        System.out.println("m = " + m);
         addedItemFees = itemFeeFacade.findByJpql(sql, m);
         if (sessionFees != null) {
             selectedItemFees.addAll(sessionFees);

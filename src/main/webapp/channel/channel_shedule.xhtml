@@ -244,6 +244,9 @@
 
                                                 <p:outputLabel value="Paid Appointment Only"/>
                                                 <p:selectBooleanCheckbox value="#{channelScheduleController.current.paidAppointmentsOnly}" />
+                                                
+                                                <p:outputLabel value="Exclude From Patient Portal"/>
+                                                <p:selectBooleanCheckbox value="#{channelScheduleController.current.excludeFromPatientPortal}" />
 
                                                 <p:outputLabel value="Vatable" rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Cooperative' or sessionController.loggedPreference.applicationInstitution eq 'Arogya'}" />
                                                 <p:selectBooleanCheckbox value="#{channelScheduleController.current.vatable}" disabled="#{!webUserController.hasPrivilege('ChannelActiveVat')}" rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Cooperative'or sessionController.loggedPreference.applicationInstitution eq 'Arogya'}"/>
@@ -364,11 +367,11 @@
                                                             <p:commandButton 
                                                                 id="btnFeeSave"
                                                                 value="Save" 
-                                                                             action="#{channelScheduleController.addNewFee()}" 
-                                                                             style="margin-left: 30px;" 
-                                                                             update="tblFees :#{p:resolveFirstComponentWithId('gpTotals',view).clientId}"
-                                                                             process="gpDetail btnFeeSave"
-                                                                             oncomplete="PF('dlg').hide();">
+                                                                action="#{channelScheduleController.addNewFee()}" 
+                                                                style="margin-left: 30px;" 
+                                                                update="tblFees :#{p:resolveFirstComponentWithId('gpTotals',view).clientId}"
+                                                                process="gpDetail btnFeeSave"
+                                                                oncomplete="PF('dlg').hide();">
                                                             </p:commandButton>
                                                         </f:facet>
                                                         <p:panelGrid columns="2" id="gpDetail" class="w-100">
@@ -531,9 +534,25 @@
                                                         <p:outputLabel value="Item to add"/>
                                                     </p:column>
                                                     <p:column >
-                                                        <p:selectOneMenu filter="true" filterMatchMode="contains" value="#{channelScheduleController.additionalItemToAdd}" id="acAdditionalItem">
-                                                            <f:selectItems value="#{itemController.suggestItems}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}"/>
-                                                        </p:selectOneMenu>
+                                                        <p:autoComplete widgetVar="aIx" 
+                                                                        id="acAdditionalItem"
+                                                                        forceSelection="true" 
+                                                                        value="#{channelScheduleController.additionalItemToAdd}" 
+                                                                        completeMethod="#{itemController.completeAllServicesAndInvestigations}" 
+                                                                        var="ix" 
+                                                                        itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  
+                                                                        class="w-100"
+                                                                        inputStyleClass="w-100">
+                                                            
+                                                            <p:column headerText="Name" >
+                                                                <p:outputLabel value="#{ix.name}" ></p:outputLabel>
+                                                            </p:column>
+                                                            <p:column headerText="Total" >
+                                                                <p:outputLabel value="#{ix.total}" >
+                                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                                </p:outputLabel>
+                                                            </p:column>
+                                                        </p:autoComplete>
 
                                                     </p:column>
                                                     <p:column  >

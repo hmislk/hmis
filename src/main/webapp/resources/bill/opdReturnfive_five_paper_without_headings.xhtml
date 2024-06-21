@@ -31,11 +31,11 @@
                             <h:outputText value="&nbsp;&nbsp;-&nbsp;&nbsp;#{cc.attrs.bill.department.name}" />
                         </div>
                     </div>
-                    <div class="d-flex  align-items-center justify-content-center">
-                        <div style="width: 50px;height: 50px;border: 1px solid black;border-radius: 50%" class="d-flex justify-content-center align-items-center">
-                            <h4 class="mx-5">#{cc.attrs.bill.sessionId}</h4> 
-                        </div>
-                    </div>
+                    <!--                    <div class="d-flex  align-items-center justify-content-center">
+                                            <div style="width: 50px;height: 50px;border: 1px solid black;border-radius: 50%" class="d-flex justify-content-center align-items-center">
+                                                <h4 class="mx-5">#{cc.attrs.bill.sessionId}</h4> 
+                                            </div>
+                                        </div>-->
 
                 </div>
                 <!--                <div class="col-7">
@@ -410,6 +410,15 @@
                         value="Paid by : Credit Card:#{ps.paidValue} (Card Last 4 Digits:#{ps.creditCardRefNo})"/>
                 </h:panelGroup>
             </ui:repeat>-->
+
+            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Require customer signature for opd bill refund')}">
+                <div class="d-flex align-items-center justify-content-end mt-5 mx-2">
+                    <div class="text-center">
+                        <p>..........................</p>
+                        <p>Customer Signature</p>
+                    </div>
+                </div>
+            </h:panelGroup>
 
 
             <div class="footer" style="text-align: center;">

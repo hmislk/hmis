@@ -201,11 +201,8 @@ public class Lims {
             @PathParam("username") String username,
             @PathParam("password") String password) {
 
-        // Validation
-        System.out.println("generateSamplesFromBill");
-        System.out.println("billId = " + billId);
-        String validationError = validateInput(billId, username, password);
-        System.out.println("validationError = " + validationError);
+// Validation
+                String validationError = validateInput(billId, username, password);
         if (validationError != null) {
             return constructErrorJson(1, validationError, billId);
         }
@@ -286,7 +283,6 @@ public class Lims {
     }
 
     public String processSamplesFromBill(String billId, String username, String password) {
-        System.out.println("Processing generateSamplesFromBill");
 
         String validationError = validateInput(billId, username, password);
         if (validationError != null) {
@@ -737,7 +733,6 @@ public class Lims {
     }
 
     public List<Bill> validBillsOfBatchBill(Bill batchBill) {
-        System.out.println("validBillsOfBatchBill");
         String j = "Select b "
                 + " from Bill b "
                 + " where b.backwardReferenceBill=:bb "

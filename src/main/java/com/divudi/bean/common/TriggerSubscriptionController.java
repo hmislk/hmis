@@ -50,7 +50,6 @@ public class TriggerSubscriptionController implements Serializable {
     private WebUser user;
 
     public List<WebUser> fillSubscribedUsersByDepartment(TriggerType tt,Department dept) {
-        System.out.println("dept = " + dept.getName());
         List<WebUser> us = new ArrayList<>();
         if (tt == null) {
             return us;

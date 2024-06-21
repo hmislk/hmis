@@ -76,9 +76,7 @@
                     </td>
                     <td>
                         <b>
-                            <ui:repeat value="#{cc.attrs.bill.billItems}" var="cbi" >
-                                <h:outputLabel value="#{cbi.billSession.staff.person.nameWithTitle}" ></h:outputLabel>
-                            </ui:repeat>
+                            <h:outputLabel value="#{cc.attrs.bill.staff.person.nameWithTitle}" ></h:outputLabel>
                         </b>
                     </td>
 
@@ -178,9 +176,10 @@
                     </td>
                 </tr>
 
-                <ui:repeat value="#{cc.attrs.bill.billFees}" var="cbif" >
+                <ui:repeat value="#{cc.attrs.bill.billFeesWIthoutZeroValue}" var="cbif" >
                     <tr>
                         <td>
+                            <!--<h:outputLabel value="#{cbif.billItem.item.name}" rendered="#{cbif.feeGrossValue ne 0.0}"></h:outputLabel>-->
                             <h:outputLabel value="#{cbif.fee.name}" rendered="#{cbif.feeGrossValue ne 0.0}"></h:outputLabel>
                         </td>
                         <td>
@@ -352,6 +351,29 @@
                         </h:outputLabel>
                     </td>
                 </tr>
+
+
+                <h:panelGroup  >
+                    <tr>
+                        <td>
+                            <h:outputLabel value="Printed By" ></h:outputLabel>
+                        </td>
+                        <td>
+                            <p:spacer width="10" ></p:spacer>
+                        </td>
+                        <td>
+                            <h:outputLabel value=":" ></h:outputLabel>
+                        </td>
+                        <td>
+                            <h:outputLabel value="#{cc.attrs.bill.paidBill.printedUser.webUserPerson.name}"></h:outputLabel>
+                            <p:spacer height="1" width="10" ></p:spacer>
+                            <h:outputLabel value="#{cc.attrs.bill.paidBill.printedAt}">
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></f:convertDateTime>
+                            </h:outputLabel>
+                        </td>
+                    </tr>
+                </h:panelGroup>
+
 
             </table>
 

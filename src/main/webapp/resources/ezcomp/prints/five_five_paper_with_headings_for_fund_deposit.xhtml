@@ -123,7 +123,26 @@
 
                 <table width="100%" style="width: 100%;" >
                     <tr>
-                        <td colspan="2" style="text-align: center;" class="billline">
+                        <td colspan="3" style="text-align: center;" class="billline">
+                            <hr/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <h:outputLabel class="itemsBlockRightFiveFive" value="Payment Method"  style="text-transform: capitalize!important;"  >
+                            </h:outputLabel>
+                        </td>
+                        <td style="text-align: left;">
+                            <h:outputLabel class="itemsBlockRightFiveFive" value="Reference Number"  style="text-transform: capitalize!important;"  >
+                            </h:outputLabel>
+                        </td>
+                        <td style="text-align: right;">
+                            <h:outputLabel class="itemsBlockRightFiveFive" value="Value"  style="text-transform: capitalize!important;"  >
+                            </h:outputLabel>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="3" style="text-align: center;" class="billline">
                             <hr/>
                         </td>
                     </tr>
@@ -133,6 +152,14 @@
                             <tr>
                                 <td  style="overflow: visible;">
                                     <h:outputLabel class="itemsBlockRightFiveFive" value="#{bip.paymentMethod}"  style="text-transform: capitalize!important;"  >
+                                    </h:outputLabel>
+                                </td>
+                                <td style="text-align: center;">
+                                    <h:outputLabel class="itemsBlockRightFiveFive" value="#{bip.chequeRefNo}"  style="text-transform: capitalize!important;" rendered="#{bip.chequeRefNo ne null}" >
+                                    </h:outputLabel>
+                                    <h:outputLabel class="itemsBlockRightFiveFive" value="#{bip.creditCardRefNo}"  style="text-transform: capitalize!important;" rendered="#{bip.creditCardRefNo ne null}" >
+                                    </h:outputLabel>
+                                    <h:outputLabel class="itemsBlockRightFiveFive" value="--"  style="text-transform: capitalize!important;" rendered="#{bip.chequeRefNo == null and bip.creditCardRefNo == null}"  >
                                     </h:outputLabel>
                                 </td>
                                 <td style="text-align: right;" >

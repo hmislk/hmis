@@ -151,54 +151,42 @@
                                         editable="true" 
                                         sortBy="#{bi.searialNo}" >
 
-                                        <p:column headerText="Item">
+                                        <p:column headerText="Item" style="padding: 6px; width:300px;">
                                             <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.item.name}" ></h:outputLabel>
                                         </p:column>
-                                        <p:column headerText="Qty">
-                                            <p:inputText value="#{bi.qty}" style="width:90%">
+                                        <p:column headerText="Qty" style="padding: 6px;">
+                                            <p:inputText value="#{bi.qty}" style="text-align: right; width: 55px;" >
                                                 <p:ajax event="keyup" listener="#{pharmacyIssueController.onEdit(bi)}" process="@this" update="gros :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}"/>
                                             </p:inputText> 
                                         </p:column>
 
-                                        <p:column headerText="Rate">
-                                            <h:outputLabel value="#{bi.rate}" >
+                                        <p:column headerText="Rate" style="padding: 6px;">
+                                            <h:outputLabel value="#{bi.rate}" style="text-align: right;">
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
                                         </p:column>
-<!--                                        <p:column headerText="Margin Rate">
-                                            <h:outputLabel value="#{bi.marginRate}" >
-                                                <f:convertNumber pattern="#,##0.00" />
-                                            </h:outputLabel>
-                                        </p:column>-->
-
-                                        <p:column headerText="Net Rate">
-                                            <h:outputLabel value="#{bi.netRate}" >
+                                        <p:column headerText="Net Rate" style="padding: 6px;">
+                                            <h:outputLabel value="#{bi.netRate}" style="text-align: right;">
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
                                         </p:column>
-                                        <p:column headerText="Gross">
-                                            <h:outputLabel value="#{bi.grossValue}">
+                                        <p:column headerText="Gross" style="padding: 6px;">
+                                            <h:outputLabel value="#{bi.grossValue}" style="text-align: right;">
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
                                         </p:column>
-<!--                                        <p:column headerText="Margin">
-                                            <h:outputLabel value="#{bi.marginValue}" >
-                                                <f:convertNumber pattern="#,##0.00" />
-                                            </h:outputLabel>
-                                        </p:column>-->
-                                        <p:column headerText="Net Value">
-                                            <h:outputLabel value="#{bi.netValue}" id="gros" >
+                                        <p:column headerText="Net Value" style="padding: 6px;">
+                                            <h:outputLabel value="#{bi.netValue}" id="gros" style="text-align: right;">
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
                                         </p:column>
-                                        <p:column headerText="Expiry">
+                                        <p:column headerText="Expiry" style="padding: 6px;">
                                             <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.dateOfExpire}" >
                                                 <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}"  ></f:convertDateTime>
                                             </h:outputLabel>
-
                                         </p:column>
 
-                                        <p:column headerText="Remove">
+                                        <p:column headerText="Remove" style="padding: 6px; width: 59px;">
                                             <p:commandButton icon="fas fa-trash" class="ui-button-danger" action="#{pharmacyIssueController.removeBillItem(bi)}" ajax="false" >
                                             </p:commandButton>
                                         </p:column>

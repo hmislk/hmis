@@ -21,6 +21,7 @@ import com.divudi.data.InvestigationItemType;
 import com.divudi.data.InvestigationItemValueType;
 import com.divudi.data.ItemListingStrategy;
 import com.divudi.data.ItemType;
+import com.divudi.data.LoginPage;
 import com.divudi.data.PaperType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.ReportItemType;
@@ -66,6 +67,7 @@ public class EnumController implements Serializable {
     ConfigOptionApplicationController configOptionApplicationController;
     List<PaymentMethod> paymentMethodsForOpdBilling;
     List<PaymentMethod> paymentMethodsForChanneling;
+    List<PaymentMethod> paymentMethodsForPharmacyBilling;
     SessionNumberType[] sessionNumberTypes;
 
     @PostConstruct
@@ -115,6 +117,23 @@ public class EnumController implements Serializable {
             }
         }
     }
+    
+    public List<PaymentMethod> getPaymentMethodsForPharmacyBilling() {
+        if (paymentMethodsForPharmacyBilling == null) {
+            fillPaymentMethodsForPharmacyBilling();
+        }
+        return paymentMethodsForPharmacyBilling;
+    }
+    
+    public void fillPaymentMethodsForPharmacyBilling() {
+        paymentMethodsForPharmacyBilling = new ArrayList<>();
+        for (PaymentMethod pm : PaymentMethod.values()) {
+            boolean include = configOptionApplicationController.getBooleanValueByKey(pm.getLabel() + " is available for Pharmacy Billing", true);
+            if (include) {
+                paymentMethodsForPharmacyBilling.add(pm);
+            }
+        }
+    }
 
     public List<String> getEnumValues(String enumClassName) {
         try {
@@ -153,6 +172,10 @@ public class EnumController implements Serializable {
         return sessionNumberTypes;
     }
 
+    public List<LoginPage> getLoginPages() {
+        return Arrays.asList(LoginPage.values());
+    }
+    
     public ItemListingStrategy[] getItemListingStrategys() {
         return ItemListingStrategy.values();
     }

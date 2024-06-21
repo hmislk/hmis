@@ -114,7 +114,14 @@
                                     <f:selectItem itemLabel="Select" ></f:selectItem>
                                     <f:selectItems value="#{enumController.departmentType}" ></f:selectItems>
                                 </p:selectOneMenu>
-
+                                
+                                <h:outputText value="No of days to mark as Short Expiary" >
+                                </h:outputText>
+                                <p:inputText 
+                                    autocomplete="off"
+                                    class="w-100"
+                                    value="#{ampController.current.numberOfDaysToMarkAsShortExpiary}"
+                                    ></p:inputText>
 
 
                                 <h:outputText  value="Discount Allowed" class="w-100"></h:outputText>

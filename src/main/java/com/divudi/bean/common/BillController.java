@@ -63,6 +63,7 @@ import com.divudi.data.dataStructure.ComponentDetail;
 import com.divudi.data.dataStructure.DailyCash;
 import com.divudi.data.dataStructure.SearchKeyword;
 import com.divudi.entity.AppEmail;
+import com.divudi.entity.FamilyMember;
 import com.divudi.entity.PreBill;
 import com.divudi.entity.RefundBill;
 import com.divudi.java.CommonFunctions;
@@ -1612,7 +1613,6 @@ public class BillController implements Serializable {
     }
 
     public List<BillFee> findBillFees(Staff staff, Date fromDate, Date toDate) {
-        System.out.println("findBillFees");
         List<BillFee> tmpFees;
         String jpql;
         List<BillTypeAtomic> btcs = new ArrayList<>();
@@ -1644,9 +1644,7 @@ public class BillController implements Serializable {
         m.put("ret", false);
         m.put("ft", FeeType.Staff);
 
-
         tmpFees = billFeeFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
-
 
         List<BillFee> removingBillFees = new ArrayList<>();
         for (BillFee bf : tmpFees) {
@@ -2114,7 +2112,7 @@ public class BillController implements Serializable {
         temp.setBillTime(new Date());
         temp.setPatient(tmpPatient);
 
-        temp.setMembershipScheme(membershipSchemeController.fetchPatientMembershipScheme(tmpPatient, getSessionController().getApplicationPreference().isMembershipExpires()));
+//        temp.setMembershipScheme(membershipSchemeController.fetchPatientMembershipScheme(tmpPatient, getSessionController().getApplicationPreference().isMembershipExpires()));
 
         temp.setPaymentScheme(getPaymentScheme());
         temp.setPaymentMethod(paymentMethod);
@@ -2775,7 +2773,7 @@ public class BillController implements Serializable {
         double billNet = 0.0;
         double billVat = 0.0;
 
-        MembershipScheme membershipScheme = membershipSchemeController.fetchPatientMembershipScheme(getSearchedPatient(), getSessionController().getApplicationPreference().isMembershipExpires());
+//        MembershipScheme membershipScheme = membershipSchemeController.fetchPatientMembershipScheme(getSearchedPatient(), getSessionController().getApplicationPreference().isMembershipExpires());
 
         for (BillEntry be : getLstBillEntries()) {
             //////// // System.out.println("bill item entry");
@@ -2799,17 +2797,9 @@ public class BillController implements Serializable {
                     item = bf.getBillItem().getItem();
                 }
 
-                //Membership Scheme
-                if (membershipScheme != null) {
-                    priceMatrix = getPriceMatrixController().getOpdMemberDisCount(paymentMethod, membershipScheme, department, category);
-                    getBillBean().setBillFees(bf, isForeigner(), paymentMethod, membershipScheme, bi.getItem(), priceMatrix);
-                    ////// // System.out.println("priceMetrix = " + priceMatrix);
-
-                } else {
-                    //Payment  Scheme && Credit Company
-                    priceMatrix = getPriceMatrixController().getPaymentSchemeDiscount(paymentMethod, paymentScheme, department, item);
-                    getBillBean().setBillFees(bf, isForeigner(), paymentMethod, paymentScheme, getCreditCompany(), priceMatrix);
-                }
+                //Payment  Scheme && Credit Company
+                priceMatrix = getPriceMatrixController().getPaymentSchemeDiscount(paymentMethod, paymentScheme, department, item);
+                getBillBean().setBillFees(bf, isForeigner(), paymentMethod, paymentScheme, getCreditCompany(), priceMatrix);
 
                 if (bf.getBillItem().getItem().isVatable()) {
                     if (!(bf.getFee().getFeeType() == FeeType.CollectingCentre && collectingCentreBillController.getCollectingCentre() != null)) {
@@ -2952,15 +2942,16 @@ public class BillController implements Serializable {
         return "/opd/opd_bill";
     }
 
-    public void prepareNewBillForMember() {
+    public String prepareNewBillForMember(FamilyMember familyMember) {
         clearBillItemValues();
         clearBillValuesForMember();
         setPrintPreview(true);
         printPreview = false;
         paymentMethodData = null;
-        paymentScheme = null;
         paymentMethod = PaymentMethod.Cash;
+
         collectingCentreBillController.setCollectingCentre(null);
+        return "/opd/opd_bill?faces-redirect=true;";
     }
 
     public void makeNull() {

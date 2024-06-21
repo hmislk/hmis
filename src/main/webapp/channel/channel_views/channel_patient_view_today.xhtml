@@ -1,0 +1,42 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="index.xhtml">
+            <ui:define name="subcontent">
+                <h:form>
+                    <p:panel>
+                        <f:facet name="header">
+                            <h:panelGrid columns="2">                    
+                                <p:outputLabel value="Date"/>
+                                <p:clock pattern="#{sessionController.applicationPreference.longDateFormat}" mode="server"  />           
+                            </h:panelGrid>
+                        </f:facet>
+
+                        <p:dataTable value="#{channelReportController.totalPatient}" var="bs" >
+                            <p:column headerText="Consultant">#{bs.consultant.person.nameWithTitle}</p:column> 
+                            <p:column headerText="Total">#{bs.billCount+bs.creditCount}</p:column>
+                            <p:column headerText="Fully Paid">#{bs.billCount+bs.billCount_c}</p:column>
+                            <p:column headerText="Paid Cancelled">#{bs.billCanncelCount+bs.creditCancelledCount}</p:column>        
+                            <p:column headerText="Refund">#{bs.refundedCount+bs.refundedCount_c}</p:column>
+                            <p:column headerText="Absent"></p:column>
+                            <p:summaryRow>
+                                <p:column colspan="2"></p:column>
+                                <p:column ></p:column>
+                                <p:column ></p:column>
+                                <p:column ></p:column>
+                                <p:column ></p:column>
+                            </p:summaryRow>
+                        </p:dataTable>
+
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

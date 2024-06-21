@@ -4,6 +4,7 @@
  */
 package com.divudi.bean.channel;
 
+import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ConfigOptionController;
 import com.divudi.bean.common.DoctorSpecialityController;
@@ -32,10 +33,12 @@ import com.divudi.facade.StaffFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillType;
 import com.divudi.data.MessageType;
+import com.divudi.data.OptionScope;
 import com.divudi.data.SmsSentResponse;
 import com.divudi.data.channel.ChannelScheduleEvent;
 import com.divudi.ejb.ChannelBean;
 import com.divudi.ejb.SmsManagerEjb;
+import com.divudi.entity.Bill;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.DoctorSpeciality;
 import com.divudi.entity.Item;
@@ -51,6 +54,8 @@ import com.divudi.facade.SessionInstanceFacade;
 import com.divudi.facade.SmsFacade;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -119,8 +124,10 @@ public class ChannelScheduleController implements Serializable {
     private DoctorSpecialityController doctorSpecialityController;
     @Inject
     ChannelScheduleController channelScheduleController;
+    @Inject
+    ConfigOptionController configOptionController;
 
-    private DoctorSpeciality speciality;
+    private Speciality speciality;
     ServiceSession current;
     private Item additionalItemToAdd;
     private ItemForItem additionalItemToRemove;
@@ -144,6 +151,14 @@ public class ChannelScheduleController implements Serializable {
     List<Department> departments;
     private List<Staff> staffs;
     int tabIndex;
+
+    private SessionInstance updatedSessionInstance;
+    private String updatedSessionDateFormatted;
+    private String sessionInstanceOldDayMonthFormatted;
+    private String updatedSessionStartTimeFormatted;
+    private String sessionInstanceOldTimeFormatted;
+    private Date sessionInstanceOldDayMonth;
+    private Date sessionInstanceOldTime;
 
     public void channelSheduleForAllDoctor(Staff stf) {
         if (stf == null) {
@@ -233,7 +248,7 @@ public class ChannelScheduleController implements Serializable {
     private ItemFeeFacade itemFeeFacade;
 
     public String navigateToChannelSchedule() {
-        itemController.fillItemsForInward();
+//        itemController.fillItemsForInward();
         return "/channel/channel_shedule?faces-redirect=true";
     }
 
@@ -293,6 +308,76 @@ public class ChannelScheduleController implements Serializable {
 
         }
         JsfUtil.addSuccessMessage("SMS Sent to all Patients.");
+    }
+
+    public void sendSmsOnChannelAppointmentTimeChange() {
+        String smsTemplateForchannelBookingAppointmentTImeChange = configOptionController.getLongTextValueByKey("Template for SMS sent on Channel Booking Appointment Time Changed", OptionScope.APPLICATION, null, null, null);
+        fillBillSessions();
+        if (billSessions == null || billSessions.isEmpty()) {
+            return;
+        }
+        for (BillSession bs : billSessions) {
+            if (bs.getBill() == null) {
+                continue;
+            }
+            if (bs.getBill().getPatient().getPerson().getSmsNumber() == null) {
+                continue;
+            }
+            Sms e = new Sms();
+            e.setCreatedAt(new Date());
+            e.setCreater(sessionController.getLoggedUser());
+            e.setBill(bs.getBill());
+            e.setReceipientNumber(bs.getBill().getPatient().getPerson().getSmsNumber());
+            e.setSendingMessage(createSmsForChannelBooking(bs.getBill(), smsTemplateForchannelBookingAppointmentTImeChange));
+            e.setDepartment(getSessionController().getLoggedUser().getDepartment());
+            e.setInstitution(getSessionController().getLoggedUser().getInstitution());
+            e.setPending(false);
+            e.setSmsType(MessageType.ChannelDoctorArrival);
+            smsFacade.create(e);
+            Boolean sent = smsManager.sendSms(e);
+
+        }
+        JsfUtil.addSuccessMessage("SMS Sent to all Patients.");
+    }
+
+    public String createSmsForChannelBooking(Bill b, String template) {
+        if (b == null) {
+            return "";
+        }
+        if (b.getSingleBillSession() == null) {
+            return "";
+        }
+        if (b.getSingleBillSession().getSessionInstance() == null) {
+            return "";
+        }
+        if (b.getSingleBillSession().getSessionInstance().getOriginatingSession() == null) {
+            return "";
+        }
+        SessionInstance si = b.getSingleBillSession().getSessionInstance();
+        BillSession bs = b.getSingleBillSession();
+        ServiceSession ss = b.getSingleBillSession().getSessionInstance().getOriginatingSession();
+        String s;
+
+        String sessionTime = CommonController.getDateFormat(si.getStartingTime(), sessionController.getApplicationPreference().getShortTimeFormat());
+        String sessionDate = CommonController.getDateFormat(si.getSessionDate(), sessionController.getApplicationPreference().getLongDateFormat());
+        String doc = bs.getStaff().getPerson().getNameWithTitle();
+        String patientName = b.getPatient().getPerson().getNameWithTitle();
+
+        int no = b.getSingleBillSession().getSerialNo();
+
+        s = template.replace("{patient_name}", patientName)
+                .replace("{doctor}", doc)
+                .replace("{appointment_time}", sessionTime)
+                .replace("{appointment_date}", sessionDate)
+                .replace("{serial_no}", String.valueOf(no))
+                .replace("{time}", sessionTime)
+                .replace("{date}", sessionDate)
+                .replace("{oldTime}", getSessionInstanceOldTimeFormatted())
+                .replace("{oldDayMonth}", getSessionInstanceOldDayMonthFormatted())
+                .replace("{newTime}", getUpdatedSessionStartTimeFormatted())
+                .replace("{newDate}", getUpdatedSessionDateFormatted());
+
+        return s;
     }
 
     public void removeFee(ItemFee ifr) {
@@ -622,11 +707,11 @@ public class ChannelScheduleController implements Serializable {
         this.tabIndex = tabIndex;
     }
 
-    public DoctorSpeciality getSpeciality() {
+    public Speciality getSpeciality() {
         return speciality;
     }
 
-    public void setSpeciality(DoctorSpeciality speciality) {
+    public void setSpeciality(Speciality speciality) {
         this.speciality = speciality;
     }
 
@@ -718,11 +803,31 @@ public class ChannelScheduleController implements Serializable {
         itemFees = null;
         createFees();
     }
+    
+    public void assignOlddateAndOldTimFromCurrentSessionInstance(){
+        setSessionInstanceOldTime(currentSessionInstance.getStartingTime());
+        setSessionInstanceOldDayMonth(currentSessionInstance.getSessionDate());
+    }
 
     public void saveNewSessioninstance() {
         currentSessionInstance.setOriginatingSession(current);
+        currentSessionInstance.setEditedAt(new Date());
+        currentSessionInstance.setEditer(sessionController.getLoggedUser());
         sessionInstanceController.save(currentSessionInstance);
+        updatedSessionInstance = currentSessionInstance;
+        DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+        DateFormat tf = new SimpleDateFormat("HH:mm");
+        sessionInstanceOldTimeFormatted = tf.format(sessionInstanceOldTime);
+        updatedSessionStartTimeFormatted = tf.format(updatedSessionInstance.getStartingTime());
+        sessionInstanceOldDayMonthFormatted = df.format(sessionInstanceOldDayMonth);
+        updatedSessionDateFormatted = df.format(updatedSessionInstance.getSessionDate());
+
+        if (sessionInstanceOldTimeFormatted != updatedSessionStartTimeFormatted || sessionInstanceOldDayMonthFormatted != updatedSessionDateFormatted) {
+            sendSmsOnChannelAppointmentTimeChange();
+        }
+
         JsfUtil.addSuccessMessage("Saved successfully");
+
     }
 
     public void prepareAddFeeChange() {
@@ -1482,6 +1587,62 @@ public class ChannelScheduleController implements Serializable {
 
     public void setStaffs(List<Staff> staffs) {
         this.staffs = staffs;
+    }
+
+    public SessionInstance getUpdatedSessionInstance() {
+        return updatedSessionInstance;
+    }
+
+    public void setUpdatedSessionInstance(SessionInstance updatedSessionInstance) {
+        this.updatedSessionInstance = updatedSessionInstance;
+    }
+
+    public String getUpdatedSessionDateFormatted() {
+        return updatedSessionDateFormatted;
+    }
+
+    public void setUpdatedSessionDateFormatted(String updatedSessionDateFormatted) {
+        this.updatedSessionDateFormatted = updatedSessionDateFormatted;
+    }
+
+    public String getSessionInstanceOldDayMonthFormatted() {
+        return sessionInstanceOldDayMonthFormatted;
+    }
+
+    public void setSessionInstanceOldDayMonthFormatted(String sessionInstanceOldDayMonthFormatted) {
+        this.sessionInstanceOldDayMonthFormatted = sessionInstanceOldDayMonthFormatted;
+    }
+
+    public String getUpdatedSessionStartTimeFormatted() {
+        return updatedSessionStartTimeFormatted;
+    }
+
+    public void setUpdatedSessionStartTimeFormatted(String updatedSessionStartTimeFormatted) {
+        this.updatedSessionStartTimeFormatted = updatedSessionStartTimeFormatted;
+    }
+
+    public String getSessionInstanceOldTimeFormatted() {
+        return sessionInstanceOldTimeFormatted;
+    }
+
+    public void setSessionInstanceOldTimeFormatted(String sessionInstanceOldTimeFormatted) {
+        this.sessionInstanceOldTimeFormatted = sessionInstanceOldTimeFormatted;
+    }
+
+    public Date getSessionInstanceOldDayMonth() {
+        return sessionInstanceOldDayMonth;
+    }
+
+    public void setSessionInstanceOldDayMonth(Date sessionInstanceOldDayMonth) {
+        this.sessionInstanceOldDayMonth = sessionInstanceOldDayMonth;
+    }
+
+    public Date getSessionInstanceOldTime() {
+        return sessionInstanceOldTime;
+    }
+
+    public void setSessionInstanceOldTime(Date sessionInstanceOldTime) {
+        this.sessionInstanceOldTime = sessionInstanceOldTime;
     }
 
 }

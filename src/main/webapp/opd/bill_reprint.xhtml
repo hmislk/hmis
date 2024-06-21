@@ -266,7 +266,7 @@
                                         <h:outputLabel value="Bill Item Details" class="mx-4"></h:outputLabel>
                                     </f:facet>
                                     <p:dataTable rowIndexVar="rowIndex"
-                                                 editable="true" value="#{billSearch.billFees2}" var="bip" >
+                                                 editable="true" value="#{billSearch.bill.billFees}" var="bip" >
                                         <p:ajax event="rowEdit" listener="#{billSearch.onEdit}" />  
                                         <p:ajax event="rowEditCancel" listener="#{billSearch.onEdit}" />  
                                         <p:column>

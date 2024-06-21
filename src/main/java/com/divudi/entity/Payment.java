@@ -70,6 +70,7 @@ public class Payment implements Serializable {
     //
 
     //paymentMethord Details
+    // Can be use as a reference number for any payment method
     private String chequeRefNo;
     @Temporal(javax.persistence.TemporalType.DATE)
     private Date chequeDate;
@@ -246,7 +247,8 @@ public class Payment implements Serializable {
     public String toString() {
         return "com.divudi.entity.Payment[ id=" + id + " ]";
     }
-
+    
+    // Can be use as a reference number for any payment method
     public String getChequeRefNo() {
         return chequeRefNo;
     }

@@ -23,11 +23,28 @@
                         </div>
                         <div class="d-flex align-items-center">
                             <!-- Cancel Session Button with BS colors, FA icon, and JavaScript confirmation -->
+                             <p:commandButton 
+                                rendered="#{!bookingControllerViewScope.selectedSessionInstance.arrived}"
+                                id="btnArrival"
+                                ajax="false"
+                                value="Mark Arrival " 
+                                class="ui-button-info mx-1"
+                                action="#{bookingControllerViewScope.markAsArrived()}"
+                                icon="fa-solid fa-check" />
+                             
+                            <p:commandButton action="#{bookingControllerViewScope.navigateToNurseView()}" 
+                                             value="Veiws"
+                                             ajax="false"
+                                             class="ui-info-Danger mx-1" 
+                                             icon="fa fa-eye" 
+                                             />
+
                             <p:commandButton action="#{bookingControllerViewScope.cancelSession}" 
                                              value="Cancel Session"
                                              ajax="false"
                                              class="ui-button-Danger mx-1" 
                                              icon="fa fa-times" 
+                                             disabled="#{bookingControllerViewScope.selectedSessionInstance.cancelled}"
                                              onclick="return confirm('Are you sure you want to cancel?');" />
 
                             <!-- Reopen Session Button -->
@@ -100,20 +117,31 @@
                                         <p:outputLabel value="#{bs.bill.creditCompany.institutionCode}"/>
                                     </p:column>
                                     <p:column headerText="Actions">
-                                        <p:commandButton 
-                                            icon="pi pi-user-plus" 
-                                            title="OPD" 
-                                            ajax="false" 
-                                            action="#{bookingControllerViewScope.navigateToOpdBilling(bs)}" 
-                                            class="ui-button-text-icon-left mx-1">
-                                        </p:commandButton>
-                                        <p:commandButton 
-                                            icon="pi pi-cog" 
-                                            title="Manage Booking" 
-                                            ajax="false" 
-                                            action="#{bookingControllerViewScope.navigateToManageBooking(bs)}" 
-                                            class="ui-button-text-icon-left mx-1">
-                                        </p:commandButton>
+                                        <div class="d-flex">
+                                            <p:commandButton 
+                                                icon="fa-solid fa-book" 
+                                                title="Past Channel Bookings"
+                                                class="ui-button-secondary"
+                                                action="#{patientController.navigateToPatientPastChannelBiiking()}"
+                                                ajax="false">
+                                                <f:setPropertyActionListener target="#{patientController.patient}" value="#{bs.bill.patient}"/>
+                                            </p:commandButton>
+                                            <p:commandButton 
+                                                icon="pi pi-user-plus" 
+                                                title="OPD" 
+                                                ajax="false" 
+                                                action="#{bookingControllerViewScope.navigateToOpdBilling(bs)}" 
+                                                class="ui-button-secondary mx-1">
+                                            </p:commandButton>
+                                            <p:commandButton 
+                                                icon="pi pi-cog" 
+                                                title="Manage Booking" 
+                                                ajax="false" 
+                                                action="#{bookingControllerViewScope.navigateToManageBooking(bs)}" 
+                                                class="ui-button-secondary ">
+                                            </p:commandButton>
+
+                                        </div>
                                         <h:panelGroup rendered="#{bs.markedToCancel}">
                                             <i class="fas fa-ban text-danger" title="Cancel"></i>
                                         </h:panelGroup>
@@ -136,11 +164,34 @@
                                         <h:outputText class="mx-4" value="Session Details" />
                                     </f:facet>
                                     <h:panelGrid columns="3" class="d-flex justify-content-end my-1">
-                                        <p:commandButton ajax="false" id="btnSave" value="Save"  
-                                                         action="#{bookingControllerViewScope.saveSessionInstanceDetails()}"
-                                                         class="ui-button-warning" icon="fas fa-save" >
+                                        <p:commandButton 
+                                            ajax="false" 
+                                            id="btnSave" 
+                                            value="Save"  
+                                            action="#{bookingControllerViewScope.saveSessionInstanceDetails()}"
+                                            class="ui-button ui-button-warning" 
+                                            icon="pi pi-save">
+                                        </p:commandButton>
+
+                                        <p:commandButton 
+                                            ajax="false" 
+                                            id="btnEditSession" 
+                                            value="To Edit"  
+                                            action="#{bookingControllerViewScope.navigateToEditSessionInstance()}"
+                                            class="ui-button ui-button-info" 
+                                            icon="pi pi-pencil">
+                                        </p:commandButton>
+
+                                        <p:commandButton 
+                                            ajax="false" 
+                                            id="btnEditOriginSession" 
+                                            value="To Edit Originating Session"  
+                                            action="#{bookingControllerViewScope.navigateToEditOriginatingSession()}"
+                                            class="ui-button ui-button-secondary" 
+                                            icon="pi pi-external-link">
                                         </p:commandButton>
                                     </h:panelGrid>
+
                                     <p:tabView style="width: 100%!important;">
                                         <p:tab title="Details">
                                             <h:panelGrid id="gpDetails" columns="2" cellpadding="10">
@@ -213,6 +264,9 @@
 
                                                 <p:outputLabel value="Paid Appointment Only"/>
                                                 <p:selectBooleanCheckbox value="#{bookingControllerViewScope.selectedSessionInstance.originatingSession.paidAppointmentsOnly}"/>
+                                                
+                                                <p:outputLabel value="Exclude From Patient Portal"/>
+                                                <p:selectBooleanCheckbox value="#{bookingControllerViewScope.selectedSessionInstance.originatingSession.excludeFromPatientPortal}"/>
 
 
                                             </h:panelGrid>
@@ -291,10 +345,10 @@
                                                     <h:outputLabel value="Base Fee" ></h:outputLabel>
                                                 </f:facet>
                                                 <p:outputLabel value="Session Value - "/>
-                                                <p:outputLabel value="#{bookingControllerViewScope.selectedSessionInstance.total}"/>
+                                                <p:outputLabel value="#{bookingControllerViewScope.selectedSessionInstance.originatingSession.total}"/>
 
                                                 <p:outputLabel value="Session Value for Foreigners - "/>
-                                                <p:outputLabel value="#{bookingControllerViewScope.selectedSessionInstance.totalForForeigner}"/>
+                                                <p:outputLabel value="#{bookingControllerViewScope.selectedSessionInstance.originatingSession.totalForForeigner}"/>
 
                                             </p:panelGrid>
 
@@ -302,7 +356,7 @@
 
 
                                             <h:panelGrid columns="1">
-                                                <p:dataTable value="#{channelScheduleController.itemFees}" var="i" >
+                                                <p:dataTable value="#{bookingControllerViewScope.selectedItemFees}" var="i" >
                                                     <p:column headerText="Name">
                                                         <h:outputLabel value="#{i.name}"/> 
                                                     </p:column>

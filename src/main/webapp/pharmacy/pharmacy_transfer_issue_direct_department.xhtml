@@ -136,10 +136,10 @@
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </p:column>  
-                                
+
                                 <p:column headerText="DOE"  style="width:50px!important; text-align: center">  
                                     <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.dateOfExpire}" style="text-align: right;">                        
-                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                                     </h:outputLabel>
                                 </p:column> 
 
@@ -200,33 +200,53 @@
 
             </p:panel>
             <p:panel rendered="#{transferIssueController.printPreview}">
-                <p:commandButton 
-                    ajax="false" 
-                    icon="fas fa-list"
-                    class="ui-button-warning"
-                    action="pharmacy_transfer_request_list" 
-                    actionListener="#{transferIssueController.makeNull()}" 
-                    value="Requested List"/>                    
-                <p:commandButton 
-                    value="Print" 
-                    icon="fas fa-print"
-                    class="ui-button-info mx-2 mb-2"
-                    ajax="false" 
-                    action="#" >
-                    <p:printer target="gpBillPreview" ></p:printer>
-                </p:commandButton>
 
-                <h:panelGroup   id="gpBillPreview" >
+                <div class="d-flex justify-content-between">
+                    <p:commandButton 
+                        ajax="false" 
+                        icon="fas fa-list"
+                        class="ui-button-warning m-2"
+                        action="pharmacy_transfer_request_list" 
+                        actionListener="#{transferIssueController.makeNull()}" 
+                        value="Requested List"/>
 
+                    <div class="d-flex m-1">
+                        <p:outputLabel value="Paper Type" class="mt-3"></p:outputLabel>
+                        <p:selectOneMenu value="#{sessionController.departmentPreference.pharmacyBillPaperType}" class="m-1" style="width: 13em;">
+                            <f:selectItem itemLabel="Please Select Paper Type" />
+                            <f:selectItems value="#{enumController.paperTypes}" />
+                        </p:selectOneMenu>
+                        <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button m-1" title="Redraw Bill"></p:commandButton>
+                        <p:commandButton 
+                            value="Print" 
+                            icon="fas fa-print"
+                            class="ui-button-info m-1"
+                            ajax="false" 
+                            action="#" >
+                            <p:printer target="gpBillPreview" ></p:printer>
+                        </p:commandButton>
+                    </div>
+                </div>
+
+                <h:panelGroup   id="gpBillPreview" class="d-flex justify-content-center">
+
+                    <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'A4Paper'}">
+                        <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq false}" class="noBorder">
+                            <ph:transferIssue bill="#{transferIssueController.issuedBill}"/>
+                        </h:panelGroup>
+
+                        <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq true}" class="noBorder">
+                            <ph:transferIssue_detailed bill="#{transferIssueController.issuedBill}"/>
+                        </h:panelGroup>
+                    </h:panelGroup>
+                    
+                    <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'PosPaper'}">
+                        <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq false}" >
+                            <ph:Pharmacy_department_Issue_pos_bill bill="#{transferIssueController.issuedBill}"/>
+                        </h:panelGroup>
+                    </h:panelGroup>
+                    
 <!--                    <ph:transferIssue bill="#{transferIssueController.issuedBill}"/>-->
-
-                    <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq false}" class="noBorder">
-                        <ph:transferIssue bill="#{transferIssueController.issuedBill}"/>
-                    </h:panelGroup>
-
-                    <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq true}" class="noBorder">
-                        <ph:transferIssue_detailed bill="#{transferIssueController.issuedBill}"/>
-                    </h:panelGroup>
 
                 </h:panelGroup>
 
