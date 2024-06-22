@@ -22,6 +22,8 @@ public enum MessageType {
     ChannelNoShow,
     ChannelDoctorPayment,
     ChannelCustom,
+    ChannelPatientFeedback,
+    ChannelPatientReschedule,
     ChannelReminder,
 
     DoctorPayment

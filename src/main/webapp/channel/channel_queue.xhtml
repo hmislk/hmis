@@ -172,26 +172,24 @@
                             <div class="d-flex justify-content-between align-items-center mt-3">
                                 
                                 <div>
-                                     <p:commandButton styleClass="rounded-button ui-button-success" type="button"
+                                    <p:badge severity="success"
                                                      value="Completed"
                                                      rendered="#{s.completed}">
-                                    </p:commandButton>
+                                    </p:badge>
 
 
-                                    <p:commandButton  value="Scheduled" styleClass="rounded-button ui-button-warning" 
-                                                      type="button"
+                                    <p:badge  value="Scheduled" severity="warning"
                                                       rendered="#{not s.completed and not s.started}">
-                                    </p:commandButton>
+                                    </p:badge>
 
-                                    <p:commandButton styleClass="rounded-button ui-button-success" value="Strated"
-                                                     type="button"
+                                    <p:badge severity="info"  value="Strated"
                                                      rendered="#{s.started and not s.completed}">
-                                    </p:commandButton>
+                                    </p:badge>
                                 </div>
                                 
                                 <div>                                 
                                      <p:commandButton class="mx-2" icon="fas fa-eye"
-                                                     styleClass="rounded-button ui-button-outlined ui-button-info " ajax="false"
+                                                      styleClass="rounded-button ui-button-outlined ui-button-info " ajax="false"
                                                      value="View"
                                                      style="font-size: 1em; text-align: center"
                                                      action="#{bookingController.navigateToManageSessionQueueAtConsultantRoom}"

@@ -823,9 +823,20 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
         checkBillValues();
         
         if (getToken() != null) {
+            if (getToken().getBill() == null) {
                 getToken().setBill(batchBill);
                 tokenFacade.edit(getToken());
                 markToken(batchBill);
+            }else{
+                Token t=new Token();
+                t.setPatient(getToken().getPatient());
+                t.setBill(batchBill);
+                t.setTokenNumber(getToken().getTokenNumber());
+                tokenFacade.create(t);
+                getToken().setReferaToken(t);
+                tokenFacade.edit(t);
+            }
+                
             }
         
         printPreview = true;
