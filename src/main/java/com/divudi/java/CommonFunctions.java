@@ -28,6 +28,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
 import java.util.TimeZone;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.LocalDate;
 import org.joda.time.Period;
@@ -45,7 +47,6 @@ public class CommonFunctions {
     private static final String[] teens = {"Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"};
     private static final String[] tens = {"", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"};
 
-    
     public static Long removeSpecialCharsInPhonenumber(String phonenumber) {
         try {
             if (phonenumber == null || phonenumber.trim().equals("")) {
@@ -58,7 +59,7 @@ public class CommonFunctions {
             return null;
         }
     }
-    
+
     public static List<Integer> convertStringToIntegerList(String text) {
         List<Integer> numbers = new ArrayList<>();
 
@@ -141,8 +142,6 @@ public class CommonFunctions {
             return units[number / 100] + " Hundred " + convert(number % 100);
         }
     }
-
-   
 
     public static Date convertLocalDateTimeToDate(LocalDateTime localDateTime) {
         return Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
@@ -598,6 +597,25 @@ public class CommonFunctions {
             mp.forEach(m::putIfAbsent);
         }
         return m;
+    }
+
+    public static List<String> extractPlaceholders(String input) {
+        List<String> placeholders = new ArrayList<>();
+
+        // Check if the input is null or empty
+        if (input == null || input.isEmpty()) {
+            return placeholders; // Return an empty list if input is null or empty
+        }
+
+        // Adjusted pattern to include the double curly braces in the match
+        Pattern pattern = Pattern.compile("\\{\\{[^}]+\\}\\}");
+        Matcher matcher = pattern.matcher(input);
+
+        while (matcher.find()) {
+            placeholders.add(matcher.group()); // Add the entire placeholder including double braces
+        }
+
+        return placeholders;
     }
 
     public static Map<String, String> getReplaceables(Patient p) {
