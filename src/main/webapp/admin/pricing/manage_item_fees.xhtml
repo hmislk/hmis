@@ -32,7 +32,7 @@
                                             var="ix" 
                                             itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  
                                             class="w-100"
-                                            maxResults="15"
+                                            maxResults="10"
                                             inputStyleClass="w-100">
                                 <p:ajax event="itemSelect" process="@this" update="gpFees lblTotal" listener="#{itemFeeManager.fillFees()}"></p:ajax>
                                 <p:column headerText="Type" style="padding: 6px;" >

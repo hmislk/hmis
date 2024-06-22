@@ -971,6 +971,32 @@ public class BookingController implements Serializable, ControllerWithPatient {
         }
         JsfUtil.addSuccessMessage("SMS Sent to all Patients.");
     }
+    
+    public void sendSmsOnChannelBookedCompleted() {
+        if (selectedBillSession == null) {
+            return;
+        }
+            if (selectedBillSession.getBill() == null) {
+                return;
+            }
+            if (selectedBillSession.getBill().getPatient().getPerson().getSmsNumber() == null) {
+                return;
+            }
+            Sms e = new Sms();
+            e.setCreatedAt(new Date());
+            e.setCreater(sessionController.getLoggedUser());
+            e.setBill(selectedBillSession.getBill());
+            e.setReceipientNumber(selectedBillSession.getBill().getPatient().getPerson().getSmsNumber());
+            e.setSendingMessage(createChanellPatientFeedbackSms(selectedBillSession.getBill()));
+            e.setDepartment(getSessionController().getLoggedUser().getDepartment());
+            e.setInstitution(getSessionController().getLoggedUser().getInstitution());
+            e.setPending(false);
+            e.setSmsType(MessageType.ChannelPatientFeedback);
+            getSmsFacade().create(e);
+            Boolean sent = smsManager.sendSms(e);
+
+//        JsfUtil.addSuccessMessage("SMS Sent to all Patients.");
+    }
 
     public void sendSmsOnChannelMissingChannelBookings() {
         if (billSessions == null || billSessions.isEmpty()) {
@@ -1019,6 +1045,15 @@ public class BookingController implements Serializable, ControllerWithPatient {
         }
         return createSmsForChannelBooking(b, template);
     }
+    
+    private String createChanellPatientFeedbackSms(Bill b) {
+//        String template = sessionController.getDepartmentPreference().getSmsTemplateForChannelBooking();
+        String template = configOptionController.getLongTextValueByKey("Template for SMS sent on Patient Feedback", OptionScope.APPLICATION, null, null, null);
+        if (template == null || template.isEmpty()) {
+            template = "Thank you for choosing  {ins_name}";
+        }
+        return createSmsForChannelBooking(b, template);
+    }
 
     public String createSmsForChannelBooking(Bill b, String template) {
         if (b == null) {
@@ -1042,6 +1077,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
         String sessionDate = CommonController.getDateFormat(si.getSessionDate(), sessionController.getApplicationPreference().getLongDateFormat());
         String doc = bs.getStaff().getPerson().getNameWithTitle();
         String patientName = b.getPatient().getPerson().getNameWithTitle();
+        String insName = sessionController.getLoggedUser().getInstitution().getName();
         int no = b.getSingleBillSession().getSerialNo();
 
         s = template.replace("{patient_name}", patientName)
@@ -1052,6 +1088,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
                 .replace("{doc}", doc)
                 .replace("{time}", sessionTime)
                 .replace("{date}", sessionDate)
+                .replace("{ins_name}", insName)
                 .replace("{No}", String.valueOf(no));
 
         return s;
@@ -1904,6 +1941,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
         billSessionFacade.edit(selectedBillSession);
         selectedSessionInstance.setLastCompletedBillSession(selectedBillSession);
         sessionInstanceFacade.edit(selectedSessionInstance);
+        sendSmsOnChannelBookedCompleted();
     }
 
     public void completeSelectedBillSessionUndo() {
