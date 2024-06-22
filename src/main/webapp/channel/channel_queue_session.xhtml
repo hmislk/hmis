@@ -33,10 +33,18 @@
                         <div class="d-flex justify-content-center align-items-center">
 
                             <p:commandButton ajax="false" 
-                                             value="Back To Today's Sessions"
-                                             icon="fa fa-calendar-alt" 
-                                             styleClass="ui-button-info mx-1" 
+                                             value="Back"
+                                             icon="fa fa-arrow-left" 
+                                             styleClass="ui-button-secondary mx-1" 
                                              action="#{bookingController.navigateToChannelQueueFromConsultantRoom()}" />
+
+                            <p:commandButton rendered="#{!bookingController.selectedSessionInstance.arrived}"
+                                             id="btnArrival"
+                                             ajax="false"
+                                             value="Arrived" 
+                                             class="ui-button-info"
+                                             action="#{bookingController.markAsArrived()}"
+                                             icon="fa-solid fa-check" />
 
                             <p:commandButton ajax="false" 
                                              value="Reopen" 
@@ -59,11 +67,11 @@
                     </div>
                 </f:facet>
 
-                <p:dialog widgetVar="startSessionWarn" modal="true" header="Session Started" draggable="false" resizable="false">
-                    <h:panelGrid columns="1" style="width:100%">
-                        <h:outputText value="The session has been successfully started." />
-                    </h:panelGrid>
-                </p:dialog>
+                <!--                <p:dialog widgetVar="startSessionWarn" modal="true" header="Session Started" draggable="false" resizable="false">
+                                    <h:panelGrid columns="1" style="width:100%">
+                                        <h:outputText value="The session has been successfully started." />
+                                    </h:panelGrid>
+                                </p:dialog>-->
 
                 <!--                <p:dialog widgetVar="completeSessionWarn" modal="true" header="Session Completed" draggable="false" resizable="false">
                                     <h:panelGrid columns="1" style="width:100%">
@@ -102,6 +110,40 @@
                             value="No"
                             class="mx-2 ui-button-danger"
                             onclick="PF('startSessionWarn').hide();" />
+                    </f:facet>
+                </p:dialog>
+
+                <p:dialog minHeight="100" width="800" header="Confirmation" widgetVar="refundPatientWarn" modal="true" resizable="false">
+                    <p>Are you sure you want to mark as refund this patient of the channel session?</p>
+
+                    <f:facet name="footer">
+                        <p:commandButton
+                            class="mx-2 ui-button-success"
+                            ajax="false"
+                            value="Yes"
+                            action="#{bookingController.markToRefund()}"
+                            onclick="PF('refundPatientWarn').hide();" />
+                        <p:commandButton
+                            value="No"
+                            class="mx-2 ui-button-danger"
+                            onclick="PF('refundPatientWarn').hide();" />
+                    </f:facet>
+                </p:dialog>
+
+                <p:dialog minHeight="100" width="800" header="Confirmation" widgetVar="attendPatientWarn" modal="true" resizable="false">
+                    <p>Are you sure you want to attend this patient to the channel session?</p>
+
+                    <f:facet name="footer">
+                        <p:commandButton
+                            class="mx-2 ui-button-success"
+                            ajax="false"
+                            value="Yes"
+                            action="#{bookingController.patientAttend()}"
+                            onclick="PF('attendPatientWarn').hide();" />
+                        <p:commandButton
+                            value="No"
+                            class="mx-2 ui-button-danger"
+                            onclick="PF('attendPatientWarn').hide();" />
                     </f:facet>
                 </p:dialog>
 
@@ -184,12 +226,14 @@
                                              icon="fa fa-play" 
                                              styleClass="ui-button-success mx-1" 
                                              oncomplete="PF('startSessionWarn').show()" 
+                                             rendered="#{!bookingController.selectedSessionInstance.started}"
                                              disabled="#{bookingController.selectedSessionInstance.started}" />
 
                             <p:commandButton value="Complete"
                                              icon="fa fa-stop" 
                                              styleClass="ui-button-danger mx-1"
-                                             onclick="PF('completeSessionWarn').show()" 
+                                             onclick="PF('completeSessionWarn').show()"
+                                             rendered="#{bookingController.selectedSessionInstance.started}"
                                              disabled="#{!bookingController.selectedSessionInstance.started || bookingController.selectedSessionInstance.completed}" />
 
 
@@ -262,7 +306,7 @@
                                                                 value="Attend"
                                                                 rendered="#{!bs.currentlyConsulted and bs.paidBillSession ne null and !bs.completed and !bs.bill.cancelled}"
                                                                 disabled="#{!bookingController.selectedSessionInstance.started}"
-                                                                action="#{bookingController.patientAttend()}"
+                                                                onclick="PF('attendPatientWarn').show()"
                                                                 icon="fas fa-clipboard-user"
                                                                 styleClass="ui-button-info ui-button-outlined rounded-button mx-1"
                                                                 process="btnCall"
@@ -294,7 +338,7 @@
                                                                 value="Refund"
                                                                 disabled="#{!bs.currentlyConsulted}"
                                                                 rendered="#{!bs.markedToRefund and bs.currentlyConsulted and !bs.completed}"
-                                                                action="#{bookingController.markToRefund()}"
+                                                                onclick="PF('refundPatientWarn').show()"
                                                                 icon="fas fa-dollar-sign"
                                                                 styleClass="ui-button-warning ui-button-outlined rounded-button w-100 mx-1"
                                                                 process="btnRefund"
