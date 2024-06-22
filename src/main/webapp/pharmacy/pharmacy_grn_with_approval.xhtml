@@ -13,23 +13,32 @@
             <p:panel rendered="#{!grnController.printPreview}">
                 <f:facet name="header">
                     <h:outputLabel value="GRN Receive" class="mt-2"/>
+                    <p:commandButton 
+                        ajax="false" 
+                        action="pharmacy_purchase_order_list_for_recieve_with_approval"
+                        class="ui-button-secondary"
+                        icon="fa fa-arrow-left"
+                        actionListener="#{grnController.viewPoList()}" 
+                        style="float: right;"
+                        value="Back to GRN List"> 
+                    </p:commandButton> 
                     <p:commandButton  
-                        value="Save Grn" 
+                        value="Finalize" 
+                        action="#{grnController.requestFinalize()}"
+                        class="ui-button-warning mx-1"
+                        icon="fas fa-check"
+                        ajax="false"  
+                        style="float: right;">
+                    </p:commandButton> 
+                    <p:commandButton  
+                        value="Save" 
                         action="#{grnController.request()}"
                         class="ui-button-success"
-                        icon="fas fa-check"
+                        icon="fas fa-floppy-disk"
                         ajax="false"  
                         style="float: right;">
                     </p:commandButton> 
-                    <p:commandButton  
-                        value="Finalize Grn" 
-                        action="#{grnController.requestFinalize()}"
-                        class="ui-button-success"
-                        icon="fas fa-check"
-                        ajax="false"  
-                        style="float: right;">
-                    </p:commandButton> 
-                    
+
                 </f:facet>
                 <h:panelGroup >
 
@@ -239,7 +248,7 @@
                                 icon="fas fa-plus"
                                 class="ui-button-danger mx-1"
                                 action="#{grnController.duplicateItem(bi)}"/>
-<!--                            <p:rowEditor />  -->
+                            <!--                            <p:rowEditor />  -->
 
                         </p:column>
 

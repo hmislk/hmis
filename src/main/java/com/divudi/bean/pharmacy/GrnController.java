@@ -146,6 +146,12 @@ public class GrnController implements Serializable {
 
     public String navigateToRecieveGrnPreBill() {
         clear();
+        for (Bill b : getApproveBill().getListOfBill()) {
+            if (b.getForwardReferenceBill() == null) {
+                JsfUtil.addErrorMessage("Please approve the grn bill");
+                return "";
+            }
+        }
         createGrn();
         getCurrentGrnBillPre().setPaymentMethod(getApproveBill().getPaymentMethod());
         return "/pharmacy/pharmacy_grn_with_approval?faces-redirect=true";
@@ -156,6 +162,8 @@ public class GrnController implements Serializable {
         billItems = getCurrentGrnBillPre().getBillItems();
         invoiceDate = getCurrentGrnBillPre().getInvoiceDate();
         invoiceNumber = getCurrentGrnBillPre().getInvoiceNumber();
+        setFromInstitution(getCurrentGrnBillPre().getFromInstitution());
+        setReferenceInstitution(getSessionController().getLoggedUser().getInstitution());
         for (BillItem bi : billItems) {
             bi.setTmpQty(bi.getPharmaceuticalBillItem().getQtyInUnit());
             bi.setTmpFreeQty(bi.getPharmaceuticalBillItem().getFreeQtyInUnit());
@@ -169,7 +177,10 @@ public class GrnController implements Serializable {
         billItems = getCurrentGrnBillPre().getBillItems();
         invoiceDate = getCurrentGrnBillPre().getInvoiceDate();
         invoiceNumber = getCurrentGrnBillPre().getInvoiceNumber();
+        setFromInstitution(getCurrentGrnBillPre().getFromInstitution());
+        setReferenceInstitution(getSessionController().getLoggedUser().getInstitution());
         for (BillItem bi : billItems) {
+            System.out.println("bi = " + bi.getItem().getName());
             bi.setTmpQty(bi.getPharmaceuticalBillItem().getQtyInUnit());
             bi.setTmpFreeQty(bi.getPharmaceuticalBillItem().getFreeQtyInUnit());
         }
@@ -392,6 +403,10 @@ public class GrnController implements Serializable {
 //            saveBillFee(i, p);
             getCurrentGrnBillPre().getBillItems().add(i);
         }
+        for (BillItem bi:getCurrentGrnBillPre().getBillItems()){
+            System.out.println("bi = " + bi.getItem().getName());
+            System.out.println("** = " + bi.getPharmaceuticalBillItem().getItemBatch().getItem().getName());
+        }
 
         calGrossTotal();
 
@@ -516,7 +531,12 @@ public class GrnController implements Serializable {
         if (getGrnBill().getReferenceInstitution() == null) {
             getGrnBill().setReferenceInstitution(getReferenceInstitution());
         }
-        getGrnBill().setPaymentMethod(getApproveBill().getPaymentMethod());
+
+        if (currentGrnBillPre != null) {
+            getGrnBill().setPaymentMethod(getCurrentGrnBillPre().getPaymentMethod());
+        } else {
+            getGrnBill().setPaymentMethod(getApproveBill().getPaymentMethod());
+        }
         getGrnBill().setInvoiceDate(invoiceDate);
         getGrnBill().setInvoiceNumber(invoiceNumber);
         String msg = pharmacyCalculation.errorCheck(getGrnBill(), billItems);
@@ -826,7 +846,7 @@ public class GrnController implements Serializable {
         //   getGrnBill().setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyGrnBill, BillNumberSuffix.GRN));
         //   getGrnBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getGrnBill(), BillType.PharmacyGrnBill, BillNumberSuffix.GRN));
         getGrnBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_GRN);
-        if(getCurrentGrnBillPre()!=null){
+        if (getCurrentGrnBillPre() != null) {
             getCurrentGrnBillPre().setForwardReferenceBill(getGrnBill());
             getGrnBill().setReferenceBill(currentGrnBillPre);
             getBillFacade().edit(getCurrentGrnBillPre());

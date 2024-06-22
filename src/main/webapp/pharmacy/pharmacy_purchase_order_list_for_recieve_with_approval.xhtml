@@ -116,48 +116,22 @@
                                     <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{p}"/>
                                 </h:commandLink>
                             </p:column>
-                            <p:column width="15%">
-                                <div class="row">
-                                    <div class="d-flex gap-2 mb-1">
-                                        <p:commandButton 
-                                            ajax="false"
-                                            value="Recieve"
-                                            class="w-100 ui-button-warning"
-                                            action="#{grnController.navigateToRecieveGrnPreBill()}" 
-                                            disabled="#{p.cancelled}">
-                                            <f:setPropertyActionListener target="#{grnController.approveBill}" value="#{p}"/>
-                                        </p:commandButton>
-<!--                                        <p:commandButton 
-                                            ajax="false" 
-                                            value="Recieve&nbsp;All" 
-                                            rendered="false"
-                                            class="w-50 ui-button-info"
-                                            action="#{grnController.navigateToResiveAll()}" 
-                                            disabled="#{p.cancelled}">
-                                            <f:setPropertyActionListener target="#{grnController.approveBill}" value="#{p}"/>
-                                        </p:commandButton>-->
-                                    </div>
-                                    <div class="col-md-12">
-<!--                                        <p:commandButton 
-                                            ajax="false" 
-                                            class="w-100 ui-button-info"
-                                            value="Recieve Wholesale" 
-                                            action="#{grnController.navigateToReceiveWholesale()}" 
-                                            disabled="#{p.cancelled}">
-                                            <f:setPropertyActionListener target="#{grnController.approveBill}" value="#{p}"/>
-                                        </p:commandButton>-->
-                                    </div>
-                                </div>
-
-
+                            <p:column width="8%">
+                                <p:commandButton 
+                                    ajax="false"
+                                    value="Recieve"
+                                    class="w-100 ui-button-warning"
+                                    action="#{grnController.navigateToRecieveGrnPreBill()}" 
+                                    disabled="#{p.cancelled}">
+                                    <f:setPropertyActionListener target="#{grnController.approveBill}" value="#{p}"/>
+                                </p:commandButton>
                             </p:column>
-                            <p:column headerText="Goods Received Notes" width="38em">                   
-                                <h:dataTable var="b" 
-                                             border="0"
+                            <p:column headerText="Goods Received Notes" width="35em">                   
+                                <p:dataTable var="b" 
                                              class="table table-borderless"
                                              value="#{p.listOfBill}" 
                                              rendered="#{not empty p.listOfBill and p.listOfBill ne null}">
-                                    <h:column >
+                                    <p:column width="5em" headerText="GRN No">
                                         <h:outputText value="#{b.deptId}" />
                                         <h:panelGroup rendered="#{b.cancelled}">
                                             <span class="ui-icon ui-icon-circle-close" title="Cancelled" style="margin-left:5px;"></span>
@@ -165,24 +139,25 @@
                                         <h:panelGroup rendered="#{b.refunded}">
                                             <span class="ui-icon ui-icon-arrowreturnthick-1-w" title="Refunded" style="margin-left:5px;"></span>
                                         </h:panelGroup>
-                                    </h:column>
-                                    <h:column >
+                                    </p:column>
+                                    <p:column width="5em" headerText="Total">
                                         <h:outputText value="#{b.netTotal lt 0 ? b.netTotal * -1 : b.netTotal}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputText>
-                                    </h:column>
-                                    <h:column >
+                                    </p:column>
+                                    <p:column width="5em" headerText="Created At">
                                         <h:outputText value="#{b.createdAt}">
                                             <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                                         </h:outputText>
-                                    </h:column>
-                                    <h:column >
-                                        <h:panelGroup layout="block" styleClass="btn-group">
+                                    </p:column>
+                                    <p:column headerText="Action">
+                                        <h:panelGroup styleClass="btn-group">
                                             <p:commandButton 
                                                 id="edit"
                                                 ajax="false"
+                                                title="Edit GRN" 
                                                 icon="fas fa-edit"
-                                                class="ui-button-warning "
+                                                class="ui-button-warning m-1"
                                                 action="#{grnController.navigateToEditGrn()}"
                                                 disabled="#{b.checkedBy ne null and b.referenceBill.cancelled eq false or b.cancelled eq true}">
                                                 <f:setPropertyActionListener 
@@ -193,21 +168,23 @@
                                             <p:commandButton 
                                                 id="approve"
                                                 ajax="false"
+                                                title="Approve GRN" 
                                                 icon="fas fa-check-circle"
-                                                class="ui-button-success mx-2"
+                                                class="ui-button-success m-1"
                                                 action="#{grnController.navigateToApproveRecieveGrnPreBill()}" 
-                                                disabled="#{b.checkedBy eq null and b.referenceBill.cancelled eq false or b.cancelled eq true or !webUserController.hasPrivilege('PurchaseOrdersApprovel')}">
+                                                disabled="#{b.checkedBy eq null and b.referenceBill.cancelled eq false or b.cancelled eq true or b.forwardReferenceBill ne null or !webUserController.hasPrivilege('PurchaseOrdersApprovel')}">
                                                 <f:setPropertyActionListener target="#{grnController.currentGrnBillPre}" value="#{b}"/>
                                             </p:commandButton>
-<!--                                            <p:commandButton  
+                                            <p:commandButton  
                                                 class="m-1"  
                                                 icon="fa fa-eye"
                                                 title="View GRN" 
                                                 ajax="false"
                                                 action="#{pharmacyBillSearch.navigateToViewPharmacyGrn()}" 
+                                                disabled="#{b.checkedBy eq null and b.referenceBill.cancelled eq false or b.cancelled eq true }"
                                                 actionListener="#{pharmacyBillSearch.calTotalSaleRate(b)}">
                                                 <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b}"/>
-                                            </p:commandButton>-->
+                                            </p:commandButton>
                                             <p:commandButton 
                                                 class="m-1" 
                                                 icon="fas fa-file-alt" 
@@ -216,8 +193,8 @@
                                                 <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b.referenceBill}"/>
                                             </p:commandButton>
                                         </h:panelGroup>
-                                    </h:column>
-                                </h:dataTable>
+                                    </p:column>
+                                </p:dataTable>
 
 
                             </p:column>
