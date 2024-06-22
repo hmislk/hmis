@@ -2304,6 +2304,7 @@ public class CommonReport implements Serializable {
     public BillsTotals getInstitutionRefundedBillsOwn() {
         if (refundedBills == null) {
             getRefundedBills().setBills(billsOwn(new RefundBill(), BillType.OpdBill));
+            System.out.println("getRefundedBills = " + getRefundedBills().getBills().size());
         }
         //  calTot(getRefundedBills());
         return refundedBills;
