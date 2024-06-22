@@ -23,6 +23,15 @@
                         </div>
                         <div class="d-flex align-items-center">
                             <!-- Cancel Session Button with BS colors, FA icon, and JavaScript confirmation -->
+                             <p:commandButton 
+                                rendered="#{!bookingControllerViewScope.selectedSessionInstance.arrived}"
+                                id="btnArrival"
+                                ajax="false"
+                                value="Mark Arrival " 
+                                class="ui-button-info mx-1"
+                                action="#{bookingControllerViewScope.markAsArrived()}"
+                                icon="fa-solid fa-check" />
+                             
                             <p:commandButton action="#{bookingControllerViewScope.navigateToNurseView()}" 
                                              value="Veiws"
                                              ajax="false"
