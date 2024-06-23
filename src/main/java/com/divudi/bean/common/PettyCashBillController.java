@@ -234,7 +234,7 @@ public class PettyCashBillController implements Serializable {
 
         getCurrent().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PettyCash, BillClassType.BilledBill, BillNumberSuffix.PTYPAY));
         getCurrent().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PettyCash, BillClassType.BilledBill, BillNumberSuffix.PTYPAY));
-
+        getCurrent().setBillTypeAtomic(BillTypeAtomic.PETTY_CASH_ISSUE);
         getCurrent().setBillType(BillType.PettyCash);
 
         getCurrent().setDepartment(getSessionController().getDepartment());
@@ -308,7 +308,7 @@ public class PettyCashBillController implements Serializable {
 
         saveBill();
         saveBillItem();
-
+        createPaymentForPettyCashBill(getCurrent(),getCurrent().getPaymentMethod());
         WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(getCurrent(), getSessionController().getLoggedUser());
         getSessionController().setLoggedUser(wb);
         JsfUtil.addSuccessMessage("Bill Saved");
@@ -340,6 +340,15 @@ public class PettyCashBillController implements Serializable {
         setPaymentMethodData(p, pm);
         return p;
     }
+    
+    public void createPaymentForPettyCashBill(Bill b, PaymentMethod pm) {
+        Payment p = new Payment();
+        p.setBill(b);
+        p.setPaidValue(0 - Math.abs(b.getNetTotal()));
+        System.out.println("p = " + p.getPaidValue());
+        setPaymentMethodData(p, pm);
+        
+    }
 
     public void setPaymentMethodData(Payment p, PaymentMethod pm) {
         p.setInstitution(getSessionController().getInstitution());
@@ -347,19 +356,19 @@ public class PettyCashBillController implements Serializable {
         p.setCreatedAt(new Date());
         p.setCreater(getSessionController().getLoggedUser());
         p.setPaymentMethod(pm);
-
-        if (p.getBill().getBillType() == BillType.PaymentBill) {
+        if (p.getBill().getBillType() == BillType.PettyCash) {
             p.setPaidValue(p.getBill().getNetTotal());
         } else {
             p.setPaidValue(p.getBill().getCashPaid());
         }
-
         if (p.getId() == null) {
             paymentFacade.create(p);
         }
 
     }
 
+
+    
     private Bill createPettyCashReturnBill() {
         Bill rb = new RefundBill();
         rb.copy(getCurrent());
