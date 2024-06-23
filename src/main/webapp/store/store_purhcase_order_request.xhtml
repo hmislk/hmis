@@ -9,10 +9,10 @@
 
     <ui:define name="content">
         <h:form>
-            <h:panelGroup rendered="#{!webUserController.hasPrivilege('PharmacyOrderCreation')}" >
+            <h:panelGroup rendered="#{!webUserController.hasPrivilege('StorePurchaseOrder')}" >
                 You are NOT authorized
             </h:panelGroup>
-            <h:panelGroup rendered="#{webUserController.hasPrivilege('PharmacyOrderCreation')}" >
+            <h:panelGroup rendered="#{webUserController.hasPrivilege('StorePurchaseOrder')}" >
                 <p:growl id="msg"/>
                 <h:panelGroup rendered="#{not storePurchaseOrderRequestController.printPreview}">
                     <div class="row">
