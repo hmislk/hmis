@@ -299,7 +299,7 @@
 
                         </f:facet>
 
-                        <div  class="justify-content-end d-flex gap-2">
+                        <div  class="justify-content-end d-flex gap-2 mb-3">
                             <h:outputLabel value="Paper Type : " class="mt-2"></h:outputLabel>
                             <p:selectOneMenu value="#{sessionController.departmentPreference.channelBillPaperType}" style="width: 13em;">
                                 <f:selectItem itemLabel="Please Select Paper Type" />
@@ -316,7 +316,7 @@
                             </p:commandButton>
                         </div>
 
-                        <h:panelGroup id="billPreview">
+                        <h:panelGroup id="billPreview" >
                             <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'FiveFivePaper'}">
                                 <bi:staff_payment_five_five_paper_without_headings controller="#{channelStaffPaymentBillController}" bill="#{channelStaffPaymentBillController.current}" duplicate="false"/>
                             </h:panelGroup>
