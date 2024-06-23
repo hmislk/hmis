@@ -264,35 +264,69 @@
                                 </p:panel>
                                 <div class="w-50" >
 
-                                    <p:commandButton id="btnPay"
-                                                     value="Pay Doctor" 
-                                                     class="w-25 ui-button-success my-1"
-                                                     action="#{channelStaffPaymentBillController.settleBill}" 
-                                                     ajax="false"
-                                                     update="tblFee pTotals gpBillPreview" />
+                                    <p:commandButton 
+                                        id="btnPay"
+                                        value="Pay Doctor" 
+                                        class="w-25 ui-button-success my-1"
+                                        action="#{channelStaffPaymentBillController.settleBill}" 
+                                        ajax="false"
+                                        update="tblFee pTotals gpBillPreview" />
                                 </div>
-
-
-
                             </h:panelGrid>
 
                         </p:panel>
                     </h:panelGroup>
 
-
-
-
-
-
-
                 </h:form>
 
-
                 <h:form>
-                    <h:panelGroup id="gpBillPreview" rendered="#{channelStaffPaymentBillController.printPreview}">
-                        <p:commandButton ajax="false" styleClass="noPrintButton" value="New Bill" action="#{channelStaffPaymentBillController.makenull()}" />
-                        <bi:staffBill_1  controller="#{channelStaffPaymentBillController}" bill="#{channelStaffPaymentBillController.current}" dup="false"/>
-                    </h:panelGroup>
+                    <p:panel id="gpBillPreview" rendered="#{channelStaffPaymentBillController.printPreview}">
+                        <f:facet name="header">
+                            <div class="d-flex justify-content-between">
+                                <h:outputLabel value="Doctor Payment Bill" ></h:outputLabel>
+                                <div class="d-flex gap-2">
+                                    
+                                    <p:commandButton
+                                        ajax="false" 
+                                        styleClass="noPrintButton" 
+                                        value="New Bill" 
+                                        action="#{channelStaffPaymentBillController.makenull()}" >
+                                    </p:commandButton>
+
+                                </div>
+                            </div>
+
+
+                        </f:facet>
+
+                        <div  class="justify-content-end d-flex gap-2">
+                            <h:outputLabel value="Paper Type : " class="mt-2"></h:outputLabel>
+                            <p:selectOneMenu value="#{sessionController.departmentPreference.channelBillPaperType}" style="width: 13em;">
+                                <f:selectItem itemLabel="Please Select Paper Type" />
+                                <f:selectItems value="#{enumController.paperTypes}" />
+                            </p:selectOneMenu>
+                            <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button" title="Redraw Bill"></p:commandButton>
+                            <p:commandButton 
+                                value="Print" 
+                                class="ui-button-info" 
+                                icon="fas fa-print" 
+                                ajax="false" 
+                                action="#" >
+                                <p:printer target="billPreview" ></p:printer>
+                            </p:commandButton>
+                        </div>
+
+                        <h:panelGroup id="billPreview">
+                            <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'FiveFivePaper'}">
+                                <bi:staff_payment_five_five_paper_without_headings controller="#{channelStaffPaymentBillController}" bill="#{channelStaffPaymentBillController.current}" duplicate="false"/>
+                            </h:panelGroup>
+                            <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'PosPaper'}">
+                                <bi:staffBill_1 controller="#{channelStaffPaymentBillController}" bill="#{channelStaffPaymentBillController.current}" dup="false"/>
+                            </h:panelGroup>
+                        </h:panelGroup>
+
+                        
+                    </p:panel>
                 </h:form>
             </ui:define>
 
