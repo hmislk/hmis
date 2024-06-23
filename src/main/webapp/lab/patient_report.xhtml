@@ -125,6 +125,7 @@
 
                         <p:growl id="messages" showDetail="true"/> 
                         <div class="row">
+
                             <div class="col-4">
                                 <p:panel header="Enter Values"  
                                          rendered="#{patientReportController.currentPatientReport.transInvestigation.reportType ne 'Microbiology' and patientReportController.currentPatientReport.containValues eq true}" >
@@ -453,7 +454,7 @@
 
                                 </p:panel>
                             </div>
-                            <div class="col-8">
+                            <div class="col-8 ">
                                 <div class="my-1 row w-100" >
                                     <div>
                                         <h:panelGrid columns="8" class="w-100">
@@ -510,9 +511,8 @@
                                         <div>
                                             <p:panel class="my-2 mx-2" header="Patient details" >
                                                 <ezcommon:patient patient="#{patientReportController.currentPatientReport.patientInvestigation.patient}" ></ezcommon:patient>
-                                            </p:panel>                                           
+                                            </p:panel>
                                         </div>
-
                                     </div>
 
                                 </div>
@@ -536,6 +536,12 @@
 
                                     <h:panelGroup rendered="#{patientReportController.currentPatientReport.item.reportType ne 'Microbiology'}"  >
                                         <div id="divReport"  class="labReport"  >
+                                            <ez:common_report 
+                                                showBackground="#{patientReportController.showBackground}"
+                                                commonReportFormat="#{patientReportController.currentPatientReport.reportFormat}"
+                                                patientReport="#{patientReportController.currentPatientReport}"/>
+
+
 
                                             <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
                                                 <div style="#{prv.investigationItem.cssStyle}; position:absolute;">
