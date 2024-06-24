@@ -186,6 +186,21 @@ public class ConfigOptionApplicationController implements Serializable {
         return option.getOptionValue();
     }
 
+    public void setLongTextValueByKey(String key, String value) {
+        ConfigOption option = getApplicationOption(key);
+        if (option == null || option.getValueType() != OptionValueType.LONG_TEXT) {
+            option = new ConfigOption();
+            option.setCreatedAt(new Date());
+            option.setOptionKey(key);
+            option.setScope(OptionScope.APPLICATION);
+            option.setValueType(OptionValueType.LONG_TEXT);
+            optionFacade.create(option);
+        }
+        option.setOptionValue(value);
+        optionFacade.edit(option);
+        loadApplicationOptions();
+    }
+
     public String getShortTextValueByKey(String key) {
         ConfigOption option = getApplicationOption(key);
         if (option == null || option.getValueType() != OptionValueType.SHORT_TEXT) {
@@ -318,6 +333,24 @@ public class ConfigOptionApplicationController implements Serializable {
             loadApplicationOptions();
         }
         return Boolean.parseBoolean(option.getOptionValue());
+    }
+
+    public void setBooleanValueByKey(String key, boolean value) {
+        ConfigOption option = getApplicationOption(key);
+        if (option == null || option.getValueType() != OptionValueType.BOOLEAN) {
+            option = new ConfigOption();
+            option.setCreatedAt(new Date());
+            option.setOptionKey(key);
+            option.setScope(OptionScope.APPLICATION);
+            option.setInstitution(null);
+            option.setDepartment(null);
+            option.setWebUser(null);
+            option.setValueType(OptionValueType.BOOLEAN);
+            optionFacade.create(option);
+        }
+        option.setOptionValue(Boolean.toString(value));
+        optionFacade.edit(option);
+        loadApplicationOptions();
     }
 
     public List<ConfigOption> getAllOptions(Object entity) {
