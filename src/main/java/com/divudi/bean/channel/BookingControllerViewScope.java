@@ -1494,6 +1494,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
         //cancel(getBillSession().getPaidBillSession().getBill(), getBillSession().getPaidBillSession().getBillItem(), getBillSession().getPaidBillSession());
         cancel(getBillSession().getBill(), getBillSession().getBillItem(), getBillSession());
+        sendSmsOnChannelCancellationBookings();
         cancelPaymentMethod = null;
         comment = null;
     }
@@ -1504,6 +1505,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         }
 
         cancel(getBillSession().getBill(), getBillSession().getBillItem(), getBillSession());
+        sendSmsOnChannelCancellationBookings();
         comment = null;
     }
 
@@ -1520,7 +1522,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         getBillFacade().edit(getBillSession().getBill());
         getBillSession().setReferenceBillSession(cbs);
         billSessionFacade.edit(selectedBillSession);
-
+        sendSmsOnChannelCancellationBookings();
         comment = null;
     }
 
@@ -1626,6 +1628,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         }
         cancel1(getBillSession().getPaidBillSession().getBill(), getBillSession().getPaidBillSession().getBillItem(), getBillSession().getPaidBillSession());
         cancel1(getBillSession().getBill(), getBillSession().getBillItem(), getBillSession());
+        sendSmsOnChannelCancellationBookings();
         comment = null;
 
     }
@@ -2609,11 +2612,41 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             e.setDepartment(getSessionController().getLoggedUser().getDepartment());
             e.setInstitution(getSessionController().getLoggedUser().getInstitution());
             e.setPending(false);
-            e.setSmsType(MessageType.ChannelDoctorArrival);
+            e.setSmsType(MessageType.ChannelNoShow);
             getSmsFacade().create(e);
             Boolean sent = smsManager.sendSms(e);
 
         }
+        JsfUtil.addSuccessMessage("SMS Sent to all No Show Patients.");
+    }
+    
+    public void sendSmsOnChannelCancellationBookings() {
+        if (billSessions == null || billSessions.isEmpty()) {
+            return;
+        }
+            BillSession bs = getBillSession();
+            if (bs.getBill() == null) {
+                return;
+            }
+            if (bs.getBill().getPatient().getPerson().getSmsNumber() == null) {
+                return;
+            }
+            if (bs.isCompleted()) {
+                return;
+            }
+            Sms e = new Sms();
+            e.setCreatedAt(new Date());
+            e.setCreater(sessionController.getLoggedUser());
+            e.setBill(bs.getBill());
+            e.setReceipientNumber(bs.getBill().getPatient().getPerson().getSmsNumber());
+            e.setSendingMessage(createChanellCancellationBookingSms(bs.getBill()));
+            e.setDepartment(getSessionController().getLoggedUser().getDepartment());
+            e.setInstitution(getSessionController().getLoggedUser().getInstitution());
+            e.setPending(false);
+            e.setSmsType(MessageType.ChannelBookingCancellation);
+            getSmsFacade().create(e);
+            Boolean sent = smsManager.sendSms(e);
+
         JsfUtil.addSuccessMessage("SMS Sent to all No Show Patients.");
     }
 
@@ -2629,7 +2662,16 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 //        String template = sessionController.getDepartmentPreference().getSmsTemplateForChannelBooking();
         String template = configOptionController.getLongTextValueByKey("Template for SMS sent on Channel Booking", OptionScope.APPLICATION, null, null, null);
         if (template == null || template.isEmpty()) {
-            template = "Dear {patient_name}, Your appointment with {doctor} is confirmed for {appointment_time} on {appointment_date}. Your serial no. is {serial_no}. Please arrive 10 minutes early. Thank you.";
+            template = "Dear {patient_name}, Your appointment with {doctor} is confirmed for {appointment_time} on {appointment_date}. Your serial No. is {serial_no}. Please arrive 10 minutes early. Thank you.";
+        }
+        return createSmsForChannelBooking(b, template);
+    }
+    
+    private String createChanellCancellationBookingSms(Bill b) {
+//        String template = sessionController.getDepartmentPreference().getSmsTemplateForChannelBooking();
+        String template = configOptionController.getLongTextValueByKey("Template for SMS sent on Channel Booking Cancellation", OptionScope.APPLICATION, null, null, null);
+        if (template == null || template.isEmpty()) {
+            template = "Dear {patient_name}, Your appointment No. {serial_no} with {doctor} on {appointment_date} at {appointment_time} is cancelled. {ins_name}";
         }
         return createSmsForChannelBooking(b, template);
     }
@@ -2657,6 +2699,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         String doc = bs.getStaff().getPerson().getNameWithTitle();
         String patientName = b.getPatient().getPerson().getNameWithTitle();
         int no = b.getSingleBillSession().getSerialNo();
+        
+        String insName = sessionController.getLoggedUser().getInstitution().getName();
 
         s = template.replace("{patient_name}", patientName)
                 .replace("{doctor}", doc)
@@ -2666,6 +2710,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 .replace("{doc}", doc)
                 .replace("{time}", sessionTime)
                 .replace("{date}", sessionDate)
+                .replace("{ins_name}", insName)
                 .replace("{No}", String.valueOf(no));
 
         return s;
@@ -2700,10 +2745,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         String newSessionDate = CommonController.getDateFormat(b1.getSessionDate(), sessionController.getApplicationPreference().getLongDateFormat());
         String newDoc = bs.getStaff().getPerson().getNameWithTitle();
         int newNo = b1.getSerialNo();
-        System.out.println("newNo = " + newNo);
-        System.out.println("newDoc = " + newDoc);
-        System.out.println("newSessionDate = " + newSessionDate);
-        System.out.println("newSessionTime = " + newSessionTime);
 
         s = template.replace("{patient_name}", patientName)
                 .replace("{doctor}", doc)
