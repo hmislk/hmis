@@ -3725,7 +3725,7 @@ public class BillSearch implements Serializable {
                 return;
             }
             billTypeSummary.getPaymentSummaries().add(newPs);
-            billPaymentTotal = bs.getTotal();
+            billPaymentTotal = bs.getNetTotal();
             double biltypeSum = billTypeSummary.getBillTypeTotal() + billPaymentTotal;
             billTypeSummary.setBillTypeTotal(biltypeSum);
         }

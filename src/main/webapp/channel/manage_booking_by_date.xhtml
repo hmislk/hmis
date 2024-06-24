@@ -505,73 +505,201 @@
                                 </div>
                             </div>
                             <div class="row" >
-                                <div class="col" >
-                                    <p:panel header="Booking" rendered="#{bookingControllerViewScope.selectedBillSession.bill.paidBill eq null and bookingControllerViewScope.selectedBillSession.bill.balance ne 0.0}">
-                                        <div class="ui-message-error ui-widget ui-corner-all">
-                                            <span class="ui-message-error-icon"/>
-                                            <span class="ui-message-error-detail">
-                                                <h:outputText value="NOT PAID YET" ></h:outputText>
-                                            </span>
+                                <div class="d-flex" >
+                                    <h:panelGroup rendered="false">
+                                        <p:panel header="Booking" rendered="#{bookingControllerViewScope.selectedBillSession.bill.paidBill eq null and bookingControllerViewScope.selectedBillSession.bill.balance ne 0.0}">
+                                            <div class="ui-message-error ui-widget ui-corner-all">
+                                                <span class="ui-message-error-icon"/>
+                                                <span class="ui-message-error-detail">
+                                                    <h:outputText value="NOT PAID YET" ></h:outputText>
+                                                </span>
+                                            </div>
+
+
+
+                                            <h:panelGrid columns="2">
+                                                <p:outputLabel value="Name"/>
+                                                <p:commandLink value="#{bookingControllerViewScope.selectedBillSession.bill.patient.person.nameWithTitle}"
+                                                               action="#{patientController.toPatientFromSearchPatients()}">
+                                                    <f:setPropertyActionListener value="#{bookingControllerViewScope.selectedBillSession.bill.patient}"
+                                                                                 target="#{patientController.current}" ></f:setPropertyActionListener>
+                                                </p:commandLink>
+                                                <p:outputLabel value="Consultant"/>
+                                                <p:outputLabel value="#{bookingControllerViewScope.selectedBillSession.serviceSession.staff.person.nameWithTitle}"/>
+                                                <p:outputLabel value="Serial No"/>
+                                                <ui:repeat value="#{bookingControllerViewScope.selectedBillSession.bill.billItems}" var="bis" >
+                                                    <p:outputLabel value="#{bis.billSession.serialNo}"/>
+                                                </ui:repeat>
+                                                <p:outputLabel value="Appointment Date">
+                                                </p:outputLabel>
+                                                <p:outputLabel value="#{bookingControllerViewScope.selectedBillSession.sessionDate}"> 
+                                                    <f:convertDateTime pattern="dd MMM yyyy" >
+                                                    </f:convertDateTime>
+                                                </p:outputLabel>
+                                                <p:outputLabel value="Appointment Time">
+                                                </p:outputLabel>
+                                                <p:outputLabel value="#{bookingControllerViewScope.selectedBillSession.serviceSession.startingTime}"> 
+                                                    <f:convertDateTime pattern="hh:mm a" ></f:convertDateTime>
+                                                </p:outputLabel>
+                                                <p:separator ></p:separator>
+                                                <p:separator ></p:separator>
+                                                <p:outputLabel value="Payment Method"/>
+                                                <p:outputLabel value="#{bookingControllerViewScope.selectedBillSession.bill.paymentMethod}"/>
+                                                <p:outputLabel value="Agent" rendered="#{bookingControllerViewScope.selectedBillSession.bill.paymentMethod eq 'Agent'}"/>
+                                                <p:outputLabel value="#{bookingControllerViewScope.selectedBillSession.bill.fromInstitution.name}" rendered="#{bookingControllerViewScope.selectedBillSession.bill.paymentMethod eq 'Agent'}"/>
+                                                <p:outputLabel value="Agent Ref No" rendered="#{bookingControllerViewScope.selectedBillSession.bill.paymentMethod eq 'Agent'}"/>
+                                                <p:outputLabel value="#{bookingControllerViewScope.selectedBillSession.billItem.agentRefNo}" rendered="#{bookingControllerViewScope.selectedBillSession.bill.paymentMethod eq 'Agent'}"/>
+                                                <p:outputLabel value="Staff Name" rendered="#{bookingControllerViewScope.selectedBillSession.bill.paymentMethod eq 'Staff'}"/>
+                                                <p:outputLabel value="#{bookingControllerViewScope.selectedBillSession.bill.toStaff.person.nameWithTitle} - (#{bookingControllerViewScope.selectedBillSession.bill.toStaff.code}) " rendered="#{bookingControllerViewScope.selectedBillSession.bill.paymentMethod eq 'Staff'}"/>
+                                                <p:outputLabel value="User"/>
+                                                <p:outputLabel value="#{bookingControllerViewScope.selectedBillSession.bill.creater.webUserPerson.nameWithTitle}"/>
+                                                
+
+                                                <p:outputLabel value="Settled At" rendered="#{bookingControllerViewScope.selectedBillSession.bill.paidBill ne null}"/>
+                                                <p:outputLabel value="#{bookingControllerViewScope.selectedBillSession.bill.paidBill.createdAt}" rendered="#{bookingControllerViewScope.selectedBillSession.bill.paidBill ne null}"> 
+                                                    <f:convertDateTime pattern="dd MMM yyyy - hh:mm a" ></f:convertDateTime>
+                                                </p:outputLabel>
+                                                <p:separator rendered="#{bookingControllerViewScope.selectedBillSession.bill.cancelled==true or bookingControllerViewScope.selectedBillSession.bill.refunded==true}" ></p:separator>
+                                                <p:separator rendered="#{bookingControllerViewScope.selectedBillSession.bill.cancelled==true or bookingControllerViewScope.selectedBillSession.bill.refunded==true}" ></p:separator>
+                                                <p:outputLabel style="color: red" value="Payment" rendered="#{bookingControllerViewScope.selectedBillSession.bill.cancelled==true or bookingControllerViewScope.selectedBillSession.bill.refunded==true}" />
+                                                <p:outputLabel style="color: red" value="#{bookingControllerViewScope.selectedBillSession.bill.billedBill.paymentMethod}" rendered="#{bookingControllerViewScope.selectedBillSession.bill.cancelled==true or bookingControllerViewScope.selectedBillSession.bill.refunded==true}"/>
+                                                <p:outputLabel style="color: red" value="Cancel/Refund User" rendered="#{bookingControllerViewScope.selectedBillSession.bill.cancelled==true or bookingControllerViewScope.selectedBillSession.bill.refunded==true}"/>
+                                                <p:outputLabel style="color: red" value="#{bookingControllerViewScope.selectedBillSession.bill.billedBill.creater.webUserPerson.nameWithTitle}" rendered="#{bookingControllerViewScope.selectedBillSession.bill.cancelled==true or bookingControllerViewScope.selectedBillSession.bill.refunded==true}"/>
+                                                <p:outputLabel style="color: red" value="Cancel/Refund At" rendered="#{bookingControllerViewScope.selectedBillSession.bill.cancelled==true or bookingControllerViewScope.selectedBillSession.bill.refunded==true}"/>
+                                                <p:outputLabel style="color: red" value="#{bookingControllerViewScope.selectedBillSession.bill.billedBill.createdAt}" rendered="#{bookingControllerViewScope.selectedBillSession.bill.cancelled==true or bookingControllerViewScope.selectedBillSession.bill.refunded==true}">
+                                                    <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"  ></f:convertDateTime>
+                                                </p:outputLabel> 
+                                            </h:panelGrid>                            
+                                        </p:panel>
+                                    </h:panelGroup>
+                                    <p:panel class="w-100"  header="Booking">
+                                        <div class="row w-100">
+                                            <div class="d-flex">
+                                                <p:panel class="w-100">
+                                                    <f:facet name="header" rendered="#{bookingControllerViewScope.selectedBillSession.referenceBillSession ne null}">
+                                                        <h:outputLabel value="Rescheduled"/>
+                                                    </f:facet>
+                                                    <h:panelGrid columns="2" styleClass="w-100" columnClasses="label,value">
+                                                        <p:outputLabel value="Consultant" style="font-weight: bold"/>
+                                                        <p:outputLabel value="#{bookingControllerViewScope.selectedBillSession.sessionInstance.staff.name}"/>
+
+                                                        <p:outputLabel value="Session" style="font-weight: bold"/>
+                                                        <p:outputLabel value="#{bookingControllerViewScope.selectedBillSession.sessionInstance.originatingSession.name}"/>
+
+                                                        <p:outputLabel value="Appointment No" style="font-weight: bold"/>
+                                                        <p:outputLabel value="#{bookingControllerViewScope.selectedBillSession.serialNo}"/>
+
+                                                        <p:outputLabel value="Start At" style="font-weight: bold"/>
+                                                        <h:outputText value="#{bookingControllerViewScope.selectedBillSession.sessionInstance.originatingSession.startingTime}">
+                                                            <f:convertDateTime pattern="HH:mm a"/>
+                                                        </h:outputText>
+                                                        
+                                                        <p:outputLabel value="Payment Method" style="font-weight: bold"/>
+                                                        <p:outputLabel value="#{bookingControllerViewScope.selectedBillSession.bill.paymentMethod}"/>
+
+                                                        <p:outputLabel value="Agent" rendered="#{bookingControllerViewScope.selectedBillSession.bill.paymentMethod eq 'Agent'}" style="font-weight: bold"/>
+                                                        <p:outputLabel value="#{bookingControllerViewScope.selectedBillSession.bill.fromInstitution.name}" rendered="#{bookingControllerViewScope.selectedBillSession.bill.paymentMethod eq 'Agent'}"/>
+
+                                                        <p:outputLabel value="Agent Ref No" rendered="#{bookingControllerViewScope.selectedBillSession.bill.paymentMethod eq 'Agent'}" style="font-weight: bold"/>
+                                                        <p:outputLabel value="#{bookingControllerViewScope.selectedBillSession.billItem.agentRefNo}" rendered="#{bookingControllerViewScope.selectedBillSession.bill.paymentMethod eq 'Agent'}"/>
+
+                                                        <p:outputLabel value="Staff Name" rendered="#{bookingControllerViewScope.selectedBillSession.bill.paymentMethod eq 'Staff'}" style="font-weight: bold"/>
+                                                        <p:outputLabel value="#{bookingControllerViewScope.selectedBillSession.bill.toStaff.person.nameWithTitle} - (#{bookingControllerViewScope.selectedBillSession.bill.toStaff.code})" rendered="#{bookingControllerViewScope.selectedBillSession.bill.paymentMethod eq 'Staff'}"/>
+
+                                                        <p:outputLabel value="User" style="font-weight: bold"/>
+                                                        <p:outputLabel value="#{bookingControllerViewScope.selectedBillSession.bill.creater.webUserPerson.nameWithTitle}" />
+
+                                                        <p:outputLabel value="Booked At" style="font-weight: bold"/>
+                                                        <p:outputLabel value="#{bookingControllerViewScope.selectedBillSession.bill.createdAt}">
+                                                            <f:convertDateTime pattern="dd MMM yyyy - hh:mm a" />
+                                                        </p:outputLabel>
+
+                                                        <p:outputLabel value="Settled At" rendered="#{bookingControllerViewScope.selectedBillSession.bill.paidBill ne null}" style="font-weight: bold"/>
+                                                        <p:outputLabel value="#{bookingControllerViewScope.selectedBillSession.bill.paidBill.createdAt}" rendered="#{bookingControllerViewScope.selectedBillSession.bill.paidBill ne null}">
+                                                            <f:convertDateTime pattern="dd MMM yyyy - hh:mm a" />
+                                                        </p:outputLabel>
+
+                                                        <p:separator rendered="#{bookingControllerViewScope.selectedBillSession.bill.cancelled == true or bookingControllerViewScope.selectedBillSession.bill.refunded == true}"/>
+                                                        <p:separator rendered="#{bookingControllerViewScope.selectedBillSession.bill.cancelled == true or bookingControllerViewScope.selectedBillSession.bill.refunded == true}"/>
+
+                                                        <p:outputLabel style="color: red" value="Payment" rendered="#{bookingControllerViewScope.selectedBillSession.bill.cancelled == true or bookingControllerViewScope.selectedBillSession.bill.refunded == true}" />
+                                                        <p:outputLabel style="color: red" value="#{bookingControllerViewScope.selectedBillSession.bill.billedBill.paymentMethod}" rendered="#{bookingControllerViewScope.selectedBillSession.bill.cancelled == true or bookingControllerViewScope.selectedBillSession.bill.refunded == true}"/>
+
+                                                        <p:outputLabel style="color: red" value="Cancel/Refund User" rendered="#{bookingControllerViewScope.selectedBillSession.bill.cancelled == true or bookingControllerViewScope.selectedBillSession.bill.refunded == true}"/>
+                                                        <p:outputLabel style="color: red" value="#{bookingControllerViewScope.selectedBillSession.bill.billedBill.creater.webUserPerson.nameWithTitle}" rendered="#{bookingControllerViewScope.selectedBillSession.bill.cancelled == true or bookingControllerViewScope.selectedBillSession.bill.refunded == true}"/>
+
+                                                        <p:outputLabel style="color: red" value="Cancel/Refund At" rendered="#{bookingControllerViewScope.selectedBillSession.bill.cancelled == true or bookingControllerViewScope.selectedBillSession.bill.refunded == true}"/>
+                                                        <p:outputLabel style="color: red" value="#{bookingControllerViewScope.selectedBillSession.bill.billedBill.createdAt}" rendered="#{bookingControllerViewScope.selectedBillSession.bill.cancelled == true or bookingControllerViewScope.selectedBillSession.bill.refunded == true}">
+                                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a" />
+                                                        </p:outputLabel>
+                                                    </h:panelGrid>
+
+                                                </p:panel>
+
+                                                <p:panel header="Rescheduled From" class="w-100 mx-1" rendered="#{bookingControllerViewScope.selectedBillSession.referenceBillSession ne null}">
+                                                    <h:panelGrid columns="2" styleClass="w-100" columnClasses="label,value">
+                                                        <p:outputLabel value="Consultant" style="font-weight: bold"/>
+                                                        <p:outputLabel value="#{bookingControllerViewScope.selectedBillSession.referenceBillSession.sessionInstance.staff.name}"/>
+
+                                                        <p:outputLabel value="Session" style="font-weight: bold"/>
+                                                        <p:outputLabel value="#{bookingControllerViewScope.selectedBillSession.referenceBillSession.sessionInstance.originatingSession.name}"/>
+
+                                                        <p:outputLabel value="Appointment No" style="font-weight: bold"/>
+                                                        <p:outputLabel value="#{bookingControllerViewScope.selectedBillSession.referenceBillSession.serialNo}"/>
+
+                                                        <p:outputLabel value="Start At" style="font-weight: bold"/>
+                                                        <h:outputText value="#{bookingControllerViewScope.selectedBillSession.referenceBillSession.sessionInstance.originatingSession.startingTime}">
+                                                            <f:convertDateTime pattern="HH:mm a"/>
+                                                        </h:outputText>
+
+                                                        <p:outputLabel value="Booked At" style="font-weight: bold"/>
+                                                        <h:outputText value="#{bookingControllerViewScope.selectedBillSession.referenceBillSession.bill.createdAt}">
+                                                            <f:convertDateTime pattern="MM/dd/yyyy HH:mm a"/>
+                                                        </h:outputText>
+
+                                                        
+
+                                                        <p:outputLabel value="Payment Method" style="font-weight: bold"/>
+                                                        <p:outputLabel value="#{bookingControllerViewScope.selectedBillSession.referenceBillSession.bill.paymentMethod}"/>
+
+                                                        <p:outputLabel value="Agent" rendered="#{bookingControllerViewScope.selectedBillSession.referenceBillSession.bill.paymentMethod eq 'Agent'}" style="font-weight: bold"/>
+                                                        <p:outputLabel value="#{bookingControllerViewScope.selectedBillSession.referenceBillSession.bill.fromInstitution.name}" rendered="#{bookingControllerViewScope.selectedBillSession.referenceBillSession.bill.paymentMethod eq 'Agent'}"/>
+
+                                                        <p:outputLabel value="Agent Ref No" rendered="#{bookingControllerViewScope.selectedBillSession.bill.paymentMethod eq 'Agent'}" style="font-weight: bold"/>
+                                                        <p:outputLabel value="#{bookingControllerViewScope.selectedBillSession.referenceBillSession.billItem.agentRefNo}" rendered="#{bookingControllerViewScope.selectedBillSession.referenceBillSession.bill.paymentMethod eq 'Agent'}"/>
+
+                                                        <p:outputLabel value="Staff Name" rendered="#{bookingControllerViewScope.selectedBillSession.referenceBillSession.bill.paymentMethod eq 'Staff'}" style="font-weight: bold"/>
+                                                        <p:outputLabel value="#{bookingControllerViewScope.selectedBillSession.referenceBillSession.bill.toStaff.person.nameWithTitle} - (#{bookingControllerViewScope.selectedBillSession.referenceBillSession.referenceBillSession.bill.toStaff.code})" rendered="#{bookingControllerViewScope.selectedBillSession.referenceBillSession.bill.paymentMethod eq 'Staff'}"/>
+
+                                                        <p:outputLabel value="User" style="font-weight: bold"/>
+                                                        <p:outputLabel value="#{bookingControllerViewScope.selectedBillSession.referenceBillSession.bill.creater.webUserPerson.nameWithTitle}"/>
+
+                                                        
+
+                                                        <p:outputLabel value="Settled At" rendered="#{bookingControllerViewScope.selectedBillSession.referenceBillSession.bill.paidBill ne null}" style="font-weight: bold"/>
+                                                        <p:outputLabel value="#{bookingControllerViewScope.selectedBillSession.referenceBillSession.bill.paidBill.createdAt}" rendered="#{bookingControllerViewScope.selectedBillSession.referenceBillSession.bill.paidBill ne null}">
+                                                            <f:convertDateTime pattern="dd MMM yyyy - hh:mm a" />
+                                                        </p:outputLabel>
+
+                                                        <p:separator rendered="#{bookingControllerViewScope.selectedBillSession.referenceBillSession.bill.cancelled == true or bookingControllerViewScope.selectedBillSession.referenceBillSession.bill.refunded == true}"/>
+                                                        <p:separator rendered="#{bookingControllerViewScope.selectedBillSession.referenceBillSession.bill.cancelled == true or bookingControllerViewScope.selectedBillSession.referenceBillSession.bill.refunded == true}"/>
+
+                                                        <p:outputLabel style="color: red" value="Payment" rendered="#{bookingControllerViewScope.selectedBillSession.referenceBillSession.bill.cancelled == true or bookingControllerViewScope.selectedBillSession.referenceBillSession.bill.refunded == true}"/>
+                                                        <p:outputLabel style="color: red" value="#{bookingControllerViewScope.selectedBillSession.referenceBillSession.bill.billedBill.paymentMethod}" rendered="#{bookingControllerViewScope.selectedBillSession.referenceBillSession.bill.cancelled == true or bookingControllerViewScope.selectedBillSession.referenceBillSession.bill.refunded == true}"/>
+
+                                                        <p:outputLabel style="color: red" value="Cancel/Refund User" rendered="#{bookingControllerViewScope.selectedBillSession.bill.cancelled == true or bookingControllerViewScope.selectedBillSession.bill.refunded == true}"/>
+                                                        <p:outputLabel style="color: red" value="#{bookingControllerViewScope.selectedBillSession.referenceBillSession.bill.billedBill.creater.webUserPerson.nameWithTitle}" rendered="#{bookingControllerViewScope.selectedBillSession.referenceBillSession.bill.cancelled == true or bookingControllerViewScope.selectedBillSession.referenceBillSession.bill.refunded == true}"/>
+
+                                                        <p:outputLabel style="color: red" value="Cancel/Refund At" rendered="#{bookingControllerViewScope.selectedBillSession.referenceBillSession.referenceBillSession.bill.cancelled == true or bookingControllerViewScope.selectedBillSession.referenceBillSession.bill.refunded == true}"/>
+                                                        <p:outputLabel style="color: red" value="#{bookingControllerViewScope.selectedBillSession.referenceBillSession.bill.billedBill.createdAt}" rendered="#{bookingControllerViewScope.selectedBillSession.referenceBillSession.bill.cancelled == true or bookingControllerViewScope.selectedBillSession.referenceBillSession.bill.refunded == true}">
+                                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a" />
+                                                        </p:outputLabel>
+                                                    </h:panelGrid>
+
+                                                </p:panel>
+                                            </div>
+
                                         </div>
-
-
-
-                                        <h:panelGrid columns="2">
-                                            <p:outputLabel value="Name"/>
-                                            <p:commandLink value="#{bookingControllerViewScope.selectedBillSession.bill.patient.person.nameWithTitle}"
-                                                           action="#{patientController.toPatientFromSearchPatients()}">
-                                                <f:setPropertyActionListener value="#{bookingControllerViewScope.selectedBillSession.bill.patient}"
-                                                                             target="#{patientController.current}" ></f:setPropertyActionListener>
-                                            </p:commandLink>
-                                            <p:outputLabel value="Consultant"/>
-                                            <p:outputLabel value="#{bookingControllerViewScope.selectedBillSession.serviceSession.staff.person.nameWithTitle}"/>
-                                            <p:outputLabel value="Serial No"/>
-                                            <ui:repeat value="#{bookingControllerViewScope.selectedBillSession.bill.billItems}" var="bis" >
-                                                <p:outputLabel value="#{bis.billSession.serialNo}"/>
-                                            </ui:repeat>
-                                            <p:outputLabel value="Appointment Date">
-                                            </p:outputLabel>
-                                            <p:outputLabel value="#{bookingControllerViewScope.selectedBillSession.sessionDate}"> 
-                                                <f:convertDateTime pattern="dd MMM yyyy" >
-                                                </f:convertDateTime>
-                                            </p:outputLabel>
-                                            <p:outputLabel value="Appointment Time">
-                                            </p:outputLabel>
-                                            <p:outputLabel value="#{bookingControllerViewScope.selectedBillSession.serviceSession.startingTime}"> 
-                                                <f:convertDateTime pattern="hh:mm a" ></f:convertDateTime>
-                                            </p:outputLabel>
-                                            <p:separator ></p:separator>
-                                            <p:separator ></p:separator>
-                                            <p:outputLabel value="Payment Method"/>
-                                            <p:outputLabel value="#{bookingControllerViewScope.selectedBillSession.bill.paymentMethod}"/>
-                                            <p:outputLabel value="Agent" rendered="#{bookingControllerViewScope.selectedBillSession.bill.paymentMethod eq 'Agent'}"/>
-                                            <p:outputLabel value="#{bookingControllerViewScope.selectedBillSession.bill.fromInstitution.name}" rendered="#{bookingControllerViewScope.selectedBillSession.bill.paymentMethod eq 'Agent'}"/>
-                                            <p:outputLabel value="Agent Ref No" rendered="#{bookingControllerViewScope.selectedBillSession.bill.paymentMethod eq 'Agent'}"/>
-                                            <p:outputLabel value="#{bookingControllerViewScope.selectedBillSession.billItem.agentRefNo}" rendered="#{bookingControllerViewScope.selectedBillSession.bill.paymentMethod eq 'Agent'}"/>
-                                            <p:outputLabel value="Staff Name" rendered="#{bookingControllerViewScope.selectedBillSession.bill.paymentMethod eq 'Staff'}"/>
-                                            <p:outputLabel value="#{bookingControllerViewScope.selectedBillSession.bill.toStaff.person.nameWithTitle} - (#{bookingControllerViewScope.selectedBillSession.bill.toStaff.code}) " rendered="#{bookingControllerViewScope.selectedBillSession.bill.paymentMethod eq 'Staff'}"/>
-                                            <p:outputLabel value="User"/>
-                                            <p:outputLabel value="#{bookingControllerViewScope.selectedBillSession.bill.creater.webUserPerson.nameWithTitle}"/>
-                                            <p:outputLabel value="Booked At"/>
-                                            <p:outputLabel value="#{bookingControllerViewScope.selectedBillSession.bill.createdAt}"> 
-                                                <f:convertDateTime pattern="dd MMM yyyy - hh:mm a" ></f:convertDateTime>
-                                            </p:outputLabel>
-
-                                            <p:outputLabel value="Settled At" rendered="#{bookingControllerViewScope.selectedBillSession.bill.paidBill ne null}"/>
-                                            <p:outputLabel value="#{bookingControllerViewScope.selectedBillSession.bill.paidBill.createdAt}" rendered="#{bookingControllerViewScope.selectedBillSession.bill.paidBill ne null}"> 
-                                                <f:convertDateTime pattern="dd MMM yyyy - hh:mm a" ></f:convertDateTime>
-                                            </p:outputLabel>
-                                            <p:separator rendered="#{bookingControllerViewScope.selectedBillSession.bill.cancelled==true or bookingControllerViewScope.selectedBillSession.bill.refunded==true}" ></p:separator>
-                                            <p:separator rendered="#{bookingControllerViewScope.selectedBillSession.bill.cancelled==true or bookingControllerViewScope.selectedBillSession.bill.refunded==true}" ></p:separator>
-                                            <p:outputLabel style="color: red" value="Payment" rendered="#{bookingControllerViewScope.selectedBillSession.bill.cancelled==true or bookingControllerViewScope.selectedBillSession.bill.refunded==true}" />
-                                            <p:outputLabel style="color: red" value="#{bookingControllerViewScope.selectedBillSession.bill.billedBill.paymentMethod}" rendered="#{bookingControllerViewScope.selectedBillSession.bill.cancelled==true or bookingControllerViewScope.selectedBillSession.bill.refunded==true}"/>
-                                            <p:outputLabel style="color: red" value="Cancel/Refund User" rendered="#{bookingControllerViewScope.selectedBillSession.bill.cancelled==true or bookingControllerViewScope.selectedBillSession.bill.refunded==true}"/>
-                                            <p:outputLabel style="color: red" value="#{bookingControllerViewScope.selectedBillSession.bill.billedBill.creater.webUserPerson.nameWithTitle}" rendered="#{bookingControllerViewScope.selectedBillSession.bill.cancelled==true or bookingControllerViewScope.selectedBillSession.bill.refunded==true}"/>
-                                            <p:outputLabel style="color: red" value="Cancel/Refund At" rendered="#{bookingControllerViewScope.selectedBillSession.bill.cancelled==true or bookingControllerViewScope.selectedBillSession.bill.refunded==true}"/>
-                                            <p:outputLabel style="color: red" value="#{bookingControllerViewScope.selectedBillSession.bill.billedBill.createdAt}" rendered="#{bookingControllerViewScope.selectedBillSession.bill.cancelled==true or bookingControllerViewScope.selectedBillSession.bill.refunded==true}">
-                                                <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"  ></f:convertDateTime>
-                                            </p:outputLabel> 
-                                        </h:panelGrid>                            
                                     </p:panel>
                                 </div>
                                 <div class="col" >
@@ -704,10 +832,7 @@
                                             <p:outputLabel value="#{bookingControllerViewScope.selectedBillSession.bill.creater.webUserPerson.nameWithTitle}"/>
                                             <p:outputLabel value="Staff Name" rendered="#{bookingControllerViewScope.selectedBillSession.bill.paymentMethod eq 'Staff'}"/>
                                             <p:outputLabel value="#{bookingControllerViewScope.selectedBillSession.bill.toStaff.person.nameWithTitle} - (#{bookingControllerViewScope.selectedBillSession.bill.toStaff.code}) " rendered="#{bookingControllerViewScope.selectedBillSession.bill.paymentMethod eq 'Staff'}"/>
-                                            <p:outputLabel value="Booked At"/>
-                                            <p:outputLabel value="#{bookingControllerViewScope.selectedBillSession.bill.createdAt}"> 
-                                                <f:convertDateTime pattern="dd MMM yyyy - hh:mm a" ></f:convertDateTime>
-                                            </p:outputLabel>
+                                            
                                             <p:outputLabel value="Settled At" rendered="#{bookingControllerViewScope.selectedBillSession.bill.paidBill ne null}"/>
                                             <p:outputLabel value="#{bookingControllerViewScope.selectedBillSession.bill.paidBill.createdAt}" rendered="#{bookingControllerViewScope.selectedBillSession.bill.paidBill ne null}"> 
                                                 <f:convertDateTime pattern="dd MMM yyyy - hh:mm a" ></f:convertDateTime>
