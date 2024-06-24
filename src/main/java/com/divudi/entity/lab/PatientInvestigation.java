@@ -767,4 +767,5 @@ public class PatientInvestigation implements Serializable {
     public void setPackege(Packege packege) {
         this.packege = packege;
     }
+
 }
