@@ -355,7 +355,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             e.setDepartment(getSessionController().getLoggedUser().getDepartment());
             e.setInstitution(getSessionController().getLoggedUser().getInstitution());
             e.setPending(false);
-            e.setSmsType(MessageType.ChannelPatientFeedback);
+            e.setSmsType(MessageType.ChannelPatientReschedule);
             getSmsFacade().create(e);
             Boolean sent = smsManager.sendSms(e);
 
@@ -2696,12 +2696,12 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 .replace("{doc}", doc)
                 .replace("{time}", sessionTime)
                 .replace("{date}", sessionDate)
-                .replace("{No}", String.valueOf(no)
+                .replace("{No}", String.valueOf(no))
+                .replace("{new_serial_no}", String.valueOf(newNo))
                 .replace("{new_doctor}", newDoc)
-                .replace("{ins_name}", insName)
-                .replace("{new_appointment_time}", newSessionTime)
                 .replace("{new_appointment_date}", newSessionDate)
-                .replace("{new_serial_no}", String.valueOf(newNo)));
+                .replace("{new_appointment_time}", newSessionTime)
+                .replace("{ins_name}", insName);
 
         return s;
     }
