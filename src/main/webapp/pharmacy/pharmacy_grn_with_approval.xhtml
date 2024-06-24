@@ -310,11 +310,22 @@
                             <p:commandButton 
                                 ajax="false" 
                                 action="pharmacy_purchase_order_list_for_recieve"
+                                rendered="#{!configOptionApplicationController.getBooleanValueByKey('Pharmacy Good Recipt With Approval')}"
                                 class="ui-button-warning"
                                 icon="fa fa-arrow-left"
                                 actionListener="#{grnController.viewPoList()}" 
                                 value="Back to PO List"> 
-                            </p:commandButton>                   
+                            </p:commandButton> 
+                            <p:commandButton 
+                                ajax="false" 
+                                action="pharmacy_purchase_order_list_for_recieve_with_approval"
+                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Good Recipt With Approval')}"
+                                class="ui-button-warning"
+                                icon="fa fa-arrow-left"
+                                actionListener="#{grnController.viewPoList()}" 
+                                style="float: right;"
+                                value="Back to GRN List"> 
+                            </p:commandButton> 
                             <p:commandButton 
                                 value="Print" 
                                 ajax="false" 
