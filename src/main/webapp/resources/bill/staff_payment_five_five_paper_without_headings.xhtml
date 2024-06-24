@@ -1,0 +1,138 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="bill" type="com.divudi.entity.Bill" />
+        <cc:attribute name="duplicate" type="java.lang.Boolean"/>
+        <cc:attribute name="payments" ></cc:attribute>
+        <cc:attribute name="controller" />
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+
+        <h:outputStylesheet library="css" name="opd_five_five.css" ></h:outputStylesheet>
+        <div class="fiveinchbill" style="page-break-after: always;" >
+            <div class="" style="margin-left: 5%; margin-right: 5%">
+                <div style="height: 2cm;">
+
+                </div>
+
+                <div class="headingBillFiveFive" style="text-align: center;font-weight: bold;">
+                    <h:outputLabel value="Payment Invoice"/>                  
+                    <h:outputLabel value="(#{cc.attrs.bill.deptId})" class="mx-2"></h:outputLabel>
+                    <br/>
+                    <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
+                    <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
+                    
+                </div>
+
+                <div class="billline">
+                    <hr></hr>   
+                </div>
+
+                <div class="billDetailsFiveFive" >
+
+                    <div class="d-flex gap-2">     
+                        <h:outputLabel value="Doctor Name :" ></h:outputLabel>
+                        <h:outputLabel value="#{cc.attrs.bill.staff.person.nameWithTitle}" ></h:outputLabel>
+                    </div>
+
+                </div>
+
+                <div class="billline">
+                    <hr></hr>   
+                </div>
+
+                <div >
+                    <table width="100%" style="width: 100%;" >
+                        <tr>
+                            <td class="totalsBlock gap-2" style="text-align: left; width: 80%;">
+                                <h:outputLabel value="Consultation Practitionar Fee" ></h:outputLabel>
+                                <h:outputLabel value="(x #{cc.attrs.bill.billItems.size()})" class="mx-2" style="font-size: 13px;"></h:outputLabel>
+                            </td>
+                            <td  class="totalsBlock" style="text-align: right!important; width: 20%;">
+                                <h:outputLabel value="#{-cc.attrs.bill.netTotal}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+
+                <div class="billline">
+                    <hr/>
+                </div>
+
+                <div class="itemHeadingsFiveFive" >
+                    <table style="width: 100%;">
+
+                        <tr>
+                            <td class="totalsBlock" style="text-align: left; width: 60%;">
+                                <h:outputLabel value="Total" />
+                            </td>
+                            <td  class="totalsBlock" style="text-align: right!important; width: 40%; " >
+                                <h:outputLabel value="#{-cc.attrs.bill.netTotal}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+
+                <div class="mt-3" style="font-size: 12px;">
+                    <div class="d-flex justify-content-between ">
+                        <div class="d-flex gap-2">
+                            <h:outputLabel value="Paid by : " style="font-weight: 700"/>
+                            <h:outputLabel value="#{cc.attrs.bill.creater.name}"/>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <h:outputLabel value="Paid Date : "  style="font-weight: 600"/>
+                            <h:outputLabel value="#{cc.attrs.bill.createdAt}">
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                            </h:outputLabel>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-between ">
+                        <div class="d-flex gap-2">
+                            <h:outputLabel value="Printed by : " style="font-weight: 600"/>
+                            <h:outputLabel value="#{sessionController.loggedUser.name}"/>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <h:outputLabel value="Printed Date : " style="font-weight: 600"/>
+                            <h:outputLabel value="#{sessionController.currentDate}">
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                            </h:outputLabel>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between mt-5">
+                    <div class="d-grid text-center">
+                        <h:outputLabel value="---------------------------------------" style="font-weight: 600"/>
+                        <h:outputLabel value="Signature (Paid by)" style="font-weight: 600"/>
+                    </div>
+                    <div class="d-grid text-center">
+                        <h:outputLabel value="---------------------------------------------" style="font-weight: 600"/>
+                        <h:outputLabel value="#{cc.attrs.bill.toStaff.person.nameWithTitle}" style="font-weight: 600"/>
+                    </div>
+                </div>
+
+                <div class="footer" style="text-align: center;">
+                    <br/>
+                    <h:outputLabel value="#{sessionController.userPreference.pharmacyBillFooter}"/>
+                    <br/>
+                </div>
+
+            </div>
+        </div>
+    </cc:implementation>
+</html>
