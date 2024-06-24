@@ -9,6 +9,7 @@ import com.divudi.bean.opd.OpdBillController;
 import com.divudi.data.PaymentMethod;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Patient;
+import com.divudi.entity.Staff;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -32,6 +33,7 @@ public class ComponentDetail {
     private List<ComponentDetail> multiplePaymentMethodComponentDetails;
     private PaymentMethodData paymentMethodData;
     private int creditDuration;
+    private Staff toStaff;
 
     public List<ComponentDetail> getMultiplePaymentMethodComponentDetails() {
         if (multiplePaymentMethodComponentDetails == null) {
@@ -129,6 +131,14 @@ public class ComponentDetail {
 
     public void setCreditDuration(int creditDuration) {
         this.creditDuration = creditDuration;
+    }
+
+    public Staff getToStaff() {
+        return toStaff;
+    }
+
+    public void setToStaff(Staff toStaff) {
+        this.toStaff = toStaff;
     }
     
     

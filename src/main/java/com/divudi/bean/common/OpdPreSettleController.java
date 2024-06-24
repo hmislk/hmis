@@ -425,6 +425,19 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
             }
             double multiplePaymentMethodTotalValue = 0.0;
             for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
+                if (paymentSchemeController.checkPaymentMethodError(cd.getPaymentMethod(), cd.getPaymentMethodData())) {
+                    return true;
+                }
+                if (cd.getPaymentMethod().equals(PaymentMethod.Staff)) {
+                    if (cd.getPaymentMethodData().getStaffCredit().getTotalValue() == 0.0 || cd.getPaymentMethodData().getStaffCredit().getToStaff() == null) {
+                        JsfUtil.addErrorMessage("Please fill the Paying Amount and Staff Name");
+                        return true;
+                    }
+                    if (cd.getPaymentMethodData().getStaffCredit().getToStaff().getCurrentCreditValue() + cd.getPaymentMethodData().getStaffCredit().getTotalValue() > cd.getPaymentMethodData().getStaffCredit().getToStaff().getCreditLimitQualified()) {
+                        JsfUtil.addErrorMessage("No enough Credit.");
+                        return true;
+                    }
+                }
                 //TODO - filter only relavant value
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCash().getTotalValue();
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCreditCard().getTotalValue();
@@ -432,6 +445,7 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getEwallet().getTotalValue();
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getSlip().getTotalValue();
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getStaffCredit().getTotalValue();
             }
             double differenceOfBillTotalAndPaymentValue = netTotal - multiplePaymentMethodTotalValue;
             differenceOfBillTotalAndPaymentValue = Math.abs(differenceOfBillTotalAndPaymentValue);
@@ -547,9 +561,8 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
     }
 
     public List<Payment> createPayment(Bill bill, PaymentMethod pm) {
-
         List<Payment> ps = new ArrayList<>();
-        if (pm == PaymentMethod.MultiplePaymentMethods) {
+        if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
             for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
                 Payment p = new Payment();
                 p.setBill(bill);
@@ -579,9 +592,17 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
                     case Credit:
                     case PatientDeposit:
                     case Slip:
+                        p.setPaidValue(cd.getPaymentMethodData().getSlip().getTotalValue());
+                        p.setBank(cd.getPaymentMethodData().getSlip().getInstitution());
+                        p.setRealizedAt(cd.getPaymentMethodData().getSlip().getDate());
                     case OnCall:
                     case OnlineSettlement:
                     case Staff:
+                        p.setPaidValue(cd.getPaymentMethodData().getStaffCredit().getTotalValue());
+                        if (cd.getPaymentMethodData().getStaffCredit().getToStaff() != null) {
+                            staffBean.updateStaffCredit(cd.getPaymentMethodData().getStaffCredit().getToStaff(), cd.getPaymentMethodData().getStaffCredit().getTotalValue());
+                            JsfUtil.addSuccessMessage("Staff Welfare Balance Updated");
+                        }
                     case YouOweMe:
                     case MultiplePaymentMethods:
                 }
@@ -603,7 +624,6 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
                     p.setBank(paymentMethodData.getCreditCard().getInstitution());
                     p.setCreditCardRefNo(paymentMethodData.getCreditCard().getNo());
                     p.setPaidValue(paymentMethodData.getCreditCard().getTotalValue());
-                    System.out.println("pCard = " + p);
                     break;
                 case Cheque:
                     p.setChequeDate(paymentMethodData.getCheque().getDate());
@@ -612,7 +632,6 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
                     break;
                 case Cash:
                     p.setPaidValue(paymentMethodData.getCash().getTotalValue());
-                    System.out.println("cash = " + p);
                     break;
                 case ewallet:
 
@@ -620,6 +639,9 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
                 case Credit:
                 case PatientDeposit:
                 case Slip:
+                    p.setBank(paymentMethodData.getSlip().getInstitution());
+                    p.setPaidValue(paymentMethodData.getSlip().getTotalValue());
+                    p.setRealizedAt(paymentMethodData.getSlip().getDate());
                 case OnCall:
                 case OnlineSettlement:
                 case Staff:
@@ -628,15 +650,10 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
             }
 
             p.setPaidValue(p.getBill().getNetTotal());
-            if (p.getId() == null) {
-                paymentFacade.create(p);
-            } else {
-                paymentFacade.edit(p);
-            }
+            paymentFacade.create(p);
 
             ps.add(p);
         }
-        payments = ps;
         return ps;
     }
 
@@ -853,7 +870,7 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getEwallet().getTotalValue();
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getSlip().getTotalValue();
-
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getStaffCredit().getTotalValue();
             }
             return total - multiplePaymentMethodTotalValue;
         }
@@ -880,6 +897,8 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
                 pm.getPaymentMethodData().getPatient_deposit().setTotalValue(remainAmount);
             } else if (pm.getPaymentMethod() == PaymentMethod.Credit) {
                 pm.getPaymentMethodData().getCredit().setTotalValue(remainAmount);
+            } else if (pm.getPaymentMethod() == PaymentMethod.Staff) {
+                pm.getPaymentMethodData().getStaffCredit().setTotalValue(remainAmount);
             }
 
         }
