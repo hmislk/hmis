@@ -68,17 +68,18 @@
                             </p:column>
 
                             <!-- Actions Column -->
+
                             <p:column headerText="Actions" styleClass="text-center">
-                                <p:commandButton 
-                                    ajax="false"
-                                    icon="fa fa-phone" 
-                                    class="ui-button-info mx-1" 
-                                    update="@form" 
-                                    title="Call" 
-                                    action="#{opdTokenController.recallToken()}"
-                                    process="@this">
+                                <p:commandButton ajax="false"
+                                                 id="btnCall"
+                                                 icon="#{token.called ? 'fa fa-times' : 'fa fa-phone'}"
+                                                 class="#{token.called ? 'ui-button-warning' : 'ui-button-success'}"
+                                                 update="@this"
+                                                 title="#{token.called ? 'Cancel Call' : 'Call Token'}"
+                                                 action="#{opdTokenController.recallToken()}"
+                                                 process="btnCall">
                                     <f:setPropertyActionListener target="#{opdTokenController.currentToken}" value="#{token}" />
-                                    <p:tooltip value="Recall Token" />
+                                    <p:tooltip value="#{token.called ? 'Cancel Call' : 'Call Token'}" />
                                 </p:commandButton>
                                 <p:commandButton 
                                     id="opdCashier"
@@ -111,10 +112,20 @@
                                     action="#{opdTokenController.navigateToSettleOpdPreBill}">
                                     <f:setPropertyActionListener target="#{opdTokenController.currentToken}" value="#{token}" />
                                 </p:commandButton>
+                                <p:commandButton ajax="false"
+                                                 icon="#{token.referaToken.completed ? 'fa fa-undo' : 'fa fa-check'}"
+                                                 class="#{token.referaToken.completed ? 'ui-button-danger' : 'ui-button-success'}"
+                                                 update="@form"
+                                                 title="#{token.referaToken.completed ? 'Reverse Complete Service' : 'Complete Service'}"
+                                                 action="#{opdTokenController.toggleCompletedStatus}"
+                                                 process="@this">
+                                    <f:setPropertyActionListener target="#{opdTokenController.currentToken}" value="#{token}" />
+                                    <p:tooltip value="#{token.completed ? 'Reverse Complete Service' : 'Complete Service'}" />
+                                </p:commandButton>
                                 <p:commandButton 
                                     ajax="false"
                                     icon="fa fa-repeat" 
-                                    class="ui-button-warning" 
+                                    class="ui-button-warning mx-1" 
                                     update="@form" 
                                     title="Restart Service" 
                                     action="#{opdTokenController.reverseCompleteTokenService()}"
@@ -122,6 +133,8 @@
                                     <f:setPropertyActionListener target="#{opdTokenController.currentToken}" value="#{token}" />
                                     <p:tooltip value="Restart Token Service" />
                                 </p:commandButton>
+                                
+
 
                             </p:column>
                         </p:dataTable>
