@@ -15,6 +15,7 @@
             <ui:define name="content">
                 <h:form >
                     <p:panel rendered="#{!opdPreSettleController.billPreview}">
+                    <p:growl id="msg" ></p:growl>
                         <f:facet name="header" >
 
                             <h:outputLabel value="OPD Bill Accept Payment" ></h:outputLabel>  
@@ -30,7 +31,7 @@
                         </f:facet>
 
                         <div class="row mt-2">
-                            <div class="col-8">
+                            <div class="col-6">
                                 <p:panel>
                                     <f:facet name="header">
                                         <h:outputText styleClass="fas fa-id-card-alt"></h:outputText>
@@ -40,7 +41,7 @@
                                 </p:panel>
                             </div>
 
-                            <div class="col-4">
+                            <div class="col-6">
                                 <p:panel>
                                     <f:facet name="header" >
 
@@ -64,7 +65,8 @@
                                             value="#{opdPreSettleController.preBill.paymentMethod}"  
                                             disabled="#{not sessionController.departmentPreference.allowtoChangePaymentMethodDuringPayment}">                                                                     
                                             <f:selectItems value="#{enumController.paymentMethodsForOpdBilling}" />
-                                            <p:ajax process="cmbPs" update="payDetails" event="change" />
+                                            <p:ajax process="@this cmbPs" 
+                                                        update=":#{p:resolveFirstComponentWithId('payDetails',view).clientId}" event="change" />
                                         </p:selectOneMenu>
                                         <h:outputLabel />
                                         <h:outputLabel />
