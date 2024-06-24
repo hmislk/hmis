@@ -622,7 +622,13 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public void sendSmsChannelSessionCancelNotification() {
-        String smsTemplateForchannelSessionCancellation = configOptionController.getLongTextValueByKey("Template for SMS Sent on Channel Booking Session Cancellation", OptionScope.APPLICATION, null, null, null);
+        String smsTemplateForchannelSessionCancellation;
+        if(configOptionController.getLongTextValueByKey("Template for SMS Sent on Channel Booking Session Cancellation", OptionScope.APPLICATION, null, null, null) != null || configOptionController.getLongTextValueByKey("Template for SMS Sent on Channel Booking Session Cancellation", OptionScope.APPLICATION, null, null, null).isEmpty()){
+            smsTemplateForchannelSessionCancellation = configOptionController.getLongTextValueByKey("Template for SMS Sent on Channel Booking Session Cancellation", OptionScope.APPLICATION, null, null, null);
+        }else{
+            smsTemplateForchannelSessionCancellation = "We are sorry! {doctor}'s consultation session on {appointment_date} at {appointment_time} is cancelled. {ins_name}";
+        }
+        
         fillBillSessions();
         if (selectedSessionInstance == null) {
             return;
@@ -644,7 +650,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             e.setDepartment(getSessionController().getLoggedUser().getDepartment());
             e.setInstitution(getSessionController().getLoggedUser().getInstitution());
             e.setPending(false);
-            e.setSmsType(MessageType.ChannelDoctorArrival);
+            e.setSmsType(MessageType.ChannelCancellation);
             smsFacade.create(e);
             Boolean sent = smsManager.sendSms(e);
 
