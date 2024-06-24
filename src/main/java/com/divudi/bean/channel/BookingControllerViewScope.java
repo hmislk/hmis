@@ -4347,15 +4347,12 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 case Card:
                     p.setBank(paymentMethodData.getCreditCard().getInstitution());
                     p.setCreditCardRefNo(paymentMethodData.getCreditCard().getNo());
-                    p.setPaidValue(paymentMethodData.getCreditCard().getTotalValue());
                     break;
                 case Cheque:
                     p.setChequeDate(paymentMethodData.getCheque().getDate());
                     p.setChequeRefNo(paymentMethodData.getCheque().getNo());
-                    p.setPaidValue(paymentMethodData.getCheque().getTotalValue());
                     break;
                 case Cash:
-                    p.setPaidValue(paymentMethodData.getCash().getTotalValue());
                     break;
                 case ewallet:
 
@@ -4364,7 +4361,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 case PatientDeposit:
                 case Slip:
                     p.setBank(paymentMethodData.getSlip().getInstitution());
-                    p.setPaidValue(paymentMethodData.getSlip().getTotalValue());
                     p.setRealizedAt(paymentMethodData.getSlip().getDate());
                 case OnCall:
                 case OnlineSettlement:
