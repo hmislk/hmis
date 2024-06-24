@@ -98,8 +98,8 @@
                                         <p:tag class="mr-2" style="font-size: 0.8rem" severity="success" value="Completed" rendered="#{bs.completed}"/>
                                         <p:tag class="mr-2" style="font-size: 0.8rem" severity="default" value="OnGoing" rendered="#{bs.currentlyConsulted}"/>
                                         <p:tag class="mr-2" style="font-size: 0.8rem" severity="warning" value="Next" rendered="#{bs.nextInLine}"/>
-                                        <p:tag class="mr-2" style="font-size: 1.03rem" severity="danger" value="Cancelled" rendered="#{bs.bill.cancelled==true}" rounded="true"/>
-                                        <p:tag class="mr-2" style="font-size: 1.03rem" severity="warning" value="Refunded" rendered="#{bs.bill.refunded==true}" rounded="true"/>
+                                        <p:tag class="mr-2" style="font-size: 0.8rem" severity="danger" value="Cancelled" rendered="#{bs.bill.cancelled==true}" rounded="true"/>
+                                        <p:tag class="mr-2" style="font-size: 0.8rem" severity="warning" value="Refunded" rendered="#{bs.bill.refunded==true}" rounded="true"/>
                                         <p:tag class="mr-2" style="font-size: 0.8rem" severity="danger" value="Absent" rendered="#{bs.absent}"/>
                                     </p:column>
                                     <p:column headerText="Payment" >
@@ -130,7 +130,8 @@
                                                 icon="pi pi-user-plus" 
                                                 title="OPD" 
                                                 ajax="false" 
-                                                action="#{bookingControllerViewScope.navigateToOpdBilling(bs)}" 
+                                                action="#{bookingControllerViewScope.navigateToOpdBilling(bs)}"
+                                                disabled="#{(bs.bill.paidAmount eq 0 and bs.bill.paymentMethod eq 'OnCall')}"
                                                 class="ui-button-secondary mx-1">
                                             </p:commandButton>
                                             <p:commandButton 
