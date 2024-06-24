@@ -49,7 +49,7 @@
                             <p:commandButton action="#{bookingControllerViewScope.cancelSession}" 
                                              value="Cancel Session"
                                              ajax="false"
-                                             class="ui-button-Danger mx-1" 
+                                             class="ui-button-danger mx-1"
                                              icon="fa fa-times" 
                                              disabled="#{bookingControllerViewScope.selectedSessionInstance.cancelled}"
                                              onclick="return confirm('Are you sure you want to cancel?');" />
@@ -59,14 +59,14 @@
                                              value="Reopen Session"
                                              disabled="#{bookingControllerViewScope.selectedSessionInstance.completed ne true}"
                                              ajax="false"
-                                             styleClass="ui-button-success mx-1" 
+                                             styleClass="ui-button-warning mx-1"
                                              icon="fa fa-check" 
                                              onclick="return confirm('Are you sure you want to reopen?');" />
 
                             <!-- Complete Session Button -->
                             <p:commandButton action="#{bookingControllerViewScope.markSessionInstanceAsCompleted()}"
                                              value="Complete Session"
-                                             disabled="#{!bookingControllerViewScope.selectedSessionInstance.started || bookingControllerViewScope.selectedSessionInstance.completed}"
+                                             rendered="#{bookingControllerViewScope.selectedSessionInstance.started eq true and bookingControllerViewScope.selectedSessionInstance.completed ne true}"
                                              ajax="false"
                                              styleClass="ui-button-success mx-1" 
                                              icon="fa fa-check" 
@@ -74,7 +74,8 @@
 
                             <p:commandButton action="#{bookingControllerViewScope.markSessionInstanceAsStarted()}"
                                              value="Start Session"
-                                             disabled="#{!bookingControllerViewScope.selectedSessionInstance.completed}"
+                                             disabled="#{bookingControllerViewScope.selectedSessionInstance.completed}"
+                                             rendered="#{bookingControllerViewScope.selectedSessionInstance.started ne true}"
                                              ajax="false"
                                              styleClass="ui-button-success mx-1"
                                              icon="fa fa-check"
@@ -83,7 +84,9 @@
 
                             <p:commandButton action="#{bookingControllerViewScope.navigateBackToBookingsFromSessionInstance()}" 
                                              value="Back to Booking"
-                                             ajax="false" 
+                                             ajax="false"
+                                             class="ui-button-secondary mx-1"
+                                             icon="fas fa-arrow-left"
                                              ></p:commandButton>
 
                         </div>
