@@ -146,6 +146,7 @@ public class GrnController implements Serializable {
 
     public String navigateToRecieveGrnPreBill() {
         clear();
+        currentGrnBillPre = null;
         for (Bill b : getApproveBill().getListOfBill()) {
             if (b.getForwardReferenceBill() == null) {
                 JsfUtil.addErrorMessage("Please approve the grn bill");
@@ -341,14 +342,15 @@ public class GrnController implements Serializable {
         getCurrentGrnBillPre().setInvoiceDate(invoiceDate);
         getCurrentGrnBillPre().setInvoiceNumber(invoiceNumber);
         getCurrentGrnBillPre().setPaymentMethod(getApproveBill().getPaymentMethod());
+        
+        if (getCurrentGrnBillPre().getInvoiceDate() == null) {
+            getCurrentGrnBillPre().setInvoiceDate(getApproveBill().getCreatedAt());
+        }
+        
         String msg = pharmacyCalculation.errorCheck(getCurrentGrnBillPre(), billItems);
         if (!msg.isEmpty()) {
             JsfUtil.addErrorMessage(msg);
             return;
-        }
-
-        if (getCurrentGrnBillPre().getInvoiceDate() == null) {
-            getCurrentGrnBillPre().setInvoiceDate(getApproveBill().getCreatedAt());
         }
 
         saveGrnPreBill();
@@ -830,6 +832,9 @@ public class GrnController implements Serializable {
         } else {
             getBillFacade().edit(getCurrentGrnBillPre());
         }
+        
+        getApproveBill().setReferenceBill(getCurrentGrnBillPre());
+        getBillFacade().edit(getApproveBill());
     }
 
     public void saveBill() {
