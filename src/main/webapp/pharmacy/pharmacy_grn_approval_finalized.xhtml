@@ -13,6 +13,7 @@
             <p:panel rendered="#{!grnController.printPreview}">
                 <f:facet name="header">
                     <h:outputLabel value="GRN Receive" class="mt-2"/>
+                    
                     <p:commandButton  
                         value="Settle" 
                         action="#{grnController.settle}"
@@ -37,17 +38,17 @@
                                          forceSelection="true"
                                          var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" />
 
-                        <p:selectOneMenu   id="cmbPs" value="#{grnController.grnBill.paymentMethod}">    
+                        <p:selectOneMenu   id="cmbPs" value="#{grnController.currentGrnBillPre.paymentMethod}">    
                             <f:selectItem itemLabel="SelectPayment method"/>
                             <f:selectItems value="#{enumController.paymentMethodsForPo}"/>
                             <p:ajax process="@this" update="grn" event="change"/>
                             <p:ajax process="@this" update="duration" event="itemSelect" />
                         </p:selectOneMenu>
-                        <h:panelGroup rendered="#{grnController.grnBill.paymentMethod eq 'Credit'}" id="duration" >
+                        <h:panelGroup rendered="#{grnController.currentGrnBillPre.paymentMethod eq 'Credit'}" id="duration" >
                             <div class="d-flex" >
                                 <div class="ui-inputgroup mx-1 my-1">
                                     <p:inputText  
-                                        value="#{grnController.grnBill.creditDuration}"
+                                        value="#{grnController.currentGrnBillPre.creditDuration}"
                                         style="width: 10em;">
                                     </p:inputText>
                                     <div class="ui-inputgroup-addon">Days</div>
@@ -312,7 +313,7 @@
                 <h:panelGroup  id="gpBillPreview"   style="border: none; width: 214mm;" >
 
                     <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq false}" class="d-flex justify-content-center">
-                        <ph:grn bill="#{grnController.grnBill}"/>
+                        <ph:grn bill="#{grnController.currentGrnBillPre}"/>
                     </h:panelGroup>
 
                 </h:panelGroup>
