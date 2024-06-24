@@ -15,26 +15,20 @@
     <!-- IMPLEMENTATION -->
     <cc:implementation>
         <div class="d-flex">
-
-            <h:panelGroup rendered="#{cc.attrs.valueRequired}" class="col " layout="block" >
-                <p:inputText autocomplete="off"   value="#{cc.attrs.paymentMethodData.creditCard.totalValue}"  id="txtVal">
+            <div class="d-flex align-items-center">
+                <p:inputText autocomplete="off"   value="#{cc.attrs.paymentMethodData.slip.totalValue}"  id="txtVal">
                     <p:ajax process="@this" ></p:ajax>
                 </p:inputText>
                 <p:watermark value="Value" for="txtVal" />
-            </h:panelGroup>
-
-            <div class=""  >
-                <div class="d-flex align-items-center">
-                    <p:selectOneMenu value="#{cc.attrs.paymentMethodData.slip.institution}" style="width: 10em;" class="mx-2">
-                        <f:selectItem itemLabel="Select Bank"/>
-                        <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
-                        <p:ajax process="@this" ></p:ajax>
-                    </p:selectOneMenu>
-                    <p:calendar value="#{cc.attrs.paymentMethodData.slip.date}" pattern="#{sessionController.applicationPreference.longDateFormat}" id="date" class="mx-2">                            
-                        <p:ajax process="@this" ></p:ajax>
-                    </p:calendar>
-                    <p:watermark value="Date" for="date"/>
-                </div>
+                <p:selectOneMenu value="#{cc.attrs.paymentMethodData.slip.institution}" style="width: 10em;" class="mx-2">
+                    <f:selectItem itemLabel="Select Bank"/>
+                    <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
+                    <p:ajax process="@this" ></p:ajax>
+                </p:selectOneMenu>
+                <p:calendar value="#{cc.attrs.paymentMethodData.slip.date}" pattern="#{sessionController.applicationPreference.longDateFormat}" id="date" class="mx-2">                            
+                    <p:ajax process="@this" ></p:ajax>
+                </p:calendar>
+                <p:watermark value="Date" for="date"/>
             </div>
         </div>
     </cc:implementation>

@@ -317,7 +317,7 @@
                         </div>
 
                         <h:panelGroup id="billPreview" >
-                            <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'FiveFivePaper'}">
+                            <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'FiveFivePrintedPaper'}">
                                 <bi:staff_payment_five_five_paper_without_headings controller="#{channelStaffPaymentBillController}" bill="#{channelStaffPaymentBillController.current}" duplicate="false"/>
                             </h:panelGroup>
                             <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'PosPaper'}">

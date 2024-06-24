@@ -357,7 +357,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
         }
 
         if (getSelectedServiceSession() != null) {
-            sql += " and b.bill.singleBillSession.serviceSession.originatingSession=:ss";
+            sql += " and b.bill.singleBillSession.sessionInstance.originatingSession=:ss";
             hm.put("ss", getSelectedServiceSession());
         }
 
