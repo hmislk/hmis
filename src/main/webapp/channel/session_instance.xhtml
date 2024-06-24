@@ -23,7 +23,14 @@
                         </div>
                         <div class="d-flex align-items-center">
                             <!-- Cancel Session Button with BS colors, FA icon, and JavaScript confirmation -->
-                             <p:commandButton 
+                            <p:commandButton value="Pay Session"
+                                             action="#{bookingControllerViewScope.paySelectedSession()}"
+                                             ajax="false"
+                                             icon="pi pi-credit-card"
+                                             class="ui-button-danger mx-1"
+                                             rendered="#{bookingControllerViewScope.selectedSessionInstance.completed}">
+                            </p:commandButton>
+                            <p:commandButton 
                                 rendered="#{!bookingControllerViewScope.selectedSessionInstance.arrived}"
                                 id="btnArrival"
                                 ajax="false"
@@ -48,21 +55,29 @@
                                              onclick="return confirm('Are you sure you want to cancel?');" />
 
                             <!-- Reopen Session Button -->
-                            <p:commandButton action="#{bookingControllerViewScope.reopenSession}" 
+                            <p:commandButton action="#{bookingControllerViewScope.reopenSessionInstance()}"
                                              value="Reopen Session"
-                                             disabled="#{!bookingControllerViewScope.selectedSessionInstance.completed}"
+                                             disabled="#{bookingControllerViewScope.selectedSessionInstance.completed ne true}"
                                              ajax="false"
                                              styleClass="ui-button-success mx-1" 
                                              icon="fa fa-check" 
                                              onclick="return confirm('Are you sure you want to reopen?');" />
 
                             <!-- Complete Session Button -->
-                            <p:commandButton action="#{bookingControllerViewScope.completeSession()}" 
+                            <p:commandButton action="#{bookingControllerViewScope.markSessionInstanceAsCompleted()}"
                                              value="Complete Session"
-                                             disabled="#{bookingControllerViewScope.selectedSessionInstance.completed}"
+                                             disabled="#{!bookingControllerViewScope.selectedSessionInstance.started || bookingControllerViewScope.selectedSessionInstance.completed}"
                                              ajax="false"
                                              styleClass="ui-button-success mx-1" 
                                              icon="fa fa-check" 
+                                             onclick="return confirm('Are you sure you want to complete this session?');" />
+
+                            <p:commandButton action="#{bookingControllerViewScope.markSessionInstanceAsStarted()}"
+                                             value="Start Session"
+                                             disabled="#{!bookingControllerViewScope.selectedSessionInstance.completed}"
+                                             ajax="false"
+                                             styleClass="ui-button-success mx-1"
+                                             icon="fa fa-check"
                                              onclick="return confirm('Are you sure you want to complete this session?');" />
 
 
