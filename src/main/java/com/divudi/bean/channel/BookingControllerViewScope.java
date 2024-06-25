@@ -243,6 +243,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     private boolean printPreviewForSettle;
     private boolean printPreviewForReprintingAsOriginal;
     private boolean printPreviewForReprintingAsDuplicate;
+    private boolean printPreviewForOnlineBill;
     private double absentCount;
     private int serealNo;
     private Date fromDate;
@@ -457,6 +458,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         printPreviewForSettle = false;
         printPreviewForReprintingAsDuplicate = false;
         printPreviewForReprintingAsOriginal = false;
+        printPreviewForOnlineBill = false;
     }
 
     public void toReprintAsOriginal() {
@@ -472,6 +474,16 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         printPreview = true;
         printPreviewForSettle = false;
         printPreviewForReprintingAsDuplicate = true;
+        printPreviewForReprintingAsOriginal = false;
+    }
+    
+    public void toPrintOnlineBill() {
+        selectedBillSession.getBill().setPrinted(true);
+        billSessionFacade.edit(selectedBillSession);
+        printPreviewForOnlineBill = true;
+        printPreview = true;
+        printPreviewForSettle = false;
+        printPreviewForReprintingAsDuplicate = false;
         printPreviewForReprintingAsOriginal = false;
     }
 
@@ -6977,6 +6989,14 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     public void setSelectedBillItem(BillItem selectedBillItem) {
         this.selectedBillItem = selectedBillItem;
+    }
+
+    public boolean isPrintPreviewForOnlineBill() {
+        return printPreviewForOnlineBill;
+    }
+
+    public void setPrintPreviewForOnlineBill(boolean printPreviewForOnlineBill) {
+        this.printPreviewForOnlineBill = printPreviewForOnlineBill;
     }
 
 }
