@@ -179,6 +179,8 @@ public class SmsManagerEjb {
             e.setSmsType(MessageType.ChannelDoctorReminder);
             getSmsFacade().create(e);
             Boolean sent = sendSms(e);
+            e.setSentSuccessfully(sent);
+            getSmsFacade().edit(e);
         
     }
     
