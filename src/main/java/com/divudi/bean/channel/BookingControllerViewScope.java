@@ -341,6 +341,10 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             }
         }
         
+        if (selectedBillSession.getBill().isCancelled()) {
+            JsfUtil.addErrorMessage("Cannot reschedule: This bill session has been cancelled.");
+        }
+        
         if (selectedBillSession.getReferenceBillSession() == null) {
             createBillSessionForReschedule(selectedBillSession, getSelectedSessionInstanceForRechedule());
             JsfUtil.addSuccessMessage("Reschedule Successfully");
