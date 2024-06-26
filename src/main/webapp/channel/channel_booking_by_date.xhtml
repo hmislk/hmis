@@ -143,9 +143,9 @@
                                                     <div>
                                                         <i class="fa-solid fa-user-doctor" style="font-size: 26pt;margin-right: 28px"></i>
                                                     </div>
-                                                    <div>
-                                                        <h:outputText value="#{s.staff.person.nameWithTitle}" style="font-weight: bolder" /><br/>
-                                                        <h:outputText value="(#{s.staff.speciality.name})" />
+                                                    <div class="align-items-center">
+                                                        <h:outputText value="#{s.staff.person.nameWithTitle}" style="font-weight: bolder" /> <p:badge class="mx-2" severity="success" value="Completed" rendered="#{s.completed}" /> <br/>
+                                                        <h:outputText value="(#{s.staff.speciality.name})" /><p:badge class="mx-2" severity="warning" value="Scaning Session" rendered="#{s.originatingSession.category eq 'Scanning'}" /> 
                                                         <br/>
 
                                                         <div>
