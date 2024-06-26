@@ -6590,13 +6590,19 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public List<SessionInstance> getSessionInstancesFiltered() {
-        if(sessionInstancesFiltered != null){
+        sortSessionOnGet();
+        return sessionInstancesFiltered;
+    }
+    
+    private void sortSessionOnGet(){
+       if(selectedSessionInstance == null){
+            if(sessionInstancesFiltered != null){
             sessionInstances = channelBean.listSessionInstances(fromDate, toDate, null, null, null);
             filterSessionInstances();
             sortSessions();
             sessionInstancesFiltered = sortedSessionInstances;
         }
-        return sessionInstancesFiltered;
+       }
     }
     
     private void sortSessions() {
