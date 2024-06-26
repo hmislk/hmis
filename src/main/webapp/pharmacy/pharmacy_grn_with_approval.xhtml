@@ -13,14 +13,32 @@
             <p:panel rendered="#{!grnController.printPreview}">
                 <f:facet name="header">
                     <h:outputLabel value="GRN Receive" class="mt-2"/>
+                    <p:commandButton 
+                        ajax="false" 
+                        action="pharmacy_purchase_order_list_for_recieve_with_approval"
+                        class="ui-button-secondary"
+                        icon="fa fa-arrow-left"
+                        actionListener="#{grnController.viewPoList()}" 
+                        style="float: right;"
+                        value="Back to GRN List"> 
+                    </p:commandButton> 
                     <p:commandButton  
-                        value="Settle" 
-                        action="#{grnController.settle}"
-                        class="ui-button-success"
+                        value="Finalize" 
+                        action="#{grnController.requestFinalize()}"
+                        class="ui-button-warning mx-1"
                         icon="fas fa-check"
                         ajax="false"  
                         style="float: right;">
                     </p:commandButton> 
+                    <p:commandButton  
+                        value="Save" 
+                        action="#{grnController.request()}"
+                        class="ui-button-success"
+                        icon="fas fa-floppy-disk"
+                        ajax="false"  
+                        style="float: right;">
+                    </p:commandButton> 
+
                 </f:facet>
                 <h:panelGroup >
 
@@ -37,17 +55,17 @@
                                          forceSelection="true"
                                          var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" />
 
-                        <p:selectOneMenu   id="cmbPs" value="#{grnController.grnBill.paymentMethod}">    
+                        <p:selectOneMenu   id="cmbPs" value="#{grnController.currentGrnBillPre.paymentMethod}">    
                             <f:selectItem itemLabel="SelectPayment method"/>
                             <f:selectItems value="#{enumController.paymentMethodsForPo}"/>
                             <p:ajax process="@this" update="grn" event="change"/>
                             <p:ajax process="@this" update="duration" event="itemSelect" />
                         </p:selectOneMenu>
-                        <h:panelGroup rendered="#{grnController.grnBill.paymentMethod eq 'Credit'}" id="duration" >
+                        <h:panelGroup rendered="#{grnController.currentGrnBillPre.paymentMethod eq 'Credit'}" id="duration" >
                             <div class="d-flex" >
                                 <div class="ui-inputgroup mx-1 my-1">
                                     <p:inputText  
-                                        value="#{grnController.grnBill.creditDuration}"
+                                        value="#{grnController.currentGrnBillPre.creditDuration}"
                                         style="width: 10em;">
                                     </p:inputText>
                                     <div class="ui-inputgroup-addon">Days</div>
@@ -230,7 +248,7 @@
                                 icon="fas fa-plus"
                                 class="ui-button-danger mx-1"
                                 action="#{grnController.duplicateItem(bi)}"/>
-<!--                            <p:rowEditor />  -->
+                            <!--                            <p:rowEditor />  -->
 
                         </p:column>
 
@@ -292,11 +310,22 @@
                             <p:commandButton 
                                 ajax="false" 
                                 action="pharmacy_purchase_order_list_for_recieve"
+                                rendered="#{!configOptionApplicationController.getBooleanValueByKey('Pharmacy Good Recipt With Approval')}"
                                 class="ui-button-warning"
                                 icon="fa fa-arrow-left"
                                 actionListener="#{grnController.viewPoList()}" 
                                 value="Back to PO List"> 
-                            </p:commandButton>                   
+                            </p:commandButton> 
+                            <p:commandButton 
+                                ajax="false" 
+                                action="pharmacy_purchase_order_list_for_recieve_with_approval"
+                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Good Recipt With Approval')}"
+                                class="ui-button-warning"
+                                icon="fa fa-arrow-left"
+                                actionListener="#{grnController.viewPoList()}" 
+                                style="float: right;"
+                                value="Back to GRN List"> 
+                            </p:commandButton> 
                             <p:commandButton 
                                 value="Print" 
                                 ajax="false" 
@@ -312,7 +341,7 @@
                 <h:panelGroup  id="gpBillPreview"   style="border: none; width: 214mm;" >
 
                     <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq false}" class="d-flex justify-content-center">
-                        <ph:grn bill="#{grnController.grnBill}"/>
+                        <ph:grn bill="#{grnController.currentGrnBillPre}"/>
                     </h:panelGroup>
 
                 </h:panelGroup>

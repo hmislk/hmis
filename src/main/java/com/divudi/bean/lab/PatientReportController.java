@@ -1812,6 +1812,7 @@ public class PatientReportController implements Serializable {
         currentPtIx.setPrintingAt(Calendar.getInstance().getTime());
         currentPtIx.setPrintingUser(getSessionController().getLoggedUser());
         currentPtIx.setPrintingDepartment(getSessionController().getDepartment());
+        currentPtIx.setPrinted(true);
         getPiFacade().edit(currentPtIx);
 
         currentPatientReport.setPrinted(Boolean.TRUE);
@@ -1821,6 +1822,29 @@ public class PatientReportController implements Serializable {
         currentPatientReport.setPrintingUser(getSessionController().getLoggedUser());
         getFacade().edit(currentPatientReport);
 
+    }
+    
+    public String printPatientLabReport() {
+        if (currentPatientReport == null) {
+            JsfUtil.addErrorMessage("Nothing to approve");
+            return"";
+        }
+        currentPtIx.setPrinted(true);
+        currentPtIx.setPrintingAt(Calendar.getInstance().getTime());
+        currentPtIx.setPrintingUser(getSessionController().getLoggedUser());
+        currentPtIx.setPrintingDepartment(getSessionController().getDepartment());
+        currentPtIx.setPrinted(true);
+        getPiFacade().edit(currentPtIx);
+
+        currentPatientReport.setPrinted(Boolean.TRUE);
+        currentPatientReport.setPrintingAt(Calendar.getInstance().getTime());
+        currentPatientReport.setPrintingDepartment(getSessionController().getLoggedUser().getDepartment());
+        currentPatientReport.setPrintingInstitution(getSessionController().getLoggedUser().getInstitution());
+        currentPatientReport.setPrintingUser(getSessionController().getLoggedUser());
+        currentPatientReport.setPrinted(true);
+        
+        getFacade().edit(currentPatientReport);
+        return"/lab/patient_report_print.xhtml";
     }
 
     public void pdfPatientReport() throws DocumentException, com.lowagie.text.DocumentException, IOException {
