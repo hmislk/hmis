@@ -92,6 +92,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -235,6 +237,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     private List<SessionInstance> sessionInstances;
     private List<SessionInstance> sessionInstancesFiltered;
+    private List<SessionInstance> sortedSessionInstances;
     private String sessionInstanceFilter;
     private List<BillSession> billSessions;
     private List<Staff> consultants;
@@ -481,7 +484,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         selectedBillSession.getBill().setPrinted(true);
         billSessionFacade.edit(selectedBillSession);
         printPreviewForOnlineBill = true;
-        printPreview = true;
+        printPreview = false;
         printPreviewForSettle = false;
         printPreviewForReprintingAsDuplicate = false;
         printPreviewForReprintingAsOriginal = false;
@@ -2657,7 +2660,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             getSmsFacade().create(e);
             Boolean sent = smsManager.sendSms(e);
 
-        JsfUtil.addSuccessMessage("SMS Sent to all No Show Patients.");
+        JsfUtil.addSuccessMessage("SMS Sent Patient.");
     }
 
     private String createChanellBookingDoctorArrivalSms(Bill b) {
@@ -6561,7 +6564,32 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public List<SessionInstance> getSessionInstancesFiltered() {
+        if(sessionInstancesFiltered != null){
+            sessionInstances = channelBean.listSessionInstances(fromDate, toDate, null, null, null);
+            filterSessionInstances();
+            sortSessions();
+            sessionInstancesFiltered = sortedSessionInstances;
+        }
         return sessionInstancesFiltered;
+    }
+    
+    private void sortSessions() {
+        sortedSessionInstances = new ArrayList<>(sessionInstancesFiltered);
+        Collections.sort(sortedSessionInstances, new Comparator<SessionInstance>() {
+            @Override
+            public int compare(SessionInstance s1, SessionInstance s2) {
+                if (s1.isStarted() && !s2.isStarted() && !s1.isCompleted()) {
+                    return -1;
+                } else if (!s1.isStarted() && s2.isStarted() && !s2.isCompleted()) {
+                    return 1;
+                } else if (s1.isCompleted() && !s2.isCompleted()) {
+                    return 1;
+                } else if (!s1.isCompleted() && s2.isCompleted()) {
+                    return -1;
+                }
+                return 0;
+            }
+        });
     }
 
     public void setSessionInstancesFiltered(List<SessionInstance> sessionInstancesFiltered) {
