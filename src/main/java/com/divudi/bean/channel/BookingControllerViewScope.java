@@ -2391,11 +2391,19 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public void addNormalChannelBooking() {
+        if (selectedSessionInstance == null){
+            JsfUtil.addErrorMessage("Please select a Session");
+            return; 
+        }
         addChannelBooking(false);
         fillBillSessions();
     }
 
     public void addReservedChannelBooking() {
+        if (selectedSessionInstance == null){
+            JsfUtil.addErrorMessage("Please select a Session Instance");
+            return; 
+        }
         boolean reservedBooking = true;
         addChannelBooking(reservedBooking);
         fillBillSessions();
