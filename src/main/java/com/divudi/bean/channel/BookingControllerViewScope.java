@@ -247,7 +247,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     private boolean printPreviewForReprintingAsOriginal;
     private boolean printPreviewForReprintingAsDuplicate;
     private boolean printPreviewForOnlineBill;
-    private boolean printPreviewR;
+    private boolean printPreviewC;
     private double absentCount;
     private int serealNo;
     private Date fromDate;
@@ -1282,7 +1282,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         viewScopeDataTransferController.setNeedToFillSessionInstanceDetails(true);
         viewScopeDataTransferController.setNeedToFillMembershipDetails(false);
         viewScopeDataTransferController.setNeedToPrepareForNewBooking(false);
-        printPreviewR = false;
+        printPreviewC = false;
 
         return "/channel/manage_booking_by_date?faces-redirect=true";
     }
@@ -1533,7 +1533,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         sendSmsOnChannelCancellationBookings();
         cancelPaymentMethod = null;
         comment = null;
-        printPreviewR = true;
+        printPreviewC = true;
     }
 
     public void cancelCashFlowBill() {
@@ -1544,7 +1544,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         cancel(getBillSession().getBill(), getBillSession().getBillItem(), getBillSession());
         sendSmsOnChannelCancellationBookings();
         comment = null;
-         printPreviewR = true;
+         printPreviewC = true;
     }
 
     public void cancelBookingBill() {
@@ -1562,7 +1562,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         billSessionFacade.edit(selectedBillSession);
         sendSmsOnChannelCancellationBookings();
         comment = null;
-        printPreviewR = true;
+        printPreviewC = true;
     }
 
     private BillItem cancelBillItems(BillItem bi, CancelledBill can) {
@@ -1669,7 +1669,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         cancel1(getBillSession().getBill(), getBillSession().getBillItem(), getBillSession());
         sendSmsOnChannelCancellationBookings();
         comment = null;
-        printPreviewR = true;
+        printPreviewC = true;
     }
 
     public void fetchRecentChannelBooks(Institution ins) {
@@ -7053,12 +7053,12 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         this.printPreviewForOnlineBill = printPreviewForOnlineBill;
     }
 
-    public boolean isPrintPreviewR() {
-        return printPreviewR;
+    public boolean isPrintPreviewC() {
+        return printPreviewC;
     }
 
-    public void setPrintPreviewR(boolean printPreviewR) {
-        this.printPreviewR = printPreviewR;
+    public void setPrintPreviewC(boolean printPreviewC) {
+        this.printPreviewC = printPreviewC;
     }
 
 }
