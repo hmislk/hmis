@@ -21,30 +21,35 @@
                                             <p:commandButton 
                                                 ajax="false" 
                                                 value="Financial Transactions Summary" 
+                                                actionListener="#{searchController.makeNull()}"
                                                 action="#{searchController.navigateToAllFinancialTransactionSummary()}"
                                                 class="w-100">
                                             </p:commandButton>
                                             <p:commandButton 
                                                 ajax="false" 
                                                 value="Financial Transactions Summary by cashier" 
+                                                actionListener="#{searchController.makeNull()}"
                                                 action="#{searchController.navigateToAllFinancialTransactionSummaryCashier()}"
                                                 class="w-100">
                                             </p:commandButton>
                                             <p:commandButton 
                                                 ajax="false" 
                                                 value="Financial Transactions Summary - Payment Method" 
+                                                actionListener="#{searchController.makeNull()}"
                                                 action="#{searchController.navigateToFinancialTransactionSummaryPaymentMethod()}"
                                                 class="w-100">
                                             </p:commandButton>
                                             <p:commandButton 
                                                 ajax="false" 
                                                 value="Financial Transactions Summary - Cashiers" 
+                                                actionListener="#{searchController.makeNull()}"
                                                 action="#{searchController.navigateToFinancialTransactionSummaryByUsers()}"
                                                 class="w-100">
                                             </p:commandButton>
                                             <p:commandButton 
                                                 ajax="false" 
                                                 value="Financial Transactions Summary - Cashier Payment Method" 
+                                                actionListener="#{searchController.makeNull()}"
                                                 action="#{searchController.navigateToFinancialTransactionSummaryByUserPayment()}"
                                                 class="w-100">
                                             </p:commandButton>
@@ -52,6 +57,7 @@
                                             <p:commandButton 
                                                 ajax="false" 
                                                 value="Financial Transactions Summary - Department" 
+                                                actionListener="#{searchController.makeNull()}"
                                                 action="#{searchController.navigateToFinancialTransactionSummaryByDepartment()}"
                                                 class="w-100">
                                             </p:commandButton>

@@ -450,8 +450,12 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
             JsfUtil.addErrorMessage("Please select valid Token");
             return;
         }
-       
-        currentToken.setCalled(true);
+        
+        if (currentToken.isCalled()) {
+            currentToken.setCalled(false);
+        }else{
+            currentToken.setCalled(true);
+        }
         tokenFacade.edit(currentToken);
     }
 
