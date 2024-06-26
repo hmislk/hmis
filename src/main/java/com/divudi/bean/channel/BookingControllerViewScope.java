@@ -331,6 +331,11 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             JsfUtil.addErrorMessage("Bill session is not valid !");
             return;
         }
+        
+        if (getSelectedSessionInstanceForRechedule().getMaxNo()==getSelectedSessionInstanceForRechedule().getBookedPatientCount()) {
+            JsfUtil.addErrorMessage("Cannot reschedule the selected session: The session has reached its maximum booking capacity.");
+            return;
+        }
         createBillSessionForReschedule(selectedBillSession, getSelectedSessionInstanceForRechedule());
         JsfUtil.addSuccessMessage("Reschedule Successfully");
         sendSmsOnChannelBookingReschedule();
