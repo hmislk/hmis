@@ -332,14 +332,30 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             return;
         }
         
-        if (getSelectedSessionInstanceForRechedule().getMaxNo()==getSelectedSessionInstanceForRechedule().getBookedPatientCount()) {
-            JsfUtil.addErrorMessage("Cannot reschedule the selected session: The session has reached its maximum booking capacity.");
-            return;
-        }
-        createBillSessionForReschedule(selectedBillSession, getSelectedSessionInstanceForRechedule());
-        JsfUtil.addSuccessMessage("Reschedule Successfully");
-        sendSmsOnChannelBookingReschedule();
         
+        if (getSelectedSessionInstanceForRechedule().getMaxNo() != 0) {
+            if (getSelectedSessionInstanceForRechedule().getBookedPatientCount() != null) {
+                int maxNo = getSelectedSessionInstanceForRechedule().getMaxNo();
+                long bookedPatientCount = getSelectedSessionInstanceForRechedule().getBookedPatientCount();
+                if (maxNo <= bookedPatientCount) {
+                    JsfUtil.addErrorMessage("Cannot reschedule the selected session: The session has reached its maximum booking capacity.");
+                    return;
+
+                }
+            }
+        }
+        
+        if (selectedBillSession.getBill().isCancelled()) {
+            JsfUtil.addErrorMessage("Cannot reschedule: This bill session has been cancelled.");
+        }
+        
+        if (selectedBillSession.getReferenceBillSession() == null) {
+            createBillSessionForReschedule(selectedBillSession, getSelectedSessionInstanceForRechedule());
+            JsfUtil.addSuccessMessage("Reschedule Successfully");
+            sendSmsOnChannelBookingReschedule();
+        }else{
+            JsfUtil.addErrorMessage("Cannot reschedule the selected session: This appointment has already been rescheduled.");
+        }
         
     }
     
