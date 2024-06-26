@@ -641,9 +641,7 @@
                                         <div class="row w-100">
                                             <div class="d-flex">
                                                 <p:panel class="w-100">
-                                                    <f:facet name="header" rendered="#{bookingControllerViewScope.selectedBillSession.referenceBillSession ne null}">
-                                                        <h:outputLabel value="Rescheduled"/>
-                                                    </f:facet>
+                                                    
                                                     <h:panelGrid columns="2" styleClass="w-100" columnClasses="label,value">
                                                         <p:outputLabel value="Consultant" style="font-weight: bold"/>
                                                         <p:outputLabel value="#{bookingControllerViewScope.selectedBillSession.sessionInstance.staff.name}"/>
