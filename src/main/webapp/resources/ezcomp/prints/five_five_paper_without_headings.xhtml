@@ -425,6 +425,17 @@
                 </div>
             </h:panelGroup>
 
+            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Add OPD Bill Printing by Details')}">
+                <br />
+                <div style="font-size: 9pt">
+                    <h:outputLabel value="Printed By :"/>
+                    <h:outputLabel value="#{sessionController.loggedUser.name}"/>
+                    <h:outputLabel class="mx-2" value="#{sessionController.currentDate}">
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
+                    </h:outputLabel>
+                </div>
+            </h:panelGroup>
+
             <div class="footer" style="text-align: center;">
                 <br/>
                 <h:outputLabel value="#{sessionController.userPreference.pharmacyBillFooter}"/>
