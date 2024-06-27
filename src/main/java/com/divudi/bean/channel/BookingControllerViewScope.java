@@ -237,8 +237,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     private List<SessionInstance> sessionInstances;
     private List<SessionInstance> sessionInstancesFiltered;
-    private List<SessionInstance> oldSessionInstancesFiltered;
     private List<SessionInstance> sortedSessionInstances;
+    private List<SessionInstance> oldSessionInstancesFiltered;
     private String sessionInstanceFilter;
     private List<BillSession> billSessions;
     private List<Staff> consultants;
@@ -248,6 +248,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     private boolean printPreviewForReprintingAsOriginal;
     private boolean printPreviewForReprintingAsDuplicate;
     private boolean printPreviewForOnlineBill;
+    private boolean printPreviewC;
     private double absentCount;
     private int serealNo;
     private Date fromDate;
@@ -331,10 +332,31 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             JsfUtil.addErrorMessage("Bill session is not valid !");
             return;
         }
-        createBillSessionForReschedule(selectedBillSession, getSelectedSessionInstanceForRechedule());
-        JsfUtil.addSuccessMessage("Reschedule Successfully");
-        sendSmsOnChannelBookingReschedule();
         
+        
+        if (getSelectedSessionInstanceForRechedule().getMaxNo() != 0) {
+            if (getSelectedSessionInstanceForRechedule().getBookedPatientCount() != null) {
+                int maxNo = getSelectedSessionInstanceForRechedule().getMaxNo();
+                long bookedPatientCount = getSelectedSessionInstanceForRechedule().getBookedPatientCount();
+                if (maxNo <= bookedPatientCount) {
+                    JsfUtil.addErrorMessage("Cannot reschedule the selected session: The session has reached its maximum booking capacity.");
+                    return;
+
+                }
+            }
+        }
+        
+        if (selectedBillSession.getBill().isCancelled()) {
+            JsfUtil.addErrorMessage("Cannot reschedule: This bill session has been cancelled.");
+        }
+        
+        if (selectedBillSession.getReferenceBillSession() == null) {
+            createBillSessionForReschedule(selectedBillSession, getSelectedSessionInstanceForRechedule());
+            JsfUtil.addSuccessMessage("Reschedule Successfully");
+            sendSmsOnChannelBookingReschedule();
+        }else{
+            JsfUtil.addErrorMessage("Cannot reschedule the selected session: This appointment has already been rescheduled.");
+        }
         
     }
     
@@ -1261,6 +1283,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         viewScopeDataTransferController.setNeedToFillSessionInstanceDetails(true);
         viewScopeDataTransferController.setNeedToFillMembershipDetails(false);
         viewScopeDataTransferController.setNeedToPrepareForNewBooking(false);
+        printPreviewC = false;
 
         return "/channel/manage_booking_by_date?faces-redirect=true";
     }
@@ -1511,6 +1534,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         sendSmsOnChannelCancellationBookings();
         cancelPaymentMethod = null;
         comment = null;
+        printPreviewC = true;
     }
 
     public void cancelCashFlowBill() {
@@ -1521,6 +1545,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         cancel(getBillSession().getBill(), getBillSession().getBillItem(), getBillSession());
         sendSmsOnChannelCancellationBookings();
         comment = null;
+         printPreviewC = true;
     }
 
     public void cancelBookingBill() {
@@ -1538,6 +1563,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         billSessionFacade.edit(selectedBillSession);
         sendSmsOnChannelCancellationBookings();
         comment = null;
+        printPreviewC = true;
     }
 
     private BillItem cancelBillItems(BillItem bi, CancelledBill can) {
@@ -1644,7 +1670,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         cancel1(getBillSession().getBill(), getBillSession().getBillItem(), getBillSession());
         sendSmsOnChannelCancellationBookings();
         comment = null;
-
+        printPreviewC = true;
     }
 
     public void fetchRecentChannelBooks(Institution ins) {
@@ -6564,7 +6590,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         this.toDate = toDate;
     }
 
-    public List<SessionInstance> getSessionInstancesFiltered() {
+     public List<SessionInstance> getSessionInstancesFiltered() {
         return sessionInstancesFiltered;
     }
     
@@ -7047,6 +7073,14 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     public void setPrintPreviewForOnlineBill(boolean printPreviewForOnlineBill) {
         this.printPreviewForOnlineBill = printPreviewForOnlineBill;
+    }
+
+    public boolean isPrintPreviewC() {
+        return printPreviewC;
+    }
+
+    public void setPrintPreviewC(boolean printPreviewC) {
+        this.printPreviewC = printPreviewC;
     }
 
 }
