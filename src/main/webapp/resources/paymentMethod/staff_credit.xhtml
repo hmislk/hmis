@@ -1,0 +1,57 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="paymentMethodData"  type="com.divudi.data.dataStructure.PaymentMethodData" />
+        <cc:attribute name="valueRequired" type="boolean" />
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <div class="col" >
+            <p:inputText 
+                autocomplete="off"   
+                value="#{cc.attrs.paymentMethodData.staffCredit.totalValue}" 
+                id="txtVal">
+                <p:ajax process="@this" ></p:ajax>
+            </p:inputText>
+            <p:autoComplete  
+                minQueryLength="2"
+                forceSelection="true" 
+                value="#{cc.attrs.paymentMethodData.staffCredit.toStaff}" 
+                id="creditStaff"
+                completeMethod="#{staffController.completeStaff}" 
+                var="mys" 
+                class="w-100"
+                placeholder="Staff (Type at least 4 letters to search)"
+                inputStyleClass="form-control"
+                itemLabel="#{mys.person.name}" 
+                itemValue="#{mys}"
+                size="10">
+                <p:column headerText="Name" style="padding: 2px;">
+                    <h:outputText value="#{mys.person.nameWithTitle}" ></h:outputText>
+                </p:column>
+                <p:column headerText="EPF" style="padding: 2px;">
+                    <h:outputText value="#{mys.epfNo}" ></h:outputText>
+                </p:column>
+                <p:column headerText="Credit Entitlement" style="padding: 2px;">
+                    <h:outputText value="#{mys.creditLimitQualified}" >
+                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                    </h:outputText>
+                </p:column>
+                <p:column  headerText="Credit Utilized" style="padding: 2px;">
+                    <h:outputText value="#{mys.currentCreditValue}" >
+                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                    </h:outputText>
+                </p:column>
+            </p:autoComplete>
+            <p:watermark value="Value" for="txtVal" />
+        </div>
+    </cc:implementation>
+</html>

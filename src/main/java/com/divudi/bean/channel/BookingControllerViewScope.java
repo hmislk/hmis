@@ -355,7 +355,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             e.setDepartment(getSessionController().getLoggedUser().getDepartment());
             e.setInstitution(getSessionController().getLoggedUser().getInstitution());
             e.setPending(false);
-            e.setSmsType(MessageType.ChannelPatientFeedback);
+            e.setSmsType(MessageType.ChannelPatientReschedule);
             getSmsFacade().create(e);
             Boolean sent = smsManager.sendSms(e);
 
@@ -528,6 +528,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getEwallet().getTotalValue();
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getSlip().getTotalValue();
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getStaffCredit().getTotalValue();
 
             }
             return feeTotalForSelectedBill - multiplePaymentMethodTotalValue;
@@ -554,6 +555,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 pm.getPaymentMethodData().getPatient_deposit().setTotalValue(remainAmount);
             } else if (pm.getPaymentMethod() == PaymentMethod.Credit) {
                 pm.getPaymentMethodData().getCredit().setTotalValue(remainAmount);
+            } else if (pm.getPaymentMethod() == PaymentMethod.Staff) {
+                pm.getPaymentMethodData().getStaffCredit().setTotalValue(remainAmount);
             }
 
         }
@@ -2338,6 +2341,19 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             }
             double multiplePaymentMethodTotalValue = 0.0;
             for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
+                if (paymentSchemeController.checkPaymentMethodError(cd.getPaymentMethod(), cd.getPaymentMethodData())) {
+                    return true;
+                }
+                if (cd.getPaymentMethod().equals(PaymentMethod.Staff)) {
+                    if (cd.getPaymentMethodData().getStaffCredit().getTotalValue() == 0.0 || cd.getPaymentMethodData().getStaffCredit().getToStaff() == null) {
+                        JsfUtil.addErrorMessage("Please fill the Paying Amount and Staff Name");
+                        return true;
+                    }
+                    if (cd.getPaymentMethodData().getStaffCredit().getToStaff().getCurrentCreditValue() + cd.getPaymentMethodData().getStaffCredit().getTotalValue() > cd.getPaymentMethodData().getStaffCredit().getToStaff().getCreditLimitQualified()) {
+                        JsfUtil.addErrorMessage("No enough Credit.");
+                        return true;
+                    }
+                }
                 //TODO - filter only relavant value
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCash().getTotalValue();
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCreditCard().getTotalValue();
@@ -2345,6 +2361,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getEwallet().getTotalValue();
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getSlip().getTotalValue();
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getStaffCredit().getTotalValue();
             }
             double differenceOfBillTotalAndPaymentValue = feeTotalForSelectedBill - multiplePaymentMethodTotalValue;
             differenceOfBillTotalAndPaymentValue = Math.abs(differenceOfBillTotalAndPaymentValue);
@@ -2357,7 +2374,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             }
 
         }
-
+        
         if (configOptionApplicationController.getBooleanValueByKey("Channel Credit Booking Settle Requires Additional Information")) {
             if (paymentMethod == PaymentMethod.Card) {
                 if (paymentMethodData.getCreditCard().getInstitution() == null) {
@@ -2696,12 +2713,12 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 .replace("{doc}", doc)
                 .replace("{time}", sessionTime)
                 .replace("{date}", sessionDate)
-                .replace("{No}", String.valueOf(no)
+                .replace("{No}", String.valueOf(no))
+                .replace("{new_serial_no}", String.valueOf(newNo))
                 .replace("{new_doctor}", newDoc)
-                .replace("{ins_name}", insName)
-                .replace("{new_appointment_time}", newSessionTime)
                 .replace("{new_appointment_date}", newSessionDate)
-                .replace("{new_serial_no}", String.valueOf(newNo)));
+                .replace("{new_appointment_time}", newSessionTime)
+                .replace("{ins_name}", insName);
 
         return s;
     }
@@ -4252,9 +4269,17 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                     case Credit:
                     case PatientDeposit:
                     case Slip:
+                        p.setPaidValue(cd.getPaymentMethodData().getSlip().getTotalValue());
+                        p.setBank(cd.getPaymentMethodData().getSlip().getInstitution());
+                        p.setRealizedAt(cd.getPaymentMethodData().getSlip().getDate());
                     case OnCall:
                     case OnlineSettlement:
                     case Staff:
+                        p.setPaidValue(cd.getPaymentMethodData().getStaffCredit().getTotalValue());
+                        if (cd.getPaymentMethodData().getStaffCredit().getToStaff() != null) {
+                            staffBean.updateStaffCredit(cd.getPaymentMethodData().getStaffCredit().getToStaff(), cd.getPaymentMethodData().getStaffCredit().getTotalValue());
+                            JsfUtil.addSuccessMessage("Staff Welfare Balance Updated");
+                        }
                     case YouOweMe:
                     case MultiplePaymentMethods:
                 }
@@ -4270,18 +4295,20 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             p.setCreatedAt(new Date());
             p.setCreater(getSessionController().getLoggedUser());
             p.setPaymentMethod(pm);
-            p.setPaidValue(bill.getNetTotal());
 
             switch (pm) {
                 case Card:
-                    p.setBank(getPaymentMethodData().getCreditCard().getInstitution());
-                    p.setCreditCardRefNo(getPaymentMethodData().getCreditCard().getNo());
+                    p.setBank(paymentMethodData.getCreditCard().getInstitution());
+                    p.setCreditCardRefNo(paymentMethodData.getCreditCard().getNo());
+                    p.setPaidValue(paymentMethodData.getCreditCard().getTotalValue());
                     break;
                 case Cheque:
-                    p.setChequeDate(getPaymentMethodData().getCheque().getDate());
-                    p.setChequeRefNo(getPaymentMethodData().getCheque().getNo());
+                    p.setChequeDate(paymentMethodData.getCheque().getDate());
+                    p.setChequeRefNo(paymentMethodData.getCheque().getNo());
+                    p.setPaidValue(paymentMethodData.getCheque().getTotalValue());
                     break;
                 case Cash:
+                    p.setPaidValue(paymentMethodData.getCash().getTotalValue());
                     break;
                 case ewallet:
 
@@ -4289,6 +4316,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 case Credit:
                 case PatientDeposit:
                 case Slip:
+                    p.setBank(paymentMethodData.getSlip().getInstitution());
+                    p.setPaidValue(paymentMethodData.getSlip().getTotalValue());
+                    p.setRealizedAt(paymentMethodData.getSlip().getDate());
                 case OnCall:
                 case OnlineSettlement:
                 case Staff:
@@ -4301,7 +4331,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
             ps.add(p);
         }
-        payments = ps;
         return ps;
     }
 
