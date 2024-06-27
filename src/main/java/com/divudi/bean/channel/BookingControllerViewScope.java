@@ -237,6 +237,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     private List<SessionInstance> sessionInstances;
     private List<SessionInstance> sessionInstancesFiltered;
+    private List<SessionInstance> oldSessionInstancesFiltered;
     private List<SessionInstance> sortedSessionInstances;
     private String sessionInstanceFilter;
     private List<BillSession> billSessions;
@@ -330,31 +331,10 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             JsfUtil.addErrorMessage("Bill session is not valid !");
             return;
         }
+        createBillSessionForReschedule(selectedBillSession, getSelectedSessionInstanceForRechedule());
+        JsfUtil.addSuccessMessage("Reschedule Successfully");
+        sendSmsOnChannelBookingReschedule();
         
-        
-        if (getSelectedSessionInstanceForRechedule().getMaxNo() != 0) {
-            if (getSelectedSessionInstanceForRechedule().getBookedPatientCount() != null) {
-                int maxNo = getSelectedSessionInstanceForRechedule().getMaxNo();
-                long bookedPatientCount = getSelectedSessionInstanceForRechedule().getBookedPatientCount();
-                if (maxNo <= bookedPatientCount) {
-                    JsfUtil.addErrorMessage("Cannot reschedule the selected session: The session has reached its maximum booking capacity.");
-                    return;
-
-                }
-            }
-        }
-        
-        if (selectedBillSession.getBill().isCancelled()) {
-            JsfUtil.addErrorMessage("Cannot reschedule: This bill session has been cancelled.");
-        }
-        
-        if (selectedBillSession.getReferenceBillSession() == null) {
-            createBillSessionForReschedule(selectedBillSession, getSelectedSessionInstanceForRechedule());
-            JsfUtil.addSuccessMessage("Reschedule Successfully");
-            sendSmsOnChannelBookingReschedule();
-        }else{
-            JsfUtil.addErrorMessage("Cannot reschedule the selected session: This appointment has already been rescheduled.");
-        }
         
     }
     
@@ -6585,15 +6565,34 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public List<SessionInstance> getSessionInstancesFiltered() {
-        if(selectedSessionInstance == null){
+        return sessionInstancesFiltered;
+    }
+    
+    public List<SessionInstance> getSortedSessionInstances() {
+        getSessionInstancesFiltered();
+        
+        if (oldSessionInstancesFiltered == null){
+            oldSessionInstancesFiltered = sessionInstancesFiltered;
+        }
+        
+        if(sortedSessionInstances == null){
             if(sessionInstancesFiltered != null){
             sessionInstances = channelBean.listSessionInstances(fromDate, toDate, null, null, null);
             filterSessionInstances();
             sortSessions();
-            sessionInstancesFiltered = sortedSessionInstances;
+            }
         }
+        
+        if(oldSessionInstancesFiltered != sessionInstancesFiltered){
+            if(sessionInstancesFiltered != null){
+            sessionInstances = channelBean.listSessionInstances(fromDate, toDate, null, null, null);
+            filterSessionInstances();
+            sortSessions();
+            }
+            oldSessionInstancesFiltered = sortedSessionInstances;
         }
-        return sessionInstancesFiltered;
+         
+         return sortedSessionInstances;
     }
     
     private void sortSessions() {
