@@ -1460,6 +1460,10 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     public String navigateToAllPatientView() {
         return "/channel/channel_user_view?faces-redirect=true";
     }
+    
+    public String navigateToCashierView() {
+        return "/channel/channel_views/channel_cashier_view?faces-redirect=true";
+    }
 
     public void channelBookingCancel() {
         if (selectedBillSession.getBill().getBillType() == BillType.ChannelAgent) {
