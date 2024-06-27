@@ -237,6 +237,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     private List<SessionInstance> sessionInstances;
     private List<SessionInstance> sessionInstancesFiltered;
+    private List<SessionInstance> oldSessionInstancesFiltered;
     private List<SessionInstance> sortedSessionInstances;
     private String sessionInstanceFilter;
     private List<BillSession> billSessions;
@@ -6564,13 +6565,34 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public List<SessionInstance> getSessionInstancesFiltered() {
-        if(sessionInstancesFiltered != null){
+        return sessionInstancesFiltered;
+    }
+    
+    public List<SessionInstance> getSortedSessionInstances() {
+        getSessionInstancesFiltered();
+        
+        if (oldSessionInstancesFiltered == null){
+            oldSessionInstancesFiltered = sessionInstancesFiltered;
+        }
+        
+        if(sortedSessionInstances == null){
+            if(sessionInstancesFiltered != null){
             sessionInstances = channelBean.listSessionInstances(fromDate, toDate, null, null, null);
             filterSessionInstances();
             sortSessions();
-            sessionInstancesFiltered = sortedSessionInstances;
+            }
         }
-        return sessionInstancesFiltered;
+        
+        if(oldSessionInstancesFiltered != sessionInstancesFiltered){
+            if(sessionInstancesFiltered != null){
+            sessionInstances = channelBean.listSessionInstances(fromDate, toDate, null, null, null);
+            filterSessionInstances();
+            sortSessions();
+            }
+            oldSessionInstancesFiltered = sortedSessionInstances;
+        }
+         
+         return sortedSessionInstances;
     }
     
     private void sortSessions() {
