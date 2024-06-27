@@ -843,10 +843,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 sessionInstancesFiltered = new ArrayList<>();
                 return;
             }
-
-            if (!sessionInstancesFiltered.isEmpty()) {
-                selectedSessionInstance = sessionInstancesFiltered.get(0);
-            }
             return;
         }
 
@@ -6595,7 +6591,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
     
     public List<SessionInstance> getSortedSessionInstances() {
-        getSessionInstancesFiltered();
         
         if (oldSessionInstancesFiltered == null){
             oldSessionInstancesFiltered = sessionInstancesFiltered;
@@ -6604,6 +6599,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         if(sortedSessionInstances == null){
             if(sessionInstancesFiltered != null){
             sessionInstances = channelBean.listSessionInstances(fromDate, toDate, null, null, null);
+                System.out.println("sortedSessionInstances == null");
             filterSessionInstances();
             sortSessions();
             }
@@ -6612,6 +6608,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         if(oldSessionInstancesFiltered != sessionInstancesFiltered){
             if(sessionInstancesFiltered != null){
             sessionInstances = channelBean.listSessionInstances(fromDate, toDate, null, null, null);
+            System.out.println("sortedSessionInstances == null");
             filterSessionInstances();
             sortSessions();
             }
