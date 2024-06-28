@@ -4460,18 +4460,26 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 case Cash:
                     break;
                 case ewallet:
-
+                    break;
                 case Agent:
+                    p.setInstitution(institution);
                 case Credit:
+                    break;
                 case PatientDeposit:
+                    break;
                 case Slip:
                     p.setBank(paymentMethodData.getSlip().getInstitution());
                     p.setRealizedAt(paymentMethodData.getSlip().getDate());
                 case OnCall:
+                    break;
                 case OnlineSettlement:
+                    break;
                 case Staff:
+                    break;
                 case YouOweMe:
+                    break;
                 case MultiplePaymentMethods:
+                    break;
             }
 
             p.setPaidValue(p.getBill().getNetTotal());
