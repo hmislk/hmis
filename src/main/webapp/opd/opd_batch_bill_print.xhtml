@@ -126,10 +126,10 @@
                                             </ui:repeat>
                                         </h:panelGroup>
                                         <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosBatchPaper'}" >
-                                            <prints:pos_opd_bill_batch_with_bill_items billController="#{opdBillController}" duplicate="#{opdBillController.duplicatePrint}"/>                        
+                                            <prints:pos_opd_bill_batch_with_bill_items billController="#{opdBillController}" payments="#{opdBillController.payments}" duplicate="#{opdBillController.duplicatePrint}"/>                        
                                         </h:panelGroup>
                                         <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaperBatchBill'}" >
-                                            <prints:five_five_paper_with_headings_badge_bill_with_bill_items billController="#{opdBillController}" duplicate="#{opdBillController.duplicatePrint}"/>                        
+                                            <prints:five_five_paper_with_headings_badge_bill_with_bill_items billController="#{opdBillController}" payments="#{opdBillController.payments}" duplicate="#{opdBillController.duplicatePrint}"/>                        
                                         </h:panelGroup>
                                     </ui:repeat>
                                 </h:panelGroup>
