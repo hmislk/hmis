@@ -229,18 +229,23 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
 
                 bff.setFeeVatPlusValue(bff.getFeeValue() + bff.getFeeVat());
                 entryGross += bff.getFeeGrossValue();
+                System.out.println("entryGross = " + entryGross);
                 entryNet += bff.getFeeValue();
                 entryDis += bff.getFeeDiscount();
 
-                BillItem bi = bff.getBillItem();
-                billGross += bi.getGrossValue();
-                billNet += bi.getNetValue();
-                billDiscount += bi.getDiscount();
-
-                bi.setDiscount(entryDis);
-                bi.setGrossValue(entryGross);
-                bi.setNetValue(entryNet);
+//                BillItem bi = bff.getBillItem();
+//                billGross += bi.getGrossValue();
+//                System.out.println("bi.getGrossValue() = " + bi.getGrossValue());
+//                billNet += bi.getNetValue();
+//                billDiscount += bi.getDiscount();
+//
+//                bi.setDiscount(entryDis);
+//                bi.setGrossValue(entryGross);
+//                bi.setNetValue(entryNet);
             }
+            billGross += entryGross;
+            billNet += entryNet;
+            billDiscount += entryDis;
         }
 
         getPreBill().setDiscount(billDiscount);
@@ -1041,6 +1046,7 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
             return "";
         }
         setPreBill(preBatchBill);
+        System.out.println("preBatchBill Total= " + preBatchBill.getTotal());
         billsOfBatchBillPre = billController.billsOfBatchBill(preBatchBill);
         for (Bill billOfBatchBillPre : billsOfBatchBillPre) {
             if (billOfBatchBillPre.getBillItems() == null) {
@@ -1056,9 +1062,11 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
             }
         }
         getPreBill().setPaymentMethod(preBatchBill.getPaymentMethod());
+        System.out.println("preBatchBill Total ++= " + preBill.getTotal());
         paymentMethod = getPreBill().getPaymentMethod();
         netTotal = getPreBill().getNetTotal();
         calculateDiscount();
+        System.out.println("preBatchBill Total ++= " + preBill.getTotal());
         return "/opd/opd_bill_pre_settle?faces-redirect=true";
 
     }
