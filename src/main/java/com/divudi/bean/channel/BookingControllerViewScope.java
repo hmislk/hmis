@@ -2619,7 +2619,18 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             if (selectedSessionInstance.getBookedPatientCount() != null) {
                 int maxNo = selectedSessionInstance.getMaxNo();
                 long bookedPatientCount = selectedSessionInstance.getBookedPatientCount();
-                if (maxNo <= bookedPatientCount) {
+                long totalPatientCount;
+                System.out.println("selectedSessionInstance.getCancelPatientCount() = " + selectedSessionInstance.getCancelPatientCount());
+                if(selectedSessionInstance.getCancelPatientCount() != null){
+                    long canceledPatientCount = selectedSessionInstance.getCancelPatientCount();
+                    totalPatientCount = bookedPatientCount - canceledPatientCount;
+                    System.out.println("totalPatientCount = " + totalPatientCount);
+                    System.out.println("bookedPatientCount = " + bookedPatientCount);
+                    System.out.println("canceledPatientCount = " + canceledPatientCount);
+                }else{
+                    totalPatientCount = bookedPatientCount;
+                }
+                if (maxNo <= totalPatientCount) {
                     JsfUtil.addErrorMessage("Error: The maximum number of bookings (" + maxNo + ") has been Reached.");
                     return;
 
@@ -4015,6 +4026,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         long bookedPatientCount = 0;
         long paidPatientCount = 0;
         long completedPatientCount = 0;
+        long cancelPatientCount = 0;
+        long refundedPatientCount = 0;
+        long onCallPatientCount = 0;
 
         if (billSessions == null) {
             selectedSessionInstance.setBookedPatientCount(0l);
@@ -4049,6 +4063,35 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                     // Log or handle the fact that there was an NPE checking paid status
 
                 }
+                // Additional check for cancel status
+                try {
+                    if (bs.getBill().isCancelled()) {
+                        cancelPatientCount++;
+                    }
+                } catch (NullPointerException npe) {
+                    // Log or handle the fact that there was an NPE checking paid status
+
+                }
+
+                // Additional check for refund status
+                try {
+                    if (bs.getBill().isRefunded()) {
+                        refundedPatientCount++;
+                    }
+                } catch (NullPointerException npe) {
+                    // Log or handle the fact that there was an NPE checking paid status
+
+                }
+
+                // Additional check for Oncall status
+                try {
+                    if (bs.getPaidBillSession() == null && !bs.getBill().isCancelled()) {
+                        onCallPatientCount++;
+                    }
+                } catch (NullPointerException npe) {
+                    // Log or handle the fact that there was an NPE checking paid status
+
+                }
             }
         }
 
@@ -4056,6 +4099,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         selectedSessionInstance.setBookedPatientCount(bookedPatientCount);
         selectedSessionInstance.setPaidPatientCount(paidPatientCount);
         selectedSessionInstance.setCompletedPatientCount(completedPatientCount);
+        selectedSessionInstance.setCancelPatientCount(cancelPatientCount);
+        selectedSessionInstance.setRefundedPatientCount(refundedPatientCount);
+        selectedSessionInstance.setOnCallPatientCount(onCallPatientCount);
 
         // Assuming remainingPatientCount is calculated as booked - completed
         selectedSessionInstance.setRemainingPatientCount(bookedPatientCount - completedPatientCount);
