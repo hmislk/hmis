@@ -2,7 +2,7 @@
 <persistence version="2.2" xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence http://xmlns.jcp.org/xml/ns/persistence/persistence_2_2.xsd">
   <persistence-unit name="hmisPU" transaction-type="JTA">
     <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
-    <jta-data-source>jdbc/arogyaNew</jta-data-source>
+    <jta-data-source>jdbc/demo</jta-data-source>
     <exclude-unlisted-classes>false</exclude-unlisted-classes>
     <properties>
       <property name="eclipselink.logging.level.sql" value="SEVERE"/>
@@ -11,7 +11,7 @@
     </properties>
   </persistence-unit>
   <persistence-unit name="hmisAuditPU" transaction-type="JTA">
-    <jta-data-source>jdbc/arogyaAudit</jta-data-source>
+    <jta-data-source>jdbc/demoaudit</jta-data-source>
     <class>com.divudi.entity.AuditEvent</class>
     <exclude-unlisted-classes>true</exclude-unlisted-classes>
     <properties>
