@@ -15,6 +15,7 @@ import com.divudi.bean.common.ControllerWithPatientViewScope;
 import com.divudi.bean.common.DoctorSpecialityController;
 import com.divudi.bean.common.ItemForItemController;
 import com.divudi.bean.common.PriceMatrixController;
+import com.divudi.bean.common.SecurityController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.ViewScopeDataTransferController;
 
@@ -89,6 +90,8 @@ import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.SessionInstanceFacade;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -215,6 +218,10 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     OpdBillController opdBillController;
     @Inject
     ChannelScheduleController channelScheduleController;
+    @Inject
+    private CommonController commonController;
+    @Inject
+    SecurityController securityController;
     /**
      * Properties
      */
@@ -321,6 +328,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     private boolean reservedBooking;
     private BillItem selectedBillItem;
     private BillSession newBillSessionForSMS;
+    
+    private String encryptedBillSessionId;
+    private String encryptedExpiary;
 
     public void sessionReschedule() {
         if (getSelectedSessionInstanceForRechedule() == null) {
@@ -977,6 +987,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         }
         for (BillSession bs : billSessions) {
             if (!bs.isCompleted()) {
+                if (configOptionApplicationController.getBooleanValueByKey("Sent Channelling Status Update Notification SMS on Channel Session Start", true)) {
+                    sendChannellingStatusUpdateNotificationSms(bs);
+                }
                 bs.setNextInLine(true);
                 billSessionFacade.edit(bs);
                 selectedSessionInstance.setNextInLineBillSession(bs);
@@ -1003,6 +1016,67 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 return;
             }
         }
+    }
+    
+    public void sendChannellingStatusUpdateNotificationSms(BillSession methodBillSession) {
+        if (methodBillSession == null) {
+            JsfUtil.addErrorMessage("Nothing to send");
+            return;
+        }
+        if (methodBillSession.getSessionInstance() == null) {
+            JsfUtil.addErrorMessage("No Session");
+            return;
+        }
+        if (methodBillSession.getSessionInstance().getOriginatingSession() == null) {
+            JsfUtil.addErrorMessage("No Originating Session");
+            return;
+        }
+        if (methodBillSession.getBill() == null) {
+            JsfUtil.addErrorMessage("No Bill");
+            return;
+        }
+        if (methodBillSession.getBill().getPatient() == null) {
+            JsfUtil.addErrorMessage("No Bill");
+            return;
+        }
+
+        if (!methodBillSession.getBill().getPatient().getPerson().getSmsNumber().trim().equals("")) {
+            Sms e = new Sms();
+            e.setCreatedAt(new Date());
+            e.setCreater(sessionController.getLoggedUser());
+            e.setBill(methodBillSession.getBill());
+            e.setCreatedAt(new Date());
+            e.setSmsType(MessageType.ChannelStatusUpdate);
+            e.setCreater(sessionController.getLoggedUser());
+            e.setReceipientNumber(methodBillSession.getBill().getPatient().getPerson().getSmsNumber());
+            e.setSendingMessage(smsBody(methodBillSession));
+            e.setDepartment(getSessionController().getLoggedUser().getDepartment());
+            e.setInstitution(getSessionController().getLoggedUser().getInstitution());
+            e.setPending(false);
+            getSmsFacade().create(e);
+
+            Boolean sent = smsManager.sendSms(e);
+
+        }
+
+        JsfUtil.addSuccessMessage("SMS Sent");
+    }
+
+    public String smsBody(BillSession r) {
+        String securityKey = sessionController.getApplicationPreference().getEncrptionKey();
+        if (securityKey == null || securityKey.trim().equals("")) {
+            sessionController.getApplicationPreference().setEncrptionKey(securityController.generateRandomKey(10));
+            sessionController.savePreferences(sessionController.getApplicationPreference());
+        }
+        Calendar c = Calendar.getInstance();
+        c.add(Calendar.DATE, 2);
+        String temId = securityController.encryptAlphanumeric(r.getId().toString(), securityKey);
+        String url = commonController.getBaseUrl() + "faces/requests/cbss.xhtml?id=" + temId;
+        String b = "Your session of "
+                + r.getSessionInstance().getOriginatingSession().getName()
+                + " Started. "
+                + url;
+        return b;
     }
 
     public void reloadSessionInstance() {
@@ -4798,6 +4872,44 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         billToCaclculate.setTotal(calculatingGrossBillTotal);
         getBillFacade().edit(billToCaclculate);
     }
+    
+     public void prepareBillSessionForReportLink() {
+        selectedBillSession = null;
+        if (encryptedBillSessionId == null) {
+            return;
+        }
+
+        String decodedIdStr;
+        try {
+            decodedIdStr = URLDecoder.decode(encryptedBillSessionId, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            // Handle the exception, possibly with logging
+            return;
+        }
+        String securityKey = sessionController.getApplicationPreference().getEncrptionKey();
+        if (securityKey == null || securityKey.trim().equals("")) {
+            sessionController.getApplicationPreference().setEncrptionKey(securityController.generateRandomKey(10));
+            sessionController.savePreferences(sessionController.getApplicationPreference());
+        }
+
+        String idStr = securityController.decryptAlphanumeric(encryptedBillSessionId, securityKey);
+
+        if (idStr == null || idStr.trim().isEmpty()) {
+            // Handle the situation where decryption returns null or an empty string
+            return;
+        }
+
+        Long id;
+        try {
+            id = Long.parseLong(idStr);
+        } catch (NumberFormatException e) {
+            // Handle the exception, possibly with logging
+            return;
+        }
+
+        selectedBillSession  = billSessionFacade.find(id);
+
+    }
 
     private Bill createBill() {
         Bill bill = new BilledBill();
@@ -7152,6 +7264,22 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     public void setPrintPreviewC(boolean printPreviewC) {
         this.printPreviewC = printPreviewC;
+    }
+    
+     public String getEncryptedBillSessionId() {
+        return encryptedBillSessionId;
+    }
+
+    public void setEncryptedBillSessionId(String encryptedBillSessionId) {
+        this.encryptedBillSessionId = encryptedBillSessionId;
+    }
+
+    public String getEncryptedExpiary() {
+        return encryptedExpiary;
+    }
+
+    public void setEncryptedExpiary(String encryptedExpiary) {
+        this.encryptedExpiary = encryptedExpiary;
     }
 
 }
