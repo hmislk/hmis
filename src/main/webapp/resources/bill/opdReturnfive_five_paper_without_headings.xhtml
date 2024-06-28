@@ -78,7 +78,7 @@
                         </td>
 
                         <td>
-                            <h:outputLabel value="#{cc.attrs.bill.createdAt}" class="billDetailsFiveFive">
+                            <h:outputLabel value="#{sessionController.currentDate}" class="billDetailsFiveFive">
                                 <f:convertDateTime pattern="dd/MMM/yyyy" ></f:convertDateTime>
                             </h:outputLabel>
                         </td>
@@ -106,7 +106,7 @@
                         </td>
 
                         <td>
-                            <h:outputLabel value="#{cc.attrs.bill.createdAt}" class="billDetailsFiveFive">
+                            <h:outputLabel value="#{sessionController.currentDate}" class="billDetailsFiveFive">
                                 <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm a"  ></f:convertDateTime>
                             </h:outputLabel>
                         </td>
@@ -197,7 +197,7 @@
                         <td>
                             <h:outputLabel value=":"/>
                         </td>
-                        <td><h:outputLabel value="#{cc.attrs.bill.creater.webUserPerson.name}"/></td>
+                        <td><h:outputLabel value="#{sessionController.loggedUser.webUserPerson.name}"/></td>
                     </tr>
 
 
