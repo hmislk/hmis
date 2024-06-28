@@ -2201,6 +2201,13 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             JsfUtil.addErrorMessage("Item to add to booking");
             return;
         }
+        List<Item> items = getItemsAddedToBooking();
+        for(Item item : items){
+            if(item.equals(itemToAddToBooking)){
+               JsfUtil.addErrorMessage("Item is Already Added");
+                return; 
+            }
+        }
         getItemsAddedToBooking().add(itemToAddToBooking);
         itemToAddToBooking = null;
         fillFees();
