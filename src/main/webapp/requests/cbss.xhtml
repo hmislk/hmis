@@ -58,7 +58,7 @@
                                             </h:panelGroup>
                                             <h:panelGroup rendered="#{(bookingControllerViewScope.selectedBillSession.sessionInstance.currentlyConsultingBillSession.bill.singleBillSession.serialNo > bookingControllerViewScope.selectedBillSession.serialNo) and bookingControllerViewScope.selectedBillSession.completed}">
                                                 <div class="alert alert-success" style="font-size: 10px" role="alert">
-                                                    Your All Done! If Any Inquires please contact our hotline. <br/>#{sessionController.institution.name} ( #{sessionController.institution.phone} )
+                                                    Your All Done! If Any Inquires please contact our hotline. <br/>#{bookingControllerViewScope.selectedBillSession.institution.name} ( #{bookingControllerViewScope.selectedBillSession.institution.phone} )
                                                 </div>
                                             </h:panelGroup>
                                             <h:panelGroup rendered="#{(bookingControllerViewScope.selectedBillSession.sessionInstance.currentlyConsultingBillSession.bill.singleBillSession.serialNo > bookingControllerViewScope.selectedBillSession.serialNo) and !bookingControllerViewScope.selectedBillSession.completed}">
@@ -80,7 +80,7 @@
                                             </h:panelGroup>
                                             <h:panelGroup rendered="#{bookingControllerViewScope.selectedBillSession.sessionInstance.arrived}">
                                                 <div class="alert alert-primary" style="font-size: 10px" role="alert">
-                                                    #{bookingControllerViewScope.selectedBillSession.sessionInstance.staff.person.nameWithTitle} has arrived to #{sessionController.institution.name}
+                                                    #{bookingControllerViewScope.selectedBillSession.sessionInstance.staff.person.nameWithTitle} has arrived to #{bookingControllerViewScope.selectedBillSession.institution.name}
                                                 </div>
                                             </h:panelGroup>
                                             <h:panelGroup rendered="#{bookingControllerViewScope.selectedBillSession.sessionInstance.started}">
