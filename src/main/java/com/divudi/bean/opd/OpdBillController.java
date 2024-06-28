@@ -785,11 +785,27 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             bf.setFeeGrossValue(0.0);
 //            return;
         }
-
+        
+        if(configOptionApplicationController.getBooleanValueByKey("Disable to increase the fee value in OPD Billing", false)){
+            if (bf.getFeeValue()<bf.getFeeGrossValue()){
+                JsfUtil.addErrorMessage("Not allow to increase the the fee value");
+                bf.setFeeGrossValue(bf.getFeeValue());
+                return;
+            }
+        }
+        if(configOptionApplicationController.getBooleanValueByKey("Disable to decrease the fee value in OPD Billing", false)){
+          
+            if (bf.getFeeValue()>bf.getFeeGrossValue()){
+                bf.setFeeGrossValue(bf.getFeeValue());
+                JsfUtil.addErrorMessage("Not allow to decrease the the fee value");
+                return;
+            }
+        }
         lstBillItems = null;
         getLstBillItems();
         bf.setTmpChangedValue(bf.getFeeGrossValue());
         calTotals();
+        JsfUtil.addSuccessMessage("Fee Changed Successfully");
     }
 
     public void changeBillDoctorByFee(BillFee bf) {
