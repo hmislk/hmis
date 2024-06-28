@@ -623,6 +623,25 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
         return "/channel/session_instance?faces-redirect=true";
     }
+    
+    public String navigateToManageSessionInstanceFromProfPay(SessionInstance sessionInstance) {
+        this.selectedSessionInstance = sessionInstance;
+
+        // Setting the properties in the viewScopeDataTransferController
+        viewScopeDataTransferController.setSelectedSessionInstance(sessionInstance);
+        viewScopeDataTransferController.setSessionInstanceFilter(sessionInstanceFilter);
+        viewScopeDataTransferController.setFromDate(fromDate);
+        viewScopeDataTransferController.setToDate(toDate);
+        viewScopeDataTransferController.setNeedToFillSessionInstances(false);
+        viewScopeDataTransferController.setNeedToFillBillSessions(true);
+        viewScopeDataTransferController.setNeedToFillSessionInstanceDetails(true);
+        viewScopeDataTransferController.setNeedToFillBillSessionDetails(false);
+        viewScopeDataTransferController.setNeedToFillMembershipDetails(false);
+        viewScopeDataTransferController.setNeedToPrepareForNewBooking(false);
+        channelStaffPaymentBillController.makenull();
+
+        return "/channel/session_instance?faces-redirect=true";
+    }
 
     public String navigateToManageSessionInstanceFromBillSession() {
         if (selectedBillSession == null) {
@@ -1350,6 +1369,24 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         viewScopeDataTransferController.setSessionInstanceFilter(sessionInstanceFilter);
         viewScopeDataTransferController.setFromDate(fromDate);
         viewScopeDataTransferController.setToDate(toDate);
+
+        viewScopeDataTransferController.setNeedToFillBillSessions(false);
+        viewScopeDataTransferController.setNeedToFillBillSessionDetails(false);
+        viewScopeDataTransferController.setNeedToFillSessionInstances(true);
+        viewScopeDataTransferController.setNeedToFillSessionInstanceDetails(true);
+        viewScopeDataTransferController.setNeedToFillMembershipDetails(false);
+        viewScopeDataTransferController.setNeedToPrepareForNewBooking(true);
+
+        return "/channel/channel_booking_by_date?faces-redirect=true";
+    }
+    
+    public String navigateBackToBookingsFromProfPay() {
+        viewScopeDataTransferController.setSelectedSessionInstance(selectedSessionInstance);
+        viewScopeDataTransferController.setSelectedBillSession(selectedBillSession);
+        viewScopeDataTransferController.setSessionInstanceFilter(sessionInstanceFilter);
+        viewScopeDataTransferController.setFromDate(fromDate);
+        viewScopeDataTransferController.setToDate(toDate);
+        channelStaffPaymentBillController.makenull();
 
         viewScopeDataTransferController.setNeedToFillBillSessions(false);
         viewScopeDataTransferController.setNeedToFillBillSessionDetails(false);
@@ -4107,6 +4144,29 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         channelStaffPaymentBillController.setSessionInstance(selectedSessionInstance);
         channelStaffPaymentBillController.calculateSessionDueFees();
         return "/channel/channel_payment_session?faces-redirect=true";
+
+    }
+    
+    public String paySelectedSessionByDates() {
+        if (getSelectedSessionInstance() == null) {
+            JsfUtil.addErrorMessage("Please Select Session Instance");
+            return "";
+        }
+        if (selectedSessionInstance.getOriginatingSession() == null) {
+            JsfUtil.addErrorMessage("Please Select Session");
+            return "";
+        }
+        if (selectedSessionInstance.getOriginatingSession().getStaff() == null) {
+            JsfUtil.addErrorMessage("Please Select Staff");
+            return "";
+        }
+        if (selectedSessionInstance.getOriginatingSession().getStaff().getSpeciality() == null) {
+            JsfUtil.addErrorMessage("Please Select Speciality");
+            return "";
+        }
+        channelStaffPaymentBillController.setSessionInstance(selectedSessionInstance);
+        channelStaffPaymentBillController.calculateSessionDueFees();
+        return "/channel/channel_payment_session_by_dates?faces-redirect=true";
 
     }
 
