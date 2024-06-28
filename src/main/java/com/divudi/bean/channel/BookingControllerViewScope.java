@@ -448,9 +448,11 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         } else {
             newBillSession.setSerialNo(1);
             System.out.println("count serial number= " + bs.getSerialNo());
-        }
-
+        }        
         getBillSessionFacade().create(newBillSession);
+        bs.setRecheduledSession(true);
+        bs.setReferenceBillSession(newBillSession);
+        getBillSessionFacade().edit(bs);
         newBillSessionForSMS = newBillSession;
     }
 
