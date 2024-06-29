@@ -33,34 +33,34 @@
 
                                     <p:tab title="Rooms">
                                         <div class="d-grid gap-2">
-                                            <p:commandButton ajax="false" value="Facility Categories" class="w-100" action="inward_room_category"  ></p:commandButton>
-                                            <p:commandButton ajax="false" value="Rooms" class="w-100" action="inward_room"  ></p:commandButton>
-                                            <p:commandButton ajax="false" value="Room Fees" class="w-100" action="inward_room_facility"  ></p:commandButton>
+                                            <p:commandButton ajax="false" value="Facility Categories" class="w-100" action="inward_room_category?faces-redirect=true"  ></p:commandButton>
+                                            <p:commandButton ajax="false" value="Rooms" class="w-100" action="inward_room?faces-redirect=true"  ></p:commandButton>
+                                            <p:commandButton ajax="false" value="Room Fees" class="w-100" action="inward_room_facility?faces-redirect=true"  ></p:commandButton>
                                         </div>
                                     </p:tab>
 
                                     <p:tab title="Services">
                                         <div class="d-grid gap-2">
-                                            <p:commandButton value="Time-based Service Categories" class="w-100" action="inward_timed_item_category"   style="alignment-adjust: auto"></p:commandButton>
-                                            <p:commandButton value="Time-based Services" class="w-100" action="inward_timed_item"  actionListener="#{timedItemController.prepareAdd()}" ></p:commandButton>
+                                            <p:commandButton value="Time-based Service Categories" class="w-100" action="inward_timed_item_category?faces-redirect=true"   style="alignment-adjust: auto"></p:commandButton>
+                                            <p:commandButton value="Time-based Services" class="w-100" action="inward_timed_item?faces-redirect=true"  actionListener="#{timedItemController.prepareAdd()}" ></p:commandButton>
 
-                                            <p:commandButton value="Time-based Services Charges" class="w-100" action="inward_timed_item_fee"  ></p:commandButton>
-                                            <p:commandButton value="Surgeries" class="w-100" action="/clinical/clinical_procedures"  ></p:commandButton>
+                                            <p:commandButton value="Time-based Services Charges" class="w-100" action="inward_timed_item_fee?faces-redirect=true"  ></p:commandButton>
+                                            <p:commandButton value="Surgeries" class="w-100" action="/clinical/clinical_procedures?faces-redirect=true"  ></p:commandButton>
                                         </div>
                                     </p:tab>
 
                                     <p:tab title="Price Matrix">
                                         <div class="d-grid gap-2">
-                                            <p:commandButton ajax="false" value="Inward Price Adjustment - Service " class="w-100" action="/inward/inward_price_adjustment_service" actionListener="#{inwardPriceAdjustmntController.preparedAdd()}"></p:commandButton>
-                                            <p:commandButton ajax="false" value="Inward Price Adjustment - Investigation " class="w-100" action="/inward/inward_price_adjustment_investigation" actionListener="#{inwardPriceAdjustmntController.preparedAdd()}"></p:commandButton>
-                                            <p:commandButton ajax="false" value="Inward Price Adjustment - Pharmacy " class="w-100" action="/inward/inward_price_adjustment_pharmacy" actionListener="#{inwardPriceAdjustmntController.preparedAdd()}"></p:commandButton>
-                                            <p:commandButton ajax="false" value="Inward Price Adjustment - Store " class="w-100" action="/inward/inward_price_adjustment_store" actionListener="#{inwardPriceAdjustmntController.preparedAdd()}"></p:commandButton>
+                                            <p:commandButton ajax="false" value="Inward Price Adjustment - Service " class="w-100" action="/inward/inward_price_adjustment_service?faces-redirect=true" actionListener="#{inwardPriceAdjustmntController.preparedAdd()}"></p:commandButton>
+                                            <p:commandButton ajax="false" value="Inward Price Adjustment - Investigation " class="w-100" action="/inward/inward_price_adjustment_investigation?faces-redirect=true" actionListener="#{inwardPriceAdjustmntController.preparedAdd()}"></p:commandButton>
+                                            <p:commandButton ajax="false" value="Inward Price Adjustment - Pharmacy " class="w-100" action="/inward/inward_price_adjustment_pharmacy?faces-redirect=true" actionListener="#{inwardPriceAdjustmntController.preparedAdd()}"></p:commandButton>
+                                            <p:commandButton ajax="false" value="Inward Price Adjustment - Store " class="w-100" action="/inward/inward_price_adjustment_store?faces-redirect=true" actionListener="#{inwardPriceAdjustmntController.preparedAdd()}"></p:commandButton>
                                         </div>
                                     </p:tab>
 
                                     <p:tab title="Analytics">
                                         <div class="d-grid gap-2">
-                                            <p:commandButton ajax="false" value="Inward Prices" class="w-100" action="/inward/inward_fee_list" ></p:commandButton>
+                                            <p:commandButton ajax="false" value="Inward Prices" class="w-100" action="/inward/?faces-redirect=true" ></p:commandButton>
                                         </div>
                                     </p:tab>
                                     <p:tab title="Diagnosis Cards">
@@ -83,7 +83,7 @@
 
                                     <p:tab title="Troubleshooting">
                                         <div class="d-grid gap-2">
-                                            <p:commandButton value="Errors in Admissions" class="w-100" ajax="false" action="inward_admission_edit" ></p:commandButton>
+                                            <p:commandButton value="Errors in Admissions" class="w-100" ajax="false" action="inward_admission_edit?faces-redirect=true" ></p:commandButton>
                                         </div>
                                     </p:tab>
 

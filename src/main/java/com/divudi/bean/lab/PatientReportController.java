@@ -1824,10 +1824,10 @@ public class PatientReportController implements Serializable {
 
     }
     
-    public String printPatientLabReport() {
+    public void printPatientLabReport() {
         if (currentPatientReport == null) {
             JsfUtil.addErrorMessage("Nothing to approve");
-            return"";
+            return;
         }
         currentPtIx.setPrinted(true);
         currentPtIx.setPrintingAt(Calendar.getInstance().getTime());
@@ -1844,7 +1844,6 @@ public class PatientReportController implements Serializable {
         currentPatientReport.setPrinted(true);
         
         getFacade().edit(currentPatientReport);
-        return"/lab/patient_report_print.xhtml";
     }
 
     public void pdfPatientReport() throws DocumentException, com.lowagie.text.DocumentException, IOException {

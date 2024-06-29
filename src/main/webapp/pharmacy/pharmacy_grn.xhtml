@@ -27,12 +27,12 @@
                     <h:panelGrid columns="7" style="min-width: 100%;" class="my-2" id="grn">
                         <h:outputLabel value="Supplier"/>
 
-                        <p:autoComplete converter="deal" value="#{grnController.grnBill.fromInstitution}"
+                        <p:autoComplete converter="deal" value="#{grnController.fromInstitution}"
                                         completeMethod="#{dealerController.completeDealor}" 
                                         forceSelection="true"
                                         var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" />
                         <h:outputLabel value="GRN Institution"/>
-                        <p:autoComplete  value="#{grnController.grnBill.referenceInstitution}"
+                        <p:autoComplete  value="#{grnController.referenceInstitution}"
                                          completeMethod="#{institutionController.completeCompany}" 
                                          forceSelection="true"
                                          var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" />
@@ -240,23 +240,23 @@
 
                             <p:panelGrid columns="2">
                                 <p:outputLabel value="Invoice No "/>
-                                <p:inputText autocomplete="off" value="#{grnController.grnBill.invoiceNumber}" />
+                                <p:inputText autocomplete="off" value="#{grnController.invoiceNumber}" />
                                 <p:outputLabel value="Invoice Date"/>
-                                <p:calendar  value="#{grnController.grnBill.invoiceDate}"   navigator="true" pattern="#{sessionController.applicationPreference.shortDateFormat}" /> 
+                                <p:calendar  value="#{grnController.invoiceDate}"   navigator="true" pattern="#{sessionController.applicationPreference.shortDateFormat}" /> 
                             </p:panelGrid>                    
 
                             <p:panelGrid columns="2" >
                                 <p:outputLabel value="Gross Total"/>
-                                <p:outputLabel id="gro"  value="#{0-grnController.grnBill.total}">
+                                <p:outputLabel id="gro"  value="#{0-grnController.total}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </p:outputLabel>
                                 <p:outputLabel value="Discount"/>
-                                <p:inputText autocomplete="off" id="dis" value="#{grnController.grnBill.discount}" >
+                                <p:inputText autocomplete="off" id="dis" value="#{grnController.discount}" >
                                     <p:ajax process="@this" update="net ins" event="keyup"
                                             listener="#{grnController.netDiscount()}"/>
                                 </p:inputText>
                                 <p:outputLabel value="Net Total"/>
-                                <p:outputLabel id="net"  value="#{0-grnController.grnBill.netTotal}" >
+                                <p:outputLabel id="net"  value="#{0-grnController.netTotal}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </p:outputLabel>
                             </p:panelGrid>

@@ -16,6 +16,7 @@ public class PaymentMethodData {
     private ComponentDetail patient_deposit;
     private ComponentDetail paymentMethodMultiple;
     private ComponentDetail credit;
+    private ComponentDetail staffCredit;
     
     private PaymentMethod paymentMethod;
 
@@ -127,6 +128,18 @@ public class PaymentMethodData {
 
     public void setCredit(ComponentDetail credit) {
         this.credit = credit;
+    }
+
+    public ComponentDetail getStaffCredit() {
+        if(staffCredit==null){
+            staffCredit = new ComponentDetail();
+            staffCredit.setPaymentMethod(PaymentMethod.Staff);
+        }
+        return staffCredit;
+    }
+
+    public void setStaffCredit(ComponentDetail staffCredit) {
+        this.staffCredit = staffCredit;
     }
 
     

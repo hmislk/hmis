@@ -14,30 +14,25 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-            <div class="d-flex" >
-                <h:panelGroup rendered="#{cc.attrs.valueRequired}" >
-                    <p:inputText autocomplete="off"   value="#{cc.attrs.paymentMethodData.creditCard.totalValue}"  id="txtVal">
-                        <p:ajax process="@this"></p:ajax>
-                    </p:inputText>
+        <div class="d-flex" >
+            <p:inputText autocomplete="off"   value="#{cc.attrs.paymentMethodData.creditCard.totalValue}"  id="txtVal">
+                <p:ajax process="@this"></p:ajax>
+            </p:inputText>
 
-                    <p:watermark value="Value" for="txtVal" />
-                </h:panelGroup>
-                <h:panelGrid columns="1">
-                    <p:inputText 
-                        autocomplete="off"   
-                        value="#{cc.attrs.paymentMethodData.creditCard.no}" class="mx-2 w-100" id="refno">
-                        <p:ajax process="@this" ></p:ajax>
-                    </p:inputText>   
-                </h:panelGrid>                             
-                <h:panelGrid columns="1" class="mx-1">
-                    <p:selectOneMenu value="#{cc.attrs.paymentMethodData.creditCard.institution}"  class="mx-2 w-100"  >
-                        <f:selectItem itemLabel="Select Bank"/>
-                        <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
-                        <p:ajax process="@this" ></p:ajax>
-                    </p:selectOneMenu>
-                </h:panelGrid>
-                <p:watermark value="Card Ref. No." for="refno" />
-            </div>
+            <p:watermark value="Value" for="txtVal" />
+
+            <p:inputText 
+                autocomplete="off"   
+                value="#{cc.attrs.paymentMethodData.creditCard.no}" class="mx-2 w-100" id="refno">
+                <p:ajax process="@this" ></p:ajax>
+            </p:inputText>                          
+            <p:selectOneMenu value="#{cc.attrs.paymentMethodData.creditCard.institution}"  class="mx-2 w-100"  >
+                <f:selectItem itemLabel="Select Bank"/>
+                <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
+                <p:ajax process="@this" ></p:ajax>
+            </p:selectOneMenu>
+            <p:watermark value="Card Ref. No." for="refno" />
+        </div>
 
 
     </cc:implementation>

@@ -2037,10 +2037,17 @@ public class BhtSummeryController implements Serializable {
         }
 
         if (getPatientEncounter().getCurrentPatientRoom().equals(patientRoom)) {
-            ////System.out.println("value * getInwardBean().calCountWithoutOverShoot(timedFee, patientRoom.getAdmittedAt(), dischargeAt) = " + value * getInwardBean().calCountWithoutOverShoot(timedFee, patientRoom.getAdmittedAt(), dischargeAt));
-            return value * getInwardBean().calCountWithoutOverShoot(timedFee, patientRoom.getAdmittedAt(), dischargeAt);
+            if(patientRoom.isDischarged()){
+                //System.out.println("value * getInwardBean().calCount(timedFee, patientRoom.getAdmittedAt(), dischargeAt); = " + value * getInwardBean().calCount(timedFee, patientRoom.getAdmittedAt(), dischargeAt));
+                return value * getInwardBean().calCount(timedFee, patientRoom.getAdmittedAt(), dischargeAt);
+            }else{
+               // System.out.println("value * getInwardBean().calCountWithoutOverShoot(timedFee, patientRoom.getAdmittedAt(), dischargeAt) = " + value * getInwardBean().calCountWithoutOverShoot(timedFee, patientRoom.getAdmittedAt(), dischargeAt));
+                return value * getInwardBean().calCountWithoutOverShoot(timedFee, patientRoom.getAdmittedAt(), dischargeAt);
+            }
+            
+            
         } else {
-            ////System.out.println("value * getInwardBean().calCount(timedFee, patientRoom.getAdmittedAt(), dischargeAt) = " + value * getInwardBean().calCount(timedFee, patientRoom.getAdmittedAt(), dischargeAt));
+            //System.out.println("value * getInwardBean().calCount(timedFee, patientRoom.getAdmittedAt(), dischargeAt) = " + value * getInwardBean().calCount(timedFee, patientRoom.getAdmittedAt(), dischargeAt));
             return value * getInwardBean().calCount(timedFee, patientRoom.getAdmittedAt(), dischargeAt);
         }
 
