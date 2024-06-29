@@ -7,6 +7,7 @@ import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 
 /**
  *
@@ -24,7 +25,11 @@ public class ReportTemplate implements Serializable {
     private ReportTemplateType reportTemplateType;
     
     
-    
+    String name;
+    String code;
+    String keywords;
+    @ManyToOne
+    Category category;
 
     public Long getId() {
         return id;
