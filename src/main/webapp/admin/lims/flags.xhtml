@@ -32,7 +32,7 @@
                             <h:outputLabel value="Select Value" ></h:outputLabel>
                             <p:selectOneMenu id="iiv" value="#{testFlagController.investigationItemOfValueType}" >
                                 <f:selectItem itemLabel="Select a Value"/>
-                                <f:selectItems value="#{testFlagController.investigationItemsOfValueType}" var="iivs" itemLabel="#{iivs.name}" itemValue="#{iivs}" />
+                                <f:selectItems value="#{testFlagController.investigationItemsOfValueandFlagType}" var="iivs" itemLabel="#{iivs.name}" itemValue="#{iivs}" />
                             </p:selectOneMenu>
                             <h:outputLabel value="Sex" ></h:outputLabel>
                             <p:selectOneMenu id="txtNewSex"  value="#{testFlagController.sex}" style="width: 200px;">
