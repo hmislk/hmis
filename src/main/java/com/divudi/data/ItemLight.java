@@ -35,6 +35,9 @@ public class ItemLight {
     String printName;
     String shortName;
     String fullName;
+    private String feeName;
+    private Double feeValue = 0.0;
+    private Double feeValueForeign = 0.0;
 
     public ItemLight(Long id, Integer orderNo, Boolean isMasterItem, Boolean hasReportFormat,
             String categoryName, Long categoryId, String institutionName, Long institutionId,
@@ -119,6 +122,16 @@ public class ItemLight {
         this.name = name;
         this.code = code;
         this.total = total;
+    }
+    
+    public ItemLight(Long id, String name, String code, Double total, String feeName, Double feeValue, Double feeValueForeign) {
+        this.id = id;
+        this.name = name;
+        this.code = code;
+        this.total = total;
+        this.feeName = feeName;
+        this.feeValue = feeValue;
+        this.feeValueForeign = feeValueForeign;
     }
 
     public ItemLight(Long id, String name, String code, String barcode,
@@ -508,6 +521,30 @@ public class ItemLight {
     public String toString() {
         // Return a unique string representation for each ItemLight object
         return "ItemLight{" + "id=" + id + ", name=" + name + '}';
+    }
+
+    public String getFeeName() {
+        return feeName;
+    }
+
+    public void setFeeName(String feeName) {
+        this.feeName = feeName;
+    }
+
+    public Double getFeeValue() {
+        return feeValue;
+    }
+
+    public void setFeeValue(Double feeValue) {
+        this.feeValue = feeValue;
+    }
+
+    public Double getFeeValueForeign() {
+        return feeValueForeign;
+    }
+
+    public void setFeeValueForeign(Double feeValueForeign) {
+        this.feeValueForeign = feeValueForeign;
     }
 
 }
