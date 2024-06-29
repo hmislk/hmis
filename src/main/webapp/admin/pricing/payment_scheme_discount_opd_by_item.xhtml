@@ -27,7 +27,7 @@
                                 <p:autoComplete widgetVar="aIx" id="acIx" 
                                             forceSelection="true" 
                                             value="#{opdMemberShipDiscountController.item}"
-                                            completeMethod="#{itemController.completeInwardItems}" 
+                                            completeMethod="#{itemController.completeAllServicesAndInvestigations}" 
                                             var="ix" 
                                             itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  
                                             class="w-100"
@@ -55,7 +55,7 @@
                                 <h:outputLabel value="Payment Method"/>
                                 <p:selectOneMenu   value="#{opdMemberShipDiscountController.paymentMethod}"  >
                                     <f:selectItem itemLabel="Select" />                           
-                                    <f:selectItems value="#{enumController.paymentMethods}" />                                    
+                                    <f:selectItems value="#{enumController.allPaymentMethods}" />                                    
                                 </p:selectOneMenu>
                                 <h:outputLabel value="Discount" ></h:outputLabel>
                                 <p:inputText autocomplete="off" value="#{opdMemberShipDiscountController.margin}" />
@@ -106,7 +106,7 @@
                                 <p:column headerText="Payment Method">
                                     <p:selectOneMenu  value="#{a.paymentMethod}"  >
                                         <f:selectItem itemLabel="Select" />                           
-                                        <f:selectItems value="#{enumController.paymentMethods}" />                                    
+                                        <f:selectItems value="#{enumController.allPaymentMethods}" />                                    
                                     </p:selectOneMenu>
                                 </p:column>
 

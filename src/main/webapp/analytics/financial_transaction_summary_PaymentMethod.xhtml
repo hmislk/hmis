@@ -82,6 +82,17 @@
                                     target="tbl" >
                                 </p:dataExporter>
                             </p:commandButton>
+
+                            <p:commandButton 
+                                class="ui-button-info " 
+                                icon="fas fa-print" 
+                                id="btnprint" 
+                                ajax="false" 
+                                value="Print" >
+                                <p:printer 
+                                    target="tbl" >
+                                </p:printer>
+                            </p:commandButton>
                         </h:panelGrid>
                         <p:dataTable rowIndexVar="i" id="tbl" 
                                      value="#{searchController.billSummaryRows}" 
@@ -93,8 +104,24 @@
                                      rows="10"
                                      paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                      rowsPerPageTemplate="5,10,15">
+                            <f:facet name="header">
+                                <div class="d-flex justify-content-center" style="font-size: 30px; font-weight: 600;"> 
+                                    <h:outputText value="#{sessionController.institution.name}" />
+                                    <h:outputText value="-" class="mx-2"/>
+                                    <h:outputText value="#{sessionController.department.name}" />
+                                </div>
+                                <div class="d-flex gap-2 justify-content-center" style="font-size: 20px; font-weight: 400;">
+                                    <h:outputLabel value="#{searchController.fromDate}" >
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                    </h:outputLabel>
+                                    <h:outputLabel value="to " />
+                                    <h:outputLabel value="#{searchController.toDate}" >
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                    </h:outputLabel>
+                                </div>
+                            </f:facet>
 
-                            <p:column headerText="Bill Type" styleClass="alignTop" filterBy="#{bill.billTypeAtomic}" filterMatchMode="contains" sortBy="#{bill.billTypeAtomic}">
+                            <p:column headerText="Bill Type" styleClass="alignTop"  filterBy="#{bill.billTypeAtomic}" filterMatchMode="contains" sortBy="#{bill.billTypeAtomic}" style="padding: 4px;">
                                 <h:outputLabel value="#{bill.billTypeAtomic.label}"/>
                                 <f:facet name="footer">
                                     <h:panelGroup>
@@ -126,8 +153,23 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Payment Method" styleClass="alignTop" width="12em">
+                            <p:column headerText="Payment Method" colspan="3" styleClass="alignTop" width="10em" style="padding: 6px;">
                                 <h:outputLabel value="#{bill.paymentMethod}"/>
+                                
+                            </p:column>
+
+                            <p:column headerText="Payment Count" width="7em" style="padding: 6px;">
+                                <p:commandLink 
+                                    value="#{bill.billCount}" 
+                                    action="#{searchController.fillAllBills(searchController.fromDate, searchController.toDate, searchController.institution, searchController.department,bill.paymentMethod,bill.billTypeAtomic)}" 
+                                    ajax="false">
+                                </p:commandLink>
+                            </p:column>
+
+                            <p:column headerText="Paid Value" width="7em" style="text-align: right; padding: 6px;">
+                                <h:outputLabel value="#{bill.paidValue}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
                                 <f:facet name="footer">
                                     <h:panelGroup rendered="#{searchController.cashTotal ne 0.0}">
                                         <h:outputText value="#{searchController.cashTotal}" >
@@ -165,20 +207,6 @@
                                         </h:outputText>
                                     </h:panelGroup>
                                 </f:facet>
-                            </p:column>
-
-                            <p:column headerText="Payment Count" width="8em">
-                                <p:commandLink 
-                                    value="#{bill.billCount}" 
-                                    action="#{searchController.fillAllBills(searchController.fromDate, searchController.toDate, searchController.institution, searchController.department,bill.paymentMethod,bill.billTypeAtomic)}" 
-                                    ajax="false">
-                                </p:commandLink>
-                            </p:column>
-
-                            <p:column headerText="Paid Value" width="8em">
-                                <h:outputLabel value="#{bill.paidValue}">
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputLabel>
 
                             </p:column>
 

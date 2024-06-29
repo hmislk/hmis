@@ -148,6 +148,7 @@ public class PatientReport implements Serializable {
     private String qrCodeContentsDetailed;
     @Lob
     private String qrCodeContentsLink;
+    
 
     public PatientReportItemValue getTemplateItem() {
 

@@ -130,6 +130,10 @@ public class WorkingTimeController implements Serializable {
     Date fromDate;
     Date toDate;
     private PaymentMethod paymentMethod;
+    
+    public void navigateBackToDoctorSelect(){
+        staff=null;
+    }
 
     public List<WorkingTime> getSelectedItems() {
         selectedItems = getFacade().findByJpql("select c from WorkingTime c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
@@ -137,20 +141,16 @@ public class WorkingTimeController implements Serializable {
     }
 
     public String selectStaffForOpdPaymentForShifts() {
-        System.out.println("selectStaffForOpdPayment");
         if (staff == null) {
             JsfUtil.addErrorMessage("Select staff");
             return "";
         }
         workingTimeForPayment = findLastWorkingTime(staff);
-        System.out.println("workingTimeForPayment = " + workingTimeForPayment);
         if (workingTimeForPayment == null) {
-            System.out.println("no work time record");
             JsfUtil.addErrorMessage("No Work Time Recorded");
             return "";
         }
         if (workingTimeForPayment.getProfessinoalPaymentBill() != null) {
-            System.out.println("workingTimeForPayment.getProfessinoalPaymentBill()");
             return toViewOpdPaymentsDone();
         }
         staffAdmissionsForPayments = admissionController.findAdmissions(staff, workingTimeForPayment.getStartRecord().getRecordTimeStamp(), workingTimeForPayment.getEndRecord().getRecordTimeStamp());
@@ -165,23 +165,18 @@ public class WorkingTimeController implements Serializable {
         if(payDoctorAfterMarkingOut){
             endTime = workingTimeForPayment.getEndRecord().getRecordTimeStamp();
         }
-        System.out.println("before");
         staffBillFeesForPayment = billController.findBillFees(staff, startTime, endTime);
-        System.out.println("staffBillFeesForPayment = " + staffBillFeesForPayment);
         
         calculateStaffPayments();
         return "/opd/pay_doctor?faces-redirect=true";
     }
     
     public String selectStaffForOpdPaymentForAll() {
-        System.out.println("selectStaffForOpdPayment");
         if (staff == null) {
             JsfUtil.addErrorMessage("Select staff");
             return "";
         }
-        System.out.println("before");
         staffBillFeesForPayment = billController.findBillFees(staff, null, null);
-        System.out.println("staffBillFeesForPayment = " + staffBillFeesForPayment);
         calculateStaffPayments();
         return "/opd/pay_doctor?faces-redirect=true";
     }

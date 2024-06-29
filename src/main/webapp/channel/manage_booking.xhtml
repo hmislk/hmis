@@ -15,16 +15,6 @@
     <ui:define name="content">
 
         <h:form id="form">
-            <!--            
-            #{bookingController.selectedBillSession.bill.billItems}
-            #{bookingController.selectedBillSession.bill.billFees}
-            
-            <ui:repeat value="#{bookingController.selectedBillSession.bill.billItems}" var="bi" >
-                Bill Item : #{bi} <br/>
-                <ui:repeat value="#{bi.billFees}" var="bf" >
-                    Bill Fee : #{bf} <br/>
-                </ui:repeat>
-            </ui:repeat>-->
 
             <p:panel >
                 <f:facet name="header">
@@ -285,6 +275,135 @@
                                     </p:outputLabel>
                                 </h:panelGrid>                            
                             </p:panel>
+
+                            <p:panel header="Rescheduled From" class="w-100 mx-1" rendered="#{bookingController.selectedBillSession.referenceBillSession ne null}">
+                                <h:panelGrid columns="2" styleClass="w-100" columnClasses="label,value">
+                                    <p:outputLabel value="Consultant" style="font-weight: bold"/>
+                                    <p:outputLabel value="#{bookingController.selectedBillSession.referenceBillSession.sessionInstance.staff.name}"/>
+
+                                    <p:outputLabel value="Session" style="font-weight: bold"/>
+                                    <p:outputLabel value="#{bookingController.selectedBillSession.referenceBillSession.sessionInstance.originatingSession.name}"/>
+
+                                    <p:outputLabel value="Appointment No" style="font-weight: bold"/>
+                                    <p:outputLabel value="#{bookingController.selectedBillSession.referenceBillSession.serialNo}"/>
+
+                                    <p:outputLabel value="Start At" style="font-weight: bold"/>
+                                    <h:outputText value="#{bookingController.selectedBillSession.referenceBillSession.sessionInstance.originatingSession.startingTime}">
+                                        <f:convertDateTime pattern="HH:mm a"/>
+                                    </h:outputText>
+
+                                    <p:outputLabel value="Booked At" style="font-weight: bold"/>
+                                    <h:outputText value="#{bookingController.selectedBillSession.referenceBillSession.bill.createdAt}">
+                                        <f:convertDateTime pattern="MM/dd/yyyy HH:mm a"/>
+                                    </h:outputText>
+
+
+
+                                    <p:outputLabel value="Payment Method" style="font-weight: bold"/>
+                                    <p:outputLabel value="#{bookingController.selectedBillSession.referenceBillSession.bill.paymentMethod}"/>
+
+                                    <p:outputLabel value="Agent" rendered="#{bookingController.selectedBillSession.referenceBillSession.bill.paymentMethod eq 'Agent'}" style="font-weight: bold"/>
+                                    <p:outputLabel value="#{bookingController.selectedBillSession.referenceBillSession.bill.fromInstitution.name}" rendered="#{bookingController.selectedBillSession.referenceBillSession.bill.paymentMethod eq 'Agent'}"/>
+
+                                    <p:outputLabel value="Agent Ref No" rendered="#{bookingController.selectedBillSession.bill.paymentMethod eq 'Agent'}" style="font-weight: bold"/>
+                                    <p:outputLabel value="#{bookingController.selectedBillSession.referenceBillSession.billItem.agentRefNo}" rendered="#{bookingController.selectedBillSession.referenceBillSession.bill.paymentMethod eq 'Agent'}"/>
+
+                                    <p:outputLabel value="Staff Name" rendered="#{bookingController.selectedBillSession.referenceBillSession.bill.paymentMethod eq 'Staff'}" style="font-weight: bold"/>
+                                    <p:outputLabel value="#{bookingController.selectedBillSession.referenceBillSession.bill.toStaff.person.nameWithTitle} - (#{bookingController.selectedBillSession.referenceBillSession.referenceBillSession.bill.toStaff.code})" rendered="#{bookingController.selectedBillSession.referenceBillSession.bill.paymentMethod eq 'Staff'}"/>
+
+                                    <p:outputLabel value="User" style="font-weight: bold"/>
+                                    <p:outputLabel value="#{bookingController.selectedBillSession.referenceBillSession.bill.creater.webUserPerson.nameWithTitle}"/>
+
+
+
+                                    <p:outputLabel value="Settled At" rendered="#{bookingController.selectedBillSession.referenceBillSession.bill.paidBill ne null}" style="font-weight: bold"/>
+                                    <p:outputLabel value="#{bookingController.selectedBillSession.referenceBillSession.bill.paidBill.createdAt}" rendered="#{bookingController.selectedBillSession.referenceBillSession.bill.paidBill ne null}">
+                                        <f:convertDateTime pattern="dd MMM yyyy - hh:mm a" />
+                                    </p:outputLabel>
+
+                                    <p:separator rendered="#{bookingController.selectedBillSession.referenceBillSession.bill.cancelled == true or bookingController.selectedBillSession.referenceBillSession.bill.refunded == true}"/>
+                                    <p:separator rendered="#{bookingController.selectedBillSession.referenceBillSession.bill.cancelled == true or bookingController.selectedBillSession.referenceBillSession.bill.refunded == true}"/>
+
+                                    <p:outputLabel style="color: red" value="Payment" rendered="#{bookingController.selectedBillSession.referenceBillSession.bill.cancelled == true or bookingController.selectedBillSession.referenceBillSession.bill.refunded == true}"/>
+                                    <p:outputLabel style="color: red" value="#{bookingController.selectedBillSession.referenceBillSession.bill.billedBill.paymentMethod}" rendered="#{bookingController.selectedBillSession.referenceBillSession.bill.cancelled == true or bookingController.selectedBillSession.referenceBillSession.bill.refunded == true}"/>
+
+                                    <p:outputLabel style="color: red" value="Cancel/Refund User" rendered="#{bookingController.selectedBillSession.bill.cancelled == true or bookingController.selectedBillSession.bill.refunded == true}"/>
+                                    <p:outputLabel style="color: red" value="#{bookingController.selectedBillSession.referenceBillSession.bill.billedBill.creater.webUserPerson.nameWithTitle}" rendered="#{bookingController.selectedBillSession.referenceBillSession.bill.cancelled == true or bookingController.selectedBillSession.referenceBillSession.bill.refunded == true}"/>
+
+                                    <p:outputLabel style="color: red" value="Cancel/Refund At" rendered="#{bookingController.selectedBillSession.referenceBillSession.referenceBillSession.bill.cancelled == true or bookingController.selectedBillSession.referenceBillSession.bill.refunded == true}"/>
+                                    <p:outputLabel style="color: red" value="#{bookingController.selectedBillSession.referenceBillSession.bill.billedBill.createdAt}" rendered="#{bookingController.selectedBillSession.referenceBillSession.bill.cancelled == true or bookingController.selectedBillSession.referenceBillSession.bill.refunded == true}">
+                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a" />
+                                    </p:outputLabel>
+                                </h:panelGrid>
+
+                            </p:panel>
+
+                            <p:panel header="Rescheduled To" class="w-100 mx-1" rendered="#{bookingController.selectedBillSession.recheduledSession}">
+                                <h:panelGrid columns="2" styleClass="w-100" columnClasses="label,value">
+                                    <p:outputLabel value="Consultant" style="font-weight: bold"/>
+                                    <p:outputLabel value="#{bookingController.selectedBillSession.referenceBillSession.sessionInstance.staff.name}"/>
+
+                                    <p:outputLabel value="Session" style="font-weight: bold"/>
+                                    <p:outputLabel value="#{bookingController.selectedBillSession.referenceBillSession.sessionInstance.originatingSession.name}"/>
+
+                                    <p:outputLabel value="Appointment No" style="font-weight: bold"/>
+                                    <p:outputLabel value="#{bookingController.selectedBillSession.referenceBillSession.serialNo}"/>
+
+                                    <p:outputLabel value="Start At" style="font-weight: bold"/>
+                                    <h:outputText value="#{bookingController.selectedBillSession.referenceBillSession.sessionInstance.originatingSession.startingTime}">
+                                        <f:convertDateTime pattern="HH:mm a"/>
+                                    </h:outputText>
+
+                                    <p:outputLabel value="Session Date" style="font-weight: bold"/>
+                                    <h:outputText value="#{bookingController.selectedBillSession.referenceBillSession.sessionInstance.sessionDate}"  >
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                    </h:outputText>
+
+                                    <p:outputLabel value="Booked At" style="font-weight: bold"/>
+                                    <h:outputText value="#{bookingController.selectedBillSession.referenceBillSession.bill.createdAt}">
+                                        <f:convertDateTime pattern="MM/dd/yyyy HH:mm a"/>
+                                    </h:outputText>
+
+
+
+                                    <p:outputLabel value="Payment Method" style="font-weight: bold"/>
+                                    <p:outputLabel value="#{bookingController.selectedBillSession.referenceBillSession.bill.paymentMethod}"/>
+
+                                    <p:outputLabel value="Agent" rendered="#{bookingController.selectedBillSession.referenceBillSession.bill.paymentMethod eq 'Agent'}" style="font-weight: bold"/>
+                                    <p:outputLabel value="#{bookingController.selectedBillSession.referenceBillSession.bill.fromInstitution.name}" rendered="#{bookingController.selectedBillSession.referenceBillSession.bill.paymentMethod eq 'Agent'}"/>
+
+                                    <p:outputLabel value="Agent Ref No" rendered="#{bookingController.selectedBillSession.bill.paymentMethod eq 'Agent'}" style="font-weight: bold"/>
+                                    <p:outputLabel value="#{bookingController.selectedBillSession.referenceBillSession.billItem.agentRefNo}" rendered="#{bookingController.selectedBillSession.referenceBillSession.bill.paymentMethod eq 'Agent'}"/>
+
+                                    <p:outputLabel value="Staff Name" rendered="#{bookingController.selectedBillSession.referenceBillSession.bill.paymentMethod eq 'Staff'}" style="font-weight: bold"/>
+                                    <p:outputLabel value="#{bookingController.selectedBillSession.referenceBillSession.bill.toStaff.person.nameWithTitle} - (#{bookingController.selectedBillSession.referenceBillSession.referenceBillSession.bill.toStaff.code})" rendered="#{bookingControllerViewScope.selectedBillSession.referenceBillSession.bill.paymentMethod eq 'Staff'}"/>
+
+                                    <p:outputLabel value="User" style="font-weight: bold"/>
+                                    <p:outputLabel value="#{bookingController.selectedBillSession.referenceBillSession.bill.creater.webUserPerson.nameWithTitle}"/>
+
+
+
+                                    <p:outputLabel value="Settled At" rendered="#{bookingController.selectedBillSession.referenceBillSession.bill.paidBill ne null}" style="font-weight: bold"/>
+                                    <p:outputLabel value="#{bookingController.selectedBillSession.referenceBillSession.bill.paidBill.createdAt}" rendered="#{bookingController.selectedBillSession.referenceBillSession.bill.paidBill ne null}">
+                                        <f:convertDateTime pattern="dd MMM yyyy - hh:mm a" />
+                                    </p:outputLabel>
+
+                                    <p:separator rendered="#{bookingController.selectedBillSession.referenceBillSession.bill.cancelled == true or bookingController.selectedBillSession.referenceBillSession.bill.refunded == true}"/>
+                                    <p:separator rendered="#{bookingController.selectedBillSession.referenceBillSession.bill.cancelled == true or bookingController.selectedBillSession.referenceBillSession.bill.refunded == true}"/>
+
+                                    <p:outputLabel style="color: red" value="Payment" rendered="#{bookingController.selectedBillSession.referenceBillSession.bill.cancelled == true or bookingController.selectedBillSession.referenceBillSession.bill.refunded == true}"/>
+                                    <p:outputLabel style="color: red" value="#{bookingController.selectedBillSession.referenceBillSession.bill.billedBill.paymentMethod}" rendered="#{bookingController.selectedBillSession.referenceBillSession.bill.cancelled == true or bookingController.selectedBillSession.referenceBillSession.bill.refunded == true}"/>
+
+                                    <p:outputLabel style="color: red" value="Cancel/Refund User" rendered="#{bookingController.selectedBillSession.bill.cancelled == true or bookingController.selectedBillSession.bill.refunded == true}"/>
+                                    <p:outputLabel style="color: red" value="#{bookingController.selectedBillSession.referenceBillSession.bill.billedBill.creater.webUserPerson.nameWithTitle}" rendered="#{bookingController.selectedBillSession.referenceBillSession.bill.cancelled == true or bookingController.selectedBillSession.referenceBillSession.bill.refunded == true}"/>
+
+                                    <p:outputLabel style="color: red" value="Cancel/Refund At" rendered="#{bookingController.selectedBillSession.referenceBillSession.referenceBillSession.bill.cancelled == true or bookingController.selectedBillSession.referenceBillSession.bill.refunded == true}"/>
+                                    <p:outputLabel style="color: red" value="#{bookingController.selectedBillSession.referenceBillSession.bill.billedBill.createdAt}" rendered="#{bookingController.selectedBillSession.referenceBillSession.bill.cancelled == true or bookingController.selectedBillSession.referenceBillSession.bill.refunded == true}">
+                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a" />
+                                    </p:outputLabel>
+                                </h:panelGrid>
+
+                            </p:panel>
                         </h:panelGrid>
 
                     </p:tab>
@@ -521,9 +640,22 @@
                         </h:panelGroup>
                         <p:dialog minHeight="100" width="800" header="Confirmation" widgetVar="confirmationDialog" modal="true" resizable="false">
                             <p>Are you sure you want to cancel the channel booking?</p>
-                            <p:inputText class="w-100"
-                                         value="#{channelBillController.comment}"
-                                         placeholder="Please provide a comment for the cancel Channel Booking" />
+                            <p:selectOneMenu
+                                id="commentsMenuCancel"
+                                value="#{channelBillController.comment}"
+                                editable="true"
+                                filter="true"
+                                placeholder="Select or enter a comment"
+                                filterMatchMode="contains"
+                                style="float: right; width: 100%"
+                                class="p-2">
+                                <f:selectItem itemLabel="Select or enter a comment" itemValue="" noSelectionOption="true"/>
+                                <f:selectItems
+                                    value="#{configOptionApplicationController.getListOfCustomOptions('Channel Bill Canceling Comments')}"
+                                    var="option"
+                                    itemLabel="#{option}"
+                                    itemValue="#{option}"/>
+                            </p:selectOneMenu>
 
                             <f:facet name="footer">
                                 <p:commandButton
@@ -634,9 +766,22 @@
 
                         <p:dialog minHeight="100" width="800" header="Confirmation" widgetVar="confirmationRefundDialog" modal="true" resizable="false">
                             <p>Are you sure you want to refund the channel booking?</p>
-                            <p:inputText class="w-100"
-                                         value="#{channelBillController.commentR}"
-                                         placeholder="Please provide a comment for the Refund of Channel Booking" />
+                            <p:selectOneMenu
+                                id="commentsMenuRefund"
+                                value="#{channelBillController.commentR}"
+                                editable="true"
+                                filter="true"
+                                placeholder="Select or enter a comment"
+                                filterMatchMode="contains"
+                                style="float: right; width: 100%"
+                                class="p-2">
+                                <f:selectItem itemLabel="Select or enter a comment" itemValue="" noSelectionOption="true"/>
+                                <f:selectItems
+                                    value="#{configOptionApplicationController.getListOfCustomOptions('Channel Bill Refunding Comments')}"
+                                    var="option"
+                                    itemLabel="#{option}"
+                                    itemValue="#{option}"/>
+                            </p:selectOneMenu>
 
                             <f:facet name="footer">
                                 <p:commandButton
@@ -1074,7 +1219,7 @@
                                                         layout="block"
                                                         id="multiplePaymentMethods"  rendered="#{channelBillController.settlePaymentMethod eq 'MultiplePaymentMethods'}"
                                                         >
-                                                        <pa:multiple_payment_methods paymentMethodData="#{channelBillController.paymentMethodData}" controller="#{channelBillController}" class="w-100"/>
+                                                        <pa:multiple_payment_methods controller="#{channelBillController}" class="w-100"/>
 
                                                     </h:panelGroup>
 
@@ -1381,6 +1526,61 @@
                                 <p:commandButton value="Pay Selected Doctor" action="#{bookingController.paySelectedDoctor}" 
                                                  ajax="false" onclick="onSubmitButton();" />                                        
                             </h:panelGrid>
+                        </p:panel>
+                    </p:tab>
+
+                    <p:tab title="Reshedule">
+                        <p:panel>
+                            <f:facet name="header">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h:outputLabel value="Reshedule"/>
+                                    <p:commandButton value="Reshedule" action="#{bookingController.sessionReschedule()}" ajax="false" >
+                                    </p:commandButton>
+                                </div>
+                            </f:facet>
+                            <h:panelGroup>
+                                <div class="row">
+                                    <div class="col-6">
+                                        <p:panel header="Patient Details">
+                                            <ezcommon:patient patient="#{bookingController.selectedBillSession.bill.patient}" ></ezcommon:patient>
+                                        </p:panel>
+                                    </div>
+                                    <div class="col-6">
+                                        <p:panel header="Other Sessions">
+                                            <p:commandButton id="btnFill" class="m-1" value="FIll" action="#{bookingController.fillSessionInstanceByDoctor()}" process="btnFill" update="lstSelect" />
+                                            <h:panelGroup id="lstSelect">
+                                                <p:dataTable value="#{bookingController.sessionInstanceByDoctor}" var="myItem" selection="#{bookingController.selectedSessionInstanceForRechedule}" selectionMode="single"  rowKey="#{myItem.id}">
+                                                    <p:column>
+                                                        <f:facet name="header">Name</f:facet>
+                                                            #{myItem.name}
+                                                    </p:column>
+                                                    <p:column>
+                                                        <f:facet name="header">Consultant</f:facet>
+                                                        <p:outputLabel value="#{myItem.staff.name}">
+                                                            <f:convertDateTime pattern="yyyy-MM-dd"/>
+                                                        </p:outputLabel>
+
+                                                    </p:column>
+                                                    <p:column filterBy="#{myItem.sessionDate}" filterMatchMode="contains">
+                                                        <f:facet name="header">Session Date</f:facet>
+                                                        <p:outputLabel value="#{myItem.sessionDate}">
+                                                            <f:convertDateTime pattern="yyyy-MM-dd"/>
+                                                        </p:outputLabel>
+
+                                                    </p:column>
+                                                    <p:column>
+                                                        <f:facet name="header">Session TIme</f:facet>
+                                                        <p:outputLabel value="#{myItem.startingTime}">
+                                                            <f:convertDateTime pattern="HH:mm a"/>
+                                                        </p:outputLabel>
+                                                    </p:column>
+                                                </p:dataTable>
+
+                                            </h:panelGroup>
+                                        </p:panel>
+                                    </div>
+                                </div>
+                            </h:panelGroup>
                         </p:panel>
                     </p:tab>
                 </p:tabView>

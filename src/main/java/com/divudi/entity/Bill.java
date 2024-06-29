@@ -49,8 +49,14 @@ import javax.persistence.Transient;
 @Inheritance
 public class Bill implements Serializable {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    Long id;
+    
+    static final long serialVersionUID = 1L;
+    
     @ManyToOne
-    MembershipScheme membershipScheme;
+    private MembershipScheme membershipScheme;
     @OneToOne
     private CashTransaction cashTransaction;
     @OneToMany(mappedBy = "bill", fetch = FetchType.LAZY)
@@ -73,155 +79,153 @@ public class Bill implements Serializable {
     private List<Bill> refundBills = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
-    BillClassType billClassType;
+    protected BillClassType billClassType;
 
     @ManyToOne(fetch = FetchType.LAZY)
     private Category category;
     @Transient
     boolean transError;
 
-    static final long serialVersionUID = 1L;
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    Long id;
+    
+    
 
     @OneToMany(mappedBy = "bill", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    List<Payment> payments = new ArrayList<>();
+    private List<Payment> payments = new ArrayList<>();
     @OneToMany(mappedBy = "bill", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    List<BillFee> billFees = new ArrayList<>();
+    private List<BillFee> billFees = new ArrayList<>();
     @OneToMany(mappedBy = "bill", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @OrderBy("inwardChargeType, searialNo")
-    List<BillItem> billItems;
+    private List<BillItem> billItems;
 
     @OneToMany(mappedBy = "expenseBill", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @OrderBy("searialNo")
-    List<BillItem> billExpenses;
+    private List<BillItem> billExpenses;
 
     @OneToMany(mappedBy = "bill", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    List<BillComponent> billComponents = new ArrayList<>();
+    private List<BillComponent> billComponents = new ArrayList<>();
     ////////////////////////////////////////////////   
     @Lob
-    String comments;
+    private String comments;
     // Bank Detail
-    String creditCardRefNo;
-    String chequeRefNo;
+    private String creditCardRefNo;
+    private String chequeRefNo;
 
     private int creditDuration;
     @ManyToOne(fetch = FetchType.LAZY)
-    Institution bank;
+    private Institution bank;
     @Temporal(javax.persistence.TemporalType.DATE)
-    Date chequeDate;
+    private Date chequeDate;
     //Approve
     @ManyToOne(fetch = FetchType.LAZY)
-    WebUser approveUser;
+    private WebUser approveUser;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-    Date approveAt;
+    private Date approveAt;
     //Pharmacy
     @Temporal(javax.persistence.TemporalType.DATE)
-    Date invoiceDate;
+    private Date invoiceDate;
     //Enum
     @Enumerated(EnumType.STRING)
-    BillType billType;
+    private BillType billType;
     @Enumerated(EnumType.STRING)
     private BillTypeAtomic billTypeAtomic;
     @Enumerated(EnumType.STRING)
-    PaymentMethod paymentMethod;
+    private PaymentMethod paymentMethod;
     @ManyToOne(fetch = FetchType.LAZY)
-    BillItem singleBillItem;
+    private BillItem singleBillItem;
     @ManyToOne(fetch = FetchType.LAZY)
-    BillSession singleBillSession;
+    private BillSession singleBillSession;
     String qutationNumber;
     @ManyToOne(fetch = FetchType.LAZY)
-    Institution referredByInstitution;
+    private Institution referredByInstitution;
     @Column
-    String referenceNumber; //referenceNumber
+    private String referenceNumber; //referenceNumber
 
     //Values
-    double margin;
+    private double margin;
 
-    double total;
-    double netTotal;
-    double discount;
-    double vat;
-    double vatPlusNetTotal;
+    private double total;
+    private double netTotal;
+    private double discount;
+    private double vat;
+    private double vatPlusNetTotal;
 
     @Transient
     private double absoluteNetTotal;
 
-    double discountPercent;
+    private double discountPercent;
 
-    double billTotal;
-    double paidAmount;
+    private double billTotal;
+    private double paidAmount;
     private double refundAmount;
-    double balance;
-    double serviceCharge;
-    Double tax = 0.0;
-    Double cashPaid = 0.0;
-    Double cashBalance = 0.0;
-    double saleValue = 0.0f;
-    double freeValue = 0.0f;
-    double performInstitutionFee;
-    double staffFee;
-    double billerFee;
-    double grantTotal;
-    double expenseTotal;
+    private double balance;
+    private double serviceCharge;
+    private Double tax = 0.0;
+    private Double cashPaid = 0.0;
+    private Double cashBalance = 0.0;
+    private double saleValue = 0.0f;
+    private double freeValue = 0.0f;
+    private double performInstitutionFee;
+    private double staffFee;
+    private double billerFee;
+    private double grantTotal;
+    private double expenseTotal;
     //with minus tax and discount
-    double grnNetTotal;
+    private double grnNetTotal;
 
     //Institution
     @ManyToOne(fetch = FetchType.LAZY)
-    Institution paymentSchemeInstitution;
+    private Institution paymentSchemeInstitution;
     @ManyToOne(fetch = FetchType.LAZY)
     @Deprecated //Use fromInstitution
-    Institution collectingCentre;
+    private Institution collectingCentre;
     @ManyToOne(fetch = FetchType.LAZY)
-    Institution institution;
+    private Institution institution;
     @ManyToOne(fetch = FetchType.LAZY)
-    Institution fromInstitution;
+    private Institution fromInstitution;
     @ManyToOne(fetch = FetchType.LAZY)
-    Institution toInstitution;
+    private Institution toInstitution;
     @ManyToOne(fetch = FetchType.LAZY)
-    Institution creditCompany;
+    private Institution creditCompany;
     @ManyToOne(fetch = FetchType.LAZY)
-    Institution referenceInstitution;
+    private Institution referenceInstitution;
     //Departments
     @ManyToOne(fetch = FetchType.LAZY)
-    Department referringDepartment;
+    private Department referringDepartment;
     @ManyToOne(fetch = FetchType.LAZY)
-    Department department;
+    private Department department;
     @ManyToOne(fetch = FetchType.LAZY)
-    Department fromDepartment;
+    private Department fromDepartment;
     @ManyToOne(fetch = FetchType.LAZY)
-    Department toDepartment;
+    private Department toDepartment;
     //Bill
     @ManyToOne(fetch = FetchType.LAZY)
-    Bill billedBill;
+    private Bill billedBill;
     @ManyToOne(fetch = FetchType.LAZY)
-    Bill cancelledBill;
+    private Bill cancelledBill;
     @ManyToOne(fetch = FetchType.LAZY)
-    Bill refundedBill;
+    private Bill refundedBill;
     @ManyToOne(fetch = FetchType.LAZY)
-    Bill reactivatedBill;
+    private Bill reactivatedBill;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    Bill referenceBill;
+    private Bill referenceBill;
     //Id's
-    String deptId;
-    String insId;
-    String catId;
-    String sessionId;
+    private String deptId;
+    private String insId;
+    private String catId;
+    private String sessionId;
     @Deprecated
-    String bookingId;
-    String invoiceNumber;
+    private String bookingId;
+    private String invoiceNumber;
     @Transient
-    int intInvoiceNumber;
+    private int intInvoiceNumber;
     //Staff
     @ManyToOne(fetch = FetchType.LAZY)
-    Staff staff;
+    private Staff staff;
     @ManyToOne(fetch = FetchType.LAZY)
-    Staff fromStaff;
+    private Staff fromStaff;
     @ManyToOne(fetch = FetchType.LAZY)
-    Staff toStaff;
+    private Staff toStaff;
     //Booleans
     private boolean paid;
     private boolean cancelled;
@@ -229,9 +233,9 @@ public class Bill implements Serializable {
     private boolean reactivated;
     //Created Properties
     @ManyToOne(fetch = FetchType.LAZY)
-    WebUser creater;
+    private WebUser creater;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-    Date createdAt;
+    private Date createdAt;
     //Edited Properties
     @ManyToOne(fetch = FetchType.LAZY)
     private WebUser editor;
@@ -245,33 +249,33 @@ public class Bill implements Serializable {
     //Retairing properties
     boolean retired;
     @ManyToOne(fetch = FetchType.LAZY)
-    WebUser retirer;
+    private WebUser retirer;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-    Date retiredAt;
-    String retireComments;
+    private Date retiredAt;
+    private String retireComments;
     ////////////////
     @ManyToOne(fetch = FetchType.LAZY)
-    PaymentScheme paymentScheme;
+    private PaymentScheme paymentScheme;
     @Temporal(javax.persistence.TemporalType.DATE)
-    Date billDate;
+    private Date billDate;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-    Date billTime;
+    private Date billTime;
     @Transient
-    String billClass;
+    private String billClass;
     @ManyToOne(fetch = FetchType.LAZY)
-    Item billPackege;//BILLPACKEGE\\_ID
+    private Item billPackege;//BILLPACKEGE\\_ID
     @ManyToOne(fetch = FetchType.LAZY)
-    Person person;
+    private Person person;
     @ManyToOne(fetch = FetchType.LAZY)
-    Patient patient;
+    private Patient patient;
     @ManyToOne(fetch = FetchType.LAZY)
-    Doctor referredBy;
+    private Doctor referredBy;
     @ManyToOne(fetch = FetchType.LAZY)
-    PatientEncounter patientEncounter;
+    private PatientEncounter patientEncounter;
     @ManyToOne(fetch = FetchType.LAZY)
     private PatientEncounter procedure;
     @Transient
-    List<Bill> listOfBill;
+    private List<Bill> listOfBill;
 
     @Transient
     private List<BillItem> transActiveBillItem;
@@ -296,11 +300,11 @@ public class Bill implements Serializable {
     double claimableTotal;
 
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-    Date appointmentAt;
+    private Date appointmentAt;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-    Date paidAt;
+    private Date paidAt;
     @ManyToOne(fetch = FetchType.LAZY)
-    Bill paidBill;
+    private Bill paidBill;
     double qty;
 
     //Sms Info
@@ -314,23 +318,34 @@ public class Bill implements Serializable {
 
     //Print Information
     private boolean printed;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private WebUser printedUser;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date printedAt;
+
+        //Print Information
+    private boolean duplicatedPrinted;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private WebUser duplicatePrintedUser;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date duplicatePrintedAt;
 
     @Transient
-    double transTotalSaleValue;
+    private double transTotalSaleValue;
     @Transient
-    double transTotalCCFee;
+    private double transTotalCCFee;
     @Transient
-    double transTotalWithOutCCFee;
+    private double transTotalWithOutCCFee;
     @Transient
-    double transCurrentCCBalance;
+    private double transCurrentCCBalance;
     @Transient
-    AgentHistory agentHistory;
+    private AgentHistory agentHistory;
     @Transient
-    double vatCalulatedAmount;
+    private double vatCalulatedAmount;
     @Transient
-    double vatPlusStaffFee;
+    private double vatPlusStaffFee;
     @Transient
-    double vatPlusHosFee;
+    private double vatPlusHosFee;
     @Transient
     private boolean approvedAnyTest = false;
     @Transient
@@ -343,6 +358,10 @@ public class Bill implements Serializable {
     private String ageAtBilledDate;
     @Transient
     private Bill tmpRefBill;
+    
+    private String agentRefNo;
+    
+    
 
     private void generateBillPrintFromBillTemplate() {
         billPrint = "";
@@ -540,6 +559,8 @@ public class Bill implements Serializable {
 
     }
 
+    
+    
     private String safeReplace(String value) {
         return value != null ? value : "";
     }
@@ -651,8 +672,6 @@ public class Bill implements Serializable {
     public void setBillTotal(double billTotal) {
         this.billTotal = billTotal;
     }
-
-    
 
     public Bill getPaidBill() {
         return paidBill;
@@ -1143,6 +1162,7 @@ public class Bill implements Serializable {
         this.patientEncounter = patientEncounter;
     }
 
+
     public Long getId() {
         return id;
     }
@@ -1520,6 +1540,23 @@ public class Bill implements Serializable {
 
     public List<BillFee> getBillFees() {
         return billFees;
+    }
+
+    @Transient
+    public List<BillFee> getBillFeesWIthoutZeroValue() {
+        if (billFees == null) {
+            return null;
+        }
+        List<BillFee> feesWithoutZeros = new ArrayList<>();
+        if (billFees.isEmpty()) {
+            return feesWithoutZeros;
+        }
+        for (BillFee bf : billFees) {
+            if (bf.getFeeValue() > 0 || bf.getFeeDiscount() > 0) {
+                feesWithoutZeros.add(bf);
+            }
+        }
+        return feesWithoutZeros;
     }
 
     public void setBillFees(List<BillFee> billFees) {
@@ -2115,6 +2152,54 @@ public class Bill implements Serializable {
 
     public void setBillTypeAtomic(BillTypeAtomic billTypeAtomic) {
         this.billTypeAtomic = billTypeAtomic;
+    }
+
+    public WebUser getPrintedUser() {
+        return printedUser;
+    }
+
+    public void setPrintedUser(WebUser printedUser) {
+        this.printedUser = printedUser;
+    }
+
+    public Date getPrintedAt() {
+        return printedAt;
+    }
+
+    public void setPrintedAt(Date printedAt) {
+        this.printedAt = printedAt;
+    }
+
+    public boolean isDuplicatedPrinted() {
+        return duplicatedPrinted;
+    }
+
+    public void setDuplicatedPrinted(boolean duplicatedPrinted) {
+        this.duplicatedPrinted = duplicatedPrinted;
+    }
+
+    public WebUser getDuplicatePrintedUser() {
+        return duplicatePrintedUser;
+    }
+
+    public void setDuplicatePrintedUser(WebUser duplicatePrintedUser) {
+        this.duplicatePrintedUser = duplicatePrintedUser;
+    }
+
+    public Date getDuplicatePrintedAt() {
+        return duplicatePrintedAt;
+    }
+
+    public void setDuplicatePrintedAt(Date duplicatePrintedAt) {
+        this.duplicatePrintedAt = duplicatePrintedAt;
+    }
+
+    public String getAgentRefNo() {
+        return agentRefNo;
+    }
+
+    public void setAgentRefNo(String agentRefNo) {
+        this.agentRefNo = agentRefNo;
     }
 
 }

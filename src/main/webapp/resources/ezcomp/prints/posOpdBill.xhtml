@@ -241,7 +241,7 @@
                         </tr>
                     </h:panelGroup>
 
-                    <h:panelGroup rendered="#{cc.attrs.bill.creater.staff.code ne null}" >
+                    <h:panelGroup rendered="#{cc.attrs.bill.creater.staff ne null}" >
                         <tr>
                             <td style="width: 15% ;text-align: left;" >
                                 <h:outputLabel value="Billed by" style="text-align: center!important;
@@ -250,14 +250,14 @@
                             </td>
                             <td>:</td>
                             <td style="width: 30%;" >
-                                <h:outputLabel value="#{cc.attrs.bill.creater.staff.code}" style="text-align: center!important;
+                                <h:outputLabel value="#{cc.attrs.bill.creater.staff.name}" style="text-align: center!important;
                                                font-size: 12px!important;
                                                font-family:Arial, Helvetica, sans-serif!important;">
                                 </h:outputLabel>
-                                <h:outputLabel value="#{cc.attrs.bill.id}" style="text-align: center!important;
+<!--                                <h:outputLabel value="#{cc.attrs.bill.id}" style="text-align: center!important;
                                                font-size: 12px!important;
                                                font-family:Arial, Helvetica, sans-serif!important;">
-                                </h:outputLabel>
+                                </h:outputLabel>-->
                             </td>
                         </tr>
                     </h:panelGroup>

@@ -93,6 +93,15 @@
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'ReferringDoctor' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.billItem.bill.referredInstituteOrDoctor.name}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'SampledAt' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.sampleInstitution.name}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
 
+                <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'ApprovedAt' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.approveAt}" style="#{myIi.innerCssStyle};" escape="false" >
+                    <f:convertDateTime pattern="dd/MM/yyyy hh:mm a"/>
+                </h:outputText>
+                <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'ReceivedAt' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.receivedAt}" style="#{myIi.innerCssStyle};" escape="false" >
+                    <f:convertDateTime pattern="dd/MM/yyyy hh:mm a"/>
+                </h:outputText>
+                <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'PrintedAt' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.printingAt}" style="#{myIi.innerCssStyle};" escape="false" >
+                    <f:convertDateTime pattern="dd/MM/yyyy hh:mm a"/>
+                </h:outputText>
 
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'AutherizedName' and myCli.retired eq false  and cc.attrs.patientReport.approveUser.staff.id ne null}"  value="#{cc.attrs.patientReport.approveUser.staff.person.nameWithTitle}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'AutherizedCode' and myCli.retired eq false  and cc.attrs.patientReport.approveUser.staff.id ne null}"  value="#{cc.attrs.patientReport.approveUser.staff.code}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>

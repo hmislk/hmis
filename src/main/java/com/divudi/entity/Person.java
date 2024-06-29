@@ -608,7 +608,7 @@ public class Person implements Serializable {
         } else if (StringUtils.isNotBlank(phone)) {
             return phone;
         } else {
-            return null;
+            return "";
         }
     }
 

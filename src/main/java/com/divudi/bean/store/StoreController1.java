@@ -1053,12 +1053,7 @@ public class StoreController1 implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-//            Date date = ;
-            Calendar cal=Calendar.getInstance();
-            cal.set(Calendar.HOUR_OF_DAY, 0);
-            cal.set(Calendar.MINUTE, 0);
-            cal.set(Calendar.SECOND, 0);
-            fromDate = getCommonFunctions().getAddedDate(cal.getTime(), -30);
+            fromDate = getCommonFunctions().getStartOfDay(new Date());
         }
         return fromDate;
     }

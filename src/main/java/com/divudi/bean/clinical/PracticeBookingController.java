@@ -211,11 +211,9 @@ public class PracticeBookingController implements Serializable {
         m.put("name", "%" + query.toUpperCase() + "%");
         m.put("code", "%" + query.toUpperCase() + "%");
         if (getSpeciality() != null) {
-            System.out.println("getSpecialitygetSpeciality = " + getSpeciality());
             sql = "select p from Doctor p where p.retired=false and ((p.person.name) like :name or  (p.code) like :code ) and p.speciality =:sp order by p.person.name";
             m.put("sp", speciality);
         } else {
-            System.out.println("getSpecialitygetSpeciality = " + getSpeciality());
             sql = "select p from Doctor p where p.retired=false and ((p.person.name) like :name or  (p.code) like :code ) order by p.person.name";
         }
         docs = getDoctorFacade().findByJpql(sql, m);
@@ -324,7 +322,6 @@ public class PracticeBookingController implements Serializable {
         getPharmacySaleController().setFromOpdEncounter(true);
         getPatientEncounterController().fillEncounterMedicines(opdVisit);
         for(ClinicalFindingValue cli :patientEncounterController.getEncounterMedicines()){
-            System.out.println("cli = " + cli.getPrescription().getItem().getName());
         }
         return "/pharmacy/pharmacy_bill_retail_sale?faces-redirect=true";
     }

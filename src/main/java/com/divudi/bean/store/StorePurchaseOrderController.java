@@ -12,6 +12,7 @@ import com.divudi.data.BillType;
 import com.divudi.data.dataStructure.SearchKeyword;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.BillTypeAtomic;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
@@ -137,7 +138,7 @@ public class StorePurchaseOrderController implements Serializable {
         getRequestedBill().setReferenceBill(getAprovedBill());
         getBillFacade().edit(getRequestedBill());
 
-        clearList();
+        printPreview = true;
 
        // return viewRequestedList();
         //   printPreview = true;
@@ -183,6 +184,7 @@ public class StorePurchaseOrderController implements Serializable {
         getAprovedBill().setFromInstitution(getRequestedBill().getInstitution());
         getAprovedBill().setReferenceBill(getRequestedBill());
         getAprovedBill().setBackwardReferenceBill(getRequestedBill());
+        getAprovedBill().setBillTypeAtomic(BillTypeAtomic.STORE_ORDER_APPROVAL);
 
 //        getAprovedBill().setDeptId(getBillNumberBean().institutionBillNumberGeneratorWithReference(getRequestedBill().getDepartment(), getAprovedBill(), BillType.StoreOrder, BillNumberSuffix.PO));
 //        getAprovedBill().setInsId(getBillNumberBean().institutionBillNumberGeneratorWithReference(getRequestedBill().getInstitution(), getAprovedBill(), BillType.StoreOrder, BillNumberSuffix.PO));
@@ -209,18 +211,41 @@ public class StorePurchaseOrderController implements Serializable {
 
             PharmaceuticalBillItem phItem = i.getPharmaceuticalBillItem();
             i.setPharmaceuticalBillItem(null);
-            getBillItemFacade().create(i);
+            try {
+                if (i.getId() == null) {
+                    getBillItemFacade().create(i);
+                } else {
+                    getBillItemFacade().edit(i);
+                }
+            } catch (Exception e) {
+            }
 
             phItem.setBillItem(i);
-            getPharmaceuticalBillItemFacade().create(phItem);
+            try {
+                if (phItem.getId() == null) {
+                    getPharmaceuticalBillItemFacade().create(phItem);
+                } else {
+                    getPharmaceuticalBillItemFacade().edit(phItem);
+                }
+            } catch (Exception e) {
+            }
 
             i.setPharmaceuticalBillItem(phItem);
-            getBillItemFacade().edit(i);
+            try {
+                getBillItemFacade().edit(i);
+            } catch (Exception e) {
+
+            }
 
             getAprovedBill().getBillItems().add(i);
         }
 
         getBillFacade().edit(getAprovedBill());
+    }
+    
+    public String navigateToPurchaseOrderApproval() {
+        printPreview = false;
+        return "/store/store_purhcase_order_approving?faces-redirect=true";
     }
 
     public void generateBillComponent() {
@@ -232,6 +257,7 @@ public class StorePurchaseOrderController implements Serializable {
             PharmaceuticalBillItem ph = new PharmaceuticalBillItem();
             ph.setBillItem(bi);
             ph.setQtyInUnit(i.getQtyInUnit());
+            ph.setFreeQtyInUnit(i.getFreeQtyInUnit());
             ph.setPurchaseRateInUnit(i.getPurchaseRateInUnit());
             ph.setRetailRateInUnit(i.getRetailRateInUnit());
             bi.setPharmaceuticalBillItem(ph);

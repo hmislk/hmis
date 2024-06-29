@@ -50,8 +50,6 @@ public class TriggerSubscriptionController implements Serializable {
     private WebUser user;
 
     public List<WebUser> fillSubscribedUsersByDepartment(TriggerType tt,Department dept) {
-        System.out.println("dept = " + dept.getName());
-        System.out.println("tt = " + tt);
         List<WebUser> us = new ArrayList<>();
         if (tt == null) {
             return us;
@@ -67,8 +65,6 @@ public class TriggerSubscriptionController implements Serializable {
         m.put("ret", false);
         m.put("dep", dept);
         us = webUserFacade.findByJpql(jpql, m);
-        System.out.println("jpql = " + jpql);
-        System.out.println("us = " + us);
         return us;
     }
 

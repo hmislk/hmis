@@ -4,6 +4,7 @@ package com.divudi.bean.cashTransaction;
 import java.util.HashMap;
 // </editor-fold>  
 import com.divudi.bean.common.BillController;
+import com.divudi.bean.common.BillSearch;
 import com.divudi.bean.common.SearchController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.data.BillClassType;
@@ -56,6 +57,8 @@ public class FinancialTransactionController implements Serializable {
     PaymentController paymentController;
     @Inject
     SearchController searchController;
+    @Inject
+    BillSearch billSearch;
     // </editor-fold>  
 
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
@@ -125,6 +128,8 @@ public class FinancialTransactionController implements Serializable {
 
     // </editor-fold> 
     // <editor-fold defaultstate="collapsed" desc="Navigational Methods">
+    
+
     public String navigateToFinancialTransactionIndex() {
         resetClassVariables();
         fillFundTransferBillsForMeToReceive();
@@ -403,14 +408,10 @@ public class FinancialTransactionController implements Serializable {
     }
 
     private void calculateShiftEndFundBillTotal() {
-        System.out.println("calculateShiftEndFundBillTotal");
         double total = 0.0;
         for (Payment p : getCurrentBillPayments()) {
-            System.out.println("p = " + p);
-            System.out.println("p.getPaidValue = " + p.getPaidValue());
             total += p.getPaidValue();
         }
-        System.out.println("total = " + total);
         currentBill.setTotal(total);
         currentBill.setNetTotal(total);
     }
@@ -573,17 +574,14 @@ public class FinancialTransactionController implements Serializable {
         atomicBillTypeTotalsByPayments = new AtomicBillTypeTotals();
         for (Payment p : paymentsFromShiftSratToNow) {
             if (p.getBill().getBillTypeAtomic() == null) {
-                System.err.println("NO ATOMIC BILL TYPE in p.getBill().getBillType() = " + p.getBill().getBillType());
             } else {
-                System.out.println("p.getPaidValue() = " + p.getPaidValue());
                 atomicBillTypeTotalsByPayments.addOrUpdateAtomicRecord(p.getBill().getBillTypeAtomic(), p.getPaymentMethod(), p.getPaidValue());
-                System.out.println("p.getBill().getBillTypeAtomic() = " + p.getBill().getBillTypeAtomic());
             }
             //            calculateBillValuesFromBillTypes(p);
         }
 //        calculateTotalFundsFromShiftStartToNow();
         financialReportByPayments = new FinancialReport(atomicBillTypeTotalsByPayments);
-        
+
     }
 
     public void fillBillsFromShiftStartToNow() {
@@ -620,8 +618,6 @@ public class FinancialTransactionController implements Serializable {
         for (Bill p : currentBills) {
             if (p.getBillTypeAtomic() == null) {
             } else {
-                System.out.println("p = " + p);
-                System.out.println("p = " + p.getBillTypeAtomic());
             }
             atomicBillTypeTotalsByBills.addOrUpdateAtomicRecord(p.getBillTypeAtomic(), p.getPaymentMethod(), p.getNetTotal());
 //            calculateBillValuesFromBillTypes(p);
@@ -699,9 +695,8 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public void calculateTotalFundsFromShiftStartToNow() {
-        additions = financialReportByPayments.getCashTotal()+financialReportByPayments.getNetCreditCardTotal()+financialReportByPayments.getCollectedVoucher()+financialReportByPayments.getNetOtherNonCreditTotal()+financialReportByPayments.getBankWithdrawals();
-        Deductions = financialReportByPayments.getRefundedCash()+financialReportByPayments.getRefundedCreditCard()+financialReportByPayments.getRefundedVoucher()+financialReportByPayments.getRefundedOtherNonCredit()+financialReportByPayments.getFloatHandover()+financialReportByPayments.getBankDeposits();
-        System.out.println("Deductions = " + Deductions);
+        additions = financialReportByPayments.getCashTotal() + financialReportByPayments.getNetCreditCardTotal() + financialReportByPayments.getCollectedVoucher() + financialReportByPayments.getNetOtherNonCreditTotal() + financialReportByPayments.getBankWithdrawals();
+        Deductions = financialReportByPayments.getRefundedCash() + financialReportByPayments.getRefundedCreditCard() + financialReportByPayments.getRefundedVoucher() + financialReportByPayments.getRefundedOtherNonCredit() + financialReportByPayments.getFloatHandover() + financialReportByPayments.getBankDeposits();
         totalFunds = additions - Deductions;
         shiftEndTotalValue = totalFunds;
 
@@ -798,7 +793,6 @@ public class FinancialTransactionController implements Serializable {
         billController.save(currentBill);
         currentBill.setTotal(financialReportByPayments.getTotal());
         currentBill.setNetTotal(financialReportByPayments.getTotal());
-        System.out.println("currentBill.setNetTotal = " + currentBill.getNetTotal());
         for (Payment p : getCurrentBillPayments()) {
             p.setBill(currentBill);
             p.setDepartment(sessionController.getDepartment());
@@ -808,7 +802,7 @@ public class FinancialTransactionController implements Serializable {
         calculateTotalFundsFromShiftStartToNow();
         nonClosedShiftStartFundBill.setReferenceBill(currentBill);
         billController.save(nonClosedShiftStartFundBill);
-        
+
         return "/cashier/shift_end_summery_bill_print?faces-redirect=true";
     }
 

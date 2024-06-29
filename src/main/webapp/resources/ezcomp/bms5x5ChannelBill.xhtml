@@ -12,6 +12,7 @@
     <cc:interface>
         <cc:attribute name="bill" type="com.divudi.entity.Bill" />
         <cc:attribute name="duplicate" type="java.lang.Boolean"/>
+        <cc:attribute name="payments" ></cc:attribute>
         <cc:attribute name="ref" type="java.lang.Boolean" />
     </cc:interface>
 
@@ -75,9 +76,7 @@
                     </td>
                     <td>
                         <b>
-                            <ui:repeat value="#{cc.attrs.bill.billItems}" var="cbi" >
-                                <h:outputLabel value="#{cbi.billSession.staff.person.nameWithTitle}" ></h:outputLabel>
-                            </ui:repeat>
+                            <h:outputLabel value="#{cc.attrs.bill.staff.person.nameWithTitle}" ></h:outputLabel>
                         </b>
                     </td>
 
@@ -97,7 +96,7 @@
                     </td>
                     <td>
                         <b class="d-flex gap-2">
-                            <h:outputLabel value="#{cc.attrs.bill.singleBillSession.sessionDate}" >
+                            <h:outputLabel value="#{cc.attrs.bill.singleBillSession.sessionInstance.sessionDate}" >
                                 <f:convertDateTime pattern=" yyyy MMMM dd" ></f:convertDateTime>
                             </h:outputLabel>
                             <h:outputLabel value="-" />
@@ -123,7 +122,7 @@
                     </td>
                     <td>
 
-                        <h:outputLabel value="#{cc.attrs.bill.singleBillSession.serviceSession.roomNo}" style="font-weight: bold;">
+                        <h:outputLabel value="#{cc.attrs.bill.singleBillSession.sessionInstance.roomNo}" style="font-weight: bold;">
                         </h:outputLabel>
 
                     </td>
@@ -177,9 +176,10 @@
                     </td>
                 </tr>
 
-                <ui:repeat value="#{cc.attrs.bill.billFees}" var="cbif" >
+                <ui:repeat value="#{cc.attrs.bill.billFeesWIthoutZeroValue}" var="cbif" >
                     <tr>
                         <td>
+                            <!--<h:outputLabel value="#{cbif.billItem.item.name}" rendered="#{cbif.feeGrossValue ne 0.0}"></h:outputLabel>-->
                             <h:outputLabel value="#{cbif.fee.name}" rendered="#{cbif.feeGrossValue ne 0.0}"></h:outputLabel>
                         </td>
                         <td>
@@ -352,6 +352,29 @@
                     </td>
                 </tr>
 
+
+                <h:panelGroup  >
+                    <tr>
+                        <td>
+                            <h:outputLabel value="Printed By" ></h:outputLabel>
+                        </td>
+                        <td>
+                            <p:spacer width="10" ></p:spacer>
+                        </td>
+                        <td>
+                            <h:outputLabel value=":" ></h:outputLabel>
+                        </td>
+                        <td>
+                            <h:outputLabel value="#{cc.attrs.bill.paidBill.printedUser.webUserPerson.name}"></h:outputLabel>
+                            <p:spacer height="1" width="10" ></p:spacer>
+                            <h:outputLabel value="#{cc.attrs.bill.paidBill.printedAt}">
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></f:convertDateTime>
+                            </h:outputLabel>
+                        </td>
+                    </tr>
+                </h:panelGroup>
+
+
             </table>
 
             <div style="margin-left: 6%; margin-right: 8%;">
@@ -389,7 +412,6 @@
                             <h:outputLabel value="-" />
                             <h:outputLabel value="#{cc.attrs.bill.paidBill.paymentMethod}" />
                         </div>
-                        
                     </h:panelGroup>
                 </div>
 
@@ -405,7 +427,17 @@
                     </h:outputText>
                     <h:outputText 
                         style="font-size: 8pt"  
-                        value="(Card Last 4 Digits:#{cc.attrs.bill.creditCardRefNo})"/>
+                        value="(Card Last 4 Digits:#{cc.attrs.paymentMethoddata.creditCardRefNo})"/>
+                </h:panelGroup>
+
+                <h:panelGroup rendered="#{cc.attrs.bill.paymentMethod eq 'MultiplePaymentMethods'}" style="margin-top: 10px;font-size: 8pt">
+                    <h:outputLabel value="Payments : #{cc.attrs.bill.paymentMethod.label}"/>
+                    <ui:repeat value="#{cc.attrs.payments}" var="p">
+                        <div class="d-flex align-items-center m-1">
+                            <div>#{p.paymentMethod}</div>
+                            <div class="mx-2">#{p.paidValue}</div>
+                        </div>
+                    </ui:repeat>
                 </h:panelGroup>
             </div>
         </div>

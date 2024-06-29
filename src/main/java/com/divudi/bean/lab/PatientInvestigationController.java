@@ -219,7 +219,6 @@ public class PatientInvestigationController implements Serializable {
         }
 
         inputBillId = ptIx.getBillItem().getBill().getIdStr();
-        System.out.println("inputBillId = " + inputBillId);
         prepareSampleCollection();
         return "/lab/sample_barcode_printing";
     }
@@ -1278,8 +1277,8 @@ public class PatientInvestigationController implements Serializable {
                 sampleTubeLabels.add(stl);
             }
         } catch (Exception e) {
-            System.err.println("Error processing barcode JSON: " + e.getMessage());
             // Handle the exception appropriately
+            
         }
     }
 

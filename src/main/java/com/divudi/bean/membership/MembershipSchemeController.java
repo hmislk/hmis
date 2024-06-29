@@ -33,8 +33,8 @@ import javax.inject.Named;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- * Acting Consultant (Health Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -51,37 +51,36 @@ public class MembershipSchemeController implements Serializable {
     String selectText = "";
     Institution lastInstitution;
 
-    public MembershipScheme fetchPatientMembershipScheme(Patient patient, boolean hasExpiary) {
-
-        MembershipScheme membershipScheme = null;
-        if (hasExpiary) {
-            if (patient != null
-                    && patient.getPerson() != null) {
-
-                Date fromDate = patient.getFromDate();
-                Date toDate = patient.getToDate();
-
-                if (fromDate != null && toDate != null) {
-                    Calendar fCalendar = Calendar.getInstance();
-                    fCalendar.setTime(fromDate);
-                    Calendar tCalendar = Calendar.getInstance();
-                    tCalendar.setTime(toDate);
-                    Calendar nCalendar = Calendar.getInstance();
-
-                    if (((fromDate.before(new Date()) && toDate.after(new Date())))
-                            || (fCalendar.get(Calendar.DATE) == nCalendar.get(Calendar.DATE) || tCalendar.get(Calendar.DATE) == nCalendar.get(Calendar.DATE))) {
-                        membershipScheme = patient.getPerson().getMembershipScheme();
-                    }
-                }
-            }
-        } else {
-            if (patient !=null && patient.getPerson()!=null && patient.getPerson().getMembershipScheme() != null) {
-                membershipScheme = patient.getPerson().getMembershipScheme();
-            }
-        }
-        return membershipScheme;
-    }
-
+//    public MembershipScheme fetchPatientMembershipScheme(Patient patient, boolean hasExpiary) {
+//
+//        MembershipScheme membershipScheme = null;
+//        if (hasExpiary) {
+//            if (patient != null
+//                    && patient.getPerson() != null) {
+//
+//                Date fromDate = patient.getFromDate();
+//                Date toDate = patient.getToDate();
+//
+//                if (fromDate != null && toDate != null) {
+//                    Calendar fCalendar = Calendar.getInstance();
+//                    fCalendar.setTime(fromDate);
+//                    Calendar tCalendar = Calendar.getInstance();
+//                    tCalendar.setTime(toDate);
+//                    Calendar nCalendar = Calendar.getInstance();
+//
+//                    if (((fromDate.before(new Date()) && toDate.after(new Date())))
+//                            || (fCalendar.get(Calendar.DATE) == nCalendar.get(Calendar.DATE) || tCalendar.get(Calendar.DATE) == nCalendar.get(Calendar.DATE))) {
+//                        membershipScheme = patient.getPerson().getMembershipScheme();
+//                    }
+//                }
+//            }
+//        } else {
+//            if (patient !=null && patient.getPerson()!=null && patient.getPerson().getMembershipScheme() != null) {
+//                membershipScheme = patient.getPerson().getMembershipScheme();
+//            }
+//        }
+//        return membershipScheme;
+//    }
     public List<MembershipScheme> completeMembershipScheme(String qry) {
         List<MembershipScheme> c;
         HashMap hm = new HashMap();
@@ -104,6 +103,11 @@ public class MembershipSchemeController implements Serializable {
     public void prepareAdd() {
         current = new MembershipScheme();
         fillItems();
+    }
+
+    public String navigateToMembershipScheme() {
+        prepareAdd();
+        return "/admin/pricing/membership/membership_scheme?faces-redirect=true";
     }
 
     public void setSelectedItems(List<MembershipScheme> selectedItems) {
@@ -267,5 +271,4 @@ public class MembershipSchemeController implements Serializable {
     /**
      *
      */
-    
 }

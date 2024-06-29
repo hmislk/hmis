@@ -1,6 +1,8 @@
 package com.divudi.bean.common;
 
 // Modified by Dr M H B Ariyaratne with assistance from ChatGPT from OpenAI
+import com.divudi.bean.Ophthalmology.OphthalmologyRepairBillController;
+import com.divudi.bean.Ophthalmology.OphthalmologySaleController;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
@@ -55,6 +57,7 @@ import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.WebUserFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.entity.Department;
 import com.divudi.java.CommonFunctions;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -144,6 +147,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
     @Inject
     PatientEncounterController patientEncounterController;
     @Inject
+    OphthalmologySaleController ophthalmologySaleController;
+    @Inject
     private CommonController commonController;
     @Inject
     private SecurityController securityController;
@@ -157,6 +162,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
     CaptureComponentController captureComponentController;
     @Inject
     OpdBillController opdBillController;
+    @Inject
+    OphthalmologyRepairBillController ophthalmologyRepairBillController;
     @Inject
     BillPackageController billPackageController;
     @Inject
@@ -188,8 +195,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
     private Patient current;
     private Person currentPerson;
     Long patientId;
-    private Person familyMember;
-    private List<Person> familyMembers;
+    private FamilyMember familyMember;
+    private List<FamilyMember> familyMembers;
     Family currentFamily;
     private List<Family> families;
     FamilyMember currentFamilyMember;
@@ -242,6 +249,9 @@ public class PatientController implements Serializable, ControllerWithPatient {
     private List<PatientInvestigation> patientInvestigations;
     private List<Patient> quickSearchPatientList;
 
+    private Institution institution;
+    private Department department;
+
     /**
      *
      *
@@ -282,29 +292,19 @@ public class PatientController implements Serializable, ControllerWithPatient {
         if (current == null) {
             return;
         }
-        System.out.println("patient = " + current);
-//        List<BillTypeAtomic> billTypesAtomics=new ArrayList<>();
-//        billTypesAtomics.add(BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT);
-//        billTypesAtomics.add(BillTypeAtomic.CHANNEL_BOOKING_WITHOUT_PAYMENT);
-//        billTypesAtomics.add(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
-//        billTypesAtomics.add(BillTypeAtomic.CHANNEL_CANCELLATION_WITHOUT_PAYMENT);
-//        billTypesAtomics.add(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT);
-//        billTypesAtomics.add(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT_FOR_CREDIT_SETTLED_BOOKINGS);
-//        billTypesAtomics.add(BillTypeAtomic.CHANNEL_REFUND);
-//        billTypesAtomics.add(BillTypeAtomic.CHANNEL_REFUND_WITH_PAYMENT);
-//        billTypesAtomics.add(BillTypeAtomic.CHANNEL_REFUND_WITH_PAYMENT_FOR_CREDIT_SETTLED_BOOKINGS);
 
         List<BillType> billTypes = new ArrayList<>();
         billTypes.add(BillType.ChannelCash);
         billTypes.add(BillType.ChannelOnCall);
         billTypes.add(BillType.ChannelPaid);
         Map m = new HashMap<>();
-        String jpql = "Select b from Bill b where b.retired=:ret and b.billType in :btas and b.patient=:pt";
+        String jpql = "Select b from Bill b where b.retired=:ret and b.billType in :btas and b.patient=:pt and b.createdAt between :fd and :td ";
         m.put("ret", false);
         m.put("btas", billTypes);
         m.put("pt", current);
+        m.put("fd", fromDate);
+        m.put("td", toDate);
         patientsPastChannelBookings = billFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
-        System.out.println("PatientsPastChannelBookings = " + patientsPastChannelBookings.size());
     }
 
     public Map<String, Patient> CreatePatientMap(List<Patient> patients) {
@@ -784,6 +784,18 @@ public class PatientController implements Serializable, ControllerWithPatient {
         patientEncounterController.fillPatientInvestigations(current);
         return "/pharmacy/pharmacy_bill_retail_sale?faces-redirect=true;";
     }
+    
+    public String navigateToOphthalmologyBilling() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No patient selected");
+            return "";
+        }
+        ophthalmologySaleController.setPatient(current);
+        patientEncounterController.setPatient(current);
+        patientEncounterController.fillCurrentPatientLists(current);
+        patientEncounterController.fillPatientInvestigations(current);
+        return "/Ophthalmology/sale?faces-redirect=true;";
+    }
 
     public String navigateToOpdPatientProfile() {
         if (current == null) {
@@ -791,6 +803,14 @@ public class PatientController implements Serializable, ControllerWithPatient {
             return "";
         }
         return "/opd/patient?faces-redirect=true";
+    }
+
+    public String navigateToOphthalmologyProfile() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No patient selected");
+            return "";
+        }
+        return "/Ophthalmology/patient?faces-redirect=true";
     }
 
     public String navigateToAdmitFromPatientProfile() {
@@ -849,7 +869,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         opdPreBillController.setPatient(getCurrent());
         return "/opd/opd_pre_bill?faces-redirect=true;";
     }
-    
+
     public String navigateToBillingForCashierFromFamilyMembership() {
         if (current == null) {
             JsfUtil.addErrorMessage("No patient selected");
@@ -931,6 +951,14 @@ public class PatientController implements Serializable, ControllerWithPatient {
         return opdBillController.navigateToNewOpdBill(current);
     }
 
+    public String navigateToSaleFromOphthalmologyRepair() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No patient selected");
+            return "";
+        }
+        return ophthalmologyRepairBillController.navigateToNewOpdBill(current);
+    }
+
     public String navigateToOpdBillFromFamilyMembership() {
         if (current == null) {
             JsfUtil.addErrorMessage("No patient selected");
@@ -948,7 +976,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
             JsfUtil.addErrorMessage("No Discount Scheme");
             return "";
         }
-        
+
         return opdBillController.navigateToNewOpdBillWithPaymentScheme(current, current.getPerson().getMembershipScheme().getPaymentScheme());
     }
 
@@ -1161,8 +1189,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         return "";
     }
 
-    public String searchPatientForOpd() {
-
+    public Boolean searchPatientCommon() {
         boolean noSearchCriteriaWasFound = true;
 
         if (searchPhn != null && !searchPhn.trim().equals("")) {
@@ -1203,7 +1230,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
         if (noSearchCriteriaWasFound) {
             JsfUtil.addErrorMessage("No Search Criteria Found !");
-            return "";
+            return false;
         }
 
         if (searchBillId != null && !searchBillId.trim().equals("")) {
@@ -1221,13 +1248,37 @@ public class PatientController implements Serializable, ControllerWithPatient {
         } else {
             searchPatientByDetails();
         }
+
+        return true;
+    }
+
+    public String searchPatientForOpd() {
+        boolean noError = searchPatientCommon();
+        if (!noError) {
+            return "";
+        }
         if (searchedPatients == null || searchedPatients.isEmpty()) {
             JsfUtil.addErrorMessage("No Matches. Please use different criteria");
             return navigateToAddNewPatientForOpd(getSearchName(), getSearchNic(), getSearchPhone());
-
         } else if (searchedPatients.size() == 1) {
             setCurrent(searchedPatients.get(0));
             return navigateToOpdPatientProfile();
+        }
+        clearSearchDetails();
+        return "";
+    }
+
+    public String searchPatientForOphthalmology() {
+        boolean noError = searchPatientCommon();
+        if (!noError) {
+            return "";
+        }
+        if (searchedPatients == null || searchedPatients.isEmpty()) {
+            JsfUtil.addErrorMessage("No Matches. Please use different criteria");
+            return navigateToAddNewPatientForOphthalmology(getSearchName(), getSearchNic(), getSearchPhone());
+        } else if (searchedPatients.size() == 1) {
+            setCurrent(searchedPatients.get(0));
+            return navigateToOphthalmologyProfile();
         }
         clearSearchDetails();
         return "";
@@ -1488,7 +1539,6 @@ public class PatientController implements Serializable, ControllerWithPatient {
         quickSearchPatientList = getFacade().findByJpql(j, m);
         if (quickSearchPatientList == null) {
             JsfUtil.addErrorMessage("No Patient found !");
-            controller.setPatientDetailsEditable(true);
             controller.setPatient(null);
             controller.getPatient().setPhoneNumberStringTransient(quickSearchPhoneNumber);
             controller.getPatient().setMobileNumberStringTransient(quickSearchPhoneNumber);
@@ -1535,6 +1585,22 @@ public class PatientController implements Serializable, ControllerWithPatient {
         quickSearchPatientList = null;
     }
 
+    public void selectQuickSearchOneFromQuickSearchPatient(ControllerWithPatient controller, Patient pt) {
+        if (controller == null) {
+            JsfUtil.addErrorMessage("Programming Error. Controller is null.");
+            return;
+        }
+        if (pt == null) {
+            JsfUtil.addErrorMessage("Programming Error. Controller is null.");
+            return;
+        }
+        current = pt;
+        controller.setPatient(current);
+        admissionController.fillCurrentPatientAllergies(current);
+        controller.setPatientDetailsEditable(false);
+        quickSearchPatientList = null;
+    }
+
     public void listAllPatients() {
         String j = "select p from Patient p where p.retired=false order by p.person.name";
         items = getFacade().findByJpql(j);
@@ -1569,13 +1635,37 @@ public class PatientController implements Serializable, ControllerWithPatient {
         return "/membership/family_membership_new?faces-redirect=true";
     }
 
+    public String navigateToAddNewIndividualMembership() {
+        currentFamily = new Family();
+        if (institution == null) {
+            institution = sessionController.getInstitution();
+        }
+        if (department == null) {
+            department = sessionController.getDepartment();
+        }
+        currentFamily.setCreatedInstitution(institution);
+        currentFamily.setCreatedDepartment(department);
+        currentFamily.setMembershipScheme(membershipScheme);
+        return "/membership/individual_membership_new?faces-redirect=true";
+    }
+
     public String navigateToManageFamilyMembership() {
         return "/membership/family_membership_manage?faces-redirect=true";
+    }
+
+    public String navigateToManageIndividualMembership() {
+        return "/membership/patient?faces-redirect=true";
     }
 
     public String navigateToSearchFamilyMembership() {
         currentFamily = null;
         return "/membership/family_membership_search?faces-redirect=true";
+    }
+
+    public String navigateToSearchIndividualMembership() {
+        currentFamily = null;
+        currentFamilyMember = null;
+        return "/membership/individual_membership_search?faces-redirect=true";
     }
 
     public String searchFamily() {
@@ -1602,6 +1692,43 @@ public class PatientController implements Serializable, ControllerWithPatient {
             families = fs;
             searchText = "";
             return "/membership/search_family?faces-redirect=true;";
+        }
+    }
+
+    public String searchFamilyMember() {
+        familyMembers = null;
+        String j = "Select fm "
+                + " from FamilyMember fm"
+                + " where fm.retired=false "
+                + " and fm.family.retired=false "
+                + " and (fm.family.phoneNo=:pn or fm.family.membershipCardNo=:mcn or fm.patient.person.mobile=:mobile or fm.patient.person.phone=:phone) ";
+        Map m = new HashMap();
+        Long mcn;
+        try {
+            mcn = Long.parseLong(searchText);
+        } catch (Exception e) {
+            mcn = 0L;
+        }
+        m.put("pn", searchText);
+        m.put("mcn", mcn);
+        m.put("mobile", searchText);
+        m.put("phone", searchText);
+
+        List<FamilyMember> fs = familyMemberFacade.findByJpql(j, m);
+        if (fs == null) {
+            JsfUtil.addErrorMessage("No matches");
+            return "";
+        } else if (fs.size() == 1) {
+            currentFamilyMember = fs.get(0);
+            current = currentFamilyMember.getPatient();
+            searchText = "";
+            return navigateToManageIndividualMembership();
+        } else {
+            familyMembers = fs;
+            familyMember = null;
+            current = null;
+            searchText = "";
+            return "";
         }
     }
 
@@ -1643,6 +1770,77 @@ public class PatientController implements Serializable, ControllerWithPatient {
         return navigateToManageFamilyMembership();
     }
 
+    public String saveIndividualMembershipAndNavigateToManageIndividual() {
+        if (currentFamily == null) {
+            JsfUtil.addErrorMessage("No Membership is Selected to Save or Update");
+            return "";
+        }
+        if (current == null) {
+            JsfUtil.addErrorMessage("No Patient to Save or Update");
+            return "";
+        }
+        if (current.getPerson().getName() == null || current.getPerson().getName().isEmpty()) {
+            JsfUtil.addErrorMessage("No Patient to Save or Update");
+            return "";
+        }
+        // Check if both phone and mobile are either null or empty
+        if ((current.getPerson().getPhone() == null || current.getPerson().getPhone().isEmpty())
+                && (current.getPerson().getMobile() == null || current.getPerson().getMobile().isEmpty())) {
+            JsfUtil.addErrorMessage("No Phone Number");
+            return "";
+        }
+        // Prefer non-empty phone number, else take non-empty mobile number
+        if (current.getPerson().getPhone() != null && !current.getPerson().getPhone().isEmpty()) {
+            currentFamily.setPhoneNo(current.getPerson().getPhone());
+        } else if (current.getPerson().getMobile() != null && !current.getPerson().getMobile().isEmpty()) {
+            currentFamily.setPhoneNo(current.getPerson().getMobile());
+        }
+        saveIndividualMembership();
+        JsfUtil.addSuccessMessage("Individual Membership Added to Family");
+        return navigateToManageIndividualMembership();
+    }
+
+    public void saveIndividualMembership() {
+        if (currentFamily == null) {
+            JsfUtil.addErrorMessage("No Membership is Selected to Save or Update");
+            return;
+        }
+        if (current == null) {
+            JsfUtil.addErrorMessage("No Patient to Save or Update");
+            return;
+        }
+        if (current.getPerson().getName() == null || current.getPerson().getName().isEmpty()) {
+            JsfUtil.addErrorMessage("No Patient to Save or Update");
+            return;
+        }
+
+        if (currentFamily.getId() == null) {
+            currentFamily.setCreatedAt(new Date());
+            currentFamily.setCreater(getSessionController().getLoggedUser());
+            getFamilyFacade().create(currentFamily);
+            JsfUtil.addSuccessMessage("Family Added");
+        } else {
+            currentFamily.setEditedAt(new Date());
+            currentFamily.setEditer(getSessionController().getLoggedUser());
+            getFamilyFacade().edit(currentFamily);
+            JsfUtil.addSuccessMessage("Family Updated");
+        }
+        current.getPerson().setMembershipScheme(currentFamily.getMembershipScheme());
+        save(current);
+        FamilyMember tfm = new FamilyMember();
+        tfm.setPatient(current);
+        tfm.setFamily(currentFamily);
+        tfm.setCreatedAt(new Date());
+        tfm.setCreater(sessionController.getLoggedUser());
+        tfm.setRelationToChh(currentRelation);
+        getFamilyMemberFacade().create(tfm);
+        currentFamily.getFamilyMembers().add(tfm);
+        saveFamily();
+        department = currentFamily.getCreatedDepartment();
+        institution = currentFamily.getCreatedInstitution();
+        membershipScheme = currentFamily.getMembershipScheme();
+    }
+
     public String saveAndClearForNewFamilyMembership() {
         saveFamily();
         currentFamily = new Family();
@@ -1653,6 +1851,25 @@ public class PatientController implements Serializable, ControllerWithPatient {
         saveFamily();
         currentFamily = new Family();
         return navigateToAddNewFamilyMembership();
+    }
+
+    public String saveAndClearForNewIndividual() {
+        if (currentFamily == null) {
+            JsfUtil.addErrorMessage("No Membership is Selected to Save or Update");
+            return "";
+        }
+        if (current == null) {
+            JsfUtil.addErrorMessage("No Patient to Save or Update");
+            return "";
+        }
+        if (current.getPerson().getName() == null || current.getPerson().getName().isEmpty()) {
+            JsfUtil.addErrorMessage("No Patient to Save or Update");
+            return "";
+        }
+        saveIndividualMembership();
+        currentFamily = new Family();
+        current = new Patient();
+        return navigateToAddNewIndividualMembership();
     }
 
     public String toAddNewFamily() {
@@ -1822,36 +2039,39 @@ public class PatientController implements Serializable, ControllerWithPatient {
     public void createFamilymembers(ActionEvent event) {
         FacesMessage message = null;
         boolean loggedIn;
-
-        if (familyMember.getFullName() == null || familyMember.getFullName().equals("")) {
+        if (familyMember == null) {
             loggedIn = false;
             JsfUtil.addErrorMessage("Please enter full name");
             return;
 
         }
-        if (familyMember.getSex() == null) {
+        if (familyMember.getPatient() == null) {
+            loggedIn = false;
+            JsfUtil.addErrorMessage("Please enter full name");
+            return;
+
+        }
+        if (familyMember.getPatient().getPerson().getName() == null || familyMember.getPatient().getPerson().getName().equals("")) {
+            loggedIn = false;
+            JsfUtil.addErrorMessage("Please enter full name");
+            return;
+
+        }
+        if (familyMember.getPatient().getPerson().getSex() == null) {
             loggedIn = false;
             JsfUtil.addErrorMessage("Please enter gender");
             return;
 
         }
-        if (familyMember.getNic() == null || familyMember.getNic().equals("")) {
-            loggedIn = false;
-            JsfUtil.addErrorMessage("Please enter NIC no");
-            return;
-        }
-        if (familyMember.getDob() == null) {
+
+        if (familyMember.getPatient().getPerson().getDob() == null) {
             loggedIn = false;
             JsfUtil.addErrorMessage("Please enter Date Of Birth");
             return;
         }
-        familyMember.setSerealNumber(familyMembers.size());
         familyMembers.add(familyMember);
         loggedIn = true;
-
         familyMember = null;
-
-//        context.addCallbackParam("loggedIn", loggedIn);
         PrimeRequestContext.getCurrentInstance().getCallbackParams().put("loggedIn", loggedIn);
     }
 
@@ -1859,8 +2079,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
         familyMembers.remove(p.getSerealNumber());
         int i = 0;
-        for (Person familyMember1 : familyMembers) {
-            familyMember1.setSerealNumber(i);
+        for (FamilyMember familyMember1 : familyMembers) {
+            familyMember1.getPatient().getPerson().setSerealNumber(i);
             i++;
         }
     }
@@ -1967,6 +2187,12 @@ public class PatientController implements Serializable, ControllerWithPatient {
         return "/opd/patient_edit?faces-redirect=true;";
     }
 
+    public String navigateToAddNewPatientForOphthalmology() {
+        current = null;
+        getCurrent();
+        return "/Ophthalmology/patient_edit?faces-redirect=true;";
+    }
+
     public String navigateToAddNewPatientForOpd(String name, String nic, String phone) {
         current = null;
         getCurrent();
@@ -1975,6 +2201,16 @@ public class PatientController implements Serializable, ControllerWithPatient {
         getCurrent().getPerson().setPhone(phone);
         getCurrent().getPerson().setMobile(phone);
         return "/opd/patient_edit?faces-redirect=true;";
+    }
+
+    public String navigateToAddNewPatientForOphthalmology(String name, String nic, String phone) {
+        current = null;
+        getCurrent();
+        getCurrent().getPerson().setName(name);
+        getCurrent().getPerson().setNic(nic);
+        getCurrent().getPerson().setPhone(phone);
+        getCurrent().getPerson().setMobile(phone);
+        return "/Ophthalmology/patient_edit?faces-redirect=true;";
     }
 
     public String navigateToAddNewPatientForOpd(String phone) {
@@ -2884,25 +3120,27 @@ public class PatientController implements Serializable, ControllerWithPatient {
         this.membershipTypeListner = membershipTypeListner;
     }
 
-    public Person getFamilyMember() {
+    public FamilyMember getFamilyMember() {
         if (familyMember == null) {
-            familyMember = new Person();
+            familyMember = new FamilyMember();
+            Patient pt = new Patient();
+            familyMember.setPatient(pt);
         }
         return familyMember;
     }
 
-    public void setFamilyMember(Person familyMember) {
+    public void setFamilyMember(FamilyMember familyMember) {
         this.familyMember = familyMember;
     }
 
-    public List<Person> getFamilyMembers() {
+    public List<FamilyMember> getFamilyMembers() {
         if (familyMembers == null) {
             familyMembers = new ArrayList<>();
         }
         return familyMembers;
     }
 
-    public void setFamilyMembers(List<Person> familyMembers) {
+    public void setFamilyMembers(List<FamilyMember> familyMembers) {
         this.familyMembers = familyMembers;
     }
 
@@ -3333,7 +3571,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
     @Override
     public Patient getPatient() {
-        if(current==null){
+        if (current == null) {
             current = new Patient();
         }
         return current;
@@ -3357,6 +3595,22 @@ public class PatientController implements Serializable, ControllerWithPatient {
     @Override
     public void toggalePatientEditable() {
         patientDetailsEditable = !patientDetailsEditable;
+    }
+
+    public Institution getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
+    }
+
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
     }
 
     /**

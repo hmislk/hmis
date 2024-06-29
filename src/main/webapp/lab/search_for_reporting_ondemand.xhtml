@@ -296,7 +296,7 @@
                                         </p:tooltip>
                                     </p:column>
 
-                                    <p:column headerText="Investigation"  styleClass="alignTop" >
+                                    <p:column headerText="Investigation"  styleClass="alignTop" style="width: 32em;">
                                         <h:outputLabel value="#{pi.billItem.item.name}" >
                                         </h:outputLabel>
                                     </p:column>
@@ -327,7 +327,7 @@
 
                                         <p:commandLink id="btnNewReport" ajax="false" 
                                                        disabled="#{!pi.received}" 
-                                                       action="/lab/patient_report"  
+                                                       action="/lab/patient_report?faces-redirect=true"  
                                                        actionListener="#{patientReportController.createNewReport(pi)}" >
                                             <f:setPropertyActionListener value="#{pi}" target="#{patientReportController.currentPtIx}"></f:setPropertyActionListener>
                                             <p:graphicImage library="image" styleClass="standedicon" name="data_entry.png" ></p:graphicImage>
@@ -408,7 +408,11 @@
                                                     <p:graphicImage library="image" styleClass="standedicon" name="data_entry.png" ></p:graphicImage>
                                                 </p:commandLink>
 
-                                                <p:commandLink id="cmdOldReportPrint" ajax="false" action="/lab/patient_report_print">
+                                                <p:commandLink id="cmdOldReportPrint1" ajax="false" action="/lab/patient_report_print" disabled="#{!dpr.approved}" rendered="#{!sessionController.departmentPreference.partialPaymentOfOpdBillsAllowed}">
+                                                    <p:graphicImage library="image" name="print.jpg" styleClass="standedicon" ></p:graphicImage>
+                                                    <f:setPropertyActionListener value="#{dpr}" target="#{patientReportController.currentPatientReport}"></f:setPropertyActionListener>
+                                                </p:commandLink>
+                                                <p:commandLink id="cmdOldReportPrint2" ajax="false" action="/lab/patient_report_print" disabled="#{!dpr.approved or dpr.patientInvestigation.billItem.bill.backwardReferenceBill.balance ne 0}" rendered="#{sessionController.departmentPreference.partialPaymentOfOpdBillsAllowed}">
                                                     <p:graphicImage library="image" name="print.jpg" styleClass="standedicon" ></p:graphicImage>
                                                     <f:setPropertyActionListener value="#{dpr}" target="#{patientReportController.currentPatientReport}"></f:setPropertyActionListener>
                                                 </p:commandLink>
@@ -435,7 +439,7 @@
                                                     <h:outputLabel value="Printed" styleClass="#{dpr.approved ? 'greentext':'yellowtext'}" >
                                                     </h:outputLabel>
                                                 </p:tooltip>
-                                                <p:tooltip for="cmdOldReportPrint" >
+                                                <p:tooltip for="cmdOldReportPrint1 cmdOldReportPrint2" >
                                                     <h:outputLabel value="To Print" styleClass="#{dpr.approved ? 'greentext':'yellowtext'}" >
                                                     </h:outputLabel>
                                                 </p:tooltip>
@@ -461,7 +465,9 @@
                                                         <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
                                                     </h:outputLabel>
                                                 </p:tooltip>
+                                                
                                             </div>
+                                           
                                         </ui:repeat>
 
 

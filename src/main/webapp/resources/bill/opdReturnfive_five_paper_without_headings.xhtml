@@ -28,14 +28,14 @@
                     <div class="d-flex  align-items-center justify-content-center">
                         <div class="d-flex">
                             <h:outputLabel value="REFUND RECEIPT " />
-                            <h:outputText value="&nbsp;&nbsp;-&nbsp;&nbsp;#{cc.attrs.bill.department.name}" />
+                            <h:outputText rendered="#{configOptionApplicationController.getBooleanValueByKey('Show Logged Department Name on the Refund Bill')}" value="&nbsp;&nbsp;-&nbsp;&nbsp;#{cc.attrs.bill.department.name}" />
                         </div>
                     </div>
-                    <div class="d-flex  align-items-center justify-content-center">
-                        <div style="width: 50px;height: 50px;border: 1px solid black;border-radius: 50%" class="d-flex justify-content-center align-items-center">
-                            <h4 class="mx-5">#{cc.attrs.bill.sessionId}</h4> 
-                        </div>
-                    </div>
+                    <!--                    <div class="d-flex  align-items-center justify-content-center">
+                                            <div style="width: 50px;height: 50px;border: 1px solid black;border-radius: 50%" class="d-flex justify-content-center align-items-center">
+                                                <h4 class="mx-5">#{cc.attrs.bill.sessionId}</h4> 
+                                            </div>
+                                        </div>-->
 
                 </div>
                 <!--                <div class="col-7">
@@ -78,7 +78,7 @@
                         </td>
 
                         <td>
-                            <h:outputLabel value="#{cc.attrs.bill.createdAt}" class="billDetailsFiveFive">
+                            <h:outputLabel value="#{sessionController.currentDate}" class="billDetailsFiveFive">
                                 <f:convertDateTime pattern="dd/MMM/yyyy" ></f:convertDateTime>
                             </h:outputLabel>
                         </td>
@@ -106,7 +106,7 @@
                         </td>
 
                         <td>
-                            <h:outputLabel value="#{cc.attrs.bill.createdAt}" class="billDetailsFiveFive">
+                            <h:outputLabel value="#{sessionController.currentDate}" class="billDetailsFiveFive">
                                 <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm a"  ></f:convertDateTime>
                             </h:outputLabel>
                         </td>
@@ -197,7 +197,7 @@
                         <td>
                             <h:outputLabel value=":"/>
                         </td>
-                        <td><h:outputLabel value="#{cc.attrs.bill.creater.webUserPerson.name}"/></td>
+                        <td><h:outputLabel value="#{sessionController.loggedUser.webUserPerson.name}"/></td>
                     </tr>
 
 
@@ -218,7 +218,7 @@
             <h:panelGroup rendered="#{cc.attrs.bill.fromStaff ne null}" style="font-weight: bold;text-align: left;font-size: 14pt" >
                 <div >
                     <div style="width: 100%;text-align: center;font-size: 15px;font-weight: bolder">
-                        <h:outputLabel value="Doctor : " ></h:outputLabel>
+<!--                        <h:outputLabel value="Doctor : " ></h:outputLabel>-->
                         <h:outputLabel value="#{cc.attrs.bill.fromStaff.person.nameWithTitle}" ></h:outputLabel>
                     </div>
                 </div>
@@ -410,6 +410,15 @@
                         value="Paid by : Credit Card:#{ps.paidValue} (Card Last 4 Digits:#{ps.creditCardRefNo})"/>
                 </h:panelGroup>
             </ui:repeat>-->
+
+            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Require customer signature for opd bill refund')}">
+                <div class="d-flex align-items-center justify-content-end mt-5 mx-2">
+                    <div class="text-center">
+                        <p>..........................</p>
+                        <p>Customer Signature</p>
+                    </div>
+                </div>
+            </h:panelGroup>
 
 
             <div class="footer" style="text-align: center;">

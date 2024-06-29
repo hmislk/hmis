@@ -6,6 +6,8 @@
 package com.divudi.bean.common;
 
 import com.divudi.entity.BillSession;
+import com.divudi.entity.Patient;
+import com.divudi.entity.PaymentScheme;
 import com.divudi.entity.channel.SessionInstance;
 import java.io.Serializable;
 import java.util.Date;
@@ -26,12 +28,18 @@ public class ViewScopeDataTransferController  implements Serializable {
     private Date toDate;
     private Boolean needToFillBillSessions;
     private Boolean needToFillBillSessionDetails;
+    private Boolean needToFillSessionInstances;
+    private Boolean needToFillSessionInstanceDetails;
     private Boolean needToCreateOpdBillForChannellingBillSession;
+    private Boolean needToFillMembershipDetails;
+    private Boolean needToPrepareForNewBooking;
     
     
     private String sessionInstanceFilter;
     private BillSession selectedBillSession;
     private SessionInstance selectedSessionInstance;
+    private Patient patient;
+    private PaymentScheme paymentScheme;
        
         
 
@@ -140,6 +148,54 @@ public class ViewScopeDataTransferController  implements Serializable {
 
     public void setNeedToCreateOpdBillForChannellingBillSession(Boolean needToCreateOpdBillForChannellingBillSession) {
         this.needToCreateOpdBillForChannellingBillSession = needToCreateOpdBillForChannellingBillSession;
+    }
+
+    public Boolean getNeedToFillSessionInstances() {
+        return needToFillSessionInstances;
+    }
+
+    public void setNeedToFillSessionInstances(Boolean needToFillSessionInstances) {
+        this.needToFillSessionInstances = needToFillSessionInstances;
+    }
+
+    public Boolean getNeedToFillSessionInstanceDetails() {
+        return needToFillSessionInstanceDetails;
+    }
+
+    public void setNeedToFillSessionInstanceDetails(Boolean needToFillSessionInstanceDetails) {
+        this.needToFillSessionInstanceDetails = needToFillSessionInstanceDetails;
+    }
+
+    public Boolean getNeedToFillMembershipDetails() {
+        return needToFillMembershipDetails;
+    }
+
+    public void setNeedToFillMembershipDetails(Boolean needToFillMembershipDetails) {
+        this.needToFillMembershipDetails = needToFillMembershipDetails;
+    }
+
+    public Boolean getNeedToPrepareForNewBooking() {
+        return needToPrepareForNewBooking;
+    }
+
+    public void setNeedToPrepareForNewBooking(Boolean needToPrepareForNewBooking) {
+        this.needToPrepareForNewBooking = needToPrepareForNewBooking;
+    }
+
+    public Patient getPatient() {
+        return patient;
+    }
+
+    public void setPatient(Patient patient) {
+        this.patient = patient;
+    }
+
+    public PaymentScheme getPaymentScheme() {
+        return paymentScheme;
+    }
+
+    public void setPaymentScheme(PaymentScheme paymentScheme) {
+        this.paymentScheme = paymentScheme;
     }
     
     

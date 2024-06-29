@@ -13,56 +13,59 @@
     <!-- IMPLEMENTATION -->
     <cc:implementation class="w-100">
         <div class="d-flex justify-content-center align-items-center w-100" style="background-color: rgba(211, 211, 211,0.7); height: 100vh;">
-
             <h:form id="formDept" class="my-5 p-5">
-
-
                 <div class="card shadow-lg p-5 w-100" style="background-color: rgba(255, 255, 255, 0.9);">
-
-                    <div class="text-black text-center p-3 w-100" style="font-size: 16pt;font-weight: bolder" >
-                        <div class=" w-100 d-flex justify-content-center align-items-center my-2 p-1">
-                            <img src="https://cdn-icons-png.flaticon.com/512/1642/1642357.png" alt="Department Icon" style="width: 100px;"/>
+                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Display the payment notice')}" >
+                        <iframe src="#{configOptionApplicationController.getLongTextValueByKey('Payment Notice URL')}" 
+                                width="600" height="400" frameborder="0"></iframe>
+                    </h:panelGroup>
+                    <h:panelGroup rendered="#{not configOptionApplicationController.getBooleanValueByKey('Execute the payment notice')}" >
+                        <div class="text-black text-center p-3 w-100" style="font-size: 16pt;font-weight: bolder" >
+                            <div class=" w-100 d-flex justify-content-center align-items-center my-2 p-1">
+                                <img src="https://cdn-icons-png.flaticon.com/512/1642/1642357.png" alt="Department Icon" style="width: 100px;"/>
+                            </div>
+                            <p>Select Department</p>
                         </div>
-                        <p>Select Department</p>
-                    </div>
-                    <div>
-                        <p:selectOneMenu
-                            value="#{sessionController.department}" 
-                            filter="true" 
-                            filterPlaceholder="Department" 
-                            filterMatchMode="contains" 
-                            required="true" 
-                            var="d" 
-                            class="w-100 form-select form-select-lg p-1"
-                            requiredMessage="Please select the Department you have to log.">
-                            <f:selectItems value="#{sessionController.departments}"
-                                           var="dept"
-                                           itemLabel="#{dept.name}"
-                                           itemValue="#{dept}"
-                                           >
-                            </f:selectItems>
-                            <p:column>
-                                <f:facet name="header">
-                                    <h:outputText value="Department"></h:outputText>
-                                </f:facet>
-                                <h:outputText value="#{d.name}"></h:outputText>
-                            </p:column>
-                            <p:column>
-                                <f:facet name="header">
-                                    <h:outputText value="Institution"></h:outputText>
-                                </f:facet>
-                                <h:outputText value="#{d.institution.name}"></h:outputText>
-                            </p:column>
-                        </p:selectOneMenu>
-                    </div>
+                        <div>
+                            <p:selectOneMenu
+                                value="#{sessionController.department}" 
+                                filter="true" 
+                                filterPlaceholder="Department" 
+                                filterMatchMode="contains" 
+                                required="true" 
+                                var="d" 
+                                class="w-100 form-select form-select-lg p-1"
+                                requiredMessage="Please select the Department you have to log.">
+                                <f:selectItems value="#{sessionController.departments}"
+                                               var="dept"
+                                               itemLabel="#{dept.name}"
+                                               itemValue="#{dept}"
+                                               >
+                                </f:selectItems>
+                                <p:column>
+                                    <f:facet name="header">
+                                        <h:outputText value="Department"></h:outputText>
+                                    </f:facet>
+                                    <h:outputText value="#{d.name}"></h:outputText>
+                                </p:column>
+                                <p:column>
+                                    <f:facet name="header">
+                                        <h:outputText value="Institution"></h:outputText>
+                                    </f:facet>
+                                    <h:outputText value="#{d.institution.name}"></h:outputText>
+                                </p:column>
+                            </p:selectOneMenu>
+                        </div>
+                        <div class="mt-4">
+                            <p:commandButton ajax="false"
+                                             value="Select"
+                                             id="btnSelect"
+                                             action="#{sessionController.selectDepartment()}" class="w-100 p-1"/>
+                            <p:defaultCommand target="btnSelect"> </p:defaultCommand>
+                        </div>
 
-                    <div class="mt-4">
-                        <p:commandButton ajax="false"
-                                         value="Select"
-                                         id="btnSelect"
-                                         action="#{sessionController.selectDepartment()}" class="w-100 p-1"/>
-                        <p:defaultCommand target="btnSelect"> </p:defaultCommand>
-                    </div>
+                    </h:panelGroup>
+
                 </div>
 
 

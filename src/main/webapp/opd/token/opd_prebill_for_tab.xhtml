@@ -5,10 +5,7 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:phi="http://xmlns.jcp.org/jsf/composite/pharmacy"
-      xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill"
-      xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
-      xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
+      xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill">
 
     <h:body>
         <ui:composition template="/resources/template/template_without_menu.xhtml">
@@ -26,7 +23,7 @@
                 </style>
 
                 <h:form>
-                    <f:event listener="#{opdTabPreBillController.reloadCurrentlyWorkingStaff()}" type="preRenderView" />
+                   
                     <p:panel id='pIxAdd' >
                         <f:facet name="header" >
                             <div class="d-flex align-items-center justify-content-between">
@@ -132,7 +129,7 @@
                                             process="acIx btnAddIx txtQty panelBillItems"
                                             update="focusIx :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}">
                                         </p:commandButton>
-                                        
+
                                     </div>
 
                                     <div>
@@ -181,52 +178,6 @@
                                 <div>
                                     <h:panelGroup id="panelBillItems" >
                                         <p:tabView id="tblBillItem" >
-                                            <p:tab id="tabBillItems" title="Bill Items" >
-                                                <p:dataTable id="tblRequests" style="font-size: 10pt" rowIndexVar="rowIndex" value="#{opdTabPreBillController.lstBillEntries}" var="bi" >
-                                                    <p:column>
-                                                        <f:facet name="header">No</f:facet>
-                                                            #{rowIndex+1}
-                                                    </p:column>
-                                                    <p:column>
-                                                        <f:facet name="header">Item</f:facet>
-                                                            #{bi.billItem.item.name}
-                                                    </p:column>
-                                                    <p:column>
-                                                        <f:facet name="header">Fee</f:facet>
-                                                        <h:outputLabel value="#{bi.billItem.netValue}">
-                                                            <f:convertNumber pattern="#,##0.00" />
-                                                        </h:outputLabel>
-                                                    </p:column>
-                                                    <p:column>
-                                                        <f:facet name="header">Department</f:facet>
-                                                            #{bi.billItem.item.department.name}
-                                                    </p:column>
-
-                                                    <p:column>
-                                                        <p:commandButton 
-                                                            id="btnRemove"
-                                                            value="X"
-                                                            ajax="false"
-                                                            action="#{opdTabPreBillController.removeBillItem(bi)}">
-
-                                                        </p:commandButton>
-                                                    </p:column>
-                                                </p:dataTable>
-                                            </p:tab>
-                                            <p:tab id="tabBillIx" title="Tests" >
-                                                <p:dataTable  style="font-size: 10pt" rowIndexVar="rowIndex" value="#{opdTabPreBillController.lstBillComponents}" var="bix" >
-                                                    <p:column>
-                                                        <f:facet name="header">No</f:facet>
-                                                            #{rowIndex+1}
-                                                    </p:column>
-                                                    <p:column>
-                                                        <f:facet name="header">Name</f:facet>
-                                                            #{bix.item.name}
-                                                    </p:column>
-
-                                                </p:dataTable>
-                                            </p:tab>
-
                                             <p:tab id="tabBillFee" title="Fees" >
                                                 <p:dataTable  style="font-size: 10pt" rowIndexVar="rowIndex" value="#{opdTabPreBillController.lstBillFees}" var="bif" >
                                                     <p:column>
@@ -271,6 +222,54 @@
                                                     </p:column>
                                                 </p:dataTable>
                                             </p:tab>
+
+                                            <p:tab id="tabBillItems" title="Bill Items" >
+                                                <p:dataTable id="tblRequests" style="font-size: 10pt" rowIndexVar="rowIndex" value="#{opdTabPreBillController.lstBillEntries}" var="bi" >
+                                                    <p:column>
+                                                        <f:facet name="header">No</f:facet>
+                                                            #{rowIndex+1}
+                                                    </p:column>
+                                                    <p:column>
+                                                        <f:facet name="header">Item</f:facet>
+                                                            #{bi.billItem.item.name}
+                                                    </p:column>
+                                                    <p:column>
+                                                        <f:facet name="header">Fee</f:facet>
+                                                        <h:outputLabel value="#{bi.billItem.netValue}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputLabel>
+                                                    </p:column>
+                                                    <p:column>
+                                                        <f:facet name="header">Department</f:facet>
+                                                            #{bi.billItem.item.department.name}
+                                                    </p:column>
+
+                                                    <p:column>
+                                                        <p:commandButton 
+                                                            id="btnRemove"
+                                                            value="X"
+                                                            ajax="false"
+                                                            action="#{opdTabPreBillController.removeBillItem}">
+                                                            <f:setPropertyActionListener target="#{opdTabPreBillController.index}" value="#{rowIndex}"/>
+                                                        </p:commandButton>
+                                                    </p:column>
+                                                </p:dataTable>
+                                            </p:tab>
+                                            <p:tab id="tabBillIx" title="Tests" >
+                                                <p:dataTable  style="font-size: 10pt" rowIndexVar="rowIndex" value="#{opdTabPreBillController.lstBillComponents}" var="bix" >
+                                                    <p:column>
+                                                        <f:facet name="header">No</f:facet>
+                                                            #{rowIndex+1}
+                                                    </p:column>
+                                                    <p:column>
+                                                        <f:facet name="header">Name</f:facet>
+                                                            #{bix.item.name}
+                                                    </p:column>
+
+                                                </p:dataTable>
+                                            </p:tab>
+
+
                                         </p:tabView>
                                     </h:panelGroup>
                                 </div>

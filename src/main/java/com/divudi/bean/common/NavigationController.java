@@ -104,9 +104,7 @@ public class NavigationController implements Serializable {
         return "/admin/staff/admin_staff_signature?faces-redirect=true";
     }
 
-    public String navigateToMembershipScheme() {
-        return "/admin/pricing/membership_scheme?faces-redirect=true";
-    }
+    
 
     public String navigateToMembershipPaymentMethodAllowed() {
         return "/admin/pricing/membership_scheme_payment_method_allowed?faces-redirect=true";
@@ -132,9 +130,6 @@ public class NavigationController implements Serializable {
         return "/admin/pricing/membership_scheme_discount_channelling_by_department?faces-redirect=true";
     }
 
-    public String navigateToPaymentScheme() {
-        return "/admin/pricing/payment_scheme?faces-redirect=true";
-    }
 
     public String navigateToPaymentSchemeDiscountChannel() {
         return "/admin/pricing/payment_scheme_discount_channel?faces-redirect=true";

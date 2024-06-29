@@ -23,6 +23,7 @@ import com.divudi.facade.ItemFacade;
 import com.divudi.facade.ItemsDistributorsFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.BillTypeAtomic;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -66,6 +67,7 @@ public class StorePurchaseOrderRequestController implements Serializable {
     //private List<PharmaceuticalBillItem> pharmaceuticalBillItems;   
     @Inject
     StoreCalculation storeCalculation;
+    private boolean printPreview;
 
     public void removeSelected() {
         //  //System.err.println("1");
@@ -92,6 +94,7 @@ public class StorePurchaseOrderRequestController implements Serializable {
         currentBill = null;
         currentBillItem = null;
         billItems = null;
+        printPreview = false;
     }
 
     public void addItem() {
@@ -173,7 +176,7 @@ public class StorePurchaseOrderRequestController implements Serializable {
 
         getCurrentBill().setFromDepartment(getSessionController().getLoggedUser().getDepartment());
         getCurrentBill().setFromInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
-
+        getCurrentBill().setBillTypeAtomic(BillTypeAtomic.STORE_ORDER_PRE);
         if (getCurrentBill().getId() == null) {
             getBillFacade().create(getCurrentBill());
         } else {
@@ -214,25 +217,20 @@ public class StorePurchaseOrderRequestController implements Serializable {
             b.setCreatedAt(new Date());
             b.setCreater(getSessionController().getLoggedUser());
 
-            PharmaceuticalBillItem tmpPh = b.getPharmaceuticalBillItem();
-            b.setPharmaceuticalBillItem(null);
+//            PharmaceuticalBillItem tmpPh = b.getPharmaceuticalBillItem();
+//            b.setPharmaceuticalBillItem(null);
 
             if (b.getId() == null) {
                 getBillItemFacade().create(b);
             } else {
-                billItemFacade.edit(b);
+                getBillItemFacade().edit(b);
             }
 
-            tmpPh.setBillItem(b);
-
-            if (tmpPh.getId() == null) {
-                getPharmaceuticalBillItemFacade().create(tmpPh);
+            if (b.getPharmaceuticalBillItem().getId() == null) {
+                getPharmaceuticalBillItemFacade().create(b.getPharmaceuticalBillItem());
             } else {
-                pharmaceuticalBillItemFacade.edit(tmpPh);
+                getPharmaceuticalBillItemFacade().edit(b.getPharmaceuticalBillItem());
             }
-
-            b.setPharmaceuticalBillItem(tmpPh);
-            getPharmaceuticalBillItemFacade().edit(tmpPh);
         }
     }
 
@@ -278,7 +276,7 @@ public class StorePurchaseOrderRequestController implements Serializable {
 
         JsfUtil.addSuccessMessage("Request Succesfully Created");
 
-        recreate();
+        printPreview = true;
         
         
 
@@ -448,6 +446,14 @@ public class StorePurchaseOrderRequestController implements Serializable {
 
     public void setCommonController(CommonController commonController) {
         this.commonController = commonController;
+    }
+
+    public boolean isPrintPreview() {
+        return printPreview;
+    }
+
+    public void setPrintPreview(boolean printPreview) {
+        this.printPreview = printPreview;
     }
 
 }

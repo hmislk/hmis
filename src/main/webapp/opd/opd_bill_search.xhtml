@@ -214,7 +214,7 @@
                                             id="billNo" 
                                             ajax="false" 
                                             value="#{bill.deptId}" 
-                                            action="#{billSearch.navigateToViewOpdBill()}">
+                                            action="#{billSearch.navigateToViewSingleOpdBill()}">
                                             <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
                                         </p:commandLink>
                                     </p:column>
@@ -230,6 +230,10 @@
                                         <p:outputLabel id="billTime2" value="#{bill.createdAt}" rendered="#{fn:substring(searchController.fromDate, 0, 10) ne fn:substring(searchController.toDate, 0, 10)}">
                                             <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" ></f:convertDateTime>
                                         </p:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Billed By" sortBy="#{bill.fromDepartment.name}" 
+                                              filterBy="#{bill.fromDepartment.name}" filterMatchMode="contains" >                                
+                                        <h:outputLabel id="byDep" value="#{bill.fromDepartment.name}" />
                                     </p:column>
                                     <p:column headerText="Billed For" sortBy="#{bill.toDepartment.name}" 
                                               filterBy="#{bill.toDepartment.name}" filterMatchMode="contains" >                                

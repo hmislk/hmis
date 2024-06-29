@@ -125,6 +125,11 @@
                                         value="Item &amp; Fee Upload for Collecting Centres" 
                                         action="#{dataUploadController.navigateToUploadCollectingCentreFees()}" />
 
+                                    <p:commandButton   
+                                        class="w-100"  
+                                        ajax="false" 
+                                        value="Investigation &amp; Fee Upload for OutSource Department" 
+                                        action="#{dataUploadController.navigateToUploadOutSourceInvestigationFees()}" />
 
                                     <p:commandButton   
                                         class="w-100"  
@@ -146,6 +151,12 @@
                                     <p:commandButton   class="w-100"  ajax="false" value="Bulk Delete of Investigations" action="#{investigationCategoryController.navigateToInvestigationListToRemove()}" />
                                     <p:commandButton   class="w-100"  ajax="false" value="Bulk Un-Delete of Investigations" action="#{investigationCategoryController.navigateToInvestigationBulkUnDelete()}" />
 
+                                    <p:commandButton   
+                                        class="w-100" 
+                                        ajax="false"
+                                        value="Edit Features of Multiple Item" 
+                                        action="#{itemController.navigateToEditFeaturesOfMultipleItems()}" />
+                                    
 
                                 </div>
                             </p:tab>

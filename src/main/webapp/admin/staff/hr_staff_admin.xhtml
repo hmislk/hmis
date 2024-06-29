@@ -122,7 +122,7 @@
                                                             <f:selectItems value="#{enumController.gender}"/>
                                                         </p:selectOneMenu>
 
-                                                        <p:outputLabel  value="Finger Print Id" ></p:outputLabel>
+                                                        <p:outputLabel  value="Finger Print ID" ></p:outputLabel>
                                                         <p:inputText class="w-100 mx-2" autocomplete="off"  value="#{staffController.current.acNo}"  />
 
                                                         <p:outputLabel  value="Code" ></p:outputLabel>
@@ -260,12 +260,38 @@
                                                         </p:inputText>
 
 
-                                                        <p:outputLabel value="Institution" ></p:outputLabel>                                     
-                                                        <p:selectOneMenu class="mx-2" style="width: 300px" id="cmbIns" value="#{staffController.current.institution}" >
-                                                            <f:selectItem itemLabel="Please select a institution"/>
-                                                            <f:selectItems value="#{institutionController.companies}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
-                                                            <f:ajax execute="cmbIns" render="cmbDep" event="change"/>  
-                                                        </p:selectOneMenu>                                          
+                                                        <h:outputText value="Institution" />
+                                                        <p:autoComplete 
+                                                            forceSelection="true"
+                                                            value="#{staffController.current.institution}"
+                                                            completeMethod="#{institutionController.completeIns}" id="ins2"
+                                                            var="ix" 
+                                                            itemLabel="#{ix.name}" 
+                                                            itemValue="#{ix}" 
+                                                            class="w-100" 
+                                                            inputStyleClass="w-100"
+                                                            style="width: 500px;">
+                                                            <p:ajax event="itemSelect" process="@this" update="somDept cmbDep" />
+                                                        </p:autoComplete>
+
+                                                        <h:outputText value="Department" />
+                                                        <p:selectOneMenu 
+                                                            id="somDept" 
+                                                            filter="true"
+                                                            filterMatchMode="contains"
+                                                            value="#{staffController.current.department}"
+                                                            class="w-100">
+                                                            <f:selectItem  itemLabel="Please select a Department"/>
+                                                            <f:selectItems 
+                                                                value="#{departmentController.getInsDepartments(staffController.current.institution)}" 
+                                                                var="d" 
+                                                                itemLabel="#{d.name}" itemValue="#{d}" 
+                                                                />
+                                                        </p:selectOneMenu>
+
+
+
+
                                                         <p:outputLabel value="Working Department" ></p:outputLabel>                                     
                                                         <p:selectOneMenu class=" mx-2"  style="width: 300px" id="cmbDep" value="#{staffController.current.workingDepartment}">
                                                             <f:selectItem itemLabel="Please select a Department"/>
@@ -357,8 +383,8 @@
                                             <p:commandButton class="w-25 ui-button-warning"
                                                              id="btnSave"
                                                              value="Save" 
-                                                             process="btnSave gpDetail"
-                                                             update="lstSelect gpDetail panelPrint msg"
+                                                             process="btnSave gpDetail @this"
+                                                             update="lstSelect gpDetail panelPrint msg @all" 
                                                              action="#{staffController.saveSelected()}"  >
                                             </p:commandButton>
                                             <p:commandButton ajax="false" class="ui-button-info w-25 mx-1" icon="fas fa-print" value="Print" >

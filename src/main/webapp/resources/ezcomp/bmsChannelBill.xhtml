@@ -137,14 +137,14 @@
                     </td>
                     <td>
 
-                        <h:outputLabel value="#{cc.attrs.bill.singleBillSession.serviceSession.roomNo}" style="font-weight: bold;">
+                        <h:outputLabel value="#{cc.attrs.bill.singleBillSession.sessionInstance.roomNo}" style="font-weight: bold;">
                         </h:outputLabel>
 
                     </td>
 
                 </tr>
 
-                <ui:repeat value="#{cc.attrs.bill.billFees}" var="cbif" >
+                <ui:repeat value="#{cc.attrs.bill.billFeesWIthoutZeroValue}" var="cbif" >
                     <tr>
                         <td>
                             <h:outputLabel value="#{cbif.fee.name}" rendered="#{cbif.feeGrossValue ne 0.0}"></h:outputLabel>

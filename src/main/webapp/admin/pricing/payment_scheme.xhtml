@@ -12,80 +12,103 @@
 
         <h:panelGroup >
             <h:form  >
-                <p:growl />
-                <p:focus id="selectFocus" context="gpSelect" />
+                <p:growl id="growl"/>
+                <p:focus id="selectFocus" context="lstSelect" />
                 <p:focus id="detailFocus" context="gpDetail" />
 
 
 
-                <p:panel header="Manage Discount Scheme" style="height: 1000px" >
-                    <h:panelGrid id ="gpVeda" columns="10" styleClass="alignTop">
-                        <div class="row"  style="height: 200px">
-                            <div class="col-md-7">
-                                <h:panelGrid id="gpSelect" columns="1"  >
-                            <p:panel style="width: 400px; height: 300px">
-                                <h:panelGrid id="gpSelectText" >
-                                    <p:selectOneListbox  id="lstSelect"   class="w-100" scrollHeight="500" value="#{paymentSchemeController.current}" style="min-width: 350px">
-                                        <f:selectItems  value="#{paymentSchemeController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
-                                        <f:ajax render="gpDetail" execute="lstSelect" >
-                                        </f:ajax>
-                                    </p:selectOneListbox>
-                                </h:panelGrid>
-                                
-                                <h:panelGrid id="gpSelectButtons" columns="3"  >
+                <p:panel header="Manage Discount Scheme"  >
+                    <div class="d-flex gap-2 mb-2">
+                        <p:commandButton 
+                            id="btnAdd"
+                            value="Add"
+                            icon="pi pi-plus"  
+                            class="ui-button-warning "
+                            action="#{paymentSchemeController.prepareAdd()}" 
+                            process="btnAdd"
+                            update="gpDetail"/>                                      
 
-                                    <p:commandButton ajax="false" id="btnAdd" value="Add" action="#{paymentSchemeController.prepareAdd()}" styleClass="buttons" />                                      
+                        <p:commandButton 
+                            ajax="false" 
+                            id="btnDelete" 
+                            icon="pi pi-trash" 
+                            class="ui-button-danger "
+                            onclick="if (!confirm('Are you sure you want to delete this record?'))
+                                        return false;" action="#{paymentSchemeController.delete()}"  
+                            value="Delete"  >
+                        </p:commandButton>
 
-                                    <p:commandButton ajax="false" id="btnDelete" onclick="if (!confirm('Are you sure you want to delete this record?'))
-                                                return false;" action="#{paymentSchemeController.delete()}"  value="Delete"  >
+                        <p:commandButton 
+                            ajax="false" 
+                            class="ui-button-info" 
+                            icon="pi pi-refresh" 
+                            value="Fill"
+                            action="#{paymentSchemeController.createPaymentSchemes()}"/>
+                    </div>
+                    <div class="row"  >
+                        <div class="col-5">
+                            <p:selectOneListbox  
+                                id="lstSelect"
+                                filter="true"
+                                class="w-100" 
+                                scrollHeight="500" 
+                                value="#{paymentSchemeController.current}">
+                                <f:selectItems  value="#{paymentSchemeController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
+                                <f:ajax render="gpDetail" execute="lstSelect" >
+                                </f:ajax>
+                            </p:selectOneListbox>
+                        </div>
+                        <div class="col-7">
+                            <p:panel >
+                                <f:facet name="header">
+                                    <h:outputText value="Details of the Discount Scheme" class="mt-2"></h:outputText>
+                                    <p:commandButton 
+                                        id="btnSave"
+                                        value="Save"
+                                        icon="pi pi-save" 
+                                        style="float: right;"
+                                        class="ui-button-success"
+                                        action="#{paymentSchemeController.saveSelected()}" 
+                                        process="btnSave gpDetail"
+                                        update="lstSelect growl selectFocus"
+                                        >                                        
                                     </p:commandButton>
+                                </f:facet>
+                                <h:panelGrid id="gpDetail" columns="1" >
+                                    <h:panelGrid id="gpDetailText" columns="2">
+                                        <h:outputText id="lblName" value="Name" ></h:outputText>
+                                        <p:inputText autocomplete="off" id="txtName" value="#{paymentSchemeController.current.name}" class="w-100" ></p:inputText>
+                                        <h:outputText id="lblPrintingName" value="Printing Name" ></h:outputText>
+                                        <p:inputText autocomplete="off" id="txtPrintingName" value="#{paymentSchemeController.current.printingName}" ></p:inputText>
+                                        <h:outputText id="lblOrder" value="Order No" />
+                                        <p:inputText autocomplete="off" id="txtOrder" value="#{paymentSchemeController.current.orderNo}" />
+                                        <h:outputLabel rendered="#{paymentSchemeController.current!=null}"  value="Valid for Pharmacy" />
+                                        <p:selectBooleanCheckbox rendered="#{paymentSchemeController.current!=null}" value="#{paymentSchemeController.current.validForPharmacy}" ></p:selectBooleanCheckbox>
+                                        <h:outputLabel rendered="#{paymentSchemeController.current!=null}"  value="Valid for Billing" />
+                                        <p:selectBooleanCheckbox rendered="#{paymentSchemeController.current!=null}" value="#{paymentSchemeController.current.validForBilledBills}" ></p:selectBooleanCheckbox>
+                                        <h:outputLabel rendered="#{paymentSchemeController.current!=null}"  value="Valid for Cancellings and Refunds" />
+                                        <p:selectBooleanCheckbox rendered="#{paymentSchemeController.current!=null}" value="#{paymentSchemeController.current.validForCrBills}" ></p:selectBooleanCheckbox>
+                                        <h:outputLabel rendered="#{paymentSchemeController.current!=null}"  value="Valid for Channeling" />
+                                        <p:selectBooleanCheckbox rendered="#{paymentSchemeController.current!=null}" value="#{paymentSchemeController.current.validForChanneling}"></p:selectBooleanCheckbox>
+                                        <h:outputText value="Creator" ></h:outputText>
+                                        <h:outputText value="#{paymentSchemeController.current.creater.webUserPerson.name}"  />
+                                        <h:outputText value="Created At" ></h:outputText>
+                                        <p:outputLabel value="#{paymentSchemeController.current.createdAt}" >
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
+                                        </p:outputLabel>
+                                    </h:panelGrid>
+                                    <h:panelGrid id="gpDetailButtons" columns="2">
 
-                                    <p:commandButton ajax="false" value="Fill"
-                                                    action="#{paymentSchemeController.createPaymentSchemes()}"/>
 
+                                        <p:defaultCommand target="btnSave"/>
+                                    </h:panelGrid>
                                 </h:panelGrid>
                             </p:panel>
-                        </h:panelGrid  >
-                            </div>
-                            <div class="col-md-5">
-                                <p:panel style="width: 600px;">
-                            <h:panelGrid id="gpDetail" columns="1" style="width: 700px;">
-                                <h:panelGrid id="gpDetailText" columns="2">
-                                    <h:outputText id="lblName" value="Name" ></h:outputText>
-                                    <h:inputText autocomplete="off" id="txtName" value="#{paymentSchemeController.current.name}"  style="min-width: 300px"></h:inputText>
-                                    <h:outputText id="lblPrintingName" value="Printing Name" ></h:outputText>
-                                    <h:inputText autocomplete="off" id="txtPrintingName" value="#{paymentSchemeController.current.printingName}"  style="min-width: 300px"></h:inputText>
-                                    <h:outputText id="lblOrder" value="Order No" />
-                                    <h:inputText autocomplete="off" id="txtOrder" value="#{paymentSchemeController.current.orderNo}" style="min-width: 300px" />
-                                    <h:outputLabel rendered="#{paymentSchemeController.current!=null}"  value="Valid for Pharmacy" />
-                                    <p:selectBooleanCheckbox rendered="#{paymentSchemeController.current!=null}" value="#{paymentSchemeController.current.validForPharmacy}" style="min-width: 300px"></p:selectBooleanCheckbox>
-                                    <h:outputLabel rendered="#{paymentSchemeController.current!=null}"  value="Valid for Billing" />
-                                    <p:selectBooleanCheckbox rendered="#{paymentSchemeController.current!=null}" value="#{paymentSchemeController.current.validForBilledBills}" style="min-width: 300px"></p:selectBooleanCheckbox>
-                                    <h:outputLabel rendered="#{paymentSchemeController.current!=null}"  value="Valid for Cancellings and Refunds" />
-                                    <p:selectBooleanCheckbox rendered="#{paymentSchemeController.current!=null}" value="#{paymentSchemeController.current.validForCrBills}" style="min-width: 300px"></p:selectBooleanCheckbox>
-                                    <h:outputLabel rendered="#{paymentSchemeController.current!=null}"  value="Valid for Channeling" />
-                                    <p:selectBooleanCheckbox rendered="#{paymentSchemeController.current!=null}" value="#{paymentSchemeController.current.validForChanneling}" style="min-width: 300px"></p:selectBooleanCheckbox>
-                                    <h:outputText value="Creator" ></h:outputText>
-                                    <h:outputText value="#{paymentSchemeController.current.creater.webUserPerson.name}"  />
-                                    <h:outputText value="Created At" ></h:outputText>
-                                    <p:outputLabel value="#{paymentSchemeController.current.createdAt}" >
-                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
-                                    </p:outputLabel>
-                                </h:panelGrid>
-                                <h:panelGrid id="gpDetailButtons" columns="2">
-
-                                    <h:commandButton id="btnSave" value="Save" action="#{paymentSchemeController.saveSelected()}" styleClass="buttons">                                        
-                                    </h:commandButton>
-                                    <p:defaultCommand target="btnSave"/>
-                                </h:panelGrid>
-                            </h:panelGrid>
-                        </p:panel>
-                            </div>
                         </div>
-                        
+                    </div>
 
-                        
-                    </h:panelGrid>
+
                 </p:panel>
             </h:form>
 

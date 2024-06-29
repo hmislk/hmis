@@ -36,11 +36,15 @@
                                 <p:commandButton 
                                     value="Fill Items Added For Department" 
                                     ajax="false"
+                                    class="ui-button-warning"
+                                    icon="fas fa-spinner"
                                     action="#{itemMappingController.fillItemMappingsForSelectedDepartment()}">
                                 </p:commandButton>
                                 <p:commandButton 
                                     value="Add Items to Department" 
                                     ajax="false"
+                                    class="ui-button-success"
+                                    icon="fas fa-plus"
                                     action="#{itemMappingController.addAllSelectedItemsToDepartment()}">
                                 </p:commandButton>
                             </p:panelGrid>
@@ -99,37 +103,45 @@
                                          rowKey="#{im.id}"
                                          selection="#{itemMappingController.selectedItemMappings}"
                                          var="im"
-                                         paginator="true" paginatorPosition="both"
+                                         paginator="true" paginatorPosition="bottom"
                                          paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                          currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
                                          rowsPerPageTemplate="5,10,{ShowAll|'All'}"
                                          >
                                 <f:facet name="header" >
-                                    <p:outputLabel value="Items Mapped" ></p:outputLabel>
-                                    <p:commandButton 
-                                        style="float: right;"
-                                        value="Remove Selected" 
-                                        ajax="false"
-                                        action="#{itemMappingController.removeSelectedItemMappingForDepartment()}"></p:commandButton>
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <div>
+                                            <p:outputLabel value="Items Mapped" ></p:outputLabel>
+                                        </div>
+                                        <div>
+                                            <p:commandButton
+                                                style="float: right;"
+                                                value="Remove Selected"
+                                                ajax="false"
+                                                class="ui-button-danger"
+                                                icon="fas fa-trash"
+                                                action="#{itemMappingController.removeSelectedItemMappingForDepartment()}"></p:commandButton>
+                                        </div>
+                                    </div>
                                 </f:facet>
                                 <p:column selectionMode="multiple" width="15"></p:column>
-                                <p:column headerText="Name"  sortBy="#{im.item.name}" filterBy="#{pasindu.item.name}" filterMatchMode="contains">
+                                <p:column headerText="Name"  sortBy="#{im.item.name}" filterBy="#{im.item.name}" filterMatchMode="contains">
                                     <h:outputText value="#{im.item.name}" ></h:outputText>
                                 </p:column>
-                                <p:column headerText="Item Department"  sortBy="#{im.item.name}" filterBy="#{pasindu.item.name}" filterMatchMode="contains">
+                                <p:column headerText="Item Department"  sortBy="#{im.item.department.name}" filterBy="#{im.item.department.name}" filterMatchMode="contains">
                                     <h:outputText value="#{im.item.department.name}" ></h:outputText>
                                 </p:column>
                                 <p:column 
                                     headerText="Mapped Institution" 
-                                    sortBy="#{im.institution.name}" 
-                                    filterBy="#{im.institution.name}" 
+                                    sortBy="#{im.institution.name}"
+                                    filterBy="#{im.institution.name}"
                                     filterMatchMode="contains">
-                                    <h:outputText value="#{pasindu.institution.name}" ></h:outputText>
+                                    <h:outputText value="#{im.institution.name}" ></h:outputText>
                                 </p:column>
                                 <p:column
                                     headerText="Mapped Department"  
-                                    sortBy="#{pasindu.department.name}" 
-                                    filterBy="#{pasindu.department.name}" 
+                                    sortBy="#{im.department.name}"
+                                    filterBy="#{im.department.name}"
                                     filterMatchMode="contains">
                                     <h:outputText value="#{im.department.name}" ></h:outputText>
                                 </p:column>

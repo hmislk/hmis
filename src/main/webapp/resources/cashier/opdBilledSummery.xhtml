@@ -13,7 +13,7 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        
+        <h1>#{cc.attrs.data.bills.size()}</h1>
         <p:dataTable id="billed" rowStyleClass="noDisplayRow"  value="#{cc.attrs.data.bills}" var="b" rendered="#{cc.attrs.data.bills.size()>0}" sortBy="#{b.billType}"  >
             
             <f:facet name="header">  

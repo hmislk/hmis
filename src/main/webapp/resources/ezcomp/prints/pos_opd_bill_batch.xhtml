@@ -17,6 +17,7 @@
     <cc:implementation>
 
         <h:outputStylesheet library="css" name="pharmacypos.css" ></h:outputStylesheet>
+        
         <ui:repeat value="#{cc.attrs.billController.bills}" var="ffb">
             <div class="posbillBreak" style="page-break-after: always">
 
@@ -334,7 +335,7 @@
                                 </div>
                 -->
 
-                <!--
+<!--                
                                 <div  >
                 
                                     <table style="width: 100%; margin-left:0.5cm; ">
@@ -551,7 +552,7 @@
 
             </div>
         </ui:repeat>
-        <h:panelGroup rendered="#{cc.attrs.billController.bills.size() ne 1}">
+        <h:panelGroup rendered="#{cc.attrs.billController.bills.size() > 1}">
             <div class="posbillBreak" style="page-break-after: always" >
 
 

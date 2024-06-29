@@ -57,8 +57,6 @@
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
                             </h:outputLabel>
                         </td>
-                   
-
 
                     </tr>
                     <tr>
@@ -84,8 +82,7 @@
                             </h:outputLabel>
                         </td>
                     </tr>
-                        
-
+                    
                     <h:panelGroup rendered="#{cc.attrs.bill.invoiceNumber ne null}" >
                         <tr>
                             <td style="width: 20% ;text-align: left;" >
@@ -140,7 +137,7 @@
                             </h:outputLabel>
                         </td>
                     </tr>
-                    
+
 
                     <h:panelGroup rendered="#{cc.attrs.bill.patient ne null}" >
                         <tr>
@@ -170,31 +167,50 @@
             <div >
                 <table style="width: 90%; margin-left: 5%" >
                     <tr>
-                        <td style="width: 25%; ">
+                        <td style="width: 40%; ">
                             <h:outputLabel value="ITEM" styleClass="itemHeadings" ></h:outputLabel>
                         </td>
-                        <td  style="width:30%;text-align: right; padding-right: 0px;">
+                        <td  style="width:20%!important;text-align: right; padding-right: 15px!important">
+                            <h:outputLabel value="QTY" styleClass="itemHeadings" ></h:outputLabel>
+                        </td>
+
+                        <td  style="width:20%!important;text-align: right; padding-right: 15px!important">
+                            <h:outputLabel value="RATE" styleClass="itemHeadings" ></h:outputLabel>
+                        </td>
+                        <td  style="width:20%;text-align: right; padding-right: 0px;">
                             <h:outputLabel value="VALUE"  styleClass="itemHeadings" ></h:outputLabel>
                         </td>
                     </tr>
 
                     <tr>
-                        <td colspan="2" >
-                            <h:outputLabel value="-----------------------------------------------"  style="text-align:center; " />                           
+                        <td colspan="4" class="text-center">
+                            <h:outputLabel value="-----------------------------------------------"  />                           
                         </td>
                     </tr>
 
                     <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
 
                         <tr>
-                            <td style="overflow: visible;">
-
+                            <td style="overflow: visible;" colspan="4">
                                 <h:outputLabel value="#{bip.item.name}"  style="text-transform: capitalize!important;"  >
                                 </h:outputLabel>
-
+                            </td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td  styleClass="itemsBlockRight" style="text-align: right; padding-right: 0px;" >
+                                <h:outputLabel value="#{bip.qty}"    >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
                             </td>
                             <td  styleClass="itemsBlockRight" style="text-align: right; padding-right: 0px;" >
-                                <h:outputLabel    value="#{bip.netValue}"    >
+                                <h:outputLabel value="#{bip.rate}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </td>
+
+                            <td  styleClass="itemsBlockRight" style="text-align: right; padding-right: 0px;" >
+                                <h:outputLabel value="#{bip.rate*bip.qty}"    >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </td>
@@ -215,7 +231,7 @@
                             <h:outputLabel value="Total" />
                         </td>
                         <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 0px;">
-                            <h:outputLabel value="#{cc.attrs.bill.netTotal}" >
+                            <h:outputLabel value="#{cc.attrs.bill.total}" >
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
                         </td>

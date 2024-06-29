@@ -13,42 +13,42 @@
                 <h:form >
                     <p:panel header="Daily Visits">
                         <h:panelGrid columns="2" class="w-100">
-                        <h:outputLabel value="From Date" ></h:outputLabel>
-                        <p:calendar value="#{patientEncounterController.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
-                       
-
-                        <h:outputLabel value="To Date" ></h:outputLabel>
-                        <p:calendar value="#{patientEncounterController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
-                        
+                            <h:outputLabel value="From Date" ></h:outputLabel>
+                            <p:calendar value="#{patientEncounterController.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
 
 
-                        <h:outputLabel value="Speciality" ></h:outputLabel>
-                        <p:autoComplete value="#{practiceBookingController.speciality}"
-                                        id="acSpeciality" 
-                                        completeMethod="#{specialityController.completeSpeciality}"
-                                        var="dsp" itemLabel="#{dsp.name}" itemValue="#{dsp}"
-                                        >
-                            <f:ajax event="itemSelect" execute="acSpeciality" render="acStaff" ></f:ajax>
-                        </p:autoComplete>
-                        
+                            <h:outputLabel value="To Date" ></h:outputLabel>
+                            <p:calendar value="#{patientEncounterController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
 
-                        <h:outputLabel value="Doctor" ></h:outputLabel>
-                        <p:autoComplete value="#{patientEncounterController.doctor}"
-                                        id="acStaff" 
-                                        completeMethod="#{practiceBookingController.completeDoctorsOfSelectedSpeciality}"
-                                        var="doc"
-                                        itemLabel="#{doc.person.nameWithTitle}" itemValue="#{doc}"
-                                        >
-                            <f:ajax  event="itemSelect" execute="@this" 
-                                     render=":#{p:resolveFirstComponentWithId('pList',view).clientId}"  
-                                     listener="#{practiceBookingController.listBillSessions}" />                                                
-                        </p:autoComplete>
-                        <p:commandButton ajax="false" value="Process" 
-                                         icon="fa-solid fa-arrows-rotate"
-                                         class="ui-button-warning" 
-                                        action="/clinical/clinical_reports_all_opd_visits" 
-                                        actionListener="#{patientEncounterController.listAllEncounters()}"  ></p:commandButton>
-                    </h:panelGrid>
+
+
+                            <h:outputLabel value="Speciality" ></h:outputLabel>
+                            <p:autoComplete value="#{practiceBookingController.speciality}"
+                                            id="acSpeciality" 
+                                            completeMethod="#{specialityController.completeSpeciality}"
+                                            var="dsp" itemLabel="#{dsp.name}" itemValue="#{dsp}"
+                                            >
+                                <f:ajax event="itemSelect" execute="acSpeciality" render="acStaff" ></f:ajax>
+                            </p:autoComplete>
+
+
+                            <h:outputLabel value="Doctor" ></h:outputLabel>
+                            <p:autoComplete value="#{patientEncounterController.doctor}"
+                                            id="acStaff" 
+                                            completeMethod="#{practiceBookingController.completeDoctorsOfSelectedSpeciality}"
+                                            var="doc"
+                                            itemLabel="#{doc.person.nameWithTitle}" itemValue="#{doc}"
+                                            >
+                                <f:ajax  event="itemSelect" execute="@this" 
+                                         render=":#{p:resolveFirstComponentWithId('pList',view).clientId}"  
+                                         listener="#{practiceBookingController.listBillSessions}" />                                                
+                            </p:autoComplete>
+                            <p:commandButton ajax="false" value="Process" 
+                                             icon="fa-solid fa-arrows-rotate"
+                                             class="ui-button-warning" 
+                                             action="/clinical/clinical_reports_all_opd_visits" 
+                                             actionListener="#{patientEncounterController.listAllEncounters()}"  ></p:commandButton>
+                        </h:panelGrid>
 
                         <p:dataTable value="#{patientEncounterController.items}" var="pe" id="pList" 
                                      emptyMessage="No Patient Encounters during the selected period">
@@ -64,12 +64,16 @@
                                 <h:outputLabel value="#{pe.opdDoctor.person.nameWithTitle}" ></h:outputLabel>
                             </p:column>
                             <p:column headerText="View" >
-                                <p:commandButton ajax="false" value="View" action="clinical_new_opd_visit"  >
-                                    <f:setPropertyActionListener value="#{pe}" target="#{patientEncounterController.current}" ></f:setPropertyActionListener>
+                                <p:commandButton ajax="false" 
+                                                 value="View"
+                                                 action="#{pastPatientEncounterController.navigateToViewPastEncounter()}">
+                                    <f:setPropertyActionListener value="#{pe}" target="#{pastPatientEncounterController.current}" ></f:setPropertyActionListener>
+
+                                    <f:setPropertyActionListener value="#{pe.patient}" target="#{patientController.current}" />
                                 </p:commandButton>
-                                
+
                             </p:column>
-                            
+
                         </p:dataTable>
                     </p:panel>
                 </h:form>

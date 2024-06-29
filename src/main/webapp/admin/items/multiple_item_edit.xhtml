@@ -1,0 +1,192 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/admin/items/index.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui">
+
+
+    <ui:define name="item">
+
+        <h:panelGroup >
+            <h:form id="form"  >
+                <p:panel id="panIx"  >
+                    <f:facet name="header" >
+                        <h:outputLabel value="List of Items and Services"></h:outputLabel>
+                    </f:facet>
+
+                    <h:panelGrid columns="1" styleClass="alignTop" >
+                        <h:panelGrid columns="4" >
+                            <!-- Make Selected Items' Fees Changeable at Billing -->
+                            <p:commandButton ajax="false" 
+                                             value="Make Selected Items' Fees Changable at Billing"
+                                             action="#{itemController.markSelectedItemsFeesChangableAtBilling}"
+                                             icon="pi pi-check-circle" 
+                                             styleClass="ui-button-success">
+                            </p:commandButton>
+
+                            <!-- Unmark Selected Items' Fees Changable at Billing -->
+                            <p:commandButton ajax="false" 
+                                             value="Unmark Selected Items' Fees Changable at Billing"
+                                             action="#{itemController.unmarkSelectedItemsFeesChangableAtBilling}"
+                                             icon="pi pi-times-circle" 
+                                             styleClass="ui-button-danger">
+                            </p:commandButton>
+
+                            <!-- Make Selected Items Discountable at Billing -->
+                            <p:commandButton ajax="false" 
+                                             value="Make Selected Items Discountable at Billing"
+                                             action="#{itemController.markSelectedItemsAsDiscountableAtBilling}"
+                                             icon="pi pi-check-square" 
+                                             styleClass="ui-button-success">
+                            </p:commandButton>
+
+                            <!-- Unmark Selected Items Discountable at Billing -->
+                            <p:commandButton ajax="false" 
+                                             value="Unmark Selected Items Discountable at Billing"
+                                             action="#{itemController.unmarkSelectedItemsAsDiscountableAtBilling}"
+                                             icon="pi pi-times-circle" 
+                                             styleClass="ui-button-danger">
+                            </p:commandButton>
+                            <p:commandButton ajax="false" 
+                                             value="Mark Selected Items for Print Separate Fees"
+                                             action="#{itemController.markSelectedItemsForPrintSeparateFees()}"
+                                             icon="pi pi-check-square" 
+                                             styleClass="ui-button-success">
+                            </p:commandButton>
+                            
+                            <p:commandButton ajax="false" 
+                                             value="Unmark Selected Items for Print Separate Fees"
+                                             action="#{itemController.unMarkSelectedItemsForPrintSeparateFees()}"
+                                             icon="pi pi-times-circle"  
+                                             styleClass="ui-button-danger">
+                            </p:commandButton>
+
+
+
+
+                        </h:panelGrid>
+                        <p:panel >
+                            <p:dataTable  
+                                value="#{itemController.items}" 
+                                id="tblExport"
+                                var="i"   
+                                rowKey="#{i.id}" 
+                                rowIndexVar="s"
+                                rows="20"
+                                paginator="true"
+                                selection="#{itemController.selectedList}"
+                                paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                rowsPerPageTemplate="20,50,100,500,1000,1500"
+                                >
+
+                                <p:column  selectionMode="multiple" exportable="false" style="width: 10px;"> 
+                                </p:column>
+
+                                <p:column  
+                                    rendered="false"
+                                    sortBy="#{i.id}" width="80"
+                                    filterMatchMode="contains" filterBy="#{i.name}" >  
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Item Id" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.id}"/>
+                                </p:column>
+
+                                <p:column   sortBy="#{i.name}" width="80"
+                                            filterMatchMode="contains" filterBy="#{i.name}" >  
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Name" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.name}"/>
+                                </p:column>
+
+                                <p:column sortBy="#{i.name}" width="100"
+                                          filterMatchMode="contains" filterBy="#{i.name}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Institution" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.institution.name}" ></h:outputLabel>
+                                </p:column>
+
+                                <p:column sortBy="#{i.department.name}" width="50"
+                                          filterMatchMode="contains" filterBy="#{i.department.name}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Department" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.department.name}" ></h:outputLabel>
+                                </p:column>
+
+
+
+                                <p:column sortBy="#{i.total}" width="80"
+                                          filterMatchMode="contains" filterBy="#{i.total}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Total Fee" >
+
+                                        </h:outputLabel>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.total}" >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </p:column>
+
+                                <p:column sortBy="#{i.totalForForeigner}" width="80"
+                                          filterMatchMode="contains" filterBy="#{i.totalForForeigner}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Forigner Fee" >
+                                        </h:outputLabel>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.totalForForeigner}" >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </p:column>
+
+                                <p:column sortBy="#{i.discountAllowed}" width="10"
+                                          filterMatchMode="contains" filterBy="#{i.discountAllowed}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Discounts Allowed" >
+                                        </h:outputLabel>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.discountAllowed?'Yes':'No'}" >
+                                    </h:outputLabel>
+                                </p:column>
+                                
+                                <p:column sortBy="#{i.printFeesForBills}" width="10"
+                                          filterMatchMode="contains" filterBy="#{i.printFeesForBills}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Print Fees For Bills" >
+                                        </h:outputLabel>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.printFeesForBills?'Yes':'No'}" >
+                                    </h:outputLabel>
+                                </p:column>
+                                
+                                 <p:column sortBy="#{i.userChangable}" width="10"
+                                          filterMatchMode="contains" filterBy="#{i.userChangable}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="User can Change Fees at Billing" >
+                                        </h:outputLabel>
+                                    </f:facet>
+                                     <h:outputLabel value="#{i.userChangable ?'Yes':'No'}" >
+                                    </h:outputLabel>
+                                </p:column>
+
+
+
+
+
+                            </p:dataTable>
+                        </p:panel>
+                    </h:panelGrid>
+
+                </p:panel>
+            </h:form>
+
+        </h:panelGroup>
+
+    </ui:define>
+
+</ui:composition>

@@ -15,19 +15,18 @@
     <!-- IMPLEMENTATION -->
     <cc:implementation>
         <div class="d-flex" >
-            <h:panelGroup rendered="#{cc.attrs.valueRequired}" >
-                <p:inputText autocomplete="off"   value="#{cc.attrs.paymentMethodData.creditCard.totalValue}"  id="txtVal">
-                    <p:ajax process="@this"></p:ajax>
-                </p:inputText>
-                
-                <p:watermark value="Value" for="txtVal" />
-            </h:panelGroup>
+            <p:inputText autocomplete="off"   value="#{cc.attrs.paymentMethodData.creditCard.totalValue}"  id="txtVal">
+                <p:ajax process="@this"></p:ajax>
+            </p:inputText>
+
+            <p:watermark value="Value" for="txtVal" />
+
             <p:inputText 
                 autocomplete="off"   
-                value="#{cc.attrs.paymentMethodData.creditCard.no}" style="width: 10em;" class="mx-2" id="refno">
+                value="#{cc.attrs.paymentMethodData.creditCard.no}" class="mx-2 w-100" id="refno">
                 <p:ajax process="@this" ></p:ajax>
-            </p:inputText>                                
-            <p:selectOneMenu value="#{cc.attrs.paymentMethodData.creditCard.institution}"  style="width: 10em;" class="mx-2">
+            </p:inputText>                          
+            <p:selectOneMenu value="#{cc.attrs.paymentMethodData.creditCard.institution}"  class="mx-2 w-100"  >
                 <f:selectItem itemLabel="Select Bank"/>
                 <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
                 <p:ajax process="@this" ></p:ajax>

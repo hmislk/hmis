@@ -87,11 +87,15 @@ public class ItemForItemController implements Serializable {
     }
 
     public List<Item> getItemsForParentItem(Item i) {
-        String sql;
-        Map m = new HashMap();
-        m.put("it", i);
-        sql = "select c.childItem from ItemForItem c where c.retired=false and c.parentItem=:it order by c.childItem.name ";
-        return getItemFacade().findByJpql(sql, m);
+        String jpql;
+        Map params = new HashMap();
+        params.put("it", i);
+        jpql = "select c.childItem from ItemForItem c where c.retired=false and c.parentItem=:it order by c.childItem.name ";
+        List<Item> cis = getItemFacade().findByJpql(jpql, params);
+        if(cis==null){
+            cis =new ArrayList<>();
+        }
+        return cis;
     }
 
     public void addItem() {

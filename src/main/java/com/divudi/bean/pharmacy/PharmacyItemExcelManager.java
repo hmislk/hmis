@@ -1250,13 +1250,11 @@ public class PharmacyItemExcelManager implements Serializable {
             getPharmacyPurchaseController().makeNull();
 
             for (int i = startRow; i < sheet.getRows(); i++) {
-                System.out.println("for loop  = " + i);
                 Map m = new HashMap();
 
                 //Category
                 cell = sheet.getCell(catCol, i);
                 strCat = cell.getContents();
-                System.out.println("strCat is " + strCat);
                 if (strCat == null || strCat.trim().equals("")) {
                     continue;
                 }
@@ -1264,14 +1262,12 @@ public class PharmacyItemExcelManager implements Serializable {
                 if (cat == null) {
                     continue;
                 }
-                System.out.println("cat = " + cat.getName());
 
                 phType = getPharmacyBean().getPharmaceuticalItemTypeByName(strCat);
 
                 //Strength Unit
                 cell = sheet.getCell(strengthUnitCol, i);
                 strStrengthUnit = cell.getContents();
-                System.out.println("strStrengthUnit is " + strStrengthUnit);
                 strengthUnit = getPharmacyBean().getUnitByName(strStrengthUnit);
                 if (strengthUnit == null) {
                     continue;
@@ -1280,16 +1276,13 @@ public class PharmacyItemExcelManager implements Serializable {
                 //Pack Unit
                 cell = sheet.getCell(packUnitCol, i);
                 strPackUnit = cell.getContents();
-                System.out.println("strPackUnit = " + strPackUnit);
                 packUnit = getPharmacyBean().getUnitByName(strPackUnit);
                 if (packUnit == null) {
                     continue;
                 }
-                System.out.println("packUnit = " + packUnit.getName());
                 //Issue Unit
                 cell = sheet.getCell(issueUnitCol, i);
                 strIssueUnit = cell.getContents();
-                System.out.println("strIssueUnit is " + strIssueUnit);
                 issueUnit = getPharmacyBean().getUnitByName(strIssueUnit);
                 if (issueUnit == null) {
                     continue;
@@ -1297,7 +1290,6 @@ public class PharmacyItemExcelManager implements Serializable {
                 //StrengthOfAnMeasurementUnit
                 cell = sheet.getCell(strengthOfIssueUnitCol, i);
                 strStrength = cell.getContents();
-                System.out.println("strStrength = " + strStrength);
                 if (!strStrength.equals("")) {
                     try {
                         strengthUnitsPerIssueUnit = Double.parseDouble(strStrength);
@@ -1311,7 +1303,6 @@ public class PharmacyItemExcelManager implements Serializable {
                 //Issue Units Per Pack
                 cell = sheet.getCell(issueUnitsPerPackCol, i);
                 strPackSize = cell.getContents();
-                System.out.println("strPackSize = " + strPackSize);
                 if (!strPackSize.equals("")) {
                     try {
                         issueUnitsPerPack = Double.parseDouble(strPackSize);
@@ -1325,7 +1316,6 @@ public class PharmacyItemExcelManager implements Serializable {
                 //Vtm
                 cell = sheet.getCell(vtmCol, i);
                 strGenericName = cell.getContents();
-                System.out.println("strGenericName = " + strGenericName);
                 if (!strGenericName.equals("")) {
                     vtm = getPharmacyBean().getVtmByName(strGenericName);
                 } else {
@@ -1340,12 +1330,10 @@ public class PharmacyItemExcelManager implements Serializable {
                     vmp.setCategory(phType);
                     getVmpFacade().edit(vmp);
                 }
-                System.out.println("vmp = " + vmp.getName());
 
                 //Code
                 cell = sheet.getCell(codeCol, i);
                 strCode = cell.getContents();
-                System.out.println("strCode = " + strCode);
 
                 //Code
                 cell = sheet.getCell(barcodeCol, i);

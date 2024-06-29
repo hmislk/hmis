@@ -69,7 +69,6 @@ public class Qb {
     @EJB
     private BillFeeFacade billFeeFacade;
 
-
     private CommonFunctions commonFunctions;
 
     @Inject
@@ -183,7 +182,11 @@ public class Qb {
         headerJo.put("rep_name", "");
 
         JSONArray bija = new JSONArray();
-        for (BillItem bi : b.getBillItems()) {
+        List<BillItem> bis = b.getBillItems();
+        if (bis == null || bis.isEmpty()) {
+            bis = findBillItemsFromBill(b);
+        }
+        for (BillItem bi : bis) {
             JSONObject bijo = new JSONObject();
             if (bi.getItem() != null) {
                 bijo.put("item", bi.getItem().getName());
@@ -255,7 +258,11 @@ public class Qb {
         headerJo.put("rep_name", "");
 
         JSONArray bija = new JSONArray();
-        for (BillItem bi : b.getBillItems()) {
+        List<BillItem> bis = b.getBillItems();
+        if (bis == null || bis.isEmpty()) {
+            bis = findBillItemsFromBill(b);
+        }
+        for (BillItem bi : bis) {
             JSONObject bijo = new JSONObject();
             if (bi.getItem() != null) {
                 bijo.put("item", bi.getItem().getName());
@@ -327,7 +334,11 @@ public class Qb {
         headerJo.put("rep_name", "");
 
         JSONArray bija = new JSONArray();
-        for (BillItem bi : b.getBillItems()) {
+        List<BillItem> bis = b.getBillItems();
+        if (bis == null || bis.isEmpty()) {
+            bis = findBillItemsFromBill(b);
+        }
+        for (BillItem bi : bis) {
             JSONObject bijo = new JSONObject();
             if (bi.getItem() != null) {
                 bijo.put("item", bi.getItem().getName());
@@ -385,7 +396,7 @@ public class Qb {
 //            }
             departnemtName = b.getDepartment().getName();
         }
-        
+
         headerJo.put("SupplierName", supplierName);
 
         headerJo.put("billDate", CommonFunctions.formatDate(b.getCreatedAt(), "yyyy-MM-dd"));
@@ -403,7 +414,13 @@ public class Qb {
         headerJo.put("rep_name", "");
 
         JSONArray bija = new JSONArray();
-        for (BillItem bi : b.getBillItems()) {
+
+        List<BillItem> bis = b.getBillItems();
+        if (bis == null || bis.isEmpty()) {
+            bis = findBillItemsFromBill(b);
+        }
+
+        for (BillItem bi : bis) {
             JSONObject bijo = new JSONObject();
             Double amount = Math.abs(bi.getNetValue());
             Double qty = 0.0;
@@ -455,7 +472,11 @@ public class Qb {
         headerJo.put("rep_name", "");
 
         JSONArray bija = new JSONArray();
-        for (BillItem bi : b.getBillItems()) {
+        List<BillItem> bis = b.getBillItems();
+        if (bis == null || bis.isEmpty()) {
+            bis = findBillItemsFromBill(b);
+        }
+        for (BillItem bi : bis) {
             JSONObject bijo = new JSONObject();
             Double amount = Math.abs(bi.getNetValue());
             Double qty = 0.0;
@@ -506,7 +527,11 @@ public class Qb {
         headerJo.put("rep_name", "");
 
         JSONArray bija = new JSONArray();
-        for (BillItem bi : b.getBillItems()) {
+        List<BillItem> bis = b.getBillItems();
+        if (bis == null || bis.isEmpty()) {
+            bis = findBillItemsFromBill(b);
+        }
+        for (BillItem bi : bis) {
             JSONObject bijo = new JSONObject();
             Double amount = Math.abs(bi.getNetValue());
             Double qty = 0.0;
@@ -576,7 +601,11 @@ public class Qb {
         headerJo.put("wcDate", CommonFunctions.formatDate(b.getCreatedAt(), "yyyy-MM-dd"));
 
         JSONArray bija = new JSONArray();
-        for (BillItem bi : b.getBillItems()) {
+        List<BillItem> bis = b.getBillItems();
+        if (bis == null || bis.isEmpty()) {
+            bis = findBillItemsFromBill(b);
+        }
+        for (BillItem bi : bis) {
 
             String account = "account";
             String amount = "amount";
@@ -652,7 +681,11 @@ public class Qb {
         headerJo.put("wcDate", CommonFunctions.formatDate(b.getCreatedAt(), "yyyy-MM-dd"));
 
         JSONArray bija = new JSONArray();
-        for (BillItem bi : b.getBillItems()) {
+        List<BillItem> bis = b.getBillItems();
+        if (bis == null || bis.isEmpty()) {
+            bis = findBillItemsFromBill(b);
+        }
+        for (BillItem bi : bis) {
 
             String account = "account";
             String amount = "amount";
@@ -728,7 +761,11 @@ public class Qb {
         headerJo.put("wcDate", CommonFunctions.formatDate(b.getCreatedAt(), "yyyy-MM-dd"));
 
         JSONArray bija = new JSONArray();
-        for (BillItem bi : b.getBillItems()) {
+        List<BillItem> bis = b.getBillItems();
+        if (bis == null || bis.isEmpty()) {
+            bis = findBillItemsFromBill(b);
+        }
+        for (BillItem bi : bis) {
 
             String account = "account";
             String amount = "amount";
@@ -812,7 +849,11 @@ public class Qb {
 
 //        headerJo.put("billNo", b.getDeptId() + "-" + b.getId());
         JSONArray bija = new JSONArray();
-        for (BillItem bi : b.getBillItems()) {
+        List<BillItem> bis = b.getBillItems();
+        if (bis == null || bis.isEmpty()) {
+            bis = findBillItemsFromBill(b);
+        }
+        for (BillItem bi : bis) {
 
             String account = "account";
             if (bi.getReferenceBill() != null
@@ -890,7 +931,11 @@ public class Qb {
 //        headerJo.put("billNo", b.getDeptId() + "-" + b.getId());
 
         JSONArray bija = new JSONArray();
-        for (BillItem bi : b.getBillItems()) {
+        List<BillItem> bis = b.getBillItems();
+        if (bis == null || bis.isEmpty()) {
+            bis = findBillItemsFromBill(b);
+        }
+        for (BillItem bi : bis) {
 
             String account = "account";
             if (bi.getReferenceBill() != null
@@ -968,7 +1013,11 @@ public class Qb {
 //        headerJo.put("billNo", b.getDeptId() + "-" + b.getId());
 
         JSONArray bija = new JSONArray();
-        for (BillItem bi : b.getBillItems()) {
+        List<BillItem> bis = b.getBillItems();
+        if (bis == null || bis.isEmpty()) {
+            bis = findBillItemsFromBill(b);
+        }
+        for (BillItem bi : bis) {
 
             String account = "account";
             if (bi.getReferenceBill() != null
@@ -1046,7 +1095,11 @@ public class Qb {
 //        headerJo.put("billNo", b.getDeptId() + "-" + b.getId());
 
         JSONArray bija = new JSONArray();
-        for (BillItem bi : b.getBillItems()) {
+        List<BillItem> bis = b.getBillItems();
+        if (bis == null || bis.isEmpty()) {
+            bis = findBillItemsFromBill(b);
+        }
+        for (BillItem bi : bis) {
 
             String account = "account";
             if (bi.getReferenceBill() != null
@@ -1102,7 +1155,11 @@ public class Qb {
         headerJo.put("jrDate", CommonFunctions.formatDate(jrDate, "yyyy-MM-dd"));
 
         JSONArray bija = new JSONArray();
-        for (BillItem bi : b.getBillItems()) {
+        List<BillItem> bis = b.getBillItems();
+        if (bis == null || bis.isEmpty()) {
+            bis = findBillItemsFromBill(b);
+        }
+        for (BillItem bi : bis) {
 
             String account = "account";
             Double credit = 0.0;
@@ -1183,13 +1240,13 @@ public class Qb {
 
         JSONArray bija = new JSONArray();
         List<BillFee> bfs = b.getBillFees();
-        if (bfs == null || bfs.isEmpty()) {
-            b = billFacade.find(b.getId());
-        }
-        bfs = b.getBillFees();
 //        if (bfs == null || bfs.isEmpty()) {
-//            bfs = findBillFeesFromBill(b);
+//            b = billFacade.find(b.getId());
 //        }
+        bfs = b.getBillFees();
+        if (bfs == null || bfs.isEmpty()) {
+            bfs = findBillFeesFromBill(b);
+        }
 
         for (BillFee bf : bfs) {
             JSONObject bijo = new JSONObject();
@@ -1293,9 +1350,9 @@ public class Qb {
             b = billFacade.find(b.getId());
         }
         bfs = b.getBillFees();
-//        if (bfs == null || bfs.isEmpty()) {
-//            bfs = findBillFeesFromBill(b);
-//        }
+        if (bfs == null || bfs.isEmpty()) {
+            bfs = findBillFeesFromBill(b);
+        }
 
         for (BillFee bf : bfs) {
             JSONObject bijo = new JSONObject();
@@ -1402,9 +1459,9 @@ public class Qb {
             b = billFacade.find(b.getId());
         }
         bfs = b.getBillFees();
-//        if (bfs == null || bfs.isEmpty()) {
-//            bfs = findBillFeesFromBill(b);
-//        }
+        if (bfs == null || bfs.isEmpty()) {
+            bfs = findBillFeesFromBill(b);
+        }
 
         for (BillFee bf : bfs) {
             JSONObject bijo = new JSONObject();
@@ -1499,45 +1556,45 @@ public class Qb {
         headerJo.put("rep_name", "");
         JSONArray bija = new JSONArray();
 
-        List<BillItem> bis = b.getBillItems();
-        if (bis == null || bis.isEmpty()) {
-            b = billFacade.find(b.getId());
+//        List<BillItem> bis = b.getBillItems();
+//        if (bis == null || bis.isEmpty()) {
+//            b = billFacade.find(b.getId());
+//        }
+//        if (bis == null || bis.isEmpty()) {
+//            bis = findBillItemsFromBill(b);
+//        }
+//        if (bis == null || bis.isEmpty()) {
+//            return jSONObject;
+//        }
+//
+//        for (BillItem bi : bis) {
+        String invType = "invType";
+        String invClass = "invClass";
+        String item = "Advance Payment";
+        Double amount = 1000.0000;
+        String itemName = "Advance Payment";
+
+        JSONObject bijo = new JSONObject();
+
+        if (b.getBillType() != null) {
+            invType = b.getBillType().getLabel();
+            itemName = b.getBillType().getLabel();
         }
-        if (bis == null || bis.isEmpty()) {
-            bis = findBillItemsFromBill(b);
-        }
-        if (bis == null || bis.isEmpty()) {
-            return jSONObject;
+
+        if (b.getDepartment() != null) {
+            invClass = b.getDepartment().getName();
         }
 
-        for (BillItem bi : bis) {
-            String invType = "invType";
-            String invClass = "invClass";
-            String item = "Advance Payment";
-            Double amount = 1000.0000;
-            String itemName = "Advance Payment";
+        amount = Math.abs(b.getNetTotal());
 
-            JSONObject bijo = new JSONObject();
+        bijo.put("item", itemName);
+        bijo.put("qty", 1);
+        bijo.put("amount", amount);
+        bijo.put("invType", invType);
+        bijo.put("invClass", invClass);
 
-            if (b.getBillType() != null) {
-                invType = b.getBillType().getLabel();
-                itemName = b.getBillType().getLabel();
-            }
-
-            if (b.getDepartment() != null) {
-                invClass = b.getDepartment().getName();
-            }
-
-            amount = Math.abs(b.getNetTotal());
-
-            bijo.put("item", itemName);
-            bijo.put("qty", 1);
-            bijo.put("amount", amount);
-            bijo.put("invType", invType);
-            bijo.put("invClass", invClass);
-
-            bija.put(bijo);
-        }
+        bija.put(bijo);
+//        }
         jSONObject.put("header", headerJo);
         jSONObject.put("grid", bija);
         return jSONObject;
@@ -1582,9 +1639,9 @@ public class Qb {
         JSONArray bija = new JSONArray();
 
         List<BillItem> bis = b.getBillItems();
-        if (bis == null || bis.isEmpty()) {
-            b = billFacade.find(b.getId());
-        }
+//        if (bis == null || bis.isEmpty()) {
+//            b = billFacade.find(b.getId());
+//        }
         if (bis == null || bis.isEmpty()) {
             bis = findBillItemsFromBill(b);
         }
@@ -1664,18 +1721,18 @@ public class Qb {
         headerJo.put("rep_name", "");
         JSONArray bija = new JSONArray();
 
-        List<BillItem> bis = b.getBillItems();
-        if (bis == null || bis.isEmpty()) {
-            b = billFacade.find(b.getId());
-        }
-        if (bis == null || bis.isEmpty()) {
-            bis = findBillItemsFromBill(b);
-        }
-        if (bis == null || bis.isEmpty()) {
-            return jSONObject;
-        }
-
-        for (BillItem bi : bis) {
+//        List<BillItem> bis = b.getBillItems();
+////        if (bis == null || bis.isEmpty()) {
+////            b = billFacade.find(b.getId());
+////        }
+//        if (bis == null || bis.isEmpty()) {
+//            bis = findBillItemsFromBill(b);
+//        }
+//        if (bis == null || bis.isEmpty()) {
+//            return jSONObject;
+//        }
+//
+//        for (BillItem bi : bis) {
             String invType = "invType";
             String invClass = "invClass";
             String item = "Advance Payment";
@@ -1702,7 +1759,7 @@ public class Qb {
             bijo.put("invClass", invClass);
 
             bija.put(bijo);
-        }
+//        }
         jSONObject.put("header", headerJo);
         jSONObject.put("grid", bija);
         return jSONObject;
@@ -1823,46 +1880,44 @@ public class Qb {
 
         JSONArray bija = new JSONArray();
 
-        List<BillItem> billItems;
+        List<BillItem> billItems = b.getBillItems();
 
-        billItems = findBillItemsFromBill(b);
+        if (billItems == null || billItems.isEmpty()) {
+            billItems = findBillItemsFromBill(b);
+        }
 
-        if (billItems != null && !billItems.isEmpty()) {
+        for (BillItem bi : billItems) {
 
-            for (BillItem bi : billItems) {
+            JSONObject bijo = new JSONObject();
 
-                JSONObject bijo = new JSONObject();
+            String invType = "invType";
+            String invClass = "invClass";
+            Double amount = 1000.0000;
+            String feeName = "Fee";
+            String itemName = "Item";
 
-                String invType = "invType";
-                String invClass = "invClass";
-                Double amount = 1000.0000;
-                String feeName = "Fee";
-                String itemName = "Item";
-
-                if (bi.getBill().getBillType() != null) {
-                    invType = bi.getBill().getBillType().getLabel();
-                }
-                if (bi.getInwardChargeType() != null) {
-                    itemName = bi.getInwardChargeType().getLabel();
-                }
-                if (b.getDepartment() != null) {
-                    invClass = b.getDepartment().getName();
-                } else if (b.getCreater().getDepartment() != null) {
-                    invClass = b.getCreater().getDepartment().getName();
-                }
-                amount = Math.abs(bi.getAdjustedValue());
-                if (amount < 0.01) {
-                    continue;
-                }
-                bijo.put("id", bi.getId());
-                bijo.put("item", itemName);
-                bijo.put("qty", 1);
-                bijo.put("amount", amount);
-                bijo.put("invType", invType);
-                bijo.put("invClass", invClass);
-                bija.put(bijo);
+            if (bi.getBill().getBillType() != null) {
+                invType = bi.getBill().getBillType().getLabel();
             }
-
+            if (bi.getInwardChargeType() != null) {
+                itemName = bi.getInwardChargeType().getLabel();
+            }
+            if (b.getDepartment() != null) {
+                invClass = b.getDepartment().getName();
+            } else if (b.getCreater().getDepartment() != null) {
+                invClass = b.getCreater().getDepartment().getName();
+            }
+            amount = Math.abs(bi.getAdjustedValue());
+            if (amount < 0.01) {
+                continue;
+            }
+            bijo.put("id", bi.getId());
+            bijo.put("item", itemName);
+            bijo.put("qty", 1);
+            bijo.put("amount", amount);
+            bijo.put("invType", invType);
+            bijo.put("invClass", invClass);
+            bija.put(bijo);
         }
 
 //        if (b.getPaidAmount() > 0.0) {
@@ -1949,11 +2004,11 @@ public class Qb {
         JSONArray bija = new JSONArray();
 
         List<BillFee> billFees = b.getBillFees();
-//        if (billFees == null || billFees.isEmpty()) {
-//            billFees = findBillFeesFromBill(b);
-//        }
+        if (billFees == null || billFees.isEmpty()) {
+            billFees = findBillFeesFromBill(b);
+        }
 
-        for (BillFee bf : b.getBillFees()) {
+        for (BillFee bf : billFees) {
 
             if (bf.getFeeGrossValue() == null || Math.abs(bf.getFeeGrossValue()) < 0.01) {
                 continue;
@@ -2635,7 +2690,11 @@ public class Qb {
             jSONObject.put("bill_time", bill.getBillTime());
 
             JSONArray biArray = new JSONArray();
-            for (BillItem bi : bill.getBillItems()) {
+            List<BillItem> bis = bill.getBillItems();
+            if (bis == null || bis.isEmpty()) {
+                bis = findBillItemsFromBill(bill);
+            }
+            for (BillItem bi : bis) {
                 JSONObject joBi = new JSONObject();
                 if (bi != null) {
                     if (bi.getItem() != null) {
@@ -2863,7 +2922,6 @@ public class Qb {
             @PathParam("institution_code") String strInstitutionCode,
             @PathParam("last_date") String strLastDate) {
 
-
         JSONArray array;
         JSONObject jSONObjectOut = new JSONObject();
         String key = requestContext.getHeader("Finance");
@@ -2938,7 +2996,6 @@ public class Qb {
 //            lastIdOfCurrentdata = lastInpatientBill.getId();
 //        }
         List<Bill> bills = billList(maxNo, billTypes, billClassTypes, lastIdInRequest, null, ins, getCashPaymentMethods(), lastDate, false);
-
 
         if (bills != null && !bills.isEmpty()) {
             Bill lastOtherBill = bills.get(bills.size() - 1);
@@ -3166,7 +3223,6 @@ public class Qb {
             return json;
         }
 
-
         Long lastIdInRequest;
         try {
             lastIdInRequest = Long.valueOf(strLastIdInRequest);
@@ -3224,7 +3280,6 @@ public class Qb {
          */
         int maxNo = 500;
 
-
         List<Bill> bills = billList(maxNo, billTypes, billClassTypes, lastIdInRequest, null, ins, null, lastDate, false);
         Long lastIdOfCurrentdata = null;
         if (!bills.isEmpty()) {
@@ -3233,7 +3288,6 @@ public class Qb {
                 lastIdOfCurrentdata = tbf.getId();
             }
         }
-
 
         array = invoiceBillsToJSONArray(bills);
         jSONObjectOut.put("grnList", array);
@@ -3458,7 +3512,7 @@ public class Qb {
          * PharmacyWholeSale
          *
          */
-        int maxNo = 20;
+        int maxNo = 50;
 
         List<Bill> bills = billList(maxNo, billTypes, billClassTypes, lastIdInRequest, null, ins, null, lastDate, false);
         Long lastIdOfCurrentdata = null;

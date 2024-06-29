@@ -6,6 +6,7 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.BillBeanController;
+import com.divudi.bean.common.ControllerWithMultiplePayments;
 import com.divudi.bean.common.SearchController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.TokenController;
@@ -68,7 +69,7 @@ import org.primefaces.event.TabChangeEvent;
  */
 @Named
 @SessionScoped
-public class PharmacyPreSettleController implements Serializable {
+public class PharmacyPreSettleController implements Serializable, ControllerWithMultiplePayments {
 
     /**
      * Creates a new instance of PharmacySaleController
@@ -155,16 +156,36 @@ public class PharmacyPreSettleController implements Serializable {
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getEwallet().getTotalValue();
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getSlip().getTotalValue();
-                System.out.println("multiplePaymentMethodTotalValue***** = " + multiplePaymentMethodTotalValue);
             }
-            System.out.println("multiplePaymentMethodTotalValue1 = " + multiplePaymentMethodTotalValue);
-            System.out.println("total = " + total);
             return total - multiplePaymentMethodTotalValue;
         }
-         System.out.println("total = " + total);
         return total;
     }
 
+     public void recieveRemainAmountAutomatically() {
+        double remainAmount = calculatRemainForMultiplePaymentTotal();
+        if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
+            int arrSize = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().size();
+            ComponentDetail pm = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().get(arrSize - 1);
+            if (pm.getPaymentMethod() == PaymentMethod.Cash) {
+                pm.getPaymentMethodData().getCash().setTotalValue(remainAmount);
+            } else if (pm.getPaymentMethod() == PaymentMethod.Card) {
+                pm.getPaymentMethodData().getCreditCard().setTotalValue(remainAmount);
+            } else if (pm.getPaymentMethod() == PaymentMethod.Cheque) {
+                pm.getPaymentMethodData().getCheque().setTotalValue(remainAmount);
+            } else if (pm.getPaymentMethod() == PaymentMethod.Slip) {
+                pm.getPaymentMethodData().getSlip().setTotalValue(remainAmount);
+            } else if (pm.getPaymentMethod() == PaymentMethod.ewallet) {
+                pm.getPaymentMethodData().getEwallet().setTotalValue(remainAmount);
+            } else if (pm.getPaymentMethod() == PaymentMethod.PatientDeposit) {
+                pm.getPaymentMethodData().getPatient_deposit().setTotalValue(remainAmount);
+            } else if (pm.getPaymentMethod() == PaymentMethod.Credit) {
+                pm.getPaymentMethodData().getCredit().setTotalValue(remainAmount);
+            }
+
+        }
+    }
+     
     public String toSettleReturn(Bill args) {
         if (args.getBillType() == BillType.PharmacyPre && args.getBillClassType() == BillClassType.RefundBill) {
             String sql = "Select b from RefundBill b"
@@ -752,12 +773,9 @@ public class PharmacyPreSettleController implements Serializable {
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getEwallet().getTotalValue();
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getSlip().getTotalValue();
-                System.out.println("multiplePaymentMethodTotalValue//// = " + multiplePaymentMethodTotalValue);
             }
             double differenceOfBillTotalAndPaymentValue = netTotal - multiplePaymentMethodTotalValue;
             differenceOfBillTotalAndPaymentValue = Math.abs(differenceOfBillTotalAndPaymentValue);
-            System.out.println("netTotal = " + netTotal);
-            System.out.println("differenceOfBillTotalAndPaymentValue = " + differenceOfBillTotalAndPaymentValue);
             if (differenceOfBillTotalAndPaymentValue > 1.0) {
                 JsfUtil.addErrorMessage("Mismatch in differences of multiple payment method total and bill total");
                 return true;
