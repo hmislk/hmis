@@ -421,7 +421,7 @@
                                                 <p:graphicImage id="imgApproved" library="image" name="approved_icon.png" 
                                                                 style="height: 30px; width: 30px; #{dpr.approved ? '':'opacity: 0.1;'}" ></p:graphicImage>
                                                 <p:graphicImage id="imgPrinted" library="image" name="print_ok.png" 
-                                                                style="height: 30px; width: 30px;#{dpr.printed ? '':'opacity: 0.1;'}" ></p:graphicImage>
+                                                                style="height: 30px; width: 30px;#{pi.printed ? '':'opacity: 0.1;'}" ></p:graphicImage>
                                                 <p:commandLink ajax="false"  
                                                                id="btnEmail" 
                                                                disabled="#{pi.billItem.bill.cancelled or pi.billItem.transRefund}"
@@ -468,7 +468,6 @@
                                                 </p:tooltip>
                                                 
                                             </div>
-                                           
                                         </ui:repeat>
 
 
