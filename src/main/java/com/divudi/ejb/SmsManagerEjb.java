@@ -106,7 +106,6 @@ public class SmsManagerEjb {
         
          // Define fromDate as the start of today
         Date fromDate = CommonFunctions.getStartOfDay();
-
         // Define toDate as the end of today
         Date toDate = CommonFunctions.getEndOfDay();
 
@@ -133,6 +132,7 @@ public class SmsManagerEjb {
                     return sessionStartDateTime != null && sessionStartDateTime.after(fromTime1) && sessionStartDateTime.before(toTime);
                 })
                 .collect(Collectors.toList());
+        System.out.println("upcomingSessions = " + upcomingSessions);
 
         // Iterate over the filtered sessions and send SMS to doctors
         for (SessionInstance s : upcomingSessions) {
