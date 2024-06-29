@@ -15,6 +15,7 @@
 
 
                 <h:form>
+                    <p:growl id="msg"/>
                     <p:panel style="height: 100vh">
                         <f:facet name="header">
                             <h:outputText value="Items and Services " />
@@ -50,7 +51,7 @@
                                              icon="fas fa-spinner"
                                              class="ui-button-warning mx-2"
                                              ajax="false"
-                                             action="#{itemController.fillInstitutionItems()}"
+                                             action="#{itemController.fillDepartmentItems()}"
                                              >
                             </p:commandButton>
 
@@ -87,7 +88,6 @@
 
                         </p:panelGrid>
 
-
                         <p:dataTable value="#{itemController.filteredItems}" 
                                      var="item"
                                      paginator="true"
@@ -118,15 +118,29 @@
                                 </f:facet>
                                 <h:outputText value="#{itemController.filterInstitution.code}"/>
                             </p:column>
-                            <p:column sortBy="#{item.categoryName}" filterBy="#{item.categoryName}" filterMatchMode="contains">
+                            <p:column sortBy="#{item.feeName}" filterBy="#{item.feeName}" filterMatchMode="contains" rendered="#{configOptionApplicationController.getBooleanValueByKey('List OPD Items with Item Fees in Manage Items')}">
                                 <f:facet name="header">
-                                    <h:outputText value="Service Category"/>
+                                    <h:outputText value="Fee Name"/>
                                 </f:facet>
-                                <h:outputText value="#{item.categoryName}"/>
+                                <h:outputText value="#{item.feeName}"/>
                             </p:column>
+                            <p:column sortBy="#{item.feeValue}" rendered="#{configOptionApplicationController.getBooleanValueByKey('List OPD Items with Item Fees in Manage Items')}">
+                                <f:facet name="header">
+                                    <h:outputText value="Local Fee Value"/>
+                                </f:facet>
+                                <h:outputText value="#{item.feeValue}"/>
+                            </p:column>
+                            <p:column sortBy="#{item.feeValueForeign}" rendered="#{configOptionApplicationController.getBooleanValueByKey('List OPD Items with Item Fees in Manage Items')}">
+                                <f:facet name="header">
+                                    <h:outputText value="Foreign Fee Value"/>
+                                </f:facet>
+                                <h:outputText value="#{item.feeValueForeign}"/>
+                            </p:column>
+
+
                             <p:column  sortBy="#{item.total}" filterBy="#{item.total}" filterMatchMode="contains">
                                 <f:facet name="header">
-                                    <h:outputText value="Price"/>
+                                    <h:outputText value="Total Local Fee"/>
                                 </f:facet>
                                 <h:outputText value="#{item.total}">
                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
