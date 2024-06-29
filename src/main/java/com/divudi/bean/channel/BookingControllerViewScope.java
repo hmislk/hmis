@@ -981,20 +981,24 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         selectedSessionInstance.setStartedBy(sessionController.getLoggedUser());
         sessionInstanceController.save(selectedSessionInstance);
         JsfUtil.addSuccessMessage("Session Started");
+
+        boolean firstIncompleteFound = false;
+
         if (sessionController.getDepartmentPreference().isSendSmsOnChannelDoctorArrival()) {
             sendSmsOnChannelDoctorArrival();
         }
         for (BillSession bs : billSessions) {
-            if (!bs.isCompleted()) {
-                if (configOptionApplicationController.getBooleanValueByKey("Sent Channelling Status Update Notification SMS on Channel Session Start", true)) {
-                    sendChannellingStatusUpdateNotificationSms(bs);
-                    System.out.println("bs = " + bs);
-                }
+            if (configOptionApplicationController.getBooleanValueByKey("Sent Channelling Status Update Notification SMS on Channel Session Start", true)) {
+                sendChannellingStatusUpdateNotificationSms(bs);
+                System.out.println("bs = " + bs);
+            }
+            
+            if (!firstIncompleteFound && !bs.isCompleted()) {
                 bs.setNextInLine(true);
                 billSessionFacade.edit(bs);
                 selectedSessionInstance.setNextInLineBillSession(bs);
                 sessionInstanceFacade.edit(selectedSessionInstance);
-                return;
+                firstIncompleteFound = true;
             }
         }
     }
