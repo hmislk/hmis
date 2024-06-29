@@ -256,6 +256,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     private boolean printPreviewForReprintingAsDuplicate;
     private boolean printPreviewForOnlineBill;
     private boolean printPreviewC;
+
     private double absentCount;
     private int serealNo;
     private Date fromDate;
@@ -2859,7 +2860,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         }
         return createSmsForChannelBooking(b, smsTemplateForchannelSessionCancellation);
     }
-
+  
     public String createSmsForChannelBooking(Bill b, String template) {
         if (b == null) {
             return "";
@@ -7314,7 +7315,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     public void setPrintPreviewForOnlineBill(boolean printPreviewForOnlineBill) {
         this.printPreviewForOnlineBill = printPreviewForOnlineBill;
     }
-
+      
     public boolean isPrintPreviewC() {
         return printPreviewC;
     }
