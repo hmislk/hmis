@@ -523,7 +523,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         selectedBillSession.getBill().setPrinted(true);
         billSessionFacade.edit(selectedBillSession);
         printPreviewForOnlineBill = true;
-        printPreview = false;
+        printPreview = true;
         printPreviewForSettle = false;
         printPreviewForReprintingAsDuplicate = false;
         printPreviewForReprintingAsOriginal = false;
@@ -2852,6 +2852,16 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         String template = configOptionController.getLongTextValueByKey("Template for SMS sent on Channel Booking Cancellation", OptionScope.APPLICATION, null, null, null);
         if (template == null || template.isEmpty()) {
             template = "Dear {patient_name}, Your appointment No. {serial_no} with {doctor} on {appointment_date} at {appointment_time} is cancelled. {ins_name}";
+        }
+        return createSmsForChannelBooking(b, template);
+    }
+    
+    private String createChanellCancellationBookingSms(Bill b) {
+//        String template = sessionController.getDepartmentPreference().getSmsTemplateForChannelBooking();
+        String template = configOptionController.getLongTextValueByKey("Template for SMS sent on Channel Booking Cancellation", OptionScope.APPLICATION, null, null, null);
+        if (template == null || template.isEmpty()) {
+            template = "Dear {patient_name}, Your appointment No. {serial_no} with {doctor} on {appointment_date} at {appointment_time} is cancelled. {ins_name}";
+
         }
         return createSmsForChannelBooking(b, template);
     }
