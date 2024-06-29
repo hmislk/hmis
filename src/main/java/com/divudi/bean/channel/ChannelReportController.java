@@ -3268,7 +3268,6 @@ public class ChannelReportController implements Serializable {
             JsfUtil.addSuccessMessage("Please Select Sessions");
             return;
         }
-
         for (BillSession bs : selectedBillSessions) {
             bs.setAbsent(true);
             billSessionFacade.edit(bs);
