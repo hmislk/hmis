@@ -133,7 +133,6 @@ public class SmsManagerEjb {
                     return sessionStartDateTime != null && sessionStartDateTime.after(fromTime1) && sessionStartDateTime.before(toTime);
                 })
                 .collect(Collectors.toList());
-
         // Iterate over the filtered sessions and send SMS to doctors
         for (SessionInstance s : upcomingSessions) {
             if(s.getBookedPatientCount() != null){
