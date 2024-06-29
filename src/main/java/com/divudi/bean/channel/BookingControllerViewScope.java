@@ -256,6 +256,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     private boolean printPreviewForReprintingAsDuplicate;
     private boolean printPreviewForOnlineBill;
     private boolean printPreviewC;
+
     private double absentCount;
     private int serealNo;
     private Date fromDate;
@@ -985,19 +986,22 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         if (sessionController.getDepartmentPreference().isSendSmsOnChannelDoctorArrival()) {
             sendSmsOnChannelDoctorArrival();
         }
+        boolean firstIncompleteFound = false;
+
         for (BillSession bs : billSessions) {
-            if (!bs.isCompleted()) {
-                if (configOptionApplicationController.getBooleanValueByKey("Sent Channelling Status Update Notification SMS on Channel Session Start", true)) {
-                    sendChannellingStatusUpdateNotificationSms(bs);
-                    System.out.println("bs = " + bs);
-                }
-                bs.setNextInLine(true);
-                billSessionFacade.edit(bs);
-                selectedSessionInstance.setNextInLineBillSession(bs);
-                sessionInstanceFacade.edit(selectedSessionInstance);
-                return;
-            }
+            if (configOptionApplicationController.getBooleanValueByKey("Sent Channelling Status Update Notification SMS on Channel Session Start", true)) {
+            sendChannellingStatusUpdateNotificationSms(bs);
+            System.out.println("bs = " + bs);
         }
+        if (!firstIncompleteFound && !bs.isCompleted()) {
+            bs.setNextInLine(true);
+            billSessionFacade.edit(bs);
+            selectedSessionInstance.setNextInLineBillSession(bs);
+            sessionInstanceFacade.edit(selectedSessionInstance);
+            firstIncompleteFound = true; 
+        }
+    }
+
     }
 
     public void reopenSessionInstance() {
@@ -2856,7 +2860,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         }
         return createSmsForChannelBooking(b, smsTemplateForchannelSessionCancellation);
     }
-
+  
     public String createSmsForChannelBooking(Bill b, String template) {
         if (b == null) {
             return "";
@@ -7311,7 +7315,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     public void setPrintPreviewForOnlineBill(boolean printPreviewForOnlineBill) {
         this.printPreviewForOnlineBill = printPreviewForOnlineBill;
     }
-
+      
     public boolean isPrintPreviewC() {
         return printPreviewC;
     }
