@@ -255,7 +255,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     private boolean printPreviewForReprintingAsOriginal;
     private boolean printPreviewForReprintingAsDuplicate;
     private boolean printPreviewForOnlineBill;
+
     private boolean printPreviewC;
+
     private double absentCount;
     private int serealNo;
     private Date fromDate;
@@ -2834,6 +2836,14 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         String template = configOptionController.getLongTextValueByKey("Template for SMS sent on Channel Booking", OptionScope.APPLICATION, null, null, null);
         if (template == null || template.isEmpty()) {
             template = "Dear {patient_name}, Your appointment with {doctor} is confirmed for {appointment_time} on {appointment_date}. Your serial No. is {serial_no}. Please arrive 10 minutes early. Thank you.";
+        return createSmsForChannelBooking(b, template);
+    }
+    
+    private String createChanellCancellationBookingSms(Bill b) {
+//        String template = sessionController.getDepartmentPreference().getSmsTemplateForChannelBooking();
+        String template = configOptionController.getLongTextValueByKey("Template for SMS sent on Channel Booking Cancellation", OptionScope.APPLICATION, null, null, null);
+        if (template == null || template.isEmpty()) {
+            template = "Dear {patient_name}, Your appointment No. {serial_no} with {doctor} on {appointment_date} at {appointment_time} is cancelled. {ins_name}";
         }
         return createSmsForChannelBooking(b, template);
     }
@@ -2846,7 +2856,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         }
         return createSmsForChannelBooking(b, template);
     }
-  
+
     private String createChanellCancellationBookingSms(Bill b) {
 //        String template = sessionController.getDepartmentPreference().getSmsTemplateForChannelBooking();
         String template = configOptionController.getLongTextValueByKey("Template for SMS sent on Channel Booking Cancellation", OptionScope.APPLICATION, null, null, null);
