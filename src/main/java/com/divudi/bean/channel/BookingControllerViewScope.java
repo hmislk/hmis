@@ -989,6 +989,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             if (!bs.isCompleted()) {
                 if (configOptionApplicationController.getBooleanValueByKey("Sent Channelling Status Update Notification SMS on Channel Session Start", true)) {
                     sendChannellingStatusUpdateNotificationSms(bs);
+                    System.out.println("bs = " + bs);
                 }
                 bs.setNextInLine(true);
                 billSessionFacade.edit(bs);
