@@ -326,6 +326,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
 
     public String createSmsForChannelBookingReschedule(Bill b, BillSession b1, String template) {
         if (b == null) {
+            System.out.println("b = " + b);
             return "";
         }
         if (b.getSingleBillSession() == null) {
@@ -336,6 +337,9 @@ public class BookingController implements Serializable, ControllerWithPatient {
         }
         if (b.getSingleBillSession().getSessionInstance().getOriginatingSession() == null) {
             return "";
+        }
+        if (b1==null) {
+            System.out.println("billsession = " + b1);
         }
         SessionInstance si = b.getSingleBillSession().getSessionInstance();
         BillSession bs = b.getSingleBillSession();
@@ -375,9 +379,11 @@ public class BookingController implements Serializable, ControllerWithPatient {
     private void createBillSessionForReschedule(BillSession bs, SessionInstance si) {
         BillSession newBillSession = new BillSession();
         if (bs == null) {
+            System.out.println("bs = " + bs);
             return;
         }
         if (si == null) {
+            System.out.println("si = " + si);
             return;
         }
 
@@ -399,6 +405,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
 
         if (selectedBillSession.isReservedBooking()) {
             if (lastSessionReservedNumbers.isEmpty()) {
+                System.out.println("selectedBillSession.isReservedBooking() = " + selectedBillSession.isReservedBooking());
                 JsfUtil.addErrorMessage("No Reserved Numbers FInd !");
                 return;
             }
@@ -424,6 +431,9 @@ public class BookingController implements Serializable, ControllerWithPatient {
             System.out.println("count serial number= " + bs.getSerialNo());
         }
         getBillSessionFacade().create(newBillSession);
+        bs.setRecheduledSession(true);
+        bs.setReferenceBillSession(newBillSession);
+        getBillSessionFacade().edit(bs);
         recheduledBillSession=newBillSession;
         
     }
@@ -2733,6 +2743,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
     }
 
     private Bill saveBilledBill(boolean forReservedNumbers) {
+        System.out.println("forReservedNumbers = " + forReservedNumbers);
         Bill savingBill = createBill();
         BillItem savingBillItem = createSessionItem(savingBill);
         BillItem additionalBillItem = createAdditionalItem(savingBill, itemToAddToBooking);
@@ -3555,6 +3566,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
     }
 
     private BillSession createBillSession(Bill bill, BillItem billItem, boolean forReservedNumbers) {
+        System.out.println("forReservedNumbers createBillSession = " + forReservedNumbers);
         BillSession bs = new BillSession();
         bs.setAbsent(false);
         bs.setBill(bill);
@@ -3574,7 +3586,6 @@ public class BookingController implements Serializable, ControllerWithPatient {
         bs.setSessionDate(getSelectedSessionInstance().getSessionDate());
         bs.setSessionTime(getSelectedSessionInstance().getSessionTime());
         bs.setStaff(getSelectedSessionInstance().getStaff());
-        bs.setReservedBooking(true);
         List<Integer> reservedNumbers = CommonFunctions.convertStringToIntegerList(getSelectedSessionInstance().getOriginatingSession().getReserveNumbers());
         Integer count;
 
@@ -3584,6 +3595,8 @@ public class BookingController implements Serializable, ControllerWithPatient {
                 count = serviceSessionBean.getNextNonReservedSerialNumber(getSelectedSessionInstance(), reservedNumbers);
                 JsfUtil.addErrorMessage("No reserved numbers available. Normal number is given");
             }
+            
+        bs.setReservedBooking(true);
         } else {
             count = serviceSessionBean.getNextNonReservedSerialNumber(getSelectedSessionInstance(), reservedNumbers);
         }
