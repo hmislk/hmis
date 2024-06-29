@@ -23,7 +23,14 @@
                         </div>
                         <div class="d-flex align-items-center">
                             <!-- Cancel Session Button with BS colors, FA icon, and JavaScript confirmation -->
-                             <p:commandButton 
+                            <p:commandButton value="Pay Session"
+                                             action="#{bookingControllerViewScope.paySelectedSessionByDates()}"
+                                             ajax="false"
+                                             icon="pi pi-credit-card"
+                                             class="ui-button-danger mx-1"
+                                             rendered="#{bookingControllerViewScope.selectedSessionInstance.completed}">
+                            </p:commandButton>
+                            <p:commandButton 
                                 rendered="#{!bookingControllerViewScope.selectedSessionInstance.arrived}"
                                 id="btnArrival"
                                 ajax="false"
@@ -42,33 +49,44 @@
                             <p:commandButton action="#{bookingControllerViewScope.cancelSession}" 
                                              value="Cancel Session"
                                              ajax="false"
-                                             class="ui-button-Danger mx-1" 
+                                             class="ui-button-danger mx-1"
                                              icon="fa fa-times" 
                                              disabled="#{bookingControllerViewScope.selectedSessionInstance.cancelled}"
                                              onclick="return confirm('Are you sure you want to cancel?');" />
 
                             <!-- Reopen Session Button -->
-                            <p:commandButton action="#{bookingControllerViewScope.reopenSession}" 
+                            <p:commandButton action="#{bookingControllerViewScope.reopenSessionInstance()}"
                                              value="Reopen Session"
-                                             disabled="#{!bookingControllerViewScope.selectedSessionInstance.completed}"
+                                             disabled="#{bookingControllerViewScope.selectedSessionInstance.completed ne true}"
                                              ajax="false"
-                                             styleClass="ui-button-success mx-1" 
+                                             styleClass="ui-button-warning mx-1"
                                              icon="fa fa-check" 
                                              onclick="return confirm('Are you sure you want to reopen?');" />
 
                             <!-- Complete Session Button -->
-                            <p:commandButton action="#{bookingControllerViewScope.completeSession()}" 
+                            <p:commandButton action="#{bookingControllerViewScope.markSessionInstanceAsCompleted()}"
                                              value="Complete Session"
-                                             disabled="#{bookingControllerViewScope.selectedSessionInstance.completed}"
+                                             rendered="#{bookingControllerViewScope.selectedSessionInstance.started eq true and bookingControllerViewScope.selectedSessionInstance.completed ne true}"
                                              ajax="false"
                                              styleClass="ui-button-success mx-1" 
                                              icon="fa fa-check" 
                                              onclick="return confirm('Are you sure you want to complete this session?');" />
 
+                            <p:commandButton action="#{bookingControllerViewScope.markSessionInstanceAsStarted()}"
+                                             value="Start Session"
+                                             disabled="#{bookingControllerViewScope.selectedSessionInstance.completed}"
+                                             rendered="#{bookingControllerViewScope.selectedSessionInstance.started ne true}"
+                                             ajax="false"
+                                             styleClass="ui-button-success mx-1"
+                                             icon="fa fa-check"
+                                             onclick="return confirm('Are you sure you want to complete this session?');" />
+
 
                             <p:commandButton action="#{bookingControllerViewScope.navigateBackToBookingsFromSessionInstance()}" 
                                              value="Back to Booking"
-                                             ajax="false" 
+                                             ajax="false"
+                                             class="ui-button-secondary mx-1"
+                                             icon="fas fa-arrow-left"
                                              ></p:commandButton>
 
                         </div>
@@ -98,9 +116,10 @@
                                         <p:tag class="mr-2" style="font-size: 0.8rem" severity="success" value="Completed" rendered="#{bs.completed}"/>
                                         <p:tag class="mr-2" style="font-size: 0.8rem" severity="default" value="OnGoing" rendered="#{bs.currentlyConsulted}"/>
                                         <p:tag class="mr-2" style="font-size: 0.8rem" severity="warning" value="Next" rendered="#{bs.nextInLine}"/>
-                                        <p:tag class="mr-2" style="font-size: 1.03rem" severity="danger" value="Cancelled" rendered="#{bs.bill.cancelled==true}" rounded="true"/>
-                                        <p:tag class="mr-2" style="font-size: 1.03rem" severity="warning" value="Refunded" rendered="#{bs.bill.refunded==true}" rounded="true"/>
+                                        <p:tag class="mr-2" style="font-size: 0.8rem" severity="danger" value="Cancelled" rendered="#{bs.bill.cancelled==true}" rounded="true"/>
+                                        <p:tag class="mr-2" style="font-size: 0.8rem" severity="warning" value="Refunded" rendered="#{bs.bill.refunded==true}" rounded="true"/>
                                         <p:tag class="mr-2" style="font-size: 0.8rem" severity="danger" value="Absent" rendered="#{bs.absent}"/>
+                                        <p:tag class="mr-2" style="font-size: 0.8rem" severity="danger" value="Recheduled" rendered="#{bs.recheduledSession}"/>
                                     </p:column>
                                     <p:column headerText="Payment" >
                                         <p:outputLabel class="badge badge-light" value="Credit" rendered="#{bs.bill.paidAmount eq 0}" style="color: green;"/>
@@ -110,6 +129,7 @@
                                         <p:outputLabel value="-Agent" rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'Agent'}"/>
                                         <p:outputLabel value="-On Call" rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'OnCall'}"/>
                                         <p:outputLabel value="-Staff" rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'Staff'}"/>
+                                        <p:outputLabel value="-Online Payment" rendered="#{bs.bill.paymentMethod eq 'OnlineSettlement'}" style="color: #0062cc;" />
                                     </p:column>
 
 
@@ -130,7 +150,8 @@
                                                 icon="pi pi-user-plus" 
                                                 title="OPD" 
                                                 ajax="false" 
-                                                action="#{bookingControllerViewScope.navigateToOpdBilling(bs)}" 
+                                                action="#{bookingControllerViewScope.navigateToOpdBilling(bs)}"
+                                                disabled="#{(bs.bill.paidAmount eq 0 and bs.bill.paymentMethod eq 'OnCall')}"
                                                 class="ui-button-secondary mx-1">
                                             </p:commandButton>
                                             <p:commandButton 

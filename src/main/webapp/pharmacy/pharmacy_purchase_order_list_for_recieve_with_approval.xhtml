@@ -163,6 +163,7 @@
                                                 <f:setPropertyActionListener 
                                                     target="#{grnController.currentGrnBillPre}"
                                                     value="#{b}"/>
+                                                <f:setPropertyActionListener target="#{grnController.approveBill}" value="#{p}"/>
                                             </p:commandButton>
 
                                             <p:commandButton 
@@ -174,6 +175,7 @@
                                                 action="#{grnController.navigateToApproveRecieveGrnPreBill()}" 
                                                 disabled="#{b.checkedBy eq null and b.referenceBill.cancelled eq false or b.cancelled eq true or b.forwardReferenceBill ne null or !webUserController.hasPrivilege('PurchaseOrdersApprovel')}">
                                                 <f:setPropertyActionListener target="#{grnController.currentGrnBillPre}" value="#{b}"/>
+                                                <f:setPropertyActionListener target="#{grnController.approveBill}" value="#{p}"/>
                                             </p:commandButton>
                                             <p:commandButton  
                                                 class="m-1"  

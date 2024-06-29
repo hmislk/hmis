@@ -94,6 +94,9 @@
                                 <h:panelGroup id="slip"  rendered="#{pm.paymentMethod eq 'Slip'}"  layout="block" class="row" >
                                     <pa:slip valueRequired="true" paymentMethodData="#{pm.paymentMethodData}"/>
                                 </h:panelGroup>
+                                <h:panelGroup id="staffCredit"  rendered="#{pm.paymentMethod eq 'Staff'}"  layout="block" class="row" >
+                                    <pa:staff_credit valueRequired="true" paymentMethodData="#{pm.paymentMethodData}"/>
+                                </h:panelGroup>
                                 <h:panelGroup id="patientDeposit"  rendered="#{pm.paymentMethod eq 'PatientDeposit'}"  layout="block" class="row" >
                                     <pa:patient_deposit valueRequired="true" paymentMethodData="#{pm.paymentMethodData}"/>
                                 </h:panelGroup>
