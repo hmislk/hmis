@@ -357,7 +357,7 @@
                                         disabled="#{!webUserController.hasPrivilege('AdminPrices')}"
                                         ajax="false" 
                                         action="#{investigationController.navigateToManageFees()}"
-                                        value="Prices" >
+                                        value="Manage Prices" >
                                     </p:commandButton>
 
                                     <p:commandButton 
@@ -366,17 +366,19 @@
                                         value="Manage Valuesets" 
                                         action="#{investigationController.navigateToManageValueSetsForAdmin()}" >
                                     </p:commandButton>
-
+  
                                     <p:commandButton 
                                         class="w-100" 
                                         ajax="false" 
-                                        value="Flags" 
+                                        value="Manage Flags" 
                                         action="#{investigationController.navigateToManageFlagsForLab()}" >
+                                        <f:setPropertyActionListener value="#{investigationController.current}" target="#{testFlagController.investigation}"/>
                                     </p:commandButton>
                                     
                                     <p:commandButton 
                                         class="w-100" 
                                         ajax="false" 
+                                        rendered="false"
                                         value="Calculations" 
                                         action="/admin/lims/calculation?faces-redirect=true" >
                                         </p:commandButton>

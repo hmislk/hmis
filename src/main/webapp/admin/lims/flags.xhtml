@@ -8,217 +8,357 @@
 
     <h:body>
 
-        <ui:composition template="/lab/administration.xhtml">
+        <ui:composition template="/admin/lims/index.xhtml">
 
             <ui:define name="subcontent">
                 <h:form>
-                    <p:panelGrid columns="1" >
-                         <p:commandButton 
-                                value="Back" 
-                                class="my-1"
-                                action="#{investigationController.navigateToManageInvestigation}" ajax="false" ></p:commandButton>
-                        <p:panelGrid columns="2" >
-                            <h:outputLabel value="Select Investigation" />
-                           
-                            <p:autoComplete converter="ixcon" widgetVar="aIx" id="acIx" forceSelection="true" value="#{testFlagController.investigation}" completeMethod="#{investigationController.completeInvest}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
-                                <p:ajax event="itemSelect" process="acIx" update="iif iiv tbl" />
-                            </p:autoComplete>
+                    <p:panel>
+                        <f:facet name="header">
+                            <div class="d-flex justify-content-between">
+                                <div class="d-flex gap-2 mt-2">
+                                    <h:outputLabel value="Manage Flag" />
+                                    <h:outputLabel value=" - " />
+                                    <h:outputLabel value="#{testFlagController.investigation.name}" />
+                                </div>
+                                <p:commandButton 
+                                    value="Back" 
+                                    class="ui-button-warning"
+                                    icon="fa fa-arrow-left"
+                                    action="#{investigationController.navigateToManageInvestigation}" 
+                                    ajax="false" >
+                                </p:commandButton>
+                                
+                            </div>
+                        </f:facet>
 
-                            <h:outputLabel value="Select Flag" ></h:outputLabel>
-                            <p:selectOneMenu id="iif" value="#{testFlagController.investigationItemofFlagType}" >
-                                <f:selectItem itemLabel="Select a Flag"/>
-                                <f:selectItems value="#{testFlagController.investigationItemsOfFlagType}" var="iifs" itemLabel="#{iifs.name}" itemValue="#{iifs}" />
-                            </p:selectOneMenu>
-                            <h:outputLabel value="Select Value" ></h:outputLabel>
-                            <p:selectOneMenu id="iiv" value="#{testFlagController.investigationItemOfValueType}" >
-                                <f:selectItem itemLabel="Select a Value"/>
-                                <f:selectItems value="#{testFlagController.investigationItemsOfValueandFlagType}" var="iivs" itemLabel="#{iivs.name}" itemValue="#{iivs}" />
-                            </p:selectOneMenu>
-                            <h:outputLabel value="Sex" ></h:outputLabel>
-                            <p:selectOneMenu id="txtNewSex"  value="#{testFlagController.sex}" style="width: 200px;">
-                                <f:selectItem itemLabel="Select Sex"/>
-                                <f:selectItem itemLabel="Male" itemValue="Male"/>
-                                <f:selectItem itemLabel="Female" itemValue="Female"/>
-                            </p:selectOneMenu>
-                            <h:outputLabel value="From Age" ></h:outputLabel>
-                            <h:panelGrid columns="2">
-                                <p:inputText autocomplete="off" value="#{testFlagController.fromAge}"></p:inputText>
-                                <h:selectOneMenu value="#{testFlagController.fromAgeUnit}" >
-                                    <f:selectItem itemLabel="Days" itemValue="Days"/>
-                                    <f:selectItem itemLabel="Months" itemValue="Months"/>
-                                    <f:selectItem itemLabel="Years" itemValue="Years"/>
-                                </h:selectOneMenu>
-                            </h:panelGrid>
-                            <h:outputLabel value="To Age" ></h:outputLabel>
-                            <h:panelGrid columns="2">
-                                <p:inputText autocomplete="off" value="#{testFlagController.toAge}"></p:inputText>
-                                <h:selectOneMenu value="#{testFlagController.toAgeUnit}" >
-                                    <f:selectItem itemLabel="Days" itemValue="Days"/>
-                                    <f:selectItem itemLabel="Months" itemValue="Months"/>
-                                    <f:selectItem itemLabel="Years" itemValue="Years"/>
-                                </h:selectOneMenu>
-                            </h:panelGrid>
+                        <div>
+                            <div class="row">
+                                <div class="col-md-2">
+                                    <h:outputLabel value="Select Investigation" class="mt-2"/>
+                                </div>
+                                <div class="col-md-5">
+                                    <p:autoComplete 
+                                        converter="ixcon" 
+                                        widgetVar="aIx" 
+                                        id="acIx" 
+                                        class="w-100"
+                                        inputStyleClass="form-control"
+                                        forceSelection="true" 
+                                        value="#{testFlagController.investigation}" 
+                                        completeMethod="#{investigationController.completeInvest}" 
+                                        var="ix" 
+                                        itemLabel="#{ix.name}" 
+                                        itemValue="#{ix}" 
+                                        maxResults="20">
+                                        <p:column headerText="Investigation" style="padding: 6px;">
+                                            #{ix.name}
+                                        </p:column>
+                                        <p:column headerText="Institution" style="padding: 6px;width: 200px;">
+                                            #{ix.institution.name}
+                                        </p:column>
+                                        <p:column headerText="Department" style="padding: 6px;">
+                                            #{ix.department}
+                                        </p:column>
+                                        <p:ajax event="itemSelect" process="acIx" update="iif iiv tbl" />
+                                    </p:autoComplete>
+                                </div>
+                            </div>
 
-                            <h:outputLabel value="From Value" ></h:outputLabel>
-                            <p:inputText autocomplete="off" value="#{testFlagController.fromValue}"></p:inputText>
+                            <div class="row mt-1">
+                                <div class="col-md-2">
+                                    <h:outputLabel value="Select Flag"  class="mt-2"></h:outputLabel>
+                                </div>
+                                <div class="col-md-5">
+                                    <p:selectOneMenu 
+                                        id="iif" 
+                                        class="w-100"
+                                        value="#{testFlagController.investigationItemofFlagType}" >
+                                        <f:selectItem itemLabel="Select a Flag"/>
+                                        <f:selectItems value="#{testFlagController.investigationItemsOfFlagType}" var="iifs" itemLabel="#{iifs.name}" itemValue="#{iifs}" />
+                                    </p:selectOneMenu>
+                                </div>
+                            </div>
 
-                            <h:outputLabel value="To Value" ></h:outputLabel>
-                            <p:inputText autocomplete="off" value="#{testFlagController.toValue}"></p:inputText>
+                            <div class="row mt-1">
+                                <div class="col-md-2">
+                                    <h:outputLabel value="Select Value" class="mt-2"></h:outputLabel>
+                                </div>
+                                <div class="col-md-5">
+                                    <p:selectOneMenu 
+                                        class="w-100"
+                                        id="iiv" 
+                                        value="#{testFlagController.investigationItemOfValueType}" >
+                                        <f:selectItem itemLabel="Select a Value"/>
+                                        <f:selectItems value="#{testFlagController.investigationItemsOfValueandFlagType}" var="iivs" itemLabel="#{iivs.name}" itemValue="#{iivs}" />
+                                    </p:selectOneMenu>
+                                </div>
+                            </div>
 
-                            <h:outputLabel value="Message if Low" ></h:outputLabel>
-                            <p:inputTextarea value="#{testFlagController.lowMessage }" ></p:inputTextarea>
-                            <h:outputLabel value="Message if High" ></h:outputLabel>
-                            <p:inputTextarea value="#{testFlagController.highMessage }" ></p:inputTextarea>
-                            <h:outputLabel value="Message if Within the Range" ></h:outputLabel>
-                            <p:inputTextarea value="#{testFlagController.flagMessage }" ></p:inputTextarea>
-                            <p:commandButton ajax="false" value="Save" action="#{testFlagController.addFlag()}"  />
-                        </p:panelGrid>
+                            <div class="row mt-1">
+                                <div class="col-md-2">
+                                    <h:outputLabel value="Sex" class="mt-2"></h:outputLabel>
+                                </div>
+                                <div class="col-md-5">
+                                    <p:selectOneMenu 
+                                        id="txtNewSex" 
+                                        class="w-100"
+                                        value="#{testFlagController.sex}">
+                                        <f:selectItem itemLabel="Select Sex"/>
+                                        <f:selectItem itemLabel="Male" itemValue="Male"/>
+                                        <f:selectItem itemLabel="Female" itemValue="Female"/>
+                                    </p:selectOneMenu>
+                                </div>
+                            </div>
 
-                        <p:panelGrid columns="1" >
-
-                            <p:dataTable id="tbl" value="#{testFlagController.items}" editable="true" var="f" >
-                                <p:ajax event="rowEdit" listener="#{testFlagController.onEdit}"  /> 
-
-
-                                <p:column headerText="Investigation">
-                                    #{f.item.name}
-                                </p:column>
-                                <p:column headerText="Flag Field">
-                                    #{f.investigationItemOfFlagType.name}
-                                </p:column>
-                                <p:column headerText="Value Field">
-                                    #{f.investigationItemOfValueType.name}
-                                </p:column>
-                                <p:column headerText="Sex">  
-                                    <p:cellEditor>  
-                                        <f:facet name="output">  
-                                            <h:outputText value="#{f.sex}" />  
-                                        </f:facet>  
-                                        <f:facet name="input">  
-                                            <p:selectOneMenu value="#{f.sex}" style="width: 200px;">
-                                                <f:selectItem itemLabel="Select Sex"/>
-                                                <f:selectItem itemLabel="Male" itemValue="Male"/>
-                                                <f:selectItem itemLabel="Female" itemValue="Female"/>
+                            <div class="row mt-1">
+                                <div class="col-md-2">
+                                    <h:outputLabel value="From Age" class="mt-2"></h:outputLabel>
+                                </div>
+                                <div class="col-md-5 d-flex">
+                                    <div class="d-flex w-100">
+                                        <div class="col-10">
+                                            <p:inputText 
+                                                autocomplete="off" 
+                                                class="w-100"
+                                                value="#{testFlagController.fromAge}">
+                                            </p:inputText>
+                                        </div>
+                                        <div class="col-2">
+                                            <p:selectOneMenu class="w-100" value="#{testFlagController.fromAgeUnit}" >
+                                                <f:selectItem itemLabel="Days" itemValue="Days"/>
+                                                <f:selectItem itemLabel="Months" itemValue="Months"/>
+                                                <f:selectItem itemLabel="Years" itemValue="Years"/>
                                             </p:selectOneMenu>
-                                        </f:facet>  
-                                    </p:cellEditor>    
-
-                                </p:column>
-                                <p:column headerText="From Age">
-                                    <p:cellEditor>  
-                                        <f:facet name="output">  
-                                            <h:outputText value="#{f.fromAge}" />  
-                                        </f:facet>  
-                                        <f:facet name="input">  
-                                            <h:inputText autocomplete="off" value="#{f.fromAge}"/>  
-                                        </f:facet>  
-                                    </p:cellEditor>                                     
-                                </p:column>
-                                <p:column headerText="To Age">
-                                    <p:cellEditor>  
-                                        <f:facet name="output">  
-                                            <h:outputText value="#{f.toAge}" />  
-                                        </f:facet>  
-                                        <f:facet name="input">  
-                                            <h:inputText autocomplete="off" value="#{f.toAge}"/>  
-                                        </f:facet>  
-                                    </p:cellEditor> 
-
-                                </p:column>
-
-                                <p:column headerText="From Value">
-                                    <p:cellEditor>  
-                                        <f:facet name="output">  
-                                            <h:outputText value="#{f.fromVal}" />  
-                                        </f:facet>  
-                                        <f:facet name="input">  
-                                            <h:inputText autocomplete="off" value="#{f.fromVal}"/>  
-                                        </f:facet>  
-                                    </p:cellEditor>                                    
-                                </p:column>
-
-                                <p:column headerText="To Value">
-                                    <p:cellEditor>  
-                                        <f:facet name="output">  
-                                            <h:outputText value="#{f.toVal}" />  
-                                        </f:facet>  
-                                        <f:facet name="input">  
-                                            <h:inputText autocomplete="off" value="#{f.toVal}"/>  
-                                        </f:facet>  
-                                    </p:cellEditor>                                       
-                                </p:column>
-
-                                <p:column headerText="High Message">
-                                    <p:cellEditor>  
-                                        <f:facet name="output">  
-                                            <h:outputText value="#{f.highMessage}" />  
-                                        </f:facet>  
-                                        <f:facet name="input">  
-                                            <h:inputText autocomplete="off" value="#{f.highMessage}"/>  
-                                        </f:facet>  
-                                    </p:cellEditor>  
-
-                                </p:column>
-
-                                <p:column headerText="Low Message">
-                                    <p:cellEditor>  
-                                        <f:facet name="output">  
-                                            <h:outputText value="#{f.lowMessage}" />  
-                                        </f:facet>  
-                                        <f:facet name="input">  
-                                            <h:inputText autocomplete="off" value="#{f.lowMessage}"/>  
-                                        </f:facet>  
-                                    </p:cellEditor>                                    
-                                </p:column>
-
-                                <p:column headerText="Normal Message">
-                                    <p:cellEditor>  
-                                        <f:facet name="output">  
-                                            <h:outputText value="#{f.flagMessage}" />  
-                                        </f:facet>  
-                                        <f:facet name="input">  
-                                            <h:inputText autocomplete="off" value="#{f.flagMessage}"/>  
-                                        </f:facet>  
-                                    </p:cellEditor>                                        
-                                </p:column>
+                                        </div>
+                                    </div>
 
 
-                                <p:column headerText="Report Item id">
-                                    #{f.investigationItemOfFlagType.id}
-                                    <br/>
-                                    #{f.retired}
-                                </p:column>
+                                </div>
+                            </div>
+
+                            <div class="row mt-1">
+                                <div class="col-md-2">
+                                    <h:outputLabel value="To Age" class="mt-2" ></h:outputLabel>
+                                </div>
+                                <div class="col-md-5 d-flex">
+                                    <div class="d-flex w-100">
+                                        <div class="col-10">
+                                            <p:inputText 
+                                                autocomplete="off" 
+                                                class="w-100"
+                                                value="#{testFlagController.toAge}">
+                                            </p:inputText>
+                                        </div>
+                                        <div class="col-2">
+                                            <p:selectOneMenu 
+                                                class="w-100"
+                                                value="#{testFlagController.toAgeUnit}" >
+                                                <f:selectItem itemLabel="Days" itemValue="Days"/>
+                                                <f:selectItem itemLabel="Months" itemValue="Months"/>
+                                                <f:selectItem itemLabel="Years" itemValue="Years"/>
+                                            </p:selectOneMenu>
+                                        </div>
+                                    </div>
 
 
-                                <p:column style="width:6%">  
-                                    <p:rowEditor > 
+                                </div>
+                            </div>
 
-                                    </p:rowEditor>
-                                </p:column>            
+                            <div class="row mt-1">
+                                <div class="col-md-2">
+                                    <h:outputLabel value="From Value"  class="mt-2" ></h:outputLabel>
+                                </div>
+                                <div class="col-md-5">
+                                    <p:inputText autocomplete="off" class="w-100" value="#{testFlagController.fromValue}"></p:inputText>
+                                </div>
+                            </div>
 
-                                <p:column headerText="Remove">
-                                    <h:commandButton value="Remove" action="#{testFlagController.removeFlag}" >
-                                        <f:setPropertyActionListener value="#{f}" target="#{testFlagController.removingFlag}" />
-                                    </h:commandButton>
-                                </p:column>
+                            <div class="row mt-1">
+                                <div class="col-md-2">
+                                    <h:outputLabel value="To Value" class="mt-2" ></h:outputLabel>
+                                </div>
+                                <div class="col-md-5">
+                                    <p:inputText autocomplete="off" class="w-100" value="#{testFlagController.toValue}"></p:inputText>
+                                </div>
+                            </div>
+
+                            <div class="row mt-1">
+                                <div class="col-md-2">
+                                    <h:outputLabel value="Message if Low" class="mt-2" ></h:outputLabel>
+                                </div>
+                                <div class="col-md-5">
+                                    <p:inputTextarea class="w-100" value="#{testFlagController.lowMessage }" ></p:inputTextarea>
+                                </div>
+                            </div>
+
+                            <div class="row mt-1">
+                                <div class="col-md-2">
+                                    <h:outputLabel value="Message if High" class="mt-2" ></h:outputLabel>
+                                </div>
+                                <div class="col-md-5">
+                                    <p:inputTextarea class="w-100" value="#{testFlagController.highMessage }" ></p:inputTextarea>
+                                </div>
+                            </div>
+
+                            <div class="row mt-1">
+                                <div class="col-md-2">
+                                    <h:outputLabel value="Message if Within the Range" class="mt-2" ></h:outputLabel>
+                                </div>
+                                <div class="col-md-5">
+                                    <p:inputTextarea class="w-100" value="#{testFlagController.flagMessage }" ></p:inputTextarea>
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-end col-7 mt-2 mb-2">
+                                <p:commandButton 
+                                    ajax="false" 
+                                    value="Save" 
+                                    style="width: 150px;"
+                                    class="ui-button-success align-right"
+                                    icon="fas fa-save"
+                                    action="#{testFlagController.addFlag()}" >
+                                </p:commandButton>
+                            </div>
+                        </div>
+
+                        <div class="mt-2">
+                            <p:panel>
+                                <f:facet name="header">
+                                     <h:outputText value="Flag List" />  
+                                </f:facet>
+                                <p:dataTable id="tbl" value="#{testFlagController.items}" editable="true" var="f" >
+                                    <p:ajax event="rowEdit" listener="#{testFlagController.onEdit}"  /> 
+                                    
+                                    <p:column headerText="Investigation">
+                                        #{f.item.name}
+                                    </p:column>
+                                    <p:column headerText="Flag Field">
+                                        #{f.investigationItemOfFlagType.name}
+                                    </p:column>
+                                    <p:column headerText="Value Field">
+                                        #{f.investigationItemOfValueType.name}
+                                    </p:column>
+                                    <p:column headerText="Sex">  
+                                        <p:cellEditor>  
+                                            <f:facet name="output">  
+                                                <h:outputText value="#{f.sex}" />  
+                                            </f:facet>  
+                                            <f:facet name="input">  
+                                                <p:selectOneMenu value="#{f.sex}" class="w-100">
+                                                    <f:selectItem itemLabel="Select Sex"/>
+                                                    <f:selectItem itemLabel="Male" itemValue="Male"/>
+                                                    <f:selectItem itemLabel="Female" itemValue="Female"/>
+                                                </p:selectOneMenu>
+                                            </f:facet>  
+                                        </p:cellEditor>    
+
+                                    </p:column>
+                                    <p:column headerText="From Age">
+                                        <p:cellEditor>  
+                                            <f:facet name="output">  
+                                                <h:outputText value="#{f.fromAge}" />  
+                                            </f:facet>  
+                                            <f:facet name="input">  
+                                                <p:inputText class="w-100" autocomplete="off" value="#{f.fromAge}"/>  
+                                            </f:facet>  
+                                        </p:cellEditor>                                     
+                                    </p:column>
+                                    <p:column headerText="To Age">
+                                        <p:cellEditor>  
+                                            <f:facet name="output">  
+                                                <h:outputText value="#{f.toAge}" />  
+                                            </f:facet>  
+                                            <f:facet name="input">  
+                                                <p:inputText  class="w-100" autocomplete="off" value="#{f.toAge}"/>  
+                                            </f:facet>  
+                                        </p:cellEditor> 
+
+                                    </p:column>
+
+                                    <p:column headerText="From Value">
+                                        <p:cellEditor>  
+                                            <f:facet name="output">  
+                                                <h:outputText value="#{f.fromVal}" />  
+                                            </f:facet>  
+                                            <f:facet name="input">  
+                                                <p:inputText  class="w-100" autocomplete="off" value="#{f.fromVal}"/>  
+                                            </f:facet>  
+                                        </p:cellEditor>                                    
+                                    </p:column>
+
+                                    <p:column headerText="To Value">
+                                        <p:cellEditor>  
+                                            <f:facet name="output">  
+                                                <h:outputText value="#{f.toVal}" />  
+                                            </f:facet>  
+                                            <f:facet name="input">  
+                                                <p:inputText  class="w-100" autocomplete="off" value="#{f.toVal}"/>  
+                                            </f:facet>  
+                                        </p:cellEditor>                                       
+                                    </p:column>
+
+                                    <p:column headerText="High Message">
+                                        <p:cellEditor>  
+                                            <f:facet name="output">  
+                                                <h:outputText value="#{f.highMessage}" />  
+                                            </f:facet>  
+                                            <f:facet name="input">  
+                                                <p:inputText autocomplete="off" class="w-100" value="#{f.highMessage}"/>  
+                                            </f:facet>  
+                                        </p:cellEditor>  
+
+                                    </p:column>
+
+                                    <p:column headerText="Low Message">
+                                        <p:cellEditor>  
+                                            <f:facet name="output">  
+                                                <h:outputText value="#{f.lowMessage}" />  
+                                            </f:facet>  
+                                            <f:facet name="input">  
+                                                <p:inputText autocomplete="off" class="w-100" value="#{f.lowMessage}"/>  
+                                            </f:facet>  
+                                        </p:cellEditor>                                    
+                                    </p:column>
+
+                                    <p:column headerText="Normal Message">
+                                        <p:cellEditor>  
+                                            <f:facet name="output">  
+                                                <h:outputText value="#{f.flagMessage}" />  
+                                            </f:facet>  
+                                            <f:facet name="input">  
+                                                <p:inputText autocomplete="off" class="w-100" value="#{f.flagMessage}"/>  
+                                            </f:facet>  
+                                        </p:cellEditor>                                        
+                                    </p:column>
 
 
+                                    <p:column rendered="false" headerText="Report Item id">
+                                        #{f.investigationItemOfFlagType.id}
+                                        <br/>
+                                        #{f.retired}
+                                    </p:column>
 
-                            </p:dataTable>
+                                    <p:column headerText="Edit" style="width: 80px;">
+                                        <p:rowEditor> </p:rowEditor>
+                                    </p:column>
+                                    <p:column headerText="Remove" style="width: 55px;">
 
-                        </p:panelGrid>
+                                        <p:commandButton 
+                                            title="Remove" 
+                                            class="ui-button-danger"
+                                            icon="fa-solid fa-trash" 
+                                            action="#{testFlagController.removeFlag}" >
+                                            <f:setPropertyActionListener value="#{f}" target="#{testFlagController.removingFlag}" />
+                                        </p:commandButton>
+                                    </p:column>
 
+                                </p:dataTable>
+                            </p:panel>
+                        </div>
 
-                    </p:panelGrid>
-
-
-
-
+                    </p:panel>
                 </h:form>
             </ui:define>
-
-
         </ui:composition>
-
     </h:body>
 </html>
