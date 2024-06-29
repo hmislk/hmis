@@ -7,55 +7,58 @@
                 xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp">
 
     <ui:define name="content">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.1/jspdf.umd.min.js"></script>
         <style>
-             .print-only {
-            display: none !important;
-        }
+            .print-only {
+                display: none !important;
+            }
 
-    @media print {
-        .print-only {
-            display: block !important;
-        }
-        .h4{
-            font-size: 0.5em;
-        }
-        .h3{
-            font-size: 0.6em;
-        }
-        .h5{
-            font-size: 0.4em;
-        }
-        .h6{
-            font-size: 0.3em;
-        }
-    }
+            @media print {
+                .print-only {
+                    display: block !important;
+                }
+                .h4 {
+                    font-size: 0.5em;
+                }
+                .h3 {
+                    font-size: 0.6em;
+                }
+                .h5 {
+                    font-size: 0.4em;
+                }
+                .h6 {
+                    font-size: 0.3em;
+                }
+            }
         </style>
         <h:form id="paymentForm">
             <div class="row">
                 <nav class="navbar sticky-top navbar-expand-lg navbar-dark bg-dark p-0">
                     <div class="d-flex justify-content-between align-items-center w-100">
-                        <a class="navbar-brand ml-4 mx-2 p-4"><h3>#{sessionController.institution.name}</h3></a>
-                        <p:commandButton value="Logout" class="ui-button-danger m-4" icon="fas fa-right-from-bracket" ajax="false" action="#{patientPortalController.reset}" rendered="#{patientPortalController.otpVerify}"></p:commandButton>
+                        <a class="navbar-brand ml-4 mx-2 p-4">
+                            <h3>#{sessionController.institution.name}</h3>
+                        </a>
+                        <p:commandButton value="Logout" class="ui-button-danger m-4" icon="fas fa-right-from-bracket" ajax="false" action="#{patientPortalController.reset}" rendered="#{patientPortalController.otpVerify}" />
                     </div>
                 </nav>
             </div>
 
-
             <div class="d-flex justify-content-center align-items-center mt-5">
-                <div style="max-width: 800px"  class="card w-100 shadow p-4">
-                    <h3 class="my-4 text-center" style="color: green; border-color: green;" >PAYMENT SUCCESS</h3>
+                <div style="max-width: 800px" class="card w-100 shadow p-4">
+                    <h3 class="my-4 text-center" style="color: green; border-color: green;">PAYMENT SUCCESS</h3>
                     <h3 class="my-4">Patient</h3>
                     <div style="display: flex; flex-direction: column;">
                         <div class="d-flex justify-content-between">
-                            <p>Name: </p>
+                            <p>Name:</p>
                             <p style="font-weight: bolder">#{patientPortalController.channelBookingBillSession.bill.patient.person.nameWithTitle}</p>
                         </div>
                         <div class="d-flex justify-content-between">
-                            <p>Address: </p>
+                            <p>Address:</p>
                             <p style="font-weight: bolder">#{patientPortalController.channelBookingBillSession.bill.patient.person.address}</p>
                         </div>
                         <div class="d-flex justify-content-between">
-                            <p>Phone Number: </p>
+                            <p>Phone Number:</p>
                             <p style="font-weight: bolder">#{patientPortalController.channelBookingBillSession.bill.patient.person.phone}</p>
                         </div>
                     </div>
@@ -63,68 +66,79 @@
                     <h3 class="my-4">Doctor and Session Details</h3>
                     <div>
                         <div class="d-flex justify-content-between">
-                            <p>Doctor: </p>
+                            <p>Doctor:</p>
                             <p style="font-weight: bolder">#{patientPortalController.channelBookingBillSession.sessionInstance.originatingSession.staff.person.nameWithTitle}</p>
                         </div>
                         <div class="d-flex justify-content-between">
-                            <p>Speciality: </p>
+                            <p>Speciality:</p>
                             <p style="font-weight: bolder">#{patientPortalController.channelBookingBillSession.sessionInstance.originatingSession.staff.speciality.name}</p>
                         </div>
                         <div class="d-flex justify-content-between">
-                            <p>Session: </p>
+                            <p>Session:</p>
                             <p style="font-weight: bolder">#{patientPortalController.channelBookingBillSession.sessionInstance.name}</p>
                         </div>
                         <div class="d-flex justify-content-between">
-                            <p>Session Date: </p>
+                            <p>Session Date:</p>
                             <p style="font-weight: bolder">#{patientPortalController.selectedSessionInstance.sessionDate}</p>
                         </div>
                     </div>
                     <h3 class="my-4">Appointment Information</h3>
                     <div class="d-flex justify-content-between">
-                        <p>Appointment no: </p>
+                        <p>Appointment no:</p>
                         <p style="font-weight: bolder">#{patientPortalController.channelSettlingBillSession.serialNo}</p>
                     </div>
                     <!-- Add more session details as needed -->
 
                     <h3 class="my-4">Payment Information</h3>
                     <div class="d-flex justify-content-between">
-                        <p>Card Number: </p>
+                        <p>Card Number:</p>
                         <p style="font-weight: bolder">#{paymentGatewayController.cardNumber}</p>
                     </div>
                     <div class="d-flex justify-content-between">
-                        <p>Card Type: </p>
+                        <p>Card Type:</p>
                         <p style="font-weight: bolder">#{paymentGatewayController.cardType}</p>
                     </div>
                     <div class="d-flex justify-content-between">
-                        <p>Transaction ID: </p>
+                        <p>Transaction ID:</p>
                         <p style="font-weight: bolder">#{paymentGatewayController.transactionId}</p>
                     </div>
                     <div class="d-flex justify-content-between">
-                        <p>Total Paid Amount: </p>
+                        <p>Total Paid Amount:</p>
                         <p style="font-weight: bolder">#{paymentGatewayController.paidAmount}</p>
                     </div>
-                    <p:commandButton value="Download" class="w-100 ui-button-danger"
-                                     icon="fas fa-file-pdf"
-                                     ajax="false"></p:commandButton>
-                    <p:commandButton value="Print" class="w-100 mt-2 ui btn-info"
-                                     icon="fas fa-print"
-                                     ajax="false">
+                    <p:commandButton value="Download" class="w-100 ui-button-danger" icon="fas fa-file-pdf" onclick="downloadPdf()" type="button" />
+                    <p:commandButton value="Print" class="w-100 mt-2 ui btn-info" icon="fas fa-print" ajax="false">
                         <p:printer target="PrintBill" />
                     </p:commandButton>
-                    <p:commandButton value="Go Back" class="w-100 mt-2  ui-button-success"
-                                     action="#{patientPortalController.navigateBookingMenue()}" ajax="false"/>
-
+                    <p:commandButton value="Go Back" class="w-100 mt-2 ui-button-success" action="#{patientPortalController.navigateBookingMenue()}" ajax="false" />
                 </div>
             </div>
-            <div>
 
+            <div>
                 <h:panelGroup id="PrintBill">
-                    <div class="print-only">
-                        <ez:bmsOnlinePayment />
+                    <div class="print-only" id="pdfContent">
+                        <div id="billContent">
+                            <ez:bmsOnlinePayment />
+                        </div>
                     </div>
                 </h:panelGroup>
             </div>
-        </h:form>
 
+            <script>
+                function downloadPdf() {
+                    console.log("Downloading PDF...");
+                    const element = document.getElementById('pdfContent');
+                    element.classList.remove('print-only');
+                    const opt = {
+                        margin: [0, 0.5, 0, 0.5], // top, left, bottom, right
+                        filename: 'OnlineChannelBookingPayment.pdf',
+                        image: {type: 'jpeg', quality: 0.98},
+                        html2canvas: {scale: 2},
+                        jsPDF: {unit: 'in', format: 'a4', orientation: 'portrait'}
+                    };
+                    html2pdf().from(element).set(opt).save();
+                }
+            </script>
+        </h:form>
     </ui:define>
 </ui:composition>
