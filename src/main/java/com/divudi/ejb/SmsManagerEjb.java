@@ -106,15 +106,11 @@ public class SmsManagerEjb {
         
          // Define fromDate as the start of today
         Date fromDate = CommonFunctions.getStartOfDay();
-        System.out.println("fromDate = " + fromDate);
-
         // Define toDate as the end of today
         Date toDate = CommonFunctions.getEndOfDay();
-        System.out.println("toDate = " + toDate);
 
         // Fetch all session instances for today
         List<SessionInstance> sessions = channelBean.listSessionInstances(fromDate, toDate, null, null, null);
-        System.out.println("sessions = " + sessions);
 
         // Define fromTime as the current time
         Date fromTime = new Date();
@@ -122,14 +118,12 @@ public class SmsManagerEjb {
         calf.setTime(fromTime);
         calf.add(Calendar.MINUTE, 30);
         Date fromTime1 = calf.getTime();
-        System.out.println("fromTime = " + fromTime);
 
         // Calculate toTime as 60 minutes from fromTime
         Calendar cal = Calendar.getInstance();
         cal.setTime(fromTime);
         cal.add(Calendar.MINUTE, 60);
         Date toTime = cal.getTime();
-        System.out.println("toTime = " + toTime);
 
         // Filter sessions that start within the next 60 minutes
         List<SessionInstance> upcomingSessions = sessions.stream()
@@ -138,7 +132,6 @@ public class SmsManagerEjb {
                     return sessionStartDateTime != null && sessionStartDateTime.after(fromTime1) && sessionStartDateTime.before(toTime);
                 })
                 .collect(Collectors.toList());
-
         System.out.println("upcomingSessions = " + upcomingSessions);
 
         // Iterate over the filtered sessions and send SMS to doctors
@@ -179,6 +172,8 @@ public class SmsManagerEjb {
             e.setSmsType(MessageType.ChannelDoctorReminder);
             getSmsFacade().create(e);
             Boolean sent = sendSms(e);
+            e.setSentSuccessfully(sent);
+            getSmsFacade().edit(e);
         
     }
     
