@@ -51,7 +51,7 @@
                 <div class="d-flex justify-content-between">
                     <div>
                         <h4>Channel Booking for #{patientPortalController.channelBookingBillSession.sessionInstance.originatingSession.staff.person.nameWithTitle}</h4>
-                        <h5>#{patientPortalController.channelBookingBillSession.sessionInstance.originatingSession.staff.speciality.name} - #{patientPortalController.selectedSessionInstance.sessionDate} @ #{patientPortalController.channelSettlingBillSession.serialNo}</h5>
+                        <h5>#{patientPortalController.channelBookingBillSession.sessionInstance.originatingSession.staff.speciality.name} - #{patientPortalController.getSessionStartDateTime(patientPortalController.selectedSessionInstance)} @ #{patientPortalController.channelSettlingBillSession.serialNo}</h5>
                     </div>
                     <div>
                         <h3>Rs.#{paymentGatewayController.paidAmount}</h3>
