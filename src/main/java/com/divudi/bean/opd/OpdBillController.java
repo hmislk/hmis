@@ -2142,6 +2142,22 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                 return true;
             }
         }
+        if(configOptionApplicationController.getBooleanValueByKey("Need Patient Title And Gender To Save Patient", false)){
+            if (getPatient().getPerson().getTitle() == null) {
+                JsfUtil.addErrorMessage("Please select title");
+                return true;
+            }
+            if (getPatient().getPerson().getSex()== null) {
+                JsfUtil.addErrorMessage("Please select gender");
+                return true;
+            }
+        }
+        if(configOptionApplicationController.getBooleanValueByKey("Need Patient Age to Save Patient", false)){
+            if (getPatient().getPerson().getDob()== null) {
+                JsfUtil.addErrorMessage("Please select patient date of birth");
+                return true;
+            }
+        }
 
         if (!sessionController.getDepartmentPreference().isOpdSettleWithoutPatientPhoneNumber()) {
             if (getPatient().getPerson().getPhone() == null) {
