@@ -7,6 +7,7 @@ package com.divudi.light.common;
 public class WebUserLight {
     private String userName;
     private Long id;
+    private String name;
 
     public WebUserLight() {
     }
@@ -16,7 +17,11 @@ public class WebUserLight {
         this.id = id;
     }
     
-    
+    public WebUserLight(String userName, String name, Long id) {
+        this.userName = userName;
+        this.name = name;
+        this.id = id;
+    }
 
     public String getUserName() {
         return userName;
@@ -32,6 +37,14 @@ public class WebUserLight {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
     
     

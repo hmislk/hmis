@@ -83,6 +83,8 @@ public class Item implements Serializable, Comparable<Item> {
 
     @ManyToOne
     Category category;
+    @ManyToOne
+    private Category financialCategory;
     Double total = 0.0;
     private Double totalForForeigner = 0.0;
     Boolean discountAllowed = false;
@@ -1080,6 +1082,8 @@ public class Item implements Serializable, Comparable<Item> {
 
         return this.name.compareTo(o.name);
     }
+    
+    
 
     public ItemType getItemType() {
         if (itemType == null) {
@@ -1309,6 +1313,14 @@ public class Item implements Serializable, Comparable<Item> {
 
     public void setNumberOfDaysToMarkAsShortExpiary(int numberOfDaysToMarkAsShortExpiary) {
         this.numberOfDaysToMarkAsShortExpiary = numberOfDaysToMarkAsShortExpiary;
+    }
+
+    public Category getFinancialCategory() {
+        return financialCategory;
+    }
+
+    public void setFinancialCategory(Category financialCategory) {
+        this.financialCategory = financialCategory;
     }
     
     
