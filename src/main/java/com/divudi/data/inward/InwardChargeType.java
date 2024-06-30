@@ -62,6 +62,8 @@ public enum InwardChargeType {
     Eye("Eye"),
     @Deprecated
     Investigations("Investigations"),
+    @Deprecated
+    MedicalCare("MedicalCare"),
     
     
     

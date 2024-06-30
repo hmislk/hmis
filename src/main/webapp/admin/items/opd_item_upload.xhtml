@@ -107,8 +107,9 @@
             </div>
         </div>
 
-
+#{sessionController.institution.name}
         <div class="row" >
+            #{sessionController.loggedUser.institution.name}
             <div class="col-6" >
                 <h1>Uploaded Items</h1>
                 <p:dataTable id="tbl" value="#{dataUploadController.items}" var="item" >
@@ -116,6 +117,13 @@
                         #{item.name}
                     </p:column>
                     <p:column >
+                        #{item.institution.name}
+                    </p:column>
+                    <p:column >
+                        #{item.department.name}
+                    </p:column>
+                    <p:column >
+                        
                         #{item.total}
                     </p:column>
 

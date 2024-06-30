@@ -69,7 +69,7 @@ public class DepartmentController implements Serializable {
                 + " and i.retired=:ret";
         Department i = getFacade().findFirstByJpql(sql, m);
         if (i == null) {
-            i = new Department();
+            i = new Department(); 
             i.setName(name);
             getFacade().create(i);
         } else {
@@ -78,7 +78,7 @@ public class DepartmentController implements Serializable {
         }
         return i;
     }
-
+    
     public void fillItems() {
         String j;
         j = "select i from Department i where i.retired=false order by i.name";

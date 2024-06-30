@@ -899,11 +899,11 @@ public class DataUploadController implements Serializable {
             String institutionName = null;
             String departmentName = null;
             String inwardName = null;
-
+            
             String itemType = "Investigation";
             Double hospitalFee = 0.0;
 
-            Cell insCell = row.getCell(5);
+            Cell insCell = row.getCell(6);
             if (insCell != null && insCell.getCellType() == CellType.STRING) {
                 institutionName = insCell.getStringCellValue();
             }
@@ -923,7 +923,7 @@ public class DataUploadController implements Serializable {
                 runningIns = institution;
             }
 
-            Cell deptCell = row.getCell(6);
+            Cell deptCell = row.getCell(7);
             if (deptCell != null && deptCell.getCellType() == CellType.STRING) {
                 departmentName = deptCell.getStringCellValue();
             }
@@ -933,6 +933,8 @@ public class DataUploadController implements Serializable {
 
             if (runningDept == null) {
                 department = departmentController.findAndSaveDepartmentByName(departmentName);
+                    System.out.println("departmentpt-111 = " + department);
+                
                 runningDept = department;
                 departmentsSaved.add(department);
             } else if (runningDept.getName().equals(departmentName)) {
@@ -1021,7 +1023,7 @@ public class DataUploadController implements Serializable {
             }
 
             // Handle financial category
-            Cell financialCategoryCell = row.getCell(10);
+            Cell financialCategoryCell = row.getCell(5);
             if (financialCategoryCell != null && financialCategoryCell.getCellType() == CellType.STRING) {
                 financialCategoryName = financialCategoryCell.getStringCellValue();
             }
@@ -1053,7 +1055,7 @@ public class DataUploadController implements Serializable {
                 runningFinancialCategory = financialCategory;
             }
 
-            Cell inwardCcCell = row.getCell(7);
+            Cell inwardCcCell = row.getCell(8);
             if (inwardCcCell != null && inwardCcCell.getCellType() == CellType.STRING) {
                 inwardName = inwardCcCell.getStringCellValue();
             }
@@ -1064,7 +1066,7 @@ public class DataUploadController implements Serializable {
                 iwct = InwardChargeType.OtherCharges;
             }
 
-            Cell itemTypeCell = row.getCell(8);
+            Cell itemTypeCell = row.getCell(9);
             if (itemTypeCell != null && itemTypeCell.getCellType() == CellType.STRING) {
                 itemType = itemTypeCell.getStringCellValue();
             }
@@ -1199,7 +1201,7 @@ public class DataUploadController implements Serializable {
                 continue;
             }
 
-            Cell hospitalFeeTypeCell = row.getCell(9);
+            Cell hospitalFeeTypeCell = row.getCell(10);
             if (hospitalFeeTypeCell != null) {
                 if (hospitalFeeTypeCell.getCellType() == CellType.NUMERIC) {
                     // If it's a numeric value
