@@ -52,14 +52,14 @@ public class UploadController implements Serializable {
         selected = new Upload();
         selected.setUploadType(UploadType.Web_Image);
         selected.setWebContent(new WebContent());
-        return "/webcontent/upload";
+        return "/webcontent/upload?faces-redirect=true";
     }
 
     public String toAddNewDiagnosisCardTemplateUpload() {
         selected = new Upload();
         selected.setUploadType(UploadType.Diagnosis_Card_Template);
         selected.setWebContent(new WebContent());
-        return "/inward/upload";
+        return "/inward/upload?faces-redirect=true";
     }
 
  
@@ -67,7 +67,7 @@ public class UploadController implements Serializable {
     public String toAddNewUpload() {
         selected = new Upload();
         selected.setWebContent(new WebContent());
-        return "/webcontent/upload";
+        return "/webcontent/upload?faces-redirect=true";
     }
 
     public StreamedContent downloadModifiedWordFile() {
@@ -84,17 +84,17 @@ public class UploadController implements Serializable {
 
     public String toListWebImageUploads() {
         listUploads(UploadType.Web_Image);
-        return "/webcontent/uploads";
+        return "/webcontent/uploads?faces-redirect=true";
     }
 
     public String toListUploads() {
         listUploads(UploadType.Web_Image);
-        return "/webcontent/uploads";
+        return "/webcontent/uploads?faces-redirect=true";
     }
 
     public String toListDiagnosisCardUploads() {
         listUploads(UploadType.Diagnosis_Card_Template);
-        return "/inward/uploads";
+        return "/inward/uploads?faces-redirect=true";
     }
 
     public String toViewUpload() {
@@ -105,7 +105,7 @@ public class UploadController implements Serializable {
         if (selected.getWebContent() == null) {
             selected.setWebContent(new WebContent());
         }
-        return "/webcontent/upload";
+        return "/webcontent/upload?faces-redirect=true";
     }
 
     public String toViewDiagnosisCardTemplateUpload() {
@@ -116,7 +116,7 @@ public class UploadController implements Serializable {
         if (selected.getWebContent() == null) {
             selected.setWebContent(new WebContent());
         }
-        return "/inward/upload_view";
+        return "/inward/upload_view?faces-redirect=true";
     }
 
    

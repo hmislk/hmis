@@ -2737,6 +2737,29 @@ public class BillSearch implements Serializable {
         return result;
     }
 
+    
+    public String navigateToViewSingleOpdBill() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("Nothing to cancel");
+            return "";
+        }
+        loadBillItemsAndBillFees(bill);
+        if (configOptionController.getBooleanValueByKey("OPD Bill Cancelation is Limited to the Last 24 hours", OptionScope.APPLICATION, null, null, null)) {
+            opdBillCancellationSameDay = chackRefundORCancelBill(bill);
+        } else {
+            opdBillCancellationSameDay = true;
+        }
+
+        if (configOptionController.getBooleanValueByKey("OPD Bill Refund Allowed to the Last 24 hours", OptionScope.APPLICATION, null, null, null)) {
+            opdBillRefundAllowedSameDay = chackRefundORCancelBill(bill);
+        } else {
+            opdBillRefundAllowedSameDay = true;
+        }
+        paymentMethod = bill.getPaymentMethod();
+        printPreview = false;
+        return "/opd/bill_reprint?faces-redirect=true;";
+    }
+    
     public String navigateToViewOpdBill() {
         if (bill == null) {
             JsfUtil.addErrorMessage("Nothing to cancel");
@@ -2979,6 +3002,20 @@ public class BillSearch implements Serializable {
             }
         }
 
+    }
+
+    private void loadBillItemsAndBillFees(Bill billToLoad) {
+        if (billToLoad == null) {
+            return;
+        }
+        if (billToLoad.getBillItems() == null || billToLoad.getBillItems().isEmpty()) {
+            billToLoad.setBillItems(billBean.fillBillItems(billToLoad));
+        }
+        for (BillItem bi : billToLoad.getBillItems()) {
+            if (bi.getBillFees() == null || bi.getBillFees().isEmpty()) {
+                bi.setBillFees(billBean.fillBillItemFees(bi));
+            }
+        }
     }
 
     private void createBillItemsForRetire() {

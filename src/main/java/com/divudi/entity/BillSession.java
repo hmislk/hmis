@@ -125,6 +125,7 @@ public class BillSession implements Serializable {
     @Transient
     ChannelFee agentFee;
     private boolean reservedBooking=false;
+    private boolean recheduledSession=false;
 
     public void copy(BillSession billSession) {
         packege = billSession.getPackege();
@@ -544,6 +545,14 @@ public class BillSession implements Serializable {
 
     public void setReservedBooking(boolean reservedBooking) {
         this.reservedBooking = reservedBooking;
+    }
+
+    public boolean isRecheduledSession() {
+        return recheduledSession;
+    }
+
+    public void setRecheduledSession(boolean recheduledSession) {
+        this.recheduledSession = recheduledSession;
     }
     
     
