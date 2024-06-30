@@ -1,0 +1,76 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp">
+
+    <h:body>
+        <ui:composition template="/dataAdmin/admin_data_administration.xhtml">
+            <ui:define name="subcontent">
+
+                <h:form id="reportForm">
+                    <p:messages id="messages" showDetail="true" closable="true" />
+
+                    <!-- Panel Grid for layout -->
+                    <p:panelGrid columns="2" columnClasses="col-md-3, col-md-9" styleClass="panelGrid">
+                        <!-- Name -->
+                        <p:outputLabel value="Name:" for="name" />
+                        <p:inputText id="name" value="#{reportTemplateController.current.name}" required="true" />
+
+                        <!-- Code -->
+                        <p:outputLabel value="Code:" for="code" />
+                        <p:inputText id="code" value="#{reportTemplateController.current.code}" />
+
+                        <!-- Description -->
+                        <p:outputLabel value="Description:" for="description" />
+                        <p:inputTextarea id="description" value="#{reportTemplateController.current.description}" rows="3" />
+
+                        <!-- Order No -->
+                        <p:outputLabel value="Order No:" for="orderNo" />
+                        <p:inputText id="orderNo" value="#{reportTemplateController.current.orderNo}" />
+
+                        <!-- Keywords -->
+                        <p:outputLabel value="Keywords:" for="keywords" />
+                        <p:inputText id="keywords" value="#{reportTemplateController.current.keywords}" />
+
+                        <!-- Report Template Type -->
+                        <p:outputLabel value="Report Type:" for="reportType" />
+                        <p:selectOneMenu id="reportType" value="#{reportTemplateController.current.reportTemplateType}">
+                            <f:selectItems value="#{reportTemplateController.reportTemplateTypes}" var="type"
+                                           itemLabel="#{type}" itemValue="#{type}" />
+                        </p:selectOneMenu>
+
+                        <!-- Category -->
+                        <p:outputLabel value="Category:" for="category" />
+                        <p:selectOneMenu id="category" value="#{reportTemplateController.current.category}">
+                            <f:selectItem itemLabel="-- Select Category --" noSelectionOption="true" />
+                            <f:selectItems value="#{reportTemplateController.categories}" var="cat"
+                                           itemLabel="#{cat.name}" itemValue="#{cat}" />
+                        </p:selectOneMenu>
+
+                        <!-- Filters -->
+                        <p:outputLabel value="Filters:" for="filters" />
+                        <p:inputTextarea id="filters" value="#{reportTemplateController.current.filters}" rows="3" />
+
+                        <!-- Columns -->
+                        <p:outputLabel value="Columns:" for="columns" />
+                        <p:inputTextarea id="columns" value="#{reportTemplateController.current.columns}" rows="3" />
+
+                        <!-- Totals -->
+                        <p:outputLabel value="Totals:" for="totals" />
+                        <p:inputTextarea id="totals" value="#{reportTemplateController.current.totals}" rows="3" />
+                    </p:panelGrid>
+
+                    <!-- Save Button -->
+                    <p:commandButton value="Save" action="#{reportTemplateController.saveReportTemplate}"
+                                     update=":messages :reportForm" />
+                </h:form>
+
+
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
