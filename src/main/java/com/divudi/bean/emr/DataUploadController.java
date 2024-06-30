@@ -870,10 +870,7 @@ public class DataUploadController implements Serializable {
         itemsSkipped = new ArrayList<>();
 
         Item item;
-        Institution runningIns = null;
-        Department runningDept = null;
-        Category runningCategory = null;
-        Category runningFinancialCategory = null; // New running financial category
+        // New running financial category
 
         // Assuming the first row contains headers, skip it
         if (rowIterator.hasNext()) {
@@ -881,6 +878,10 @@ public class DataUploadController implements Serializable {
         }
 
         while (rowIterator.hasNext()) {
+            Institution runningIns = null;
+            Department runningDept = null;
+            Category runningCategory = null;
+            Category runningFinancialCategory = null;
             Row row = rowIterator.next();
 
             Category category;
@@ -903,7 +904,7 @@ public class DataUploadController implements Serializable {
             String itemType = "Investigation";
             Double hospitalFee = 0.0;
 
-            Cell insCell = row.getCell(5);
+            Cell insCell = row.getCell(6);
             if (insCell != null && insCell.getCellType() == CellType.STRING) {
                 institutionName = insCell.getStringCellValue();
             }
@@ -923,16 +924,15 @@ public class DataUploadController implements Serializable {
                 runningIns = institution;
             }
 
-            Cell deptCell = row.getCell(6);
+            Cell deptCell = row.getCell(7);
             if (deptCell != null && deptCell.getCellType() == CellType.STRING) {
                 departmentName = deptCell.getStringCellValue();
             }
             if (departmentName == null || departmentName.trim().equals("")) {
                 departmentName = sessionController.getDepartment().getName();
             }
-
             if (runningDept == null) {
-                department = departmentController.findAndSaveDepartmentByName(departmentName);
+                department = departmentController.findAndSaveDepartmentByName(departmentName,institution);
                 runningDept = department;
                 departmentsSaved.add(department);
             } else if (runningDept.getName().equals(departmentName)) {
@@ -1021,7 +1021,7 @@ public class DataUploadController implements Serializable {
             }
 
             // Handle financial category
-            Cell financialCategoryCell = row.getCell(10);
+            Cell financialCategoryCell = row.getCell(5);
             if (financialCategoryCell != null && financialCategoryCell.getCellType() == CellType.STRING) {
                 financialCategoryName = financialCategoryCell.getStringCellValue();
             }
@@ -1053,7 +1053,7 @@ public class DataUploadController implements Serializable {
                 runningFinancialCategory = financialCategory;
             }
 
-            Cell inwardCcCell = row.getCell(7);
+            Cell inwardCcCell = row.getCell(8);
             if (inwardCcCell != null && inwardCcCell.getCellType() == CellType.STRING) {
                 inwardName = inwardCcCell.getStringCellValue();
             }
@@ -1064,7 +1064,7 @@ public class DataUploadController implements Serializable {
                 iwct = InwardChargeType.OtherCharges;
             }
 
-            Cell itemTypeCell = row.getCell(8);
+            Cell itemTypeCell = row.getCell(9);
             if (itemTypeCell != null && itemTypeCell.getCellType() == CellType.STRING) {
                 itemType = itemTypeCell.getStringCellValue();
             }
@@ -1199,7 +1199,7 @@ public class DataUploadController implements Serializable {
                 continue;
             }
 
-            Cell hospitalFeeTypeCell = row.getCell(9);
+            Cell hospitalFeeTypeCell = row.getCell(10);
             if (hospitalFeeTypeCell != null) {
                 if (hospitalFeeTypeCell.getCellType() == CellType.NUMERIC) {
                     // If it's a numeric value

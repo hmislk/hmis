@@ -44,7 +44,13 @@
                                                           filterMatchMode="contains">
                                                     <h:outputText value="#{u.userName}"/>
                                                 </p:column>
-
+                                                    <p:column headerText="Name" 
+                                                              sortBy="#{u.name}" 
+                                                              filterBy="#{u.name}"
+                                                              rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable filtering logged users name on the View Users Page',false)}"
+                                                              filterMatchMode="contains">
+                                                        <h:outputText value="#{u.name}"/>
+                                                    </p:column>
                                             </p:dataTable>
                                         </ui:insert>
                                     </div>
