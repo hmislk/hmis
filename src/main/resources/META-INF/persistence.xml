@@ -4,16 +4,13 @@
         <jta-data-source>jdbc/horizon</jta-data-source>
         <exclude-unlisted-classes>false</exclude-unlisted-classes>
         <properties>
-            <!--      <property name="javax.persistence.schema-generation.database.action" value="create-or-extend-tables"/>-->
-            <!-- EclipseLink Logging -->
-            <property name="javax.persistence.schema-generation.database.action" value="create"/>
+            <property name="javax.persistence.schema-generation.database.action" value="create-or-extend-tables"/>
         </properties>
     </persistence-unit>
     <persistence-unit name="hmisAuditPU" transaction-type="JTA">
         <jta-data-source>jdbc/horizonAudit</jta-data-source>
         <exclude-unlisted-classes>false</exclude-unlisted-classes>
         <properties>
-            <!--      <property name="javax.persistence.schema-generation.database.action" value="create-or-extend-tables"/>-->
         </properties>
     </persistence-unit>
 </persistence>
