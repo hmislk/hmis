@@ -15,17 +15,93 @@
     </f:metadata>
 
     <head>
-
     </head>
 
     <h:body>
         <ui:composition template="/resources/template/template_contents_only.xhtml">
             <ui:define name="content">
+                <h:panelGroup>
+                    <div class="container-fluid my-5 d-sm-flex justify-content-center">
+                        <div class="card px-2">
+                            <div class="card-header bg-white" style="text-align: center">
+                                <h:outputLabel value="Channeling Live Tracker" class="h5" />
+                            </div>
+                            <div class="card-body">
+                                <div class="media flex-column flex-sm-row">
+                                    <div class="media-body ">
+                                        <h5 class="bold">#{bookingControllerViewScope.selectedBillSession.sessionInstance.staff.person.nameWithTitle}</h5>
+                                        <p class="text-muted">#{bookingControllerViewScope.selectedBillSession.sessionInstance.name}&emsp; 
+                                            <p:badge style="font-size: 10px" value="Not Started Yet" rendered="#{!bookingControllerViewScope.selectedBillSession.sessionInstance.started and !bookingControllerViewScope.selectedBillSession.sessionInstance.cancelled}" />
+                                            <p:badge style="font-size: 10px" value="Started" severity="warning" rendered="#{bookingControllerViewScope.selectedBillSession.sessionInstance.started and !bookingControllerViewScope.selectedBillSession.sessionInstance.completed and !bookingControllerViewScope.selectedBillSession.sessionInstance.cancelled}" />
+                                            <p:badge style="font-size: 10px" value="Completed" severity="success" rendered="#{bookingControllerViewScope.selectedBillSession.sessionInstance.completed and !bookingControllerViewScope.selectedBillSession.sessionInstance.cancelled}" />
+                                            <p:badge style="font-size: 10px" value="Canceled" severity="danger" rendered="#{bookingControllerViewScope.selectedBillSession.sessionInstance.cancelled}" />
+                                        </p>
+                                        <p class="text-muted">
+                                            <h:outputLabel value="#{bookingControllerViewScope.selectedBillSession.sessionInstance.sessionDate}" >
+                                                <f:convertDateTime pattern="dd MMMMM YYYY" />
+                                            </h:outputLabel> @ 
+                                            <h:outputLabel value="#{bookingControllerViewScope.selectedBillSession.sessionInstance.sessionTime}" >
+                                                <f:convertDateTime pattern="hh:mm a" />
+                                            </h:outputLabel><br />
+                                            <h:outputLabel value="Room #{bookingControllerViewScope.selectedBillSession.sessionInstance.roomNo}" rendered="#{bookingControllerViewScope.selectedBillSession.sessionInstance.roomNo ne 0 and bookingControllerViewScope.selectedBillSession.sessionInstance.roomNo ne null}" />
+                                        </p>
+                                        <h4 class="mt-3 mb-4 bold"> <h:outputLabel value="#{bookingControllerViewScope.selectedBillSession.sessionInstance.currentlyConsultingBillSession.bill.singleBillSession.serialNo}" rendered="#{bookingControllerViewScope.selectedBillSession.sessionInstance.currentlyConsultingBillSession.bill.singleBillSession.serialNo ne null}"/><h:outputLabel value="0" rendered="#{bookingControllerViewScope.selectedBillSession.sessionInstance.currentlyConsultingBillSession.bill.singleBillSession.serialNo eq null}"/> <span class="small text-muted"> is currently on going number </span></h4>
+                                        <p:badge style="font-size: 10px" value="You're Next" severity="warning" rendered="#{bookingControllerViewScope.selectedBillSession.nextInLine and !bookingControllerViewScope.selectedBillSession.completed and !(bookingControllerViewScope.selectedBillSession.serialNo eq bookingControllerViewScope.selectedBillSession.sessionInstance.currentlyConsultingBillSession.bill.singleBillSession.serialNo)}" />
+                                        <p:badge style="font-size: 10px" value="Your're Up" severity="success" rendered="#{bookingControllerViewScope.selectedBillSession.serialNo eq bookingControllerViewScope.selectedBillSession.sessionInstance.currentlyConsultingBillSession.bill.singleBillSession.serialNo and !bookingControllerViewScope.selectedBillSession.completed}" />
 
-                <h:panelGroup rendered="#{bookingControllerViewScope.selectedBillSession eq null}"  >
-                    
+
+                                        <div class="mt-2" style="padding: none">
+                                            <h:panelGroup rendered="#{bookingControllerViewScope.selectedBillSession.sessionInstance.completed}">
+                                                <div class="alert alert-success" style="font-size: 10px" role="alert">
+                                                    This Session has been completed.
+                                                </div>
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{(bookingControllerViewScope.selectedBillSession.sessionInstance.currentlyConsultingBillSession.bill.singleBillSession.serialNo > bookingControllerViewScope.selectedBillSession.serialNo) and bookingControllerViewScope.selectedBillSession.completed}">
+                                                <div class="alert alert-success" style="font-size: 10px" role="alert">
+                                                    Your All Done! If Any Inquires please contact our hotline. <br/>#{bookingControllerViewScope.selectedBillSession.institution.name} ( #{bookingControllerViewScope.selectedBillSession.institution.phone} )
+                                                </div>
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{(bookingControllerViewScope.selectedBillSession.sessionInstance.currentlyConsultingBillSession.bill.singleBillSession.serialNo > bookingControllerViewScope.selectedBillSession.serialNo) and !bookingControllerViewScope.selectedBillSession.completed}">
+                                                <div class="alert alert-danger" style="font-size: 10px" role="alert">
+                                                    You Missed your appointment on this session.
+                                                </div>
+                                            </h:panelGroup>
+
+                                            <h:panelGroup rendered="#{(bookingControllerViewScope.selectedBillSession.serialNo eq bookingControllerViewScope.selectedBillSession.sessionInstance.currentlyConsultingBillSession.bill.singleBillSession.serialNo) or (bookingControllerViewScope.selectedBillSession.sessionInstance.currentlyConsultingBillSession.bill.singleBillSession.serialNo > bookingControllerViewScope.selectedBillSession.serialNo)}">
+                                                <div class="alert alert-success" style="font-size: 10px" role="alert">
+                                                    Your Appointment No.#{bookingControllerViewScope.selectedBillSession.serialNo} is called.
+                                                </div>
+                                            </h:panelGroup>
+
+                                            <h:panelGroup rendered="#{bookingControllerViewScope.selectedBillSession.nextInLine}">
+                                                <div class="alert alert-warning" style="font-size: 10px" role="alert">
+                                                    Your Appointment No.#{bookingControllerViewScope.selectedBillSession.serialNo} is next to be called.
+                                                </div>
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{bookingControllerViewScope.selectedBillSession.sessionInstance.arrived}">
+                                                <div class="alert alert-primary" style="font-size: 10px" role="alert">
+                                                    #{bookingControllerViewScope.selectedBillSession.sessionInstance.staff.person.nameWithTitle} has arrived to #{bookingControllerViewScope.selectedBillSession.institution.name}
+                                                </div>
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{bookingControllerViewScope.selectedBillSession.sessionInstance.started}">
+                                                <div class="alert alert-success" style="font-size: 10px" role="alert">
+                                                    Your Session has been started.
+                                                </div>
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{bookingControllerViewScope.selectedBillSession.sessionInstance.cancelled}">
+                                                <div class="alert alert-danger" style="font-size: 10px" role="alert">
+                                                    This Session has been canceled.
+                                                </div>
+                                            </h:panelGroup>
+                                        </div>
+
+                                        <p class="text-muted mt-5" style="font-size: 9px" >Tracking Status on: <span class="Today">#{sessionController.currentTime()}</span></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </h:panelGroup>
-
             </ui:define>
 
         </ui:composition>

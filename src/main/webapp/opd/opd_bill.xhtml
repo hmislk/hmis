@@ -332,6 +332,11 @@
                                                         <f:ajax event="keyup" execute="@this" 
                                                                 render=":#{p:resolveFirstComponentWithId('tblRequests',view).clientId}  :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}"
                                                                 listener="#{opdBillController.feeChangeListener(bif)}" />
+                                                        <f:ajax event="blur" execute="@this :#{p:resolveFirstComponentWithId('tabBillFee',view).clientId}" 
+                                                                render=":#{p:resolveFirstComponentWithId('panelBillItems',view).clientId} :#{p:resolveFirstComponentWithId('msg',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}"
+                                                                listener="#{opdBillController.feeChangeListener(bif)}" />
+                                                        
+                                                        
                                                     </p:inputText>
                                                     <p:commandButton ajax="false" 
                                                                      icon="fa fa-refresh" 

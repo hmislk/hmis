@@ -123,7 +123,7 @@
                                 <div class="col-7" >
                                     <h:panelGroup id="groupFilteredSessions" >
                                         <p:dataTable 
-                                            value="#{bookingControllerViewScope.sessionInstancesFiltered}"  
+                                            value="#{bookingControllerViewScope.sortedSessionInstances}"
                                             var="s"
                                             selectionMode="single"
                                             selection="#{bookingControllerViewScope.selectedSessionInstance}"
@@ -144,7 +144,9 @@
                                                         <i class="fa-solid fa-user-doctor" style="font-size: 26pt;margin-right: 28px"></i>
                                                     </div>
                                                     <div class="align-items-center">
+
                                                         <h:outputText value="#{s.staff.person.nameWithTitle}" style="font-weight: bolder" /> <p:badge class="mx-2" severity="success" value="Completed" rendered="#{s.completed}" /> <br/>
+
                                                         <h:outputText value="(#{s.staff.speciality.name})" /><p:badge class="mx-2" severity="warning" value="Scaning Session" rendered="#{s.originatingSession.category eq 'Scanning'}" /> 
                                                         <br/>
 
@@ -207,9 +209,16 @@
                                                         </div>
                                                         <div class="text-center mx-4">
                                                             <h:outputLabel style="font-weight: bolder" value="A"/><br/>
-                                                            <p:badge value="#{s.maxNo - s.bookedPatientCount}" size="large" styleClass="mr-2" rendered="#{s.maxNo - s.bookedPatientCount > 3}"></p:badge>
-                                                            <p:badge value="#{s.maxNo - s.bookedPatientCount}" size="large" styleClass="mr-2" rendered="#{3 >= (s.maxNo - s.bookedPatientCount) and (s.maxNo - s.bookedPatientCount) > 0}" severity="warning"></p:badge>
-                                                            <p:badge value="0" size="large" styleClass="mr-2" rendered="#{0 >= s.maxNo - s.bookedPatientCount}" severity="danger"></p:badge>
+                                                            <h:panelGroup rendered="#{s.cancelPatientCount eq null}" >
+                                                                <p:badge value="#{s.maxNo - s.bookedPatientCount}" size="large" styleClass="mr-2" rendered="#{s.maxNo - s.bookedPatientCount > 3}"></p:badge>
+                                                                <p:badge value="#{s.maxNo - s.bookedPatientCount}" size="large" styleClass="mr-2" rendered="#{3 >= (s.maxNo - s.bookedPatientCount) and (s.maxNo - s.bookedPatientCount) > 0}" severity="warning"></p:badge>
+                                                                <p:badge value="0" size="large" styleClass="mr-2" rendered="#{0 >= s.maxNo - s.bookedPatientCount}" severity="danger"></p:badge>
+                                                            </h:panelGroup>
+                                                            <h:panelGroup rendered="#{s.cancelPatientCount ne null}" >
+                                                                <p:badge value="#{s.maxNo - (s.bookedPatientCount - s.cancelPatientCount)}" size="large" styleClass="mr-2" rendered="#{s.maxNo - (s.bookedPatientCount - s.cancelPatientCount) > 3}"></p:badge>
+                                                                <p:badge value="#{s.maxNo - (s.bookedPatientCount - s.cancelPatientCount)}" size="large" styleClass="mr-2" rendered="#{3 >= (s.maxNo - (s.bookedPatientCount - s.cancelPatientCount)) and (s.maxNo - (s.bookedPatientCount - s.cancelPatientCount)) > 0}" severity="warning"></p:badge>
+                                                                <p:badge value="0" size="large" styleClass="mr-2" rendered="#{0 >= s.maxNo - (s.bookedPatientCount - s.cancelPatientCount)}" severity="danger"></p:badge>
+                                                            </h:panelGroup>                                  
                                                         </div>
                                                         <div class="text-center">
                                                             <h:outputLabel style="font-weight: bolder" value="N"/><br/>
