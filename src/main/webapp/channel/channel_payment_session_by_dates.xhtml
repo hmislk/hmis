@@ -20,15 +20,15 @@
                                             ajax="false" 
                                             class="ui-button-secondary"
                                             icon="fa-solid fa-arrow-left"
-                                            action="#{bookingController.navigateBackToBookings()}" 
+                                            action="#{bookingControllerViewScope.navigateBackToBookingsFromProfPay()}"
                                             value="Back to Channel Booking" >
                                         </p:commandButton>
                                         <p:commandButton 
                                             ajax="false"
                                             class="ui-button-secondary"
                                             icon="fa-solid fa-arrow-left"
-                                            action="#{bookingController.navigateToViewSessionData()}" 
-                                            value="Back to Sesion Data" >
+                                            action="#{bookingControllerViewScope.navigateToManageSessionInstanceFromProfPay(channelStaffPaymentBillController.sessionInstance)}"
+                                            value="Back to Session Details" >
                                         </p:commandButton>
                                     </div>
                                 </div>
@@ -39,101 +39,47 @@
                                 <div class="row w-100">
                                     <div class="col-5">
                                         <p:panel class="mb-2 w-100">
-                                            <h:panelGrid columns="2" class="w-100">
+                                            <h:panelGrid columns="3" class="w-100">
                                                 <p:outputLabel value="Speciality" />
-                                                <p:autoComplete 
-                                                    class="w-100 mx-2" 
-                                                    inputStyleClass="w-100" 
-                                                    forceSelection="true" 
-                                                    value="#{channelStaffPaymentBillController.speciality}" 
-                                                    id="acSpeciality"
-                                                    completeMethod="#{doctorSpecialityController.completeSpeciality}" 
-                                                    var="mysp" 
-                                                    itemLabel="#{mysp.name}" 
-                                                    itemValue="#{mysp}"
-                                                    >
-                                                    <f:ajax event="itemSelect" execute="acSpeciality" render="scStaff" />
-                                                </p:autoComplete>
+                                                <p:outputLabel value=":" />
+                                                <p:outputLabel value="#{channelStaffPaymentBillController.sessionInstance.originatingSession.staff.speciality.name}" />
 
                                                 <p:outputLabel value="Staff" />
-                                                <p:autoComplete 
-                                                    minQueryLength="2"  
-                                                    class="w-100 mx-2 my-1"
-                                                    inputStyleClass="w-100"
-                                                    forceSelection="true" 
-                                                    value="#{channelStaffPaymentBillController.currentStaff}" 
-                                                    id="scStaff"
-                                                    completeMethod="#{channelStaffPaymentBillController.completeStaff}" var="mys" 
-                                                    itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
-                                                    >                                            
-                                                    <p:ajax 
-                                                        event="itemSelect" 
-                                                        update="lstSelect" 
-                                                        process="scStaff"  
-                                                        listener="#{channelStaffPaymentBillController.fillSessions}">
-                                                    </p:ajax>
-                                                </p:autoComplete>
-                                                <p:outputLabel value="Consider Date" />
-                                                <p:selectBooleanCheckbox 
-                                                    value="#{channelStaffPaymentBillController.considerDate}" 
-                                                    class="w-100 mx-2 my-1">
-                                                    <p:ajax update="fDate tDate" process="@this" event="change" />
-                                                </p:selectBooleanCheckbox>
-                                                <p:outputLabel value="From Date" />
-                                                <p:calendar 
-                                                    value="#{channelStaffPaymentBillController.fromDate}" 
-                                                    id="fDate" 
-                                                    class="w-100 mx-2" 
-                                                    inputStyleClass="w-100" 
-                                                    disabled="#{!channelStaffPaymentBillController.considerDate}" 
-                                                    navigator="false" 
-                                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
-                                                <p:outputLabel value="To Date" />
-                                                <p:calendar 
-                                                    value="#{channelStaffPaymentBillController.toDate}" 
-                                                    id="tDate" 
-                                                    class="w-100 mx-2" 
-                                                    inputStyleClass="w-100" 
-                                                    disabled="#{!channelStaffPaymentBillController.considerDate}" 
-                                                    navigator="false" 
-                                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
+                                                <p:outputLabel value=":" />
+                                                <p:outputLabel value="#{channelStaffPaymentBillController.sessionInstance.originatingSession.staff.person.nameWithTitle}" />
+
                                                 <p:outputLabel value="Session" />
-                                                <p:selectOneMenu  
-                                                    id="lstSelect" 
-                                                    converter="sscon"  
-                                                    value="#{channelStaffPaymentBillController.selectedServiceSession}" 
-                                                    class="w-100 mx-2 my-1">
-                                                    <f:selectItem itemLabel="Select"  ></f:selectItem>
-                                                    <f:selectItems  value="#{channelStaffPaymentBillController.serviceSessionList}" var="ses" 
-                                                                    itemValue="#{ses}" 
-                                                                    itemLabel="#{ses.name} - #{ses.dayString}" ></f:selectItems>
-                                                </p:selectOneMenu>
+                                                <p:outputLabel value=":" />
+                                                <p:outputLabel value="#{channelStaffPaymentBillController.sessionInstance.originatingSession.name}" />
+                                                
+                                                <p:outputLabel value="Date" />
+                                                <p:outputLabel value=":" />
+                                                <p:outputLabel value="#{channelStaffPaymentBillController.sessionInstance.sessionDate}" >
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                                                    </f:convertDateTime>
+                                                </p:outputLabel>
+                                                
                                                 <h:outputLabel value="Payment Method" ></h:outputLabel>
+                                                <p:outputLabel value=":" />
                                                 <p:selectOneMenu 
-                                                    id="cmbPay" 
-                                                    class="w-100 mx-2" 
+                                                    id="cmbPay"
                                                     value="#{channelStaffPaymentBillController.paymentMethod}" >
                                                     <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"/>
                                                 </p:selectOneMenu>
-                                                <p:watermark value="Speciality" for="acSpeciality"/>
-                                                <p:watermark value="Staff" for="scStaff"/>
+                                                
+                                                
                                             </h:panelGrid>
                                             <div class="d-flex justify-content-end mt-2">
-                                                <p:commandButton 
-                                                    ajax="false"
-                                                    value="Tem Process" 
-                                                    icon="fa-solid fa-arrows-rotate"
-                                                    class="ui-button-warning my-1"/>
-
                                                 <div class="d-flex ">
                                                     <p:commandButton 
                                                         ajax="false"
                                                         value="Process" 
                                                         icon="fa-solid fa-arrows-rotate"
                                                         class="ui-button-warning my-1"
-                                                        action="#{channelStaffPaymentBillController.calculateDueFees}"/>
+                                                        action="#{channelStaffPaymentBillController.calculateSessionDueFees()}"/>
                                                     <p:commandButton 
-                                                        ajax="false" 
+                                                        ajax="false"
+                                                        rendered="false"
                                                         value="Clear"
                                                         icon="fa-solid fa-eraser"
                                                         class="ui-button-danger mx-1 my-1"
@@ -143,6 +89,11 @@
                                         </p:panel>
                                     </div>
                                 </div>
+
+
+
+
+
 
                                 <p:dataTable 
                                     id="tblFee" 
@@ -179,7 +130,7 @@
                                         </h:outputLabel>
                                     </p:column>
 
-                                    <p:column headerText="Appoinment No">
+                                    <p:column headerText="Appointment No">
                                         <h:outputLabel value="#{bf.bill.singleBillSession.serialNo}">
                                         </h:outputLabel>
                                     </p:column>
@@ -259,20 +210,29 @@
                                 </p:panel>
                                 <div class="w-50" >
 
-                                    <p:commandButton 
-                                        id="btnPay"
-                                        value="Pay Doctor" 
-                                        class="w-25 ui-button-success my-1"
-                                        action="#{channelStaffPaymentBillController.settleBill}" 
-                                        ajax="false"
-                                        update="tblFee pTotals gpBillPreview" />
+                                    <p:commandButton id="btnPay"
+                                                     value="Pay Doctor" 
+                                                     class="w-25 ui-button-success my-1"
+                                                     action="#{channelStaffPaymentBillController.settleSessionPaymentBill()}" 
+                                                     ajax="false"
+                                                     update="tblFee pTotals gpBillPreview" />
                                 </div>
+
+
+
                             </h:panelGrid>
 
                         </p:panel>
                     </h:panelGroup>
 
+
+
+
+
+
+
                 </h:form>
+
 
                 <h:form>
                     <p:panel id="gpBillPreview" rendered="#{channelStaffPaymentBillController.printPreview}">
@@ -280,12 +240,13 @@
                             <div class="d-flex justify-content-between">
                                 <h:outputLabel value="Doctor Payment Bill" ></h:outputLabel>
                                 <div class="d-flex gap-2">
-                                    
+
                                     <p:commandButton
-                                        ajax="false" 
-                                        styleClass="noPrintButton" 
-                                        value="New Bill" 
-                                        action="#{channelStaffPaymentBillController.makenull()}" >
+                                        ajax="false"
+                                        class="ui-button-secondary"
+                                        icon="fa-solid fa-arrow-left"
+                                        action="#{bookingControllerViewScope.navigateToManageSessionInstanceFromProfPay(channelStaffPaymentBillController.sessionInstance)}"
+                                        value="Back to Session Details" >
                                     </p:commandButton>
 
                                 </div>
@@ -301,11 +262,11 @@
                                 <f:selectItems value="#{enumController.paperTypes}" />
                             </p:selectOneMenu>
                             <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button" title="Redraw Bill"></p:commandButton>
-                            <p:commandButton 
-                                value="Print" 
-                                class="ui-button-info" 
-                                icon="fas fa-print" 
-                                ajax="false" 
+                            <p:commandButton
+                                value="Print"
+                                class="ui-button-info"
+                                icon="fas fa-print"
+                                ajax="false"
                                 action="#" >
                                 <p:printer target="billPreview" ></p:printer>
                             </p:commandButton>
@@ -313,14 +274,14 @@
 
                         <h:panelGroup id="billPreview" >
                             <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'FiveFivePrintedPaper'}">
-                                <bi:staff_payment_five_five_paper_without_headings controller="#{channelStaffPaymentBillController}" bill="#{channelStaffPaymentBillController.current}" duplicate="false"/>
+                                <bi:staff_session_payment_five_five_paper_without_headings controller="#{channelStaffPaymentBillController}" bill="#{channelStaffPaymentBillController.current}" duplicate="false"/>
                             </h:panelGroup>
                             <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'PosPaper'}">
                                 <bi:staffBill_1 controller="#{channelStaffPaymentBillController}" bill="#{channelStaffPaymentBillController.current}" dup="false"/>
                             </h:panelGroup>
                         </h:panelGroup>
 
-                        
+
                     </p:panel>
                 </h:form>
             </ui:define>
