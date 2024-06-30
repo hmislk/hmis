@@ -49,7 +49,6 @@ public enum InwardChargeType {
     Nebulisation("Nebulisation"),
     Echo("Echo"),
     SyringePump("Syringe Pump"),
-    ExerciseECG("Exercise E.C.G"),
     OperationTheatreNursingCharges("Operation Theatre Nursing Charges"),
     OperationTheatreMachineryCharges("Operation Theatre Machinery Charges"),
     TheaterConsumbale("Theater Consumables & Drugs"),
@@ -63,12 +62,32 @@ public enum InwardChargeType {
     Eye("Eye"),
     @Deprecated
     Investigations("Investigations"),
-    @Deprecated
-    MedicalCare("MedicalCare")
     
     
     
-    ;
+    
+    // New enum values
+    Andrology("Andrology"),
+    AudiogramTest("Audiogram Test"),
+    CathLabEOMachine("Cath Lab EO Machine"),
+    Channel("Channel"),
+    CSSDCharges("CSSD Charges"),
+    Dialysis("Dialysis"),
+    ECG("ECG"),
+    EEG("EEG"),
+    ExerciseECG("Exercise ECG"),
+    Fertility("Fertility"),
+    HolterMoniteringCharges("Holter Monitering Charges"),
+    LaboratoryInvestigation("Laboratory Investigation"),
+    MedicalService("Medical Service"),
+    MedicalServiceOPD("Medical Service OPD"),
+    MRIUnit("MRI Unit"),
+    OPD("OPD"),
+    Others("Others"),
+    Procedure("Procedure"),
+    Radiology("Radiology"),
+    ReportingCharges("Reporting Charges"),
+    WardProcedure("Ward Procedure");
 
     private final String nameAsString;
 
