@@ -129,18 +129,24 @@
                 function downloadPdf() {
                     console.log("Downloading PDF...");
                     const element = document.getElementById('pdfContent');
-                    element.classList.remove('print-only');
+                 element.classList.remove('print-only');
+
                     const opt = {
-                        margin: [0, 0.5, 0, 0.5], // top, left, bottom, right
-                        filename: 'OnlineChannelBookingPayment.pdf',
-                        image: {type: 'jpeg', quality: 0.98},
-                        html2canvas: {scale: 2},
-                        jsPDF: {unit: 'in', format: 'a4', orientation: 'portrait'}
-                    };
-                     html2pdf().from(element).set(opt).save().then(() => {
-                        element.classList.add('print-only');
-                    });
-                }
+                            margin: [0, 0.5, 0, 0.5], // top, left, bottom, right
+                            filename: '#{patientPortalController.channelBookingBillSession.bill.institution.name}_#{patientPortalController.channelBookingBillSession.sessionInstance.name}_OnlinePayment.pdf',
+                            image: {type: 'jpeg', quality: 0.98},
+                            html2canvas: {
+                                scale: 2
+                            },
+                            jsPDF: {unit: 'in', format: 'a4', orientation: 'portrait'}
+                        };
+
+                    html2pdf().from(element).set(opt).toPdf().get('pdf').then(function (pdf) {
+                        pdf.deletePage(2); // Remove the second page if it exists
+                            }).save().then(() => {
+                                element.classList.add('print-only');
+                            });
+                    }
             </script>
         </h:form>
     </ui:define>
