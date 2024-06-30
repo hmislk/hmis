@@ -43,13 +43,18 @@
                                            itemLabel="#{type}" itemValue="#{type}" />
                         </p:selectOneMenu>
 
-                        <!-- Category -->
                         <p:outputLabel value="Category:" for="category" />
-                        <p:selectOneMenu id="category" value="#{reportTemplateController.current.category}">
-                            <f:selectItem itemLabel="-- Select Category --" noSelectionOption="true" />
-                            <f:selectItems value="#{reportTemplateController.categories}" var="cat"
-                                           itemLabel="#{cat.name}" itemValue="#{cat}" />
-                        </p:selectOneMenu>
+                        <p:autoComplete id="category" value="#{reportTemplateController.current.category}"
+                                        completeMethod="#{categoryController.completeCategory}"
+                                        dropdown="true" dropdownMode="blank"
+                                        var="cat" itemLabel="#{cat.name}" itemValue="#{cat}"
+                                        converter="categoryConverter" forceSelection="true">
+                            <f:facet name="itemtip">
+                                <h:outputText value="#{cat.name}" />
+                            </f:facet>
+                        </p:autoComplete>
+
+
 
                         <!-- Filters -->
                         <p:outputLabel value="Filters:" for="filters" />
@@ -65,7 +70,7 @@
                     </p:panelGrid>
 
                     <!-- Save Button -->
-                    <p:commandButton value="Save" action="#{reportTemplateController.saveReportTemplate}"
+                    <p:commandButton value="Save" action="#{reportTemplateController.saveSelected()}"
                                      update=":messages :reportForm" />
                 </h:form>
 

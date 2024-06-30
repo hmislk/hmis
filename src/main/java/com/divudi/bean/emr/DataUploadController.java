@@ -873,6 +873,7 @@ public class DataUploadController implements Serializable {
         Institution runningIns = null;
         Department runningDept = null;
         Category runningCategory = null;
+        Category runningFinancialCategory = null; // New running financial category
 
         // Assuming the first row contains headers, skip it
         if (rowIterator.hasNext()) {
@@ -883,6 +884,7 @@ public class DataUploadController implements Serializable {
             Row row = rowIterator.next();
 
             Category category;
+            Category financialCategory; // New financial category
             Institution institution;
             Department department;
             InwardChargeType iwct = null;
@@ -893,6 +895,7 @@ public class DataUploadController implements Serializable {
             String fullName = null;
             String code = null;
             String categoryName = null;
+            String financialCategoryName = null; // New financial category name
             String institutionName = null;
             String departmentName = null;
             String inwardName = null;
@@ -962,7 +965,6 @@ public class DataUploadController implements Serializable {
             Cell printingNameCell = row.getCell(1);
             if (printingNameCell != null && printingNameCell.getCellType() == CellType.STRING) {
                 printingName = printingNameCell.getStringCellValue();
-
             }
             if (printingName == null || printingName.trim().equals("")) {
                 printingName = name;
@@ -1018,6 +1020,39 @@ public class DataUploadController implements Serializable {
                 runningCategory = category;
             }
 
+            // Handle financial category
+            Cell financialCategoryCell = row.getCell(10);
+            if (financialCategoryCell != null && financialCategoryCell.getCellType() == CellType.STRING) {
+                financialCategoryName = financialCategoryCell.getStringCellValue();
+            }
+            if (financialCategoryName == null || financialCategoryName.trim().equals("")) {
+                financialCategoryName = "Default Financial Category"; // Default value if needed
+            }
+
+            if (runningFinancialCategory == null) {
+                financialCategory = categoryController.findCategoryByName(financialCategoryName);
+                if (financialCategory == null) {
+                    financialCategory = new Category();
+                    financialCategory.setName(financialCategoryName);
+                    categoryFacade.create(financialCategory);
+                    categoriesSaved.add(financialCategory);
+                }
+                runningFinancialCategory = financialCategory;
+            } else if (runningFinancialCategory.getName() == null) {
+                financialCategory = runningFinancialCategory;
+            } else if (runningFinancialCategory.getName().equals(financialCategoryName)) {
+                financialCategory = runningFinancialCategory;
+            } else {
+                financialCategory = categoryController.findCategoryByName(financialCategoryName);
+                if (financialCategory == null) {
+                    financialCategory = new Category();
+                    financialCategory.setName(financialCategoryName);
+                    categoryFacade.create(financialCategory);
+                    categoriesSaved.add(financialCategory);
+                }
+                runningFinancialCategory = financialCategory;
+            }
+
             Cell inwardCcCell = row.getCell(7);
             if (inwardCcCell != null && inwardCcCell.getCellType() == CellType.STRING) {
                 inwardName = inwardCcCell.getStringCellValue();
@@ -1044,6 +1079,7 @@ public class DataUploadController implements Serializable {
                     masterItem.setFullName(fullName);
                     masterItem.setCode(code);
                     masterItem.setCategory(category);
+                    masterItem.setFinancialCategory(financialCategory);
                     masterItem.setIsMasterItem(true);
                     masterItem.setInwardChargeType(iwct);
                     masterItem.setCreater(sessionController.getLoggedUser());
@@ -1057,6 +1093,7 @@ public class DataUploadController implements Serializable {
                 service.setFullName(fullName);
                 service.setCode(code);
                 service.setCategory(category);
+                service.setFinancialCategory(financialCategory);
                 service.setMasterItemReference(masterItem);
                 service.setInstitution(institution);
                 service.setDepartment(department);
@@ -1074,6 +1111,7 @@ public class DataUploadController implements Serializable {
                     masterItem.setCode(code);
                     masterItem.setIsMasterItem(true);
                     masterItem.setCategory(category);
+                    masterItem.setFinancialCategory(financialCategory);
                     masterItem.setInwardChargeType(iwct);
                     masterItem.setCreater(sessionController.getLoggedUser());
                     masterItem.setCreatedAt(new Date());
@@ -1085,6 +1123,7 @@ public class DataUploadController implements Serializable {
                 ix.setFullName(fullName);
                 ix.setCode(code);
                 ix.setCategory(category);
+                ix.setFinancialCategory(financialCategory);
                 ix.setInstitution(institution);
                 ix.setDepartment(department);
                 ix.setInwardChargeType(iwct);
@@ -1102,6 +1141,7 @@ public class DataUploadController implements Serializable {
                     masterItem.setCode(code);
                     masterItem.setIsMasterItem(true);
                     masterItem.setCategory(category);
+                    masterItem.setFinancialCategory(financialCategory);
                     masterItem.setInwardChargeType(iwct);
                     masterItem.setCreater(sessionController.getLoggedUser());
                     masterItem.setCreatedAt(new Date());
@@ -1113,6 +1153,7 @@ public class DataUploadController implements Serializable {
                 iwdService.setFullName(fullName);
                 iwdService.setCode(code);
                 iwdService.setCategory(category);
+                iwdService.setFinancialCategory(financialCategory);
                 iwdService.setInstitution(institution);
                 iwdService.setDepartment(department);
                 iwdService.setInwardChargeType(iwct);
@@ -1128,6 +1169,7 @@ public class DataUploadController implements Serializable {
                     masterItem.setFullName(fullName);
                     masterItem.setCode(code);
                     masterItem.setCategory(category);
+                    masterItem.setFinancialCategory(financialCategory);
                     masterItem.setIsMasterItem(true);
                     masterItem.setInwardChargeType(iwct);
                     masterItem.setSymanticType(SymanticType.Therapeutic_Procedure);
@@ -1142,6 +1184,7 @@ public class DataUploadController implements Serializable {
                 cli.setFullName(fullName);
                 cli.setCode(code);
                 cli.setCategory(category);
+                cli.setFinancialCategory(financialCategory);
                 cli.setMasterItemReference(masterItem);
                 cli.setInstitution(institution);
                 cli.setDepartment(department);
@@ -1195,7 +1238,7 @@ public class DataUploadController implements Serializable {
                 itf.setFfee(hospitalFee);
                 itf.setCreatedAt(new Date());
                 itf.setCreater(sessionController.getLoggedUser());
-//                itemFeeFacade.create(itf);
+                // itemFeeFacade.create(itf);
                 itemFeesToSave.add(itf);
             }
 
