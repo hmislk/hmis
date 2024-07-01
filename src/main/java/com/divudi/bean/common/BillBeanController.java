@@ -2817,11 +2817,14 @@ public class BillBeanController implements Serializable {
     }
 
     public int calculateNumberOfBillsPerOrder(List<BillEntry> billEntrys) {
-        Set<Department> deptSet = new HashSet();
+        Set<Long> deptIdSet = new HashSet<>(); // Use Set to store department IDs
         for (BillEntry be : billEntrys) {
-            deptSet.add(be.getBillItem().getItem().getDepartment());
+            Department dept = be.getBillItem().getItem().getDepartment();
+            if (dept != null) {
+                deptIdSet.add(dept.getId()); // Add department ID to the set
+            }
         }
-        return deptSet.size();
+        return deptIdSet.size();
     }
 
     public int checkDepartment(List<BillEntry> billEntries) {
