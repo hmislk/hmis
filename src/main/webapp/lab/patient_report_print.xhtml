@@ -22,6 +22,13 @@
                     <p:panel>
                         <f:facet name="header">
                             <h:outputText value="Report View" />
+                            <p:commandButton    value="Back to Report Search" 
+                                                style="float: right;"
+                                                action="/lab/search_for_reporting_ondemand?faces-redirect=true" 
+                                                icon="fa-solid fa-arrow-left"
+                                                class="mx-1 ui-button-secondary"
+                                                ajax="false"   >
+                            </p:commandButton>
                             <p:commandButton 
                                 class="ui-button-info " 
                                 icon="fas fa-print" 
@@ -34,12 +41,12 @@
                         </f:facet>
 
                         <h:panelGroup id="divPrint" >
-                             <h:outputLabel value="Show Background" class="mx-1 my-1" style="font-weight: bold; font-size: 20px;"></h:outputLabel>
-                                <p:selectBooleanButton class="mt-1 mx-4 my-1" offLabel="No" onLabel="Yes"  value="#{patientReportController.showBackground}" >
-                                    <p:ajax process="@this" update="divPrint" event="change"/>
-                                </p:selectBooleanButton>
+                            <h:outputLabel value="Show Background" class="mx-1 my-1" style="font-weight: bold; font-size: 20px;"></h:outputLabel>
+                            <p:selectBooleanButton class="mt-1 mx-4 my-1" offLabel="No" onLabel="Yes"  value="#{patientReportController.showBackground}" >
+                                <p:ajax process="@this" update="divPrint" event="change"/>
+                            </p:selectBooleanButton>
 
-                             <h:panelGroup rendered="#{patientReportController.currentPatientReport.item.reportType ne 'Microbiology'}" >
+                            <h:panelGroup rendered="#{patientReportController.currentPatientReport.item.reportType ne 'Microbiology'}" >
                                 <div id="divReport"  class="labReport1" >
                                     <ez:common_report 
                                         showBackground="#{patientReportController.showBackground}"

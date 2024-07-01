@@ -20,6 +20,7 @@ import com.divudi.facade.InvestigationItemFacade;
 import com.divudi.facade.TestFlagFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
@@ -62,6 +63,7 @@ public class TestFlagController implements Serializable {
     private List<TestFlag> items = null;
     Investigation investigation;
     List<InvestigationItem> investigationItemsOfValueType;
+    private List<InvestigationItem> investigationItemsOfValueandFlagType;
     List<InvestigationItem> investigationItemsOfFlagType;
     InvestigationItem investigationItemOfValueType;
     InvestigationItem investigationItemofFlagType;
@@ -204,7 +206,7 @@ public class TestFlagController implements Serializable {
         f.setToVal(toValue);
         getEjbFacade().create(f);
         clearForNew();
-        JsfUtil.addErrorMessage("Added");
+        JsfUtil.addSuccessMessage("Added Successfully");
     }
 
     private void clearForNew() {
@@ -424,6 +426,30 @@ public class TestFlagController implements Serializable {
         List<String> sortedList = new ArrayList(tfss);
         Collections.sort(sortedList);
         return sortedList;
+    }
+
+    public List<InvestigationItem> getInvestigationItemsOfValueandFlagType() {
+        List<InvestigationItemType> iit = Arrays.asList(InvestigationItemType.Calculation, InvestigationItemType.Value);
+    
+        if (investigation != null) {
+            Map<String, Object> m = new HashMap<>();
+            String jpql = "select i from InvestigationItem i where "
+                    + " i.retired=false"
+                    + " and i.item.id=:id "
+                    + " and i.ixItemType in :itemType";
+           
+            m.put("itemType", iit);
+            m.put("id", investigation.getId());
+            investigationItemsOfValueandFlagType = getInvestigationItemFacade().findByJpql(jpql, m, TemporalType.TIMESTAMP);
+        }
+        if (investigationItemsOfValueandFlagType == null) {
+            investigationItemsOfValueandFlagType = new ArrayList<InvestigationItem>();
+        }
+        return investigationItemsOfValueandFlagType;
+    }
+
+    public void setInvestigationItemsOfValueandFlagType(List<InvestigationItem> investigationItemsOfValueandFlagType) {
+        this.investigationItemsOfValueandFlagType = investigationItemsOfValueandFlagType;
     }
 
     /**

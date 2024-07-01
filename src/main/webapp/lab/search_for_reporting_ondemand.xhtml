@@ -319,7 +319,7 @@
                                         </h:panelGroup>
 
                                         <h:panelGroup rendered="#{pi.billItem.bill.cancelled ne true}">
-                                            <p:commandLink ajax="false" id="btnPrintWorksheets" disabled="#{pi.received ne true}" action="/lab/single_worksheet" >
+                                            <p:commandLink ajax="false" id="btnPrintWorksheets" disabled="#{pi.received ne true}" action="/lab/single_worksheet?faces-redirect=true" >
                                                 <f:setPropertyActionListener value="#{pi}" target="#{patientInvestigationController.current}" ></f:setPropertyActionListener>
                                                 <p:graphicImage library="image" styleClass="standedicon" name="worksheet.gif" ></p:graphicImage>
                                             </p:commandLink>
@@ -377,7 +377,7 @@
                                             <ui:repeat value="#{itemForItemController.getItemsForParentItem(pi.investigation)}" var="ifi"  >
                                                 <tr>
                                                     <td>
-                                                        <p:commandLink disabled="#{!pi.received}" value="New #{ifi.name}" actionListener="#{patientReportController.enterNewReportFormat(pi, ifi)}" action="/lab/patient_report" 
+                                                        <p:commandLink disabled="#{!pi.received}" value="New #{ifi.name}" actionListener="#{patientReportController.enterNewReportFormat(pi, ifi)}" action="/lab/patient_report?faces-redirect=true" 
                                                                        ajax="false">
                                                         </p:commandLink>
                                                     </td>
@@ -399,20 +399,20 @@
                                                 <p:commandLink id="cmdOldReport" 
                                                                value="#{dpr.item.name}" 
                                                                rendered="#{dpr.item ne pi.billItem.item}"
-                                                               ajax="false" action="/lab/patient_report">
+                                                               ajax="false" action="/lab/patient_report?faces-redirect=true">
                                                     <f:setPropertyActionListener value="#{dpr}" target="#{patientReportController.currentPatientReport}"></f:setPropertyActionListener>
                                                 </p:commandLink>
 
-                                                <p:commandLink id="cmdOldReportEdit" ajax="false" action="/lab/patient_report">
+                                                <p:commandLink id="cmdOldReportEdit" ajax="false" action="/lab/patient_report?faces-redirect=true">
                                                     <f:setPropertyActionListener value="#{dpr}" target="#{patientReportController.currentPatientReport}"></f:setPropertyActionListener>
                                                     <p:graphicImage library="image" styleClass="standedicon" name="data_entry.png" ></p:graphicImage>
                                                 </p:commandLink>
 
-                                                <p:commandLink id="cmdOldReportPrint1" ajax="false" action="/lab/patient_report_print" disabled="#{!dpr.approved}" rendered="#{!sessionController.departmentPreference.partialPaymentOfOpdBillsAllowed}">
+                                                <p:commandLink id="cmdOldReportPrint1" ajax="false" action="/lab/patient_report_print?faces-redirect=true" disabled="#{!dpr.approved}" rendered="#{!sessionController.departmentPreference.partialPaymentOfOpdBillsAllowed}">
                                                     <p:graphicImage library="image" name="print.jpg" styleClass="standedicon" ></p:graphicImage>
                                                     <f:setPropertyActionListener value="#{dpr}" target="#{patientReportController.currentPatientReport}"></f:setPropertyActionListener>
                                                 </p:commandLink>
-                                                <p:commandLink id="cmdOldReportPrint2" ajax="false" action="/lab/patient_report_print" disabled="#{!dpr.approved or dpr.patientInvestigation.billItem.bill.backwardReferenceBill.balance ne 0}" rendered="#{sessionController.departmentPreference.partialPaymentOfOpdBillsAllowed}">
+                                                <p:commandLink id="cmdOldReportPrint2" ajax="false" action="/lab/patient_report_print?faces-redirect=true" disabled="#{!dpr.approved or dpr.patientInvestigation.billItem.bill.backwardReferenceBill.balance ne 0}" rendered="#{sessionController.departmentPreference.partialPaymentOfOpdBillsAllowed}">
                                                     <p:graphicImage library="image" name="print.jpg" styleClass="standedicon" ></p:graphicImage>
                                                     <f:setPropertyActionListener value="#{dpr}" target="#{patientReportController.currentPatientReport}"></f:setPropertyActionListener>
                                                 </p:commandLink>
@@ -467,7 +467,7 @@
                                                 </p:tooltip>
                                                 
                                             </div>
-                                           
+                                            <p:badge value="Printed" severity="info" rendered="#{pi.printed}" ></p:badge>
                                         </ui:repeat>
 
 
