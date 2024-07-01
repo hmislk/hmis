@@ -870,10 +870,7 @@ public class DataUploadController implements Serializable {
         itemsSkipped = new ArrayList<>();
 
         Item item;
-        Institution runningIns = null;
-        Department runningDept = null;
-        Category runningCategory = null;
-        Category runningFinancialCategory = null; // New running financial category
+        // New running financial category
 
         // Assuming the first row contains headers, skip it
         if (rowIterator.hasNext()) {
@@ -881,6 +878,10 @@ public class DataUploadController implements Serializable {
         }
 
         while (rowIterator.hasNext()) {
+            Institution runningIns = null;
+            Department runningDept = null;
+            Category runningCategory = null;
+            Category runningFinancialCategory = null;
             Row row = rowIterator.next();
 
             Category category;
@@ -899,7 +900,7 @@ public class DataUploadController implements Serializable {
             String institutionName = null;
             String departmentName = null;
             String inwardName = null;
-            
+
             String itemType = "Investigation";
             Double hospitalFee = 0.0;
 
@@ -930,11 +931,8 @@ public class DataUploadController implements Serializable {
             if (departmentName == null || departmentName.trim().equals("")) {
                 departmentName = sessionController.getDepartment().getName();
             }
-
             if (runningDept == null) {
-                department = departmentController.findAndSaveDepartmentByName(departmentName);
-                    System.out.println("departmentpt-111 = " + department);
-                
+                department = departmentController.findAndSaveDepartmentByName(departmentName,institution);
                 runningDept = department;
                 departmentsSaved.add(department);
             } else if (runningDept.getName().equals(departmentName)) {
