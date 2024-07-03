@@ -524,7 +524,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         selectedBillSession.getBill().setPrinted(true);
         billSessionFacade.edit(selectedBillSession);
         printPreviewForOnlineBill = true;
-        printPreview = false;
+        printPreview = true;
         printPreviewForSettle = false;
         printPreviewForReprintingAsDuplicate = false;
         printPreviewForReprintingAsOriginal = false;
