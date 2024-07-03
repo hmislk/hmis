@@ -278,6 +278,9 @@ public class CollectingCentreBillController implements Serializable, ControllerW
 
     @Inject
     SearchController searchController;
+    
+    @Inject
+    BillController billController;
 
     public List<Bill> getSelectedBills() {
         return selectedBills;
@@ -1263,12 +1266,10 @@ public class CollectingCentreBillController implements Serializable, ControllerW
             itemController.saveSelected(getCurrentBillItem().getItem());
             return;
         }
+        
+        
 
         
-//        New Session
-        //   getCurrentBillItem().setBillSession(getServiceSessionBean().createBillSession(getCurrentBillItem()));
-//        New Session
-        //   getCurrentBillItem().setBillSession(getServiceSessionBean().createBillSession(getCurrentBillItem()));
         BillItem bi = new BillItem();
         bi.copy(getCurrentBillItem());
         bi.setSessionDate(sessionDate);
@@ -1533,6 +1534,30 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         prepareNewBillKeepingCollectingCenter();
         setPatient(getPatient());
         return "/collecting_centre/bill?faces-redirect=true";
+    }
+    
+    public String navigateToCollectingCenterBillFromBillSearch(Long id){
+        bills = null;
+        if(id == null){
+            return "";
+        }
+        bill = billController.findBillbyID(id);
+        
+        System.out.println("bill = " + bill);
+        
+        if(bill == null){
+            return "";
+        }
+        
+        bill.setBillItems(getBillBean().fillBillItems(bill));
+        
+        bill.setBillFees(getBillBean().getBillFee(bill));
+        
+        System.out.println("bill.getBillItems = " + bill.getBillItems());
+        System.out.println("bill.getBillFees = " + bill.getBillFees());
+        bills.add(bill);
+        
+        return "/collecting_centre/bill_print?faces-redirect=true";
     }
 
     public Payment createPayment(Bill bill, PaymentMethod pm) {
