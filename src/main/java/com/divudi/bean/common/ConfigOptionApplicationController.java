@@ -47,14 +47,7 @@ public class ConfigOptionApplicationController implements Serializable {
     @PostConstruct
     public void init() {
         loadApplicationOptions();
-        ExternalContext ec = FacesContext.getCurrentInstance().getExternalContext();
-        Long currentTimeOut = getLongValueByKey("Application Timeout in Minutes", 15l);
-        if (currentTimeOut == null || currentTimeOut < 5) {
-            currentTimeOut = 15l;
-        }
-        Long currentTimeOutInSeconds = currentTimeOut * 60;
-        String currentTimeOutInSecondsString = currentTimeOutInSeconds.toString();
-        ec.getSessionMap().put("com.sun.faces.timeout", currentTimeOutInSecondsString);
+        
     }
 
     public void loadApplicationOptions() {
