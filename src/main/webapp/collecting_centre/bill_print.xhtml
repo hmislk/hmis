@@ -1,0 +1,666 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:phi="http://xmlns.jcp.org/jsf/composite/pharmacy"
+                xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill/cc_bill"
+                xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
+                xmlns:pat="http://xmlns.jcp.org/jsf/composite/patient"
+                xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
+                >
+
+    <ui:define name="content">
+        <h:panelGroup rendered="#{!(webUserController.hasPrivilege('OpdCollectingCentreBilling') or webUserController.hasPrivilege('LabCashier'))}" >
+            You are NOT authorized
+        </h:panelGroup>
+
+        <h:panelGroup rendered="#{webUserController.hasPrivilege('OpdCollectingCentreBilling') or webUserController.hasPrivilege('LabCashier')}" styleClass="opdPanel" >
+            <h:form id="form">
+                <p:growl id="msg" ></p:growl>
+
+                <p:panel  rendered="#{collectingCentreBillController.collectingCentre eq null}">
+                    <f:facet name="header" >
+                        <h:outputText styleClass="fa-solid fa-warehouse" />
+                        <h:outputLabel  class="mx-4" value="Collecting Centre"/>
+
+                    </f:facet>
+
+                    <h:panelGroup 
+                        class="row"
+                        layout="block"
+                        rendered="#{collectingCentreBillController.collectingCentre eq null}" >
+                        <div class="col-md-3">
+                            <p:outputLabel class="mt-1" value="Select Collecting Centre"></p:outputLabel>
+                        </div>
+                        <div class="col-md-6">
+                            <p:autoComplete 
+                                converter="deal" 
+                                value="#{collectingCentreBillController.collectingCentre}" 
+                                forceSelection="true" id="acColl"
+                                completeMethod="#{institutionController.completeCollectingCenter}" 
+                                var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" 
+                                maxResults="10"
+                                class="w-100 mb-1"
+                                inputStyleClass="form-control">
+                                <p:column>#{vt.institutionCode}</p:column>
+                                <p:column>#{vt.name}</p:column>
+                            </p:autoComplete>
+                        </div>
+                        <div class="col-md-3">
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Select" 
+                                action="#{collectingCentreBillController.selectCollectingCentre()}" ></p:commandButton>
+                        </div>
+                    </h:panelGroup>
+
+                </p:panel>
+
+                <p:panel rendered="#{collectingCentreBillController.collectingCentre ne null}" >
+                    <f:facet name="header" >
+                        <h:outputText class="fa-solid fa-warehouse mt-2"  />
+                        <h:outputLabel  class="mx-2 mt-2" value="Collecting Centre Billing"/>
+                        <h:outputLabel  class="mx-5 mt-2" value="#{collectingCentreBillController.collectingCentre.name}"/>
+                        <p:commandButton 
+                            ajax="false" 
+                            value="Change Collecting Centre" 
+                            style="float: right;"
+                            action="#{collectingCentreBillController.navigateToCollectingCenterBillingromMenu()}"></p:commandButton>
+                    </f:facet>
+
+                    <h:panelGroup layout="block" rendered="#{!collectingCentreBillController.printPreview}" class="row">
+                        <div class="col-6" >
+                            <common:patient_details 
+                                editable="true"
+                                controller="#{collectingCentreBillController}"/>
+
+                            <h:panelGroup id="panelIx" >
+
+                                <p:panel id='pIxAdd' >
+                                    <f:facet name="header" >
+                                        <h:outputText styleClass="fa-solid fa-circle-plus" /> <!-- FontAwesome Icon -->
+                                        <h:outputText value="Add New Item" class="mx-4"></h:outputText>
+                                    </f:facet>
+                                    <div class="row">
+                                        <div class="col-md-10" >
+                                            <p:selectOneListbox 
+                                                filter="true"
+                                                filterMatchMode="contains"
+                                                id="acIx"
+                                                class="w-100"
+                                                scrollHeight="200"
+                                                converter="itemLightConverter"
+                                                value="#{collectingCentreBillController.itemLight}" var="ix" >
+                                                <f:selectItems value="#{collectingCentreBillController.opdItems}"
+                                                               var="item" 
+                                                               itemLabel="#{item.name}"
+                                                               itemValue="#{item}" >
+                                                </f:selectItems>
+                                                <p:ajax 
+                                                    process="@this"></p:ajax>
+                                                <p:ajax 
+                                                    event="blur"
+                                                    process="@this"></p:ajax>
+                                                <p:ajax 
+                                                    event="keyup"
+                                                    process="@this"></p:ajax>
+                                                <p:column  headerText="Name">
+                                                    <f:facet name="header" >
+                                                        Name
+                                                    </f:facet>
+                                                    <h:outputText value="#{ix.name}" ></h:outputText>
+                                                    <h:panelGroup rendered="#{ix.name ne ix.fullName}" >
+                                                        <h:outputText value=" (#{ix.fullName})" ></h:outputText>
+                                                    </h:panelGroup>
+                                                </p:column>
+                                                <p:column  headerText="Dept">
+                                                    <h:outputText value="#{ix.departmentName}"></h:outputText>
+                                                </p:column>
+                                                <p:column  headerText="Code">
+                                                    <h:outputText value="#{ix.code}"></h:outputText>
+                                                </p:column>
+                                                <p:column style="text-align: right;" headerText="Value">
+                                                    <h:outputText value="#{ix.total}"></h:outputText>
+                                                </p:column>
+                                            </p:selectOneListbox>
+                                        </div>
+                                        <div class="col-md-2" >
+                                            <h:panelGrid id="txtQty">
+                                                <h:inputText autocomplete="off" 
+                                                             rendered="#{collectingCentreBillController.currentBillItem.item.requestForQuentity}"
+                                                             value="#{collectingCentreBillController.currentBillItem.qty}" >
+                                                </h:inputText>
+                                            </h:panelGrid>
+                                            <p:commandButton 
+                                                id="btnAddIx"
+                                                value="Add" 
+                                                icon="fa fa-plus" 
+                                                action="#{collectingCentreBillController.addToBill()}"  
+                                                class=" mx-1 ui-button-success" 
+                                                process="txtQty :#{p:resolveFirstComponentWithId('acIx',view).clientId} btnAddIx"
+                                                update="msg focusIx tblBillItem  :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}  pIxAdd">
+                                            </p:commandButton>
+                                            <p:defaultCommand target="btnAddIx" />
+                                        </div>
+                                    </div>
+                                </p:panel>
+
+                                <p:panel class="mt-1">
+                                    <f:facet name="header" >
+                                        <h:outputText styleClass="fa fa-list" /> <!-- FontAwesome Icon -->
+                                        <h:outputText value="Added Services / Items" class="mx-4"></h:outputText>
+                                    </f:facet>
+                                    <h:panelGroup id="panelBillItems" >
+                                        <p:tabView id="tblBillItem" >
+                                            <p:tab id="tabBillItems" title="Bill Items" >
+                                                <p:dataTable 
+                                                    id="tblRequests" 
+                                                    rowIndexVar="rowIndex" 
+                                                    value="#{collectingCentreBillController.lstBillEntries}" var="bi" >
+                                                    <p:column>
+                                                        <f:facet name="header">No</f:facet>
+                                                            #{rowIndex+1}
+                                                    </p:column>
+                                                    <p:column>
+                                                        <f:facet name="header">Item</f:facet>
+                                                            #{bi.billItem.item.name}
+                                                    </p:column>
+                                                    <p:column>
+                                                        <f:facet name="header">Fee</f:facet>
+                                                        <h:outputLabel value="#{bi.billItem.netValue}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputLabel>
+                                                    </p:column>
+                                                    <p:column>
+                                                        <f:facet name="header">Department</f:facet>
+                                                            #{bi.billItem.item.department.name}
+                                                    </p:column>
+
+                                                    <p:column>
+                                                        <h:commandButton id="btnRemove" value="X" action="#{collectingCentreBillController.removeBillItem}" >
+                                                            <f:setPropertyActionListener  value="#{rowIndex}" target="#{collectingCentreBillController.index}" />
+                                                            <p:ajax  process="btnRemove" update=":#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}" />
+                                                        </h:commandButton>
+                                                    </p:column>
+                                                </p:dataTable>
+                                            </p:tab>
+                                            <p:tab id="tabBillIx" title="Tests" >
+                                                <p:dataTable rowIndexVar="rowIndex" value="#{collectingCentreBillController.lstBillComponents}" var="bix" >
+                                                    <p:column>
+                                                        <f:facet name="header">No</f:facet>
+                                                            #{rowIndex+1}
+                                                    </p:column>
+                                                    <p:column>
+                                                        <f:facet name="header">Name</f:facet>
+                                                            #{bix.item.name}
+                                                    </p:column>
+
+                                                </p:dataTable>
+                                            </p:tab>
+
+                                            <p:tab id="tabBillFee" title="Fees" >
+                                                <p:dataTable rowIndexVar="rowIndex" value="#{collectingCentreBillController.lstBillFees}" var="bif" >
+                                                    <p:column>
+                                                        <f:facet name="header">Item Name</f:facet>
+                                                        <h:outputLabel value="#{bif.billItem.item.name}" />
+                                                    </p:column>
+                                                    <p:column>
+                                                        <f:facet name="header">Fee</f:facet>
+                                                        <h:inputText autocomplete="off"  
+                                                                     id="txtFeeVal"
+                                                                     class="form-control"
+                                                                     value="#{bif.feeGrossValue}" disabled="#{!bif.billItem.item.userChangable}" >
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                            <f:ajax event="keyup" execute="@this" 
+                                                                    render=":#{p:resolveFirstComponentWithId('tblRequests',view).clientId}  :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}"
+                                                                    listener="#{collectingCentreBillController.feeChangeListener(bif)}" />
+                                                        </h:inputText>
+                                                    </p:column>
+                                                    <p:column>
+                                                        <f:facet name="header">Fee</f:facet>
+                                                        <p:commandButton ajax="false" value="Update" action="#{collectingCentreBillController.feeChangeListener(bif)}" disabled="#{!bif.billItem.item.userChangable}"/>
+                                                    </p:column>
+                                                    <p:column>
+                                                        <f:facet name="header">Fee Name</f:facet>
+                                                        <h:outputLabel value="#{bif.fee.name}" rendered="#{bif.fee !=null}" ></h:outputLabel>
+                                                    </p:column>
+
+
+
+                                                    <p:column>
+                                                        <f:facet name="header">Speciality</f:facet>
+                                                        <h:outputLabel value="#{bif.fee.speciality.name}" rendered="#{bif.fee !=null and bif.fee.speciality!=null}" ></h:outputLabel>
+                                                    </p:column>
+
+                                                    <p:column>
+                                                        <f:facet name="header">Payee</f:facet>                                                
+                                                        <p:selectOneMenu value="#{bif.staff}" rendered="#{bif.fee.speciality!=null}" >
+                                                            <f:selectItem itemLabel="Select Staff" />
+                                                            <f:selectItems  value="#{staffController.getSpecialityStaff(bif.fee.speciality)}" var="bifs" itemLabel="#{bifs.person.name}" itemValue="#{bifs}" />
+                                                        </p:selectOneMenu>
+
+                                                    </p:column>
+                                                </p:dataTable>
+                                            </p:tab>
+                                        </p:tabView>
+                                    </h:panelGroup>
+                                </p:panel>
+
+                                <p:panel class="my-1">
+                                    <f:facet name="header" >
+                                        <h:outputText styleClass="pi pi-calendar-plus" />
+                                        <h:outputText value="Appointments" class="mx-4"></h:outputText>
+                                    </f:facet>
+                                    <div class="row mb-2">
+                                        <div class="col-5">
+                                            <p:outputLabel class="mt-1" value="Date for appointment"></p:outputLabel>
+                                        </div>
+                                        <div class="col-7">
+                                            <p:calendar id="calS" value="#{collectingCentreBillController.sessionDate}" pattern="#{sessionController.applicationPreference.longDateFormat}" class="w-100" inputStyleClass="w-100" >
+                                                <f:ajax event="dateSelect" execute="calS" render="tblSs :#{p:resolveFirstComponentWithId('lblTemS',view).clientId}" />
+                                            </p:calendar>
+                                        </div>
+                                    </div>  
+
+                                    <div class="row my-1">
+
+                                        <p:dataTable id="tblSs" value="#{collectingCentreBillController.billSessions}" var="bs" emptyMessage="No Numbers Yet">
+                                            <f:facet name="header">
+                                                <h:outputLabel value="#{collectingCentreBillController.lastBillItem.item.name}" />
+
+                                                <h:outputLabel id="lblTemS" value="#{collectingCentreBillController.sessionDate}" >
+                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
+                                                </h:outputLabel>
+
+                                            </f:facet>
+                                            <p:column headerText="No">
+                                                <h:outputLabel value="#{bs.serialNo}" />
+                                            </p:column>
+                                            <p:column headerText="Client">
+                                                <h:outputLabel value="#{bs.billItem.bill.patient.person.nameWithTitle}" />
+                                            </p:column>
+                                        </p:dataTable>
+                                    </div> 
+
+                                </p:panel>
+
+                            </h:panelGroup>
+
+                        </div>
+
+                        <div class="col-6" >
+
+
+                            <p:panel class="my-1">
+                                <f:facet name="header" >
+                                    <h:outputText styleClass="fas fa-bullseye" /> <!-- FontAwesome Icon -->
+                                    <h:outputText value="Collecting Centre Details" class="mx-4"></h:outputText>
+
+                                    <p:commandButton  
+                                        style="float: right;"
+                                        value="Settle" 
+                                        icon="fa fa-check"
+                                        action="#{collectingCentreBillController.settleBill}" 
+                                        ajax="false" 
+                                        class="ui-button-success ">
+                                    </p:commandButton>
+                                    <p:commandButton 
+                                        style="float: right;"
+                                        value="New Bill" 
+                                        icon="fa fa-plus" 
+                                        ajax="false" 
+                                        action="#{collectingCentreBillController.navigateToCollectingCenterBillingromCollectingCenterBilling()}" 
+                                        class="ui-button-warning mx-1" >
+                                    </p:commandButton>
+                                    <p:commandButton 
+                                        style="float: right;"
+                                        value="Lookup" 
+                                        ajax="false"
+                                        icon="fa fa-search"
+                                        class="ui-button-warning" 
+                                        action="#{patientController.navigateToSearchPatients()}" 
+                                        >
+                                    </p:commandButton>
+                                    <p:commandButton 
+                                        style="float: right;"
+                                        value="Profile" 
+                                        ajax="false"
+                                        icon="fa fa-user"
+                                        class="ui-button-warning mx-1 " 
+                                        action="#{patientController.navigateToOpdPatientProfile()}" 
+                                        >
+                                        <f:setPropertyActionListener 
+                                            value="#{collectingCentreBillController.patient}" 
+                                            target="#{patientController.current}" ></f:setPropertyActionListener>
+                                    </p:commandButton>
+                                    <p:focus id="focusIx" for=":#{p:resolveFirstComponentWithId('acIx',view).clientId}" />
+
+
+
+
+
+                                </f:facet>
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <p:outputLabel value="Reference No" class="mr-4"></p:outputLabel>
+                                    </div>
+                                    <div class="col-md-9">
+                                        <p:selectOneMenu
+                                            filter="true"
+                                            filterMatchMode="contains"
+                                            value="#{collectingCentreBillController.referralId}" 
+                                            class="w-100 mb-1">
+                                            <f:selectItem itemLabel="Select" itemValue="" /> <!-- Default empty selection -->
+                                            <f:selectItems value="#{collectingCentreBillController.referralIds}" var="refId"
+                                                           itemLabel="#{refId}" itemValue="#{refId}" />
+                                        </p:selectOneMenu>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <h:outputLabel id="ballance" value="Balance" class="my-1"  />
+                                    </div>
+                                    <div class="col-md-9">
+                                        <h:outputLabel class="my-1"  id="ballance2" value="#{collectingCentreBillController.collectingCentre.ballance}">
+                                            <f:convertNumber  pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <h:outputLabel   id="ballance3" value="Max Credit Limit" class="my-1"/>    
+                                    </div>
+                                    <div class="col-md-9">
+                                        <h:outputLabel class="my-1" id="ballance4" value="#{collectingCentreBillController.collectingCentre.maxCreditLimit}">
+                                            <f:convertNumber  pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <h:outputLabel id="ballance5" value="Credit Limit"  class="my-1" />
+                                    </div>
+                                    <div class="col-md-9">
+                                        <h:outputLabel class="my-1" id="ballance6" value="#{collectingCentreBillController.collectingCentre.allowedCredit}">
+                                            <f:convertNumber  pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </div>
+                                </div>
+                                <h:panelGrid columns="2" class="w-100 ">
+                                    <p:dataTable 
+                                        class="mt-2"
+                                        emptyMessage="No Book"  
+                                        id="tblAgentBooks" 
+                                        value="#{collectingCentreBillController.bookSummeryRows}" 
+                                        var="a" 
+                                        styleClass="noBorder summeryBorder">
+                                        <p:column>
+                                            <f:facet name="header">
+                                                <p:outputLabel value="Book Number" />
+                                            </f:facet>
+                                            <p:outputLabel value="#{a.bookName}" >
+                                                <f:convertNumber pattern="00000" />
+                                            </p:outputLabel>
+                                        </p:column>
+
+                                        <p:column>
+                                            <f:facet name="header">
+                                                <p:outputLabel value="Number Of Leaves" />
+                                            </f:facet>
+                                            <p:outputLabel value="#{a.bookNumber}" >
+                                            </p:outputLabel>
+                                        </p:column>
+                                    </p:dataTable>
+
+                                </h:panelGrid>
+
+                            </p:panel>
+
+
+
+
+                            <p:panel>
+                                <f:facet name="header" >
+                                    <h:outputText styleClass="fa fa-stethoscope" /> <!-- FontAwesome Icon -->
+                                    <h:outputText value="Referral Details" class="mx-4"></h:outputText>
+                                </f:facet>
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <h:panelGroup>
+                                            <p:outputLabel value="Referring Doctor"></p:outputLabel>
+                                            <p:commandLink id="btnAddNewDoc" 
+                                                           type="button"  
+                                                           value="&nbsp;(+)" 
+                                                           oncomplete="PF('dlg').show();" 
+                                                           actionListener="#{doctorController.prepareAdd}" 
+                                                           process="btnAddNewDoc" 
+                                                           update="#{p:resolveFirstComponentWithId('panDoc',view).clientId}" />  
+
+                                            <p:dialog id="panDoc" header="Add New Doctor" widgetVar="dlg" resizable="false">  
+                                                <p:growl id="msgs" ></p:growl>
+                                                <h:panelGrid columns="2" style="margin-bottom:10px">  
+                                                    <h:outputText id="lblNameD" value="Name" ></h:outputText>
+                                                    <h:inputText autocomplete="off" id="txtNameD"  value="#{doctorController.current.person.name}" class="w-100"  ></h:inputText>
+                                                    <h:outputText id="lblPhoneD" value="Phone" ></h:outputText>
+                                                    <h:inputText autocomplete="off" id="txtPhoneD" value="#{doctorController.current.person.phone}" class="w-100" ></h:inputText>
+                                                    <h:outputText id="lblFaxD" value="Fax" ></h:outputText>
+                                                    <h:inputText autocomplete="off" id="txtFaxD" value="#{doctorController.current.person.fax}" class="w-100" ></h:inputText>
+                                                    <h:outputText id="lblMobileD" value="Mobile" ></h:outputText>
+                                                    <h:inputText autocomplete="off" id="txtMobileD" value="#{doctorController.current.person.mobile}" class="w-100" ></h:inputText>
+                                                    <h:outputText id="lblAddressD" value="Address" ></h:outputText>
+                                                    <h:inputText autocomplete="off" id="txtAddressD" value="#{doctorController.current.person.address}" class="w-100" ></h:inputText>
+                                                    <h:outputText value="Speciality" ></h:outputText>                                    
+                                                    <h:selectOneListbox id="cmbSpecialityD" size="1" value="#{doctorController.current.speciality}" class="w-100" >
+                                                        <f:selectItem itemLabel="Please select a speciality"/>
+                                                        <f:selectItems value="#{specialityController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
+                                                    </h:selectOneListbox>
+                                                    <h:outputText id="lblRegD" value="Registration" ></h:outputText>
+                                                    <h:inputText autocomplete="off" id="txtRegD" value="#{doctorController.current.registration}" class="w-100" ></h:inputText>                 
+                                                    <h:outputText id="lblQuaD" value="Qualification" ></h:outputText>
+                                                    <h:inputText autocomplete="off" id="txtQuaD" value="#{doctorController.current.qualification}" class="w-100" ></h:inputText>   
+
+                                                    <p:commandButton class="ui-button-success" icon="fas fa-plus" id="btnDocSave" value="Add New" process="btnDocSave panDoc" update="panDoc :#{p:resolveFirstComponentWithId('cmbDoc',view).clientId}" actionListener="#{doctorController.saveSelected()}" oncomplete="dlg.hide();">
+                                                    </p:commandButton>
+
+                                                </h:panelGrid>  
+
+                                            </p:dialog> 
+
+                                        </h:panelGroup>
+                                    </div>
+                                    <div class="col-md-9">
+                                        <p:autoComplete  forceSelection="true" id="cmbDoc" 
+                                                         minQueryLength="4"
+                                                         class="w-100 mb-1" inputStyleClass="w-100"
+                                                         placeholder="Type at least 4 letters to search"
+                                                         value="#{collectingCentreBillController.referredBy}" completeMethod="#{doctorController.completeDoctor}" var="ix" itemLabel="#{ix.person.name}" itemValue="#{ix}" >
+                                        </p:autoComplete>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <p:outputLabel value="Referring Institution"></p:outputLabel>
+                                    </div>
+                                    <div class="col-md-9">
+                                        <p:autoComplete forceSelection="true" id="cmdIns" 
+                                                        minQueryLength="4"
+                                                        placeholder="Type at least 4 letters to search"
+                                                        value="#{collectingCentreBillController.referredByInstitution}" 
+                                                        completeMethod="#{institutionController.completeIns}" var="refi" 
+                                                        itemLabel="#{refi.name}" itemValue="#{refi}" class="mb-1 w-100" inputStyleClass="w-100">
+                                            <p:column headerText="Name">
+                                                #{refi.name}
+                                            </p:column>
+                                            <p:column headerText="Code">
+                                                #{refi.institutionCode}
+                                            </p:column>
+                                            <p:column headerText="Institution Type">
+                                                #{refi.institutionType}
+                                            </p:column>
+                                        </p:autoComplete>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <p:outputLabel value="Comments"></p:outputLabel>
+                                    </div>
+                                    <div class="col-md-9">
+                                        <p:inputTextarea value="#{collectingCentreBillController.comment}" id="comment" class="w-100 mb-1"/>
+                                    </div>
+                                </div>
+                            </p:panel>
+
+                            <div class="row m-1" >
+                                <p:panel id="pBillDetails" >
+                                    <f:facet name="header" >
+                                        <h:outputText styleClass="fa fa-money-bill-wave" /> <!-- FontAwesome Icon -->
+                                        <h:outputText value="Bill Details" class="mx-4"></h:outputText>
+                                    </f:facet>
+                                    <div class="row h5">
+                                        <div class="col-md-3">
+                                            <h:outputText value="Total" ></h:outputText >
+                                        </div>
+                                        <div class="col-md-9">
+                                            <h:outputText id="tot" value="#{collectingCentreBillController.total}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <h:outputText value="Discount" ></h:outputText>
+                                        </div>
+                                        <div class="col-md-9">
+                                            <h:outputText id="dis" value="#{collectingCentreBillController.discount}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <h:outputText value="Net Total" ></h:outputText>
+                                        </div>
+                                        <div class="col-md-9">
+                                            <h:outputText id="netTotal" value="#{collectingCentreBillController.netTotal}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <h:outputText value="VAT" ></h:outputText>
+                                        </div>
+                                        <div class="col-md-9">
+                                            <h:outputText id="netTotalVat" value="#{collectingCentreBillController.vat}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <h:outputText  value="Balance " ></h:outputText>
+                                        </div>
+                                        <div class="col-md-9">
+                                            <h:outputText id="balance" value="#{collectingCentreBillController.cashBalance}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </div>
+                                    </div>
+                                </p:panel>
+                            </div>
+                        </div>
+                    </h:panelGroup>
+
+                    <h:panelGroup rendered="#{collectingCentreBillController.printPreview}" >
+                        <div class="d-flex justify-content-between">
+                            <div class="">
+                                <p:commandButton 
+                                    value="New Bill"
+                                    class="ui-button-success m-1"
+                                    icon="fa fa-plus-circle"
+                                    ajax="false" 
+                                    action="#{collectingCentreBillController.prepareNewBillKeepingCollectingCenter()}" >
+                                </p:commandButton>
+                                <p:commandButton 
+                                    ajax="false" 
+                                    value="Batch Cancel" 
+                                    icon="fa-solid fa-ban" class="ui-button-danger m-1"
+                                    action="#{collectingCentreBillController.cancellAll}" 
+                                    style="float: right;"
+                                    onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
+                                                return false;">
+                                </p:commandButton>
+                            </div>
+
+                            <div class="d-flex m-2">
+                                <p:outputLabel value="Paper Type" class="m-2"></p:outputLabel>
+                                <p:selectOneMenu value="#{sessionController.departmentPreference.opdBillPaperType}" class="m-1" style="width: 13em;">
+                                    <f:selectItem itemLabel="Please Select Paper Type" />
+                                    <f:selectItems value="#{enumController.paperTypes}" />
+                                </p:selectOneMenu>
+                                <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button m-1" title="Redraw Bill"></p:commandButton>
+                            </div>
+                        </div>
+
+                        <div class="row ">
+                            <div class="col-md-6">
+                                <p:panel>
+                                    <f:facet name="header">
+                                        <p:outputLabel value="Bill for Collecting Center"  class="mt-2"/>
+                                        <p:commandButton 
+                                            value="Print" 
+                                            process="@this" 
+                                            update="@all" 
+                                            type="button"  
+                                            class="ui-button-info m-1"
+                                            icon="fa fa-print"
+                                            style="float: right;"
+                                            ajax="false">
+                                            <p:printer target="centerBillPriview" ></p:printer>
+                                        </p:commandButton>
+                                    </f:facet>
+
+                                    <h:panelGroup id="centerBillPriview">
+
+                                        <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosPaper'}" >
+                                            <ui:repeat value="#{collectingCentreBillController.bills}" var="pp">
+                                                <bi:posCCBill_CC bill="#{pp}" duplicate="false"/>                        
+                                            </ui:repeat>
+                                        </h:panelGroup>
+                                        
+                                        <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaper'}" >
+                                            <ui:repeat value="#{collectingCentreBillController.bills}" var="pp">
+                                                <bi:fiveFiveCCBill_CC bill="#{pp}" duplicate="false"/>                        
+                                            </ui:repeat>
+                                        </h:panelGroup>
+                                        
+                                    </h:panelGroup>
+
+                                </p:panel>
+                            </div>
+                            <div class="col-md-6">
+                                <p:panel>
+                                    <f:facet name="header">
+                                        <p:outputLabel value="Bill for Patinet " class="mt-2"/>
+                                        <p:commandButton 
+                                            value="Print Patient" 
+                                            class="ui-button-info m-1"
+                                            icon="fa fa-print"
+                                            process="@this" 
+                                            update="@all" 
+                                            style="float: right;"
+                                            type="button"  
+                                            ajax="false">
+                                            <p:printer target="parinetBillPriview" ></p:printer>
+                                        </p:commandButton>
+                                    </f:facet>
+                                    <h:panelGroup id="parinetBillPriview">
+
+                                        <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosPaper'}" >
+                                            <ui:repeat value="#{collectingCentreBillController.bills}" var="pp">
+                                                <bi:posCCBill_Patient bill="#{pp}" duplicate="false"/>                        
+                                            </ui:repeat>
+                                        </h:panelGroup>
+                                        
+                                        <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaper'}" >
+                                            <ui:repeat value="#{collectingCentreBillController.bills}" var="pp">
+                                                <bi:fiveFiveCCBill_Patient bill="#{pp}" duplicate="false"/>                        
+                                            </ui:repeat>
+                                        </h:panelGroup>
+
+                                    </h:panelGroup>
+
+                                </p:panel>
+                            </div>                            
+                        </div>
+                    </h:panelGroup>
+                </p:panel>
+            </h:form>
+        </h:panelGroup>
+    </ui:define>
+</ui:composition>
