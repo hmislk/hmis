@@ -56,6 +56,7 @@ public class DepartmentController implements Serializable {
     List<Department> itemsToRemove;
 
     public Department findAndSaveDepartmentByName(String name) {
+        System.out.println("name = " + name);
         if (name == null || name.trim().equals("")) {
             return null;
         }
@@ -69,7 +70,7 @@ public class DepartmentController implements Serializable {
                 + " and i.retired=:ret";
         Department i = getFacade().findFirstByJpql(sql, m);
         if (i == null) {
-            i = new Department();
+            i = new Department(); 
             i.setName(name);
             getFacade().create(i);
         } else {
@@ -78,7 +79,32 @@ public class DepartmentController implements Serializable {
         }
         return i;
     }
-
+    
+    public Department findAndSaveDepartmentByName(String name, Institution ins) {
+        if (name == null || name.trim().equals("")) {
+            return null;
+        }
+        String sql;
+        Map m = new HashMap();
+        m.put("name", name);
+        m.put("ret", false);
+        sql = "select i "
+                + " from Department i "
+                + " where i.name=:name"
+                + " and i.retired=:ret";
+        Department i = getFacade().findFirstByJpql(sql, m);
+        if (i == null) {
+            i = new Department(); 
+            i.setName(name);
+            i.setInstitution(ins);
+            getFacade().create(i);
+        } else {
+            i.setRetired(false);
+            getFacade().edit(i);
+        }
+        return i;
+    }
+    
     public void fillItems() {
         String j;
         j = "select i from Department i where i.retired=false order by i.name";
