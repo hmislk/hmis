@@ -1241,15 +1241,25 @@
                 <f:facet name="options">
                     <div class="d-flex align-items-center">
                         <div class="mx-4">
-                            <p:poll interval="180" 
+                            <h:panelGroup>
+                                <p:poll
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Auto-refresh Menu Notifications', false)}"
+                                    interval="#{configOptionApplicationController.getLongValueByKey('Auto-refresh Menu Notification Duration', 1800)}"
                                     listener="#{userNotificationController.fillLoggedUserNotifications()}"
                                     update="notCount" />
-                            <h:panelGroup id="notCount">
-                                <p:badge id="bdgeNotiCount" severity="danger" value="#{webUserController.userNotificationCount}" >
-                                    <p:commandButton id="btnNot" ajax="false" icon="pi pi-bell" action="#{userNotificationController.navigateToRecivedNotification()}"/>
-                                </p:badge>
+                                <h:panelGroup id="notCount">
+                                    <p:badge id="bdgeNotiCount" severity="danger" value="#{webUserController.userNotificationCount}">
+                                        <p:commandButton id="btnNot" ajax="false" icon="pi pi-bell" action="#{userNotificationController.navigateToRecivedNotification()}" />
+                                    </p:badge>
+                                </h:panelGroup>
+                                <p:commandButton 
+                                    icon="pi pi-refresh" 
+                                    rendered="#{not configOptionApplicationController.getBooleanValueByKey('Auto-refresh Menu Notifications', false)}"
+                                    action="#{userNotificationController.fillLoggedUserNotifications()}"
+                                    title="Refresh Notifications" style="margin-left: 10px;"/>
                             </h:panelGroup>
                         </div>
+
 
                         <p:commandButton id="btnLogout" ajax="false" icon="pi pi-sign-out" action="#{sessionController.logout}" />
                     </div>
