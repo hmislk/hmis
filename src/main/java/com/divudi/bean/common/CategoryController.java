@@ -111,6 +111,8 @@ public class CategoryController implements Serializable {
         current.setRetiredAt(new Date());
         current.setRetirer(sessionController.getLoggedUser());
         save(current);
+        fillFeeItemListTypes();
+        JsfUtil.addSuccessMessage("Deleted");
     }
     
     
