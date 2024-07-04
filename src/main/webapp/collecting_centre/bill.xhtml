@@ -42,11 +42,11 @@
                                 forceSelection="true" id="acColl"
                                 completeMethod="#{institutionController.completeCollectingCenter}" 
                                 var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" 
-                                maxResults="10"
+                                maxResults="15"
                                 class="w-100 mb-1"
                                 inputStyleClass="form-control">
-                                <p:column>#{vt.institutionCode}</p:column>
-                                <p:column>#{vt.name}</p:column>
+                                <p:column style="padding: 6px;">#{vt.institutionCode}</p:column>
+                                <p:column style="padding: 6px;">#{vt.name}</p:column>
                             </p:autoComplete>
                         </div>
                         <div class="col-md-3">

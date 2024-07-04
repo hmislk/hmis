@@ -100,8 +100,10 @@
                                     </p:column>  
 
                                     <p:column headerText="View">
-                                        <p:commandButton ajax="false" value="View Bill" action="/collecting_centre/bill_print.xhtml">
-                                            <f:setPropertyActionListener value="#{billController.findBillbyID(bill.id)}" target="#{collectingCentreBillController.bill}"/>
+                                        <p:commandButton 
+                                            ajax="false" 
+                                            value="View Bill" 
+                                            action="#{collectingCentreBillController.navigateToCollectingCenterBillFromBillSearch(bill.id)}">
                                         </p:commandButton>
                                         #{billController.findBillbyID(bill.id)}
                                     </p:column>
