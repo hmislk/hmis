@@ -1321,6 +1321,11 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     public void listAllSesionInstances() {
         sessionInstances = channelBean.listSessionInstances(fromDate, toDate, null, null, null);
+        if(configOptionApplicationController.getBooleanValueByKey("Calculate All Patient Count When Loading Channel Booking By Dates")){
+            for(SessionInstance s : sessionInstances){
+                fillBillSessions(s);
+            }
+        }
         filterSessionInstances();
     }
 
@@ -2617,6 +2622,16 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 return;
             }
         }
+        if (configOptionApplicationController.getBooleanValueByKey("Channel Scan Sessions Require Item Presence")){
+            if(!(itemsAvailableToAddToBooking.isEmpty())){
+                if(itemsAddedToBooking == null || itemsAddedToBooking.isEmpty()){
+                    JsfUtil.addErrorMessage("There is No Item Added");
+                    settleSucessFully = false;
+                    return; 
+                }
+            }
+        }
+        
         if (configOptionApplicationController.getBooleanValueByKey("Channel Items Sessions Need to Have a Referance Doctor")) {        
             if (!(itemsAddedToBooking == null || itemsAddedToBooking.isEmpty())) {
                 if(referredBy == null){
