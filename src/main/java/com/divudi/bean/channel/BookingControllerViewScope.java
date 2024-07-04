@@ -1321,6 +1321,11 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     public void listAllSesionInstances() {
         sessionInstances = channelBean.listSessionInstances(fromDate, toDate, null, null, null);
+        if(configOptionApplicationController.getBooleanValueByKey("Calculate All Patient Count When Loading Channel Booking By Dates")){
+            for(SessionInstance s : sessionInstances){
+                fillBillSessions(s);
+            }
+        }
         filterSessionInstances();
     }
 
