@@ -1948,7 +1948,7 @@ public class BillSearch implements Serializable {
 
         cb.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), originalBill.getToDepartment(), originalBill.getBillType(), BillClassType.CancelledBill, BillNumberSuffix.CAN));
         cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), originalBill.getToDepartment(), originalBill.getBillType(), BillClassType.CancelledBill, BillNumberSuffix.CAN));
-
+        
         cb.setBalance(0.0);
         cb.setPaymentMethod(paymentMethod);
         cb.setBilledBill(originalBill);
@@ -2127,7 +2127,7 @@ public class BillSearch implements Serializable {
         System.out.println("getBill() 3= " + getBill().isCancelled());
         System.out.println("getBill() 4= " + getBill().getIdStr());
         JsfUtil.addSuccessMessage("Cancelled");
-
+        
         if (getBill().getPaymentMethod() == PaymentMethod.Credit) {
             //TODO: Manage Credit Balances for Company, Staff
             if (getBill().getToStaff() != null) {
