@@ -84,7 +84,7 @@
                                 <p:inputText   value="#{itemFeeManager.item.total}"  class="w-100" ></p:inputText>
                                 <p:spacer width="10" ></p:spacer>
                                 <p:outputLabel value="For Collecting Centre" ></p:outputLabel>
-                                <p:inputText id="gpTotalsForeginor" value="#{itemFeeManager.totalItemFee}" class="w-100"></p:inputText>
+                                <p:inputText id="gpTotalsForeginor" value="#{itemFeeManager.itemFee.ffee}" class="w-100"></p:inputText>
                             </h:panelGrid>
 
 
@@ -94,7 +94,7 @@
                                 <p:inputText value="#{itemFeeManager.item.totalForForeigner}"   class="w-100"></p:inputText>
                                 <p:spacer width="10" ></p:spacer>
                                 <p:outputLabel value="For Collecting Centre" ></p:outputLabel>
-                                <p:inputText  value="#{itemFeeManager.totalItemFeeForForeigners}"  class="w-100"></p:inputText>
+                                <p:inputText  value="#{itemFeeManager.itemFee.ffee}"  class="w-100"></p:inputText>
                             </h:panelGrid>
 
 
@@ -110,6 +110,17 @@
                                     process="btnAddNewFee acIx" 
                                     onclick="PF('dlg').show();" 
                                     class="w-100 mt-2 ui-button-success" icon="fa fa-plus">   
+                                </p:commandButton>
+                            </div>
+                            <div class="col-md-2">
+                                <p:commandButton value="Clear" ajax="false"
+                                                 actionListener="#{itemFeeManager.clearItemFees()}" class="w-100 mt-2 ui-button-danger" icon="fa-solid fa-ban">   
+                                </p:commandButton>
+                            </div>
+                            <div class="col-md-2">
+
+                                <p:commandButton value="Back" ajax="false"
+                                                 action="#{itemFeeManager.navigateToCollectingCentreItemFees()}" icon="fa fa-arrow-right" class="w-100 ui-button-warning mt-2">   
                                 </p:commandButton>
                             </div>
                         </div>
@@ -141,6 +152,20 @@
                                     class="w-100">
                                     <f:selectItem itemLabel="Select Fee Type" ></f:selectItem>
                                     <f:selectItems value="#{enumController.feeTypes}" var="ft" itemLabel="#{ft.label}" itemValue="#{ft}" />                                        
+                                    <p:ajax process="@this" update="gpDetail" ></p:ajax>
+                                </p:selectOneMenu>
+
+                                <p:outputLabel value="Fee Category" ></p:outputLabel>
+                                <p:selectOneMenu 
+                                    filter="true"
+                                    filterMatchMode="contains"
+                                    value="#{itemFeeManager.itemFee.feeCategory}" 
+                                    class="w-100">
+                                    <f:selectItem itemLabel="Select Fee Type" ></f:selectItem>
+                                    <f:selectItem itemLabel="Collecting Centre" ></f:selectItem>
+                                    <f:selectItem itemLabel="Institution" ></f:selectItem>
+                                    <f:selectItem itemLabel="Staff" ></f:selectItem>
+                                    <f:selectItems value="#{enumController.feeCategories}" var="ft" itemLabel="#{ft.label}" itemValue="#{ft}" />                                        
                                     <p:ajax process="@this" update="gpDetail" ></p:ajax>
                                 </p:selectOneMenu>
 

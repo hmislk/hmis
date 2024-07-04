@@ -23,6 +23,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -66,6 +67,9 @@ public class ItemFeeManager implements Serializable {
     List<Department> departments;
     List<Staff> staffs;
     private List<Item> selectedList;
+
+    private Double totalItemFee;
+    private Double totalItemFeeForForeigners;
 
     public String navigateItemFeeList() {
         return "/admin/pricing/item_fee_list?faces-redirect=true";
@@ -206,7 +210,13 @@ public class ItemFeeManager implements Serializable {
     }
 
     public String navigateToCollectingCentreItemFees() {
+        collectingCentre = null;
+        fillForInstitutionFees();
         return "/admin/pricing/manage_collecting_centre_item_fees?faces-redirect=true";
+    }
+
+    public String navigateToFeeListItemFees() {
+        return "/admin/pricing/manage_fee_list_item_fees?faces-redirect=true";
     }
 
     public String navigateToItemFeesMultiple() {
@@ -256,7 +266,21 @@ public class ItemFeeManager implements Serializable {
     }
 
     public void fillForInstitutionFees() {
+        if (collectingCentre == null) {
+            itemFees = null;
+            totalItemFee = 0.0;
+            totalItemFeeForForeigners = 0.0;
+            return;
+        }
         itemFees = fillFees(item, collectingCentre);
+        totalItemFee = itemFees.stream()
+                .filter(Objects::nonNull)
+                .mapToDouble(ItemFee::getFee)
+                .sum();
+        totalItemFeeForForeigners = itemFees.stream()
+                .filter(Objects::nonNull)
+                .mapToDouble(ItemFee::getFfee)
+                .sum();
     }
 
     public String toManageItemFees() {
@@ -406,8 +430,7 @@ public class ItemFeeManager implements Serializable {
         itemFee = new ItemFee();
         itemFees = null;
         fillForInstitutionFees();
-        updateTotal();
-        JsfUtil.addSuccessMessage("New Fee Added");
+        JsfUtil.addSuccessMessage("New Fee Added for Collecting Centre");
     }
 
     public void addNewFeeForItem(Item inputItem, ItemFee inputFee) {
@@ -515,4 +538,21 @@ public class ItemFeeManager implements Serializable {
     public void setCollectingCentre(Institution collectingCentre) {
         this.collectingCentre = collectingCentre;
     }
+
+    public Double getTotalItemFee() {
+        return totalItemFee;
+    }
+
+    public void setTotalItemFee(Double totalItemFee) {
+        this.totalItemFee = totalItemFee;
+    }
+
+    public Double getTotalItemFeeForForeigners() {
+        return totalItemFeeForForeigners;
+    }
+
+    public void setTotalItemFeeForForeigners(Double totalItemFeeForForeigners) {
+        this.totalItemFeeForForeigners = totalItemFeeForForeigners;
+    }
+
 }
