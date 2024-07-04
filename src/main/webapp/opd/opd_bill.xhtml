@@ -439,6 +439,7 @@
                                                     icon="fa fa-check"
                                                     action="#{opdBillController.settleOpdBill()}" 
                                                     class="ui-button-success mx-2 w-100"
+                                                    onclick="this.disabled=true; PrimeFaces.ab({source:this}); return false;"
                                                     >
                                                 </p:commandButton>
                                                 <p:commandButton 
