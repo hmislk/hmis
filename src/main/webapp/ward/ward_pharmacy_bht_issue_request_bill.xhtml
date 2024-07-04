@@ -22,9 +22,21 @@
                         rendered="#{!pharmacyRequestForBhtController.billPreview}"
                         style="width: fit-content;" >
 
-                        <p:panel 
-                            header="Start Pharmacy Request for Inpatients" 
+                        <p:panel
                             rendered="#{pharmacyRequestForBhtController.department eq null or pharmacyRequestForBhtController.patientEncounter eq null}">                                        
+                            <f:facet name="header">
+                                <h:outputLabel value="Start Pharmacy Request for Inpatients"/>
+                                <p:commandButton
+                                        ajax="false"
+                                        icon="fa-solid fa-address-card"
+                                        class="ui-button-secondary " 
+                                        value="Inpatient Dashboard"
+                                        style="float: right;"
+                                        action="#{admissionController.navigateToAdmissionProfilePage}" 
+                                        >
+                                        <f:setPropertyActionListener value="#{pharmacyRequestForBhtController.patientEncounter}" target="#{admissionController.current}" />
+                                    </p:commandButton>
+                            </f:facet>
                             <div class="d-flex gap-3">
                                 <h:outputLabel value="Requesting Department"/>
                                 <p:autoComplete  
@@ -95,11 +107,11 @@
                                     </div>
                                     <div class="d-flex gap-2">
 
-                                        <p:commandButton 
-                                            value="Back" 
+                                        <p:commandButton
                                             ajax="false"
-                                            icon="fas fa-arrow-left"
-                                            class="ui-button-secondary" 
+                                            icon="fa-solid fa-address-card"
+                                            class="ui-button-secondary " 
+                                            value="Inpatient Dashboard"
                                             action="#{bhtSummeryController.navigateToInpatientProfile()}">
                                         </p:commandButton>
 
@@ -408,6 +420,16 @@
                                         <f:setPropertyActionListener 
                                             value="#{admissionController.current.patient}" 
                                             target="#{patientController.current}" ></f:setPropertyActionListener>
+                                    </p:commandButton>
+                                    <p:commandButton
+                                        ajax="false"
+                                        icon="fa-solid fa-address-card"
+                                        class="ui-button-secondary " 
+                                        value="Inpatient Dashboard"
+                                        style="float: right;"
+                                        action="#{admissionController.navigateToAdmissionProfilePage}" 
+                                        >
+                                        <f:setPropertyActionListener value="#{pharmacyRequestForBhtController.patientEncounter}" target="#{admissionController.current}" />
                                     </p:commandButton>
                                 </div>
                             </div>

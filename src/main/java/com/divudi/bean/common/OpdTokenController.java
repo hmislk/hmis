@@ -169,7 +169,7 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
             currentToken.setPatient(getPatient());
         }
         if (sessionController.getDepartmentPreference().isOpdSettleWithoutPatientArea()) {
-            if (getPatient().getPerson().getArea() == null || getPatient().getPerson().getArea().getName().trim()=="") {
+            if (getPatient().getPerson().getArea() == null || getPatient().getPerson().getArea().getName().trim() == "") {
                 JsfUtil.addErrorMessage("Please select a patient Area");
                 return "";
             }
@@ -433,32 +433,48 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
         tokenFacade.edit(currentToken);
     }
 
-    public void startTokenService() {
-
-    }
-
-    public void completeTokenService() {
-
-    }
-
-    public void reverseCallToken() {
-
-    }
-
+//    public void startTokenService() {
+//        
+//    }
+//
+//    public void completeTokenService() {
+//
+//    }
+//
+//    public void reverseCallToken() {
+//
+//    }
+//
     public void recallToken() {
-
+        if (currentToken == null) {
+            JsfUtil.addErrorMessage("Please select valid Token");
+            return;
+        }
+        
+        if (currentToken.isCalled()) {
+            currentToken.setCalled(false);
+        }else{
+            currentToken.setCalled(true);
+        }
+        tokenFacade.edit(currentToken);
     }
 
-    public void restartTokenService() {
-
-    }
+//    public void restartTokenService() {
+//        
+//    }
 
     public void reverseCompleteTokenService() {
-
+        if (currentToken==null) {
+            JsfUtil.addErrorMessage("Token Is Not Valid !");
+            return;
+        }
+       currentToken.setRestartTokenServices(true);
+        currentToken.setCompleted(false);
+        tokenFacade.edit(currentToken);
     }
 
     public Token getCurrentToken() {
-        if(currentToken==null){
+        if (currentToken == null) {
             currentToken = new Token();
         }
         return currentToken;

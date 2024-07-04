@@ -65,8 +65,7 @@
                                     </h:panelGroup>
 
                                     <h:panelGroup rendered="#{token.bill.referenceBill eq null}" >
-                                        <h:outputText value="AWAITING PAYMENT" rendered="#{token.bill.cancelled eq false}"/>
-
+                                        <h:outputText value="AWAITING PAYMENT" rendered="#{token.bill.cancelled eq false}"/><br/>
                                         <h:outputText value="ALL ITEMS GET ADDED TO STOCK" rendered="#{token.bill.cancelled eq true}"/>
                                         <br/>
                                         <h:outputText value="Bill Number : " />
@@ -115,7 +114,7 @@
                                     <p:commandButton 
                                         id="opdCashier"
                                         icon="fa fa-fw fa-cash-register"
-                                        disabled="#{token.bill ne null}"
+                                        disabled="#{token.bill ne null and token.restartTokenServices eq false}"
                                         action="#{opdTokenController.navigateToNewOpdBillForCashier()}"
                                         ajax="false"
                                         >
@@ -125,7 +124,7 @@
                                     <p:commandButton 
                                         id="opdBill"
                                         icon="fa fa-fw fa-notes-medical"
-                                        disabled="#{token.bill ne null}"
+                                        disabled="#{token.bill ne null and token.restartTokenServices eq false}"
                                         action="#{opdBillController.navigateToNewOpdBillFromToken()}"
                                         actionListener="#{opdBillController.makeNull()}"
                                         ajax="false"

@@ -100,8 +100,8 @@ public class EnumController implements Serializable {
             }
         }
     }
-    
-     public List<PaymentMethod> getPaymentMethodsForChanneling() {
+
+    public List<PaymentMethod> getPaymentMethodsForChanneling() {
         if (paymentMethodsForChanneling == null) {
             fillPaymentMethodsForChanneling();
         }
@@ -117,14 +117,14 @@ public class EnumController implements Serializable {
             }
         }
     }
-    
+
     public List<PaymentMethod> getPaymentMethodsForPharmacyBilling() {
         if (paymentMethodsForPharmacyBilling == null) {
             fillPaymentMethodsForPharmacyBilling();
         }
         return paymentMethodsForPharmacyBilling;
     }
-    
+
     public void fillPaymentMethodsForPharmacyBilling() {
         paymentMethodsForPharmacyBilling = new ArrayList<>();
         for (PaymentMethod pm : PaymentMethod.values()) {
@@ -175,7 +175,7 @@ public class EnumController implements Serializable {
     public List<LoginPage> getLoginPages() {
         return Arrays.asList(LoginPage.values());
     }
-    
+
     public ItemListingStrategy[] getItemListingStrategys() {
         return ItemListingStrategy.values();
     }
@@ -445,7 +445,28 @@ public class EnumController implements Serializable {
             InwardChargeType.DialysisTreatment,
             InwardChargeType.OtherCharges,
             InwardChargeType.Eye,
-            InwardChargeType.Dental};
+            InwardChargeType.Dental,
+            InwardChargeType.Andrology,
+            InwardChargeType.AudiogramTest,
+            InwardChargeType.CathLabEOMachine,
+            InwardChargeType.Channel,
+            InwardChargeType.CSSDCharges,
+            InwardChargeType.Dialysis,
+            InwardChargeType.ECG,
+            InwardChargeType.EEG,
+            InwardChargeType.ExerciseECG,
+            InwardChargeType.Fertility,
+            InwardChargeType.HolterMoniteringCharges,
+            InwardChargeType.LaboratoryInvestigation,
+            InwardChargeType.MedicalService,
+            InwardChargeType.MedicalServiceOPD,
+            InwardChargeType.MRIUnit,
+            InwardChargeType.OPD,
+            InwardChargeType.Others,
+            InwardChargeType.Procedure,
+            InwardChargeType.Radiology,
+            InwardChargeType.ReportingCharges,
+            InwardChargeType.WardProcedure};
 
         return b;
     }
@@ -621,6 +642,7 @@ public class EnumController implements Serializable {
             PaymentMethod.Cheque,
             PaymentMethod.Slip,
             PaymentMethod.ewallet,
+            PaymentMethod.Staff,
             PaymentMethod.PatientDeposit};
         return p;
     }
@@ -639,7 +661,7 @@ public class EnumController implements Serializable {
             PaymentMethod.MultiplePaymentMethods};
         return p;
     }
-    
+
     public PaymentMethod[] PaymentMethodsForPharmacyRetailSale() {
         PaymentMethod[] p = {
             PaymentMethod.Cash,
@@ -671,7 +693,7 @@ public class EnumController implements Serializable {
         PaymentMethod[] p = {PaymentMethod.OnCall, PaymentMethod.Cash, PaymentMethod.Agent, PaymentMethod.Staff, PaymentMethod.Card, PaymentMethod.Cheque, PaymentMethod.Slip};
         return p;
     }
-    
+
     public PaymentMethod[] getPaymentMethodsForMakingProfessionalPayments() {
         PaymentMethod[] p = {PaymentMethod.Cash, PaymentMethod.Cheque, PaymentMethod.Slip};
         return p;

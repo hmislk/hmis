@@ -46,7 +46,7 @@
                             <p:column headerText="Patient Name">
                                 <h:outputText value="#{token.patient.person.name}" />
                             </p:column>
-                            
+
                             <p:column headerText="Patient Name">
                                 <h:outputText value="#{token.counter.name}" />
                             </p:column>
@@ -68,104 +68,74 @@
                             </p:column>
 
                             <!-- Actions Column -->
+
                             <p:column headerText="Actions" styleClass="text-center">
-                                <!-- Call Token Button -->
+                                <p:commandButton ajax="false"
+                                                 id="btnCall"
+                                                 icon="#{token.called ? 'fa fa-times' : 'fa fa-phone'}"
+                                                 class="#{token.called ? 'ui-button-warning' : 'ui-button-success'}"
+                                                 update="@this"
+                                                 title="#{token.called ? 'Cancel Call' : 'Call Token'}"
+                                                 action="#{opdTokenController.recallToken()}"
+                                                 process="btnCall">
+                                    <f:setPropertyActionListener target="#{opdTokenController.currentToken}" value="#{token}" />
+                                    <p:tooltip value="#{token.called ? 'Cancel Call' : 'Call Token'}" />
+                                </p:commandButton>
+                                <p:commandButton 
+                                    id="opdCashier"
+                                    icon="fa fa-fw fa-cash-register"
+                                    class="mx-1"
+                                    rendered="#{token.restartTokenServices eq true}"
+                                    action="#{opdTokenController.navigateToNewOpdBillForCashier()}"
+                                    ajax="false"
+                                    >
+                                    <f:setPropertyActionListener target="#{opdTokenController.currentToken}" value="#{token}" />
+                                    <p:tooltip value="Opd Billing for Cashier"/>
+                                </p:commandButton>
+                                <p:commandButton 
+                                    id="opdBill"
+                                    class="mx-1"
+                                    icon="fa fa-fw fa-notes-medical"
+                                    rendered="#{token.restartTokenServices eq true}"
+                                    action="#{opdBillController.navigateToNewOpdBillFromToken()}"
+                                    actionListener="#{opdBillController.makeNull()}"
+                                    ajax="false"
+                                    >
+                                    <f:setPropertyActionListener target="#{opdBillController.token}" value="#{token}" />
+                                </p:commandButton>
                                 <p:commandButton 
                                     ajax="false"
-                                    icon="fa fa-phone" 
-                                    class="ui-button-success" 
-                                    update=":#{p:resolveFirstComponentWithId('panel',view).clientId}" 
-                                    title="Call Token" 
-                                    rendered="#{not token.called}" 
-                                    action="#{opdTokenController.callToken}"
-                                    process="@this">
-                                    <f:setPropertyActionListener target="#{opdTokenController.currentToken}" value="#{token}" />
-                                    <p:tooltip value="Call Token" />
-                                </p:commandButton>
-
-                                <!-- Start Token Service Button -->
-                                <p:commandButton 
-                                    ajax="false"
-                                    id="btnStart"
-                                    icon="fa fa-play" 
-                                    class="ui-button-success mx-2" 
-                                    update="@form" 
-                                    title="Start Service" 
-                                    rendered="#{token.called and not token.inProgress}" 
-                                    action="#{opdTokenController.startTokenService}"
-                                    process="@this">
+                                    class="ui-button-success mx-1"
+                                    rendered="#{token.restartTokenServices eq true}"
+                                    icon="fa fa-money-bill" 
+                                    title="Pay at Cashier" 
+                                    action="#{opdTokenController.navigateToSettleOpdPreBill}">
                                     <f:setPropertyActionListener target="#{opdTokenController.currentToken}" value="#{token}" />
                                 </p:commandButton>
-
-                                <!-- Complete Token Service Button -->
-                                <p:commandButton 
-                                    ajax="false"
-                                    icon="fa fa-check" 
-                                    class="ui-button-success" 
-                                    update="@form" 
-                                    title="Complete Service" 
-                                    rendered="#{token.inProgress}" 
-                                    action="#{opdTokenController.completeTokenService}"
-                                    process="@this">
+                                <p:commandButton ajax="false"
+                                                 icon="#{token.referaToken.completed ? 'fa fa-undo' : 'fa fa-check'}"
+                                                 class="#{token.referaToken.completed ? 'ui-button-danger' : 'ui-button-success'}"
+                                                 update="@form"
+                                                 title="#{token.referaToken.completed ? 'Reverse Complete Service' : 'Complete Service'}"
+                                                 action="#{opdTokenController.toggleCompletedStatus}"
+                                                 process="@this">
                                     <f:setPropertyActionListener target="#{opdTokenController.currentToken}" value="#{token}" />
-                                    <p:tooltip value="Complete Token Service" />
+                                    <p:tooltip value="#{token.completed ? 'Reverse Complete Service' : 'Complete Service'}" />
                                 </p:commandButton>
-
-                                <!-- Reverse Call Token Button -->
-                                <p:commandButton 
-                                    ajax="false"
-                                    icon="fa fa-undo" 
-                                    class="ui-button-warning" 
-                                    update="@form" 
-                                    title="Reverse Call" 
-                                    rendered="#{token.called and not token.inProgress}" 
-                                    action="#{opdTokenController.reverseCallToken}"
-                                    process="@this">
-                                    <f:setPropertyActionListener target="#{opdTokenController.currentToken}" value="#{token}" />
-                                    <p:tooltip value="Reverse Call Token" />
-                                </p:commandButton>
-
-                                <!-- Recall Token Button -->
-                                <p:commandButton 
-                                    ajax="false"
-                                    icon="fa fa-refresh" 
-                                    class="ui-button-info mx-2" 
-                                    update="@form" 
-                                    title="Recall Token" 
-                                    rendered="#{token.called}" 
-                                    action="#{opdTokenController.recallToken}"
-                                    process="@this">
-                                    <f:setPropertyActionListener target="#{opdTokenController.currentToken}" value="#{token}" />
-                                    <p:tooltip value="Recall Token" />
-                                </p:commandButton>
-
-                                <!-- Restart Token Service Button -->
                                 <p:commandButton 
                                     ajax="false"
                                     icon="fa fa-repeat" 
-                                    class="ui-button-warning" 
+                                    class="ui-button-warning mx-1" 
                                     update="@form" 
                                     title="Restart Service" 
-                                    rendered="#{token.inProgress}" 
-                                    action="#{opdTokenController.restartTokenService}"
+                                    action="#{opdTokenController.reverseCompleteTokenService()}"
                                     process="@this">
                                     <f:setPropertyActionListener target="#{opdTokenController.currentToken}" value="#{token}" />
                                     <p:tooltip value="Restart Token Service" />
                                 </p:commandButton>
+                                
 
-                                <!-- Reverse Complete Token Service Button -->
-                                <p:commandButton 
-                                    ajax="false"
-                                    icon="fa fa-undo" 
-                                    class="ui-button-danger mx-2" 
-                                    update="@form" 
-                                    title="Reverse Complete Service" 
-                                    rendered="#{token.completed}" 
-                                    action="#{opdTokenController.reverseCompleteTokenService}"
-                                    process="@this">
-                                    <f:setPropertyActionListener target="#{opdTokenController.currentToken}" value="#{token}" />
-                                    <p:tooltip value="Reverse Complete Token Service" />
-                                </p:commandButton>
+
                             </p:column>
                         </p:dataTable>
                     </p:panel>

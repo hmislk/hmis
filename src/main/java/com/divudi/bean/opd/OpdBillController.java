@@ -785,11 +785,38 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             bf.setFeeGrossValue(0.0);
 //            return;
         }
-
+        
+        if(configOptionApplicationController.getBooleanValueByKey("Disable increasing the fee value in OPD Billing", false)){
+            if (bf.getFeeValue()<bf.getFeeGrossValue()){
+                JsfUtil.addErrorMessage("Increasing the fee value is not allowed.");
+                bf.setFeeGrossValue(bf.getFeeValue());
+                return;
+            }
+        }
+        if(configOptionApplicationController.getBooleanValueByKey("Disable decreasing the fee value in OPD Billing", false)){
+          
+            if (bf.getFeeValue()>bf.getFeeGrossValue()){
+                bf.setFeeGrossValue(bf.getFeeValue());
+                JsfUtil.addErrorMessage("Decreasing the fee value is not allowed.");
+                return;
+            }
+        }
         lstBillItems = null;
         getLstBillItems();
         bf.setTmpChangedValue(bf.getFeeGrossValue());
         calTotals();
+        JsfUtil.addSuccessMessage("Fee Changed Successfully");
+    }
+
+    public void changeBillDoctorByFee(BillFee bf) {
+        if (bf == null) {
+            return;
+        }
+        if (bf.getStaff() == null) {
+            return;
+        }
+        getCurrentlyWorkingStaff().add(bf.getStaff());
+        selectedCurrentlyWorkingStaff = bf.getStaff();
     }
 
     public String getStrTenderedValue() {
@@ -1692,10 +1719,10 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
         if (toStaff != null && getPaymentMethod() == PaymentMethod.Staff_Welfare) {
             staffBean.updateStaffWelfare(toStaff, netPlusVat);
-            JsfUtil.addSuccessMessage("User Credit Updated");
+            JsfUtil.addSuccessMessage("Staff Welfare Balance Updated");
         } else if (toStaff != null && getPaymentMethod() == PaymentMethod.Staff) {
             staffBean.updateStaffCredit(toStaff, netPlusVat);
-            JsfUtil.addSuccessMessage("Staff Welfare Balance Updated");
+            JsfUtil.addSuccessMessage("Staff Credit Updated");
         }
 
         if (paymentMethod == PaymentMethod.PatientDeposit) {
@@ -1826,17 +1853,19 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             b.setBackwardReferenceBill(newBatchBill);
             dbl += b.getNetTotal();
 
-            if (getSessionController().getApplicationPreference().isPartialPaymentOfOpdBillsAllowed()) {
-                b.setCashPaid(reminingCashPaid);
-
-                if (reminingCashPaid > b.getTransSaleBillTotalMinusDiscount()) {
-                    b.setBalance(0.0);
-                    b.setNetTotal(b.getTransSaleBillTotalMinusDiscount());
-                } else {
-                    b.setBalance(b.getTotal() - b.getCashPaid());
-                    b.setNetTotal(reminingCashPaid);
-                }
-            }
+//            if (getSessionController().getDepartmentPreference().isPartialPaymentOfOpdBillsAllowed()) {
+//                b.setCashPaid(reminingCashPaid);
+//                System.out.println("reminingCashPaid ***= " + reminingCashPaid);
+//                System.out.println("b.getTransSaleBillTotalMinusDiscount() **= " + b.getTransSaleBillTotalMinusDiscount());
+//                if (reminingCashPaid > b.getTransSaleBillTotalMinusDiscount()) {
+//                    b.setBalance(0.0);
+//                    b.setNetTotal(b.getTransSaleBillTotalMinusDiscount());
+//                } else {
+//                    b.setBalance(b.getTotal() - b.getCashPaid());
+//                    b.setNetTotal(reminingCashPaid);
+//                }
+//            }
+            System.out.println("b.getNet = " + b.getNetTotal());
             reminingCashPaid = reminingCashPaid - b.getNetTotal();
             getBillFacade().edit(b);
 
@@ -1844,8 +1873,11 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         }
 
         newBatchBill.setNetTotal(dbl);
-
+        if (reminingCashPaid < 0) {
+            newBatchBill.setBalance(Math.abs(reminingCashPaid));
+        }
         newBatchBill.setCashBalance(reminingCashPaid);
+        newBatchBill.setCashPaid(cashPaid);
         getBillFacade().edit(newBatchBill);
         setBatchBill(newBatchBill);
     }
@@ -1906,7 +1938,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         newBill.setPatient(patient);
 
 //        newBill.setMembershipScheme(membershipSchemeController.fetchPatientMembershipScheme(patient, getSessionController().getApplicationPreference().isMembershipExpires()));
-
         newBill.setPaymentScheme(getPaymentScheme());
         newBill.setPaymentMethod(paymentMethod);
         newBill.setCreatedAt(new Date());
@@ -1984,7 +2015,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         newBill.setPatient(patient);
 
 //        newBill.setMembershipScheme(membershipSchemeController.fetchPatientMembershipScheme(patient, getSessionController().getApplicationPreference().isMembershipExpires()));
-
         newBill.setPaymentScheme(getPaymentScheme());
         newBill.setPaymentMethod(paymentMethod);
         newBill.setCreatedAt(new Date());
@@ -2049,6 +2079,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getEwallet().getTotalValue();
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getSlip().getTotalValue();
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getStaffCredit().getTotalValue();
 
             }
             return total - multiplePaymentMethodTotalValue;
@@ -2075,6 +2106,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                 pm.getPaymentMethodData().getPatient_deposit().setTotalValue(remainAmount);
             } else if (pm.getPaymentMethod() == PaymentMethod.Credit) {
                 pm.getPaymentMethodData().getCredit().setTotalValue(remainAmount);
+            } else if (pm.getPaymentMethod() == PaymentMethod.Staff) {
+                pm.getPaymentMethodData().getStaffCredit().setTotalValue(remainAmount);
             }
 
         }
@@ -2249,6 +2282,19 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             }
             double multiplePaymentMethodTotalValue = 0.0;
             for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
+                if (paymentSchemeController.checkPaymentMethodError(cd.getPaymentMethod(), cd.getPaymentMethodData())) {
+                    return true;
+                }
+                if (cd.getPaymentMethod().equals(PaymentMethod.Staff)) {
+                    if (cd.getPaymentMethodData().getStaffCredit().getTotalValue() == 0.0 || cd.getPaymentMethodData().getStaffCredit().getToStaff() == null) {
+                        JsfUtil.addErrorMessage("Please fill the Paying Amount and Staff Name");
+                        return true;
+                    }
+                    if (cd.getPaymentMethodData().getStaffCredit().getToStaff().getCurrentCreditValue() + cd.getPaymentMethodData().getStaffCredit().getTotalValue() > cd.getPaymentMethodData().getStaffCredit().getToStaff().getCreditLimitQualified()) {
+                        JsfUtil.addErrorMessage("No enough Credit.");
+                        return true;
+                    }
+                }
                 //TODO - filter only relavant value
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCash().getTotalValue();
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCreditCard().getTotalValue();
@@ -2256,6 +2302,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getEwallet().getTotalValue();
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getSlip().getTotalValue();
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getStaffCredit().getTotalValue();
             }
             double differenceOfBillTotalAndPaymentValue = netTotal - multiplePaymentMethodTotalValue;
             differenceOfBillTotalAndPaymentValue = Math.abs(differenceOfBillTotalAndPaymentValue);
@@ -2555,7 +2602,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         double billVat = 0.0;
 
 //        MembershipScheme membershipScheme = membershipSchemeController.fetchPatientMembershipScheme(getPatient(), getSessionController().getApplicationPreference().isMembershipExpires());
-
         for (BillEntry be : getLstBillEntries()) {
             //////// // System.out.println("bill item entry");
             double entryGross = 0.0;
@@ -2911,9 +2957,17 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                     case Credit:
                     case PatientDeposit:
                     case Slip:
+                        p.setPaidValue(cd.getPaymentMethodData().getSlip().getTotalValue());
+                        p.setBank(cd.getPaymentMethodData().getSlip().getInstitution());
+                        p.setRealizedAt(cd.getPaymentMethodData().getSlip().getDate());
                     case OnCall:
                     case OnlineSettlement:
                     case Staff:
+                        p.setPaidValue(cd.getPaymentMethodData().getStaffCredit().getTotalValue());
+                        if (cd.getPaymentMethodData().getStaffCredit().getToStaff() != null) {
+                            staffBean.updateStaffCredit(cd.getPaymentMethodData().getStaffCredit().getToStaff(), cd.getPaymentMethodData().getStaffCredit().getTotalValue());
+                            JsfUtil.addSuccessMessage("Staff Welfare Balance Updated");
+                        }
                     case YouOweMe:
                     case MultiplePaymentMethods:
                 }
@@ -2950,6 +3004,9 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                 case Credit:
                 case PatientDeposit:
                 case Slip:
+                    p.setBank(paymentMethodData.getSlip().getInstitution());
+                    p.setPaidValue(paymentMethodData.getSlip().getTotalValue());
+                    p.setRealizedAt(paymentMethodData.getSlip().getDate());
                 case OnCall:
                 case OnlineSettlement:
                 case Staff:
@@ -3420,16 +3477,10 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     }
 
     public PaymentMethod getPaymentMethod() {
-        if (paymentMethod == paymentMethod.Card) {
-            strTenderedValue = String.valueOf(netTotal);
-
-        } else {
-            strTenderedValue = "";
-        }
-        try {
-            cashPaid = Double.parseDouble(strTenderedValue);
-        } catch (NumberFormatException e) {
-
+        if (!sessionController.getDepartmentPreference().isPartialPaymentOfOpdBillsAllowed()) {
+            if (paymentMethod == paymentMethod.Card) {
+                strTenderedValue = String.valueOf(netTotal);
+            }
         }
 
         return paymentMethod;

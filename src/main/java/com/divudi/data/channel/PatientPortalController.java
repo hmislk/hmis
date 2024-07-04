@@ -259,7 +259,7 @@ public class PatientPortalController implements Serializable {
         calendar.setTime(currentDate);
         calendar.add(Calendar.DAY_OF_MONTH, 2);
         Map<String, Object> m = new HashMap<>();
-        StringBuilder jpql = new StringBuilder("select i from SessionInstance i where i.retired=:ret and i.sessionDate BETWEEN :cd AND :nextTwoDays");
+        StringBuilder jpql = new StringBuilder("select i from SessionInstance i where i.retired=:ret and i.originatingSession.excludeFromPatientPortal=:epp and i.sessionDate BETWEEN :cd AND :nextTwoDays");
 
         if (selectedConsultant != null) {
             jpql.append(" and i.originatingSession.staff=:os");
@@ -273,6 +273,7 @@ public class PatientPortalController implements Serializable {
         }
 
         m.put("ret", false);
+        m.put("epp", false);
         m.put("cd", currentDate);
         m.put("nextTwoDays", calendar.getTime());
 
@@ -316,6 +317,21 @@ public class PatientPortalController implements Serializable {
             JsfUtil.addSuccessMessage("SMS Failed");
         }
 
+    }
+    
+    public Date getSessionStartDateTime(SessionInstance session) {
+        Calendar sessionDateTimeCal = Calendar.getInstance();
+        sessionDateTimeCal.setTime(session.getSessionDate()); // Assuming session has a getSessionDate method
+
+        Calendar sessionTimeCal = Calendar.getInstance();
+        sessionTimeCal.setTime(session.getSessionTime()); // Assuming session has a getSessionTime method
+
+        // Combine session date and time
+        sessionDateTimeCal.set(Calendar.HOUR_OF_DAY, sessionTimeCal.get(Calendar.HOUR_OF_DAY));
+        sessionDateTimeCal.set(Calendar.MINUTE, sessionTimeCal.get(Calendar.MINUTE));
+        sessionDateTimeCal.set(Calendar.SECOND, sessionTimeCal.get(Calendar.SECOND));
+
+        return sessionDateTimeCal.getTime();
     }
 
     public void findPatients() {

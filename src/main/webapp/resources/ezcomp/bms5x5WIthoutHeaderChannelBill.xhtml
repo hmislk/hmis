@@ -325,11 +325,20 @@
                         <h:outputLabel value=":" ></h:outputLabel>
                     </td>
                     <td>
-                        <h:outputLabel value="#{cc.attrs.bill.paidBill.creater.webUserPerson.name}"></h:outputLabel>
-                        <p:spacer height="1" width="10" ></p:spacer>
-                        <h:outputLabel value="#{cc.attrs.bill.paidBill.billTime}">
-                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></f:convertDateTime>
-                        </h:outputLabel>
+                        <h:panelGroup rendered="#{cc.attrs.bill.paidBill ne null}">
+                            <h:outputLabel value="#{cc.attrs.bill.paidBill.creater.webUserPerson.name}"></h:outputLabel>
+                            <p:spacer height="1" width="10" ></p:spacer>
+                            <h:outputLabel value="#{cc.attrs.bill.paidBill.billTime}">
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></f:convertDateTime>
+                            </h:outputLabel>
+                        </h:panelGroup>
+                       <h:panelGroup rendered="#{cc.attrs.bill.paidBill eq null}">
+                            <h:outputLabel value="#{cc.attrs.bill.creater.webUserPerson.name}"></h:outputLabel>
+                            <p:spacer height="1" width="10" ></p:spacer>
+                            <h:outputLabel value="#{cc.attrs.bill.billTime}">
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></f:convertDateTime>
+                            </h:outputLabel>
+                        </h:panelGroup>
                     </td>
                 </tr>
 
@@ -344,9 +353,9 @@
                         <h:outputLabel value=":" ></h:outputLabel>
                     </td>
                     <td>
-                        <h:outputLabel value="#{cc.attrs.bill.creater.webUserPerson.name}"></h:outputLabel>
+                        <h:outputLabel value="#{sessionController.loggedUser.name}"></h:outputLabel>
                         <p:spacer height="1" width="10" ></p:spacer>
-                        <h:outputLabel value="#{cc.attrs.bill.billTime}">
+                        <h:outputLabel value="#{sessionController.currentDate}">
                             <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></f:convertDateTime>
                         </h:outputLabel>     
                     </td>
@@ -363,7 +372,7 @@
                     </div>
                     <h:panelGroup rendered="#{cc.attrs.bill.paidBill.id ne null}" >
                         <div class="d-flex gap-2">
-                            <h:outputLabel value="Paid Bill Id :" />
+                            <h:outputLabel value="Paid Bill ID :" />
                             <h:outputLabel value="#{cc.attrs.bill.paidBill.id}" />
                             <p:spacer height="1" width="15" ></p:spacer>
                         </div>
@@ -406,6 +415,18 @@
                     <h:outputText 
                         style="font-size: 8pt"  
                         value="(Card Last 4 Digits:#{cc.attrs.paymentMethodData.creditCard.no})"/>
+                </h:panelGroup>
+                
+                <h:panelGroup rendered="#{cc.attrs.bill.paymentMethod eq 'Agent' }" >
+                    <h:outputText
+                        class="mx-1"
+                        style="font-size: 8pt"  
+                        value="#{cc.attrs.bill.creditCompany.name}">
+                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                    </h:outputText>
+                    <h:outputText 
+                        style="font-size: 8pt"  
+                        value="(Ref. No: #{cc.attrs.bill.agentRefNo})"/>
                 </h:panelGroup>
 
                 <h:panelGroup rendered="#{cc.attrs.bill.paymentMethod eq 'MultiplePaymentMethods'}" style="margin-top: 10px;font-size: 8pt">

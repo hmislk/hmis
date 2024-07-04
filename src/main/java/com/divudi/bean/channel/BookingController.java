@@ -85,6 +85,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -220,6 +222,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
     private BillSession managingBillSession;
     private List<SessionInstance> sessionInstances;
     private List<BillSession> billSessions;
+    private List<BillSession> filteredBillSessions;
     List<Staff> consultants;
     List<BillSession> getSelectedBillSession;
     boolean printPreview;
@@ -246,10 +249,223 @@ public class BookingController implements Serializable, ControllerWithPatient {
     private String agentRefNo;
     private List<BillFee> listBillFees;
     private BillSession billSession;
-
+    private List<SessionInstance> sortedSessionInstances;
+    private List<SessionInstance> sessionInstanceByDoctor;
+    private SessionInstance selectedSessionInstanceForRechedule;
     private ChannelScheduleEvent event = new ChannelScheduleEvent();
-
+    private Integer selectedReserverdBookingNumber;
     private Double feeTotalForSelectedBill;
+    private BillSession recheduledBillSession;
+
+    public void fillSessionInstanceByDoctor() {
+        Staff selectedConsultant;
+        sessionInstanceByDoctor = new ArrayList<>();
+        Date currentDate = new Date();
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(currentDate);
+        calendar.add(Calendar.DAY_OF_MONTH, 2);
+        Map<String, Object> m = new HashMap<>();
+        selectedConsultant = selectedBillSession.getSessionInstance().getStaff();
+        String jpql = "select i from SessionInstance i where i.retired = :ret and i.sessionDate >=:cd";
+
+        if (selectedConsultant != null) {
+            jpql += " and i.originatingSession.staff =:staff";
+            m.put("staff", selectedConsultant);
+        }
+        m.put("ret", false);
+        m.put("cd", currentDate);
+        sessionInstanceByDoctor = sessionInstanceFacade.findByJpql(jpql.toString(), m, TemporalType.DATE);
+        System.out.println("sessionInstanceByDoctor = " + sessionInstanceByDoctor.size());
+    }
+
+    public void sessionReschedule() {
+        if (getSelectedSessionInstanceForRechedule() == null) {
+            JsfUtil.addErrorMessage("Pleace Select Session For Rechedule");
+            return;
+        }
+
+        if (selectedBillSession == null) {
+            JsfUtil.addErrorMessage("Bill session is not valid !");
+            return;
+        }
+
+        if (getSelectedSessionInstanceForRechedule().getMaxNo() != 0) {
+            if (getSelectedSessionInstanceForRechedule().getBookedPatientCount() != null) {
+                int maxNo = getSelectedSessionInstanceForRechedule().getMaxNo();
+                long bookedPatientCount = getSelectedSessionInstanceForRechedule().getBookedPatientCount();
+                if (maxNo <= bookedPatientCount) {
+                    JsfUtil.addErrorMessage("Cannot reschedule the selected session: The session has reached its maximum booking capacity.");
+                    return;
+
+                }
+            }
+        }
+
+        if (selectedBillSession.getBill().isCancelled()) {
+            JsfUtil.addErrorMessage("Cannot reschedule: This bill session has been cancelled.");
+        }
+
+        if (selectedBillSession.getReferenceBillSession() == null) {
+            createBillSessionForReschedule(selectedBillSession, getSelectedSessionInstanceForRechedule());
+            JsfUtil.addSuccessMessage("Reschedule Successfully");
+            sendSmsOnChannelBookingReschedule();
+        } else {
+            JsfUtil.addErrorMessage("Cannot reschedule the selected session: This appointment has already been rescheduled.");
+        }
+
+    }
+
+    private String createChanelBookingRescheduleSms(Bill b, BillSession s) {
+//        String template = sessionController.getDepartmentPreference().getSmsTemplateForChannelBooking();
+        String template = configOptionController.getLongTextValueByKey("Template for SMS sent on Patient Feedback", OptionScope.APPLICATION, null, null, null);
+        if (template == null || template.isEmpty()) {
+            template = "Dear {patient_name}, Your appointment No. {serial_no} with {doctor} is rescheduled to appointment No. {new_serial_no} with {new_doctor} on {new_appointment_date} at {new_appointment_time} . {ins_name}";
+        }
+        return createSmsForChannelBookingReschedule(b, s, template);
+    }
+
+    public String createSmsForChannelBookingReschedule(Bill b, BillSession b1, String template) {
+        if (b == null) {
+            System.out.println("b = " + b);
+            return "";
+        }
+        if (b.getSingleBillSession() == null) {
+            return "";
+        }
+        if (b.getSingleBillSession().getSessionInstance() == null) {
+            return "";
+        }
+        if (b.getSingleBillSession().getSessionInstance().getOriginatingSession() == null) {
+            return "";
+        }
+        if (b1==null) {
+            System.out.println("billsession = " + b1);
+        }
+        SessionInstance si = b.getSingleBillSession().getSessionInstance();
+        BillSession bs = b.getSingleBillSession();
+        ServiceSession ss = b.getSingleBillSession().getSessionInstance().getOriginatingSession();
+        String s;
+
+        String sessionTime = CommonController.getDateFormat(si.getStartingTime(), sessionController.getApplicationPreference().getShortTimeFormat());
+        String sessionDate = CommonController.getDateFormat(si.getSessionDate(), sessionController.getApplicationPreference().getLongDateFormat());
+        String doc = bs.getStaff().getPerson().getNameWithTitle();
+        String patientName = b.getPatient().getPerson().getNameWithTitle();
+        int no = b.getSingleBillSession().getSerialNo();
+        String insName = sessionController.getLoggedUser().getInstitution().getName();
+
+        String newSessionTime = CommonController.getDateFormat(b1.getSessionTime(), sessionController.getApplicationPreference().getShortTimeFormat());
+        String newSessionDate = CommonController.getDateFormat(b1.getSessionDate(), sessionController.getApplicationPreference().getLongDateFormat());
+        String newDoc = bs.getStaff().getPerson().getNameWithTitle();
+        int newNo = b1.getSerialNo();
+
+        s = template.replace("{patient_name}", patientName)
+                .replace("{doctor}", doc)
+                .replace("{appointment_time}", sessionTime)
+                .replace("{appointment_date}", sessionDate)
+                .replace("{serial_no}", String.valueOf(no))
+                .replace("{doc}", doc)
+                .replace("{time}", sessionTime)
+                .replace("{date}", sessionDate)
+                .replace("{No}", String.valueOf(no))
+                .replace("{new_serial_no}", String.valueOf(newNo))
+                .replace("{new_doctor}", newDoc)
+                .replace("{new_appointment_date}", newSessionDate)
+                .replace("{new_appointment_time}", newSessionTime)
+                .replace("{ins_name}", insName);
+
+        return s;
+    }
+
+    private void createBillSessionForReschedule(BillSession bs, SessionInstance si) {
+        BillSession newBillSession = new BillSession();
+        if (bs == null) {
+            System.out.println("bs = " + bs);
+            return;
+        }
+        if (si == null) {
+            System.out.println("si = " + si);
+            return;
+        }
+
+        newBillSession.copy(bs);
+        newBillSession.setBill(bs.getBill());
+        newBillSession.setBillItem(bs.getBillItem());
+        newBillSession.setReferenceBillSession(bs);
+        newBillSession.setCreatedAt(new Date());
+        newBillSession.setCreater(getSessionController().getLoggedUser());
+        newBillSession.setSessionInstance(getSelectedSessionInstanceForRechedule());
+        newBillSession.setSessionDate(getSelectedSessionInstanceForRechedule().getSessionDate());
+        newBillSession.setSessionTime(getSelectedSessionInstanceForRechedule().getSessionTime());
+        newBillSession.setStaff(getSelectedSessionInstanceForRechedule().getStaff());
+        List<Integer> lastSessionReservedNumbers = CommonFunctions.convertStringToIntegerList(getSelectedSessionInstance().getOriginatingSession().getReserveNumbers());
+        List<Integer> reservedNumbers = CommonFunctions.convertStringToIntegerList(getSelectedSessionInstanceForRechedule().getOriginatingSession().getReserveNumbers());
+
+        Integer count = null;
+        boolean reservedSession;
+
+        if (selectedBillSession.isReservedBooking()) {
+            if (lastSessionReservedNumbers.isEmpty()) {
+                System.out.println("selectedBillSession.isReservedBooking() = " + selectedBillSession.isReservedBooking());
+                JsfUtil.addErrorMessage("No Reserved Numbers FInd !");
+                return;
+            }
+            for (Integer rn : lastSessionReservedNumbers) {
+                System.out.println("rn = " + rn);
+                if (bs.getSerialNo() == rn) {
+                    count = serviceSessionBean.getNextAvailableReservedNumber(getSelectedSessionInstanceForRechedule(), reservedNumbers, selectedReserverdBookingNumber);
+                    if (count == null) {
+                        count = serviceSessionBean.getNextNonReservedSerialNumber(getSelectedSessionInstanceForRechedule(), reservedNumbers);
+                        JsfUtil.addErrorMessage("No reserved numbers available. Normal number is given");
+                    }
+                }
+            }
+
+        } else {
+            count = serviceSessionBean.getNextNonReservedSerialNumber(getSelectedSessionInstanceForRechedule(), reservedNumbers);
+        }
+        if (count != null) {
+            newBillSession.setSerialNo(count);
+            System.out.println("count = " + count);
+        } else {
+            newBillSession.setSerialNo(1);
+            System.out.println("count serial number= " + bs.getSerialNo());
+        }
+        getBillSessionFacade().create(newBillSession);
+        bs.setRecheduledSession(true);
+        bs.setReferenceBillSession(newBillSession);
+        getBillSessionFacade().edit(bs);
+        recheduledBillSession=newBillSession;
+        
+    }
+
+    public void sendSmsOnChannelBookingReschedule() {
+        if (selectedBillSession == null) {
+            return;
+        }
+        if (selectedBillSession.getBill() == null) {
+            return;
+        }
+        if (selectedBillSession.getBill().getPatient().getPerson().getSmsNumber() == null) {
+            return;
+        }
+        if (getSelectedSessionInstanceForRechedule() == null) {
+            return;
+        }
+        Sms e = new Sms();
+        e.setCreatedAt(new Date());
+        e.setCreater(sessionController.getLoggedUser());
+        e.setBill(selectedBillSession.getBill());
+        e.setReceipientNumber(selectedBillSession.getBill().getPatient().getPerson().getSmsNumber());
+        e.setSendingMessage(createChanelBookingRescheduleSms(selectedBillSession.getBill(), recheduledBillSession));
+        e.setDepartment(getSessionController().getLoggedUser().getDepartment());
+        e.setInstitution(getSessionController().getLoggedUser().getInstitution());
+        e.setPending(false);
+        e.setSmsType(MessageType.ChannelPatientReschedule);
+        getSmsFacade().create(e);
+        Boolean sent = smsManager.sendSms(e);
+
+//        JsfUtil.addSuccessMessage("SMS Sent to all Patients.");
+    }
 
     public boolean chackNull(String template) {
         boolean chack;
@@ -332,9 +548,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
         selectedSessionInstance.setCompletedBy(sessionController.getLoggedUser());
         sessionInstanceController.save(selectedSessionInstance);
         JsfUtil.addSuccessMessage("Session Completed");
-        if (sessionController.getDepartmentPreference().isSendSmsOnChannelBookingNoShow()) {
-            sendSmsOnChannelMissingChannelBookings();
-        }
+        sendSmsOnChannelMissingChannelBookings();
     }
 
     public String navigateToAddBooking() {
@@ -741,6 +955,21 @@ public class BookingController implements Serializable, ControllerWithPatient {
         }
     }
 
+    private void sortSessions() {
+        sortedSessionInstances = new ArrayList<>(sessionInstances);
+        Collections.sort(sortedSessionInstances, new Comparator<SessionInstance>() {
+            @Override
+            public int compare(SessionInstance s1, SessionInstance s2) {
+                if (s1.isStarted() && !s2.isStarted()) {
+                    return -1;
+                } else if (!s1.isStarted() && s2.isStarted()) {
+                    return 1;
+                }
+                return 0;
+            }
+        });
+    }
+
     public boolean patientErrorPresent(Patient p) {
         if (p == null) {
             JsfUtil.addErrorMessage("No Current. Error. NOT SAVED");
@@ -953,6 +1182,32 @@ public class BookingController implements Serializable, ControllerWithPatient {
         JsfUtil.addSuccessMessage("SMS Sent to all Patients.");
     }
 
+    public void sendSmsOnChannelBookedCompleted() {
+        if (selectedBillSession == null) {
+            return;
+        }
+        if (selectedBillSession.getBill() == null) {
+            return;
+        }
+        if (selectedBillSession.getBill().getPatient().getPerson().getSmsNumber() == null) {
+            return;
+        }
+        Sms e = new Sms();
+        e.setCreatedAt(new Date());
+        e.setCreater(sessionController.getLoggedUser());
+        e.setBill(selectedBillSession.getBill());
+        e.setReceipientNumber(selectedBillSession.getBill().getPatient().getPerson().getSmsNumber());
+        e.setSendingMessage(createChanellPatientFeedbackSms(selectedBillSession.getBill()));
+        e.setDepartment(getSessionController().getLoggedUser().getDepartment());
+        e.setInstitution(getSessionController().getLoggedUser().getInstitution());
+        e.setPending(false);
+        e.setSmsType(MessageType.ChannelPatientFeedback);
+        getSmsFacade().create(e);
+        Boolean sent = smsManager.sendSms(e);
+
+//        JsfUtil.addSuccessMessage("SMS Sent to all Patients.");
+    }
+
     public void sendSmsOnChannelMissingChannelBookings() {
         if (billSessions == null || billSessions.isEmpty()) {
             return;
@@ -976,7 +1231,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
             e.setDepartment(getSessionController().getLoggedUser().getDepartment());
             e.setInstitution(getSessionController().getLoggedUser().getInstitution());
             e.setPending(false);
-            e.setSmsType(MessageType.ChannelDoctorArrival);
+            e.setSmsType(MessageType.ChannelNoShow);
             getSmsFacade().create(e);
             Boolean sent = smsManager.sendSms(e);
 
@@ -989,7 +1244,12 @@ public class BookingController implements Serializable, ControllerWithPatient {
     }
 
     private String createChanellBookingNoShowSms(Bill b) {
-        return createSmsForChannelBooking(b, sessionController.getDepartmentPreference().getSmsTemplateForChannelBookingNoShow());
+        //return createSmsForChannelBooking(b, sessionController.getDepartmentPreference().getSmsTemplateForChannelBookingNoShow());
+        String template = configOptionController.getLongTextValueByKey("Template for SMS sent on No show - Channel", OptionScope.APPLICATION, null, null, null);
+        if (template == null || template.isEmpty()) {
+            template = "Sorry {patient_name}, You missed an appointment today! {ins_name}";
+        }
+        return createSmsForChannelBooking(b, template);
     }
 
     private String createChanellBookingSms(Bill b) {
@@ -997,6 +1257,15 @@ public class BookingController implements Serializable, ControllerWithPatient {
         String template = configOptionController.getLongTextValueByKey("Template for SMS sent on Channel Booking", OptionScope.APPLICATION, null, null, null);
         if (template == null || template.isEmpty()) {
             template = "Dear {patient_name}, Your appointment with {doctor} is confirmed for {appointment_time} on {appointment_date}. Your serial no. is {serial_no}. Please arrive 10 minutes early. Thank you.";
+        }
+        return createSmsForChannelBooking(b, template);
+    }
+
+    private String createChanellPatientFeedbackSms(Bill b) {
+//        String template = sessionController.getDepartmentPreference().getSmsTemplateForChannelBooking();
+        String template = configOptionController.getLongTextValueByKey("Template for SMS sent on Patient Feedback", OptionScope.APPLICATION, null, null, null);
+        if (template == null || template.isEmpty()) {
+            template = "Thank you for choosing  {ins_name}";
         }
         return createSmsForChannelBooking(b, template);
     }
@@ -1023,6 +1292,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
         String sessionDate = CommonController.getDateFormat(si.getSessionDate(), sessionController.getApplicationPreference().getLongDateFormat());
         String doc = bs.getStaff().getPerson().getNameWithTitle();
         String patientName = b.getPatient().getPerson().getNameWithTitle();
+        String insName = sessionController.getLoggedUser().getInstitution().getName();
         int no = b.getSingleBillSession().getSerialNo();
 
         s = template.replace("{patient_name}", patientName)
@@ -1033,6 +1303,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
                 .replace("{doc}", doc)
                 .replace("{time}", sessionTime)
                 .replace("{date}", sessionDate)
+                .replace("{ins_name}", insName)
                 .replace("{No}", String.valueOf(no));
 
         return s;
@@ -1551,7 +1822,15 @@ public class BookingController implements Serializable, ControllerWithPatient {
         if (billSessions == null) {
             billSessions = new ArrayList<>();
         }
+        getFilteredBillSessions();
         return billSessions;
+    }
+
+    public List<BillSession> getFilteredBillSessions() {
+        filteredBillSessions = billSessions;
+        return filteredBillSessions.stream()
+                .filter(bs -> !bs.isCompleted())
+                .collect(Collectors.toList());
     }
 
 //    public void fillBillSessions(SelectEvent event) {
@@ -1873,9 +2152,11 @@ public class BookingController implements Serializable, ControllerWithPatient {
             return;
         }
         selectedBillSession.setCompleted(true);
+        selectedBillSession.setCurrentlyConsulted(false);
         billSessionFacade.edit(selectedBillSession);
         selectedSessionInstance.setLastCompletedBillSession(selectedBillSession);
         sessionInstanceFacade.edit(selectedSessionInstance);
+        sendSmsOnChannelBookedCompleted();
     }
 
     public void completeSelectedBillSessionUndo() {
@@ -2206,7 +2487,10 @@ public class BookingController implements Serializable, ControllerWithPatient {
         // Initialize counts
         long bookedPatientCount = 0;
         long paidPatientCount = 0;
+        long cancelPatientCount = 0;
+        long refundedPatientCount = 0;
         long completedPatientCount = 0;
+        long onCallPatientCount = 0;
 
         if (billSessions == null) {
             selectedSessionInstance.setBookedPatientCount(0l);
@@ -2241,6 +2525,36 @@ public class BookingController implements Serializable, ControllerWithPatient {
                     // Log or handle the fact that there was an NPE checking paid status
 
                 }
+
+                // Additional check for cancel status
+                try {
+                    if (bs.getBill().isCancelled()) {
+                        cancelPatientCount++;
+                    }
+                } catch (NullPointerException npe) {
+                    // Log or handle the fact that there was an NPE checking paid status
+
+                }
+
+                // Additional check for cancel status
+                try {
+                    if (bs.getBill().isRefunded()) {
+                        refundedPatientCount++;
+                    }
+                } catch (NullPointerException npe) {
+                    // Log or handle the fact that there was an NPE checking paid status
+
+                }
+
+                // Additional check for Oncall status
+                try {
+                    if (bs.getPaidBillSession() == null && !bs.getBill().isCancelled()) {
+                        onCallPatientCount++;
+                    }
+                } catch (NullPointerException npe) {
+                    // Log or handle the fact that there was an NPE checking paid status
+
+                }
             }
         }
 
@@ -2248,9 +2562,26 @@ public class BookingController implements Serializable, ControllerWithPatient {
         selectedSessionInstance.setBookedPatientCount(bookedPatientCount);
         selectedSessionInstance.setPaidPatientCount(paidPatientCount);
         selectedSessionInstance.setCompletedPatientCount(completedPatientCount);
+        selectedSessionInstance.setCancelPatientCount(cancelPatientCount);
+        selectedSessionInstance.setRefundedPatientCount(refundedPatientCount);
+        selectedSessionInstance.setOnCallPatientCount(onCallPatientCount);
 
         // Assuming remainingPatientCount is calculated as booked - completed
         selectedSessionInstance.setRemainingPatientCount(bookedPatientCount - completedPatientCount);
+        sessionInstanceController.save(selectedSessionInstance);
+    }
+
+    public void addReportPatient() {
+        int prp = selectedSessionInstance.getReportPatients();
+        prp += 1;
+        selectedSessionInstance.setReportPatients(prp);
+        sessionInstanceController.save(selectedSessionInstance);
+    }
+
+    public void removeReportPatient() {
+        int prp = selectedSessionInstance.getReportPatients();
+        prp -= 1;
+        selectedSessionInstance.setReportPatients(prp);
         sessionInstanceController.save(selectedSessionInstance);
     }
 
@@ -2412,6 +2743,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
     }
 
     private Bill saveBilledBill(boolean forReservedNumbers) {
+        System.out.println("forReservedNumbers = " + forReservedNumbers);
         Bill savingBill = createBill();
         BillItem savingBillItem = createSessionItem(savingBill);
         BillItem additionalBillItem = createAdditionalItem(savingBill, itemToAddToBooking);
@@ -3234,6 +3566,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
     }
 
     private BillSession createBillSession(Bill bill, BillItem billItem, boolean forReservedNumbers) {
+        System.out.println("forReservedNumbers createBillSession = " + forReservedNumbers);
         BillSession bs = new BillSession();
         bs.setAbsent(false);
         bs.setBill(bill);
@@ -3253,7 +3586,6 @@ public class BookingController implements Serializable, ControllerWithPatient {
         bs.setSessionDate(getSelectedSessionInstance().getSessionDate());
         bs.setSessionTime(getSelectedSessionInstance().getSessionTime());
         bs.setStaff(getSelectedSessionInstance().getStaff());
-
         List<Integer> reservedNumbers = CommonFunctions.convertStringToIntegerList(getSelectedSessionInstance().getOriginatingSession().getReserveNumbers());
         Integer count;
 
@@ -3263,6 +3595,8 @@ public class BookingController implements Serializable, ControllerWithPatient {
                 count = serviceSessionBean.getNextNonReservedSerialNumber(getSelectedSessionInstance(), reservedNumbers);
                 JsfUtil.addErrorMessage("No reserved numbers available. Normal number is given");
             }
+            
+        bs.setReservedBooking(true);
         } else {
             count = serviceSessionBean.getNextNonReservedSerialNumber(getSelectedSessionInstance(), reservedNumbers);
         }
@@ -3915,6 +4249,47 @@ public class BookingController implements Serializable, ControllerWithPatient {
 
     public void setAppointmentActivity(AppointmentActivity appointmentActivity) {
         this.appointmentActivity = appointmentActivity;
+    }
+
+    public List<SessionInstance> getSortedSessionInstances() {
+        sortSessions();
+        return sortedSessionInstances;
+    }
+
+    public void setSortedSessionInstances(List<SessionInstance> sortedSessionInstances) {
+        this.sortedSessionInstances = sortedSessionInstances;
+    }
+
+    public List<SessionInstance> getSessionInstanceByDoctor() {
+        return sessionInstanceByDoctor;
+    }
+
+    public void setSessionInstanceByDoctor(List<SessionInstance> sessionInstanceByDoctor) {
+        this.sessionInstanceByDoctor = sessionInstanceByDoctor;
+    }
+
+    public SessionInstance getSelectedSessionInstanceForRechedule() {
+        return selectedSessionInstanceForRechedule;
+    }
+
+    public void setSelectedSessionInstanceForRechedule(SessionInstance selectedSessionInstanceForRechedule) {
+        this.selectedSessionInstanceForRechedule = selectedSessionInstanceForRechedule;
+    }
+
+    public Integer getSelectedReserverdBookingNumber() {
+        return selectedReserverdBookingNumber;
+    }
+
+    public void setSelectedReserverdBookingNumber(Integer selectedReserverdBookingNumber) {
+        this.selectedReserverdBookingNumber = selectedReserverdBookingNumber;
+    }
+
+    public BillSession getRecheduledBillSession() {
+        return recheduledBillSession;
+    }
+
+    public void setRecheduledBillSession(BillSession recheduledBillSession) {
+        this.recheduledBillSession = recheduledBillSession;
     }
 
 }

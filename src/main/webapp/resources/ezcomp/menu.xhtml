@@ -17,21 +17,6 @@
                 }
             </style>
 
-            <p:tooltip for="home" value="Home" ></p:tooltip>
-            <p:tooltip for="smOpd" value="OPD" ></p:tooltip>
-            <p:tooltip for="smMembership" value="Membership" ></p:tooltip>
-            <p:tooltip for="smInpatient" value="Inward" ></p:tooltip>
-            <p:tooltip for="smLab" value="Lab" ></p:tooltip>
-            <p:tooltip for="smPharmacy" value="Pharmacy" ></p:tooltip>
-            <p:tooltip for="smTheatre" value="Theatre" ></p:tooltip>
-            <p:tooltip for="smStore" value="Store" ></p:tooltip>
-            <p:tooltip for="smChannelling" value="Channelling" ></p:tooltip>
-            <p:tooltip for="smPayment" value="Payment" ></p:tooltip>
-            <p:tooltip for="smHr" value="HR" ></p:tooltip>
-            <p:tooltip for="smEmr" value="EMR" ></p:tooltip>
-            <p:tooltip for="smReports" value="Reports" ></p:tooltip>
-            <p:tooltip for="smSettings" value="Settings" ></p:tooltip>
-
 
 
             <p:menubar autoDisplay="#{sessionController.userPreference.autodisplayMenu}"  >
@@ -54,7 +39,7 @@
                         rendered="true" />
                     <p:menuitem 
                         ajax="false" 
-                        action="#{opdTokenController.navigateToTokenIndex()}" 
+                        action="#{opdTokenController.navigateToCreateNewOpdToken()}" 
                         value="OPD Token" 
                         icon="fa fa-file-medical" 
                         rendered="true" />
@@ -277,7 +262,7 @@
                 <p:submenu id="smMembership"  icon="fa fa-fw fa-id-card"  rendered="#{webUserController.hasPrivilege('MemberShip')}">
                     <p:menuitem ajax="false" action="#{patientController.navigateToAddNewIndividualMembership()}" value="Add Individual Membership" rendered="#{webUserController.hasPrivilege('MemberShip')}" ></p:menuitem>
                     <p:menuitem ajax="false" action="#{patientController.navigateToSearchIndividualMembership()}" value="Search Individual Membership" rendered="#{webUserController.hasPrivilege('MemberShip')}" ></p:menuitem>
-                    
+
                     <p:menuitem ajax="false" action="#{patientController.navigateToAddNewFamilyMembership()}" value="Add Family Membership" rendered="#{webUserController.hasPrivilege('MemberShip')}" ></p:menuitem>
                     <p:menuitem ajax="false" action="#{patientController.navigateToSearchFamilyMembership()}" value="Search Family Membership" rendered="#{webUserController.hasPrivilege('MemberShip')}" ></p:menuitem>
                     <p:menuitem ajax="false" action="/membership/reports?faces-redirect=true" value="Family Membership Reports" rendered="#{webUserController.hasPrivilege('MemberShip')}" ></p:menuitem>
@@ -591,7 +576,14 @@
                             value="Goods Receipt"  
                             icon="fas fa-dolly-flatbed"
                             actionListener="#{searchController.makeListNull()}" 
-                            rendered="#{webUserController.hasPrivilege('GoodsRecipt')}" ></p:menuitem>                                        
+                            rendered="#{webUserController.hasPrivilege('GoodsRecipt') and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Good Recipt With Approval')}"  ></p:menuitem> 
+                        <p:menuitem  
+                            ajax="false" 
+                            action="/pharmacy/pharmacy_purchase_order_list_for_recieve_with_approval?faces-redirect=true"  
+                            value="Goods Receipt With Approval"  
+                            icon="fas fa-dolly-flatbed"
+                            actionListener="#{searchController.makeListNull()}" 
+                            rendered="#{webUserController.hasPrivilege('GoodsRecipt') and configOptionApplicationController.getBooleanValueByKey('Pharmacy Good Recipt With Approval')}" ></p:menuitem>
                         <p:menuitem  
                             ajax="false" 
                             action="/pharmacy/pharmacy_grn_list_for_return?faces-redirect=true"  
@@ -894,7 +886,7 @@
                         action="/channel/channel_scheduling/index?faces-redirect=true"  ></p:menuitem>
                     <p:menuitem  ajax="false"  value="Channel Fees"  action="/channel/channel_fee?faces-redirect=true" rendered="false" ></p:menuitem>
                     <p:menuitem  ajax="false"  value="Doctor Session View"  action="/channel/channel_doctor_session_report?faces-redirect=true" actionListener="#{channelScheduleController.prepareAdd}" rendered="false"></p:menuitem>
-                    
+
 
                     <p:submenu label="Payment" rendered="#{webUserController.hasPrivilege('ChannellingPayment')}" >
                         <p:menuitem  ajax="false"  value="Pay Doctor"  action="/channel/channel_payment_staff_bill?faces-redirect=true" actionListener="#{channelStaffPaymentBillController.makenull()}" rendered="#{webUserController.hasPrivilege('ChannellingPaymentPayDoctor')}" ></p:menuitem>
@@ -928,6 +920,16 @@
                         icon="fa fa-list-alt">
                     </p:menuitem>
                 </p:submenu>
+
+                <p:submenu id="smOpdOphthalmology"  icon="fa fa-eye" >
+                    <p:menuitem value="Patient Management" action="#{ophthalmologyController.navigateToOphthalmologyPatientManagement()}" ajax="false" icon="fa fa-users" />
+                    <p:menuitem value="Appointment Management" action="#{ophthalmologyController.navigateToOphthalmologyAppointmentManagement()}" ajax="false" icon="fa fa-calendar-alt" />
+                    <p:menuitem value="Retail Sale" action="#{ophthalmologySaleController.navigateToPharmacyRetailSale()}" ajax="false" icon="fa fa-shopping-cart" />
+                    <p:menuitem value="Repair Management" action="#{ophthalmologyRepairBillController.navigateToNewOpdBill()}" ajax="false" icon="fa fa-tools" />
+                    <p:menuitem value="Stock Management" action="#{ophthalmologyController.navigateToOphthalmologyStockManagement()}" ajax="false" icon="fa fa-warehouse" />
+                    <p:menuitem value="Product Catalog" action="#{ophthalmologyController.navigateToOphthalmologyProductCatalog()}" ajax="false" icon="fa fa-book-open" />
+                </p:submenu>
+
 
                 <p:submenu id="smPayment" icon="fa fa-fw fa-money-bill-wave"  rendered="#{webUserController.hasPrivilege('Payment')}">  
                     <p:menuitem  

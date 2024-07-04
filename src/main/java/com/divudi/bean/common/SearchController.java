@@ -253,7 +253,6 @@ public class SearchController implements Serializable {
     private Token token;
 
     private boolean duplicateBillView;
-    
 
     public String navigateTobill(Bill bill) {
         String navigateTo = "";
@@ -1629,7 +1628,7 @@ public class SearchController implements Serializable {
 
         sql += " order by b.createdAt desc  ";
 //    
-        temMap.put("billType", BillType.OpdBill);
+        temMap.put("billType", BillType.OpdBathcBill);
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
         temMap.put("ins", getSessionController().getInstitution());
@@ -2687,8 +2686,26 @@ public class SearchController implements Serializable {
     }
 
     public void makeNull() {
+        fromDate = null;
+        toDate = null;
+        department = null;
+        departments = null;
+        institution = null;
+        paymentMethod = null;
         searchKeyword = null;
         bills = null;
+        billSummaryRows = null;
+        netTotal = 0.0;
+        discount = 0.0;
+        grossTotal = 0.0;
+
+        cashTotal = 0.0;
+        cardTotal = 0.0;
+        chequeTotal = 0.0;
+        slipTotal = 0.0;
+        totalOfOtherPayments = 0.0;
+        billCount = 0.0;
+        totalPaying = 0.0;
     }
 
     public void createTableByBillType() {
@@ -3138,15 +3155,8 @@ public class SearchController implements Serializable {
 
         sql += " order by b.createdAt desc  ";
 
-        if (getReportKeyWord() != null) {
-            if (getReportKeyWord().isAdditionalDetails()) {
-                bills = getBillFacade().findByJpql(sql, tmp, TemporalType.TIMESTAMP);
-            } else {
-                bills = getBillFacade().findByJpql(sql, tmp, TemporalType.TIMESTAMP, 50);
-            }
-        } else {
-            bills = getBillFacade().findByJpql(sql, tmp, TemporalType.TIMESTAMP, 50);
-        }
+        bills = getBillFacade().findByJpql(sql, tmp, TemporalType.TIMESTAMP);
+
         for (Bill b : bills) {
             b.setListOfBill(getIssudBills(b));
         }
@@ -4063,7 +4073,7 @@ public class SearchController implements Serializable {
         bills = null;
         String sql;
         HashMap tmp = new HashMap();
-        
+
         if (getSearchKeyword().getItem() == null) {
             sql = "Select b From BilledBill b where  b.retired=false and b.billType= :bTp "
                     + " and b.institution=:ins "
@@ -6773,7 +6783,10 @@ public class SearchController implements Serializable {
 
     public void searchOpdBills() {
         Date startTime = new Date();
-        createTableByKeyword(BillType.OpdBill, institution, department, fromInstitution, fromDepartment, toInstitution, toDepartment);
+        List<BillTypeAtomic> billTypesAtomics = new ArrayList<>();
+        billTypesAtomics.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+        billTypesAtomics.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+        createTableByKeyword(billTypesAtomics, institution, department, fromInstitution, fromDepartment, toInstitution, toDepartment);
         checkLabReportsApproved(bills);
 
     }
@@ -7055,6 +7068,90 @@ public class SearchController implements Serializable {
         createTableByKeyword(billType, ins, dep, null, null, null, null);
 
     }
+    
+    
+    
+    public void createTableByKeyword(List<BillTypeAtomic> billTypesAtomics,
+            Institution ins, Department dep,
+            Institution fromIns,
+            Department fromDep,
+            Institution toIns,
+            Department toDep) {
+        bills = null;
+        String sql;
+        Map temMap = new HashMap();
+
+        sql = "select b "
+                + " from Bill b "
+                + " where b.billTypeAtomic in :billTypesAtomics "
+                + " and b.createdAt between :fromDate and :toDate "
+                + " and b.retired=false ";
+
+        if (ins != null) {
+            sql += " and b.institution=:ins ";
+            temMap.put("ins", ins);
+        }
+
+        if (dep != null) {
+            sql += " and b.department=:dep ";
+            temMap.put("dep", dep);
+        }
+
+        if (toDep != null) {
+            sql += " and b.toDepartment=:todep ";
+            temMap.put("todep", toDep);
+        }
+
+        if (fromDep != null) {
+            sql += " and b.fromDepartment=:fromdep ";
+            temMap.put("fromdep", fromDep);
+        }
+
+        if (fromIns != null) {
+            sql += " and b.fromInstitution=:fromins ";
+            temMap.put("fromins", fromIns);
+        }
+
+        if (toIns != null) {
+            sql += " and b.toInstitution=:toins ";
+            temMap.put("toins", toIns);
+        }
+
+        if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
+            sql += " and  ((b.patient.person.name) like :patientName )";
+            temMap.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getPatientPhone() != null && !getSearchKeyword().getPatientPhone().trim().equals("")) {
+            sql += " and  ((b.patient.person.phone) like :patientPhone )";
+            temMap.put("patientPhone", "%" + getSearchKeyword().getPatientPhone().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
+            sql += " and  b.deptId like :billNo";
+            temMap.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
+            sql += " and  ((b.netTotal) like :netTotal )";
+            temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
+            sql += " and  ((b.total) like :total )";
+            temMap.put("total", "%" + getSearchKeyword().getTotal().trim().toUpperCase() + "%");
+        }
+
+        sql += " order by b.createdAt desc  ";
+//    
+        temMap.put("billTypesAtomics", billTypesAtomics);
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+
+        bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
+
+    }
+    
 
     public void createTableByKeyword(BillType billType,
             Institution ins, Department dep,
@@ -7178,20 +7275,32 @@ public class SearchController implements Serializable {
 //        b.getDiscount();
 //        b.getNetTotal();
 //        b.getBillTypeAtomic();
-        if (webUser == null) {
-            jpql += "and b.creater=:bc ";
-            params.put("bc", sessionController.getLoggedUser());
+        if (institution == null && department == null) {
+            jpql += " and b.institution=:ins";
+            params.put("ins", sessionController.getInstitution());
+
+        } else if (institution != null && department == null) {
+            jpql += " and b.institution=:ins";
+            params.put("ins", getInstitution());
+
+            jpql += " and b.department=:dept";
+            params.put("dept", sessionController.getDepartment());
+
         } else {
-            jpql += "and b.creater=:bc ";
-            params.put("bc", webUser);
+            jpql += " and b.institution=:ins";
+            params.put("ins", getInstitution());
+
+            jpql += " and b.department=:dept";
+            params.put("dept", getDepartment());
         }
 
-        jpql += "group by b.billTypeAtomic order by b.billTypeAtomic";
+        jpql += " group by b.billTypeAtomic order by b.billTypeAtomic";
 
         params.put("toDate", getToDate());
         params.put("fromDate", getFromDate());
         params.put("ret", false);
         params.put("abts", billTypesToFilter);
+
         billSummaryRows = getBillFacade().findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
 
         for (BillSummaryRow bss : billSummaryRows) {
@@ -7199,7 +7308,6 @@ public class SearchController implements Serializable {
             discount += bss.getDiscount();
             netTotal += bss.getNetTotal();
         }
-
     }
 
     private List<Department> departments;
@@ -7252,8 +7360,8 @@ public class SearchController implements Serializable {
         }
 
         if (department == null) {
-            jpql += " and p.bill.department=:dept";
-            params.put("dept", sessionController.getLoggedUser().getDepartment());
+//            jpql += " and p.bill.department=:dept";
+//            params.put("dept", sessionController.getLoggedUser().getDepartment());
         } else {
             jpql += " and p.bill.department=:dept";
             params.put("dept", department);
@@ -8128,7 +8236,9 @@ public class SearchController implements Serializable {
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
         temMap.put("ins", getSessionController().getInstitution());
-        temMap.put("class", BilledBill.class);
+        temMap
+                .put("class", BilledBill.class
+                );
 
         billItems = getBillItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 50);
         ////System.out.println("billItems = " + billItems);
@@ -8183,7 +8293,9 @@ public class SearchController implements Serializable {
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
         temMap.put("ins", getSessionController().getInstitution());
-        temMap.put("class", BilledBill.class);
+        temMap
+                .put("class", BilledBill.class
+                );
 
         billItems = getBillItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
         ////System.out.println("billItems = " + billItems);
@@ -8411,7 +8523,9 @@ public class SearchController implements Serializable {
         m.put("toDate", getToDate());
         m.put("bt", BillType.PaymentBill);
         m.put("bts", bts);
-        m.put("class", BilledBill.class);
+        m
+                .put("class", BilledBill.class
+                );
 
         if (getReportKeyWord().isAdditionalDetails()) {
             billItems = getBillItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
@@ -8479,7 +8593,9 @@ public class SearchController implements Serializable {
         m.put("toDate", getToDate());
         m.put("bt", BillType.ChannelProPayment);
         m.put("bts", bts);
-        m.put("class", BilledBill.class);
+        m
+                .put("class", BilledBill.class
+                );
         if (getReportKeyWord().isAdditionalDetails()) {
             billItems = getBillItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
         } else {
@@ -8588,7 +8704,9 @@ public class SearchController implements Serializable {
         //hm.put("ins", sessionController.getInstitution());
         hm.put("bt", bts);
         hm.put("ftp", FeeType.Staff);
-        hm.put("class", BilledBill.class);
+        hm
+                .put("class", BilledBill.class
+                );
         if (getReportKeyWord().isAdditionalDetails()) {
             billFees = billFeeFacade.findByJpql(sql, hm, TemporalType.TIMESTAMP);
         } else {
@@ -8631,7 +8749,9 @@ public class SearchController implements Serializable {
         //hm.put("ins", sessionController.getInstitution());
         hm.put("bt", BillType.ChannelAgent);
         hm.put("ftp", FeeType.OtherInstitution);
-        hm.put("class", BilledBill.class);
+        hm
+                .put("class", BilledBill.class
+                );
         billFees = billFeeFacade.findByJpql(sql, hm, TemporalType.TIMESTAMP);
 
     }
@@ -8757,7 +8877,9 @@ public class SearchController implements Serializable {
 
         sql += " order by b.bill.insId desc ";
         temMap.put("billType", BillType.InwardBill);
-        temMap.put("class", BilledBill.class);
+        temMap
+                .put("class", BilledBill.class
+                );
         temMap.put("toDate", toDate);
         temMap.put("fromDate", fromDate);
 
