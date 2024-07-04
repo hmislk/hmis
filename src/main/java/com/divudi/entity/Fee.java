@@ -5,6 +5,7 @@
  */
 package com.divudi.entity;
 
+import com.divudi.data.FeeCategory;
 import com.divudi.data.FeeType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.Serializable;
@@ -40,6 +41,7 @@ public class Fee implements Serializable {
     String code;
     double fee = 0.0;
     double ffee = 0.0;
+    private double ccFee = 0.0;
     @JsonIgnore
     @ManyToOne
     Item item; // FBC, ESR, UFR
@@ -82,6 +84,8 @@ public class Fee implements Serializable {
     String retireComments;
     @Enumerated(EnumType.STRING)
     FeeType feeType;
+    @Enumerated(EnumType.STRING)
+    FeeCategory feeCategory;
     // Newly Added Field
     @ManyToOne
     @JsonIgnore
@@ -437,6 +441,14 @@ public class Fee implements Serializable {
 
     public void setDiscountAllowed(boolean discountAllowed) {
         this.discountAllowed = discountAllowed;
+    }
+
+    public double getCcFee() {
+        return ccFee;
+    }
+
+    public void setCcFee(double ccFee) {
+        this.ccFee = ccFee;
     }
 
 }

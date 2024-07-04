@@ -70,16 +70,6 @@
                             </p:autoComplete>
                             
 
-                            <p:outputLabel value="Total Fee" />
-                            <p:outputLabel id="lblTotal" value="#{itemFeeManager.item.total}" >
-                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                            </p:outputLabel>
-
-                            <p:outputLabel value="Total Fee for Foreigners" />
-                            <p:outputLabel id="lblTotalF" value="#{itemFeeManager.item.totalForForeigner}" >
-                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                            </p:outputLabel>
-
                         </p:panelGrid>
                         <div class="row">
                             <div class="col-md-2">
@@ -108,7 +98,7 @@
                                 <p:commandButton value="Save" 
                                                  action="#{itemFeeManager.addNewCollectingCentreFee()}" 
                                                  style="margin-left: 30px;" 
-                                                 update="gpFees lblTotal dlg lblTotalF msg tblFees"
+                                                 update="gpFees dlg msg tblFees"
                                                  process="gpDetail @this"
                                                  oncomplete="PF('dlg').hide();">
                                 </p:commandButton>
@@ -127,6 +117,20 @@
                                     class="w-100">
                                     <f:selectItem itemLabel="Select Fee Type" ></f:selectItem>
                                     <f:selectItems value="#{enumController.feeTypes}" var="ft" itemLabel="#{ft.label}" itemValue="#{ft}" />                                        
+                                    <p:ajax process="@this" update="gpDetail" ></p:ajax>
+                                </p:selectOneMenu>
+                                
+                                <p:outputLabel value="Fee Category" ></p:outputLabel>
+                                <p:selectOneMenu 
+                                    filter="true"
+                                    filterMatchMode="contains"
+                                    value="#{itemFeeManager.itemFee.feeCategory}" 
+                                    class="w-100">
+                                    <f:selectItem itemLabel="Select Fee Type" ></f:selectItem>
+                                    <f:selectItem itemLabel="Collecting Centre" ></f:selectItem>
+                                    <f:selectItem itemLabel="Institution" ></f:selectItem>
+                                    <f:selectItem itemLabel="Staff" ></f:selectItem>
+                                    <f:selectItems value="#{enumController.feeCategories}" var="ft" itemLabel="#{ft.label}" itemValue="#{ft}" />                                        
                                     <p:ajax process="@this" update="gpDetail" ></p:ajax>
                                 </p:selectOneMenu>
 
@@ -209,9 +213,9 @@
 
                         <p:panel header="Current Fees" id="gpFees" class="m-1">
 
-                            <p:commandButton value="Update" action="#{itemFeeManager.updateFee}" 
+<!--                            <p:commandButton value="Update" action="#{itemFeeManager.updateFee}" 
                                              process="@this tblFees" 
-                                             update=":#{p:resolveFirstComponentWithId('lblTotal',view).clientId} :#{p:resolveFirstComponentWithId('lblTotalF',view).clientId}" ></p:commandButton>
+                                             update=":#{p:resolveFirstComponentWithId('lblTotal',view).clientId} :#{p:resolveFirstComponentWithId('lblTotalF',view).clientId}" ></p:commandButton>-->
 
                             <p:dataTable id="tblFees" value="#{itemFeeManager.itemFees}" var="f" rowIndexVar="n" rowKey="#{f.id}" >
                                 <p:column headerText="No" width="30" >
