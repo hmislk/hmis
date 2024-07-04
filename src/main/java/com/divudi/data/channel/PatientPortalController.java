@@ -144,6 +144,7 @@ public class PatientPortalController implements Serializable {
     private ChannelBean channelBean;
 
     public String navigateBookingMenue() {
+        bookingControllerViewScope.fillBillSessions(selectedSessionInstance);
         sessionInstances = null;
         selectedConsultant = null;
         selectedSpeciality = null;
