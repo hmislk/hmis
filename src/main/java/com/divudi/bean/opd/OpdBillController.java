@@ -785,17 +785,17 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             bf.setFeeGrossValue(0.0);
 //            return;
         }
-        
-        if(configOptionApplicationController.getBooleanValueByKey("Disable increasing the fee value in OPD Billing", false)){
-            if (bf.getFeeValue()<bf.getFeeGrossValue()){
+
+        if (configOptionApplicationController.getBooleanValueByKey("Disable increasing the fee value in OPD Billing", false)) {
+            if (bf.getFeeValue() < bf.getFeeGrossValue()) {
                 JsfUtil.addErrorMessage("Increasing the fee value is not allowed.");
                 bf.setFeeGrossValue(bf.getFeeValue());
                 return;
             }
         }
-        if(configOptionApplicationController.getBooleanValueByKey("Disable decreasing the fee value in OPD Billing", false)){
-          
-            if (bf.getFeeValue()>bf.getFeeGrossValue()){
+        if (configOptionApplicationController.getBooleanValueByKey("Disable decreasing the fee value in OPD Billing", false)) {
+
+            if (bf.getFeeValue() > bf.getFeeGrossValue()) {
                 bf.setFeeGrossValue(bf.getFeeValue());
                 JsfUtil.addErrorMessage("Decreasing the fee value is not allowed.");
                 return;
@@ -1531,7 +1531,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             getBillBean().calculateBillItems(myBill, tmp);
             createPaymentsForBills(myBill, tmp);
             getBillBean().checkBillItemFeesInitiated(myBill);
-            bills.add(myBill);
+            getBills().add(myBill);
         }
 
         return true;
@@ -1577,7 +1577,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             getBillBean().calculateBillItems(myBill, tmp);
             createPaymentsForBills(myBill, tmp);
             getBillBean().checkBillItemFeesInitiated(myBill);
-            bills.add(myBill);
+            getBills().add(myBill);
         }
         return true;
     }
@@ -1623,7 +1623,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                 getBillBean().checkBillItemFeesInitiated(myBill);
 
                 // Adding the finalized Bill to the list of Bills
-                bills.add(myBill);
+                getBills().add(myBill);
             }
         }
 
@@ -1661,7 +1661,111 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             return false;
         }
         savePatient();
+//        int numberOfBillsForTheOrder = getBillBean().calculateNumberOfBillsPerOrder(getLstBillEntries());
+
+        boolean oneOpdBillForAllDepartments = configOptionApplicationController.getBooleanValueByKey("One OPD Bill For All Departments and Categories", true);
+        boolean oneOpdBillForEachDepartment = configOptionApplicationController.getBooleanValueByKey("One OPD Bill For Each Department", false);
+        boolean oneOpdBillForEachCategory = configOptionApplicationController.getBooleanValueByKey("One OPD Bill For Each Category", false);
+        boolean oneOpdBillForEachDepartmentAndCategoryCombination = configOptionApplicationController.getBooleanValueByKey("One OPD Bill For Each Department and Category Combination", false);
+
+        BilledBill newBatchBill = new BilledBill();
+
+        if (oneOpdBillForAllDepartments) {
+            Bill newSingleBill = null;
+            newSingleBill = saveBill(sessionController.getDepartment(), newBatchBill);
+            if (newSingleBill == null) {
+                return false;
+            }
+            List<BillItem> list = new ArrayList<>();
+            for (BillEntry billEntry : getLstBillEntries()) {
+                list.add(getBillBean().saveBillItem(newSingleBill, billEntry, getSessionController().getLoggedUser()));
+            }
+            newSingleBill.setBillItems(list);
+            newSingleBill.setBillTotal(newSingleBill.getNetTotal());
+            getBillFacade().edit(newSingleBill);
+            getBillBean().calculateBillItems(newSingleBill, getLstBillEntries());
+            if (getSessionController().getApplicationPreference().isPartialPaymentOfOpdBillsAllowed()) {
+                newSingleBill.setCashPaid(cashPaid);
+                if (cashPaid >= newSingleBill.getTransSaleBillTotalMinusDiscount()) {
+                    newSingleBill.setBalance(0.0);
+                    newSingleBill.setNetTotal(newSingleBill.getTransSaleBillTotalMinusDiscount());
+                } else {
+                    newSingleBill.setBalance(newSingleBill.getTransSaleBillTotalMinusDiscount() - newSingleBill.getCashPaid());
+                    newSingleBill.setNetTotal(newSingleBill.getCashPaid());
+                }
+            }
+            newSingleBill.setVat(newSingleBill.getVat());
+            newSingleBill.setVatPlusNetTotal(newSingleBill.getNetTotal() + newSingleBill.getVat());
+
+            getBillFacade().edit(newSingleBill);
+            getBillBean().checkBillItemFeesInitiated(newSingleBill);
+            getBills().add(newSingleBill);
+        } else if (oneOpdBillForEachDepartmentAndCategoryCombination) {
+            processBillsByDepartmentAndCategory();
+        } else if (oneOpdBillForEachDepartment) {
+            processBillsByDepartment();
+        } else if (oneOpdBillForEachCategory) {
+            JsfUtil.addErrorMessage("Still Under Development");
+            return false;
+        } else {
+            JsfUtil.addErrorMessage("Still Under Development");
+            return false;
+        }
+
+        
+        saveBatchBill();
+        createPaymentsForBills(getBatchBill(), getLstBillEntries());
+        saveBillItemSessions();
+
+        if (toStaff != null && getPaymentMethod() == PaymentMethod.Staff_Welfare) {
+            staffBean.updateStaffWelfare(toStaff, netPlusVat);
+            JsfUtil.addSuccessMessage("Staff Welfare Balance Updated");
+        } else if (toStaff != null && getPaymentMethod() == PaymentMethod.Staff) {
+            staffBean.updateStaffCredit(toStaff, netPlusVat);
+            JsfUtil.addSuccessMessage("Staff Credit Updated");
+        }
+
+        if (paymentMethod == PaymentMethod.PatientDeposit) {
+            if (getPatient().getRunningBalance() != null) {
+                getPatient().setRunningBalance(getPatient().getRunningBalance() - netTotal);
+            } else {
+                getPatient().setRunningBalance(0.0 - netTotal);
+            }
+            getPatientFacade().edit(getPatient());
+        }
+
+        if (getToken() != null) {
+            getToken().setBill(getBatchBill());
+            tokenFacade.edit(getToken());
+            markToken(getBatchBill());
+        }
+
+        JsfUtil.addSuccessMessage("Bill Saved");
+        setPrintigBill();
+        checkBillValues();
+        duplicatePrint = false;
+        return true;
+    }
+
+    @Deprecated
+    private boolean executeSettleBillActionsRetired() {
+        if (errorCheck()) {
+            return false;
+        }
+        savePatient();
         int numberOfBillsForTheOrder = getBillBean().calculateNumberOfBillsPerOrder(getLstBillEntries());
+
+        boolean oneOpdBillForAllDepartments = configOptionApplicationController.getBooleanValueByKey("One OPD Bill For All Departments and Categories", true);
+        boolean oneOpdBillForEachDepartment = configOptionApplicationController.getBooleanValueByKey("One OPD Bill For Each Department", false);
+        boolean oneOpdBillForEachCategory = configOptionApplicationController.getBooleanValueByKey("One OPD Bill For Each Category", false);
+        boolean oneOpdBillForEachDepartmentAndCategoryCombination = configOptionApplicationController.getBooleanValueByKey("One OPD Bill For Each Department and Category Combination", false);
+
+        if (oneOpdBillForAllDepartments) {
+
+        } else {
+
+        }
+
         if (numberOfBillsForTheOrder == 1) {
             BilledBill temp = new BilledBill();
             Bill b = null;
@@ -2139,6 +2243,22 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         if (sessionController.getApplicationPreference().isNeedAreaForPatientRegistration()) {
             if (getPatient().getPerson().getArea() == null) {
                 JsfUtil.addErrorMessage("Please Add Patient Area");
+                return true;
+            }
+        }
+        if (configOptionApplicationController.getBooleanValueByKey("Need Patient Title And Gender To Save Patient", false)) {
+            if (getPatient().getPerson().getTitle() == null) {
+                JsfUtil.addErrorMessage("Please select title");
+                return true;
+            }
+            if (getPatient().getPerson().getSex() == null) {
+                JsfUtil.addErrorMessage("Please select gender");
+                return true;
+            }
+        }
+        if (configOptionApplicationController.getBooleanValueByKey("Need Patient Age to Save Patient", false)) {
+            if (getPatient().getPerson().getDob() == null) {
+                JsfUtil.addErrorMessage("Please select patient date of birth");
                 return true;
             }
         }

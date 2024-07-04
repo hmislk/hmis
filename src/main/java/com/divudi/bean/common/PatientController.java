@@ -182,6 +182,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
     CollectingCentreBillController collectingCentreBillController;
     @Inject
     PatientController patientController;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
 
     /**
      *
@@ -2357,6 +2359,22 @@ public class PatientController implements Serializable, ControllerWithPatient {
         if (p.getPerson().getName().trim().equals("")) {
             JsfUtil.addErrorMessage("Please enter a name");
             return;
+        }
+        if(configOptionApplicationController.getBooleanValueByKey("Need Patient Title And Gender to Save Patient", false)){
+            if (p.getPerson().getTitle() == null) {
+                JsfUtil.addErrorMessage("Please select title");
+                return;
+            }
+            if (p.getPerson().getSex()== null) {
+                JsfUtil.addErrorMessage("Please select gender");
+                return;
+            }
+        }
+        if(configOptionApplicationController.getBooleanValueByKey("Need Patient Age to Save Patient", false)){
+            if (p.getPerson().getDob()== null) {
+                JsfUtil.addErrorMessage("Please select patient date of birth");
+                return;
+            }
         }
         if (p.getPerson().getId() == null) {
             p.getPerson().setCreatedAt(Calendar.getInstance().getTime());
