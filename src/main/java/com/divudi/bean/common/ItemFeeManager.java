@@ -15,6 +15,7 @@ import com.divudi.facade.ItemFacade;
 import com.divudi.facade.ItemFeeFacade;
 import com.divudi.facade.StaffFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.entity.Institution;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -43,6 +44,7 @@ public class ItemFeeManager implements Serializable {
     Item item;
     ItemFee itemFee;
     ItemFee removingFee;
+    private Institution collectingCentre;
 
     List<ItemFee> itemFees;
 
@@ -201,6 +203,10 @@ public class ItemFeeManager implements Serializable {
 //        itemController.fillItemsForInward();
         return "/admin/pricing/manage_item_fees?faces-redirect=true";
     }
+    
+    public String navigateToCollectingCentreItemFees() {
+        return "/admin/pricing/manage_collecting_centre_item_fees?faces-redirect=true";
+    }
 
     public String navigateToItemFeesMultiple() {
         return "/admin/pricing/manage_item_fees_multiple?faces-redirect=true";
@@ -210,6 +216,7 @@ public class ItemFeeManager implements Serializable {
         item = null;
         itemFees = null;
         removingFee = null;
+        collectingCentre = null;
     }
 
     public void clearSelectedItems() {
@@ -246,6 +253,10 @@ public class ItemFeeManager implements Serializable {
     public void fillFees() {
         itemFees = fillFees(item);
     }
+    
+    public void fillCollectingCentreFees() {
+        itemFees = fillFees(item, collectingCentre);
+    }
 
     public String toManageItemFees() {
         if (item == null) {
@@ -260,6 +271,14 @@ public class ItemFeeManager implements Serializable {
         String jpql;
         Map m = new HashMap();
         jpql = "select f from ItemFee f where f.retired=false and f.item=:i";
+        m.put("i", i);
+        return itemFeeFacade.findByJpql(jpql, m);
+    }
+    
+    public List<ItemFee> fillFees(Item i, Institution c) {
+        String jpql;
+        Map m = new HashMap();
+        jpql = "select f from ItemFee f where f.retired=false and f.item=:i and f.institution=:c";
         m.put("i", i);
         return itemFeeFacade.findByJpql(jpql, m);
     }
@@ -315,6 +334,70 @@ public class ItemFeeManager implements Serializable {
         itemFee = new ItemFee();
         itemFees = null;
         fillFees();
+        updateTotal();
+        JsfUtil.addSuccessMessage("New Fee Added");
+    }
+    
+    public void addNewCollectingCentreFee() {
+        if (collectingCentre == null) {
+            JsfUtil.addErrorMessage("Select Collecting Centre ?");
+            return;
+        }
+        if (collectingCentre == null) {
+            JsfUtil.addErrorMessage("Select Collecting Centre ?");
+            return;
+        }
+        if (item == null) {
+            JsfUtil.addErrorMessage("Select Item ?");
+            return;
+        }
+        if (itemFee == null) {
+            JsfUtil.addErrorMessage("Select Item Fee");
+            return;
+        }
+        if (itemFee.getName() == null || itemFee.getName().trim().equals("")) {
+            JsfUtil.addErrorMessage("Please Fill Fee Name");
+            return;
+        }
+
+        if (itemFee.getFeeType() == null) {
+            JsfUtil.addErrorMessage("Please Fill Fee Type");
+            return;
+        }
+
+        if (itemFee.getFeeType() == FeeType.OtherInstitution || itemFee.getFeeType() == FeeType.OwnInstitution || itemFee.getFeeType() == FeeType.Referral) {
+            if (itemFee.getDepartment() == null) {
+                JsfUtil.addErrorMessage("Please Select Department");
+                return;
+            }
+        }
+
+//        if (itemFee.getFeeType() == FeeType.Staff) {
+//            if (itemFee.getStaff() == null || itemFee.getStaff().getPerson().getName().trim().equals("")) {
+//                JsfUtil.addErrorMessage("Please Select Staff");
+//                return;
+//            }
+//        }
+        if (itemFee.getFee() == 0.00) {
+            JsfUtil.addErrorMessage("Please Enter Local Fee Value");
+            return;
+        }
+
+        if (itemFee.getFfee() == 0.00) {
+            JsfUtil.addErrorMessage("Please Enter Foreign Fee Value");
+            return;
+        }
+        getItemFee().setCreatedAt(new Date());
+        getItemFee().setCreater(sessionController.getLoggedUser());
+        getItemFee().setInstitution(collectingCentre);
+        itemFeeFacade.create(itemFee);
+
+        getItemFee().setItem(item);
+        itemFeeFacade.edit(itemFee);
+
+        itemFee = new ItemFee();
+        itemFees = null;
+        fillCollectingCentreFees();
         updateTotal();
         JsfUtil.addSuccessMessage("New Fee Added");
     }
@@ -415,5 +498,13 @@ public class ItemFeeManager implements Serializable {
 
     public void setSelectedList(List<Item> selectedList) {
         this.selectedList = selectedList;
+    }
+
+    public Institution getCollectingCentre() {
+        return collectingCentre;
+    }
+
+    public void setCollectingCentre(Institution collectingCentre) {
+        this.collectingCentre = collectingCentre;
     }
 }
