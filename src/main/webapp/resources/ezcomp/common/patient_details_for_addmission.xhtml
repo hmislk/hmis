@@ -5,7 +5,8 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:c="http://java.sun.com/jsp/jstl/core">
+      xmlns:c="http://java.sun.com/jsp/jstl/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
 
     <!-- INTERFACE -->
     <cc:interface>
@@ -451,7 +452,7 @@
                     <div class="row" >                                    
                         <div class="col-12" >
                             <h:panelGroup id="ptAl" >
-                                <p:repeat value="#{cc.attrs.controller.patientAllergies}" var="al">
+                                <ui:repeat value="#{cc.attrs.controller.patientAllergies}" var="al">
                                     <div class="card my-1 w-100">
                                         <div class="d-flex justify-content-between align-items-center p-2">
                                             <div>
@@ -471,7 +472,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                </p:repeat>
+                                </ui:repeat>
                             </h:panelGroup>
 
 

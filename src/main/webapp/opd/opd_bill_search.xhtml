@@ -225,10 +225,10 @@
                                     </p:column>
                                     <p:column headerText="Billed At" filterBy="#{bill.billDate}" sortBy="#{bill.billDate}"  >
                                         <p:outputLabel id="billTime1" value="#{bill.createdAt}" rendered="#{fn:substring(searchController.fromDate, 0, 10) eq fn:substring(searchController.toDate, 0, 10)}">
-                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" ></f:convertDateTime>
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" ></f:convertDateTime>
                                         </p:outputLabel>
                                         <p:outputLabel id="billTime2" value="#{bill.createdAt}" rendered="#{fn:substring(searchController.fromDate, 0, 10) ne fn:substring(searchController.toDate, 0, 10)}">
-                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" ></f:convertDateTime>
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
                                         </p:outputLabel>
                                     </p:column>
                                     <p:column headerText="Billed By" sortBy="#{bill.fromDepartment.name}" 

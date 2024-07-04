@@ -31,6 +31,14 @@
                                         <p:printer target="nurseView"/>
                                     </p:commandButton>
                                     <p:commandButton 
+                                        value="Download" 
+                                        ajax="fasle" 
+                                        icon="fa fa-print"
+                                        class="ui-button-info"
+                                        action="#">
+                                        <p:dataExporter type="xlsx" fileName="nurse_view" target="nurseView"/>
+                                    </p:commandButton>
+                                    <p:commandButton 
                                         ajax="false" 
                                         class="ui-button-success"
                                         icon="fa fa-check-square"
