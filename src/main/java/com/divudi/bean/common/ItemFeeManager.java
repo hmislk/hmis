@@ -15,6 +15,7 @@ import com.divudi.facade.ItemFacade;
 import com.divudi.facade.ItemFeeFacade;
 import com.divudi.facade.StaffFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.entity.Category;
 import com.divudi.entity.Institution;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -203,7 +204,7 @@ public class ItemFeeManager implements Serializable {
 //        itemController.fillItemsForInward();
         return "/admin/pricing/manage_item_fees?faces-redirect=true";
     }
-    
+
     public String navigateToCollectingCentreItemFees() {
         return "/admin/pricing/manage_collecting_centre_item_fees?faces-redirect=true";
     }
@@ -253,8 +254,8 @@ public class ItemFeeManager implements Serializable {
     public void fillFees() {
         itemFees = fillFees(item);
     }
-    
-    public void fillCollectingCentreFees() {
+
+    public void fillForInstitutionFees() {
         itemFees = fillFees(item, collectingCentre);
     }
 
@@ -268,18 +269,36 @@ public class ItemFeeManager implements Serializable {
     }
 
     public List<ItemFee> fillFees(Item i) {
-        String jpql;
-        Map m = new HashMap();
-        jpql = "select f from ItemFee f where f.retired=false and f.item=:i";
-        m.put("i", i);
-        return itemFeeFacade.findByJpql(jpql, m);
+        return fillFees(i, null, null);
     }
-    
-    public List<ItemFee> fillFees(Item i, Institution c) {
-        String jpql;
-        Map m = new HashMap();
-        jpql = "select f from ItemFee f where f.retired=false and f.item=:i and f.institution=:c";
+
+    public List<ItemFee> fillFees(Item i, Institution ins) {
+        return fillFees(i, ins, null);
+    }
+
+    public List<ItemFee> fillFees(Item i, Category cat) {
+        return fillFees(i, null, cat);
+    }
+
+    public List<ItemFee> fillFees(Item i, Institution forInstitution, Category cat) {
+        String jpql = "select f from ItemFee f where f.retired=false and f.item=:i";
+        Map<String, Object> m = new HashMap<>();
         m.put("i", i);
+
+        if (forInstitution != null) {
+            jpql += " and f.forInstitution=:ins";
+            m.put("ins", forInstitution);
+        } else {
+            jpql += " and f.forInstitution is null";
+        }
+
+        if (cat != null) {
+            jpql += " and f.forCategory=:cat";
+            m.put("cat", cat);
+        } else {
+            jpql += " and f.forCategory is null";
+        }
+
         return itemFeeFacade.findByJpql(jpql, m);
     }
 
@@ -337,12 +356,8 @@ public class ItemFeeManager implements Serializable {
         updateTotal();
         JsfUtil.addSuccessMessage("New Fee Added");
     }
-    
+
     public void addNewCollectingCentreFee() {
-        if (collectingCentre == null) {
-            JsfUtil.addErrorMessage("Select Collecting Centre ?");
-            return;
-        }
         if (collectingCentre == null) {
             JsfUtil.addErrorMessage("Select Collecting Centre ?");
             return;
@@ -371,13 +386,6 @@ public class ItemFeeManager implements Serializable {
                 return;
             }
         }
-
-//        if (itemFee.getFeeType() == FeeType.Staff) {
-//            if (itemFee.getStaff() == null || itemFee.getStaff().getPerson().getName().trim().equals("")) {
-//                JsfUtil.addErrorMessage("Please Select Staff");
-//                return;
-//            }
-//        }
         if (itemFee.getFee() == 0.00) {
             JsfUtil.addErrorMessage("Please Enter Local Fee Value");
             return;
@@ -389,7 +397,7 @@ public class ItemFeeManager implements Serializable {
         }
         getItemFee().setCreatedAt(new Date());
         getItemFee().setCreater(sessionController.getLoggedUser());
-        getItemFee().setInstitution(collectingCentre);
+        getItemFee().setForInstitution(collectingCentre);
         itemFeeFacade.create(itemFee);
 
         getItemFee().setItem(item);
@@ -397,7 +405,7 @@ public class ItemFeeManager implements Serializable {
 
         itemFee = new ItemFee();
         itemFees = null;
-        fillCollectingCentreFees();
+        fillForInstitutionFees();
         updateTotal();
         JsfUtil.addSuccessMessage("New Fee Added");
     }

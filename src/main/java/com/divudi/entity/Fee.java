@@ -46,6 +46,10 @@ public class Fee implements Serializable {
     @ManyToOne
     Item item; // FBC, ESR, UFR
     @ManyToOne
+    private Institution forInstitution;
+    @ManyToOne
+    private Category forCategory;
+    @ManyToOne
     Institution institution;
     @ManyToOne
     Department department;
@@ -85,7 +89,7 @@ public class Fee implements Serializable {
     @Enumerated(EnumType.STRING)
     FeeType feeType;
     @Enumerated(EnumType.STRING)
-    FeeCategory feeCategory;
+    private FeeCategory feeCategory;
     // Newly Added Field
     @ManyToOne
     @JsonIgnore
@@ -116,6 +120,9 @@ public class Fee implements Serializable {
     Speciality toSpaciality;
     private boolean discountAllowed;
 
+    
+    
+    
     public Fee() {
     }
 
@@ -449,6 +456,30 @@ public class Fee implements Serializable {
 
     public void setCcFee(double ccFee) {
         this.ccFee = ccFee;
+    }
+
+    public Institution getForInstitution() {
+        return forInstitution;
+    }
+
+    public void setForInstitution(Institution forInstitution) {
+        this.forInstitution = forInstitution;
+    }
+
+    public Category getForCategory() {
+        return forCategory;
+    }
+
+    public void setForCategory(Category forCategory) {
+        this.forCategory = forCategory;
+    }
+
+    public FeeCategory getFeeCategory() {
+        return feeCategory;
+    }
+
+    public void setFeeCategory(FeeCategory feeCategory) {
+        this.feeCategory = feeCategory;
     }
 
 }
