@@ -2,10 +2,10 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.divudi</groupId>
-    <artifactId>sethma</artifactId>
+    <artifactId>horizon1</artifactId>
     <version>3.0.0</version>
     <packaging>war</packaging>
-    <name>sethma</name>
+    <name>horizon1</name>
     
     <properties>
         <endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
@@ -307,7 +307,11 @@
             <artifactId>reflections</artifactId>
             <version>0.10.2</version>
         </dependency>
-       
+        <dependency>
+            <groupId>org.apache.tomcat</groupId>
+            <artifactId>tomcat-catalina</artifactId>
+            <version>9.0.39</version> <!-- or the version compatible with your setup -->
+        </dependency>
 
     </dependencies>
 
