@@ -85,6 +85,13 @@ public class EnumController implements Serializable {
         }
         return paymentMethodsForOpdBilling;
     }
+    
+    public List<PaymentMethod> getPaymentMethodsForPackageBilling() {
+        if (paymentMethodsForOpdBilling == null) {
+            fillPaymentMethodsForPackageBilling();
+        }
+        return paymentMethodsForOpdBilling;
+    }
 
     public void resetPaymentMethods() {
         paymentMethodsForOpdBilling = null;
@@ -95,6 +102,16 @@ public class EnumController implements Serializable {
         paymentMethodsForOpdBilling = new ArrayList<>();
         for (PaymentMethod pm : PaymentMethod.values()) {
             boolean include = configOptionApplicationController.getBooleanValueByKey(pm.getLabel() + " is available for OPD Billing", true);
+            if (include) {
+                paymentMethodsForOpdBilling.add(pm);
+            }
+        }
+    }
+    
+    public void fillPaymentMethodsForPackageBilling() {
+        paymentMethodsForOpdBilling = new ArrayList<>();
+        for (PaymentMethod pm : PaymentMethod.values()) {
+            boolean include = configOptionApplicationController.getBooleanValueByKey(pm.getLabel() + " is available for Package Billing", true);
             if (include) {
                 paymentMethodsForOpdBilling.add(pm);
             }
