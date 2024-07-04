@@ -2647,13 +2647,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 int maxNo = selectedSessionInstance.getMaxNo();
                 long bookedPatientCount = selectedSessionInstance.getBookedPatientCount();
                 long totalPatientCount;
-                System.out.println("selectedSessionInstance.getCancelPatientCount() = " + selectedSessionInstance.getCancelPatientCount());
                 if(selectedSessionInstance.getCancelPatientCount() != null){
                     long canceledPatientCount = selectedSessionInstance.getCancelPatientCount();
                     totalPatientCount = bookedPatientCount - canceledPatientCount;
-                    System.out.println("totalPatientCount = " + totalPatientCount);
-                    System.out.println("bookedPatientCount = " + bookedPatientCount);
-                    System.out.println("canceledPatientCount = " + canceledPatientCount);
                 }else{
                     totalPatientCount = bookedPatientCount;
                 }
@@ -4506,6 +4502,11 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         }
         if (collectingCentre != null) {
             savingBill.setCollectingCentre(collectingCentre);
+        }
+        if (savingBill.getPaidAmount() == 0.0){
+            if(!(savingBill.getPaymentMethod() == PaymentMethod.OnCall)){
+                savingBill.setPaidAmount(feeNetTotalForSelectedBill);
+            }
         }
 
         calculateBillTotalsFromBillFees(savingBill, savingBillFees);
