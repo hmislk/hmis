@@ -85,6 +85,7 @@ import com.divudi.entity.UserPreference;
 import com.divudi.entity.channel.AgentReferenceBook;
 import com.divudi.entity.channel.AppointmentActivity;
 import com.divudi.entity.channel.SessionInstanceActivity;
+import com.divudi.entity.lab.PatientReport;
 import com.divudi.facade.AgentReferenceBookFacade;
 import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.SessionInstanceFacade;
@@ -172,6 +173,11 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     /**
      * Controllers
      */
+
+    @Inject
+    private CommonController commonController;
+    @Inject
+    SecurityController securityController;
     @Inject
     ConfigOptionController configOptionController;
     @Inject
@@ -218,10 +224,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     OpdBillController opdBillController;
     @Inject
     ChannelScheduleController channelScheduleController;
-    @Inject
-    private CommonController commonController;
-    @Inject
-    SecurityController securityController;
     /**
      * Properties
      */
@@ -245,7 +247,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     private List<SessionInstance> sessionInstances;
     private List<SessionInstance> sessionInstancesFiltered;
     private List<SessionInstance> sortedSessionInstances;
-    private List<SessionInstance> oldSessionInstancesFiltered;
     private String sessionInstanceFilter;
     private List<BillSession> billSessions;
     private List<Staff> consultants;
@@ -255,8 +256,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     private boolean printPreviewForReprintingAsOriginal;
     private boolean printPreviewForReprintingAsDuplicate;
     private boolean printPreviewForOnlineBill;
-    private boolean printPreviewC;
-
     private double absentCount;
     private int serealNo;
     private Date fromDate;
@@ -343,75 +342,49 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             JsfUtil.addErrorMessage("Bill session is not valid !");
             return;
         }
-        
-        
-        if (getSelectedSessionInstanceForRechedule().getMaxNo() != 0) {
-            if (getSelectedSessionInstanceForRechedule().getBookedPatientCount() != null) {
-                int maxNo = getSelectedSessionInstanceForRechedule().getMaxNo();
-                long bookedPatientCount = getSelectedSessionInstanceForRechedule().getBookedPatientCount();
-                if (maxNo <= bookedPatientCount) {
-                    JsfUtil.addErrorMessage("Cannot reschedule the selected session: The session has reached its maximum booking capacity.");
-                    return;
+        createBillSessionForReschedule(selectedBillSession, getSelectedSessionInstanceForRechedule());
+        JsfUtil.addSuccessMessage("Reschedule Successfully");
+        sendSmsOnChannelBookingReschedule();
 
-                }
-            }
-        }
-        
-        if (selectedBillSession.getBill().isCancelled()) {
-            JsfUtil.addErrorMessage("Cannot reschedule: This bill session has been cancelled.");
-        }
-        
-        if (selectedBillSession.isRecheduledSession()) {
-            JsfUtil.addErrorMessage("Cannot reschedule: This bill session has been Alrady Recheduled To Another Session !");
-        }
-        
-        if (selectedBillSession.getReferenceBillSession() == null) {
-            createBillSessionForReschedule(selectedBillSession, getSelectedSessionInstanceForRechedule());
-            JsfUtil.addSuccessMessage("Reschedule Successfully");
-            sendSmsOnChannelBookingReschedule();
-        }else{
-            JsfUtil.addErrorMessage("Cannot reschedule the selected session: This appointment has already been rescheduled.");
-        }
-        
     }
-    
+
     public void sendSmsOnChannelBookingReschedule() {
         if (selectedBillSession == null) {
             return;
         }
-            if (selectedBillSession.getBill() == null) {
-                return;
-            }
-            if (selectedBillSession.getBill().getPatient().getPerson().getSmsNumber() == null) {
-                return;
-            }
-            if (getSelectedSessionInstanceForRechedule() == null){
-                return;
-            }
-            Sms e = new Sms();
-            e.setCreatedAt(new Date());
-            e.setCreater(sessionController.getLoggedUser());
-            e.setBill(selectedBillSession.getBill());
-            e.setReceipientNumber(selectedBillSession.getBill().getPatient().getPerson().getSmsNumber());
-            e.setSendingMessage(createChanelBookingRescheduleSms(selectedBillSession.getBill(),newBillSessionForSMS));
-            e.setDepartment(getSessionController().getLoggedUser().getDepartment());
-            e.setInstitution(getSessionController().getLoggedUser().getInstitution());
-            e.setPending(false);
-            e.setSmsType(MessageType.ChannelPatientReschedule);
-            getSmsFacade().create(e);
-            Boolean sent = smsManager.sendSms(e);
+        if (selectedBillSession.getBill() == null) {
+            return;
+        }
+        if (selectedBillSession.getBill().getPatient().getPerson().getSmsNumber() == null) {
+            return;
+        }
+        if (getSelectedSessionInstanceForRechedule() == null) {
+            return;
+        }
+        Sms e = new Sms();
+        e.setCreatedAt(new Date());
+        e.setCreater(sessionController.getLoggedUser());
+        e.setBill(selectedBillSession.getBill());
+        e.setReceipientNumber(selectedBillSession.getBill().getPatient().getPerson().getSmsNumber());
+        e.setSendingMessage(createChanelBookingRescheduleSms(selectedBillSession.getBill(), newBillSessionForSMS));
+        e.setDepartment(getSessionController().getLoggedUser().getDepartment());
+        e.setInstitution(getSessionController().getLoggedUser().getInstitution());
+        e.setPending(false);
+        e.setSmsType(MessageType.ChannelPatientReschedule);
+        getSmsFacade().create(e);
+        Boolean sent = smsManager.sendSms(e);
 
 //        JsfUtil.addSuccessMessage("SMS Sent to all Patients.");
     }
-    
-    private String createChanelBookingRescheduleSms(Bill b , BillSession s) {
+
+    private String createChanelBookingRescheduleSms(Bill b, BillSession s) {
 //        String template = sessionController.getDepartmentPreference().getSmsTemplateForChannelBooking();
         String template = configOptionController.getLongTextValueByKey("Template for SMS sent on Patient Feedback", OptionScope.APPLICATION, null, null, null);
         if (template == null || template.isEmpty()) {
             template = "Dear {patient_name}, Your appointment No. {serial_no} with {doctor} is rescheduled to appointment No. {new_serial_no} with {new_doctor} on {new_appointment_date} at {new_appointment_time} . {ins_name}";
         }
         return createSmsForChannelBookingReschedule(b, s, template);
-    }   
+    }
 
     private void createBillSessionForReschedule(BillSession bs, SessionInstance si) {
         BillSession newBillSession = new BillSession();
@@ -463,11 +436,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         } else {
             newBillSession.setSerialNo(1);
             System.out.println("count serial number= " + bs.getSerialNo());
-        }        
+        }
+
         getBillSessionFacade().create(newBillSession);
-        bs.setRecheduledSession(true);
-        bs.setReferenceBillSession(newBillSession);
-        getBillSessionFacade().edit(bs);
         newBillSessionForSMS = newBillSession;
     }
 
@@ -519,7 +490,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         printPreviewForReprintingAsDuplicate = true;
         printPreviewForReprintingAsOriginal = false;
     }
-    
+
     public void toPrintOnlineBill() {
         selectedBillSession.getBill().setPrinted(true);
         billSessionFacade.edit(selectedBillSession);
@@ -634,25 +605,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
         return "/channel/session_instance?faces-redirect=true";
     }
-    
-    public String navigateToManageSessionInstanceFromProfPay(SessionInstance sessionInstance) {
-        this.selectedSessionInstance = sessionInstance;
-
-        // Setting the properties in the viewScopeDataTransferController
-        viewScopeDataTransferController.setSelectedSessionInstance(sessionInstance);
-        viewScopeDataTransferController.setSessionInstanceFilter(sessionInstanceFilter);
-        viewScopeDataTransferController.setFromDate(fromDate);
-        viewScopeDataTransferController.setToDate(toDate);
-        viewScopeDataTransferController.setNeedToFillSessionInstances(false);
-        viewScopeDataTransferController.setNeedToFillBillSessions(true);
-        viewScopeDataTransferController.setNeedToFillSessionInstanceDetails(true);
-        viewScopeDataTransferController.setNeedToFillBillSessionDetails(false);
-        viewScopeDataTransferController.setNeedToFillMembershipDetails(false);
-        viewScopeDataTransferController.setNeedToPrepareForNewBooking(false);
-        channelStaffPaymentBillController.makenull();
-
-        return "/channel/session_instance?faces-redirect=true";
-    }
 
     public String navigateToManageSessionInstanceFromBillSession() {
         if (selectedBillSession == null) {
@@ -696,7 +648,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public void sendSmsChannelSessionCancelNotification() {
-        
+
         if (selectedSessionInstance == null) {
             return;
         }
@@ -879,6 +831,10 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 sessionInstancesFiltered = new ArrayList<>();
                 return;
             }
+
+            if (!sessionInstancesFiltered.isEmpty()) {
+                selectedSessionInstance = sessionInstancesFiltered.get(0);
+            }
             return;
         }
 
@@ -983,37 +939,15 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         selectedSessionInstance.setStartedBy(sessionController.getLoggedUser());
         sessionInstanceController.save(selectedSessionInstance);
         JsfUtil.addSuccessMessage("Session Started");
+
         if (sessionController.getDepartmentPreference().isSendSmsOnChannelDoctorArrival()) {
             sendSmsOnChannelDoctorArrival();
         }
-        boolean firstIncompleteFound = false;
-
-        for (BillSession bs : billSessions) {
-            if (configOptionApplicationController.getBooleanValueByKey("Sent Channelling Status Update Notification SMS on Channel Session Start", true)) {
-            sendChannellingStatusUpdateNotificationSms(bs);
-            System.out.println("bs = " + bs);
-        }
-        if (!firstIncompleteFound && !bs.isCompleted()) {
-            bs.setNextInLine(true);
-            billSessionFacade.edit(bs);
-            selectedSessionInstance.setNextInLineBillSession(bs);
-            sessionInstanceFacade.edit(selectedSessionInstance);
-            firstIncompleteFound = true; 
-        }
-    }
-
-    }
-
-    public void reopenSessionInstance() {
-        if (selectedSessionInstance == null) {
-            JsfUtil.addErrorMessage("No session selected");
-            return;
-        }
-        selectedSessionInstance.setCompleted(false);
-        sessionInstanceController.save(selectedSessionInstance);
-        JsfUtil.addSuccessMessage("Session Re-Started");
         for (BillSession bs : billSessions) {
             if (!bs.isCompleted()) {
+                if (configOptionApplicationController.getBooleanValueByKey("Sent Channelling Status Update Notification SMS on Channel Session Start", true)) {
+                    sendChannellingStatusUpdateNotificationSms(bs);
+                }
                 bs.setNextInLine(true);
                 billSessionFacade.edit(bs);
                 selectedSessionInstance.setNextInLineBillSession(bs);
@@ -1022,7 +956,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             }
         }
     }
-    
+
     public void sendChannellingStatusUpdateNotificationSms(BillSession methodBillSession) {
         if (methodBillSession == null) {
             JsfUtil.addErrorMessage("Nothing to send");
@@ -1082,6 +1016,25 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 + " Started. "
                 + url;
         return b;
+    }
+
+    public void reopenSessionInstance() {
+        if (selectedSessionInstance == null) {
+            JsfUtil.addErrorMessage("No session selected");
+            return;
+        }
+        selectedSessionInstance.setCompleted(false);
+        sessionInstanceController.save(selectedSessionInstance);
+        JsfUtil.addSuccessMessage("Session Re-Started");
+        for (BillSession bs : billSessions) {
+            if (!bs.isCompleted()) {
+                bs.setNextInLine(true);
+                billSessionFacade.edit(bs);
+                selectedSessionInstance.setNextInLineBillSession(bs);
+                sessionInstanceFacade.edit(selectedSessionInstance);
+                return;
+            }
+        }
     }
 
     public void reloadSessionInstance() {
@@ -1373,7 +1326,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             JsfUtil.addErrorMessage("Please select a Patient");
             return "";
         }
-        
+
         fillSessionInstanceByDoctor();
         // Setting the properties in the viewScopeDataTransferController
         viewScopeDataTransferController.setSelectedBillSession(selectedBillSession);
@@ -1389,6 +1342,23 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         viewScopeDataTransferController.setNeedToFillMembershipDetails(false);
         viewScopeDataTransferController.setNeedToPrepareForNewBooking(false);
         printPreviewC = false;
+        if (configOptionApplicationController.getBooleanValueByKey("Automatically Load and Display the Refund Amount Upon Page Load")) {
+            if(configOptionApplicationController.getBooleanValueByKey("Disable Hospital Fee Refunds")){
+                for(BillFee bf : bs.getBill().getBillFeesWIthoutZeroValue()){
+                    if(!(bf.getFee().getFeeType() == FeeType.OwnInstitution)){
+                        copyValue(bf);
+                        calRefundTotal();
+                        checkRefundTotal();
+                    }
+                }
+            }else{
+                for(BillFee bf : bs.getBill().getBillFeesWIthoutZeroValue()){
+                        copyValue(bf);
+                        calRefundTotal();
+                        checkRefundTotal();
+                }
+            }  
+        }
 
         return "/channel/manage_booking_by_date?faces-redirect=true";
     }
@@ -1453,24 +1423,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         viewScopeDataTransferController.setSessionInstanceFilter(sessionInstanceFilter);
         viewScopeDataTransferController.setFromDate(fromDate);
         viewScopeDataTransferController.setToDate(toDate);
-
-        viewScopeDataTransferController.setNeedToFillBillSessions(false);
-        viewScopeDataTransferController.setNeedToFillBillSessionDetails(false);
-        viewScopeDataTransferController.setNeedToFillSessionInstances(true);
-        viewScopeDataTransferController.setNeedToFillSessionInstanceDetails(true);
-        viewScopeDataTransferController.setNeedToFillMembershipDetails(false);
-        viewScopeDataTransferController.setNeedToPrepareForNewBooking(true);
-
-        return "/channel/channel_booking_by_date?faces-redirect=true";
-    }
-    
-    public String navigateBackToBookingsFromProfPay() {
-        viewScopeDataTransferController.setSelectedSessionInstance(selectedSessionInstance);
-        viewScopeDataTransferController.setSelectedBillSession(selectedBillSession);
-        viewScopeDataTransferController.setSessionInstanceFilter(sessionInstanceFilter);
-        viewScopeDataTransferController.setFromDate(fromDate);
-        viewScopeDataTransferController.setToDate(toDate);
-        channelStaffPaymentBillController.makenull();
 
         viewScopeDataTransferController.setNeedToFillBillSessions(false);
         viewScopeDataTransferController.setNeedToFillBillSessionDetails(false);
@@ -1657,7 +1609,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         sendSmsOnChannelCancellationBookings();
         cancelPaymentMethod = null;
         comment = null;
-        printPreviewC = true;
     }
 
     public void cancelCashFlowBill() {
@@ -1668,7 +1619,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         cancel(getBillSession().getBill(), getBillSession().getBillItem(), getBillSession());
         sendSmsOnChannelCancellationBookings();
         comment = null;
-         printPreviewC = true;
     }
 
     public void cancelBookingBill() {
@@ -1686,7 +1636,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         billSessionFacade.edit(selectedBillSession);
         sendSmsOnChannelCancellationBookings();
         comment = null;
-        printPreviewC = true;
     }
 
     private BillItem cancelBillItems(BillItem bi, CancelledBill can) {
@@ -1793,7 +1742,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         cancel1(getBillSession().getBill(), getBillSession().getBillItem(), getBillSession());
         sendSmsOnChannelCancellationBookings();
         comment = null;
-        printPreviewC = true;
+
     }
 
     public void fetchRecentChannelBooks(Institution ins) {
@@ -2211,32 +2160,25 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             JsfUtil.addErrorMessage("Item to add to booking");
             return;
         }
-        List<Item> items = getItemsAddedToBooking();
-        for(Item item : items){
-            if(item.equals(itemToAddToBooking)){
-               JsfUtil.addErrorMessage("Item is Already Added");
-                return; 
-            }
-        }
         getItemsAddedToBooking().add(itemToAddToBooking);
         itemToAddToBooking = null;
         fillFees();
     }
-    
-    public void removeAddedAditionalItem(){
-         if (selectedBillItem==null) {
-             JsfUtil.addErrorMessage("Pleace Select A Bill Item !");
-        } 
-          List<ItemFee> itemFeesofTheRemovingItem = billBeanController.fillFees(selectedBillItem.getItem());
-          List<BillFee> billFeesToRemove = selectedBillItem.getBillFees();
-         if(billFeesToRemove==null || billFeesToRemove.isEmpty()){
-             billFeesToRemove=billBeanController.fillBillItemFees(selectedBillItem);
-         }
-         if (billFeesToRemove != null) {
+
+    public void removeAddedAditionalItem() {
+        if (selectedBillItem == null) {
+            JsfUtil.addErrorMessage("Pleace Select A Bill Item !");
+        }
+        List<ItemFee> itemFeesofTheRemovingItem = billBeanController.fillFees(selectedBillItem.getItem());
+        List<BillFee> billFeesToRemove = selectedBillItem.getBillFees();
+        if (billFeesToRemove == null || billFeesToRemove.isEmpty()) {
+            billFeesToRemove = billBeanController.fillBillItemFees(selectedBillItem);
+        }
+        if (billFeesToRemove != null) {
             selectedBillSession.getBillItem().getBill().getBillFees().removeAll(billFeesToRemove);
         }
-         selectedBillSession.getBillItem().getBill().getBillItems().remove(selectedBillItem);
-         calculateBillTotalsFromBillFees(selectedBillSession.getBillItem().getBill());
+        selectedBillSession.getBillItem().getBill().getBillItems().remove(selectedBillItem);
+        calculateBillTotalsFromBillFees(selectedBillSession.getBillItem().getBill());
     }
 
     public void addItemToBookingAtSettling() {
@@ -2547,7 +2489,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             }
 
         }
-        
+
         if (configOptionApplicationController.getBooleanValueByKey("Channel Credit Booking Settle Requires Additional Information")) {
             if (paymentMethod == PaymentMethod.Card) {
                 if (paymentMethodData.getCreditCard().getInstitution() == null) {
@@ -2581,18 +2523,18 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public void addNormalChannelBooking() {
-        if (selectedSessionInstance == null){
+        if (selectedSessionInstance == null) {
             JsfUtil.addErrorMessage("Please select a Session");
-            return; 
+            return;
         }
         addChannelBooking(false);
         fillBillSessions();
     }
 
     public void addReservedChannelBooking() {
-        if (selectedSessionInstance == null){
+        if (selectedSessionInstance == null) {
             JsfUtil.addErrorMessage("Please select a Session Instance");
-            return; 
+            return;
         }
         boolean reservedBooking = true;
         addChannelBooking(reservedBooking);
@@ -2622,6 +2564,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 return;
             }
         }
+      
         if (configOptionApplicationController.getBooleanValueByKey("Channel Scan Sessions Require Item Presence")){
             if(!(itemsAvailableToAddToBooking.isEmpty())){
                 if(itemsAddedToBooking == null || itemsAddedToBooking.isEmpty()){
@@ -2634,10 +2577,10 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         
         if (configOptionApplicationController.getBooleanValueByKey("Channel Items Sessions Need to Have a Referance Doctor")) {        
             if (!(itemsAddedToBooking == null || itemsAddedToBooking.isEmpty())) {
-                if(referredBy == null){
+                if (referredBy == null) {
                     JsfUtil.addErrorMessage("Referring Doctor is required");
                     settleSucessFully = false;
-                    return; 
+                    return;
                 }
             }
         }
@@ -2669,20 +2612,18 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         }
 
         if (configOptionApplicationController.getBooleanValueByKey("Allow Tenderd amount for channel booking")) {
-            if(paymentMethod == PaymentMethod.Cash){
+            if (paymentMethod == PaymentMethod.Cash) {
                 if (strTenderedValue == "" || strTenderedValue.isEmpty()) {
-                JsfUtil.addErrorMessage("Please Enter Tenderd Amount");
-                return;
-            }
+                    JsfUtil.addErrorMessage("Please Enter Tenderd Amount");
+                    return;
+                }
             }
         }
-        
-        
-           if (selectedSessionInstance.isCancelled()) {
-    JsfUtil.addErrorMessage("Cannot add patient to a canceled session. Please select an active session.");
-    return;
-}
 
+        if (selectedSessionInstance.isCancelled()) {
+            JsfUtil.addErrorMessage("Cannot add patient to a canceled session. Please select an active session.");
+            return;
+        }
 
         saveSelected(patient);
         printingBill = saveBilledBill(reservedBooking);
@@ -2806,33 +2747,33 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         }
         JsfUtil.addSuccessMessage("SMS Sent to all No Show Patients.");
     }
-    
+
     public void sendSmsOnChannelCancellationBookings() {
         if (billSessions == null || billSessions.isEmpty()) {
             return;
         }
-            BillSession bs = getBillSession();
-            if (bs.getBill() == null) {
-                return;
-            }
-            if (bs.getBill().getPatient().getPerson().getSmsNumber() == null) {
-                return;
-            }
-            if (bs.isCompleted()) {
-                return;
-            }
-            Sms e = new Sms();
-            e.setCreatedAt(new Date());
-            e.setCreater(sessionController.getLoggedUser());
-            e.setBill(bs.getBill());
-            e.setReceipientNumber(bs.getBill().getPatient().getPerson().getSmsNumber());
-            e.setSendingMessage(createChanellCancellationBookingSms(bs.getBill()));
-            e.setDepartment(getSessionController().getLoggedUser().getDepartment());
-            e.setInstitution(getSessionController().getLoggedUser().getInstitution());
-            e.setPending(false);
-            e.setSmsType(MessageType.ChannelBookingCancellation);
-            getSmsFacade().create(e);
-            Boolean sent = smsManager.sendSms(e);
+        BillSession bs = getBillSession();
+        if (bs.getBill() == null) {
+            return;
+        }
+        if (bs.getBill().getPatient().getPerson().getSmsNumber() == null) {
+            return;
+        }
+        if (bs.isCompleted()) {
+            return;
+        }
+        Sms e = new Sms();
+        e.setCreatedAt(new Date());
+        e.setCreater(sessionController.getLoggedUser());
+        e.setBill(bs.getBill());
+        e.setReceipientNumber(bs.getBill().getPatient().getPerson().getSmsNumber());
+        e.setSendingMessage(createChanellCancellationBookingSms(bs.getBill()));
+        e.setDepartment(getSessionController().getLoggedUser().getDepartment());
+        e.setInstitution(getSessionController().getLoggedUser().getInstitution());
+        e.setPending(false);
+        e.setSmsType(MessageType.ChannelBookingCancellation);
+        getSmsFacade().create(e);
+        Boolean sent = smsManager.sendSms(e);
 
         JsfUtil.addSuccessMessage("SMS Sent Patient.");
     }
@@ -2853,7 +2794,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         }
         return createSmsForChannelBooking(b, template);
     }
-    
+
     private String createChanellCancellationBookingSms(Bill b) {
 //        String template = sessionController.getDepartmentPreference().getSmsTemplateForChannelBooking();
         String template = configOptionController.getLongTextValueByKey("Template for SMS sent on Channel Booking Cancellation", OptionScope.APPLICATION, null, null, null);
@@ -2862,7 +2803,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         }
         return createSmsForChannelBooking(b, template);
     }
-    
+
     private String createChanellSessionCancellationBookingSms(Bill b) {
 //        String template = sessionController.getDepartmentPreference().getSmsTemplateForChannelBooking();
         String smsTemplateForchannelSessionCancellation = configOptionController.getLongTextValueByKey("Template for SMS Sent on Channel Booking Session Cancellation", OptionScope.APPLICATION, null, null, null);
@@ -2871,7 +2812,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         }
         return createSmsForChannelBooking(b, smsTemplateForchannelSessionCancellation);
     }
-  
+
     public String createSmsForChannelBooking(Bill b, String template) {
         if (b == null) {
             return "";
@@ -2895,7 +2836,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         String doc = bs.getStaff().getPerson().getNameWithTitle();
         String patientName = b.getPatient().getPerson().getNameWithTitle();
         int no = b.getSingleBillSession().getSerialNo();
-        
+
         String insName = sessionController.getLoggedUser().getInstitution().getName();
 
         s = template.replace("{patient_name}", patientName)
@@ -2911,7 +2852,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
         return s;
     }
-    
+
     public String createSmsForChannelBookingReschedule(Bill b, BillSession b1, String template) {
         if (b == null) {
             return "";
@@ -2936,7 +2877,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         String patientName = b.getPatient().getPerson().getNameWithTitle();
         int no = b.getSingleBillSession().getSerialNo();
         String insName = sessionController.getLoggedUser().getInstitution().getName();
-        
+
         String newSessionTime = CommonController.getDateFormat(b1.getSessionTime(), sessionController.getApplicationPreference().getShortTimeFormat());
         String newSessionDate = CommonController.getDateFormat(b1.getSessionDate(), sessionController.getApplicationPreference().getLongDateFormat());
         String newDoc = bs.getStaff().getPerson().getNameWithTitle();
@@ -4049,9 +3990,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         long bookedPatientCount = 0;
         long paidPatientCount = 0;
         long completedPatientCount = 0;
-        long cancelPatientCount = 0;
-        long refundedPatientCount = 0;
-        long onCallPatientCount = 0;
 
         if (billSessions == null) {
             selectedSessionInstance.setBookedPatientCount(0l);
@@ -4086,35 +4024,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                     // Log or handle the fact that there was an NPE checking paid status
 
                 }
-                // Additional check for cancel status
-                try {
-                    if (bs.getBill().isCancelled()) {
-                        cancelPatientCount++;
-                    }
-                } catch (NullPointerException npe) {
-                    // Log or handle the fact that there was an NPE checking paid status
-
-                }
-
-                // Additional check for refund status
-                try {
-                    if (bs.getBill().isRefunded()) {
-                        refundedPatientCount++;
-                    }
-                } catch (NullPointerException npe) {
-                    // Log or handle the fact that there was an NPE checking paid status
-
-                }
-
-                // Additional check for Oncall status
-                try {
-                    if (bs.getPaidBillSession() == null && !bs.getBill().isCancelled()) {
-                        onCallPatientCount++;
-                    }
-                } catch (NullPointerException npe) {
-                    // Log or handle the fact that there was an NPE checking paid status
-
-                }
             }
         }
 
@@ -4122,9 +4031,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         selectedSessionInstance.setBookedPatientCount(bookedPatientCount);
         selectedSessionInstance.setPaidPatientCount(paidPatientCount);
         selectedSessionInstance.setCompletedPatientCount(completedPatientCount);
-        selectedSessionInstance.setCancelPatientCount(cancelPatientCount);
-        selectedSessionInstance.setRefundedPatientCount(refundedPatientCount);
-        selectedSessionInstance.setOnCallPatientCount(onCallPatientCount);
 
         // Assuming remainingPatientCount is calculated as booked - completed
         selectedSessionInstance.setRemainingPatientCount(bookedPatientCount - completedPatientCount);
@@ -4399,29 +4305,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         return "/channel/channel_payment_session?faces-redirect=true";
 
     }
-    
-    public String paySelectedSessionByDates() {
-        if (getSelectedSessionInstance() == null) {
-            JsfUtil.addErrorMessage("Please Select Session Instance");
-            return "";
-        }
-        if (selectedSessionInstance.getOriginatingSession() == null) {
-            JsfUtil.addErrorMessage("Please Select Session");
-            return "";
-        }
-        if (selectedSessionInstance.getOriginatingSession().getStaff() == null) {
-            JsfUtil.addErrorMessage("Please Select Staff");
-            return "";
-        }
-        if (selectedSessionInstance.getOriginatingSession().getStaff().getSpeciality() == null) {
-            JsfUtil.addErrorMessage("Please Select Speciality");
-            return "";
-        }
-        channelStaffPaymentBillController.setSessionInstance(selectedSessionInstance);
-        channelStaffPaymentBillController.calculateSessionDueFees();
-        return "/channel/channel_payment_session_by_dates?faces-redirect=true";
-
-    }
 
     private Bill saveBilledBill(boolean forReservedNumbers) {
         Bill savingBill = createBill();
@@ -4450,7 +4333,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         if (!additionalBillItems.isEmpty()) {
             for (BillItem abi : additionalBillItems) {
                 List<BillFee> blf = createBillFeeForSessions(savingBill, abi, true, priceMatrix);
-                for (BillFee bf : blf){
+                for (BillFee bf : blf) {
                     savingBillFeesFromAdditionalItems.add(bf);
                 }
             }
@@ -4718,26 +4601,18 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 case Cash:
                     break;
                 case ewallet:
-                    break;
+
                 case Agent:
-                    p.setInstitution(institution);
                 case Credit:
-                    break;
                 case PatientDeposit:
-                    break;
                 case Slip:
                     p.setBank(paymentMethodData.getSlip().getInstitution());
                     p.setRealizedAt(paymentMethodData.getSlip().getDate());
                 case OnCall:
-                    break;
                 case OnlineSettlement:
-                    break;
                 case Staff:
-                    break;
                 case YouOweMe:
-                    break;
                 case MultiplePaymentMethods:
-                    break;
             }
 
             p.setPaidValue(p.getBill().getNetTotal());
@@ -5056,8 +4931,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         billToCaclculate.setTotal(calculatingGrossBillTotal);
         getBillFacade().edit(billToCaclculate);
     }
-    
-     public void prepareBillSessionForReportLink() {
+
+    public void prepareBillSessionForReportLink() {
         selectedBillSession = null;
         if (encryptedBillSessionId == null) {
             return;
@@ -5092,9 +4967,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         }
 
         selectedBillSession  = billSessionFacade.find(id);
-
+        
     }
-
+    
     private Bill createBill() {
         Bill bill = new BilledBill();
         bill.setStaff(getSelectedSessionInstance().getOriginatingSession().getStaff());
@@ -6505,6 +6380,10 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             }
         }
     }
+    
+    public void copyValue(BillFee bf ){
+        bf.setTmpChangedValue(bf.getFeeValue());
+    }
 
     public void checkRefundTotal() {
         refundableTotal = 0;
@@ -6819,12 +6698,12 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 System.out.println("itmf = " + itmf);
                 if (foriegn) {
                     feeTotalForSelectedBill += itmf.getFfee();
-                    if(itmf.isDiscountAllowed()){
-                      feeDiscountForSelectedBill += itmf.getFfee() * (paymentSchemeDiscount.getDiscountPercent() / 100);  
-                    }              
+                    if (itmf.isDiscountAllowed()) {
+                        feeDiscountForSelectedBill += itmf.getFfee() * (paymentSchemeDiscount.getDiscountPercent() / 100);
+                    }
                 } else {
                     feeTotalForSelectedBill += itmf.getFee();
-                    if(itmf.isDiscountAllowed()){
+                    if (itmf.isDiscountAllowed()) {
                         feeDiscountForSelectedBill += itmf.getFee() * (paymentSchemeDiscount.getDiscountPercent() / 100);
                     }
                 }
@@ -6956,38 +6835,16 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         this.toDate = toDate;
     }
 
-     public List<SessionInstance> getSessionInstancesFiltered() {
+    public List<SessionInstance> getSessionInstancesFiltered() {
+        if (sessionInstancesFiltered != null) {
+            sessionInstances = channelBean.listSessionInstances(fromDate, toDate, null, null, null);
+            filterSessionInstances();
+            sortSessions();
+            sessionInstancesFiltered = sortedSessionInstances;
+        }
         return sessionInstancesFiltered;
     }
-    
-    public List<SessionInstance> getSortedSessionInstances() {
-        
-        if (oldSessionInstancesFiltered == null){
-            oldSessionInstancesFiltered = sessionInstancesFiltered;
-        }
-        
-        if(sortedSessionInstances == null){
-            if(sessionInstancesFiltered != null){
-            sessionInstances = channelBean.listSessionInstances(fromDate, toDate, null, null, null);
-                System.out.println("sortedSessionInstances == null");
-            filterSessionInstances();
-            sortSessions();
-            }
-        }
-        
-        if(oldSessionInstancesFiltered != sessionInstancesFiltered){
-            if(sessionInstancesFiltered != null){
-            sessionInstances = channelBean.listSessionInstances(fromDate, toDate, null, null, null);
-            System.out.println("sortedSessionInstances == null");
-            filterSessionInstances();
-            sortSessions();
-            }
-            oldSessionInstancesFiltered = sortedSessionInstances;
-        }
-         
-         return sortedSessionInstances;
-    }
-    
+
     private void sortSessions() {
         sortedSessionInstances = new ArrayList<>(sessionInstancesFiltered);
         Collections.sort(sortedSessionInstances, new Comparator<SessionInstance>() {
@@ -7007,6 +6864,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         });
     }
 
+    
+    
     public void setSessionInstancesFiltered(List<SessionInstance> sessionInstancesFiltered) {
         this.sessionInstancesFiltered = sessionInstancesFiltered;
     }
@@ -7441,16 +7300,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     public void setPrintPreviewForOnlineBill(boolean printPreviewForOnlineBill) {
         this.printPreviewForOnlineBill = printPreviewForOnlineBill;
     }
-      
-    public boolean isPrintPreviewC() {
-        return printPreviewC;
-    }
 
-    public void setPrintPreviewC(boolean printPreviewC) {
-        this.printPreviewC = printPreviewC;
-    }
-    
-     public String getEncryptedBillSessionId() {
+    public String getEncryptedBillSessionId() {
         return encryptedBillSessionId;
     }
 

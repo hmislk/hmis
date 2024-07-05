@@ -722,6 +722,65 @@ public class ChannelBean {
         return sessionInstances;
     }
 
+public List<SessionInstance> listSessionInstancesByDate(Date sessionDate, Boolean ongoing, Boolean completed, Boolean pending) {
+    List<SessionInstance> sessionInstances = new ArrayList<>();
+    StringBuilder jpql = new StringBuilder("select i from SessionInstance i where i.retired=:ret and i.sessionDate between :startOfDay and :endOfDay");
+
+    // Initializing the parameters map
+    Calendar cal = Calendar.getInstance();
+    cal.setTime(sessionDate);
+    cal.set(Calendar.HOUR_OF_DAY, 0);
+    cal.set(Calendar.MINUTE, 0);
+    cal.set(Calendar.SECOND, 0);
+    cal.set(Calendar.MILLISECOND, 0);
+    Date startOfDay = cal.getTime();
+
+    cal.set(Calendar.HOUR_OF_DAY, 23);
+    cal.set(Calendar.MINUTE, 59);
+    cal.set(Calendar.SECOND, 59);
+    cal.set(Calendar.MILLISECOND, 999);
+    Date endOfDay = cal.getTime();
+
+    Map<String, Object> params = new HashMap<>();
+    params.put("ret", false);
+    params.put("startOfDay", startOfDay);
+    params.put("endOfDay", endOfDay);
+
+    // Dynamically appending conditions based on parameters
+    List<String> conditions = new ArrayList<>();
+    if (ongoing != null && ongoing) {
+        conditions.add("(i.started = true and i.completed = false)");
+    }
+    if (completed != null && completed) {
+        conditions.add("i.completed = true");
+    }
+    if (pending != null && pending) {
+        conditions.add("(i.started = false and i.completed = false)");
+    }
+
+    // Adding the conditions to the JPQL query
+    if (!conditions.isEmpty()) {
+        jpql.append(" and (").append(String.join(" or ", conditions)).append(")");
+    }
+
+    // Fetching the session instances based on the constructed JPQL query and parameters
+    sessionInstances = sessionInstanceFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+    // Sorting logic remains unchanged
+    Collections.sort(sessionInstances, new Comparator<SessionInstance>() {
+        @Override
+        public int compare(SessionInstance s1, SessionInstance s2) {
+            int dateCompare = s1.getSessionDate().compareTo(s2.getSessionDate());
+            if (dateCompare != 0) {
+                return dateCompare;
+            } else {
+                return s1.getOriginatingSession().getName().compareTo(s2.getOriginatingSession().getName());
+            }
+        }
+    });
+    return sessionInstances;
+}
+
     public List<SessionInstance> listSessionInstances(Date fromDate, Date toDate, Boolean ongoing, Boolean completed, Boolean pending) {
         return listSessionInstances(fromDate, toDate, ongoing, completed, pending, null);
     }
