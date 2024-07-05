@@ -35,7 +35,7 @@
                                 inputStyleClass="form-control">
                                 <p:ajax event="itemSelect" 
                                         process="@this" 
-                                        update="gpFees gpTotals" 
+                                        update="gpFees gpTotals gpTotalsF" 
                                         listener="#{itemFeeManager.fillForInstitutionFees()}"></p:ajax>
                                 <p:column headerText="Code" style="padding: 6px;">#{vt.institutionCode}</p:column>
                                 <p:column headerText="Name" style="padding: 6px;">#{vt.name}</p:column>
@@ -57,7 +57,7 @@
                                 inputStyleClass="w-100">
                                 <p:ajax event="itemSelect" 
                                         process="@this" 
-                                        update="gpFees gpTotals" 
+                                        update="gpFees gpTotals gpTotalsF" 
                                         listener="#{itemFeeManager.fillForInstitutionFees()}"></p:ajax>
                                 <p:column headerText="Type" style="padding: 6px;" >
                                     <p:outputLabel value="#{ix.class.simpleName}" ></p:outputLabel>
@@ -122,7 +122,7 @@
                                 <p:commandButton value="Save" 
                                                  action="#{itemFeeManager.addNewCollectingCentreFee()}" 
                                                  style="margin-left: 30px;" 
-                                                 update="gpFees dlg msg tblFees"
+                                                 update="gpFees dlg msg tblFees gpTotals gpTotalsF"
                                                  process="gpDetail @this"
                                                  oncomplete="PF('dlg').hide();">
                                 </p:commandButton>
@@ -223,15 +223,10 @@
                         </p:dialog>
 
                         <p:panel header="Current Fees" id="gpFees" class="m-1">
-
-<!--                            <p:commandButton value="Update" action="#{itemFeeManager.updateFee}" 
-                                             process="@this tblFees" 
-                                             update=":#{p:resolveFirstComponentWithId('gpTotals',view).clientId} :#{p:resolveFirstComponentWithId('gpTotalsF',view).clientId}" ></p:commandButton>-->
-
                             <p:dataTable id="tblFees" value="#{itemFeeManager.itemFees}" var="f" rowIndexVar="n" rowKey="#{f.id}" >
                                 <p:column headerText="Name" >
                                     <p:inputText id="txtFeeName" value="#{f.name}" class="w-100" >
-                                        <p:ajax process="txtFeeName" event="blur" listener="#{itemFeeManager.updateFee(f)}" update=":#{p:resolveFirstComponentWithId('gpTotals',view).clientId}" ></p:ajax>
+                                        <p:ajax process="txtFeeName" event="blur" listener="#{itemFeeManager.updateFee(f)}" update=":#{p:resolveFirstComponentWithId('gpTotals',view).clientId} :#{p:resolveFirstComponentWithId('gpTotalsF',view).clientId}" ></p:ajax>
                                     </p:inputText>
                                 </p:column>
                                 <p:column headerText="Type" >
@@ -277,12 +272,12 @@
                                 </p:column>
                                 <p:column headerText="Value" >
                                     <p:inputText id="txtFeeVal" value="#{f.fee}" class="w-100" >
-                                        <p:ajax process="txtFeeVal" event="blur" listener="#{itemFeeManager.updateFee(f)}" update=":#{p:resolveFirstComponentWithId('gpTotals',view).clientId}" ></p:ajax>
+                                        <p:ajax process="txtFeeVal" event="blur" listener="#{itemFeeManager.updateFee(f)}" update=":#{p:resolveFirstComponentWithId('gpTotals',view).clientId} :#{p:resolveFirstComponentWithId('gpTotalsF',view).clientId}" ></p:ajax>
                                     </p:inputText>
                                 </p:column>
                                 <p:column headerText="Value for Foreigners" >
                                     <p:inputText id="txtFfeeVal" value="#{f.ffee}"  class="w-100" >
-                                        <p:ajax process="txtFfeeVal" event="blur" listener="#{itemFeeManager.updateFee(f)}"  update=":#{p:resolveFirstComponentWithId('gpTotalsF',view).clientId}"></p:ajax>
+                                        <p:ajax process="txtFfeeVal" event="blur" listener="#{itemFeeManager.updateFee(f)}"  update=":#{p:resolveFirstComponentWithId('gpTotalsF',view).clientId} :#{p:resolveFirstComponentWithId('gpTotalsF',view).clientId}"></p:ajax>
                                     </p:inputText>
                                 </p:column>
                                 <p:column headerText="Actions" >
@@ -295,23 +290,9 @@
 
                             </p:dataTable>
 
-
-
-
-
-
                         </p:panel>
 
-
-
-
-
-
-                        <p:commandButton rendered="false" value="Issue to Referral" ajax="false" action="#{itemFeeManager.fixIssueToReferralFees()}" ></p:commandButton>
-
                     </p:panel>
-
-
 
                 </h:form>
             </ui:define>

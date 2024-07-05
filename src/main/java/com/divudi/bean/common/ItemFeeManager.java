@@ -205,12 +205,12 @@ public class ItemFeeManager implements Serializable {
     }
 
     public String navigateToItemFees() {
-//        itemController.fillItemsForInward();
         return "/admin/pricing/manage_item_fees?faces-redirect=true";
     }
 
     public String navigateToCollectingCentreItemFees() {
         collectingCentre = null;
+        item=null;
         fillForInstitutionFees();
         return "/admin/pricing/manage_collecting_centre_item_fees?faces-redirect=true";
     }

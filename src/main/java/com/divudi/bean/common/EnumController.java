@@ -16,7 +16,6 @@ import com.divudi.data.Dashboard;
 import com.divudi.data.DepartmentListMethod;
 import com.divudi.data.DepartmentType;
 import com.divudi.data.DiscountType;
-import com.divudi.data.FeeCategory;
 import com.divudi.data.FeeType;
 import com.divudi.data.InvestigationItemType;
 import com.divudi.data.InvestigationItemValueType;
@@ -302,9 +301,6 @@ public class EnumController implements Serializable {
         return FeeType.values();
     }
     
-    public FeeCategory[] getFeeCategories() {
-        return FeeCategory.values();
-    }
 
     public DayType[] getDayTypes() {
         return DayType.values();
