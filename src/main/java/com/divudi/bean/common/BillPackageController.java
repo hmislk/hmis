@@ -532,6 +532,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             } else if (pm.getPaymentMethod() == PaymentMethod.ewallet) {
                 pm.getPaymentMethodData().getEwallet().setTotalValue(remainAmount);
             } else if (pm.getPaymentMethod() == PaymentMethod.PatientDeposit) {
+                pm.getPaymentMethodData().getPatient_deposit().setPatient(patient);
                 pm.getPaymentMethodData().getPatient_deposit().setTotalValue(remainAmount);
             } else if (pm.getPaymentMethod() == PaymentMethod.Credit) {
                 pm.getPaymentMethodData().getCredit().setTotalValue(remainAmount);
@@ -775,7 +776,6 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         setCurrentBillItem(null);
         recreateBillItems();
     }
-    
 
     private void recreateBillItems() {
         //Only remove Total and BillComponenbts,Fee and Sessions. NOT bill Entries
@@ -862,16 +862,16 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     }
 
     public void removeBillItem(Item itm) {
-        List<Item> itemList = getBillBean().itemFromPackage(currentBillItem.getItem());
-        System.out.println("itm = " + itm.getName());
+        List<Item> itemList = new ArrayList<>();
+        for (BillEntry be : getLstBillEntries()) {
+            itemList.add(be.getBillItem().getItem());
+        }
         lstBillComponents = null;
         lstBillFees = null;
         lstBillItems = null;
         lstBillEntries = null;
         for (Item i : itemList) {
-            System.out.println("i = " + i.getName());
             if (!i.getName().equals(itm.getName())) {
-                System.out.println("i = ******" + i.getName());
                 if (i.getDepartment() == null) {
                     JsfUtil.addErrorMessage("Under administration, add a Department for item " + i.getName());
                     return;
@@ -1077,6 +1077,9 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     }
 
     public PaymentMethod getPaymentMethod() {
+        if (paymentMethod != paymentMethod.Cash) {
+            setCashPaid(netTotal);
+        }
         return paymentMethod;
     }
 
@@ -1112,6 +1115,17 @@ public class BillPackageController implements Serializable, ControllerWithPatien
 
     public void setBills(List<Bill> bills) {
         this.bills = bills;
+    }
+
+    public void listnerForPaymentMethodChange() {
+        if (paymentMethod == PaymentMethod.PatientDeposit) {
+            getPaymentMethodData().getPatient_deposit().setPatient(patient);
+            getPaymentMethodData().getPatient_deposit().setTotalValue(netTotal);
+        }
+        if (paymentMethod == PaymentMethod.Card) {
+            getPaymentMethodData().getCreditCard().setTotalValue(netTotal);
+        }
+        calTotals();
     }
 
     public CommonFunctions getCommonFunctions() {
