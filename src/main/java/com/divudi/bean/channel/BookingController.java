@@ -678,7 +678,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
         if(fromDate == null){
             fromDate = new Date();
         }
-        System.out.println("fromdate = " + fromDate);
+
         Calendar today = Calendar.getInstance();
         Calendar sessionCalendar = Calendar.getInstance();
         sessionCalendar.setTime(fromDate);
