@@ -3614,9 +3614,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
     public PaymentMethod getPaymentMethod() {
         if (!sessionController.getDepartmentPreference().isPartialPaymentOfOpdBillsAllowed()) {
-            if (paymentMethod == paymentMethod.Card) {
-                strTenderedValue = String.valueOf(netTotal);
-            }else if(paymentMethod == paymentMethod.PatientDeposit) {
+            if (paymentMethod != paymentMethod.Cash) {
                 strTenderedValue = String.valueOf(netTotal);
             }
         }
