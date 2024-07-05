@@ -17,7 +17,7 @@
 
                 <h:form id="form" rendered="#{webUserController.hasPrivilege('OpdBilling') or webUserController.hasPrivilege('LabCashier')}" >
 
-                    <p:growl id="msg" ></p:growl>
+                    <p:growl id="msg"  />
                     <p:panel class="m-0 p-0" >
                         <f:facet name="header" >
                             <div class="d-flex justify-content-between align-items-center">
@@ -433,12 +433,16 @@
                                         <div class="col-7 " >
                                             <h:panelGrid columns="3" class="m-1 w-100">
                                                 <p:commandButton  
+                                                    id="btnSettle"
                                                     value="Settle"
                                                     style="float: right;"
-                                                    ajax="false"
+                                                    process="btnSettle"
+                                                    update="msg"
                                                     icon="fa fa-check"
                                                     action="#{opdBillController.settleOpdBill()}" 
                                                     class="ui-button-success mx-2 w-100"
+                                                    onclick="this.disabled=true; PrimeFaces.ab({source:this}); return false;"
+                                                    oncomplete="this.disabled=false;"
                                                     >
                                                 </p:commandButton>
                                                 <p:commandButton 
