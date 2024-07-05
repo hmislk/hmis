@@ -1341,7 +1341,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         viewScopeDataTransferController.setNeedToFillSessionInstanceDetails(true);
         viewScopeDataTransferController.setNeedToFillMembershipDetails(false);
         viewScopeDataTransferController.setNeedToPrepareForNewBooking(false);
-        printPreviewC = false;
+        printPreview = false;
         if (configOptionApplicationController.getBooleanValueByKey("Automatically Load and Display the Refund Amount Upon Page Load")) {
             if(configOptionApplicationController.getBooleanValueByKey("Disable Hospital Fee Refunds")){
                 for(BillFee bf : bs.getBill().getBillFeesWIthoutZeroValue()){
