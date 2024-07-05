@@ -68,6 +68,7 @@ import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.InstitutionType;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -278,6 +279,9 @@ public class CollectingCentreBillController implements Serializable, ControllerW
 
     @Inject
     SearchController searchController;
+    
+    @Inject
+    BillController billController;
 
     public List<Bill> getSelectedBills() {
         return selectedBills;
@@ -1226,6 +1230,31 @@ public class CollectingCentreBillController implements Serializable, ControllerW
             getCurrentBillItem().setItem(itemController.findItem(itemLight.getId()));
         }
     }
+    
+    public List<BillFee> getSelectedCollectionCenterItemFeeList(Institution collectingCentre, Item item){
+
+        Map m = new HashMap();
+        String jpql = "select f from ItemFee f "
+                + " where f.institution=:ins"
+                + " and f.institution.institutionType=:insType"
+                + " and f.item=:item"
+                + " and f.retired=:ret";
+        
+        m.put("insType", InstitutionType.CollectingCentre);
+        m.put("ins", collectingCentre);
+        m.put("item", item);
+        m.put("ret", false);
+        
+        List<BillFee> billFees = getBillFeeFacade().findByJpql(jpql, m);
+        
+        if(billFees == null){
+            billFees = new ArrayList<BillFee>();
+        }
+        
+        System.out.println("getSelectedCollectionCenterItemFeeList - billFees = " + billFees);
+        
+        return billFees;
+    }
 
     public void addToBill() {
         if (collectingCentre == null) {
@@ -1263,12 +1292,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
             itemController.saveSelected(getCurrentBillItem().getItem());
             return;
         }
-
         
-//        New Session
-        //   getCurrentBillItem().setBillSession(getServiceSessionBean().createBillSession(getCurrentBillItem()));
-//        New Session
-        //   getCurrentBillItem().setBillSession(getServiceSessionBean().createBillSession(getCurrentBillItem()));
         BillItem bi = new BillItem();
         bi.copy(getCurrentBillItem());
         bi.setSessionDate(sessionDate);
@@ -1276,12 +1300,25 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         if(bi.getQty()==null || bi.getQty()<1){
             bi.setQty(1.0);
         }
+        
         BillEntry addingEntry = new BillEntry();
         addingEntry.setBillItem(bi);
         addingEntry.setLstBillComponents(getBillBean().billComponentsFromBillItem(bi));
-        addingEntry.setLstBillFees(getBillBean().billFeefromBillItem(bi));
+        System.out.println("collectingCentre = " + collectingCentre);
+        System.out.println("getSelectedCollectionCenterItemFeeList(collectingCentre,getCurrentBillItem().getItem()) = " + getSelectedCollectionCenterItemFeeList(collectingCentre,getCurrentBillItem().getItem()).size());
+        System.out.println("getCurrentBillItem().getItem().getName() = " + getCurrentBillItem().getItem().getName());
+        if(getSelectedCollectionCenterItemFeeList(collectingCentre,getCurrentBillItem().getItem()).isEmpty()){
+            addingEntry.setLstBillFees(getBillBean().billFeefromBillItem(bi));
+            
+            System.out.println("Collecting Center Item Fee Null");
+        }else{
+            addingEntry.setLstBillFees(getSelectedCollectionCenterItemFeeList(collectingCentre,getCurrentBillItem().getItem()));
+            System.out.println("Collecting Center Item Fee");
+        }
+        
         addingEntry.setLstBillSessions(getBillBean().billSessionsfromBillItem(bi));
         getLstBillEntries().add(addingEntry);
+        System.out.println("addingEntry = " + addingEntry);
         bi.setRate(getBillBean().billItemRate(addingEntry));
         bi.setQty(1.0);
        
@@ -1292,6 +1329,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
             JsfUtil.addErrorMessage("Please enter the Fees");
             return;
         }
+        
         clearBillItemValues();
         JsfUtil.addSuccessMessage("Item Added");
     }
@@ -1533,6 +1571,30 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         prepareNewBillKeepingCollectingCenter();
         setPatient(getPatient());
         return "/collecting_centre/bill?faces-redirect=true";
+    }
+    
+    public String navigateToCollectingCenterBillFromBillSearch(Long id){
+        bills = null;
+        if(id == null){
+            return "";
+        }
+        bill = billController.findBillbyID(id);
+        
+        System.out.println("bill = " + bill);
+        
+        if(bill == null){
+            return "";
+        }
+        
+        bill.setBillItems(getBillBean().fillBillItems(bill));
+        
+        bill.setBillFees(getBillBean().getBillFee(bill));
+        
+        System.out.println("bill.getBillItems = " + bill.getBillItems());
+        System.out.println("bill.getBillFees = " + bill.getBillFees());
+        bills.add(bill);
+        
+        return "/collecting_centre/bill_print?faces-redirect=true";
     }
 
     public Payment createPayment(Bill bill, PaymentMethod pm) {
