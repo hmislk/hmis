@@ -197,7 +197,9 @@ public class BookingController implements Serializable, ControllerWithPatient {
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     FinancialTransactionController financialTransactionController;
-    /**
+    @Inject 
+    BookingControllerViewScope bookingControllerViewScope;
+    /** 
      * Properties
      */
     private Speciality speciality;
@@ -229,6 +231,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
     double absentCount;
     int serealNo;
     Date date;
+    private Date fromDate;
     Date sessionStartingDate;
     String selectTextSpeciality = "";
     String selectTextConsultant = "";
@@ -660,6 +663,28 @@ public class BookingController implements Serializable, ControllerWithPatient {
 
     public void listTodaysCompletedSesionInstances() {
         sessionInstances = channelBean.listTodaysSessionInstances(null, true, null);
+    }
+    
+    public void listSessionInstancesByDate() {
+        sessionInstances = channelBean.listSessionInstancesByDate(fromDate,null, null, null);
+        if(configOptionApplicationController.getBooleanValueByKey("Load Past Patient Data")){
+            for( SessionInstance s : sessionInstances){
+               bookingControllerViewScope.fillBillSessions(s);
+            }
+        }
+    }
+    
+    public boolean isSessionDateToday() {
+        if(fromDate == null){
+            fromDate = new Date();
+        }
+        System.out.println("fromdate = " + fromDate);
+        Calendar today = Calendar.getInstance();
+        Calendar sessionCalendar = Calendar.getInstance();
+        sessionCalendar.setTime(fromDate);
+
+        return today.get(Calendar.YEAR) == sessionCalendar.get(Calendar.YEAR) &&
+               today.get(Calendar.DAY_OF_YEAR) == sessionCalendar.get(Calendar.DAY_OF_YEAR);
     }
 
     public void listTodaysPendingSesionInstances() {
@@ -4290,6 +4315,14 @@ public class BookingController implements Serializable, ControllerWithPatient {
 
     public void setRecheduledBillSession(BillSession recheduledBillSession) {
         this.recheduledBillSession = recheduledBillSession;
+    }
+
+    public Date getFromDate() {
+        return fromDate;
+    }
+
+    public void setFromDate(Date fromDate) {
+        this.fromDate = fromDate;
     }
 
 }
