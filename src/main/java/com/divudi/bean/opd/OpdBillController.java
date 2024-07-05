@@ -1552,11 +1552,13 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     }
 
     private boolean processBillsByDepartment() {
+        System.out.println("processBillsByDepartment");
         Set<Department> billDepts = new HashSet<>();
         for (BillEntry e : lstBillEntries) {
             billDepts.add(e.getBillItem().getItem().getDepartment());
         }
         for (Department d : billDepts) {
+            System.out.println("d = " + d);
             Bill myBill = new BilledBill();
             myBill = saveBill(d, myBill);
             if (myBill == null) {
@@ -1671,6 +1673,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         BilledBill newBatchBill = new BilledBill();
 
         if (oneOpdBillForAllDepartments) {
+            System.out.println("oneOpdBillForAllDepartments");
             Bill newSingleBill = null;
             newSingleBill = saveBill(sessionController.getDepartment(), newBatchBill);
             if (newSingleBill == null) {
@@ -1703,6 +1706,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         } else if (oneOpdBillForEachDepartmentAndCategoryCombination) {
             processBillsByDepartmentAndCategory();
         } else if (oneOpdBillForEachDepartment) {
+            System.out.println("oneOpdBillForEachDepartment");
             processBillsByDepartment();
         } else if (oneOpdBillForEachCategory) {
             JsfUtil.addErrorMessage("Still Under Development");
@@ -1712,7 +1716,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             return false;
         }
 
-        
         saveBatchBill();
         createPaymentsForBills(getBatchBill(), getLstBillEntries());
         saveBillItemSessions();
@@ -1918,6 +1921,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     }
 
     private void saveBatchBill() {
+        System.out.println("saveBatchBill");
         Bill newBatchBill = new BilledBill();
         newBatchBill.setBillType(BillType.OpdBathcBill);
         newBatchBill.setBillTypeAtomic(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
@@ -1954,6 +1958,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         double dbl = 0;
         double reminingCashPaid = cashPaid;
         for (Bill b : bills) {
+            System.out.println("b = " + b);
             b.setBackwardReferenceBill(newBatchBill);
             dbl += b.getNetTotal();
 
@@ -2207,6 +2212,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             } else if (pm.getPaymentMethod() == PaymentMethod.ewallet) {
                 pm.getPaymentMethodData().getEwallet().setTotalValue(remainAmount);
             } else if (pm.getPaymentMethod() == PaymentMethod.PatientDeposit) {
+                pm.getPaymentMethodData().getPatient_deposit().setPatient(patient);
                 pm.getPaymentMethodData().getPatient_deposit().setTotalValue(remainAmount);
             } else if (pm.getPaymentMethod() == PaymentMethod.Credit) {
                 pm.getPaymentMethodData().getCredit().setTotalValue(remainAmount);
@@ -3076,6 +3082,12 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                     case Agent:
                     case Credit:
                     case PatientDeposit:
+                        if (getPatient().getRunningBalance() != null) {
+                            getPatient().setRunningBalance(getPatient().getRunningBalance() - netTotal);
+                        } else {
+                            getPatient().setRunningBalance(0.0 - netTotal);
+                        }
+                        getPatientFacade().edit(getPatient());
                     case Slip:
                         p.setPaidValue(cd.getPaymentMethodData().getSlip().getTotalValue());
                         p.setBank(cd.getPaymentMethodData().getSlip().getInstitution());
@@ -3290,6 +3302,10 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     public void listnerForPaymentMethodChange() {
         if (paymentMethod == PaymentMethod.PatientDeposit) {
             getPaymentMethodData().getPatient_deposit().setPatient(patient);
+            getPaymentMethodData().getPatient_deposit().setTotalValue(netTotal);
+        }
+        if (paymentMethod == PaymentMethod.Card) {
+            getPaymentMethodData().getCreditCard().setTotalValue(netTotal);
         }
         calTotals();
     }
@@ -3598,7 +3614,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
     public PaymentMethod getPaymentMethod() {
         if (!sessionController.getDepartmentPreference().isPartialPaymentOfOpdBillsAllowed()) {
-            if (paymentMethod == paymentMethod.Card) {
+            if (paymentMethod != paymentMethod.Cash) {
                 strTenderedValue = String.valueOf(netTotal);
             }
         }

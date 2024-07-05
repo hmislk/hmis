@@ -335,8 +335,8 @@
                                                         <f:ajax event="blur" execute="@this :#{p:resolveFirstComponentWithId('tabBillFee',view).clientId}" 
                                                                 render=":#{p:resolveFirstComponentWithId('panelBillItems',view).clientId} :#{p:resolveFirstComponentWithId('msg',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}"
                                                                 listener="#{opdBillController.feeChangeListener(bif)}" />
-                                                        
-                                                        
+
+
                                                     </p:inputText>
                                                     <p:commandButton ajax="false" 
                                                                      icon="fa fa-refresh" 
@@ -432,19 +432,15 @@
 
                                         <div class="col-7 " >
                                             <h:panelGrid columns="3" class="m-1 w-100">
-                                                <p:commandButton  
-                                                    id="btnSettle"
-                                                    value="Settle"
-                                                    style="float: right;"
-                                                    process="btnSettle"
-                                                    update="msg"
-                                                    icon="fa fa-check"
-                                                    action="#{opdBillController.settleOpdBill()}" 
-                                                    class="ui-button-success mx-2 w-100"
-                                                    onclick="this.disabled=true; PrimeFaces.ab({source:this}); return false;"
-                                                    oncomplete="this.disabled=false;"
-                                                    >
+                                                <p:commandButton value="Settle"
+                                                                 style="float: right;"
+                                                                 ajax="false"
+                                                                 icon="fa fa-check"
+                                                                 action="#{opdBillController.settleOpdBill()}"
+                                                                 onclick="setTimeout(() => this.disabled = true, 50);"
+                                                                 class="ui-button-success mx-2 w-100">
                                                 </p:commandButton>
+
                                                 <p:commandButton 
                                                     style="float: right;"
                                                     value="Lookup" 
@@ -637,7 +633,7 @@
                                                 layout="block" 
                                                 id="multiplePaymentMethods"  rendered="#{opdBillController.paymentMethod eq 'MultiplePaymentMethods'}" 
                                                 >
-                                                <pa:multiple_payment_methods controller="#{opdBillController}" class="w-100"/>
+                                                <pa:multiple_payment_methods controller="#{opdBillController}" paymentMethods="#{enumController.paymentMethodsForOpdBilling}" class="w-100"/>
 
                                             </h:panelGroup>
 
@@ -704,34 +700,84 @@
                                         <h:outputText styleClass="fa fa-money-bill-wave" /> <!-- FontAwesome Icon -->
                                         <h:outputText value="Bill Details" class="mx-4"></h:outputText>
                                     </f:facet>
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <h:outputText value="Total" class="h5"></h:outputText >
+                                        </div>
+                                        <div class="col-5">
+                                            <h:outputText id="tot" value="#{opdBillController.total}" class="h5">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <h:outputText value="Discount" class="h5"></h:outputText>
+                                        </div>
+                                        <div class="col-5">
+                                            <h:outputText id="dis" value="#{opdBillController.discount}" class="h5">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <h:outputText value="Net Total" class="h5"></h:outputText>
+
+                                        </div>
+                                        <div class="col-5">
+                                            <h:outputText id="netTotal" value="#{opdBillController.netTotal}" class="h5">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <h:outputText value="VAT" class="h5"></h:outputText>
+                                        </div>
+                                        <div class="col-5">
+                                            <h:outputText id="netTotalVat" value="#{opdBillController.vat}" class="h5">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </div>
+                                    </div>
+                                    <h:panelGroup rendered="#{opdBillController.paymentMethod eq 'Cash'}">
+                                        <div class="row">
+                                            <div class="col-6">
+                                                <h:outputText value="Tendered" class="h5"></h:outputText>
+                                            </div>
+                                            <div class="col-5">
+                                                <p:inputText autocomplete="off"  id="paid" value="#{opdBillController.strTenderedValue}" class="h5">
+                                                    <!--<p:ajax process="netTotal paid" update="balance" event="change"/>-->
+                                                    <p:ajax event="keyup" process="netTotal paid" update="balance netTotal" listener="#{opdBillController.calTotals()}"/>
+                                                </p:inputText>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-6">
+                                                <h:outputText  value="Balance" class="h5"></h:outputText>
+                                            </div>
+                                            <div class="col-5">
+                                                <h:outputText id="balance" value="#{opdBillController.cashBalance}" class="h5">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputText>
+                                            </div>
+                                        </div>
+                                    </h:panelGroup>
                                     <h:panelGrid 
                                         columns="2" 
                                         class="w-100 h5" >
-                                        <h:outputText value="Total" ></h:outputText >
-                                        <h:outputText id="tot" value="#{opdBillController.total}" >
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputText>
-                                        <h:outputText value="Discount" ></h:outputText>
-                                        <h:outputText id="dis" value="#{opdBillController.discount}" >
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputText>
-                                        <h:outputText value="Net Total" ></h:outputText>
-                                        <h:outputText id="netTotal" value="#{opdBillController.netTotal}" >
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputText>
-                                        <h:outputText value="VAT" ></h:outputText>
-                                        <h:outputText id="netTotalVat" value="#{opdBillController.vat}" >
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputText>
-                                        <h:outputText value="Tendered" ></h:outputText>
-                                        <p:inputText autocomplete="off"  id="paid" value="#{opdBillController.strTenderedValue}" >
-                                            <!--<p:ajax process="netTotal paid" update="balance" event="change"/>-->
-                                            <p:ajax event="keyup" process="netTotal paid" update="balance netTotal" listener="#{opdBillController.calTotals()}"/>
-                                        </p:inputText>
-                                        <h:outputText  value="Balance " ></h:outputText>
-                                        <h:outputText id="balance" value="#{opdBillController.cashBalance}" >
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputText>
+
+
+
+
+
+                                    </h:panelGrid>
+                                    <h:panelGrid 
+                                        columns="2" 
+                                        class="w-100 h5" >
+
+
                                     </h:panelGrid>
                                 </p:panel>
 
