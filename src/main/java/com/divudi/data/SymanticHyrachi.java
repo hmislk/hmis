@@ -16,6 +16,7 @@ public enum SymanticHyrachi {
 
     Symantic(null),
     Symantic_Type_Entity(Symantic),
+    Financial_Entity(Symantic),
     Physical_Object(Symantic_Type_Entity),
     Organism(Physical_Object),
     Plant(Organism),
@@ -148,7 +149,9 @@ public enum SymanticHyrachi {
     Neoplastic_Process(Disease_or_Syndrome),
     Cell_or_Molecular_Dysfunction(Pathologic_Function),
     Experimental_Model_of_Disease(Pathologic_Function),
-    Injury_or_Poisoning(Phenomenon_or_Process);
+    Injury_or_Poisoning(Phenomenon_or_Process),
+    Fee_List_Type(Financial_Entity),
+    ;
 
     private final SymanticHyrachi parent;
 

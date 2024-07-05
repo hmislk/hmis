@@ -300,6 +300,7 @@ public class EnumController implements Serializable {
     public FeeType[] getFeeTypes() {
         return FeeType.values();
     }
+    
 
     public DayType[] getDayTypes() {
         return DayType.values();

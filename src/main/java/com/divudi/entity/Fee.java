@@ -5,6 +5,7 @@
  */
 package com.divudi.entity;
 
+
 import com.divudi.data.FeeType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.Serializable;
@@ -40,9 +41,14 @@ public class Fee implements Serializable {
     String code;
     double fee = 0.0;
     double ffee = 0.0;
+    private double ccFee = 0.0;
     @JsonIgnore
     @ManyToOne
     Item item; // FBC, ESR, UFR
+    @ManyToOne
+    private Institution forInstitution;
+    @ManyToOne
+    private Category forCategory;
     @ManyToOne
     Institution institution;
     @ManyToOne
@@ -82,7 +88,6 @@ public class Fee implements Serializable {
     String retireComments;
     @Enumerated(EnumType.STRING)
     FeeType feeType;
-    // Newly Added Field
     @ManyToOne
     @JsonIgnore
     Item packege;  //Ceylinco, LEC ,
@@ -112,6 +117,9 @@ public class Fee implements Serializable {
     Speciality toSpaciality;
     private boolean discountAllowed;
 
+    
+    
+    
     public Fee() {
     }
 
@@ -438,5 +446,30 @@ public class Fee implements Serializable {
     public void setDiscountAllowed(boolean discountAllowed) {
         this.discountAllowed = discountAllowed;
     }
+
+    public double getCcFee() {
+        return ccFee;
+    }
+
+    public void setCcFee(double ccFee) {
+        this.ccFee = ccFee;
+    }
+
+    public Institution getForInstitution() {
+        return forInstitution;
+    }
+
+    public void setForInstitution(Institution forInstitution) {
+        this.forInstitution = forInstitution;
+    }
+
+    public Category getForCategory() {
+        return forCategory;
+    }
+
+    public void setForCategory(Category forCategory) {
+        this.forCategory = forCategory;
+    }
+
 
 }
