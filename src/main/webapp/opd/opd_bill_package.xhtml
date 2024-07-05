@@ -23,6 +23,14 @@
                         <f:facet name="header" >
                             <h:outputText styleClass="pi pi-slack" />
                             <h:outputLabel value="OPD Packages" class="mx-4"></h:outputLabel>
+                            <p:commandButton 
+                                value="New Package Bill" 
+                                style="float: right;"
+                                icon="fas fa-plus"
+                                ajax="false" 
+                                action="/opd/opd_bill_package" 
+                                actionListener="#{billPackageController.prepareNewBill()}" >
+                            </p:commandButton>
                         </f:facet>
 
                         <div class="row">
