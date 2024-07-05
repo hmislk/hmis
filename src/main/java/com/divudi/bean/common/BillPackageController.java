@@ -51,7 +51,9 @@ import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.dataStructure.ComponentDetail;
 import com.divudi.ejb.StaffBean;
+import com.divudi.entity.BillFeePayment;
 import com.divudi.entity.Payment;
+import com.divudi.facade.BillFeePaymentFacade;
 import com.divudi.facade.PaymentFacade;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
@@ -103,6 +105,8 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     PaymentFacade paymentFacade;
     @EJB
     StaffBean staffBean;
+    @EJB
+    BillFeePaymentFacade billFeePaymentFacade;
     //</editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Injects">
@@ -328,7 +332,9 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         }
 
         saveBatchBill();
-        payments = createPayments(getBatchBill(), paymentMethod);
+        List<Payment> ps = createPayments(getBatchBill(), paymentMethod);
+        payments = ps;
+        calculateBillfeePayments(lstBillFees, payments.get(0));
         if (toStaff != null && getPaymentMethod() == PaymentMethod.Staff_Welfare) {
             staffBean.updateStaffWelfare(toStaff, batchBill.getNetTotal());
             JsfUtil.addSuccessMessage("Staff Welfare Balance Updated");
@@ -502,6 +508,28 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         }
         return ps;
     }
+    
+    public void calculateBillfeePayments(List<BillFee> billFees, Payment p) {
+        for (BillFee bf : billFees) {
+                bf.setSettleValue(bf.getFeeValue());
+                setBillFeePaymentAndPayment(bf.getFeeValue(), bf, p);
+                getBillFeeFacade().edit(bf);
+            
+        }
+    }
+    
+    public void setBillFeePaymentAndPayment(double amount, BillFee bf, Payment p) {
+        BillFeePayment bfp = new BillFeePayment();
+        bfp.setBillFee(bf);
+        bfp.setAmount(amount);
+        bfp.setInstitution(bf.getBillItem().getItem().getInstitution());
+        bfp.setDepartment(bf.getBillItem().getItem().getDepartment());
+        bfp.setCreater(getSessionController().getLoggedUser());
+        bfp.setCreatedAt(new Date());
+        bfp.setPayment(p);
+        billFeePaymentFacade.create(bfp);
+    }
+
 
     public double calculatRemainForMultiplePaymentTotal() {
 
