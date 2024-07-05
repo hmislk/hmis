@@ -22,6 +22,8 @@ import com.divudi.entity.pharmacy.PharmaceuticalCategory;
 import com.divudi.entity.pharmacy.PharmaceuticalItemCategory;
 import com.divudi.facade.CategoryFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.SymanticHyrachi;
+import com.divudi.data.SymanticType;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -57,10 +59,65 @@ public class CategoryController implements Serializable {
     Category fromCategory;
     Category toCategory;
     private List<Category> items = null;
+    private List<Category> feeListTypes = null;
     String selectText = "";
 
     @Inject
     ItemController itemController;
+    
+    
+    
+    
+    public String navigateToManageFeeListTypes(){
+        fillFeeItemListTypes();
+        return "/admin/pricing/fee_list_types";
+    }
+    
+    private void fillFeeItemListTypes(){
+        String jpql = "Select c "
+                + " from Category c "
+                + " where c.retired=:ret "
+                + " and c.symanticType=:st "
+                + " order by c.name";
+        Map m = new HashMap();
+        m.put("ret", false);
+        m.put("st", SymanticHyrachi.Fee_List_Type);
+        feeListTypes = getFacade().findByJpql(jpql, m);
+    }
+    
+    
+    public void saveFeeListType(){
+        if(current==null){
+            JsfUtil.addErrorMessage("No Entity to save");
+            return;
+        }
+        current.setSymanticType(SymanticHyrachi.Fee_List_Type);
+        save(current);
+        fillFeeItemListTypes();
+    }
+    
+    public void prepareAddFeeListType(){
+        current= new Category();
+        current.setSymanticType(SymanticHyrachi.Fee_List_Type);
+    }
+    
+    
+    public void deleteFeeListType(){
+        if(current==null){
+            JsfUtil.addErrorMessage("No Entity to save");
+            return;
+        }
+        current.setRetired(true);
+        current.setRetiredAt(new Date());
+        current.setRetirer(sessionController.getLoggedUser());
+        save(current);
+        fillFeeItemListTypes();
+        JsfUtil.addSuccessMessage("Deleted");
+    }
+    
+    
+    
+    
 
     public void fromTransferItemsFromFromCategoryToToCategory() {
         if (fromCategory == null) {
@@ -442,18 +499,25 @@ public class CategoryController implements Serializable {
     private void recreateModel() {
         items = null;
     }
-
-    public void saveSelected() {
-
-        if (getCurrent().getId() != null && getCurrent().getId() > 0) {
-            getFacade().edit(current);
+    
+    public void save(Category categoryToSave) {
+        if(categoryToSave==null){
+            JsfUtil.addErrorMessage("Nothing to save");
+            return;
+        }
+        if (categoryToSave.getId() != null && categoryToSave.getId() > 0) {
+            getFacade().edit(categoryToSave);
             JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
-            current.setCreatedAt(new Date());
-            current.setCreater(getSessionController().getLoggedUser());
-            getFacade().create(current);
+            categoryToSave.setCreatedAt(new Date());
+            categoryToSave.setCreater(getSessionController().getLoggedUser());
+            getFacade().create(categoryToSave);
             JsfUtil.addSuccessMessage("Saved Successfully");
         }
+    }
+
+    public void saveSelected() {
+        save(current);
         recreateModel();
         getItems();
     }
@@ -613,6 +677,20 @@ public class CategoryController implements Serializable {
             getItems();
         }
     }
+
+    public List<Category> getFeeListTypes() {
+        if(feeListTypes==null){
+            fillFeeItemListTypes();
+        }
+        return feeListTypes;
+    }
+
+    public void setFeeListTypes(List<Category> feeListTypes) {
+        this.feeListTypes = feeListTypes;
+    }
+    
+    
+    
 
     /**
      *

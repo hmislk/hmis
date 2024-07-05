@@ -42,7 +42,7 @@
                                 onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
                                             return false;">
                             </p:commandButton>
-                            
+
                         </div>
 
                         <div class="d-flex m-2">
@@ -76,11 +76,15 @@
                                 <h:panelGroup id="centerBillPriview">
 
                                     <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosPaper'}" >
-                                        <bi:posCCBill_CC bill="#{collectingCentreBillController.bill}" duplicate="true"/>                        
+                                        <ui:repeat value="#{collectingCentreBillController.bills}" var="pp">        
+                                            <bi:posCCBill_CC bill="#{pp}" duplicate="true"/>          
+                                        </ui:repeat>
                                     </h:panelGroup>
 
                                     <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaper'}" >
-                                        <bi:fiveFiveCCBill_CC bill="#{collectingCentreBillController.bill}" duplicate="true"/>                        
+                                        <ui:repeat value="#{collectingCentreBillController.bills}" var="pp">      
+                                            <bi:fiveFiveCCBill_CC bill="#{pp}" duplicate="true"/>        
+                                        </ui:repeat>
                                     </h:panelGroup>
 
                                 </h:panelGroup>
@@ -106,11 +110,15 @@
                                 <h:panelGroup id="parinetBillPriview">
 
                                     <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosPaper'}" >
-                                        <bi:posCCBill_Patient bill="#{collectingCentreBillController.bill}" duplicate="true"/>                        
+                                        <ui:repeat value="#{collectingCentreBillController.bills}" var="pp">    
+                                            <bi:posCCBill_Patient bill="#{pp}" duplicate="true"/>          
+                                        </ui:repeat>
                                     </h:panelGroup>
 
                                     <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaper'}" >
-                                        <bi:fiveFiveCCBill_Patient bill="#{collectingCentreBillController.bill}" duplicate="true"/>                        
+                                        <ui:repeat value="#{collectingCentreBillController.bills}" var="pp">
+                                            <bi:fiveFiveCCBill_Patient bill="#{pp}" duplicate="true"/>               
+                                        </ui:repeat>
                                     </h:panelGroup>
 
                                 </h:panelGroup>
