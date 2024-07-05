@@ -1,0 +1,76 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:head>
+    </h:head>
+    <h:body>
+        <ui:composition template="/admin/pricing/index.xhtml">
+            <ui:define name="subcontent">
+                <h:form>
+                    <p:panel header="Manage Fee Lists">
+                        <table class="w-100">
+                            <tr>
+                                <td>
+                                    <p:panel id="panelSelect" class="w-100">
+                                        <table class="alignTop">
+                                            <tr class="alignTop">
+                                                <td colspan="2" class="alignTop">
+                                                    <p:selectOneListbox id="lstItems" value="#{categoryController.current}" class="w-100">
+                                                        <f:selectItems value="#{categoryController.feeListTypes}"
+                                                                       var="r" itemLabel="#{r.name} " itemValue="#{r}" />
+                                                        <f:ajax event="change" execute="lstItems" render="panelDetails" />
+                                                    </p:selectOneListbox>
+                                                </td>
+                                            </tr>
+                                            <tr class="alignTop">
+                                                <td class="alignTop">
+                                                    <p:commandButton id="btnAdd" value="Add New" action="#{categoryController.prepareAddFeeListType()}"
+                                                                     process="btnAdd" update="lstItems panelDetails" class="ui-button-success"
+                                                                     icon="pi pi-plus" />
+                                                </td>
+                                                <td class="alignTop">
+                                                    <p:commandButton id="btnDelete" value="Delete"
+                                                                     action="#{categoryController.deleteFeeListType()}"
+                                                                     process="btnDelete"
+                                                                     update="lstItems panelDetails" class="ui-button-danger"
+                                                                     icon="pi pi-trash"
+                                                                     onClick="return confirm('Are you sure you want to delete this item?');" />
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </p:panel>
+                                </td>
+                                <td>
+                                    <p:panel class="w-100">
+                                        <p:panelGrid columns="2" class="w-100" id="panelDetails">
+                                            <p:outputLabel value="Name:" for="txtName" />
+                                            <p:inputText id="txtName" value="#{categoryController.current.name}" title="Name" class="w-100" />
+                                            <p:outputLabel value="Description:" for="txtDescription" />
+                                            <p:inputTextarea 
+                                                id="txtDescription" 
+                                                value="#{categoryController.current.description}" 
+                                                title="Description" 
+                                                class="w-100"
+                                                />
+                                        </p:panelGrid>
+                                        <p:commandButton 
+                                            id="btnSave" 
+                                            value="Save"
+                                            action="#{categoryController.saveFeeListType()}"
+                                            process="btnSave panelDetails" update="lstItems" class="ui-button-primary"
+                                            icon="pi pi-save" />
+                                    </p:panel>
+                                </td>
+                            </tr>                            
+                        </table>
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
