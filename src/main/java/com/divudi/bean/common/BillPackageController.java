@@ -862,16 +862,16 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     }
 
     public void removeBillItem(Item itm) {
-        List<Item> itemList = getBillBean().itemFromPackage(currentBillItem.getItem());
-        System.out.println("itm = " + itm.getName());
+        List<Item> itemList = new ArrayList<>();
+        for(BillEntry be: getLstBillEntries()){
+            itemList.add(be.getBillItem().getItem());
+        }
         lstBillComponents = null;
         lstBillFees = null;
         lstBillItems = null;
         lstBillEntries = null;
         for (Item i : itemList) {
-            System.out.println("i = " + i.getName());
             if (!i.getName().equals(itm.getName())) {
-                System.out.println("i = ******" + i.getName());
                 if (i.getDepartment() == null) {
                     JsfUtil.addErrorMessage("Under administration, add a Department for item " + i.getName());
                     return;
