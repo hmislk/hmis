@@ -431,6 +431,12 @@ public class BillPackageController implements Serializable, ControllerWithPatien
                     case Agent:
                     case Credit:
                     case PatientDeposit:
+                        if (getPatient().getRunningBalance() != null) {
+                            getPatient().setRunningBalance(getPatient().getRunningBalance() - netTotal);
+                        } else {
+                            getPatient().setRunningBalance(0.0 - netTotal);
+                        }
+                        getPatientFacade().edit(getPatient());
                     case Slip:
                         p.setPaidValue(cd.getPaymentMethodData().getSlip().getTotalValue());
                         p.setBank(cd.getPaymentMethodData().getSlip().getInstitution());
