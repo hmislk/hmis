@@ -508,16 +508,16 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         }
         return ps;
     }
-    
+
     public void calculateBillfeePayments(List<BillFee> billFees, Payment p) {
         for (BillFee bf : billFees) {
-                bf.setSettleValue(bf.getFeeValue());
-                setBillFeePaymentAndPayment(bf.getFeeValue(), bf, p);
-                getBillFeeFacade().edit(bf);
-            
+            bf.setSettleValue(bf.getFeeValue());
+            setBillFeePaymentAndPayment(bf.getFeeValue(), bf, p);
+            getBillFeeFacade().edit(bf);
+
         }
     }
-    
+
     public void setBillFeePaymentAndPayment(double amount, BillFee bf, Payment p) {
         BillFeePayment bfp = new BillFeePayment();
         bfp.setBillFee(bf);
@@ -529,7 +529,6 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         bfp.setPayment(p);
         billFeePaymentFacade.create(bfp);
     }
-
 
     public double calculatRemainForMultiplePaymentTotal() {
 
@@ -566,7 +565,9 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             } else if (pm.getPaymentMethod() == PaymentMethod.ewallet) {
                 pm.getPaymentMethodData().getEwallet().setTotalValue(remainAmount);
             } else if (pm.getPaymentMethod() == PaymentMethod.PatientDeposit) {
-                pm.getPaymentMethodData().getPatient_deposit().setPatient(patient);
+                if (patient != null) {
+                    pm.getPaymentMethodData().getPatient_deposit().setPatient(patient);
+                }
                 pm.getPaymentMethodData().getPatient_deposit().setTotalValue(remainAmount);
             } else if (pm.getPaymentMethod() == PaymentMethod.Credit) {
                 pm.getPaymentMethodData().getCredit().setTotalValue(remainAmount);
@@ -1113,6 +1114,8 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     public PaymentMethod getPaymentMethod() {
         if (paymentMethod != paymentMethod.Cash) {
             setCashPaid(netTotal);
+        } else {
+            setCashPaid(0.00);
         }
         return paymentMethod;
     }
