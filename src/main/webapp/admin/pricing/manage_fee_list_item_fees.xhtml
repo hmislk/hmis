@@ -19,28 +19,29 @@
                     <p:panel>
                         <f:facet name="header">
                             <h:outputText styleClass="fa fa-fw fa-money-bill-wave"></h:outputText>
-                            <p:outputLabel class="m-2">Manage Collecting Centre Items Fees</p:outputLabel>
+                            <p:outputLabel class="m-2">Manage Fee List Type Items Fees</p:outputLabel>
 
                         </f:facet>
                         <p:panelGrid columns="2" class="w-100" >
 
-                            <p:outputLabel value="Select Collecting Centre" />
-                            <p:autoComplete 
-                                value="#{itemFeeManager.collectingCentre}" 
-                                forceSelection="true" id="acColl"
-                                completeMethod="#{institutionController.completeCollectingCenter}" 
-                                var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" 
-                                maxResults="10"
-                                class="w-100 mb-1"
-                                inputStyleClass="form-control">
+                            <p:outputLabel value="Select Fee List" />
+                            <p:selectOneMenu 
+                                value="#{itemFeeManager.feeListType}" 
+                                id="acColl" 
+                                filter="true"
+                                class="w-100"
+                                filterMatchMode="contains">
+                                <f:selectItem itemLabel="Select" ></f:selectItem>
+                                <f:selectItems 
+                                    value="#{categoryController.feeListTypes}"
+                                    var="vt" 
+                                    itemLabel="#{vt.name}" 
+                                    itemValue="#{vt}" ></f:selectItems>
                                 <p:ajax event="itemSelect" 
                                         process="@this" 
                                         update="gpFees gpTotals gpTotalsF" 
                                         listener="#{itemFeeManager.fillForInstitutionFees()}"></p:ajax>
-                                <p:column headerText="Code" style="padding: 6px;">#{vt.institutionCode}</p:column>
-                                <p:column headerText="Name" style="padding: 6px;">#{vt.name}</p:column>
-                            </p:autoComplete>
-
+                            </p:selectOneMenu>
                             <p:outputLabel value="Select Item" />
                             <p:autoComplete 
                                 widgetVar="aIx" 
@@ -58,7 +59,7 @@
                                 <p:ajax event="itemSelect" 
                                         process="@this" 
                                         update="gpFees gpTotals gpTotalsF" 
-                                        listener="#{itemFeeManager.fillForInstitutionFees()}"></p:ajax>
+                                        listener="#{itemFeeManager.fillForForCategoryFees()}"></p:ajax>
                                 <p:column headerText="Type" style="padding: 6px;" >
                                     <p:outputLabel value="#{ix.class.simpleName}" ></p:outputLabel>
                                 </p:column>
@@ -81,12 +82,12 @@
                             <p:outputLabel value="Total" ></p:outputLabel>
                             <h:panelGrid id="gpTotals" columns="5" class="w-100" >
                                 <p:outputLabel value="Base Item" ></p:outputLabel>
-                                <p:inputText   value="#{itemFeeManager.item.total}"  class="w-100" >
+                                <p:inputText readonly="true"  value="#{itemFeeManager.item.total}"  class="w-100" >
                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                 </p:inputText>
                                 <p:spacer width="10" ></p:spacer>
-                                <p:outputLabel value="For Collecting Centre" ></p:outputLabel>
-                                <p:inputText id="gpTotalsForeginor" value="#{itemFeeManager.totalItemFee}" class="w-100">
+                                <p:outputLabel value="For Fee List" ></p:outputLabel>
+                                <p:inputText readonly="true"  id="gpTotalsForeginor" value="#{itemFeeManager.totalItemFee}" class="w-100">
                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                 </p:inputText>
                             </h:panelGrid>
@@ -95,12 +96,12 @@
                             <p:outputLabel value="Total for Foreigners" ></p:outputLabel>
                             <h:panelGrid id="gpTotalsF" columns="5" class="w-100">
                                 <p:outputLabel value="Base Item" ></p:outputLabel>
-                                <p:inputText value="#{itemFeeManager.item.totalForForeigner}"   class="w-100">
+                                <p:inputText readonly="true"  value="#{itemFeeManager.item.totalForForeigner}"   class="w-100">
                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                 </p:inputText>
                                 <p:spacer width="10" ></p:spacer>
-                                <p:outputLabel value="For Collecting Centre" ></p:outputLabel>
-                                <p:inputText  value="#{itemFeeManager.totalItemFeeForForeigners}"  class="w-100">
+                                <p:outputLabel value="For Fee List" ></p:outputLabel>
+                                <p:inputText readonly="true"   value="#{itemFeeManager.totalItemFeeForForeigners}"  class="w-100">
                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                 </p:inputText>
                             </h:panelGrid>
@@ -128,7 +129,7 @@
                             <f:facet name="header" >
                                 <p:outputLabel value="Adding a new Fee" class="mr-5"></p:outputLabel>
                                 <p:commandButton value="Save" 
-                                                 action="#{itemFeeManager.addNewCollectingCentreFee()}" 
+                                                 action="#{itemFeeManager.addNewFeeForFeeListType()}" 
                                                  style="margin-left: 30px;" 
                                                  update="gpFees dlg msg tblFees gpTotals gpTotalsF"
                                                  process="gpDetail @this"
