@@ -47,6 +47,7 @@ public class ItemFeeManager implements Serializable {
     ItemFee itemFee;
     ItemFee removingFee;
     private Institution collectingCentre;
+    private Category feeListType;
 
     List<ItemFee> itemFees;
 
@@ -211,11 +212,16 @@ public class ItemFeeManager implements Serializable {
     public String navigateToCollectingCentreItemFees() {
         collectingCentre = null;
         item=null;
+        feeListType=null;
         fillForInstitutionFees();
         return "/admin/pricing/manage_collecting_centre_item_fees?faces-redirect=true";
     }
-
-    public String navigateToFeeListItemFees() {
+    
+    public String navigateToFeeListFees() {
+        collectingCentre = null;
+        item=null;
+        feeListType=null;
+        fillForInstitutionFees();
         return "/admin/pricing/manage_fee_list_item_fees?faces-redirect=true";
     }
 
@@ -273,6 +279,24 @@ public class ItemFeeManager implements Serializable {
             return;
         }
         itemFees = fillFees(item, collectingCentre);
+        totalItemFee = itemFees.stream()
+                .filter(Objects::nonNull)
+                .mapToDouble(ItemFee::getFee)
+                .sum();
+        totalItemFeeForForeigners = itemFees.stream()
+                .filter(Objects::nonNull)
+                .mapToDouble(ItemFee::getFfee)
+                .sum();
+    }
+    
+    public void fillForForCategoryFees() {
+        if (feeListType == null) {
+            itemFees = null;
+            totalItemFee = 0.0;
+            totalItemFeeForForeigners = 0.0;
+            return;
+        }
+        itemFees = fillFees(item, feeListType);
         totalItemFee = itemFees.stream()
                 .filter(Objects::nonNull)
                 .mapToDouble(ItemFee::getFee)
@@ -432,6 +456,59 @@ public class ItemFeeManager implements Serializable {
         fillForInstitutionFees();
         JsfUtil.addSuccessMessage("New Fee Added for Collecting Centre");
     }
+    
+    public void addNewFeeForFeeListType() {
+        if (feeListType == null) {
+            JsfUtil.addErrorMessage("Select Collecting Centre ?");
+            return;
+        }
+        if (item == null) {
+            JsfUtil.addErrorMessage("Select Item ?");
+            return;
+        }
+        if (itemFee == null) {
+            JsfUtil.addErrorMessage("Select Item Fee");
+            return;
+        }
+        if (itemFee.getName() == null || itemFee.getName().trim().equals("")) {
+            JsfUtil.addErrorMessage("Please Fill Fee Name");
+            return;
+        }
+
+        if (itemFee.getFeeType() == null) {
+            JsfUtil.addErrorMessage("Please Fill Fee Type");
+            return;
+        }
+
+        if (itemFee.getFeeType() == FeeType.OtherInstitution || itemFee.getFeeType() == FeeType.OwnInstitution || itemFee.getFeeType() == FeeType.Referral) {
+            if (itemFee.getDepartment() == null) {
+                JsfUtil.addErrorMessage("Please Select Department");
+                return;
+            }
+        }
+        if (itemFee.getFee() == 0.00) {
+            JsfUtil.addErrorMessage("Please Enter Local Fee Value");
+            return;
+        }
+
+        if (itemFee.getFfee() == 0.00) {
+            JsfUtil.addErrorMessage("Please Enter Foreign Fee Value");
+            return;
+        }
+        getItemFee().setCreatedAt(new Date());
+        getItemFee().setCreater(sessionController.getLoggedUser());
+        getItemFee().setForInstitution(null);
+        getItemFee().setForCategory(feeListType);
+        itemFeeFacade.create(itemFee);
+
+        getItemFee().setItem(item);
+        itemFeeFacade.edit(itemFee);
+
+        itemFee = new ItemFee();
+        itemFees = null;
+        fillForForCategoryFees();
+        JsfUtil.addSuccessMessage("New Fee Added for Fee List");
+    }
 
     public void addNewFeeForItem(Item inputItem, ItemFee inputFee) {
         if (inputItem == null) {
@@ -554,5 +631,15 @@ public class ItemFeeManager implements Serializable {
     public void setTotalItemFeeForForeigners(Double totalItemFeeForForeigners) {
         this.totalItemFeeForForeigners = totalItemFeeForForeigners;
     }
+
+    public Category getFeeListType() {
+        return feeListType;
+    }
+
+    public void setFeeListType(Category feeListType) {
+        this.feeListType = feeListType;
+    }
+    
+    
 
 }
