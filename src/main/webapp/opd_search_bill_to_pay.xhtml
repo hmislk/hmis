@@ -54,7 +54,7 @@
                                         <h6>#{bill.idStr}</h6>
                                     </p:column>
                                     <p:column headerText="View">
-                                        <p:commandButton ajax="false" value="Pay" action="bill_payment_opd" disabled="#{bill.cancelledBill ne null}">
+                                        <p:commandButton ajax="false" value="Pay" action="#{billSearch.navigateToBillPaymentOpdBill()}"  disabled="#{bill.cancelledBill ne null}">
                                             <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
                                             <f:setPropertyActionListener value="#{bill}" target="#{billController.opdBill}"/>
                                         </p:commandButton>
