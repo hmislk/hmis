@@ -81,20 +81,28 @@
                             <p:outputLabel value="Total" ></p:outputLabel>
                             <h:panelGrid id="gpTotals" columns="5" class="w-100" >
                                 <p:outputLabel value="Base Item" ></p:outputLabel>
-                                <p:inputText   value="#{itemFeeManager.item.total}"  class="w-100" ></p:inputText>
+                                <p:inputText   value="#{itemFeeManager.item.total}"  class="w-100" >
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </p:inputText>
                                 <p:spacer width="10" ></p:spacer>
                                 <p:outputLabel value="For Collecting Centre" ></p:outputLabel>
-                                <p:inputText id="gpTotalsForeginor" value="#{itemFeeManager.totalItemFee}" class="w-100"></p:inputText>
+                                <p:inputText id="gpTotalsForeginor" value="#{itemFeeManager.totalItemFee}" class="w-100">
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </p:inputText>
                             </h:panelGrid>
 
 
                             <p:outputLabel value="Total for Foreigners" ></p:outputLabel>
                             <h:panelGrid id="gpTotalsF" columns="5" class="w-100">
                                 <p:outputLabel value="Base Item" ></p:outputLabel>
-                                <p:inputText value="#{itemFeeManager.item.totalForForeigner}"   class="w-100"></p:inputText>
+                                <p:inputText value="#{itemFeeManager.item.totalForForeigner}"   class="w-100">
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </p:inputText>
                                 <p:spacer width="10" ></p:spacer>
                                 <p:outputLabel value="For Collecting Centre" ></p:outputLabel>
-                                <p:inputText  value="#{itemFeeManager.totalItemFeeForForeigners}"  class="w-100"></p:inputText>
+                                <p:inputText  value="#{itemFeeManager.totalItemFeeForForeigners}"  class="w-100">
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </p:inputText>
                             </h:panelGrid>
 
 
@@ -208,10 +216,10 @@
 
 
                                 <p:outputLabel value="Fee" ></p:outputLabel>
-                                <p:inputText value="#{itemFeeManager.itemFee.fee}"   class="w-100"></p:inputText>
+                                <p:inputText value="#{itemFeeManager.itemFee.fee}"  onfocus="this.select();"   class="w-100"></p:inputText>
 
                                 <p:outputLabel value="Foreigner Fee" ></p:outputLabel>
-                                <p:inputText value="#{itemFeeManager.itemFee.ffee}"  class="w-100"></p:inputText>
+                                <p:inputText value="#{itemFeeManager.itemFee.ffee}"  onfocus="this.select();"  class="w-100"></p:inputText>
 
 
 

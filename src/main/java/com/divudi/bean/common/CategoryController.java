@@ -679,6 +679,9 @@ public class CategoryController implements Serializable {
     }
 
     public List<Category> getFeeListTypes() {
+        if(feeListTypes==null){
+            fillFeeItemListTypes();
+        }
         return feeListTypes;
     }
 
