@@ -36,7 +36,7 @@
                                         <p:tab title="Doctor/Staff">
                                             <div class="d-grid gap-2">
                                                 <p:commandButton  class="w-100" ajax="false" value="Pay Doctor"  action="/channel/channel_payment_staff_bill?faces-redirect=true" actionListener="#{channelStaffPaymentBillController.makenull()}" rendered="#{webUserController.hasPrivilege('ChannellingPaymentPayDoctor')}" />
-                                                <p:commandButton  class="w-100" ajax="false" value="Payment Due Search"  action="/channel/channel_payments_due_searc?faces-redirect=trueh" rendered="#{webUserController.hasPrivilege('ChannellingPaymentDueSearch')}"/>
+                                                <p:commandButton  class="w-100" ajax="false" value="Payment Due Search"  action="/channel/channel_payments_due_search?faces-redirect=trueh" rendered="#{webUserController.hasPrivilege('ChannellingPaymentDueSearch')}"/>
                                                 <p:commandButton  class="w-100" ajax="false" value="Payment Done Search"  action="/channel/channel_payment_bill_search?faces-redirect=true" actionListener="#{billSearch.recreateModel}" rendered="#{webUserController.hasPrivilege('ChannellingPaymentDoneSearch')}" />
                                             </div>
                                         </p:tab>
