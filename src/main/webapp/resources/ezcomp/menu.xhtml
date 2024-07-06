@@ -1034,9 +1034,9 @@
                                          actionListener="#{searchController.makeListNull}"  value="Collecting Centre Bill Search"  ></p:menuitem>
                         </p:submenu>
 
-                        <p:submenu label="Patient Deposit"  rendered="#{webUserController.hasPrivilege('Payment')}">
+                        <p:menuitem  value="Patient Deposit"  rendered="#{webUserController.hasPrivilege('Payment')}" action="/payments/patient/receive?faces-redirect=true" actionListener="#{patientController.clearDataForPatientDeposite()}">
 
-                        </p:submenu>
+                        </p:menuitem >
 
                     </p:submenu>
 
