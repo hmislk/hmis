@@ -87,6 +87,20 @@ public class ItemFeeController implements Serializable {
         return d;
     }
     
+    public List<ItemFee> fillDepartmentItemFees(Department department) {
+        String jpql = "SELECT f"
+                + " FROM ItemFee f "
+                + " WHERE f.retired=:ret ";
+        HashMap<String, Object> parameters = new HashMap<>();
+        parameters.put("ret", false);
+        if (department != null) {
+            jpql += " and f.item.department=:dep ";
+            parameters.put("dep", department);
+        }
+        jpql += " ORDER BY f.item.name, f.name ";
+        return itemFeeFacade.findByJpql(jpql, parameters);
+    }
+    
     public List<Department> getInstitutionDepatrments(ItemFee fee) {
         List<Department> d;
         //////// // System.out.println("gettin ins dep ");
