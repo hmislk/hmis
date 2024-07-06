@@ -3491,15 +3491,16 @@ public class BillBeanController implements Serializable {
     }
 
     public List<BillFee> billFeefromBillItem(BillItem billItem, Institution forInstitution, Category forCategory) {
-        List<BillFee> t;
-        t = billFeefromBillItem(billItem, forInstitution);
-        if (t == null) {
-            t = billFeefromBillItem(billItem, forCategory);
+        List<BillFee> billFees = billFeefromBillItem(billItem, forInstitution);
+
+        if (billFees == null || billFees.isEmpty()) {
+            billFees = billFeefromBillItem(billItem, forCategory);
         }
-        if (t == null) {
-            t = baseBillFeefromBillItem(billItem);
+        if (billFees == null || billFees.isEmpty()) {
+            billFees = baseBillFeefromBillItem(billItem);
         }
-        return t;
+
+        return billFees;
     }
 
     public List<BillFee> billFeefromBillItem(BillItem billItem, Category forCategory) {
@@ -3522,6 +3523,7 @@ public class BillBeanController implements Serializable {
                 } else {
                     jpql += " and f.forCategory is null ";
                 }
+                jpql += " and f.forInstitution is null ";
                 params.put("ret", false);
                 params.put("packege", billItem.getItem());
                 params.put("item", billItem.getItem());
@@ -3585,6 +3587,7 @@ public class BillBeanController implements Serializable {
             } else {
                 jpql += " and f.forCategory is null ";
             }
+            jpql += " and f.forInstitution is null ";
             params.put("ret", false);
             params.put("item", billItem.getItem());
 
@@ -3657,6 +3660,7 @@ public class BillBeanController implements Serializable {
                 } else {
                     jpql += " and f.forInstitution is null ";
                 }
+                jpql += " and f.forCategory is null ";
                 params.put("ret", false);
                 params.put("packege", billItem.getItem());
                 params.put("item", billItem.getItem());
@@ -3720,6 +3724,7 @@ public class BillBeanController implements Serializable {
             } else {
                 jpql += " and f.forInstitution is null ";
             }
+            jpql += " and f.forCategory is null ";
             params.put("ret", false);
             params.put("item", billItem.getItem());
 
