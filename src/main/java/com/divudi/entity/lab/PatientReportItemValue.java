@@ -171,33 +171,33 @@ public class PatientReportItemValue implements Serializable {
 
         String value = "";
         String formatString = this.investigationItem.formatString;
-        System.out.println("Format string: " + formatString);
+//        System.out.println("Format string: " + formatString);
 
-        System.out.println("this.investigationItem.ixItemValueType = " + this.investigationItem.ixItemValueType);
+//        System.out.println("this.investigationItem.ixItemValueType = " + this.investigationItem.ixItemValueType);
 
         switch (this.investigationItem.ixItemValueType) {
             case Double:
             case Long:
                 if (this.doubleValue != null) {
-                    System.out.println("Double value before formatting: " + this.doubleValue);
+//                    System.out.println("Double value before formatting: " + this.doubleValue);
                     if (formatString != null) {
                         DecimalFormat decimalFormat = new DecimalFormat(formatString);
                         value = decimalFormat.format(this.doubleValue);
                     } else {
                         value = Double.toString(this.doubleValue);
                     }
-                    System.out.println("Double value after formatting: " + value);
+//                    System.out.println("Double value after formatting: " + value);
                 } else {
-                    System.out.println("Double value is null");
+//                    System.out.println("Double value is null");
                 }
                 break;
             case Varchar:
                 value = this.strValue;
-                System.out.println("Varchar value: " + value);
+//                System.out.println("Varchar value: " + value);
                 break;
             case Memo:
                 value = this.lobValue;
-                System.out.println("Memo value: " + value);
+//                System.out.println("Memo value: " + value);
                 break;
             default:
                 value = this.investigationItem.ixItemValueType.toString();
@@ -205,7 +205,7 @@ public class PatientReportItemValue implements Serializable {
                 break;
         }
 
-        System.out.println("Final value: " + value);
+//        System.out.println("Final value: " + value);
         return value;
     }
 
