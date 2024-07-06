@@ -231,6 +231,11 @@ public class BillSearch implements Serializable {
 
     //Edit Bill details
     private Doctor referredBy;
+   
+
+    public String navigateToBillPaymentOpdBill() {        
+        return "bill_payment_opd?faces-redirect=true";
+    }
 
     public void editBillDetails() {
         Bill editedBill = bill;
@@ -1948,7 +1953,7 @@ public class BillSearch implements Serializable {
 
         cb.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), originalBill.getToDepartment(), originalBill.getBillType(), BillClassType.CancelledBill, BillNumberSuffix.CAN));
         cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), originalBill.getToDepartment(), originalBill.getBillType(), BillClassType.CancelledBill, BillNumberSuffix.CAN));
-        
+
         cb.setBalance(0.0);
         cb.setPaymentMethod(paymentMethod);
         cb.setBilledBill(originalBill);
@@ -2127,7 +2132,7 @@ public class BillSearch implements Serializable {
         System.out.println("getBill() 3= " + getBill().isCancelled());
         System.out.println("getBill() 4= " + getBill().getIdStr());
         JsfUtil.addSuccessMessage("Cancelled");
-        
+
         if (getBill().getPaymentMethod() == PaymentMethod.Credit) {
             //TODO: Manage Credit Balances for Company, Staff
             if (getBill().getToStaff() != null) {
@@ -2737,7 +2742,6 @@ public class BillSearch implements Serializable {
         return result;
     }
 
-    
     public String navigateToViewSingleOpdBill() {
         if (bill == null) {
             JsfUtil.addErrorMessage("Nothing to cancel");
@@ -2759,7 +2763,7 @@ public class BillSearch implements Serializable {
         printPreview = false;
         return "/opd/bill_reprint?faces-redirect=true;";
     }
-    
+
     public String navigateToViewOpdBill() {
         if (bill == null) {
             JsfUtil.addErrorMessage("Nothing to cancel");
@@ -3066,26 +3070,35 @@ public class BillSearch implements Serializable {
         return billFees;
     }
 
+    
     public List<BillFee> getBillFees2() {
+        System.out.println("getBill.getId() = " + getBill().getId());
         if (billFees == null) {
             if (getBill() != null) {
-                String sql = "SELECT b FROM BillFee b WHERE b.retired=false and b.bill.id=" + getBill().getId();
-                billFees = getBillFeeFacade().findByJpql(sql);
+                Map m = new HashMap();
+                String sql = "SELECT b FROM BillFee b WHERE b.retired=false and b.bill=:cb";
+                m.put("cb", getBill());
+                billFees = getBillFeeFacade().findByJpql(sql, m);
+                System.out.println("billFees = " + billFees.size());
             }
 
             if (getBillSearch() != null) {
-                String sql = "SELECT b FROM BillFee b WHERE b.bill.id=" + getBillSearch().getId();
-                billFees = getBillFeeFacade().findByJpql(sql);
+                Map m = new HashMap();
+                String sql = "SELECT b FROM BillFee b WHERE b.bill=:cb";
+                m.put("cb", getBill());
+                billFees = getBillFeeFacade().findByJpql(sql, m);
+                System.out.println("billFees2 = " + billFees.size());
             }
 
             if (billFees == null) {
                 billFees = new ArrayList<>();
+                System.out.println("this = " + this);
             }
         }
 
         return billFees;
     }
-
+    
     public List<BillFee> getPayingBillFees() {
         if (getBill() != null) {
             String sql = "SELECT b FROM BillFee b WHERE b.retired=false and b.bill.id=" + getBill().getId();
