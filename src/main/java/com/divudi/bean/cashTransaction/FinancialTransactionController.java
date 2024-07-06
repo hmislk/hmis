@@ -128,8 +128,6 @@ public class FinancialTransactionController implements Serializable {
 
     // </editor-fold> 
     // <editor-fold defaultstate="collapsed" desc="Navigational Methods">
-    
-
     public String navigateToFinancialTransactionIndex() {
         resetClassVariables();
         fillFundTransferBillsForMeToReceive();
@@ -773,6 +771,8 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public String settleShiftEndFundBill() {
+        boolean fundTransferBillTocollect = false;
+
         if (currentBill == null) {
             JsfUtil.addErrorMessage("Error");
             return "";
@@ -785,6 +785,16 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("Error");
             return "";
         }
+
+        if (fundTransferBillsToReceive == null) {
+            fundTransferBillTocollect = true;
+        }
+
+        if (fundTransferBillTocollect) {
+            JsfUtil.addErrorMessage("Please collect your transferred money.");
+            return "";
+        }
+
         currentBill.setDepartment(sessionController.getDepartment());
         currentBill.setInstitution(sessionController.getInstitution());
         currentBill.setStaff(sessionController.getLoggedUser().getStaff());

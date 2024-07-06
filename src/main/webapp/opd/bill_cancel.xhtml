@@ -176,29 +176,29 @@
                         <h:panelGroup id="groupPrint" >
                             <!-- Bill Print Templates -->
                             <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaper'}" >       
-                                <prints:five_five_paper_with_headings bill="#{billSearch.bill.cancelledBill}"/>
+                                <prints:five_five_paper_with_headings bill="#{billSearch.bill}"/>
                             </h:panelGroup>
 
                             <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePrintedPaper'}" >
                                 <prints:five_five_paper_without_headings 
-                                    bill="#{billSearch.bill.cancelledBill}" 
+                                    bill="#{billSearch.bill}" 
                                     duplicate="#{opdBillController.duplicatePrint}" 
                                     payments="#{opdBillController.payments}"/>
                             </h:panelGroup>
 
                             <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosPrintedPaper'}" >     
-                                <prints:posOpdBillWithoutLogo bill="#{billSearch.bill.cancelledBill}" duplicate="#{opdBillController.duplicatePrint}"/>         
+                                <prints:posOpdBillWithoutLogo bill="#{billSearch.bill}" duplicate="#{opdBillController.duplicatePrint}"/>         
                             </h:panelGroup>
 
                             <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosPaper'}" >
-                                <prints:posOpdBill bill="#{billSearch.bill.cancelledBill}" duplicate="#{opdBillController.duplicatePrint}"/>
+                                <prints:posOpdBill bill="#{billSearch.bill}" duplicate="#{opdBillController.duplicatePrint}"/>
                             </h:panelGroup>
 
                             <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'A4Paper'}" >   
-                                <prints:A4_paper_with_headings bill="#{billSearch.bill.cancelledBill}" duplicate="#{opdBillController.duplicatePrint}"/>
+                                <prints:A4_paper_with_headings bill="#{billSearch.bill}" duplicate="#{opdBillController.duplicatePrint}"/>
                             </h:panelGroup>
                             <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'A4PrintedPaper'}" >
-                                <prints:A4_paper_without_headings bill="#{billSearch.bill.cancelledBill}" duplicate="#{opdBillController.duplicatePrint}"/>
+                                <prints:A4_paper_without_headings bill="#{billSearch.bill}" duplicate="#{opdBillController.duplicatePrint}"/>
                             </h:panelGroup>
 
                         </h:panelGroup>

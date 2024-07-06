@@ -307,7 +307,11 @@
             <artifactId>reflections</artifactId>
             <version>0.10.2</version>
         </dependency>
-       
+        <dependency>
+            <groupId>org.apache.tomcat</groupId>
+            <artifactId>tomcat-catalina</artifactId>
+            <version>9.0.39</version> <!-- or the version compatible with your setup -->
+        </dependency>
 
     </dependencies>
 
