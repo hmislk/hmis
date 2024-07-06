@@ -89,7 +89,6 @@ public class ItemFeeController implements Serializable {
     }
 
     public List<ItemFee> fillDepartmentItemFees(Department department) {
-        System.out.println("fillDepartmentItemFees");
         String jpql = "SELECT f"
                 + " FROM ItemFee f "
                 + " WHERE f.retired=:ret "
@@ -101,8 +100,7 @@ public class ItemFeeController implements Serializable {
         parameters.put("dep", department);
 
         jpql += " ORDER BY f.item.name, f.name ";
-        System.out.println("parameters = " + parameters);
-        System.out.println("jpql = " + jpql);
+
         return itemFeeFacade.findByJpql(jpql, parameters);
     }
 

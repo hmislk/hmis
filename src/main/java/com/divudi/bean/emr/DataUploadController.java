@@ -4227,7 +4227,6 @@ public class DataUploadController implements Serializable {
         }
 
         List<ItemFee> fees = itemFeeController.fillDepartmentItemFees(department);
-        System.out.println("fees = " + fees.size());
         for (int i = 0; i < fees.size(); i++) {
             ItemFee fee = fees.get(i);
             Row row = dataSheet.createRow(i + 1); // Starting from row 1 since row 0 is the header
