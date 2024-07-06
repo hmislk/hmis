@@ -1,0 +1,392 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:pharmacy="http://xmlns.jcp.org/jsf/composite/pharmacy">
+
+    <ui:define name="content">
+        <h:outputStylesheet library="css" name="maincss.css" ></h:outputStylesheet>
+        <h:form id="bill">
+            <p:growl id="msg"/>
+            <p:panel rendered="#{!opticianPurchaseController.printPreview}" style="height: 100vh">
+                <f:facet name="header" > 
+                    <h:outputText styleClass="fas fa-shopping-bag"/>
+                    <h:outputText  class="mx-4" value="Pharmacy Purchase" />  
+                </f:facet>
+
+                <div class="row">
+                    <div class="col-6">
+                        <p:panel header="Purchasing Details">
+                            <f:facet name="header">
+                                <h:outputText styleClass="fas fa-shopping-basket"/>
+                                <h:outputText class="mx-4" value="Purchasing Details"/>
+                            </f:facet>
+                            <h:panelGrid columns="2" class="w-100">
+                                <p:outputLabel value="Select Supplier"/>
+                                <p:autoComplete class=" w-100" inputStyleClass="w-100" converter="deal" value="#{opticianPurchaseController.bill.fromInstitution}" 
+                                                forceSelection="true"
+                                                completeMethod="#{dealerController.completeDealor}" var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" />
+                                <h:outputLabel value="Purchasing Institution"/>
+                                <p:autoComplete class=" w-100" inputStyleClass="w-100" value="#{opticianPurchaseController.bill.referenceInstitution}"
+                                                completeMethod="#{institutionController.completeCompany}" 
+                                                forceSelection="true"
+                                                var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" />
+
+                            </h:panelGrid>
+                        </p:panel>
+                    </div>
+                    <div class="col-6">
+                        <p:panel header="Payment Details">
+                            <f:facet name="header" > 
+                                <h:outputText styleClass="fa fa-money-bill-wave"/>
+                                <h:outputText  class="mx-4" value="Payment Details" />  
+                            </f:facet>
+                            
+                            <div class="row">
+                                <div class="col-6">
+                                    <h:panelGrid columns="2">
+                                <p:outputLabel value="Payment Method"/>
+                                <p:selectOneMenu class="mx-4"  id="cmbPs" value="#{opticianPurchaseController.bill.paymentMethod}">       
+                                    <f:selectItem itemLabel="Select Payment Method" />
+                                    <f:selectItems value="#{enumController.paymentMethodsForPo}" />
+                                </p:selectOneMenu>
+
+                            </h:panelGrid>
+                                </div>
+                                <div class="col-6">
+                                    <div class="d-flex align-items-center justify-content-end">
+                                <p:commandButton  value="Settle" 
+                                                  action="#{opticianPurchaseController.settle}"
+                                                  class="mx-2 ui-button-success"
+                                                  ajax="false"
+                                                  icon="fas fa-check-circle">
+                                </p:commandButton>
+                                <p:commandButton value="New Bill" ajax="false"
+                                                 class="mx-2 ui-button-warning"
+                                                 icon="fas fa-plus"
+                                                 action="#{opticianPurchaseController.makeNull()}" >
+                                </p:commandButton>
+                            </div>
+                                </div>
+                            </div>
+                            <p:spacer height="40px"></p:spacer>
+                        </p:panel>
+                    </div>
+                </div>
+                <div class="row w-100">
+                    <div class="col-12">
+                        <p:panel id="itemselectgrid" class="my-1 w-100" rendered="#{sessionController.loggedPreference.pharmayPurchaseWithLastRate eq false}" header="Add Item">
+                            <f:facet name="header" > 
+                                <h:outputText styleClass="fa-solid fa-circle-plus" />
+                                <h:outputText  class="mx-4" value="Add Items" />  
+                            </f:facet>
+                            <p:focus id="focusItem" for="acItem" ></p:focus>
+                            <div class="row w-100 d-flex align-items-center">
+                                <div class="col-4">
+                                    <h:outputLabel value="Select Item"/><br/>
+                                    <p:autoComplete class="w-100 my-1"
+                                                    inputStyleClass="w-100 my-1" 
+                                                    id="acItem"  
+                                                    value="#{opticianPurchaseController.currentBillItem.item}" 
+                                                    forceSelection="true"
+                                                    completeMethod="#{itemController.completeAmpItem}" 
+                                                    var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
+                                        <p:column headerText="Item">
+                                            <h:outputLabel value="#{vt.name}"></h:outputLabel>
+                                        </p:column>
+                                        <p:column headerText="Code" >
+                                            <h:outputLabel value="#{vt.code}"></h:outputLabel>
+                                        </p:column>
+                                    </p:autoComplete>
+                                </div>
+                                <div class="col-1">
+                                    <h:outputLabel value="Qty"/><br/>
+                                    <p:inputText  
+                                        autocomplete="off"
+                                        onfocus="this.select()"
+                                        id="txtQty" 
+                                        styleClass="numericTxt"
+                                        value="#{opticianPurchaseController.currentBillItem.tmpQty}"
+                                        style="width:100%" />  
+                                </div>
+                                <div class="col-1">
+                                    <h:outputLabel value="Free"/><br/>
+                                    <p:inputText autocomplete="off" 
+                                                 id="txtFreeQty" 
+                                                 onfocus="this.select()"
+                                                 styleClass="numericTxt" 
+                                                 value="#{opticianPurchaseController.currentBillItem.pharmaceuticalBillItem.freeQty}" 
+                                                 style="width:100%" /> 
+                                </div>
+                                <div class="col-1">
+                                    <h:outputLabel value="Purchase Rate"></h:outputLabel><br/>
+                                    <p:inputText autocomplete="off" 
+                                                 id="txtPrate"  
+                                                 onfocus="this.select()"
+                                                 styleClass="numericTxt" 
+                                                 value="#{opticianPurchaseController.currentBillItem.pharmaceuticalBillItem.purchaseRate}"  >
+                                        <f:ajax event="keyup" execute="@this acItem" render="tmpRetail" listener="#{opticianPurchaseController.calSaleRte()}"></f:ajax>
+                                    </p:inputText>
+                                </div>
+                                <div class="col-1">
+                                    <h:outputLabel value="Sale Price"></h:outputLabel>
+                                    <p:inputText autocomplete="off" 
+                                                 id="tmpRetail" 
+                                                 onfocus="this.select()"
+                                                 styleClass="numericTxt" 
+                                                 value="#{opticianPurchaseController.currentBillItem.pharmaceuticalBillItem.retailRate}"  >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </p:inputText>  
+                                </div>
+                                <div class="col-2">
+                                    <h:outputLabel value="DOE(DD MM YY)"/>
+                                    <p:calendar navigator="true"
+                                                class="my-1"
+                                                inputStyleClass="my-1" 
+                                                id="calDoe"
+                                                pattern="dd MM yy" 
+                                                value="#{opticianPurchaseController.currentBillItem.pharmaceuticalBillItem.doe}">
+                                        <f:ajax event="dateSelect" execute="@this tmp" render="tmp" listener="#{opticianPurchaseController.setBatch()}"/>
+                                    </p:calendar> 
+                                </div>
+                                <div class="col-1">
+                                    <h:outputLabel value="Batch No"/>
+                                    <p:inputText autocomplete="off" 
+                                                 styleClass="numericTxt" 
+                                                 id="tmp"
+                                                 value="#{opticianPurchaseController.currentBillItem.pharmaceuticalBillItem.stringValue}"  /> 
+                                </div>
+                                <div class="col-1">
+                                    <p:commandButton id="btnAdd" 
+                                                     value="Add" 
+                                                     class="ui-button-success"
+                                                     icon="fas fa-plus"
+                                                     action="#{opticianPurchaseController.addItem}" 
+
+                                                     process="itemselectgrid" update="itemList itemselectgrid tot focusItem :#{p:resolveFirstComponentWithId('total',view).clientId} :#{p:resolveFirstComponentWithId('totalSaleValue',view).clientId} msg"/>
+
+                                </div>
+                            </div>
+                        </p:panel>
+                    </div>
+                    <div class="my-2" >
+                        <p:panel id="PnlAdd" header="Add Item" rendered="#{sessionController.loggedPreference.pharmayPurchaseWithLastRate eq true}" >
+                            <h:panelGrid columns="2" style="width: 100%">
+                                <p:autoComplete class="w-100" inputStyleClass="w-100" id="exItem" value="#{opticianPurchaseController.currentBillItem.item}"
+                                                forceSelection="true"
+                                                completeMethod="#{itemController.completeAmpItem}" var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
+                                    <p:column headerText="Item" >
+                                        <h:outputLabel value="#{vt.name}"></h:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Code" >
+                                        <h:outputLabel value="#{vt.code}"></h:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Pack Size" >
+                                        <p:outputLabel value=" X #{vt.dblValue}" 
+                                                       rendered="#{vt.class eq 'class com.divudi.entity.pharmacy.Ampp'}"/>                            
+                                    </p:column>
+                                </p:autoComplete>
+                                <p:commandButton class="mx-1 ui-button-primary" value="Process" action="#{opticianPurchaseController.addItemWithLastRate}" process="PnlAdd" update="itemList PnlAdd tot focusItem :#{p:resolveFirstComponentWithId('total',view).clientId} :#{p:resolveFirstComponentWithId('totalSaleValue',view).clientId}"/>
+
+                            </h:panelGrid>
+                        </p:panel>
+                        <div>
+
+                        </div>
+
+                    </div>
+
+
+                </div>
+                <p:dataTable class="my-2" rowIndexVar="i" var="ph" 
+                             value="#{opticianPurchaseController.billItems}" 
+
+                             id="itemList">  
+                    <f:facet name="header" > 
+                        <h:outputText styleClass="fas fa-shopping-cart"/>
+                        <h:outputText  class="mx-4" value="Ordered Items" />  
+                    </f:facet>
+
+                    <p:column headerText="Item Name"  styleClass="#{ph.item.category.profitMargin > ((ph.pharmaceuticalBillItem.retailRate - ph.pharmaceuticalBillItem.purchaseRate) / ph.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}">  
+                        <h:outputLabel id="item" value="#{ph.item.name} - #{ph.item.code}" style="width:100%">
+                        </h:outputLabel>
+
+                    </p:column>  
+
+                    <p:column headerText="Qty" style="width:8em; padding: 0px;" styleClass="#{ph.item.category.profitMargin > ((ph.pharmaceuticalBillItem.retailRate - ph.pharmaceuticalBillItem.purchaseRate) / ph.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}">                     
+                        <p:inputText autocomplete="off" id="qty" value="#{ph.tmpQty}" style="width: 80px; text-align: right;"  >
+                            <f:ajax event="blur" render="item qty freeQty purchase retail total totalSaleValue :#{p:resolveFirstComponentWithId('tot',view).clientId}"
+                                    execute="item qty freeQty purchase retail" listener="#{opticianPurchaseController.onEdit(ph)}" ></f:ajax> 
+                        </p:inputText>
+                    </p:column>  
+
+                    <p:column headerText="Free" style="width:8em; padding: 0px;" styleClass="#{ph.item.category.profitMargin > ((ph.pharmaceuticalBillItem.retailRate - ph.pharmaceuticalBillItem.purchaseRate) / ph.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}">       
+                        <p:inputText autocomplete="off" id="freeQty" value="#{ph.pharmaceuticalBillItem.freeQty}" style="width: 70px; text-align: right;" >
+                            <f:ajax event="blur" render="item qty freeQty purchase retail total totalSaleValue :#{p:resolveFirstComponentWithId('tot',view).clientId}"
+                                    execute="item qty freeQty purchase retail" listener="#{opticianPurchaseController.onEdit(ph)}" ></f:ajax> 
+                        </p:inputText>
+                    </p:column> 
+                    
+                    
+                    
+                    <p:column headerText="P. Rate" style="width:8em; padding: 0px;" styleClass="#{ph.item.category.profitMargin > ((ph.pharmaceuticalBillItem.retailRate - ph.pharmaceuticalBillItem.purchaseRate) / ph.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}">                     
+                        <p:inputText autocomplete="off" id="purchase" value="#{ph.pharmaceuticalBillItem.purchaseRate}" style="width: 70px; text-align: right;">
+                            <f:ajax event="blur" render="itemList totalSaleValue :#{p:resolveFirstComponentWithId('tot',view).clientId}"  execute="@this qty item qty freeQty purchase retail" listener="#{opticianPurchaseController.onEditPurchaseRate(ph)}" ></f:ajax> 
+                        </p:inputText>
+                        <p:outputLabel value=" X #{ph.item.dblValue}" rendered="#{ph.item.class eq 'class com.divudi.entity.pharmacy.Ampp'}"/>                                                
+                    </p:column>              
+
+                    <p:column headerText="S. Rate" style="width:8em; padding: 0px;" styleClass="#{ph.item.category.profitMargin > ((ph.pharmaceuticalBillItem.retailRate - ph.pharmaceuticalBillItem.purchaseRate) / ph.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}">                   
+                        <p:inputText autocomplete="off" id="retail" value="#{ph.pharmaceuticalBillItem.retailRate}"  label="Price" style="width: 70px; text-align: right;">
+                            <f:ajax event="blur" render="itemList totalSaleValue :#{p:resolveFirstComponentWithId('tot',view).clientId}"  execute="item qty freeQty purchase retail" listener="#{opticianPurchaseController.onEdit(ph)}" ></f:ajax> 
+                        </p:inputText>
+                        <p:outputLabel value=" X (#{ph.item.dblValue})" rendered="#{ph.item.class eq 'class com.divudi.entity.pharmacy.Ampp'}"/>                    
+                    </p:column>  
+
+                    <p:column headerText="P. Value" style="width:8em; padding: 0px;" styleClass="#{ph.item.category.profitMargin > ((ph.pharmaceuticalBillItem.retailRate - ph.pharmaceuticalBillItem.purchaseRate) / ph.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}">  
+                        <h:outputText id="total" value="#{ph.pharmaceuticalBillItem.purchaseRate*ph.pharmaceuticalBillItem.qty}" 
+                                      style="width: 80px; text-align: right;">
+                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                        </h:outputText> 
+                    </p:column>  
+
+                    <p:column headerText="S. Value" style="width:8em; padding: 0px;" styleClass="#{ph.item.category.profitMargin > ((ph.pharmaceuticalBillItem.retailRate - ph.pharmaceuticalBillItem.purchaseRate) / ph.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}">  
+                        <h:outputText id="totalSaleValue" value="#{ph.pharmaceuticalBillItem.retailRate *(ph.pharmaceuticalBillItem.qtyInUnit +ph.pharmaceuticalBillItem.freeQtyInUnit )}" 
+                                      style="width: 110px; text-align: right;">
+                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                        </h:outputText>
+                    </p:column> 
+
+                    <p:column headerText="Batch" style="width:8em; padding: 0px;" styleClass="#{ph.item.category.profitMargin > ((ph.pharmaceuticalBillItem.retailRate - ph.pharmaceuticalBillItem.purchaseRate) / ph.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}">                   
+                        <p:inputText autocomplete="off" id="txtBatch" value="#{ph.pharmaceuticalBillItem.stringValue}" style="width: 70px; text-align: right;" >
+                            <f:ajax event="blur" render="total totalSaleValue :#{p:resolveFirstComponentWithId('tot',view).clientId}"  execute="@this" listener="#{opticianPurchaseController.onEdit(ph)}" ></f:ajax> 
+                        </p:inputText>
+                    </p:column>  
+
+                    <p:column headerText="DOE" style="width:10em; padding: 0px;" styleClass="#{ph.item.category.profitMargin > ((ph.pharmaceuticalBillItem.retailRate - ph.pharmaceuticalBillItem.purchaseRate) / ph.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}">                    
+                        <p:calendar  value="#{ph.pharmaceuticalBillItem.doe}" style="width: 5em;" inputStyleClass="w-75"  navigator="true" pattern="#{sessionController.applicationPreference.shortDateFormat}" >
+                            <f:ajax event="dateSelect" execute="@this" render="txtBatch" listener="#{opticianPurchaseController.setBatch(ph)}"
+                                    />
+                        </p:calendar>
+                    </p:column>
+
+
+                    <p:column headerText="Profit %" style="width:8em; padding: 0px;" styleClass="#{ph.item.category.profitMargin > ((ph.pharmaceuticalBillItem.retailRate - ph.pharmaceuticalBillItem.purchaseRate) / ph.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}">                    
+                        <h:outputText id="profMargin" value="#{((ph.pharmaceuticalBillItem.retailRate - ph.pharmaceuticalBillItem.purchaseRate ) / ph.pharmaceuticalBillItem.purchaseRate)*100}" >
+                            <f:convertNumber pattern="0.0" ></f:convertNumber>
+                        </h:outputText>
+                    </p:column>
+
+                    <p:column style="width:4em; padding: 0px;" styleClass="#{ph.item.category.profitMargin > ((ph.pharmaceuticalBillItem.retailRate - ph.pharmaceuticalBillItem.purchaseRate) / ph.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}">
+                        <p:commandButton class="mr-4 ui-button-danger" icon="fas fa-trash" ajax="false" action="#{opticianPurchaseController.removeItem(ph)}"/>
+                    </p:column>
+
+                </p:dataTable> 
+                <div class="row">
+                    <div class="col-6">
+                        <p:panel header="Bill details" >
+                            <f:facet name="header" > 
+                                <h:outputText styleClass="fas fa-receipt"/>
+                                <h:outputText  class="mx-4" value="Bill Details" />  
+                            </f:facet>
+
+                            <h:panelGrid columns="2" style="min-width: 100%">
+                                <h:panelGrid columns="2" id="tot" style="min-width: 100%;font-weight: bolder">
+                                    <p:outputLabel value="Gross Total"/>
+                                    <p:outputLabel id="gro"  value="#{opticianPurchaseController.bill.total}" /> 
+                                    <p:outputLabel value="Tax"/>
+                                    <p:inputText autocomplete="off" id="tx" value="#{opticianPurchaseController.bill.tax}" > 
+                                        <p:ajax process="tx" update="gro tx net" event="keyup" listener ="#{opticianPurchaseController.calNetTotal()}"/>
+                                    </p:inputText>
+                                    <p:outputLabel value="Discount"/>
+                                    <p:inputText autocomplete="off" id="dis" value="#{opticianPurchaseController.bill.discount}" >
+                                        <p:ajax process="@this" update="gro tx net" event="keyup" listener ="#{opticianPurchaseController.calNetTotal()}"/>
+                                    </p:inputText>
+                                    <p:outputLabel value="Net Total"/>
+                                    <h:outputLabel id="net"  value="#{opticianPurchaseController.bill.netTotal}" > 
+                                        <f:convertNumber pattern="#,##0.00"/> 
+                                    </h:outputLabel>
+                                    <p:outputLabel value="Sale Value"/>
+                                    <h:outputLabel id="saleValue"  value="#{opticianPurchaseController.bill.saleValue}" > 
+                                        <f:convertNumber pattern="#,##0.00"/> 
+                                    </h:outputLabel>
+
+                                </h:panelGrid>
+                            </h:panelGrid>
+                        </p:panel>
+                    </div>
+                    <div class="col-6">
+                        <p:panel header="Invoice Details">
+                            <f:facet name="header" > 
+                                <h:outputText styleClass="fas fa-file-invoice"/>
+                                <h:outputText  class="mx-4" value="Invoice Details" />  
+                            </f:facet>
+                            <h:panelGrid columns="2">
+                                <p:outputLabel value="Invoice No  "/>
+                                <p:inputText class="mx-4 w-100" autocomplete="off" value="#{opticianPurchaseController.bill.invoiceNumber}" />
+                                <p:outputLabel value="Invoice Date"/>
+                                <p:calendar class="mx-4 w-100" inputStyleClass="w-100" value="#{opticianPurchaseController.bill.invoiceDate}"   navigator="true" pattern="#{sessionController.applicationPreference.shortDateFormat}" /> 
+                            </h:panelGrid>
+                        </p:panel>
+                    </div>
+                </div>
+
+
+                <p:commandButton 
+                    id="nullButton" 
+                    value="No Action"
+                    action="#" 
+                    style="display: none;" ></p:commandButton>
+
+                <p:defaultCommand  target="btnAdd" />  
+
+
+
+
+
+
+                <h:panelGroup rendered="#{not empty pharmacyItemExcelManager.itemNamesFailedToImport}" >
+                    <p:dataTable value="#{pharmacyItemExcelManager.itemNamesFailedToImport}" 
+                                 var="f">
+                        <p:column >
+                            #{f}
+                        </p:column>
+                    </p:dataTable>
+                </h:panelGroup>
+
+
+            </p:panel>
+
+            <p:panel rendered="#{opticianPurchaseController.printPreview}">
+                <p:panel class="m-0 p-0" >
+                    <f:facet name="header" >
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <h:outputText styleClass="fa-solid fa-circle-plus" />
+                                <h:outputLabel value="Direct Purchase Order" class="mx-4"></h:outputLabel>
+                            </div>
+                            <div>
+                                <p:commandButton ajax="false" 
+                                             class="ui-button-success"
+                                             icon="fa fa-plus"
+                                             action="#{opticianPurchaseController.makeNull()}" value="New Bill"/>                    
+                            <p:commandButton value="Print" ajax="false" action="#" 
+                                             class="ui-button-info mx-2"
+                                             icon="fas fa-print">
+                                <p:printer target="gpBillPreview" ></p:printer>
+                            </p:commandButton>
+                            </div>
+                        </div>
+                    </f:facet>
+                    <p:panel id="gpBillPreview">
+                        <pharmacy:purhcase bill="#{opticianPurchaseController.bill}"/>
+                    </p:panel>
+                </p:panel>
+            </p:panel>
+        </h:form>
+    </ui:define>  
+
+</ui:composition>

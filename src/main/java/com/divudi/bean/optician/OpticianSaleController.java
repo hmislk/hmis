@@ -648,7 +648,7 @@ public class OpticianSaleController implements Serializable, ControllerWithPatie
 
     public String navigateToPharmacyRetailSale() {
         resetAll();
-        return "/pharmacy/pharmacy_bill_retail_sale?faces-redirect=true";
+        return "/optician/retail_sale?faces-redirect=true";
     }
 
     public void resetAll() {

@@ -53,5 +53,9 @@ public class OpticianController implements Serializable {
         return "/Optician/retail_sale?faces-redirect=true";
     }
     
+    public String navigateToPurchase(){
+        return "/Optician/purchase?faces-redirect=true";
+    }
+    
 }
 
