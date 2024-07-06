@@ -749,6 +749,8 @@ public class ItemController implements Serializable {
             return null;
         }
     }
+    
+    
 
     public void fillInvestigationSampleComponents() {
         if (current == null) {
@@ -2727,6 +2729,20 @@ public class ItemController implements Serializable {
 
         }
         return investigationsAndServices;
+    }
+
+    public List<Item> fillDepartmentItems(Department department) {
+        String jpql = "SELECT item"
+                + " FROM Item item "
+                + " WHERE item.retired=:ret ";
+        HashMap<String, Object> parameters = new HashMap<>();
+        parameters.put("ret", false);
+        if (department != null) {
+            jpql += " and item.department=:dep ";
+            parameters.put("dep", department);
+        }
+        jpql += " ORDER BY item.name ";
+        return itemFacade.findByJpql(jpql, parameters);
     }
 
     public List<Item> listInvestigationsAndServices(Institution institution, Department department) {

@@ -21,14 +21,46 @@
                                       label="Choose File"/>
                         <p:commandButton value="Upload"
                                          class="ui-button-warning m-1"
-                                         action="#{dataUploadController.uploadCollectingCentreItemsAndFees()}"
+                                         action="#{dataUploadController.uploadCollectingCentreSpecialFeeUpload()}"
                                          ajax="false"/>
-                        <p:commandButton value="Download Template" 
-                                         ajax="false" 
-                                         class="ui-button-success m-1"
-                                         onclick="PrimeFaces.monitorDownload(start, stop);" 
-                                         icon="ui-icon-arrowthick-1-s">
-                            <p:fileDownload value="#{dataUploadController.getTemplateForCollectingCentreItemWithFeeUpload()}" />
+
+                        <h:panelGroup id="gpLblIns"  >
+                            <p:outputLabel value="Institution" ></p:outputLabel>
+                        </h:panelGroup>
+                        <h:panelGroup id="gpAcIns"  >
+                            <p:autoComplete id="acInstitution" value="#{dataUploadController.institution}" 
+                                            completeMethod="#{institutionController.completeIns}"
+                                            var="ins" 
+                                            class="w-100"
+                                            inputStyleClass="w-100"
+                                            itemLabel="#{ins.name}" 
+                                            itemValue="#{ins}" 
+                                            >
+                                <p:ajax event="itemSelect" process="acInstitution" update="gpDepartment"  ></p:ajax>
+                            </p:autoComplete>
+                        </h:panelGroup>
+
+                        <h:panelGroup id="gpLblDep"  >
+                            <p:outputLabel value="Department" ></p:outputLabel>
+                        </h:panelGroup>
+                        <h:panelGroup id="gpDepartment" >
+                            <p:selectOneMenu 
+                                id="lstDepartment"
+                                class="w-100"
+                                value="#{dataUploadController.department}" >
+                                <f:selectItem itemLabel="Select" ></f:selectItem>
+                                <f:selectItems value="#{departmentController.institutionDepatrments(dataUploadController.institution)}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" ></f:selectItems>
+                            </p:selectOneMenu>
+                        </h:panelGroup>
+
+
+                        <p:commandButton 
+                            value="Download Template" 
+                            ajax="false" 
+                            class="ui-button-success m-1"
+                            onclick="PrimeFaces.monitorDownload(start, stop);" 
+                            icon="ui-icon-arrowthick-1-s">
+                            <p:fileDownload value="#{dataUploadController.getTemplateForCollectingCentreSpecialFeeUpload()}" />
                         </p:commandButton>
 
 
@@ -65,61 +97,37 @@
                                     <tr>
                                         <td>A</td>
                                         <td>Name</td>
-                                        <td>Name. Required</td>
-                                    </tr>
-                                    <tr>
-                                        <td>B</td>
-                                        <td>Printing Name</td>
-                                        <td>Printing Name name. Optional.</td>
-                                    </tr>
-                                    <tr>
-                                        <td>C</td>
-                                        <td>Full Name</td>
-                                        <td>Full Name Optional</td>
+                                        <td>Mandatory. Item Name.</td>
                                     </tr>
                                     <tr>
                                         <td>D</td>
                                         <td>Item Code</td>
-                                        <td>Item Code  Optional</td>
-                                    </tr>
-                                    <tr>
-                                        <td>E</td>
-                                        <td>Category</td>
-                                        <td>Category name.  Required.</td>
+                                        <td>Mandatory. Item Code</td>
                                     </tr>
                                     <tr>
                                         <td>F</td>
                                         <td>Institution</td>
-                                        <td>Institution. Optional.</td>
+                                        <td>Mandatory. Institution.</td>
                                     </tr>
                                     <tr>
                                         <td>G</td>
                                         <td>Department</td>
-                                        <td>Department. Optional.</td>
+                                        <td>Mandatory. Department.</td>
                                     </tr>
                                     <tr>
-                                        <td>H</td>
-                                        <td>Inward Charge Category</td>
-                                        <td>Inward Charge Category. Optional.</td>
-                                    </tr>
-                                    <tr>
-                                        <td>I</td>
-                                        <td>Item Type</td>
-                                        <td>Optional. Default is Investigation. Other options include Service.</td>
+                                        <td>G</td>
+                                        <td>Collecting Centre</td>
+                                        <td>Mandatory. Collecting Centre.</td>
                                     </tr>
                                     <tr>
                                         <td>J</td>
-                                        <td>Hospital Fee</td>
-                                        <td>Mandatory. Created for Logged Department and Institution</td>
-                                    </tr>
-                                    <tr>
-                                        <td>K</td>
-                                        <td>Collecting Centre Fee</td>
-                                        <td>Optional. Created for Institution in Institution Column and Department in Department Column.</td>
+                                        <td>Fee</td>
+                                        <td>Mandatory. New Fee will be created.</td>
                                     </tr>
 
                                 </tbody>
                             </table>
+
                         </h:panelGroup>
 
                     </h:form>
@@ -128,36 +136,36 @@
             </div>
         </div>
 
-        
+
 
         <p:tabView >
-            <p:tab title="Uploaded Items" >
+            <p:tab title="Uploaded Item Fees" >
                 <p:poll update="tbl"></p:poll>
                 <p:dataTable
                     paginator="true"
                     rows="10"
                     rowKey="#{item.id}"
-                    id="tbl" value="#{dataUploadController.itemsToSave}" var="item" >
+                    id="tbl" value="#{dataUploadController.itemFees}" var="fee" >
                     <f:facet name="header" >
                         <p:outputLabel value="Items Saved" ></p:outputLabel>
                     </f:facet>
                     <p:column >
-                        #{item.name}
+                        #{fee.item.department.name}
                     </p:column>
                     <p:column >
-                        #{item.total}
+                        #{fee.item.name}
                     </p:column>
 
                 </p:dataTable>        
             </p:tab>
             <p:tab title="Rejected Items" >
-               
+
                 <p:dataTable 
                     id="tbl2" 
                     paginator="true"
                     rows="10"
                     rowKey="#{item.id}"
-                    
+
                     value="#{dataUploadController.itemsSkipped}" var="item" >
                     <f:facet name="header" >
                         <p:outputLabel value="Items Skipped" ></p:outputLabel>

@@ -189,6 +189,9 @@ public class DataUploadController implements Serializable {
     @EJB
     CategoryFacade categoryFacade;
 
+    private Institution institution;
+    private Department department;
+
     private UploadedFile file;
     private String outputString;
     private List<Item> items;
@@ -303,6 +306,11 @@ public class DataUploadController implements Serializable {
     public String navigateToUploadOpdItemsAndFees() {
         pollActive = true;
         return "/admin/items/opd_item_upload?faces-redirect=true";
+    }
+
+    public String navigateToCollectingCentreSpecialFeeUpload() {
+        pollActive = true;
+        return "/admin/items/collecting_centre_special_fee_upload?faces-redirect=true";
     }
 
     public String navigateToUploadAndAddProfessionalFees() {
@@ -454,6 +462,19 @@ public class DataUploadController implements Serializable {
         if (file != null) {
             try ( InputStream inputStream = file.getInputStream()) {
                 items = readCollectingCentreItemsAndFeesFromExcel(inputStream);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        pollActive = false;
+    }
+
+    public void uploadCollectingCentreSpecialFeeUpload() {
+        pollActive = true;
+        items = new ArrayList<>();
+        if (file != null) {
+            try ( InputStream inputStream = file.getInputStream()) {
+                itemFees = readCollectingCentreSpecialFeeUploadFromExcel(inputStream);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -932,7 +953,7 @@ public class DataUploadController implements Serializable {
                 departmentName = sessionController.getDepartment().getName();
             }
             if (runningDept == null) {
-                department = departmentController.findAndSaveDepartmentByName(departmentName,institution);
+                department = departmentController.findAndSaveDepartmentByName(departmentName, institution);
                 runningDept = department;
                 departmentsSaved.add(department);
             } else if (runningDept.getName().equals(departmentName)) {
@@ -1692,6 +1713,147 @@ public class DataUploadController implements Serializable {
         itemFeeFacade.batchCreate(itemFeesToSave, 10000);
 
         return itemsToSave;
+    }
+
+    private List<ItemFee> readCollectingCentreSpecialFeeUploadFromExcel(InputStream inputStream) throws IOException {
+        Workbook workbook = new XSSFWorkbook(inputStream);
+        Sheet sheet = workbook.getSheetAt(0);
+        Iterator<Row> rowIterator = sheet.rowIterator();
+        outputString = "";
+        itemsToSave = new ArrayList<>();
+        masterItemsToSave = new ArrayList<>();
+        itemFeesToSave = new ArrayList<>();
+        categoriesSaved = new ArrayList<>();
+        institutionsSaved = new ArrayList<>();
+        departmentsSaved = new ArrayList<>();
+        itemsSkipped = new ArrayList<>();
+
+        Item item;
+        int rowCount = 0;
+
+        if (rowIterator.hasNext()) {
+            rowIterator.next(); // Skip header row
+        }
+
+        while (rowIterator.hasNext()) {
+            rowCount++;
+            Row row = rowIterator.next();
+
+            Institution ins;
+            Department dept;
+            Institution cc;
+
+            String name = null;
+            String code = null;
+
+            String institutionName = null;
+            String departmentName = null;
+            String ccName = null;
+
+            Double fee = null;
+
+            Cell nameCell = row.getCell(0);
+            if (nameCell != null && nameCell.getCellType() == CellType.STRING) {
+                name = nameCell.getStringCellValue();
+                if (name == null || name.trim().isEmpty()) {
+                    outputString += "Row " + rowCount + ". No Item name given. Skipping ";
+                    continue;
+                }
+            }
+
+            Cell codeCell = row.getCell(1);
+            if (codeCell != null && codeCell.getCellType() == CellType.STRING) {
+                code = codeCell.getStringCellValue();
+            }
+
+            Cell insCell = row.getCell(2);
+            if (insCell != null && insCell.getCellType() == CellType.STRING) {
+                institutionName = insCell.getStringCellValue();
+            }
+
+            ins = institutionController.findExistingInstitutionByName(institutionName);
+            if (ins == null) {
+                outputString += "Row " + rowCount + ". No Institution named " + institutionName + ". Skipping ";
+                continue;
+            }
+
+            Cell deptCell = row.getCell(3);
+            if (deptCell != null && deptCell.getCellType() == CellType.STRING) {
+                departmentName = deptCell.getStringCellValue();
+            }
+
+            dept = departmentController.findExistingDepartmentByName(departmentName, ins);
+            if (dept == null) {
+                outputString += "Row " + rowCount + ". No Department named " + departmentName + " under the institution " + institutionName + ". Skipping ";
+                continue;
+            }
+
+            Cell ccCell = row.getCell(4);
+            if (ccCell != null && ccCell.getCellType() == CellType.STRING) {
+                ccName = ccCell.getStringCellValue();
+            }
+
+            cc = institutionController.findExistingInstitutionByName(ccName);
+            if (cc == null) {
+                outputString += "Row " + rowCount + ". No Collecting Centre named " + ccName + ". Skipping ";
+                continue;
+            }
+
+            Cell feeCell = row.getCell(5);
+            if (feeCell != null) {
+                switch (feeCell.getCellType()) {
+                    case NUMERIC:
+                        fee = feeCell.getNumericCellValue();
+                        break;
+                    case FORMULA:
+                        Workbook wb = feeCell.getSheet().getWorkbook();
+                        CreationHelper createHelper = wb.getCreationHelper();
+                        FormulaEvaluator evaluator = createHelper.createFormulaEvaluator();
+                        CellValue cellValue = evaluator.evaluate(feeCell);
+                        if (cellValue.getCellType() == CellType.NUMERIC) {
+                            fee = cellValue.getNumberValue();
+                        }
+                        break;
+                    case STRING:
+                        String strFee = feeCell.getStringCellValue();
+                        fee = CommonFunctions.stringToDouble(strFee);
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            if (fee == null || fee < 1) {
+                outputString += "Row " + rowCount + ". No Fee found or invalid fee. Skipping ";
+                continue;
+            }
+
+            name = CommonFunctions.sanitizeStringForDatabase(name);
+
+            item = itemController.findItemByName(name, code, dept);
+            if (item == null) {
+                outputString += "Row " + rowCount + ". No Item found. Skipping ";
+                continue;
+            }
+
+            ItemFee itf = new ItemFee();
+            itf.setName("Fee");
+            itf.setItem(item);
+            itf.setInstitution(ins);
+            itf.setDepartment(dept);
+            itf.setFeeType(FeeType.OwnInstitution);
+            itf.setForCategory(null);
+            itf.setForInstitution(cc);
+            itf.setFee(fee);
+            itf.setFfee(fee);
+            itf.setCreatedAt(new Date());
+            itf.setCreater(sessionController.getLoggedUser());
+
+            itemFeesToSave.add(itf);
+        }
+
+        itemFeeFacade.batchCreate(itemFeesToSave, 10000);
+        return itemFeesToSave;
     }
 
     private List<Item> readOutSourceDepartmentItemsAndFeesFromExcel(InputStream inputStream) throws IOException {
@@ -3874,6 +4036,19 @@ public class DataUploadController implements Serializable {
         return templateForItemWithFeeUpload;
     }
 
+    public StreamedContent getTemplateForCollectingCentreSpecialFeeUpload() {
+        if (department == null) {
+            JsfUtil.addErrorMessage("Need to select a Department");
+            return null;
+        }
+        try {
+            createTemplateForCollectingCentreSpecialFeeUpload();
+        } catch (IOException e) {
+            // Handle IOException
+        }
+        return templateForItemWithFeeUpload;
+    }
+
     public StreamedContent getTemplateForOutSourceItemWithFeeUpload() {
         try {
             createTemplateForOutSourceItemWithFeeUpload();
@@ -3915,6 +4090,75 @@ public class DataUploadController implements Serializable {
         DataValidationConstraint constraint = validationHelper.createFormulaListConstraint("Institutions!$A$1:$A$" + institutions.size());
 
         CellRangeAddressList addressList = new CellRangeAddressList(1, 65535, 5, 5); // Assuming column F is for institutions
+        XSSFDataValidation dataValidation = (XSSFDataValidation) validationHelper.createValidation(constraint, addressList);
+
+        dataValidation.setShowErrorBox(true);
+        dataSheet.addValidationData(dataValidation);
+
+        // Auto-size columns for aesthetics
+        for (int i = 0; i < columnHeaders.length; i++) {
+            dataSheet.autoSizeColumn(i);
+        }
+
+        // Write the output to a byte array
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        workbook.write(outputStream);
+        workbook.close();
+
+        InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+
+        // Set the downloading file
+        templateForItemWithFeeUpload = DefaultStreamedContent.builder()
+                .name("template_for_item_fee_upload.xlsx")
+                .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                .stream(() -> inputStream)
+                .build();
+    }
+
+    public void createTemplateForCollectingCentreSpecialFeeUpload() throws IOException {
+        XSSFWorkbook workbook = new XSSFWorkbook();
+
+        // Creating the first sheet for data entry
+        XSSFSheet dataSheet = workbook.createSheet("Upload Collecting Centre Special Fees for " + department.getName());
+
+        // Creating the second sheet for institution list
+        XSSFSheet institutionSheet = workbook.createSheet("Items");
+
+        // Fetching institutions and adding to the institution sheet
+        List<Institution> institutions = institutionController.getItems();
+        for (int i = 0; i < institutions.size(); i++) {
+            Row row = institutionSheet.createRow(i);
+            Cell cell = row.createCell(0);
+            cell.setCellValue(institutions.get(i).getName());
+        }
+
+        // Hiding the institution sheet
+        // workbook.setSheetHidden(workbook.getSheetIndex("Institutions"), true);
+        // Create header row in data sheet
+        Row headerRow = dataSheet.createRow(0);
+        String[] columnHeaders = {"Name", "Item Code", "Institution", "Department", "Collecting Centre", "Fee"};
+        for (int i = 0; i < columnHeaders.length; i++) {
+            Cell cell = headerRow.createCell(i);
+            cell.setCellValue(columnHeaders[i]);
+        }
+
+        List<Item> items = itemController.fillDepartmentItems(department);
+        for (int i = 0; i < items.size(); i++) {
+            Item item = items.get(i);
+            Row row = dataSheet.createRow(i + 1); // Starting from row 1 since row 0 is the header
+            row.createCell(0).setCellValue(item.getName());
+            row.createCell(1).setCellValue(item.getCode());
+            row.createCell(2).setCellValue(item.getInstitution().getName());
+            row.createCell(3).setCellValue(item.getDepartment().getName());
+            row.createCell(4).setCellValue(""); // Collecting Centre - blank
+            row.createCell(5).setCellValue(0.00); // Fee - default to 0.00
+        }
+
+        // Setting data validation for institution column in data sheet
+        XSSFDataValidationHelper validationHelper = new XSSFDataValidationHelper(dataSheet);
+        DataValidationConstraint constraint = validationHelper.createFormulaListConstraint("Institutions!$A$1:$A$" + institutions.size());
+
+        CellRangeAddressList addressList = new CellRangeAddressList(1, 65535, 2, 2); // Assuming column C is for institutions
         XSSFDataValidation dataValidation = (XSSFDataValidation) validationHelper.createValidation(constraint, addressList);
 
         dataValidation.setShowErrorBox(true);
@@ -4178,6 +4422,22 @@ public class DataUploadController implements Serializable {
 
     public void setUploadComplete(boolean uploadComplete) {
         this.uploadComplete = uploadComplete;
+    }
+
+    public Institution getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
+    }
+
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
     }
 
 }

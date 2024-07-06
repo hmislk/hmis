@@ -181,6 +181,8 @@
                                 <h:panelGroup id="gpSomDepartment" rendered="#{itemFeeManager.itemFee.feeType eq 'OtherInstitution' or itemFeeManager.itemFee.feeType eq 'OwnInstitution'  or itemFeeManager.itemFee.feeType eq 'Referral' }" >
                                     <p:selectOneMenu id="somDepartment"
                                                      class="w-100"
+                                                     filter="true"
+                                                     filterMatchMode="contains"
                                                      value="#{itemFeeManager.itemFee.department}" >
                                         <f:selectItem itemLabel="Select" ></f:selectItem>
                                         <f:selectItems value="#{itemFeeManager.departments}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" ></f:selectItems>
@@ -208,7 +210,10 @@
                                     <p:outputLabel value="Doctor / Staff" ></p:outputLabel>
                                 </h:panelGroup>
                                 <h:panelGroup id="gpSomEmp" rendered="#{itemFeeManager.itemFee.feeType eq 'Staff'}" >
-                                    <p:selectOneMenu id="somEmployee" value="#{itemFeeManager.itemFee.staff}"   class="w-100">
+                                    <p:selectOneMenu id="somEmployee"
+                                                     filter="true"
+                                                     filterMatchMode="contains"
+                                                     value="#{itemFeeManager.itemFee.staff}"   class="w-100">
                                         <f:selectItem itemLabel="Select" ></f:selectItem>
                                         <f:selectItems value="#{itemFeeManager.staffs}" var="staff" itemLabel="#{staff.person.nameWithTitle}" itemValue="#{staff}" ></f:selectItems>
                                     </p:selectOneMenu>
