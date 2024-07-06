@@ -4227,6 +4227,7 @@ public class DataUploadController implements Serializable {
         }
 
         List<ItemFee> fees = itemFeeController.fillDepartmentItemFees(department);
+        System.out.println("fees = " + fees.size());
         for (int i = 0; i < fees.size(); i++) {
             ItemFee fee = fees.get(i);
             Row row = dataSheet.createRow(i + 1); // Starting from row 1 since row 0 is the header
@@ -4235,7 +4236,7 @@ public class DataUploadController implements Serializable {
             row.createCell(2).setCellValue(fee.getItem().getInstitution().getName());
             row.createCell(3).setCellValue(fee.getItem().getDepartment().getName());
             row.createCell(4).setCellValue(fee.getName());
-            row.createCell(5).setCellValue(fee.getFeeType().toString());
+            row.createCell(5).setCellValue(fee.getFeeType() != null ? fee.getFeeType().toString() : "");
             row.createCell(6).setCellValue(fee.getSpeciality() != null ? fee.getSpeciality().getName() : "");
             row.createCell(7).setCellValue(fee.getStaff() != null ? fee.getStaff().getName() : "");
             row.createCell(8).setCellValue(fee.getInstitution() != null ? fee.getInstitution().getName() : "");

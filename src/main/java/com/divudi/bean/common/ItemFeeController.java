@@ -7,6 +7,7 @@
  * (94) 71 5812399
  */
 package com.divudi.bean.common;
+
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.entity.Department;
 import com.divudi.entity.Item;
@@ -34,8 +35,8 @@ import javax.inject.Named;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- * Acting Consultant (Health Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -86,21 +87,25 @@ public class ItemFeeController implements Serializable {
 
         return d;
     }
-    
+
     public List<ItemFee> fillDepartmentItemFees(Department department) {
+        System.out.println("fillDepartmentItemFees");
         String jpql = "SELECT f"
                 + " FROM ItemFee f "
-                + " WHERE f.retired=:ret ";
+                + " WHERE f.retired=:ret "
+                + " and f.item.retired=:ret ";
         HashMap<String, Object> parameters = new HashMap<>();
         parameters.put("ret", false);
-        if (department != null) {
-            jpql += " and f.item.department=:dep ";
-            parameters.put("dep", department);
-        }
+
+        jpql += " and f.item.department=:dep ";
+        parameters.put("dep", department);
+
         jpql += " ORDER BY f.item.name, f.name ";
+        System.out.println("parameters = " + parameters);
+        System.out.println("jpql = " + jpql);
         return itemFeeFacade.findByJpql(jpql, parameters);
     }
-    
+
     public List<Department> getInstitutionDepatrments(ItemFee fee) {
         List<Department> d;
         //////// // System.out.println("gettin ins dep ");
@@ -239,14 +244,14 @@ public class ItemFeeController implements Serializable {
         String sql = "select c from ItemFee c where c.retired = false and c.item.id = " + currentIx.getId();
         fees = itemFeeFacade.findByJpql(sql);
     }
-    
-    public List<ItemFee> getFees(Item i){
-        String sql="select c from ItemFee c where c.retired = false and c.item.id = " + i.getId();
-        List<ItemFee> fees=itemFeeFacade.findByJpql(sql);
+
+    public List<ItemFee> getFees(Item i) {
+        String sql = "select c from ItemFee c where c.retired = false and c.item.id = " + i.getId();
+        List<ItemFee> fees = itemFeeFacade.findByJpql(sql);
         return fees;
     }
-    
-    public ItemFee findItemFeeFromItemFeeId(Long id){
+
+    public ItemFee findItemFeeFromItemFeeId(Long id) {
         return getItemFeeFacade().find(id);
     }
 
