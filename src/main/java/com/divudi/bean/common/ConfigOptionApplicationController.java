@@ -20,6 +20,8 @@ import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.enterprise.context.ApplicationScoped;
+import javax.faces.context.ExternalContext;
+import javax.faces.context.FacesContext;
 
 /**
  *
@@ -45,6 +47,7 @@ public class ConfigOptionApplicationController implements Serializable {
     @PostConstruct
     public void init() {
         loadApplicationOptions();
+        
     }
 
     public void loadApplicationOptions() {
@@ -56,6 +59,9 @@ public class ConfigOptionApplicationController implements Serializable {
     }
 
     public ConfigOption getApplicationOption(String key) {
+        if (applicationOptions == null) {
+            loadApplicationOptions();
+        }
         ConfigOption c = applicationOptions.get(key);
         return c;
     }
@@ -276,6 +282,32 @@ public class ConfigOptionApplicationController implements Serializable {
             return Long.parseLong(option.getOptionValue());
         } catch (NumberFormatException e) {
 // Log or handle the case where the value cannot be parsed into a Long
+            return null;
+        }
+    }
+
+    public Long getLongValueByKey(String key, Long defaultValue) {
+        ConfigOption option = getApplicationOption(key);
+        if (option == null || option.getValueType() != OptionValueType.LONG) {
+            option = new ConfigOption();
+            option.setCreatedAt(new Date());
+            option.setOptionKey(key);
+            option.setScope(OptionScope.APPLICATION);
+            option.setInstitution(null);
+            option.setDepartment(null);
+            option.setWebUser(null);
+            option.setValueType(OptionValueType.LONG);
+            if (defaultValue != null) {
+                option.setOptionValue("" + defaultValue);
+            } else {
+                option.setOptionValue("0");
+            }
+            optionFacade.create(option);
+            loadApplicationOptions();
+        }
+        try {
+            return Long.parseLong(option.getOptionValue());
+        } catch (NumberFormatException e) {
             return null;
         }
     }

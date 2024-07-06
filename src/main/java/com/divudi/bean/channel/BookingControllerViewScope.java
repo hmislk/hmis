@@ -1321,6 +1321,11 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     public void listAllSesionInstances() {
         sessionInstances = channelBean.listSessionInstances(fromDate, toDate, null, null, null);
+        if(configOptionApplicationController.getBooleanValueByKey("Calculate All Patient Count When Loading Channel Booking By Dates")){
+            for(SessionInstance s : sessionInstances){
+                fillBillSessions(s);
+            }
+        }
         filterSessionInstances();
     }
 
@@ -2617,6 +2622,16 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 return;
             }
         }
+        if (configOptionApplicationController.getBooleanValueByKey("Channel Scan Sessions Require Item Presence")){
+            if(!(itemsAvailableToAddToBooking.isEmpty())){
+                if(itemsAddedToBooking == null || itemsAddedToBooking.isEmpty()){
+                    JsfUtil.addErrorMessage("There is No Item Added");
+                    settleSucessFully = false;
+                    return; 
+                }
+            }
+        }
+        
         if (configOptionApplicationController.getBooleanValueByKey("Channel Items Sessions Need to Have a Referance Doctor")) {        
             if (!(itemsAddedToBooking == null || itemsAddedToBooking.isEmpty())) {
                 if(referredBy == null){
@@ -2632,13 +2647,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 int maxNo = selectedSessionInstance.getMaxNo();
                 long bookedPatientCount = selectedSessionInstance.getBookedPatientCount();
                 long totalPatientCount;
-                System.out.println("selectedSessionInstance.getCancelPatientCount() = " + selectedSessionInstance.getCancelPatientCount());
                 if(selectedSessionInstance.getCancelPatientCount() != null){
                     long canceledPatientCount = selectedSessionInstance.getCancelPatientCount();
                     totalPatientCount = bookedPatientCount - canceledPatientCount;
-                    System.out.println("totalPatientCount = " + totalPatientCount);
-                    System.out.println("bookedPatientCount = " + bookedPatientCount);
-                    System.out.println("canceledPatientCount = " + canceledPatientCount);
                 }else{
                     totalPatientCount = bookedPatientCount;
                 }
@@ -4119,6 +4130,116 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         selectedSessionInstance.setRemainingPatientCount(bookedPatientCount - completedPatientCount);
         sessionInstanceController.save(selectedSessionInstance);
     }
+    
+    
+    public void fillBillSessions(SessionInstance s) {
+        List<BillSession> tempBillSessions;
+        BillType[] billTypes = {
+            BillType.ChannelAgent,
+            BillType.ChannelCash,
+            BillType.ChannelOnCall,
+            BillType.ChannelStaff,
+            BillType.ChannelCredit
+        };
+        List<BillType> bts = Arrays.asList(billTypes);
+        String sql = "Select bs "
+                + " From BillSession bs "
+                + " where bs.retired=false"
+                + " and bs.bill.billType in :bts"
+                + " and type(bs.bill)=:class "
+                + " and bs.sessionInstance=:ss "
+                + " order by bs.serialNo ";
+        HashMap<String, Object> hh = new HashMap<>();
+        hh.put("bts", bts);
+        hh.put("class", BilledBill.class);
+        hh.put("ss", s);
+        tempBillSessions = getBillSessionFacade().findByJpql(sql, hh, TemporalType.DATE);
+
+        // Initialize counts
+        long bookedPatientCount = 0;
+        long paidPatientCount = 0;
+        long completedPatientCount = 0;
+        long cancelPatientCount = 0;
+        long refundedPatientCount = 0;
+        long onCallPatientCount = 0;
+
+        if (tempBillSessions == null) {
+            s.setBookedPatientCount(0l);
+            s.setPaidPatientCount(0l);
+            s.setCompletedPatientCount(0l);
+            s.setRemainingPatientCount(0l);
+            sessionInstanceController.save(s);
+            return;
+        }
+
+        // Loop through billSessions to calculate counts
+        for (BillSession bs : tempBillSessions) {
+            if (bs != null) {
+                bookedPatientCount++; // Always increment if bs is not null
+
+                // Additional check for completion status
+                try {
+                    if (bs.isCompleted()) {
+                        completedPatientCount++;
+                    }
+                } catch (NullPointerException npe) {
+                    // Log or handle the fact that there was an NPE checking completion status
+
+                }
+
+                // Additional check for paid status
+                try {
+                    if (bs.getPaidBillSession() != null) {
+                        paidPatientCount++;
+                    }
+                } catch (NullPointerException npe) {
+                    // Log or handle the fact that there was an NPE checking paid status
+
+                }
+                // Additional check for cancel status
+                try {
+                    if (bs.getBill().isCancelled()) {
+                        cancelPatientCount++;
+                    }
+                } catch (NullPointerException npe) {
+                    // Log or handle the fact that there was an NPE checking paid status
+
+                }
+
+                // Additional check for refund status
+                try {
+                    if (bs.getBill().isRefunded()) {
+                        refundedPatientCount++;
+                    }
+                } catch (NullPointerException npe) {
+                    // Log or handle the fact that there was an NPE checking paid status
+
+                }
+
+                // Additional check for Oncall status
+                try {
+                    if (bs.getPaidBillSession() == null && !bs.getBill().isCancelled()) {
+                        onCallPatientCount++;
+                    }
+                } catch (NullPointerException npe) {
+                    // Log or handle the fact that there was an NPE checking paid status
+
+                }
+            }
+        }
+
+        // Set calculated counts to selectedSessionInstance
+        s.setBookedPatientCount(bookedPatientCount);
+        s.setPaidPatientCount(paidPatientCount);
+        s.setCompletedPatientCount(completedPatientCount);
+        s.setCancelPatientCount(cancelPatientCount);
+        s.setRefundedPatientCount(refundedPatientCount);
+        s.setOnCallPatientCount(onCallPatientCount);
+
+        // Assuming remainingPatientCount is calculated as booked - completed
+        s.setRemainingPatientCount(bookedPatientCount - completedPatientCount);
+        sessionInstanceController.save(s);
+    }
 
     private boolean errorCheckForAddingNewBooking() {
         if (getSelectedSessionInstance() == null) {
@@ -4381,6 +4502,11 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         }
         if (collectingCentre != null) {
             savingBill.setCollectingCentre(collectingCentre);
+        }
+        if (savingBill.getPaidAmount() == 0.0){
+            if(!(savingBill.getPaymentMethod() == PaymentMethod.OnCall)){
+                savingBill.setPaidAmount(feeNetTotalForSelectedBill);
+            }
         }
 
         calculateBillTotalsFromBillFees(savingBill, savingBillFees);
