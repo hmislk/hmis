@@ -5,7 +5,7 @@ import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 
 /**
- * Controller for Optician-related navigation.
+ * Controller for optician-related navigation.
  * @author Dr M H B Ariyaratne <buddhika.ari at gmail.com>
  */
 @Named
@@ -18,43 +18,43 @@ public class OpticianController implements Serializable {
     public OpticianController() {
     }
     
-    // Navigation to the Optician EMR page
+    // Navigation to the optician EMR page
     public String navigateToOpticianEmr(){
-        return "/Optician/emr?faces-redirect=true";
+        return "/optician/emr?faces-redirect=true";
     }
 
-    // Navigation to the Optician Patient Management page
+    // Navigation to the optician Patient Management page
     public String navigateToOpticianPatientManagement(){
-        return "/Optician/patient_management?faces-redirect=true";
+        return "/optician/patient_management?faces-redirect=true";
     }
 
-    // Navigation to the Optician Appointment Management page
+    // Navigation to the optician Appointment Management page
     public String navigateToOpticianAppointmentManagement(){
-        return "/Optician/appointment_management?faces-redirect=true";
+        return "/optician/appointment_management?faces-redirect=true";
     }
 
-    // Navigation to the Optician Stock Management page
+    // Navigation to the optician Stock Management page
     public String navigateToOpticianStockManagement(){
-        return "/Optician/stock_management?faces-redirect=true";
+        return "/optician/stock_management?faces-redirect=true";
     }
 
-    // Navigation to the Optician Product Catalog page
+    // Navigation to the optician Product Catalog page
     public String navigateToOpticianProductCatalog(){
-        return "/Optician/product_catalog?faces-redirect=true";
+        return "/optician/product_catalog?faces-redirect=true";
     }
 
-    // Navigation to the Optician Repair Management page
+    // Navigation to the optician Repair Management page
     public String navigateToOpticianRepairManagement(){
-        return "/Optician/repair_management?faces-redirect=true";
+        return "/optician/repair_management?faces-redirect=true";
     }
     
-    // Navigation to the Optician Repair Management page
+    // Navigation to the optician Repair Management page
     public String navigateToRetailSale(){
-        return "/Optician/retail_sale?faces-redirect=true";
+        return "/optician/retail_sale?faces-redirect=true";
     }
     
     public String navigateToPurchase(){
-        return "/Optician/purchase?faces-redirect=true";
+        return "/optician/purchase?faces-redirect=true";
     }
     
 }

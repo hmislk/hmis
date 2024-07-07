@@ -19,6 +19,7 @@ public enum DepartmentType {
     Inventry,
     Counter,
     Inward,
+    Optician,
     Other;
 
     public String getLabel() {
