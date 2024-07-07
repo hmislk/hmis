@@ -247,6 +247,7 @@ public class StaffPaymentBillController implements Serializable {
             List<BillTypeAtomic> btcs = new ArrayList<>();
             btcs.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
             btcs.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+            btcs.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
             btcs.add(BillTypeAtomic.CC_BILL);
             String sql;
             HashMap h = new HashMap();

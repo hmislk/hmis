@@ -251,6 +251,7 @@ public class SearchController implements Serializable {
     private double totalOfOtherPayments;
     private double billCount;
     private Token token;
+    private int managePaymentIndex = -1;
 
     private boolean duplicateBillView;
 
@@ -1498,6 +1499,14 @@ public class SearchController implements Serializable {
 
     public void setDuplicateBillView(boolean duplicateBillView) {
         this.duplicateBillView = duplicateBillView;
+    }
+
+    public int getManagePaymentIndex() {
+        return managePaymentIndex;
+    }
+
+    public void setManagePaymentIndex(int managePaymentIndex) {
+        this.managePaymentIndex = managePaymentIndex;
     }
 
     public class billsWithbill {
