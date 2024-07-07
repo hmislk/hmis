@@ -85,7 +85,7 @@ public class EnumController implements Serializable {
         }
         return paymentMethodsForOpdBilling;
     }
-    
+
     public List<PaymentMethod> getPaymentMethodsForPackageBilling() {
         if (paymentMethodsForOpdBilling == null) {
             fillPaymentMethodsForPackageBilling();
@@ -107,7 +107,7 @@ public class EnumController implements Serializable {
             }
         }
     }
-    
+
     public void fillPaymentMethodsForPackageBilling() {
         paymentMethodsForOpdBilling = new ArrayList<>();
         for (PaymentMethod pm : PaymentMethod.values()) {
@@ -300,7 +300,6 @@ public class EnumController implements Serializable {
     public FeeType[] getFeeTypes() {
         return FeeType.values();
     }
-    
 
     public DayType[] getDayTypes() {
         return DayType.values();
@@ -663,6 +662,23 @@ public class EnumController implements Serializable {
             PaymentMethod.Staff,
             PaymentMethod.PatientDeposit};
         return p;
+    }
+
+    public List<PaymentMethod> getPaymentMethodsNonCreditExceptMultiple(List<PaymentMethod> pm) {
+        List<PaymentMethod> paymentMethod = new ArrayList<>();
+        if (pm == null){
+            paymentMethod.add(PaymentMethod.Cash);
+            paymentMethod.add(PaymentMethod.Card);
+            paymentMethod.add(PaymentMethod.Cheque);
+            paymentMethod.add(PaymentMethod.Slip);
+            paymentMethod.add(PaymentMethod.ewallet);
+            paymentMethod.add(PaymentMethod.Staff);
+            paymentMethod.add(PaymentMethod.PatientDeposit);
+        }else{
+            paymentMethod.addAll(pm);
+            paymentMethod.remove(PaymentMethod.MultiplePaymentMethods);
+        }
+        return paymentMethod;
     }
 
     public PaymentMethod[] getCollectingCentrePaymentMethods() {

@@ -538,6 +538,61 @@
                                                         <pa:multiple_payment_methods controller="#{bookingControllerViewScope}" class="w-100"/>
 
                                                     </h:panelGroup>
+                                                    <!-- Agent Payment Method -->
+                                                    <p:panelGrid columns="1" rendered="#{bookingControllerViewScope.settlePaymentMethod eq 'Agent'}" >
+                                                        <f:facet name="header">
+                                                            <div class="d-flex align-items-center justify-content-between">
+                                                                <h:outputLabel id="agent" value="Agent" />
+                                                                <div class=" mx-4">
+                                                                    <p:outputLabel class="mx-2" value="Agent Balance" />
+                                                                    <h:outputLabel id="balance2" value="#{empty bookingControllerViewScope.institution.ballance ? '00.00' : bookingControllerViewScope.institution.ballance}" />
+                                                                </div>
+                                                            </div>
+                                                        </f:facet>
+
+                                                        <p:row>
+                                                            <p:column>
+                                                                <h:outputLabel value="Agent Details" />
+                                                            </p:column>
+                                                            <p:column>
+                                                                <p:autoComplete class="w-75 mx-2" id="agent2" forceSelection="true"
+                                                                                value="#{bookingControllerViewScope.institution}" completeMethod="#{agencyController.completeAgency}" var="ix"
+                                                                                itemLabel="#{ix.name}" itemValue="#{ix}" size="38">
+                                                                    <f:ajax event="itemSelect" execute="@this" render="balance2 totalsPanel agRefLbl agRefTxt :#{p:resolveFirstComponentWithId('agRefLbl',view).clientId} :#{p:resolveFirstComponentWithId('tblAgentBooks',view).clientId} gdManageBookings" listener="#{bookingControllerViewScope.validateAgentBalance()}"/>
+                                                                    <p:column>#{ix.institutionCode}</p:column>
+                                                                    <p:column>#{ix.name}</p:column>
+                                                                </p:autoComplete>
+                                                            </p:column>
+                                                        </p:row>
+                                                        <p:row>
+                                                            <p:column>
+                                                                <p:outputLabel for="agRefTxt" value="Agent Ref No" />
+                                                            </p:column>
+                                                            <p:column>
+                                                                <p:inputText size="38" class="mx-2" autocomplete="off" id="agRefTxt" value="#{bookingControllerViewScope.agentRefNo}" />
+                                                            </p:column>
+                                                        </p:row>
+                                                        <p:row>
+                                                            <p:column colspan="2">
+                                                                <p:dataTable class="w-100" id="tblAgentBooks" emptyMessage="No Reference Books"
+                                                                             value="#{bookingControllerViewScope.institution.agentReferenceBooks}" var="a">
+                                                                    <f:facet name="header">
+                                                                        <p:outputLabel value="Agent Reference Number Details" />
+                                                                    </f:facet>
+                                                                    <p:column headerText="S.R.N.">
+                                                                        <p:outputLabel value="#{a.startingReferenceNumber}">
+                                                                            <f:convertNumber pattern="00000" />
+                                                                        </p:outputLabel>
+                                                                    </p:column>
+                                                                    <p:column headerText="E.R.N.">
+                                                                        <p:outputLabel value="#{a.endingReferenceNumber}">
+                                                                            <f:convertNumber pattern="00000" />
+                                                                        </p:outputLabel>
+                                                                    </p:column>
+                                                                </p:dataTable>
+                                                            </p:column>
+                                                        </p:row>
+                                                    </p:panelGrid>
 
                                                 </h:panelGroup>
                                             </div>
@@ -774,10 +829,10 @@
                                                             <p:outputLabel value="Payment Method"/>
                                                             <p:outputLabel value="#{bookingControllerViewScope.selectedBillSession.bill.paidBill.paymentMethod}"/>
                                                             <p:outputLabel value="Agent" rendered="#{bookingControllerViewScope.selectedBillSession.bill.paidBill.paymentMethod eq 'Agent'}"/>
-                                                            <p:outputLabel value="#{bookingControllerViewScope.selectedBillSession.bill.paidBill.fromInstitution.name}" 
+                                                            <p:outputLabel value="#{bookingControllerViewScope.selectedBillSession.bill.creditCompany.name}"
                                                                            rendered="#{bookingControllerViewScope.selectedBillSession.bill.paidBill.paymentMethod eq 'Agent'}"/>
                                                             <p:outputLabel value="Agent Ref No" rendered="#{bookingControllerViewScope.selectedBillSession.bill.paidBill.paymentMethod eq 'Agent'}"/>
-                                                            <p:outputLabel value="#{bookingControllerViewScope.selectedBillSession.billItem.paidBill.agentRefNo}" rendered="#{bookingControllerViewScope.selectedBillSession.bill.paidBill.paymentMethod eq 'Agent'}"/>
+                                                            <p:outputLabel value="#{bookingControllerViewScope.selectedBillSession.billItem.bill.agentRefNo}" rendered="#{bookingControllerViewScope.selectedBillSession.bill.paidBill.paymentMethod eq 'Agent'}"/>
                                                             <p:outputLabel value="User"/>
                                                             <p:outputLabel value="#{bookingControllerViewScope.selectedBillSession.bill.paidBill.creater.webUserPerson.nameWithTitle}"/>
                                                             <p:outputLabel value="Settled At"/>
@@ -1226,11 +1281,19 @@
                                         <p:outputLabel value="#{bi.feeValue}"/> 
                                     </p:column>
                                     <p:column headerText="Return Value">
-                                        <p:inputText value="#{bi.tmpChangedValue}">
+                                        <p:inputText value="#{bi.tmpChangedValue}" disabled="#{configOptionApplicationController.getBooleanValueByKey('Disallow Modifications to Refund Amounts')}"  >
                                             <f:ajax execute="@this" render=":#{p:resolveFirstComponentWithId('tot',view).clientId}" event="blur" listener="#{bookingControllerViewScope.calRefundTotal()}"/>
                                             <f:ajax execute="@this" render=":#{p:resolveFirstComponentWithId('tot',view).clientId} @this" event="blur" listener="#{bookingControllerViewScope.checkRefundTotal()}"/>
                                         </p:inputText>
-
+                                        <p:commandButton class="ui-button-warning mx-2"
+                                                         icon="fas fa-copy"
+                                                         action="#{bookingControllerViewScope.copyValue(bi)}"
+                                                         ajax="false"
+                                                         disabled="#{bi.fee.feeType eq 'OwnInstitution' and configOptionApplicationController.getBooleanValueByKey('Disable Hospital Fee Refunds')}"
+                                                         rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable Users to Fetch Refund Amounts Using a Button')}" >
+                                            <f:ajax execute="@this" render=":#{p:resolveFirstComponentWithId('tot',view).clientId}" event="click" listener="#{bookingControllerViewScope.calRefundTotal()}"/>
+                                            <f:ajax execute="@this" render=":#{p:resolveFirstComponentWithId('tot',view).clientId} @this" event="click" listener="#{bookingControllerViewScope.checkRefundTotal()}"/>
+                                        </p:commandButton>
                                     </p:column>
                                 </p:dataTable>
                             </h:panelGroup>
@@ -1255,12 +1318,15 @@
                                     <p:commandButton id="btnIdRefund" value="Refund Booking" class="ui-button-warning my-2 mx-2" icon="fas fa-reply" ajax="false"
                                                      disabled="#{bookingControllerViewScope.billSession.bill.refunded==true
                                                                  or bookingControllerViewScope.billSession.bill.cancelled==true or bookingControllerViewScope.disableRefund==true}"
-                                                     action="#{bookingControllerViewScope.channelBookingRefund()}"/>
+                                                     action="#{bookingControllerViewScope.channelBookingRefund()}">
+                                        <f:ajax execute="@this" render=":#{p:resolveFirstComponentWithId('tot',view).clientId}" event="click" listener="#{bookingControllerViewScope.calRefundTotal()}"/>
+                                        <f:ajax execute="@this" render=":#{p:resolveFirstComponentWithId('tot',view).clientId} @this" event="click" listener="#{bookingControllerViewScope.checkRefundTotal()}"/>
+                                    </p:commandButton>
 
                                 </div>
                             </div>
 
-                            <h:panelGroup id="gpSettleRefundBillPreview" rendered="#{bookingControllerViewScope.selectedBillSession.bill.refunded}">
+                            <h:panelGroup rendered="#{bookingControllerViewScope.selectedBillSession.bill.refunded}">
                                 <div>
                                     <p:commandButton
                                         class="mx-2 ui-button-info"
@@ -1270,8 +1336,9 @@
                                         <p:printer target="gpSettleRefundBillPreview" ></p:printer>
                                     </p:commandButton>
                                 </div>
-                                <ez:five_five_paper_without_headings_channel_RefundBill bill="#{bookingControllerViewScope.selectedBillSession.bill}"/>
-
+                                <h:panelGroup id="gpSettleRefundBillPreview">
+                                    <ez:five_five_paper_without_headings_channel_RefundBill bill="#{bookingControllerViewScope.selectedBillSession.bill}"/>
+                                </h:panelGroup>
                             </h:panelGroup>
 
                         </p:tab>

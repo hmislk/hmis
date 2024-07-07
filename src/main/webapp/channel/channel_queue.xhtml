@@ -51,11 +51,27 @@
                         </div>
 
                         <div>
-                            <p:commandButton ajax="false" 
-                                             value="List Completed" 
-                                             icon="fa fa-check" 
-                                             styleClass="ui-button-success mx-1" 
+                            <h:panelGroup rendered="#{webUserController.hasPrivilege('ChannellingPastBookingPatientAttend')}" >
+                                <p:datePicker
+                                    value="#{bookingController.fromDate}"
+                                    showButtonBar="true"
+                                    inputStyleClass="form-control"
+                                    maxdate="#{commonFunctionsController.endOfDay}"
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"          >
+                                </p:datePicker>
+                                <p:commandButton ajax="false"
+                                                 value="List Date"
+                                                 icon="fa fa-redo"
+                                                 styleClass="ui-button-info mx-1"
+                                                 action="#{bookingController.listSessionInstancesByDate()}" />
+                            </h:panelGroup>
+
+                            <p:commandButton ajax="false"
+                                             value="List Completed"
+                                             icon="fa fa-check"
+                                             styleClass="ui-button-success mx-1"
                                              action="#{bookingController.listTodaysCompletedSesionInstances()}" />
+
 
                             <!-- View Ongoing Session Data Button -->
                             <p:commandButton ajax="false" 
@@ -190,8 +206,9 @@
                                 <div>                                 
                                      <p:commandButton class="mx-2" icon="fas fa-eye"
                                                       styleClass="rounded-button ui-button-outlined ui-button-info " ajax="false"
-                                                     value="View"
-                                                     style="font-size: 1em; text-align: center"
+                                                      value="View"
+                                                      rendered="#{bookingController.isSessionDateToday() or webUserController.hasPrivilege('ChannellingPastBookingPatientAttend')}"
+                                                      style="font-size: 1em; text-align: center"
                                                      action="#{bookingController.navigateToManageSessionQueueAtConsultantRoom}"
                                                     >
                                         <f:setPropertyActionListener value="#{s}" target="#{bookingController.selectedSessionInstance}"/>

@@ -34,6 +34,19 @@
                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                     </h:outputText>
                 </div>
+                <br/>
+            </div>
+            <div class="row" >
+                <div class="col mx-1" >
+                    <p:inputText 
+                        autocomplete="off"  
+                        class="w-25"
+                        value="#{cc.attrs.paymentMethodData.patient_deposit.totalValue}" 
+                        id="txtVal">
+                        <p:ajax process="@this" ></p:ajax>
+                    </p:inputText>
+                    <p:watermark value="Value" for="txtVal" />
+                </div>
             </div>
         </h:panelGroup>
         <h:panelGroup rendered="#{!cc.attrs.paymentMethodData.patient_deposit.patient.hasAnAccount}" >
