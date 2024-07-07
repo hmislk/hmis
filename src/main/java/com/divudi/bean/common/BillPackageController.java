@@ -438,9 +438,9 @@ public class BillPackageController implements Serializable, ControllerWithPatien
                     case Credit:
                     case PatientDeposit:
                         if (getPatient().getRunningBalance() != null) {
-                            getPatient().setRunningBalance(getPatient().getRunningBalance() - netTotal);
+                            getPatient().setRunningBalance(getPatient().getRunningBalance() - cd.getPaymentMethodData().getPatient_deposit().getTotalValue());
                         } else {
-                            getPatient().setRunningBalance(0.0 - netTotal);
+                            getPatient().setRunningBalance(0.0 - cd.getPaymentMethodData().getPatient_deposit().getTotalValue());
                         }
                         getPatientFacade().edit(getPatient());
                     case Slip:
@@ -508,16 +508,16 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         }
         return ps;
     }
-    
+
     public void calculateBillfeePayments(List<BillFee> billFees, Payment p) {
         for (BillFee bf : billFees) {
-                bf.setSettleValue(bf.getFeeValue());
-                setBillFeePaymentAndPayment(bf.getFeeValue(), bf, p);
-                getBillFeeFacade().edit(bf);
-            
+            bf.setSettleValue(bf.getFeeValue());
+            setBillFeePaymentAndPayment(bf.getFeeValue(), bf, p);
+            getBillFeeFacade().edit(bf);
+
         }
     }
-    
+
     public void setBillFeePaymentAndPayment(double amount, BillFee bf, Payment p) {
         BillFeePayment bfp = new BillFeePayment();
         bfp.setBillFee(bf);
@@ -529,7 +529,6 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         bfp.setPayment(p);
         billFeePaymentFacade.create(bfp);
     }
-
 
     public double calculatRemainForMultiplePaymentTotal() {
 
@@ -566,7 +565,9 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             } else if (pm.getPaymentMethod() == PaymentMethod.ewallet) {
                 pm.getPaymentMethodData().getEwallet().setTotalValue(remainAmount);
             } else if (pm.getPaymentMethod() == PaymentMethod.PatientDeposit) {
-                pm.getPaymentMethodData().getPatient_deposit().setPatient(patient);
+                if (patient != null) {
+                    pm.getPaymentMethodData().getPatient_deposit().setPatient(patient);
+                }
                 pm.getPaymentMethodData().getPatient_deposit().setTotalValue(remainAmount);
             } else if (pm.getPaymentMethod() == PaymentMethod.Credit) {
                 pm.getPaymentMethodData().getCredit().setTotalValue(remainAmount);
@@ -715,6 +716,26 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
                 if (paymentSchemeController.checkPaymentMethodError(cd.getPaymentMethod(), cd.getPaymentMethodData())) {
                     return true;
+                }
+                if (cd.getPaymentMethod().equals(PaymentMethod.PatientDeposit)) {
+                    if (!getPatient().getHasAnAccount()) {
+                        JsfUtil.addErrorMessage("Patient has not account. Can't proceed with Patient Deposits");
+                        return true;
+                    }
+                    double creditLimitAbsolute = Math.abs(getPatient().getCreditLimit());
+                    double runningBalance;
+                    if (getPatient().getRunningBalance() != null) {
+                        runningBalance = getPatient().getRunningBalance();
+                    } else {
+                        runningBalance = 0.0;
+                    }
+                    double availableForPurchase = runningBalance + creditLimitAbsolute;
+
+                    if (cd.getPaymentMethodData().getPatient_deposit().getTotalValue() > availableForPurchase) {
+                        JsfUtil.addErrorMessage("No Sufficient Patient Deposit");
+                        return true;
+                    }
+
                 }
                 if (cd.getPaymentMethod().equals(PaymentMethod.Staff)) {
                     if (cd.getPaymentMethodData().getStaffCredit().getTotalValue() == 0.0 || cd.getPaymentMethodData().getStaffCredit().getToStaff() == null) {
@@ -1113,6 +1134,8 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     public PaymentMethod getPaymentMethod() {
         if (paymentMethod != paymentMethod.Cash) {
             setCashPaid(netTotal);
+        } else {
+            setCashPaid(0.00);
         }
         return paymentMethod;
     }

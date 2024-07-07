@@ -12,6 +12,11 @@
             <ui:define name="content">
                 <h:form>
                     <p:panel header="OPD Payments Due Search" >
+                        <f:facet name="header">
+                            <h:outputLabel value="OPD Payments Due Search"/>
+                            <p:commandButton value="Back" icon="fas fa-arrow-left" class="ui-button-warning" style="float: right;" action="/payments/pay_index?faces-redirect=true" ajax="false"/>
+                       
+                        </f:facet>
                        
                             <div class="row">
                                 <div class="col-2">
