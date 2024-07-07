@@ -308,6 +308,7 @@ public class UserPrivilageController implements Serializable {
         TreeNode channeleditCreditLimitUserLevelNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.ChannellingEditCreditLimitUserLevel, "Edit Credit Limit User Level"), channeladministratorNode);
         TreeNode channeleditCreditLimitAdminLevelNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.ChannellingEditCreditLimitAdminLevel, "Edit Credit Limit Administrator Level"), channeladministratorNode);
         TreeNode ChannellingReprintOriginalBill = new DefaultTreeNode(new PrivilegeHolder(Privileges.ChannellingReprintOriginalBill, "Channelling Reprint Original Bill"), channeladministratorNode);
+        TreeNode ChannellingPastBookingPatientAttend = new DefaultTreeNode(new PrivilegeHolder(Privileges.ChannellingPastBookingPatientAttend, "Channelling Attend Patients To Past Booking"), channeladministratorNode);
         TreeNode channelReportsNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.ChannelReports, "Channel Reports"), channellingNode);
         TreeNode channelSummaryNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.ChannelSummery, "Channel Summary"), channellingNode);
         TreeNode channelManagementNode = new DefaultTreeNode("Channel Management", channellingNode);

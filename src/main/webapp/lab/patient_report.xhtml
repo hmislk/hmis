@@ -590,8 +590,8 @@
                                     <h:panelGroup rendered="#{patientReportController.currentPatientReport.item.reportType eq 'Microbiology'}"  >
                                         <div id="divReportM"  class="labReport"   >
                                             <ez:common_report showBackground="#{patientReportController.showBackground}" commonReportFormat="#{patientReportController.currentPatientReport.reportFormat}"
-                                                              patientReport="#{patientReportController.currentPatientReport}"/>
-                                            <div style="position: absolute; top: 27%; width: 97%; left: 1%; text-align: center; font-family:Cambria, Georgia, serif; font-size: 14px; height: 70%; vertical-align: top;" >
+                                                                  patientReport="#{patientReportController.currentPatientReport}"/>
+                                            <div style="position: absolute; top: #{configOptionApplicationController.getShortTextValueByKey('Microbiology Lab Report Height')}%; width: 97%; left: 1%; text-align: center; font-family:Cambria, Georgia, serif; font-size: 14px; height: 70%; vertical-align: top;" >
                                                 <div id="ixName" >
                                                     <h:outputLabel value="#{patientReportController.currentPatientReport.patientInvestigation.investigation.printName}" 
                                                                    style="font-weight: bold;font-size: 18px!important; "/>
@@ -649,8 +649,8 @@
                                                 <div style="clear: left;padding-top: 1%;">
                                                     <h:outputLabel value="--- End of Report ---" style="font-size: 14px; font-weight: bold; "></h:outputLabel>
                                                 </div>
-                                            </div>
-                                        </div>
+                                                </div>
+                                       </div>
                                     </h:panelGroup>
 
                                 </h:panelGroup>
