@@ -1,6 +1,7 @@
 package com.divudi.data.channel;
 
 import com.divudi.bean.channel.BookingController;
+import com.divudi.bean.channel.BookingControllerViewScope;
 import com.divudi.bean.channel.ChannelBillController;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.DoctorController;
@@ -98,6 +99,8 @@ public class PatientPortalController implements Serializable {
     ChannelBillController channelBillController;
     @Inject
     StaffController staffController;
+    @Inject
+    BookingControllerViewScope bookingControllerViewScope;
 
     private String PatientphoneNumber;
     private boolean bookDoctor;
@@ -141,6 +144,7 @@ public class PatientPortalController implements Serializable {
     private ChannelBean channelBean;
 
     public String navigateBookingMenue() {
+        bookingControllerViewScope.fillBillSessions(selectedSessionInstance);
         sessionInstances = null;
         selectedConsultant = null;
         selectedSpeciality = null;
@@ -278,6 +282,11 @@ public class PatientPortalController implements Serializable {
         m.put("nextTwoDays", calendar.getTime());
 
         sessionInstances = sessionInstanceFacade.findByJpql(jpql.toString(), m, TemporalType.DATE);
+        
+        for(SessionInstance s : sessionInstances){
+            bookingControllerViewScope.fillBillSessions(s);
+        }
+        
     }
 
     public void otpCodeConverter() {

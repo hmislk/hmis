@@ -938,7 +938,13 @@
                         value="Financial Transaction Manager" 
                         rendered="#{webUserController.hasPrivilege('PaymentBilling')}" >
                     </p:menuitem>
-                    <p:submenu label="Pay"
+                    <p:menuitem  
+                        ajax="false"  
+                        action="/payments/pay_index?faces-redirect=true"
+                        value="Cash To Pay" 
+                        rendered="#{webUserController.hasPrivilege('PaymentBilling')}" >
+                    </p:menuitem>
+<!--                    <p:submenu label="Pay"
                                rendered="#{webUserController.hasPrivilege('Payment')}">
                         <p:submenu label="OPD">
                             <p:menuitem  ajax="false"  action="/payment_staff_bill?faces-redirect=true" value="Pay Doctor/Staff" rendered="#{webUserController.hasPrivilege('PaymentBilling')}" ></p:menuitem>
@@ -972,7 +978,7 @@
                             <p:menuitem  ajax="false"  action="/petty_cash_bill_search_own?faces-redirect=true" actionListener="#{searchController.makeListNull}"  value="Petty Cash Bill Search"  ></p:menuitem>
                             <p:menuitem  ajax="false"  action="/iou_bill?faces-redirect=true" value="Petty Cash (IOU)"  ></p:menuitem>
                         </p:submenu>
-                    </p:submenu>
+                    </p:submenu>-->
 
                     <p:submenu label="Recieve"  rendered="#{webUserController.hasPrivilege('Payment')}">  
                         <p:submenu label="Inward Deposit">
@@ -1028,9 +1034,9 @@
                                          actionListener="#{searchController.makeListNull}"  value="Collecting Centre Bill Search"  ></p:menuitem>
                         </p:submenu>
 
-                        <p:submenu label="Patient Deposit"  rendered="#{webUserController.hasPrivilege('Payment')}">
+                        <p:menuitem  value="Patient Deposit"  rendered="#{webUserController.hasPrivilege('Payment')}" action="/payments/patient/receive?faces-redirect=true" actionListener="#{patientController.clearDataForPatientDeposite()}">
 
-                        </p:submenu>
+                        </p:menuitem >
 
                     </p:submenu>
 
@@ -1241,15 +1247,25 @@
                 <f:facet name="options">
                     <div class="d-flex align-items-center">
                         <div class="mx-4">
-                            <p:poll interval="180" 
+                            <h:panelGroup>
+                                <p:poll
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Auto-refresh Menu Notifications', false)}"
+                                    interval="#{configOptionApplicationController.getLongValueByKey('Auto-refresh Menu Notification Duration', 1800)}"
                                     listener="#{userNotificationController.fillLoggedUserNotifications()}"
                                     update="notCount" />
-                            <h:panelGroup id="notCount">
-                                <p:badge id="bdgeNotiCount" severity="danger" value="#{webUserController.userNotificationCount}" >
-                                    <p:commandButton id="btnNot" ajax="false" icon="pi pi-bell" action="#{userNotificationController.navigateToRecivedNotification()}"/>
-                                </p:badge>
+                                <h:panelGroup id="notCount">
+                                    <p:badge id="bdgeNotiCount" severity="danger" value="#{webUserController.userNotificationCount}">
+                                        <p:commandButton id="btnNot" ajax="false" icon="pi pi-bell" action="#{userNotificationController.navigateToRecivedNotification()}" />
+                                    </p:badge>
+                                </h:panelGroup>
+                                <p:commandButton 
+                                    icon="pi pi-refresh" 
+                                    rendered="#{not configOptionApplicationController.getBooleanValueByKey('Auto-refresh Menu Notifications', false)}"
+                                    action="#{userNotificationController.fillLoggedUserNotifications()}"
+                                    title="Refresh Notifications" style="margin-left: 10px;"/>
                             </h:panelGroup>
                         </div>
+
 
                         <p:commandButton id="btnLogout" ajax="false" icon="pi pi-sign-out" action="#{sessionController.logout}" />
                     </div>

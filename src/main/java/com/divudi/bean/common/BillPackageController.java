@@ -50,7 +50,10 @@ import com.divudi.facade.PersonFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.dataStructure.ComponentDetail;
+import com.divudi.ejb.StaffBean;
+import com.divudi.entity.BillFeePayment;
 import com.divudi.entity.Payment;
+import com.divudi.facade.BillFeePaymentFacade;
 import com.divudi.facade.PaymentFacade;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
@@ -72,7 +75,7 @@ import javax.inject.Named;
  */
 @Named
 @SessionScoped
-public class BillPackageController implements Serializable, ControllerWithPatient {
+public class BillPackageController implements Serializable, ControllerWithPatient, ControllerWithMultiplePayments {
 
     // <editor-fold defaultstate="collapsed" desc="EJBs">
     @EJB
@@ -100,6 +103,10 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     BillSessionFacade billSessionFacade;
     @EJB
     PaymentFacade paymentFacade;
+    @EJB
+    StaffBean staffBean;
+    @EJB
+    BillFeePaymentFacade billFeePaymentFacade;
     //</editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Injects">
@@ -115,6 +122,8 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     PaymentSchemeController paymentSchemeController;
     @Inject
     ItemController itemController;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
 
     //</editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
@@ -137,6 +146,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     private Institution chequeBank;
     private BillItem currentBillItem;
     private Institution collectingCentre;
+    private Staff toStaff;
 
     //Bill Items
     private List<BillComponent> lstBillComponents;
@@ -225,7 +235,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         batchBill.setPaymentMethod(paymentMethod);
         batchBill.setCreatedAt(new Date());
         batchBill.setCreater(getSessionController().getLoggedUser());
-        
+
         batchBill.setDepartment(getSessionController().getLoggedUser().getDepartment());
         batchBill.setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
         batchBill.setFromDepartment(getSessionController().getLoggedUser().getDepartment());
@@ -245,7 +255,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
 
         batchBill.setDeptId(getBillNumberBean().departmentBillNumberGenerator(batchBill.getDepartment(), batchBill.getToDepartment(), batchBill.getBillType(), BillClassType.BilledBill));
         batchBill.setInsId(getBillNumberBean().institutionBillNumberGenerator(batchBill.getInstitution(), batchBill.getBillType(), BillClassType.BilledBill, BillNumberSuffix.PACK));
-        
+
         getBillFacade().create(batchBill);
 
         double dbl = 0;
@@ -261,7 +271,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
 
         batchBill.setNetTotal(dbl);
         batchBill.setTotal(dblTot);
-        batchBill.setDiscount(dblTot-dbl);
+        batchBill.setDiscount(dblTot - dbl);
         getBillFacade().edit(batchBill);
 
     }
@@ -322,7 +332,25 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         }
 
         saveBatchBill();
-        payments = createPayments(getBatchBill(), paymentMethod);
+        List<Payment> ps = createPayments(getBatchBill(), paymentMethod);
+        payments = ps;
+        calculateBillfeePayments(lstBillFees, payments.get(0));
+        if (toStaff != null && getPaymentMethod() == PaymentMethod.Staff_Welfare) {
+            staffBean.updateStaffWelfare(toStaff, batchBill.getNetTotal());
+            JsfUtil.addSuccessMessage("Staff Welfare Balance Updated");
+        } else if (toStaff != null && getPaymentMethod() == PaymentMethod.Staff) {
+            staffBean.updateStaffCredit(toStaff, batchBill.getNetTotal());
+            JsfUtil.addSuccessMessage("Staff Credit Updated");
+        }
+
+        if (paymentMethod == PaymentMethod.PatientDeposit) {
+            if (getPatient().getRunningBalance() != null) {
+                getPatient().setRunningBalance(getPatient().getRunningBalance() - netTotal);
+            } else {
+                getPatient().setRunningBalance(0.0 - netTotal);
+            }
+            getPatientFacade().edit(getPatient());
+        }
         saveBillItemSessions();
 
         clearBillItemValues();
@@ -409,10 +437,24 @@ public class BillPackageController implements Serializable, ControllerWithPatien
                     case Agent:
                     case Credit:
                     case PatientDeposit:
+                        if (getPatient().getRunningBalance() != null) {
+                            getPatient().setRunningBalance(getPatient().getRunningBalance() - cd.getPaymentMethodData().getPatient_deposit().getTotalValue());
+                        } else {
+                            getPatient().setRunningBalance(0.0 - cd.getPaymentMethodData().getPatient_deposit().getTotalValue());
+                        }
+                        getPatientFacade().edit(getPatient());
                     case Slip:
+                        p.setPaidValue(cd.getPaymentMethodData().getSlip().getTotalValue());
+                        p.setBank(cd.getPaymentMethodData().getSlip().getInstitution());
+                        p.setRealizedAt(cd.getPaymentMethodData().getSlip().getDate());
                     case OnCall:
                     case OnlineSettlement:
                     case Staff:
+                        p.setPaidValue(cd.getPaymentMethodData().getStaffCredit().getTotalValue());
+                        if (cd.getPaymentMethodData().getStaffCredit().getToStaff() != null) {
+                            staffBean.updateStaffCredit(cd.getPaymentMethodData().getStaffCredit().getToStaff(), cd.getPaymentMethodData().getStaffCredit().getTotalValue());
+                            JsfUtil.addSuccessMessage("Staff Welfare Balance Updated");
+                        }
                     case YouOweMe:
                     case MultiplePaymentMethods:
                 }
@@ -449,6 +491,9 @@ public class BillPackageController implements Serializable, ControllerWithPatien
                 case Credit:
                 case PatientDeposit:
                 case Slip:
+                    p.setBank(paymentMethodData.getSlip().getInstitution());
+                    p.setPaidValue(paymentMethodData.getSlip().getTotalValue());
+                    p.setRealizedAt(paymentMethodData.getSlip().getDate());
                 case OnCall:
                 case OnlineSettlement:
                 case Staff:
@@ -464,24 +509,124 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         return ps;
     }
 
+    public void calculateBillfeePayments(List<BillFee> billFees, Payment p) {
+        for (BillFee bf : billFees) {
+            bf.setSettleValue(bf.getFeeValue());
+            setBillFeePaymentAndPayment(bf.getFeeValue(), bf, p);
+            getBillFeeFacade().edit(bf);
+
+        }
+    }
+
+    public void setBillFeePaymentAndPayment(double amount, BillFee bf, Payment p) {
+        BillFeePayment bfp = new BillFeePayment();
+        bfp.setBillFee(bf);
+        bfp.setAmount(amount);
+        bfp.setInstitution(bf.getBillItem().getItem().getInstitution());
+        bfp.setDepartment(bf.getBillItem().getItem().getDepartment());
+        bfp.setCreater(getSessionController().getLoggedUser());
+        bfp.setCreatedAt(new Date());
+        bfp.setPayment(p);
+        billFeePaymentFacade.create(bfp);
+    }
+
+    public double calculatRemainForMultiplePaymentTotal() {
+
+        if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
+            double multiplePaymentMethodTotalValue = 0.0;
+            for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCash().getTotalValue();
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCreditCard().getTotalValue();
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCheque().getTotalValue();
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getEwallet().getTotalValue();
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getSlip().getTotalValue();
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getStaffCredit().getTotalValue();
+
+            }
+            return total - multiplePaymentMethodTotalValue;
+        }
+        return total;
+    }
+
+    public void recieveRemainAmountAutomatically() {
+        double remainAmount = calculatRemainForMultiplePaymentTotal();
+        if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
+            int arrSize = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().size();
+            ComponentDetail pm = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().get(arrSize - 1);
+            if (pm.getPaymentMethod() == PaymentMethod.Cash) {
+                pm.getPaymentMethodData().getCash().setTotalValue(remainAmount);
+            } else if (pm.getPaymentMethod() == PaymentMethod.Card) {
+                pm.getPaymentMethodData().getCreditCard().setTotalValue(remainAmount);
+            } else if (pm.getPaymentMethod() == PaymentMethod.Cheque) {
+                pm.getPaymentMethodData().getCheque().setTotalValue(remainAmount);
+            } else if (pm.getPaymentMethod() == PaymentMethod.Slip) {
+                pm.getPaymentMethodData().getSlip().setTotalValue(remainAmount);
+            } else if (pm.getPaymentMethod() == PaymentMethod.ewallet) {
+                pm.getPaymentMethodData().getEwallet().setTotalValue(remainAmount);
+            } else if (pm.getPaymentMethod() == PaymentMethod.PatientDeposit) {
+                if (patient != null) {
+                    pm.getPaymentMethodData().getPatient_deposit().setPatient(patient);
+                }
+                pm.getPaymentMethodData().getPatient_deposit().setTotalValue(remainAmount);
+            } else if (pm.getPaymentMethod() == PaymentMethod.Credit) {
+                pm.getPaymentMethodData().getCredit().setTotalValue(remainAmount);
+            } else if (pm.getPaymentMethod() == PaymentMethod.Staff) {
+                pm.getPaymentMethodData().getStaffCredit().setTotalValue(remainAmount);
+            }
+
+        }
+    }
+
     private boolean errorCheck() {
 
-        if (getPatient().getPerson().getName() == null
-                || getPatient().getPerson().getName().trim().equals("")
-                || getPatient().getPerson().getSex() == null
-                || getPatient().getPerson().getDob() == null) {
-            JsfUtil.addErrorMessage("Can not bill without Patient Name, Age or Sex.");
-            return true;
+        if (configOptionApplicationController.getBooleanValueByKey("Need Patient Name to Save Patient in Package Billing", false)) {
+            if (getPatient().getPerson().getName() == null
+                    || getPatient().getPerson().getName().trim().equals("")
+                    || getPatient().getPerson().getSex() == null
+                    || getPatient().getPerson().getDob() == null) {
+                JsfUtil.addErrorMessage("Can not bill without Patient Name, Age or Sex.");
+                return true;
+            }
         }
 
-        if (!com.divudi.java.CommonFunctions.checkAgeSex(getPatient().getPerson().getDob(), getPatient().getPerson().getSex(), getPatient().getPerson().getTitle())) {
-            JsfUtil.addErrorMessage("Check Title,Age,Sex");
-            return true;
+        if (configOptionApplicationController.getBooleanValueByKey("Need Patient Title And Gender To Save Patient in Package Billing", false)) {
+            if (getPatient().getPerson().getTitle() == null) {
+                JsfUtil.addErrorMessage("Please select title");
+                return true;
+            }
+            if (getPatient().getPerson().getSex() == null) {
+                JsfUtil.addErrorMessage("Please select gender");
+                return true;
+            }
+        }
+        if (configOptionApplicationController.getBooleanValueByKey("Need Patient Age to Save Patient in Package Billing", false)) {
+            if (getPatient().getPerson().getDob() == null) {
+                JsfUtil.addErrorMessage("Please select patient date of birth");
+                return true;
+            }
         }
 
-        if (getPatient().getPerson().getPhone().length() < 1) {
-            JsfUtil.addErrorMessage("Phone Number is Required it should be fill");
-            return true;
+        if (configOptionApplicationController.getBooleanValueByKey("Need Patient Phone Number to save Patient in Package Billing", false)) {
+            if (getPatient().getPerson().getPhone() == null) {
+                JsfUtil.addErrorMessage("Please Enter a Phone Number");
+                return true;
+            }
+            if (getPatient().getPerson().getPhone().trim().equals("")) {
+                JsfUtil.addErrorMessage("Please Enter a Phone Number");
+                return true;
+            }
+        }
+
+        if (configOptionApplicationController.getBooleanValueByKey("Need Patient Area to save Patient in Package Billing", false)) {
+            if (getPatient().getPerson().getArea() == null) {
+                JsfUtil.addErrorMessage("Please Select Pataient Area");
+                return true;
+            }
+            if (getPatient().getPerson().getArea().getName().trim().equals("")) {
+                JsfUtil.addErrorMessage("Please Select Patient Area");
+                return true;
+            }
         }
 
         if (getLstBillEntries().isEmpty()) {
@@ -500,6 +645,124 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         if (paymentMethod == PaymentMethod.Credit && creditCompany == null) {
             JsfUtil.addErrorMessage("Plase Select Credit Company");
             return true;
+        }
+
+        if (paymentMethod == PaymentMethod.PatientDeposit) {
+            if (!getPatient().getHasAnAccount()) {
+                JsfUtil.addErrorMessage("Patient has not account. Can't proceed with Patient Deposits");
+                return true;
+            }
+            double creditLimitAbsolute = Math.abs(getPatient().getCreditLimit());
+            double runningBalance;
+            if (getPatient().getRunningBalance() != null) {
+                runningBalance = getPatient().getRunningBalance();
+            } else {
+                runningBalance = 0.0;
+            }
+            double availableForPurchase = runningBalance + creditLimitAbsolute;
+
+            if (netTotal > availableForPurchase) {
+                JsfUtil.addErrorMessage("No Sufficient Patient Deposit");
+                return true;
+            }
+
+        }
+
+        if (paymentMethod == PaymentMethod.Credit) {
+            if (creditCompany == null && collectingCentre == null) {
+                JsfUtil.addErrorMessage("Please select Staff Member under welfare or credit company or Collecting centre.");
+                return true;
+            }
+        }
+
+        if (paymentMethod == PaymentMethod.Staff) {
+            if (toStaff == null) {
+                JsfUtil.addErrorMessage("Please select Staff Member.");
+                return true;
+            }
+
+            if (toStaff.getCurrentCreditValue() + netTotal > toStaff.getCreditLimitQualified()) {
+                JsfUtil.addErrorMessage("No enough Credit.");
+                return true;
+            }
+        }
+
+        if (paymentMethod == PaymentMethod.Staff_Welfare) {
+            if (toStaff == null) {
+                JsfUtil.addErrorMessage("Please select Staff Member under welfare.");
+                return true;
+            }
+            if (Math.abs(toStaff.getAnnualWelfareUtilized()) + netTotal > toStaff.getAnnualWelfareQualified()) {
+                JsfUtil.addErrorMessage("No enough credit.");
+                return true;
+            }
+
+        }
+
+        if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
+            if (getPaymentMethodData() == null) {
+                JsfUtil.addErrorMessage("No Details on multiple payment methods given");
+                return true;
+            }
+            if (getPaymentMethodData().getPaymentMethodMultiple() == null) {
+                JsfUtil.addErrorMessage("No Details on multiple payment methods given");
+                return true;
+            }
+            if (getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails() == null) {
+                JsfUtil.addErrorMessage("No Details on multiple payment methods given");
+                return true;
+            }
+            double multiplePaymentMethodTotalValue = 0.0;
+            for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
+                if (paymentSchemeController.checkPaymentMethodError(cd.getPaymentMethod(), cd.getPaymentMethodData())) {
+                    return true;
+                }
+                if (cd.getPaymentMethod().equals(PaymentMethod.PatientDeposit)) {
+                    if (!getPatient().getHasAnAccount()) {
+                        JsfUtil.addErrorMessage("Patient has not account. Can't proceed with Patient Deposits");
+                        return true;
+                    }
+                    double creditLimitAbsolute = Math.abs(getPatient().getCreditLimit());
+                    double runningBalance;
+                    if (getPatient().getRunningBalance() != null) {
+                        runningBalance = getPatient().getRunningBalance();
+                    } else {
+                        runningBalance = 0.0;
+                    }
+                    double availableForPurchase = runningBalance + creditLimitAbsolute;
+
+                    if (cd.getPaymentMethodData().getPatient_deposit().getTotalValue() > availableForPurchase) {
+                        JsfUtil.addErrorMessage("No Sufficient Patient Deposit");
+                        return true;
+                    }
+
+                }
+                if (cd.getPaymentMethod().equals(PaymentMethod.Staff)) {
+                    if (cd.getPaymentMethodData().getStaffCredit().getTotalValue() == 0.0 || cd.getPaymentMethodData().getStaffCredit().getToStaff() == null) {
+                        JsfUtil.addErrorMessage("Please fill the Paying Amount and Staff Name");
+                        return true;
+                    }
+                    if (cd.getPaymentMethodData().getStaffCredit().getToStaff().getCurrentCreditValue() + cd.getPaymentMethodData().getStaffCredit().getTotalValue() > cd.getPaymentMethodData().getStaffCredit().getToStaff().getCreditLimitQualified()) {
+                        JsfUtil.addErrorMessage("No enough Credit.");
+                        return true;
+                    }
+                }
+                //TODO - filter only relavant value
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCash().getTotalValue();
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCreditCard().getTotalValue();
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCheque().getTotalValue();
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getEwallet().getTotalValue();
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getSlip().getTotalValue();
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getStaffCredit().getTotalValue();
+            }
+            double differenceOfBillTotalAndPaymentValue = netTotal - multiplePaymentMethodTotalValue;
+            differenceOfBillTotalAndPaymentValue = Math.abs(differenceOfBillTotalAndPaymentValue);
+            if (differenceOfBillTotalAndPaymentValue > 1.0) {
+                JsfUtil.addErrorMessage("Mismatch in differences of multiple payment method total and bill total");
+                return true;
+            }
+
         }
 
         return false;
@@ -622,7 +885,8 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         setLstBillEntries(null);
         setLstBillFees(null);
         setStaff(null);
-        lstBillEntries = new ArrayList<BillEntry>();
+        setToStaff(null);
+        lstBillEntries = new ArrayList<>();
         //   setForeigner(false);
         calTotals();
 
@@ -650,6 +914,30 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         setCashBalance(0.0);
         setTotal(0.0);
         setNetTotal(0.0);
+    }
+
+    public void removeBillItem(Item itm) {
+        List<Item> itemList = new ArrayList<>();
+        for (BillEntry be : getLstBillEntries()) {
+            itemList.add(be.getBillItem().getItem());
+        }
+        lstBillComponents = null;
+        lstBillFees = null;
+        lstBillItems = null;
+        lstBillEntries = null;
+        for (Item i : itemList) {
+            if (!i.getName().equals(itm.getName())) {
+                if (i.getDepartment() == null) {
+                    JsfUtil.addErrorMessage("Under administration, add a Department for item " + i.getName());
+                    return;
+                }
+
+                BillItem tmp = new BillItem();
+                tmp.setItem(i);
+                addEntry(tmp);
+            }
+        }
+        calTotals();
     }
 
     public void recreateList(BillEntry r) {
@@ -844,6 +1132,11 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     }
 
     public PaymentMethod getPaymentMethod() {
+        if (paymentMethod != paymentMethod.Cash) {
+            setCashPaid(netTotal);
+        } else {
+            setCashPaid(0.00);
+        }
         return paymentMethod;
     }
 
@@ -879,6 +1172,17 @@ public class BillPackageController implements Serializable, ControllerWithPatien
 
     public void setBills(List<Bill> bills) {
         this.bills = bills;
+    }
+
+    public void listnerForPaymentMethodChange() {
+        if (paymentMethod == PaymentMethod.PatientDeposit) {
+            getPaymentMethodData().getPatient_deposit().setPatient(patient);
+            getPaymentMethodData().getPatient_deposit().setTotalValue(netTotal);
+        }
+        if (paymentMethod == PaymentMethod.Card) {
+            getPaymentMethodData().getCreditCard().setTotalValue(netTotal);
+        }
+        calTotals();
     }
 
     public CommonFunctions getCommonFunctions() {
@@ -1134,6 +1438,14 @@ public class BillPackageController implements Serializable, ControllerWithPatien
 
     public void setPayments(List<Payment> payments) {
         this.payments = payments;
+    }
+
+    public Staff getToStaff() {
+        return toStaff;
+    }
+
+    public void setToStaff(Staff toStaff) {
+        this.toStaff = toStaff;
     }
 
 }
