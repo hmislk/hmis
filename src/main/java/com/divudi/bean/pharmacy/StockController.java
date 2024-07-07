@@ -178,7 +178,7 @@ public class StockController implements Serializable {
                 stockSet.addAll(additionalStocks);
             }
         }
-        List<Stock> distinctStock = new ArrayList<>();
+        
         for (Stock s : stockSet) {
             s.getItemBatch().getItem().setTotalStockQty(calulateTotalStockOfSelectedItemInSameDepartment(s.getItemBatch().getItem()));
         }
