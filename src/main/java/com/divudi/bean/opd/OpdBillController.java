@@ -2413,6 +2413,26 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                 if (paymentSchemeController.checkPaymentMethodError(cd.getPaymentMethod(), cd.getPaymentMethodData())) {
                     return true;
                 }
+                if (cd.getPaymentMethod().equals(PaymentMethod.PatientDeposit)) {
+                    if (!getPatient().getHasAnAccount()) {
+                        JsfUtil.addErrorMessage("Patient has not account. Can't proceed with Patient Deposits");
+                        return true;
+                    }
+                    double creditLimitAbsolute = Math.abs(getPatient().getCreditLimit());
+                    double runningBalance;
+                    if (getPatient().getRunningBalance() != null) {
+                        runningBalance = getPatient().getRunningBalance();
+                    } else {
+                        runningBalance = 0.0;
+                    }
+                    double availableForPurchase = runningBalance + creditLimitAbsolute;
+
+                    if (cd.getPaymentMethodData().getPatient_deposit().getTotalValue() > availableForPurchase) {
+                        JsfUtil.addErrorMessage("No Sufficient Patient Deposit");
+                        return true;
+                    }
+
+                }
                 if (cd.getPaymentMethod().equals(PaymentMethod.Staff)) {
                     if (cd.getPaymentMethodData().getStaffCredit().getTotalValue() == 0.0 || cd.getPaymentMethodData().getStaffCredit().getToStaff() == null) {
                         JsfUtil.addErrorMessage("Please fill the Paying Amount and Staff Name");
@@ -3085,9 +3105,9 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                     case Credit:
                     case PatientDeposit:
                         if (getPatient().getRunningBalance() != null) {
-                            getPatient().setRunningBalance(getPatient().getRunningBalance() - netTotal);
+                            getPatient().setRunningBalance(getPatient().getRunningBalance() - cd.getPaymentMethodData().getPatient_deposit().getTotalValue());
                         } else {
-                            getPatient().setRunningBalance(0.0 - netTotal);
+                            getPatient().setRunningBalance(0.0 - cd.getPaymentMethodData().getPatient_deposit().getTotalValue());
                         }
                         getPatientFacade().edit(getPatient());
                     case Slip:
@@ -3618,7 +3638,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         if (!sessionController.getDepartmentPreference().isPartialPaymentOfOpdBillsAllowed()) {
             if (paymentMethod != PaymentMethod.Cash) {
                 strTenderedValue = String.valueOf(netTotal);
-            }else{
+            } else {
                 strTenderedValue = String.valueOf(0.00);
             }
         }

@@ -9,8 +9,8 @@
       >
 
     <h:body>
-        <ui:composition template="/resources/template/template.xhtml">
-            <ui:define name="content">
+        <ui:composition template="/payments/pay_index.xhtml">
+            <ui:define name="admin">
                 <h:panelGroup id="panbilledit" rendered="#{!staffPaymentBillController.printPreview}" styleClass="alignTop" >
                     <p:panel header="Staff Payments" >
                         <h:form>
