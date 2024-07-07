@@ -105,6 +105,22 @@ public class DepartmentController implements Serializable {
         return i;
     }
     
+    public Department findExistingDepartmentByName(String name, Institution ins) {
+        if (name == null || name.trim().equals("")) {
+            return null;
+        }
+        String sql;
+        Map m = new HashMap();
+        m.put("name", name);
+        m.put("ret", false);
+        sql = "select i "
+                + " from Department i "
+                + " where i.name=:name"
+                + " and i.retired=:ret";
+        Department i = getFacade().findFirstByJpql(sql, m);
+        return i;
+    }
+    
     public void fillItems() {
         String j;
         j = "select i from Department i where i.retired=false order by i.name";
