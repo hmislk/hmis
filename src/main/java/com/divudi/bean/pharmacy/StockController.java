@@ -178,10 +178,38 @@ public class StockController implements Serializable {
                 stockSet.addAll(additionalStocks);
             }
         }
-
+        List<Stock> distinctStock = new ArrayList<>();
+        for (Stock s : stockSet) {
+            s.getItemBatch().getItem().setTotalStockQty(calulateTotalStockOfSelectedItemInSameDepartment(s.getItemBatch().getItem()));
+        }
+        
         return new ArrayList<>(stockSet);
     }
 
+    public double calulateTotalStockOfSelectedItemInSameDepartment(Item item) {
+        double total;
+        if (item == null) {
+            return 0;
+        }
+        String sql;
+        Map m = new HashMap();
+        double d = 0.0;
+        m.put("s", d);
+        m.put("item", item);
+        m.put("dept", sessionController.getLoggedUser().getDepartment());
+        sql = "select sum(s.stock) "
+                + "from Stock s "
+                + "where s.stock > :s "
+                + "and s.itemBatch.item = :item "
+                + "and s.department = :dept "
+                + "order by s.itemBatch.dateOfExpire desc";
+        System.out.println("sql = " + sql);
+        System.out.println("m = " + m);
+        total = ejbFacade.findDoubleByJpql(sql, m);
+        System.out.println("total = " + total);
+        return total;
+    }
+    
     public List<Stock> findNextAvailableStocks(Stock stock) {
         List<Stock> stockList;
         String jpql;

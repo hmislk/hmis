@@ -96,6 +96,11 @@
                                                             <f:convertNumber pattern="#,###" ></f:convertNumber>
                                                         </h:outputLabel>
                                                     </p:column>
+                                                    <p:column headerText="Total Stock" style="padding: 8px;" styleClass="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
+                                                        <h:outputLabel value="#{i.stock.itemBatch.item.totalStockQty}" >
+                                                            <f:convertNumber pattern="#,###" ></f:convertNumber>
+                                                        </h:outputLabel>
+                                                    </p:column>
                                                     <p:column headerText="Expiry" style="padding: 8px;" class="w-100" styleClass="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
                                                         <h:outputLabel value="#{i.itemBatch.dateOfExpire}" style="width: 100px!important;" >
                                                             <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
