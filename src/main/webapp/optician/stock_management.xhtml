@@ -18,41 +18,31 @@
 
                 <div class="row" >
                     <div class="col-2" >
-                        <h:form >
-                            <p:panelGrid columns="1" >
-                                <p:commandButton 
-                                    value="Purchase"
-                                    ajax="false"
-                                    action="#{opticianController.navigateToPurchase()}">
+                        <h:form>
+                            <p:panelGrid columns="1" class="w-100">
+                                <p:commandButton value="Purchase" icon="pi pi-shopping-cart" class="ui-button-success w-100"
+                                                 ajax="false" action="#{opticianController.navigateToPurchase()}">
                                 </p:commandButton>
-                                <p:commandButton 
-                                    value="Item Master"
-                                    ajax="false"
-                                    action="#{opticianController.navigateToItemMaster()}">
+                                <p:commandButton value="Item Master" icon="pi pi-list" class="ui-button-warning w-100"
+                                                 ajax="false" action="#{opticianController.navigateToItemMaster()}">
                                 </p:commandButton>
-                                <p:commandButton 
-                                    value="Manufacturers"
-                                    ajax="false"
-                                    action="#{opticianController.navigateToManufacturer()}">
+                                <p:commandButton value="Manufacturers" icon="fa fa-industry" class="ui-button-secondary w-100"
+                                                 ajax="false" action="#{opticianController.navigateToManufacturer()}">
                                 </p:commandButton>
-                                <p:commandButton 
-                                    value="Importers"
-                                    ajax="false"
-                                    action="#{opticianController.navigateToImporter()}">
+                                <p:commandButton value="Importers" icon="fa fa-globe" class="ui-button-secondary w-100"
+                                                 ajax="false" action="#{opticianController.navigateToImporter()}">
                                 </p:commandButton>
-                                <p:commandButton 
-                                    value="Suppliers"
-                                    ajax="false"
-                                    action="#{opticianController.navigateToSuppliers()}">
+                                <p:commandButton value="Suppliers" icon="fa fa-truck" class="ui-button-primary w-100"
+                                                 ajax="false" action="#{opticianController.navigateToSuppliers()}">
                                 </p:commandButton>
-
                             </p:panelGrid>
                         </h:form>
 
+
                     </div>
                     <div class="col-10" >
-                        <ui:insert name="content" >
-                            
+                        <ui:insert name="subcontent" >
+
                         </ui:insert>
                     </div>
                 </div>
