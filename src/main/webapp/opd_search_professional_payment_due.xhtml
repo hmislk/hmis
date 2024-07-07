@@ -12,6 +12,11 @@
             <ui:define name="content">
                 <h:form>
                     <p:panel header="OPD Payments Due Search" >
+                        <f:facet name="header">
+                            <h:outputLabel value="OPD Payments Due Search"/>
+                            <p:commandButton value="Back" icon="fas fa-arrow-left" class="ui-button-warning" style="float: right;" action="/payments/pay_index?faces-redirect=true" ajax="false"/>
+                       
+                        </f:facet>
                        
                             <div class="row">
                                 <div class="col-2">
@@ -63,10 +68,9 @@
                                         </p:column>
 
                                         <p:column headerText="Doctor" >
-                                            <h:commandLink action="payment_staff_bill" >
+                                            <h:commandLink action="#{staffPaymentBillController.navigateToStaffPaymentFromDuePayment(bf.staff)}" >
                                                 <h:outputLabel value="#{bf.staff.person.name}">
                                                 </h:outputLabel>
-                                                <f:setPropertyActionListener value="#{bf.staff}" target="#{staffPaymentBillController.currentStaff}"/>
                                             </h:commandLink>
                                         </p:column>
 

@@ -11,7 +11,11 @@
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form>
-                    <p:panel header="Inward Search Professional Payment Done" >
+                    <p:panel>
+                        <f:facet name="header">
+                            <h:outputLabel value="Inward Payments Done Search"/>
+                            <p:commandButton value="Back" icon="fas fa-arrow-left" class="ui-button-warning" style="float: right;" action="/payments/pay_index?faces-redirect=true" ajax="false"/>     
+                        </f:facet>
                         <div class="row">
                             <div class="col-2">
                                 <h:outputLabel value="From Date"/>
@@ -57,7 +61,7 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="#{searchController.total}"/>
                                     </f:facet>
-                                    
+
 
                                     <p:column headerText="Inward Bill No" >
                                         <h:outputLabel  value="#{bi.paidForBillFee.id}"  ></h:outputLabel>
@@ -129,7 +133,7 @@
                                 </p:dataTable>
                             </div>
                         </div>
-                        
+
 
 
 
