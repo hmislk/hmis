@@ -182,6 +182,49 @@ public class StockController implements Serializable {
         return new ArrayList<>(stockSet);
     }
 
+    public List<Stock> completeAvailableStocksWithItemStock(String qry) {
+        Set<Stock> stockSet = new LinkedHashSet<>(); // Preserve insertion order
+        List<Stock> initialStocks = completeAvailableStocksStartsWith(qry);
+        if (initialStocks != null) {
+            stockSet.addAll(initialStocks);
+        }
+
+        // No need to check if initialStocks is empty or null anymore, Set takes care of duplicates
+        if (stockSet.size() <= 10) {
+            List<Stock> additionalStocks = completeAvailableStocksContains(qry);
+            if (additionalStocks != null) {
+                stockSet.addAll(additionalStocks);
+            }
+        }
+
+        addItemStockToStocks(stockSet);
+
+        return new ArrayList<>(stockSet);
+    }
+
+    public void addItemStockToStocks(Set<Stock> inputStocks) {
+        if (inputStocks == null) {
+            return;
+        }
+        if(inputStocks.size()>20){
+            return;
+        }
+        // Map to store the total stock quantity for each item
+        Map<Item, Double> itemStockTotals = new HashMap<>();
+
+        // First pass: calculate the total stock quantity for each item
+        for (Stock s : inputStocks) {
+            Item item = s.getItemBatch().getItem();
+            itemStockTotals.put(item, itemStockTotals.getOrDefault(item, 0.0) + s.getStock());
+        }
+
+        // Second pass: set the total stock quantity for each stock
+        for (Stock s : inputStocks) {
+            Item item = s.getItemBatch().getItem();
+            s.setTransItemStockQty(itemStockTotals.get(item));
+        }
+    }
+
     public List<Stock> findNextAvailableStocks(Stock stock) {
         List<Stock> stockList;
         String jpql;
@@ -430,7 +473,7 @@ public class StockController implements Serializable {
         shortExpiryDate.add(Calendar.DATE, daysToMarkAsExpiaring);
         Date doeStart = today.getTime();
         Date doeEnd = shortExpiryDate.getTime();
-        
+
         if (inputShortExpiaryDate == null) {
             inputShortExpiaryDate = doeEnd;
         }
