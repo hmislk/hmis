@@ -944,6 +944,12 @@
                         value="Cash To Pay" 
                         rendered="#{webUserController.hasPrivilege('PaymentBilling')}" >
                     </p:menuitem>
+                    <p:menuitem  
+                        ajax="false"  
+                        action="/payments/recieve_index?faces-redirect=true"
+                        value="Cash For Receive" 
+                        rendered="#{webUserController.hasPrivilege('Payment')}" >
+                    </p:menuitem>
 <!--                    <p:submenu label="Pay"
                                rendered="#{webUserController.hasPrivilege('Payment')}">
                         <p:submenu label="OPD">
