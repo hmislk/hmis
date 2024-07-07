@@ -1389,7 +1389,23 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         viewScopeDataTransferController.setNeedToFillMembershipDetails(false);
         viewScopeDataTransferController.setNeedToPrepareForNewBooking(false);
         printPreviewC = false;
-
+        if (configOptionApplicationController.getBooleanValueByKey("Automatically Load and Display the Refund Amount Upon Page Load")) {
+            if(configOptionApplicationController.getBooleanValueByKey("Disable Hospital Fee Refunds")){
+                for(BillFee bf : bs.getBill().getBillFeesWIthoutZeroValue()){
+                    if(!(bf.getFee().getFeeType() == FeeType.OwnInstitution)){
+                        copyValue(bf);
+                        calRefundTotal();
+                        checkRefundTotal();
+                    }
+                }
+            }else{
+                for(BillFee bf : bs.getBill().getBillFeesWIthoutZeroValue()){
+                        copyValue(bf);
+                        calRefundTotal();
+                        checkRefundTotal();
+                }
+            }  
+        }
         return "/channel/manage_booking_by_date?faces-redirect=true";
     }
 
@@ -5955,7 +5971,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             }
         }
 
-        if (settlePaymentMethod == PaymentMethod.Agent && settleInstitution == null) {
+        if (settlePaymentMethod == PaymentMethod.Agent && institution == null) {
             JsfUtil.addErrorMessage("Please select Agency");
             return true;
         }
@@ -6004,6 +6020,10 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         getBillSession().getBill().setPaidAmount(b.getPaidAmount());
         getBillSession().getBill().setBalance(0.0);
         getBillSession().getBill().setPaidBill(b);
+        if(settlePaymentMethod == PaymentMethod.Agent){
+            getBillSession().getBillItem().getBill().setCreditCompany(institution);
+            getBillSession().getBillItem().getBill().setAgentRefNo(agentRefNo);
+        }
         getBillFacade().edit(getBillSession().getBill());
 
         b.setSingleBillItem(bi);
@@ -6070,6 +6090,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         temp.setBillDate(new Date());
         temp.setBillTime(new Date());
         temp.setCreatedAt(new Date());
+        temp.setCreditCompany(institution);
+        temp.setAgentRefNo(agentRefNo);
         temp.setCreater(getSessionController().getLoggedUser());
 
         getBillFacade().create(temp);
@@ -6504,6 +6526,10 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 refundableTotal += bf.getTmpChangedValue();
             }
         }
+    }
+    
+    public void copyValue(BillFee bf ){
+        bf.setTmpChangedValue(bf.getFeeValue());
     }
 
     public void checkRefundTotal() {

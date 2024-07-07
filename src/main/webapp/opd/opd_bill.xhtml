@@ -236,7 +236,7 @@
                                         <h:outputText styleClass="fa fa-list" /> <!-- FontAwesome Icon -->
                                         <h:outputText value="Added Items" class="mx-4"></h:outputText>
                                     </f:facet>
-                                    <p:tabView id="tblBillItem" >
+                                    <p:tabView id="tblBillItem" activeIndex="#{configOptionApplicationController.getLongValueByKey('OPD Bill Item and Fee Active Index')}" >
                                         <p:tab id="tabBillFee" title="Fees" >
                                             <p:dataTable rowIndexVar="rowIndex" value="#{opdBillController.lstBillFees}" var="bif" rowKey="#{bif.id}" class="w-100">
                                                 <p:column>
