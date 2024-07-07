@@ -97,19 +97,19 @@
                             </p:column>    
 
                             <p:column headerText="Distributor">
-                                <h:commandLink action="pharmacy_reprint_po" >
+                                <h:commandLink action="pharmacy_reprint_po?faces-redirect=true" >
                                     <h:outputLabel  value="#{p.toInstitution.name}"/>
                                     <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{p}"/>
                                 </h:commandLink>
                             </p:column>
                             <p:column headerText="PO Number" >                   
-                                <h:commandLink action="pharmacy_reprint_po"  >    
+                                <h:commandLink action="pharmacy_reprint_po?faces-redirect=true"  >
                                     <h:outputLabel  value="#{p.deptId}"/>
                                     <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{p}"/>
                                 </h:commandLink>
                             </p:column>              
                             <p:column headerText="PO Value">
-                                <h:commandLink action="pharmacy_reprint_po"  >   
+                                <h:commandLink action="pharmacy_reprint_po?faces-redirect=true"  >
                                     <h:outputLabel value="#{p.netTotal}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
