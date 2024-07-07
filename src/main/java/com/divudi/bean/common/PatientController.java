@@ -182,6 +182,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
     CollectingCentreBillController collectingCentreBillController;
     @Inject
     PatientController patientController;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
 
     /**
      *
@@ -909,6 +911,15 @@ public class PatientController implements Serializable, ControllerWithPatient {
         printPreview = false;
         return "/payments/patient/receive?faces-redirect=true;";
     }
+    
+    public void clearDataForPatientDeposite(){
+        current = null;
+        paymentMethodData = new PaymentMethodData();
+        bill = new Bill();
+        billItem = new BillItem();
+        billItems = new ArrayList<>();
+        printPreview = false;
+    }
 
     public String navigateToCollectingCenterBillingFromPatientProfile() {
         if (current == null) {
@@ -1035,6 +1046,19 @@ public class PatientController implements Serializable, ControllerWithPatient {
         Date startTime = new Date();
         Date fromDate = null;
         Date toDate = null;
+        if (getBill().getPaymentMethod() == null) {
+            JsfUtil.addErrorMessage("Please select a Payment Method");
+            return;
+        }
+        if (!current.getHasAnAccount()){
+            JsfUtil.addErrorMessage("Please Create Patient Account");
+            return;
+        }
+        if (paymentSchemeController.checkPaymentMethodError(getBill().getPaymentMethod(), paymentMethodData)) {
+            JsfUtil.addErrorMessage("Please enter all relavent Payment Method Details");
+            return;
+        }
+
         settleBill(BillType.PatientPaymentReceiveBill, HistoryType.PatientDeposit, BillNumberSuffix.PD, current);
         printPreview = true;
     }
@@ -1047,15 +1071,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
     }
 
     public void settleBill(BillType billType, HistoryType historyType, BillNumberSuffix billNumberSuffix, Patient patient) {
-        if (getBill().getPaymentMethod() == null) {
-            JsfUtil.addErrorMessage("Please select a Payment Method");
-            return;
-        }
-        if (paymentSchemeController.checkPaymentMethodError(getBill().getPaymentMethod(), paymentMethodData)) {
-            JsfUtil.addErrorMessage("Please enter all relavent Payment Method Details");
-            return;
-        }
-
+        
         saveBill(billType, billNumberSuffix, patient);
         billBeanController.setPaymentMethodData(getBill(), getBill().getPaymentMethod(), getPaymentMethodData());
         addToBill();
@@ -2357,6 +2373,25 @@ public class PatientController implements Serializable, ControllerWithPatient {
         if (p.getPerson().getName().trim().equals("")) {
             JsfUtil.addErrorMessage("Please enter a name");
             return;
+        }
+        if (p.getHasAnAccount() && p.getCreditLimit()==null){
+            p.setCreditLimit(0.0);
+        }
+        if(configOptionApplicationController.getBooleanValueByKey("Need Patient Title And Gender to Save Patient", false)){
+            if (p.getPerson().getTitle() == null) {
+                JsfUtil.addErrorMessage("Please select title");
+                return;
+            }
+            if (p.getPerson().getSex()== null) {
+                JsfUtil.addErrorMessage("Please select gender");
+                return;
+            }
+        }
+        if(configOptionApplicationController.getBooleanValueByKey("Need Patient Age to Save Patient", false)){
+            if (p.getPerson().getDob()== null) {
+                JsfUtil.addErrorMessage("Please select patient date of birth");
+                return;
+            }
         }
         if (p.getPerson().getId() == null) {
             p.getPerson().setCreatedAt(Calendar.getInstance().getTime());
