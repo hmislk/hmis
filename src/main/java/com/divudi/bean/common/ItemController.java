@@ -749,8 +749,6 @@ public class ItemController implements Serializable {
             return null;
         }
     }
-    
-    
 
     public void fillInvestigationSampleComponents() {
         if (current == null) {
@@ -1393,29 +1391,39 @@ public class ItemController implements Serializable {
     }
 
     public List<Item> completeAmpItem(String query) {
-//        DepartmentType[] dts = new DepartmentType[]{DepartmentType.Pharmacy, null};
-//        Class[] classes = new Class[]{Amp.class};
-//        return completeItem(query, classes, dts, 30);
-//        
-        String sql;
-        HashMap tmpMap = new HashMap();
-        if (query == null) {
-            suggestions = new ArrayList<>();
+        List<Item> suggestions = new ArrayList<>();
+        if (query == null || query.trim().isEmpty()) {
+            return suggestions;
         } else {
+            String[] words = query.split("\\s+");
+            String sql = "SELECT c FROM Item c WHERE c.retired = false AND type(c) = :amp AND "
+                    + "(c.departmentType IS NULL OR c.departmentType != :dep) AND (";
 
-            sql = "select c from Item c where c.retired=false "
-                    + " and (type(c)= :amp) and "
-                    + " ( c.departmentType is null or c.departmentType!=:dep ) "
-                    + " and ((c.name) like :str or (c.code) like :str or"
-                    + " (c.barcode) like :str ) order by c.name";
-            //////// // System.out.println(sql);
+            // Dynamic part of the query for the name field using each word
+            StringBuilder nameConditions = new StringBuilder();
+            for (int i = 0; i < words.length; i++) {
+                if (i > 0) {
+                    nameConditions.append(" AND ");
+                }
+                nameConditions.append("LOWER(c.name) LIKE :nameStr").append(i);
+            }
+
+            // Adding name conditions and the static conditions for code and barcode
+            sql += "(" + nameConditions + ") OR LOWER(c.code) LIKE :codeStr OR LOWER(c.barcode) LIKE :barcodeStr) "
+                    + "ORDER BY c.name";
+
+            // Setting parameters
+            HashMap<String, Object> tmpMap = new HashMap<>();
             tmpMap.put("dep", DepartmentType.Store);
             tmpMap.put("amp", Amp.class);
-            tmpMap.put("str", "%" + query.toUpperCase() + "%");
+            tmpMap.put("codeStr", "%" + query.toLowerCase() + "%");
+            tmpMap.put("barcodeStr", query.toLowerCase() );
+            for (int i = 0; i < words.length; i++) {
+                tmpMap.put("nameStr" + i, "%" + words[i].toLowerCase() + "%");
+            }
             suggestions = getFacade().findByJpql(sql, tmpMap, TemporalType.TIMESTAMP, 30);
         }
         return suggestions;
-
     }
 
 //    @Deprecated(forRemoval = true)

@@ -13,18 +13,54 @@
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
-                <h:form  >
-                    <p:growl id="panelError" />
-                    <p:panelGrid columns="1" >
-                        <p:commandButton 
-                            value="Purchase"
-                            ajax="false"
-                            action="#{opticianController.navigateToPurchase()}">
-                        </p:commandButton>
-                        
-                    </p:panelGrid>
-                </h:form>
-              
+
+                <p:growl id="panelError" />
+
+                <div class="row" >
+                    <div class="col-2" >
+                        <h:form >
+                            <p:panelGrid columns="1" >
+                                <p:commandButton 
+                                    value="Purchase"
+                                    ajax="false"
+                                    action="#{opticianController.navigateToPurchase()}">
+                                </p:commandButton>
+                                <p:commandButton 
+                                    value="Item Master"
+                                    ajax="false"
+                                    action="#{opticianController.navigateToItemMaster()}">
+                                </p:commandButton>
+                                <p:commandButton 
+                                    value="Manufacturers"
+                                    ajax="false"
+                                    action="#{opticianController.navigateToManufacturer()}">
+                                </p:commandButton>
+                                <p:commandButton 
+                                    value="Importers"
+                                    ajax="false"
+                                    action="#{opticianController.navigateToImporter()}">
+                                </p:commandButton>
+                                <p:commandButton 
+                                    value="Suppliers"
+                                    ajax="false"
+                                    action="#{opticianController.navigateToSuppliers()}">
+                                </p:commandButton>
+
+                            </p:panelGrid>
+                        </h:form>
+
+                    </div>
+                    <div class="col-10" >
+                        <ui:insert name="content" >
+                            
+                        </ui:insert>
+                    </div>
+                </div>
+
+
+
+
+
 
             </ui:define>
 
