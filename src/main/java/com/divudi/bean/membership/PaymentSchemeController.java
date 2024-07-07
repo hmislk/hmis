@@ -127,7 +127,6 @@ public class PaymentSchemeController implements Serializable {
                 return true;
             }
         }
-
         return false;
     }
 
