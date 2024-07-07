@@ -6,6 +6,7 @@ package com.divudi.entity;
 
 import com.divudi.data.BillType;
 import com.divudi.data.DepartmentType;
+import com.divudi.data.ItemBarcodeGenerationStrategy;
 import com.divudi.data.ItemType;
 import com.divudi.data.SessionNumberType;
 import com.divudi.data.SymanticType;
@@ -117,6 +118,7 @@ public class Item implements Serializable, Comparable<Item> {
     String tname;
     String code;
     String barcode;
+    private Long lastBarcode;
     String printName;
     String shortName;
     String fullName;
@@ -212,6 +214,8 @@ public class Item implements Serializable, Comparable<Item> {
     private ItemType itemType;
     @Enumerated(EnumType.STRING)
     private Priority priority;
+    @Enumerated
+    private ItemBarcodeGenerationStrategy itemBarcodeGenerationStrategy;
 
     private boolean hasMoreThanOneComponant;
 
@@ -1242,6 +1246,8 @@ public class Item implements Serializable, Comparable<Item> {
     public void setPackUnit(MeasurementUnit packUnit) {
         this.packUnit = packUnit;
     }
+    
+    
 
     public MeasurementUnit getBaseUnit() {
         return baseUnit;
@@ -1333,6 +1339,27 @@ public class Item implements Serializable, Comparable<Item> {
     public void setTotalStockQty(double totalStockQty) {
         this.totalStockQty = totalStockQty;
     }
+
+    public ItemBarcodeGenerationStrategy getItemBarcodeGenerationStrategy() {
+        if(itemBarcodeGenerationStrategy==null){
+            itemBarcodeGenerationStrategy=ItemBarcodeGenerationStrategy.BY_ITEM;
+        }
+        return itemBarcodeGenerationStrategy;
+    }
+
+    public void setItemBarcodeGenerationStrategy(ItemBarcodeGenerationStrategy itemBarcodeGenerationStrategy) {
+        this.itemBarcodeGenerationStrategy = itemBarcodeGenerationStrategy;
+    }
+
+    public Long getLastBarcode() {
+        return lastBarcode;
+    }
+
+    public void setLastBarcode(Long lastBarcode) {
+        this.lastBarcode = lastBarcode;
+    }
+    
+    
     
     static class ReportItemComparator implements Comparator<ReportItem> {
 

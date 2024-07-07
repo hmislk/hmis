@@ -5,9 +5,11 @@
 package com.divudi.bean.optician;
 
 import com.divudi.bean.common.CommonController;
+import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.pharmacy.AmpController;
+import com.divudi.bean.pharmacy.StockController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
@@ -99,6 +101,10 @@ public class OpticianPurchaseController implements Serializable {
     PharmacyCalculation pharmacyBillBean;
     @Inject
     CommonController commonController;
+    @Inject
+    ItemController itemController;
+    @Inject
+    StockController stockController;
     /**
      * Properties
      */
@@ -389,7 +395,7 @@ public class OpticianPurchaseController implements Serializable {
 
     public void calNetTotal() {
         double grossTotal = 0.0;
-        if (getBill().getDiscount() > 0 || getBill().getTax()>0) {
+        if (getBill().getDiscount() > 0 || getBill().getTax() > 0) {
             grossTotal = getBill().getTotal() + getBill().getDiscount() - getBill().getTax();
             ////// // System.out.println("gross" + grossTotal);
             ////// // System.out.println("net1" + getBill().getNetTotal());
@@ -469,8 +475,39 @@ public class OpticianPurchaseController implements Serializable {
             Stock stock = getPharmacyBean().addToStock(tmpPh, Math.abs(addingQty), getSessionController().getDepartment());
 
             tmpPh.setStock(stock);
-            getPharmaceuticalBillItemFacade().edit(tmpPh);
 
+            switch (i.getItem().getItemBarcodeGenerationStrategy()) {
+                case BY_INDIVIDUAL_UNIT: {
+                    String initialPartOfBarcode = i.getItem().getBarcode();
+                    Long startLongSecondPart = i.getItem().getLastBarcode() + 1;
+                    Long endLongSecondPart = i.getItem().getLastBarcode() + 1 + Math.round(i.getQty());
+                    Long startFullBarcode = createLongBarcode(initialPartOfBarcode, startLongSecondPart);
+                    Long endFullBarcode = createLongBarcode(initialPartOfBarcode, endLongSecondPart);
+                    stock.setStartBarcode(startFullBarcode);
+                    stock.setEndBarcode(endFullBarcode);
+                    i.getItem().setLastBarcode(endFullBarcode);
+                    itemController.saveSelected(i.getItem());
+                    stockController.save(stock);
+                    break;
+                }
+                case BY_BATCH: {
+                    String initialPartOfBarcode = i.getItem().getBarcode();
+                    Long startLongSecondPart = i.getItem().getLastBarcode() + 1;
+                    Long startFullBarcode = createLongBarcode(initialPartOfBarcode, startLongSecondPart);
+                    stock.setStartBarcode(startFullBarcode);
+                    i.getItem().setLastBarcode(startFullBarcode); // Fixed to use startFullBarcode instead of undefined endFullBarcode
+                    itemController.saveSelected(i.getItem());
+                    stockController.save(stock);
+                    break;
+                }
+                case BY_ITEM:
+                    // Handle case as necessary
+                    break;
+                default:
+                // Optional: handle the default case
+            }
+
+            getPharmaceuticalBillItemFacade().edit(tmpPh);
             getBill().getBillItems().add(i);
         }
         if (billItemsTotalQty == 0.0) {
@@ -488,6 +525,16 @@ public class OpticianPurchaseController implements Serializable {
         printPreview = true;
         //   recreate();
 
+    }
+
+    public Long createLongBarcode(String initialBarcode, Long number) {
+        // Convert the number to a String and concatenate it with the initialBarcode
+        String combinedBarcode = initialBarcode + number.toString();
+
+        // Convert the combined String back to a Long
+        Long longBarcode = Long.parseLong(combinedBarcode);
+
+        return longBarcode;
     }
 
     public void removeItem(BillItem bi) {

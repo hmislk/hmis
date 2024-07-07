@@ -24,15 +24,14 @@ import javax.persistence.Transient;
  */
 @Entity
 public class Stock implements Serializable {
-    
-  
+
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    private Double stock=0.0;
+    private Double stock = 0.0;
     @Transient
-    private double calculated=0;
+    private double calculated = 0;
     @ManyToOne
     private ItemBatch itemBatch;
     @ManyToOne
@@ -40,17 +39,20 @@ public class Stock implements Serializable {
     @ManyToOne
     Staff staff;
     String code;
-    
+    private Long startBarcode;
+    private Long endBarcode;
+
     @ManyToOne
     Stock parentStock;
-    
-    @OneToMany(mappedBy = "parentStock",cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+
+    @OneToMany(mappedBy = "parentStock", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     List<Stock> childStocks;
-    
+
     @Transient
     private Double transItemStockQty;
-    
 
+    
+    
     public List<Stock> getChildStocks() {
         return childStocks;
     }
@@ -58,8 +60,6 @@ public class Stock implements Serializable {
     public void setChildStocks(List<Stock> childStocks) {
         this.childStocks = childStocks;
     }
-    
-    
 
     public Stock getParentStock() {
         return parentStock;
@@ -69,9 +69,6 @@ public class Stock implements Serializable {
         this.parentStock = parentStock;
     }
 
-    
-    
-    
     public String getCode() {
         return code;
     }
@@ -79,8 +76,6 @@ public class Stock implements Serializable {
     public void setCode(String code) {
         this.code = code;
     }
-    
-    
 
     public Staff getStaff() {
         return staff;
@@ -90,8 +85,6 @@ public class Stock implements Serializable {
         this.staff = staff;
     }
 
-    
-    
     public Long getId() {
         return id;
     }
@@ -109,7 +102,7 @@ public class Stock implements Serializable {
 
     @Override
     public boolean equals(Object object) {
-        
+
         if (!(object instanceof Stock)) {
             return false;
         }
@@ -165,5 +158,20 @@ public class Stock implements Serializable {
         this.transItemStockQty = transItemStockQty;
     }
 
-    
+    public Long getStartBarcode() {
+        return startBarcode;
+    }
+
+    public void setStartBarcode(Long startBarcode) {
+        this.startBarcode = startBarcode;
+    }
+
+    public Long getEndBarcode() {
+        return endBarcode;
+    }
+
+    public void setEndBarcode(Long endBarcode) {
+        this.endBarcode = endBarcode;
+    }
+
 }
