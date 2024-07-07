@@ -141,7 +141,7 @@ public class WebUserController implements Serializable {
     
     private LoginPage loginPage;
 
-    boolean testRun = false;
+    boolean grantAllPrivilegesToAllUsersForTesting = true;
 
     private List<UserNotification> userNotifications;
     private int userNotificationCount;
@@ -277,7 +277,7 @@ public class WebUserController implements Serializable {
 
     public boolean hasPrivilege(String privilege) {
         boolean hasPri = false;
-        if (testRun) {
+        if (grantAllPrivilegesToAllUsersForTesting) {
             return true;
         }
         if (getSessionController().getLoggedUser() == null) {
@@ -625,7 +625,7 @@ public class WebUserController implements Serializable {
 
     public String navigateToListUsers() {
         fillLightUsers();
-        return "/admin/users/user_list";
+        return "/admin/users/user_list?faces-redirect=true";
     }
 
     private void fillLightUsers() {

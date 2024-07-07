@@ -31,7 +31,6 @@ import com.divudi.entity.pharmacy.Vmpp;
 import com.divudi.facade.ItemFacade;
 import com.divudi.facade.ItemFeeFacade;
 import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.entity.ItemMapping;
 import com.divudi.entity.UserPreference;
 import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.ItemMappingFacade;
@@ -49,11 +48,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
-import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
-import javax.faces.convert.ConverterException;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -520,18 +517,18 @@ public class ItemController implements Serializable {
         allItems = getFacade().findByJpql(jpql, m);
     }
 
-    public String toManageItemdIndex() {
-        return "/admin/items/index";
+    public String toManageItemIndex() {
+        return "/admin/items/index?faces-redirect=true";
     }
 
     public String toListInvestigations() {
         fillInvestigations();
-        return "/admin/investigations";
+        return "/admin/investigations?faces-redirect=true";
     }
 
     public String toAddNewInvestigation() {
         current = new Investigation();
-        return "/admin/investigation";
+        return "/admin/investigation?faces-redirect=true";
     }
 
     public String toEditInvestigation() {
@@ -539,7 +536,7 @@ public class ItemController implements Serializable {
             JsfUtil.addErrorMessage("Nothing selected");
             return "";
         }
-        return "/admin/institution";
+        return "/admin/institution?faces-redirect=true";
     }
 
     public String deleteInvestigation() {
@@ -752,6 +749,8 @@ public class ItemController implements Serializable {
             return null;
         }
     }
+    
+    
 
     public void fillInvestigationSampleComponents() {
         if (current == null) {
@@ -2730,6 +2729,20 @@ public class ItemController implements Serializable {
 
         }
         return investigationsAndServices;
+    }
+
+    public List<Item> fillDepartmentItems(Department department) {
+        String jpql = "SELECT item"
+                + " FROM Item item "
+                + " WHERE item.retired=:ret ";
+        HashMap<String, Object> parameters = new HashMap<>();
+        parameters.put("ret", false);
+        if (department != null) {
+            jpql += " and item.department=:dep ";
+            parameters.put("dep", department);
+        }
+        jpql += " ORDER BY item.name ";
+        return itemFacade.findByJpql(jpql, parameters);
     }
 
     public List<Item> listInvestigationsAndServices(Institution institution, Department department) {
