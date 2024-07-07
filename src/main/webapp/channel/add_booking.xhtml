@@ -549,7 +549,7 @@
                             <h:panelGroup id="gpBillPreview">
                                 <ui:repeat value="#{sessionController.departmentPreference.channellingBillCopiesList}" var="copy">
                                     <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'PosPaper'}" >
-                                        <ez:bmsChannelBill  bill="#{bookingController.printingBill}"/>
+                                        <ez:bmsChannelBill  bill="#{bookingController.printingBill}" />
                                     </h:panelGroup>
                                     <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'FiveFivePaper'}" >
                                         <ez:bms5x5ChannelBill bill="#{bookingController.printingBill}"/> 
