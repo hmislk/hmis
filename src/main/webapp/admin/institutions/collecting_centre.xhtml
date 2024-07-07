@@ -35,124 +35,178 @@
 
                         </div>
                         <div class="col-md-7">
-                            <p:panel id="gpDetail" header="Details of the Collecting Centre" class="w-100">
+                            <p:panelGrid 
+                                columns="2" 
+                                id="gpDetail" 
+                                class="w-100"
+                                >
+                                <f:facet name="header">
+                                    <div class="d-flex justify-content-between align-items-center w-100">
+                                        <h:outputLabel value="Details of the Collecting Centre"></h:outputLabel>
+                                        <p:commandButton id="btnSave" 
+                                                         value="Save"
+                                                         icon="fas fa-save"
+                                                         action="#{collectingCentreController.saveSelected()}" 
+                                                         class="ui-button-warning btn" 
+                                                         process="gpDetail btnSave" 
+                                                         update="lstSelect" />
+                                    </div>
+                                </f:facet>
 
-                                <h:panelGrid id="gpDetailText" columns="2" class="w-100">
-                                    <h:outputText id="lblName" value="Name"  ></h:outputText>
-                                    <p:inputText autocomplete="off" id="txtName" 
-                                                 styleClass="longText"
-                                                 class="w-100"
-                                                 value="#{collectingCentreController.current.name}"  ></p:inputText>
 
-                                    <h:outputText id="lblChqPrnName" value="Printing Name" ></h:outputText>
-                                    <p:inputText autocomplete="off" id="txtChqPrnName" 
-                                                 class="w-100"
-                                                 value="#{collectingCentreController.current.chequePrintingName}" ></p:inputText>
+                                <h:outputText id="lblName" value="Name"  ></h:outputText>
+                                <p:inputText autocomplete="off" id="txtName" 
+                                             styleClass="longText"
+                                             class="w-100"
+                                             value="#{collectingCentreController.current.name}"  ></p:inputText>
 
-                                    <h:outputText value="Code" >                                        
-                                    </h:outputText>
+                                <h:outputText id="lblChqPrnName" value="Printing Name" ></h:outputText>
+                                <p:inputText autocomplete="off" id="txtChqPrnName" 
+                                             class="w-100"
+                                             value="#{collectingCentreController.current.chequePrintingName}" ></p:inputText>
+
+                                <h:outputText value="Code" >                                        
+                                </h:outputText>
+                                <h:panelGroup >
                                     <p:inputText
                                         id="txtCode"
-                                        autocomplete="off"  value="#{collectingCentreController.current.code}" 
-                                        class="w-100">
-                                    </p:inputText> 
-                                    
-                                    <h:outputText value="Active" >                                        
-                                    </h:outputText>
-                                    <p:selectBooleanButton class="form-control" onIcon="fas fa-times" offIcon="fas fa-check" value="#{collectingCentreController.current.inactive}"  />
-                                   
-
-                                    <h:outputText value="Description" >                                        
-                                    </h:outputText>
-                                    <p:inputTextarea styleClass="longText" value="#{collectingCentreController.current.descreption}" class="w-100" >
-                                    </p:inputTextarea> 
-
-                                    <h:outputText id="lblPaymentMethod" value="Payment Method" ></h:outputText>
-                                    <p:selectOneMenu value="#{collectingCentreController.current.collectingCentrePaymentMethod}"  class="w-100">
-                                        <f:selectItem itemLabel="Select the Payment Method" />
-                                        <f:selectItems value="#{collectingCentreController.collectingCentrePaymentMethod}"/>                                        
-                                    </p:selectOneMenu>
-                                    
-                                    <h:outputText id="lblRoute" value="Route" ></h:outputText>
-                                    <p:selectOneMenu 
-                                        filter="true"
-                                        value="#{collectingCentreController.current.route}"  
-                                        class="w-100">
-                                        <f:selectItem itemLabel="Select the Route" />
-                                        <f:selectItems 
-                                            value="#{routeController.items}"
-                                            var="r"
-                                            itemLabel="#{r.name}"
-                                            itemValue="#{r}"/>                                        
-                                    </p:selectOneMenu>
-                                    
-                                    <h:outputText value="Percentage" >                                        
-                                    </h:outputText>
-                                    <p:inputText autocomplete="off"  value="#{collectingCentreController.current.percentage}"  class="w-100">
+                                        autocomplete="off"  
+                                        value="#{collectingCentreController.current.code}" >
                                     </p:inputText>
-                                    
-                                    <h:outputText value="Contact Number" >                                        
-                                    </h:outputText>
-                                    <p:inputText autocomplete="off"  value="#{collectingCentreController.current.phone}"  class="w-100">
-                                    </p:inputText>
-                                    
-                                    <h:outputText value="Email Address" >                                        
-                                    </h:outputText>
-                                    <p:inputText autocomplete="off"  value="#{collectingCentreController.current.email}"  class="w-100">
-                                    </p:inputText>
-                                    
-                                    <h:outputText value="Owner Name" >                                        
-                                    </h:outputText>
-                                    <p:inputText autocomplete="off"  value="#{collectingCentreController.current.ownerName}"  class="w-100">
-                                    </p:inputText>
-                                    
-                                    <h:outputText id="lblAdress" value="Address" ></h:outputText>
-                                    <p:inputTextarea id="txtAdress" value="#{collectingCentreController.current.address}" styleClass="longText" class="w-100" ></p:inputTextarea>
-
-                                    <h:outputText value="Standard Credit Limit" >                                        
-                                    </h:outputText>
-                                    <p:inputText autocomplete="off"  value="#{collectingCentreController.current.allowedCredit}"  class="w-100">
-                                    </p:inputText>
-                                    
-                                    <h:outputText value="Allowed Credit Limit" >                                        
-                                    </h:outputText>
-                                    <p:inputText autocomplete="off"  value="#{collectingCentreController.current.allowedCreditLimit}"  class="w-100">
-                                    </p:inputText>
-                                    
-                                    <h:outputText value="Max Credit Limit" >                                        
-                                    </h:outputText>
-                                    <p:inputText autocomplete="off"  value="#{collectingCentreController.current.maxCreditLimit}"  class="w-100">
-                                    </p:inputText>
-
-
-                                    <h:outputText id="lblWeb" value="Web" ></h:outputText>
-                                    <p:inputText autocomplete="off" id="txtWeb" value="#{collectingCentreController.current.web}" class="w-100" ></p:inputText>
-
-                                    <h:outputText id="lblAcc" value="Account No" ></h:outputText>
-                                    <p:inputText autocomplete="off" id="txtAcc" value="#{collectingCentreController.current.accountNo}" class="w-100" ></p:inputText>
-
-                                    <h:outputText value="Creator" ></h:outputText>
-                                    <h:outputText value="#{collectingCentreController.current.creater.webUserPerson.name}" ></h:outputText>
-
-                                    <h:outputText value="Created At" ></h:outputText>
-                                    <h:outputText value="#{collectingCentreController.current.createdAt}" >
-                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
-                                    </h:outputText>
                                     <p:commandButton 
                                         id="btnGen" 
                                         icon="fas fa-arrows-rotate"
-                                        value="Generate Code"
                                         process="btnGen"
                                         action="#{collectingCentreController.generateAndAssignCode()}" 
-                                        class=" m-1 ui-button-warning w-100" 
+                                        class="m-1 ui-button-warning" 
                                         update="txtCode" />
-                                </h:panelGrid>
-                                <p:commandButton id="btnSave" value="Save"
-                                                 icon="fas fa-save"
-                                                 action="#{collectingCentreController.saveSelected()}" 
-                                                 class=" m-1 ui-button-warning w-25" process="gpDetail btnSave" update="lstSelect" />
-                                <p:defaultCommand target="btnSave"/>
-                            </p:panel>
+                                </h:panelGroup>
+
+
+                                <h:outputText value="Active" >                                        
+                                </h:outputText>
+                                <p:selectBooleanButton class="form-control" onIcon="fas fa-times" offIcon="fas fa-check" value="#{collectingCentreController.current.inactive}"  />
+
+
+                                <h:outputText value="Description" >                                        
+                                </h:outputText>
+                                <p:inputTextarea styleClass="longText" value="#{collectingCentreController.current.descreption}" class="w-100" >
+                                </p:inputTextarea> 
+
+                                <h:outputText id="lblPaymentMethod" value="Payment Method" ></h:outputText>
+                                <p:selectOneMenu value="#{collectingCentreController.current.collectingCentrePaymentMethod}"  class="w-100">
+                                    <f:selectItem itemLabel="Select the Payment Method" />
+                                    <f:selectItems value="#{collectingCentreController.collectingCentrePaymentMethod}"/>                                        
+                                </p:selectOneMenu>
+
+                                <h:outputText id="lblRoute" value="Route" ></h:outputText>
+                                <p:selectOneMenu 
+                                    filter="true"
+                                    value="#{collectingCentreController.current.route}"  
+                                    class="w-100">
+                                    <f:selectItem itemLabel="Select the Route" />
+                                    <f:selectItems 
+                                        value="#{routeController.items}"
+                                        var="r"
+                                        itemLabel="#{r.name}"
+                                        itemValue="#{r}"/>                                        
+                                </p:selectOneMenu>
+
+
+                                <p:outputLabel value="Lab Institution" for="institution" />
+                                <p:autoComplete forceSelection="true" value="#{collectingCentreController.current.labInstitution}"
+                                                completeMethod="#{institutionController.completeIns}" id="institution"
+                                                var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30" 
+                                                class="w-100" inputStyleClass="w-100">
+                                    <f:ajax event="itemSelect" execute="@this" render="department" ></f:ajax>
+                                    <f:ajax event="change" execute="@this" render="department" ></f:ajax>
+                                </p:autoComplete>
+
+                                <p:outputLabel value="Lab Department"  for="department" />
+                                <h:panelGroup id="department"  >
+                                    <p:selectOneMenu 
+                                        value="#{collectingCentreController.current.labDepartment}" 
+                                        rendered="#{collectingCentreController.current.labInstitution ne null}" >
+                                        <f:selectItem itemLabel="Select Department"/>
+                                        <f:selectItems value="#{departmentController.getInstitutionDepatrments(collectingCentreController.current.labInstitution)}"/>
+                                    </p:selectOneMenu>
+                                    <p:outputLabel 
+                                        value=""
+                                        rendered="#{collectingCentreController.current.labInstitution eq null}"></p:outputLabel>
+                                </h:panelGroup>
+
+
+                                <p:outputLabel value="Select Fee List" />
+                                <p:selectOneMenu 
+                                    value="#{collectingCentreController.current.feeListType}" 
+                                    id="acColl" 
+                                    filter="true"
+                                    class="w-100"
+                                    filterMatchMode="contains">
+                                    <f:selectItem itemLabel="Select" ></f:selectItem>
+                                    <f:selectItems 
+                                        value="#{categoryController.feeListTypes}"
+                                        var="vt" 
+                                        itemLabel="#{vt.name}" 
+                                        itemValue="#{vt}" ></f:selectItems>
+                                </p:selectOneMenu>
+
+
+                                <h:outputText value="Percentage" >                                        
+                                </h:outputText>
+                                <p:inputText autocomplete="off"  value="#{collectingCentreController.current.percentage}"  class="w-100">
+                                </p:inputText>
+
+                                <h:outputText value="Contact Number" >                                        
+                                </h:outputText>
+                                <p:inputText autocomplete="off"  value="#{collectingCentreController.current.phone}"  class="w-100">
+                                </p:inputText>
+
+                                <h:outputText value="Email Address" >                                        
+                                </h:outputText>
+                                <p:inputText autocomplete="off"  value="#{collectingCentreController.current.email}"  class="w-100">
+                                </p:inputText>
+
+                                <h:outputText value="Owner Name" >                                        
+                                </h:outputText>
+                                <p:inputText autocomplete="off"  value="#{collectingCentreController.current.ownerName}"  class="w-100">
+                                </p:inputText>
+
+                                <h:outputText id="lblAdress" value="Address" ></h:outputText>
+                                <p:inputTextarea id="txtAdress" value="#{collectingCentreController.current.address}" styleClass="longText" class="w-100" ></p:inputTextarea>
+
+                                <h:outputText value="Standard Credit Limit" >                                        
+                                </h:outputText>
+                                <p:inputText autocomplete="off"  value="#{collectingCentreController.current.allowedCredit}"  class="w-100">
+                                </p:inputText>
+
+                                <h:outputText value="Allowed Credit Limit" >                                        
+                                </h:outputText>
+                                <p:inputText autocomplete="off"  value="#{collectingCentreController.current.allowedCreditLimit}"  class="w-100">
+                                </p:inputText>
+
+                                <h:outputText value="Max Credit Limit" >                                        
+                                </h:outputText>
+                                <p:inputText autocomplete="off"  value="#{collectingCentreController.current.maxCreditLimit}"  class="w-100">
+                                </p:inputText>
+
+
+                                <h:outputText id="lblWeb" value="Web" ></h:outputText>
+                                <p:inputText autocomplete="off" id="txtWeb" value="#{collectingCentreController.current.web}" class="w-100" ></p:inputText>
+
+                                <h:outputText id="lblAcc" value="Account No" ></h:outputText>
+                                <p:inputText autocomplete="off" id="txtAcc" value="#{collectingCentreController.current.accountNo}" class="w-100" ></p:inputText>
+
+                                <h:outputText value="Creator" ></h:outputText>
+                                <h:outputText value="#{collectingCentreController.current.creater.webUserPerson.name}" ></h:outputText>
+
+                                <h:outputText value="Created At" ></h:outputText>
+                                <h:outputText value="#{collectingCentreController.current.createdAt}" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
+                                </h:outputText>
+
+                            </p:panelGrid>
+
                         </div>
                     </div>
                 </p:panel>

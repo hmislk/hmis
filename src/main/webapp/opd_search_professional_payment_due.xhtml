@@ -63,10 +63,9 @@
                                         </p:column>
 
                                         <p:column headerText="Doctor" >
-                                            <h:commandLink action="payment_staff_bill" >
+                                            <h:commandLink action="#{staffPaymentBillController.navigateToStaffPaymentFromDuePayment(bf.staff)}" >
                                                 <h:outputLabel value="#{bf.staff.person.name}">
                                                 </h:outputLabel>
-                                                <f:setPropertyActionListener value="#{bf.staff}" target="#{staffPaymentBillController.currentStaff}"/>
                                             </h:commandLink>
                                         </p:column>
 
