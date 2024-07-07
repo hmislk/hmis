@@ -1226,11 +1226,19 @@
                                         <p:outputLabel value="#{bi.feeValue}"/> 
                                     </p:column>
                                     <p:column headerText="Return Value">
-                                        <p:inputText value="#{bi.tmpChangedValue}">
+                                        <p:inputText value="#{bi.tmpChangedValue}" disabled="#{configOptionApplicationController.getBooleanValueByKey('Disallow Modifications to Refund Amounts')}"  >
                                             <f:ajax execute="@this" render=":#{p:resolveFirstComponentWithId('tot',view).clientId}" event="blur" listener="#{bookingControllerViewScope.calRefundTotal()}"/>
                                             <f:ajax execute="@this" render=":#{p:resolveFirstComponentWithId('tot',view).clientId} @this" event="blur" listener="#{bookingControllerViewScope.checkRefundTotal()}"/>
                                         </p:inputText>
-
+                                        <p:commandButton class="ui-button-warning mx-2"
+                                                         icon="fas fa-copy"
+                                                         action="#{bookingControllerViewScope.copyValue(bi)}"
+                                                         ajax="false"
+                                                         disabled="#{bi.fee.feeType eq 'OwnInstitution' and configOptionApplicationController.getBooleanValueByKey('Disable Hospital Fee Refunds')}"
+                                                         rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable Users to Fetch Refund Amounts Using a Button')}" >
+                                            <f:ajax execute="@this" render=":#{p:resolveFirstComponentWithId('tot',view).clientId}" event="click" listener="#{bookingControllerViewScope.calRefundTotal()}"/>
+                                            <f:ajax execute="@this" render=":#{p:resolveFirstComponentWithId('tot',view).clientId} @this" event="click" listener="#{bookingControllerViewScope.checkRefundTotal()}"/>
+                                        </p:commandButton>
                                     </p:column>
                                 </p:dataTable>
                             </h:panelGroup>
@@ -1255,12 +1263,15 @@
                                     <p:commandButton id="btnIdRefund" value="Refund Booking" class="ui-button-warning my-2 mx-2" icon="fas fa-reply" ajax="false"
                                                      disabled="#{bookingControllerViewScope.billSession.bill.refunded==true
                                                                  or bookingControllerViewScope.billSession.bill.cancelled==true or bookingControllerViewScope.disableRefund==true}"
-                                                     action="#{bookingControllerViewScope.channelBookingRefund()}"/>
+                                                     action="#{bookingControllerViewScope.channelBookingRefund()}">
+                                        <f:ajax execute="@this" render=":#{p:resolveFirstComponentWithId('tot',view).clientId}" event="click" listener="#{bookingControllerViewScope.calRefundTotal()}"/>
+                                        <f:ajax execute="@this" render=":#{p:resolveFirstComponentWithId('tot',view).clientId} @this" event="click" listener="#{bookingControllerViewScope.checkRefundTotal()}"/>
+                                    </p:commandButton>
 
                                 </div>
                             </div>
 
-                            <h:panelGroup id="gpSettleRefundBillPreview" rendered="#{bookingControllerViewScope.selectedBillSession.bill.refunded}">
+                            <h:panelGroup rendered="#{bookingControllerViewScope.selectedBillSession.bill.refunded}">
                                 <div>
                                     <p:commandButton
                                         class="mx-2 ui-button-info"
@@ -1270,8 +1281,9 @@
                                         <p:printer target="gpSettleRefundBillPreview" ></p:printer>
                                     </p:commandButton>
                                 </div>
-                                <ez:five_five_paper_without_headings_channel_RefundBill bill="#{bookingControllerViewScope.selectedBillSession.bill}"/>
-
+                                <h:panelGroup id="gpSettleRefundBillPreview">
+                                    <ez:five_five_paper_without_headings_channel_RefundBill bill="#{bookingControllerViewScope.selectedBillSession.bill}"/>
+                                </h:panelGroup>
                             </h:panelGroup>
 
                         </p:tab>

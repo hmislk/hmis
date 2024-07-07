@@ -1,0 +1,80 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html">
+
+
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+
+                <div class="row" >
+                    <div class="col-md-3" >
+                        <h:form>
+                            <p:accordionPanel activeIndex="#{searchController.managePaymentIndex}">
+                                <p:ajax process="@this"></p:ajax>
+                                <p:tab title="OPD" >
+                                    <div class="d-grid gap-2">
+                                        <p:commandButton  class="w-100" ajax="false" value="Pay Doctor / Staff" action="/payment_staff_bill?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PaymentBilling')}" />
+                                        <p:commandButton  class="w-100" ajax="false" action="/opd_search_professional_payment_due?faces-redirect=true" actionListener="#{searchController.makeListNull}"  value="Payments Due Search" rendered="#{webUserController.hasPrivilege('PaymentBillSearch')}" />
+                                        <p:commandButton  class="w-100" ajax="false" value="Payment Done Search" action="/opd_search_professional_payment_done?faces-redirect=true" actionListener="#{searchController.makeListNull}" rendered="#{webUserController.hasPrivilege('PaymentBillSearch')}"/>
+                                    </div>
+                                </p:tab>
+                                <p:tab title="Inward" >
+                                    <div class="d-grid gap-2">
+                                        <p:commandButton  class="w-100" ajax="false" value="Pay Doctor / Staff" action="/inward/inward_bill_staff_payment?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PaymentBilling')}" />
+                                        <p:commandButton  class="w-100" ajax="false" action="/inward/inward_search_professional_payment_due?faces-redirect=true" actionListener="#{searchController.makeListNull}"  value="Payments Due Search" rendered="#{webUserController.hasPrivilege('PaymentBillSearch')}" />
+                                        <p:commandButton  class="w-100" ajax="false" value="Payment Done Search" action="/inward/inward_search_professional_payment_done?faces-redirect=true" actionListener="#{searchController.makeListNull}" rendered="#{webUserController.hasPrivilege('PaymentBillSearch')}"/>
+                                    </div>
+
+                                </p:tab>
+                                <p:tab title="Channel" >
+                                    <p:accordionPanel >
+                                        <p:tab title="Doctor/Staff">
+                                            <div class="d-grid gap-2">
+                                                <p:commandButton  class="w-100" ajax="false" value="Pay Doctor"  action="/channel/channel_payment_staff_bill?faces-redirect=true" actionListener="#{channelStaffPaymentBillController.makenull()}" rendered="#{webUserController.hasPrivilege('ChannellingPaymentPayDoctor')}" />
+                                                <p:commandButton  class="w-100" ajax="false" value="Payment Due Search"  action="/channel/channel_payments_due_search?faces-redirect=trueh" rendered="#{webUserController.hasPrivilege('ChannellingPaymentDueSearch')}"/>
+                                                <p:commandButton  class="w-100" ajax="false" value="Payment Done Search"  action="/channel/channel_payment_bill_search?faces-redirect=true" actionListener="#{billSearch.recreateModel}" rendered="#{webUserController.hasPrivilege('ChannellingPaymentDoneSearch')}" />
+                                            </div>
+                                        </p:tab>
+                                    </p:accordionPanel>
+                                    <p:accordionPanel>
+                                        <p:tab title="Agency">
+                                            <div class="d-grid gap-2">
+                                                <p:commandButton  class="w-100" ajax="false" value="Pay Agent"  action="/channel/channel_payment_agent_bill?faces-redirect=true" rendered="#{webUserController.hasPrivilege('ChannellingPaymentPayDoctor')}" />
+                                                <p:commandButton  class="w-100" ajax="false" value="Payment Done Search"  action="/channel/channel_payment_agency_bill_search?faces-redirect=true" actionListener="#{billSearch.recreateModel}" rendered="#{webUserController.hasPrivilege('ChannellingPaymentDoneSearch')}"/>
+                                            </div>
+                                        </p:tab>
+                                    </p:accordionPanel>
+                                </p:tab>
+                                <p:tab title="Petty Cash" >
+                                    <div class="d-grid gap-2">
+                                        <p:commandButton  class="w-100" ajax="false" action="/petty_cash_bill?faces-redirect=true" value="Petty Cash Payment" actionListener="#{pettyCashBillController.prepareNewBill()}" />
+                                        <p:commandButton  class="w-100" ajax="false" action="/petty_cash_bill_search_own?faces-redirect=true" actionListener="#{searchController.makeListNull}"  value="Petty Cash Bill Search"/>
+                                        <p:commandButton  class="w-100" ajax="false" action="/iou_bill?faces-redirect=true" value="Petty Cash (IOU)"/>
+                                    </div>
+
+                                </p:tab>
+                            </p:accordionPanel>
+                        </h:form>
+                    </div>
+                    <div class="col-md-9" >
+                        <ui:insert name="admin" >
+
+                        </ui:insert>
+
+                    </div>
+                </div>
+
+
+
+            </ui:define>
+
+
+        </ui:composition>
+
+    </h:body>
+</html>
