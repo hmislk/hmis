@@ -72,7 +72,7 @@
                                                     class="w-100"
                                                     forceSelection="true"
                                                     value="#{pharmacySaleController.stock}" 
-                                                    completeMethod="#{stockController.completeAvailableStocks}" 
+                                                    completeMethod="#{stockController.completeAvailableStocksWithItemStock}" 
                                                     scrollHeight="400"
                                                     var="i" 
                                                     itemLabel="#{i.itemBatch.item.name}" 
@@ -97,7 +97,7 @@
                                                         </h:outputLabel>
                                                     </p:column>
                                                     <p:column headerText="Total Stock" style="padding: 8px;" styleClass="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
-                                                        <h:outputLabel value="#{i.itemBatch.item.totalStockQty}" >
+                                                        <h:outputLabel value="#{i.transItemStockQty}" >
                                                             <f:convertNumber pattern="#,###" ></f:convertNumber>
                                                         </h:outputLabel>
                                                     </p:column>
