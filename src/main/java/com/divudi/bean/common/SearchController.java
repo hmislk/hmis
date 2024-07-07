@@ -2972,12 +2972,12 @@ public class SearchController implements Serializable {
         tmp.put("fromDate", getFromDate());
         tmp.put("toDep", getSessionController().getDepartment());
         tmp.put("bct", bct);
-        tmp.put("bTp", BillType.PharmacyTransferRequest);
+        tmp.put("bTp", billTypeAtomic.PHARMACY_TRANSFER_REQUEST);
 
         sql = "Select b From Bill b where "
                 + " b.retired=false and  b.toDepartment=:toDep"
                 + " and b.billClassType not in :bct"
-                + " and b.billType= :bTp and b.createdAt between :fromDate and :toDate ";
+                + " and b.billTypeAtomic= :bTp and b.createdAt between :fromDate and :toDate ";
 
         if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
             sql += " and  ((b.deptId) like :billNo )";
