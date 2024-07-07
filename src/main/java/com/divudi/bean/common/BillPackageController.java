@@ -51,7 +51,9 @@ import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.dataStructure.ComponentDetail;
 import com.divudi.ejb.StaffBean;
+import com.divudi.entity.BillFeePayment;
 import com.divudi.entity.Payment;
+import com.divudi.facade.BillFeePaymentFacade;
 import com.divudi.facade.PaymentFacade;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
@@ -103,6 +105,8 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     PaymentFacade paymentFacade;
     @EJB
     StaffBean staffBean;
+    @EJB
+    BillFeePaymentFacade billFeePaymentFacade;
     //</editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Injects">
@@ -328,7 +332,9 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         }
 
         saveBatchBill();
-        payments = createPayments(getBatchBill(), paymentMethod);
+        List<Payment> ps = createPayments(getBatchBill(), paymentMethod);
+        payments = ps;
+        calculateBillfeePayments(lstBillFees, payments.get(0));
         if (toStaff != null && getPaymentMethod() == PaymentMethod.Staff_Welfare) {
             staffBean.updateStaffWelfare(toStaff, batchBill.getNetTotal());
             JsfUtil.addSuccessMessage("Staff Welfare Balance Updated");
@@ -431,6 +437,12 @@ public class BillPackageController implements Serializable, ControllerWithPatien
                     case Agent:
                     case Credit:
                     case PatientDeposit:
+                        if (getPatient().getRunningBalance() != null) {
+                            getPatient().setRunningBalance(getPatient().getRunningBalance() - cd.getPaymentMethodData().getPatient_deposit().getTotalValue());
+                        } else {
+                            getPatient().setRunningBalance(0.0 - cd.getPaymentMethodData().getPatient_deposit().getTotalValue());
+                        }
+                        getPatientFacade().edit(getPatient());
                     case Slip:
                         p.setPaidValue(cd.getPaymentMethodData().getSlip().getTotalValue());
                         p.setBank(cd.getPaymentMethodData().getSlip().getInstitution());
@@ -497,6 +509,27 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         return ps;
     }
 
+    public void calculateBillfeePayments(List<BillFee> billFees, Payment p) {
+        for (BillFee bf : billFees) {
+            bf.setSettleValue(bf.getFeeValue());
+            setBillFeePaymentAndPayment(bf.getFeeValue(), bf, p);
+            getBillFeeFacade().edit(bf);
+
+        }
+    }
+
+    public void setBillFeePaymentAndPayment(double amount, BillFee bf, Payment p) {
+        BillFeePayment bfp = new BillFeePayment();
+        bfp.setBillFee(bf);
+        bfp.setAmount(amount);
+        bfp.setInstitution(bf.getBillItem().getItem().getInstitution());
+        bfp.setDepartment(bf.getBillItem().getItem().getDepartment());
+        bfp.setCreater(getSessionController().getLoggedUser());
+        bfp.setCreatedAt(new Date());
+        bfp.setPayment(p);
+        billFeePaymentFacade.create(bfp);
+    }
+
     public double calculatRemainForMultiplePaymentTotal() {
 
         if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
@@ -532,6 +565,9 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             } else if (pm.getPaymentMethod() == PaymentMethod.ewallet) {
                 pm.getPaymentMethodData().getEwallet().setTotalValue(remainAmount);
             } else if (pm.getPaymentMethod() == PaymentMethod.PatientDeposit) {
+                if (patient != null) {
+                    pm.getPaymentMethodData().getPatient_deposit().setPatient(patient);
+                }
                 pm.getPaymentMethodData().getPatient_deposit().setTotalValue(remainAmount);
             } else if (pm.getPaymentMethod() == PaymentMethod.Credit) {
                 pm.getPaymentMethodData().getCredit().setTotalValue(remainAmount);
@@ -681,6 +717,26 @@ public class BillPackageController implements Serializable, ControllerWithPatien
                 if (paymentSchemeController.checkPaymentMethodError(cd.getPaymentMethod(), cd.getPaymentMethodData())) {
                     return true;
                 }
+                if (cd.getPaymentMethod().equals(PaymentMethod.PatientDeposit)) {
+                    if (!getPatient().getHasAnAccount()) {
+                        JsfUtil.addErrorMessage("Patient has not account. Can't proceed with Patient Deposits");
+                        return true;
+                    }
+                    double creditLimitAbsolute = Math.abs(getPatient().getCreditLimit());
+                    double runningBalance;
+                    if (getPatient().getRunningBalance() != null) {
+                        runningBalance = getPatient().getRunningBalance();
+                    } else {
+                        runningBalance = 0.0;
+                    }
+                    double availableForPurchase = runningBalance + creditLimitAbsolute;
+
+                    if (cd.getPaymentMethodData().getPatient_deposit().getTotalValue() > availableForPurchase) {
+                        JsfUtil.addErrorMessage("No Sufficient Patient Deposit");
+                        return true;
+                    }
+
+                }
                 if (cd.getPaymentMethod().equals(PaymentMethod.Staff)) {
                     if (cd.getPaymentMethodData().getStaffCredit().getTotalValue() == 0.0 || cd.getPaymentMethodData().getStaffCredit().getToStaff() == null) {
                         JsfUtil.addErrorMessage("Please fill the Paying Amount and Staff Name");
@@ -775,7 +831,6 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         setCurrentBillItem(null);
         recreateBillItems();
     }
-    
 
     private void recreateBillItems() {
         //Only remove Total and BillComponenbts,Fee and Sessions. NOT bill Entries
@@ -863,7 +918,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
 
     public void removeBillItem(Item itm) {
         List<Item> itemList = new ArrayList<>();
-        for(BillEntry be: getLstBillEntries()){
+        for (BillEntry be : getLstBillEntries()) {
             itemList.add(be.getBillItem().getItem());
         }
         lstBillComponents = null;
@@ -1077,6 +1132,11 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     }
 
     public PaymentMethod getPaymentMethod() {
+        if (paymentMethod != paymentMethod.Cash) {
+            setCashPaid(netTotal);
+        } else {
+            setCashPaid(0.00);
+        }
         return paymentMethod;
     }
 
@@ -1112,6 +1172,17 @@ public class BillPackageController implements Serializable, ControllerWithPatien
 
     public void setBills(List<Bill> bills) {
         this.bills = bills;
+    }
+
+    public void listnerForPaymentMethodChange() {
+        if (paymentMethod == PaymentMethod.PatientDeposit) {
+            getPaymentMethodData().getPatient_deposit().setPatient(patient);
+            getPaymentMethodData().getPatient_deposit().setTotalValue(netTotal);
+        }
+        if (paymentMethod == PaymentMethod.Card) {
+            getPaymentMethodData().getCreditCard().setTotalValue(netTotal);
+        }
+        calTotals();
     }
 
     public CommonFunctions getCommonFunctions() {
