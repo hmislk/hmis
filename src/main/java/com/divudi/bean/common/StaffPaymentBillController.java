@@ -405,6 +405,13 @@ public class StaffPaymentBillController implements Serializable {
 
         return tmp;
     }
+    
+    public String navigateToStaffPaymentFromDuePayment(Staff s){
+        currentStaff = s;
+        speciality = s.getSpeciality();
+        calculateDueFees();
+        return "/payment_staff_bill?faces-redirect=true";
+    }
 
     private boolean errorCheck() {
         if (currentStaff == null) {
