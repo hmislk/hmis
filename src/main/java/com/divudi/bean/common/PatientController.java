@@ -796,7 +796,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         patientEncounterController.setPatient(current);
         patientEncounterController.fillCurrentPatientLists(current);
         patientEncounterController.fillPatientInvestigations(current);
-        return "/Optician/sale?faces-redirect=true;";
+        return "/optician/sale?faces-redirect=true;";
     }
 
     public String navigateToOpdPatientProfile() {
@@ -812,7 +812,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
             JsfUtil.addErrorMessage("No patient selected");
             return "";
         }
-        return "/Optician/patient?faces-redirect=true";
+        return "/optician/patient?faces-redirect=true";
     }
 
     public String navigateToAdmitFromPatientProfile() {
@@ -2192,7 +2192,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
     public String navigateToAddNewPatientForOptician() {
         current = null;
         getCurrent();
-        return "/Optician/patient_edit?faces-redirect=true;";
+        return "/optician/patient_edit?faces-redirect=true;";
     }
 
     public String navigateToAddNewPatientForOpd(String name, String nic, String phone) {
@@ -2212,7 +2212,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         getCurrent().getPerson().setNic(nic);
         getCurrent().getPerson().setPhone(phone);
         getCurrent().getPerson().setMobile(phone);
-        return "/Optician/patient_edit?faces-redirect=true;";
+        return "/optician/patient_edit?faces-redirect=true;";
     }
 
     public String navigateToAddNewPatientForOpd(String phone) {
