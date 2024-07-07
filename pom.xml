@@ -310,7 +310,7 @@
         <dependency>
             <groupId>org.apache.tomcat</groupId>
             <artifactId>tomcat-catalina</artifactId>
-            <version>9.0.39</version> <!-- or the version compatible with your setup -->
+            <version>9.0.83</version> <!-- or the version compatible with your setup -->
         </dependency>
 
     </dependencies>

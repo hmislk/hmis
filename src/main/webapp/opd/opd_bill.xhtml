@@ -17,7 +17,7 @@
 
                 <h:form id="form" rendered="#{webUserController.hasPrivilege('OpdBilling') or webUserController.hasPrivilege('LabCashier')}" >
 
-                    <p:growl id="msg" ></p:growl>
+                    <p:growl id="msg"  />
                     <p:panel class="m-0 p-0" >
                         <f:facet name="header" >
                             <div class="d-flex justify-content-between align-items-center">
@@ -236,7 +236,7 @@
                                         <h:outputText styleClass="fa fa-list" /> <!-- FontAwesome Icon -->
                                         <h:outputText value="Added Items" class="mx-4"></h:outputText>
                                     </f:facet>
-                                    <p:tabView id="tblBillItem" >
+                                    <p:tabView id="tblBillItem" activeIndex="#{configOptionApplicationController.getLongValueByKey('OPD Bill Item and Fee Active Index')}" >
                                         <p:tab id="tabBillFee" title="Fees" >
                                             <p:dataTable rowIndexVar="rowIndex" value="#{opdBillController.lstBillFees}" var="bif" rowKey="#{bif.id}" class="w-100">
                                                 <p:column>
@@ -335,8 +335,8 @@
                                                         <f:ajax event="blur" execute="@this :#{p:resolveFirstComponentWithId('tabBillFee',view).clientId}" 
                                                                 render=":#{p:resolveFirstComponentWithId('panelBillItems',view).clientId} :#{p:resolveFirstComponentWithId('msg',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}"
                                                                 listener="#{opdBillController.feeChangeListener(bif)}" />
-                                                        
-                                                        
+
+
                                                     </p:inputText>
                                                     <p:commandButton ajax="false" 
                                                                      icon="fa fa-refresh" 
@@ -432,15 +432,16 @@
 
                                         <div class="col-7 " >
                                             <h:panelGrid columns="3" class="m-1 w-100">
-                                                <p:commandButton  
+                                                <p:commandButton 
                                                     value="Settle"
                                                     style="float: right;"
                                                     ajax="false"
                                                     icon="fa fa-check"
-                                                    action="#{opdBillController.settleOpdBill()}" 
-                                                    class="ui-button-success mx-2 w-100"
-                                                    >
+                                                    action="#{opdBillController.settleOpdBill()}"
+                                                    onclick="setTimeout(() => this.disabled = true, 50);"
+                                                    class="ui-button-success mx-2 w-100">
                                                 </p:commandButton>
+
                                                 <p:commandButton 
                                                     style="float: right;"
                                                     value="Lookup" 
