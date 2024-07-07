@@ -236,6 +236,9 @@ public class Item implements Serializable, Comparable<Item> {
     double channelAgentFee;
     @Transient
     double channelOnCallFee;
+    
+    @Transient
+    private double totalStockQty;
 
     @Transient
     String transName;
@@ -1322,10 +1325,15 @@ public class Item implements Serializable, Comparable<Item> {
     public void setFinancialCategory(Category financialCategory) {
         this.financialCategory = financialCategory;
     }
-    
-    
-    
 
+    public double getTotalStockQty() {
+        return totalStockQty;
+    }
+
+    public void setTotalStockQty(double totalStockQty) {
+        this.totalStockQty = totalStockQty;
+    }
+    
     static class ReportItemComparator implements Comparator<ReportItem> {
 
         @Override
