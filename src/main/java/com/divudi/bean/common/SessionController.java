@@ -1081,7 +1081,7 @@ public class SessionController implements Serializable, HttpSessionListener {
 
                     departments = listLoggableDepts(u);
 
-                    if (webUserController.testRun) {
+                    if (webUserController.grantAllPrivilegesToAllUsersForTesting) {
                         departments = departmentController.fillAllItems();
                     }
 
@@ -1109,13 +1109,13 @@ public class SessionController implements Serializable, HttpSessionListener {
                     getFacede().edit(u);
                     setLoggedUser(u);
                     loggableDepartments = fillLoggableDepts();
-                    if (webUserController.testRun) {
+                    if (webUserController.grantAllPrivilegesToAllUsersForTesting) {
                         loggableDepartments = departmentController.fillAllItems();
                     }
 //                    loggableSubDepartments = fillLoggableSubDepts(loggableDepartments);
                     loggableInstitutions = fillLoggableInstitutions();
 
-                    if (webUserController.testRun) {
+                    if (webUserController.grantAllPrivilegesToAllUsersForTesting) {
                         loggableInstitutions = institutionController.fillAllItems();
                     }
                     loadDashboards();

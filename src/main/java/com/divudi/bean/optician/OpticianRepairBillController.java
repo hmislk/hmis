@@ -1,4 +1,4 @@
-package com.divudi.bean.Ophthalmology;
+package com.divudi.bean.optician;
 
 import com.divudi.bean.opd.*;
 import com.divudi.bean.cashTransaction.FinancialTransactionController;
@@ -99,7 +99,7 @@ import javax.persistence.TemporalType;
  */
 @Named
 @SessionScoped
-public class OphthalmologyRepairBillController implements Serializable, ControllerWithPatient, ControllerWithMultiplePayments {
+public class OpticianRepairBillController implements Serializable, ControllerWithPatient, ControllerWithMultiplePayments {
 
     private static final long serialVersionUID = 1L;
 
@@ -319,7 +319,7 @@ public class OphthalmologyRepairBillController implements Serializable, Controll
     public String navigateToSearchOpdBills() {
         batchBill = null;
         bills = null;
-        return "/Ophthalmology/repair_bill_search?faces-redirect=true";
+        return "/Optician/repair_bill_search?faces-redirect=true";
     }
 
     public void fillOpdBillItems() {
@@ -2742,7 +2742,7 @@ public class OphthalmologyRepairBillController implements Serializable, Controll
                 paymentScheme = null;
                 paymentMethod = PaymentMethod.Cash;
                 collectingCentreBillController.setCollectingCentre(null);
-                return "/Ophthalmology/repair_bill?faces-redirect=true";
+                return "/Optician/repair_bill?faces-redirect=true";
             } else {
                 JsfUtil.addErrorMessage("Start Your Shift First !");
                 return "/cashier/index?faces-redirect=true";
@@ -2754,7 +2754,7 @@ public class OphthalmologyRepairBillController implements Serializable, Controll
             paymentScheme = null;
             paymentMethod = PaymentMethod.Cash;
             collectingCentreBillController.setCollectingCentre(null);
-            return "/Ophthalmology/repair_bill?faces-redirect=true";
+            return "/Optician/repair_bill?faces-redirect=true";
         }
     }
 
@@ -2770,7 +2770,7 @@ public class OphthalmologyRepairBillController implements Serializable, Controll
                 if (getToken() != null) {
                     setPatient(token.getPatient());
                 }
-                return "/Ophthalmology/repair_bill?faces-redirect=true";
+                return "/Optician/repair_bill?faces-redirect=true";
             } else {
                 JsfUtil.addErrorMessage("Start Your Shift First !");
                 return "/cashier/index?faces-redirect=true";
@@ -2783,7 +2783,7 @@ public class OphthalmologyRepairBillController implements Serializable, Controll
             if (getToken() != null) {
                 setPatient(token.getPatient());
             }
-            return "/Ophthalmology/repair_bill?faces-redirect=true";
+            return "/Optician/repair_bill?faces-redirect=true";
         }
     }
 
@@ -2820,11 +2820,11 @@ public class OphthalmologyRepairBillController implements Serializable, Controll
         navigateToNewOpdBill();
         patient = pt;
         paymentScheme = ps;
-        return "/Ophthalmology/repair_bill?faces-redirect=true";
+        return "/Optician/repair_bill?faces-redirect=true";
     }
 
     public String toOpdBilling() {
-        return "/Ophthalmology/repair_bill?faces-redirect=true";
+        return "/Optician/repair_bill?faces-redirect=true";
     }
 
     public void prepareNewBillForMember() {
@@ -3083,7 +3083,7 @@ public class OphthalmologyRepairBillController implements Serializable, Controll
         this.sessionController = sessionController;
     }
 
-    public OphthalmologyRepairBillController() {
+    public OpticianRepairBillController() {
     }
 
     private BillFacade getFacade() {
