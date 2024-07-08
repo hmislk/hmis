@@ -528,8 +528,24 @@ public class OpticianPurchaseController implements Serializable {
     }
 
     public Long createLongBarcode(String initialBarcode, Long number) {
-        // Convert the number to a String and concatenate it with the initialBarcode
-        String combinedBarcode = initialBarcode + number.toString();
+        // Convert both the initialBarcode and the full number to strings
+        String fullNumberStr = number.toString();
+        String initialBarcodeStr = initialBarcode;
+
+        // Check if the full number starts with the initial barcode
+        if (!fullNumberStr.startsWith(initialBarcodeStr)) {
+            // If it doesn't start with the initial barcode, prepend the initial barcode to the number
+            fullNumberStr = initialBarcodeStr + fullNumberStr;
+        } else {
+            // Remove the initial barcode part from the full number
+            fullNumberStr = fullNumberStr.substring(initialBarcodeStr.length());
+        }
+
+        // Format the number part (with or without the initial barcode added) with leading zeros to have at least 6 digits
+        String formattedNumberPart = String.format("%06d", Long.parseLong(fullNumberStr));
+
+        // Concatenate the initial barcode with the formatted number part
+        String combinedBarcode = initialBarcodeStr + formattedNumberPart;
 
         // Convert the combined String back to a Long
         Long longBarcode = Long.parseLong(combinedBarcode);

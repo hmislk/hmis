@@ -5,7 +5,7 @@
                 xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://xmlns.jcp.org/jsf/core"
-                xmlns:pharmacy="http://xmlns.jcp.org/jsf/composite/pharmacy">
+                xmlns:optician="http://xmlns.jcp.org/jsf/composite/optician">
 
     <ui:define name="subcontent">
         <h:outputStylesheet library="css" name="maincss.css" ></h:outputStylesheet>
@@ -382,7 +382,7 @@
                         </div>
                     </f:facet>
                     <p:panel id="gpBillPreview">
-                        <pharmacy:purhcase bill="#{opticianPurchaseController.bill}"/>
+                        <optician:purhcase bill="#{opticianPurchaseController.bill}"/>
                     </p:panel>
                 </p:panel>
             </p:panel>

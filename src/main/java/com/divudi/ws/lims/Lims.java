@@ -320,7 +320,7 @@ public class Lims {
 
             switch (i.getItemBarcodeGenerationStrategy()) {
                 case BY_INDIVIDUAL_UNIT:
-                    JSONArray jArray = constructUnitBarcodesJson(bi, bi.getPharmaceuticalBillItem().getStock().getStartBarcode(), bi.getPharmaceuticalBillItem().getStock().getStartBarcode());
+                    JSONArray jArray = constructUnitBarcodesJson(bi, bi.getPharmaceuticalBillItem().getStock().getStartBarcode(), bi.getPharmaceuticalBillItem().getStock().getEndBarcode());
                     if (jArray != null) {
                         for (int index = 0; index < jArray.length(); index++) {
                             array.put(jArray.get(index));
@@ -329,13 +329,13 @@ public class Lims {
                     break;
                 case BY_BATCH:
                     JSONObject bcBatch = constructBatchBarcodeJson(bi.getPharmaceuticalBillItem().getStock());
-                    if(bcBatch!=null){
+                    if (bcBatch != null) {
                         array.put(bcBatch);
                     }
                     break;
                 case BY_ITEM:
                     JSONObject bcItem = constructItemBarcodeJson(bi.getItem());
-                    if(bcItem!=null){
+                    if (bcItem != null) {
                         array.put(bcItem);
                     }
                     break;
@@ -567,19 +567,26 @@ public class Lims {
     }
 
     private JSONArray constructUnitBarcodesJson(BillItem bi, Long startBarcode, Long endBarcode) {
+
+        System.out.println("constructUnitBarcodesJson - startBarcode: " + startBarcode + ", endBarcode: " + endBarcode);
         JSONArray jsonArray = new JSONArray();
 
         if (bi == null || startBarcode == null || endBarcode == null || startBarcode > endBarcode) {
+            System.out.println("Invalid parameters in constructUnitBarcodesJson");
             return jsonArray;  // Return an empty array if input is invalid
         }
 
         Long barcode = startBarcode;
-        while (barcode <= endBarcode) {
-            JSONObject jsonObject = new JSONObject();
-            jsonObject.put("itemName", bi.getItem().getName() != null ? bi.getItem().getName() : "");
-            jsonObject.put("barcode", barcode);
-            jsonArray.put(jsonObject);
-            barcode++;
+        try {
+            while (barcode <= endBarcode) {
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put("itemName", bi.getItem().getName() != null ? bi.getItem().getName() : "");
+                jsonObject.put("barcode", barcode);
+                jsonArray.put(jsonObject);
+                barcode++;
+            }
+        } catch (Exception e) {
+            System.out.println("e = " + e);
         }
 
         return jsonArray;
@@ -594,9 +601,9 @@ public class Lims {
         jsonObject.put("barcode", stock.getStartBarcode());
         return jsonObject;
     }
-    
+
     private JSONObject constructItemBarcodeJson(Item item) {
-        if (item == null ) {
+        if (item == null) {
             return null;  // Return an empty array if input is invalid
         }
         JSONObject jsonObject = new JSONObject();

@@ -1352,6 +1352,9 @@ public class Item implements Serializable, Comparable<Item> {
     }
 
     public Long getLastBarcode() {
+        if(lastBarcode==null){
+            lastBarcode=0l;
+        }
         return lastBarcode;
     }
 
