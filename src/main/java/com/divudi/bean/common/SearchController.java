@@ -251,6 +251,7 @@ public class SearchController implements Serializable {
     private double totalOfOtherPayments;
     private double billCount;
     private Token token;
+    private int managePaymentIndex = -1;
 
     private boolean duplicateBillView;
 
@@ -1498,6 +1499,14 @@ public class SearchController implements Serializable {
 
     public void setDuplicateBillView(boolean duplicateBillView) {
         this.duplicateBillView = duplicateBillView;
+    }
+
+    public int getManagePaymentIndex() {
+        return managePaymentIndex;
+    }
+
+    public void setManagePaymentIndex(int managePaymentIndex) {
+        this.managePaymentIndex = managePaymentIndex;
     }
 
     public class billsWithbill {
@@ -6785,6 +6794,7 @@ public class SearchController implements Serializable {
         Date startTime = new Date();
         List<BillTypeAtomic> billTypesAtomics = new ArrayList<>();
         billTypesAtomics.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+        billTypesAtomics.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
         billTypesAtomics.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
         createTableByKeyword(billTypesAtomics, institution, department, fromInstitution, fromDepartment, toInstitution, toDepartment);
         checkLabReportsApproved(bills);
@@ -6806,9 +6816,62 @@ public class SearchController implements Serializable {
 
     public void createCollectingCentreBillSearch() {
         Date startTime = new Date();
-        createTableByKeyword(BillType.CollectingCentreBill);
-        checkLabReportsApproved(bills);
+        createCCBillTableByKeyword(BillType.CollectingCentreBill,null,null);
+        //checkLabReportsApproved(bills);
 
+    }
+    
+    public void createCCBillTableByKeyword(BillType billType, Institution ins, Department dep){
+        billLights = null;
+        String sql;
+        Map temMap = new HashMap();
+        sql = "select new com.divudi.light.common.BillLight(bill.id, bill.insId, bill.createdAt, bill.fromInstitution.name, bill.institution.name, bill.toDepartment.name, bill.creater.name, bill.patient.person.name, bill.patient.person.phone, bill.total, bill.discount, bill.netTotal, bill.patient.id) "
+                + " from BilledBill bill "
+                + " where bill.billType = :billType "
+                + " and bill.createdAt between :fromDate and :toDate "
+                + " and bill.retired=false ";
+        
+        if (ins != null) {
+            sql += " and bill.institution=:ins ";
+            temMap.put("ins", ins);
+        }
+
+        if (dep != null) {
+            sql += " and bill.department=:dep ";
+            temMap.put("dep", dep);
+        }
+
+        if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
+            sql += " and  ((bill.patient.person.name) like :patientName )";
+            temMap.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getPatientPhone() != null && !getSearchKeyword().getPatientPhone().trim().equals("")) {
+            sql += " and  ((bill.patient.person.phone) like :patientPhone )";
+            temMap.put("patientPhone", "%" + getSearchKeyword().getPatientPhone().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
+            sql += " and  (((bill.insId) like :billNo )or((bill.deptId) like :billNo ))";
+            temMap.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
+            sql += " and  ((bill.netTotal) like :netTotal )";
+            temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
+            sql += " and  ((bill.total) like :total )";
+            temMap.put("total", "%" + getSearchKeyword().getTotal().trim().toUpperCase() + "%");
+        }
+        sql += " order by bill.createdAt desc  ";
+
+        temMap.put("billType", billType);
+        temMap.put("toDate", toDate);
+        temMap.put("fromDate", fromDate);
+
+        billLights = getBillFacade().findLightsByJpql(sql, temMap, TemporalType.TIMESTAMP);
     }
 
     public void listOpdBilledBills() {

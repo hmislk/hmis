@@ -86,6 +86,13 @@ public class EnumController implements Serializable {
         return paymentMethodsForOpdBilling;
     }
 
+    public List<PaymentMethod> getPaymentMethodsForPackageBilling() {
+        if (paymentMethodsForOpdBilling == null) {
+            fillPaymentMethodsForPackageBilling();
+        }
+        return paymentMethodsForOpdBilling;
+    }
+
     public void resetPaymentMethods() {
         paymentMethodsForOpdBilling = null;
         paymentMethodsForChanneling = null;
@@ -95,6 +102,16 @@ public class EnumController implements Serializable {
         paymentMethodsForOpdBilling = new ArrayList<>();
         for (PaymentMethod pm : PaymentMethod.values()) {
             boolean include = configOptionApplicationController.getBooleanValueByKey(pm.getLabel() + " is available for OPD Billing", true);
+            if (include) {
+                paymentMethodsForOpdBilling.add(pm);
+            }
+        }
+    }
+
+    public void fillPaymentMethodsForPackageBilling() {
+        paymentMethodsForOpdBilling = new ArrayList<>();
+        for (PaymentMethod pm : PaymentMethod.values()) {
+            boolean include = configOptionApplicationController.getBooleanValueByKey(pm.getLabel() + " is available for Package Billing", true);
             if (include) {
                 paymentMethodsForOpdBilling.add(pm);
             }
@@ -645,6 +662,23 @@ public class EnumController implements Serializable {
             PaymentMethod.Staff,
             PaymentMethod.PatientDeposit};
         return p;
+    }
+
+    public List<PaymentMethod> getPaymentMethodsNonCreditExceptMultiple(List<PaymentMethod> pm) {
+        List<PaymentMethod> paymentMethod = new ArrayList<>();
+        if (pm == null){
+            paymentMethod.add(PaymentMethod.Cash);
+            paymentMethod.add(PaymentMethod.Card);
+            paymentMethod.add(PaymentMethod.Cheque);
+            paymentMethod.add(PaymentMethod.Slip);
+            paymentMethod.add(PaymentMethod.ewallet);
+            paymentMethod.add(PaymentMethod.Staff);
+            paymentMethod.add(PaymentMethod.PatientDeposit);
+        }else{
+            paymentMethod.addAll(pm);
+            paymentMethod.remove(PaymentMethod.MultiplePaymentMethods);
+        }
+        return paymentMethod;
     }
 
     public PaymentMethod[] getCollectingCentrePaymentMethods() {

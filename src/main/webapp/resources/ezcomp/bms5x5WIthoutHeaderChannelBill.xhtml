@@ -429,6 +429,18 @@
                         value="(Ref. No: #{cc.attrs.bill.agentRefNo})"/>
                 </h:panelGroup>
 
+                <h:panelGroup rendered="#{cc.attrs.bill.paidBill ne null and cc.attrs.bill.paidBill.paymentMethod eq 'Agent'}" >
+                    <h:outputText
+                        class="mx-1"
+                        style="font-size: 8pt"
+                        value="#{cc.attrs.bill.creditCompany.name}">
+                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                    </h:outputText>
+                    <h:outputText
+                        style="font-size: 8pt"
+                        value="(Ref. No: #{cc.attrs.bill.agentRefNo})"/>
+                </h:panelGroup>
+
                 <h:panelGroup rendered="#{cc.attrs.bill.paymentMethod eq 'MultiplePaymentMethods'}" style="margin-top: 10px;font-size: 8pt">
                     <h:outputLabel value="Payments : #{cc.attrs.bill.paymentMethod.label}"/>
                     <ui:repeat value="#{cc.attrs.payments}" var="p">

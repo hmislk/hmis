@@ -1552,11 +1552,13 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     }
 
     private boolean processBillsByDepartment() {
+        System.out.println("processBillsByDepartment");
         Set<Department> billDepts = new HashSet<>();
         for (BillEntry e : lstBillEntries) {
             billDepts.add(e.getBillItem().getItem().getDepartment());
         }
         for (Department d : billDepts) {
+            System.out.println("d = " + d);
             Bill myBill = new BilledBill();
             myBill = saveBill(d, myBill);
             if (myBill == null) {
@@ -1671,6 +1673,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         BilledBill newBatchBill = new BilledBill();
 
         if (oneOpdBillForAllDepartments) {
+            System.out.println("oneOpdBillForAllDepartments");
             Bill newSingleBill = null;
             newSingleBill = saveBill(sessionController.getDepartment(), newBatchBill);
             if (newSingleBill == null) {
@@ -1703,6 +1706,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         } else if (oneOpdBillForEachDepartmentAndCategoryCombination) {
             processBillsByDepartmentAndCategory();
         } else if (oneOpdBillForEachDepartment) {
+            System.out.println("oneOpdBillForEachDepartment");
             processBillsByDepartment();
         } else if (oneOpdBillForEachCategory) {
             JsfUtil.addErrorMessage("Still Under Development");
@@ -1712,7 +1716,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             return false;
         }
 
-        
         saveBatchBill();
         createPaymentsForBills(getBatchBill(), getLstBillEntries());
         saveBillItemSessions();
@@ -1918,6 +1921,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     }
 
     private void saveBatchBill() {
+        System.out.println("saveBatchBill");
         Bill newBatchBill = new BilledBill();
         newBatchBill.setBillType(BillType.OpdBathcBill);
         newBatchBill.setBillTypeAtomic(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
@@ -1954,6 +1958,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         double dbl = 0;
         double reminingCashPaid = cashPaid;
         for (Bill b : bills) {
+            System.out.println("b = " + b);
             b.setBackwardReferenceBill(newBatchBill);
             dbl += b.getNetTotal();
 
@@ -2207,6 +2212,9 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             } else if (pm.getPaymentMethod() == PaymentMethod.ewallet) {
                 pm.getPaymentMethodData().getEwallet().setTotalValue(remainAmount);
             } else if (pm.getPaymentMethod() == PaymentMethod.PatientDeposit) {
+                if (patient != null) {
+                    pm.getPaymentMethodData().getPatient_deposit().setPatient(patient);
+                }
                 pm.getPaymentMethodData().getPatient_deposit().setTotalValue(remainAmount);
             } else if (pm.getPaymentMethod() == PaymentMethod.Credit) {
                 pm.getPaymentMethodData().getCredit().setTotalValue(remainAmount);
@@ -2404,6 +2412,26 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
                 if (paymentSchemeController.checkPaymentMethodError(cd.getPaymentMethod(), cd.getPaymentMethodData())) {
                     return true;
+                }
+                if (cd.getPaymentMethod().equals(PaymentMethod.PatientDeposit)) {
+                    if (!getPatient().getHasAnAccount()) {
+                        JsfUtil.addErrorMessage("Patient has not account. Can't proceed with Patient Deposits");
+                        return true;
+                    }
+                    double creditLimitAbsolute = Math.abs(getPatient().getCreditLimit());
+                    double runningBalance;
+                    if (getPatient().getRunningBalance() != null) {
+                        runningBalance = getPatient().getRunningBalance();
+                    } else {
+                        runningBalance = 0.0;
+                    }
+                    double availableForPurchase = runningBalance + creditLimitAbsolute;
+
+                    if (cd.getPaymentMethodData().getPatient_deposit().getTotalValue() > availableForPurchase) {
+                        JsfUtil.addErrorMessage("No Sufficient Patient Deposit");
+                        return true;
+                    }
+
                 }
                 if (cd.getPaymentMethod().equals(PaymentMethod.Staff)) {
                     if (cd.getPaymentMethodData().getStaffCredit().getTotalValue() == 0.0 || cd.getPaymentMethodData().getStaffCredit().getToStaff() == null) {
@@ -3076,6 +3104,12 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                     case Agent:
                     case Credit:
                     case PatientDeposit:
+                        if (getPatient().getRunningBalance() != null) {
+                            getPatient().setRunningBalance(getPatient().getRunningBalance() - cd.getPaymentMethodData().getPatient_deposit().getTotalValue());
+                        } else {
+                            getPatient().setRunningBalance(0.0 - cd.getPaymentMethodData().getPatient_deposit().getTotalValue());
+                        }
+                        getPatientFacade().edit(getPatient());
                     case Slip:
                         p.setPaidValue(cd.getPaymentMethodData().getSlip().getTotalValue());
                         p.setBank(cd.getPaymentMethodData().getSlip().getInstitution());
@@ -3290,6 +3324,10 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     public void listnerForPaymentMethodChange() {
         if (paymentMethod == PaymentMethod.PatientDeposit) {
             getPaymentMethodData().getPatient_deposit().setPatient(patient);
+            getPaymentMethodData().getPatient_deposit().setTotalValue(netTotal);
+        }
+        if (paymentMethod == PaymentMethod.Card) {
+            getPaymentMethodData().getCreditCard().setTotalValue(netTotal);
         }
         calTotals();
     }
@@ -3598,8 +3636,10 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
     public PaymentMethod getPaymentMethod() {
         if (!sessionController.getDepartmentPreference().isPartialPaymentOfOpdBillsAllowed()) {
-            if (paymentMethod == paymentMethod.Card) {
+            if (paymentMethod != PaymentMethod.Cash) {
                 strTenderedValue = String.valueOf(netTotal);
+            } else {
+                strTenderedValue = String.valueOf(0.00);
             }
         }
 

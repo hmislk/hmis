@@ -75,6 +75,13 @@
                                 class="w-100" 
                                 id="valueInputShortText" value="#{configOptionController.option.optionValue}"
                                 rendered="#{configOptionController.option.valueType eq 'SHORT_TEXT'}" />
+                            
+                             <!-- For Long -->
+                            <p:inputText 
+                                class="w-100" 
+                                id="valueInputLong" 
+                                value="#{configOptionController.option.optionValue}"
+                                rendered="#{configOptionController.option.valueType eq 'LONG'}" />
 
                             <!-- For LONG_TEXT -->
                             <p:inputTextarea 
