@@ -4,7 +4,7 @@
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
-      
+
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <h:body>
@@ -13,109 +13,105 @@
                 <h:form>
                     <p:panel  >
                         <f:facet name="header" >
-                            <h:panelGroup>
-                                <h:panelGrid columns="1">
-                                    <p:outputLabel value="Search Channel Due Bills" />
-                                </h:panelGrid>
-                                <h:panelGrid columns="4">                                                       
-                                    <h:outputLabel value="From Date"/>
-                                    <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                   
-                                    </p:calendar>
-                                    <h:outputLabel value="To Date"/>
-                                    <p:calendar styleClass="dateTimePicker" id="toDate" value="#{searchController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                   
-                                    </p:calendar>
-
-                                </h:panelGrid>
-                                <h:panelGrid columns="5">
-                                    <h:outputLabel value="Bill No"/>
-                                    <h:outputLabel value="Patient Name"/>
-                                    <h:outputLabel value="Speciality"/> 
-                                    <h:outputLabel value="Doctor Name"/>      
-                                    <h:outputLabel value="Charges"/>
-                                    <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />
-                                    <p:inputText autocomplete="off" value="#{searchController.searchKeyword.patientName}" />
-                                    <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.speciality}" />
-                                    <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.staffName}" />
-                                    <p:inputText autocomplete="off" value="#{searchController.searchKeyword.total}"/>
-                                </h:panelGrid>
-                                <h:panelGrid columns="5">
-                                    <p:selectBooleanCheckbox value="#{searchController.reportKeyWord.additionalDetails}" itemLabel="Search All" />
-                                    <p:commandButton value="Search" ajax="false" action="#{searchController.createChannelDueBillFee()}" />
-                                    <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton"  >
-                                        <p:dataExporter type="xlsx" target="tblFee" fileName="channel_doc_pay_due"  />
-                                    </p:commandButton>
-                                </h:panelGrid>
-                            </h:panelGroup>
+                            <p:outputLabel value="Search Channel Due Bills" />
+<!--                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" class="ui-button-success" icon="fa fas-file-excel">
+                                <p:dataExporter type="xlsx" target="tblFee" fileName="channel_doc_pay_due"/>
+                            </p:commandButton>-->
                         </f:facet>
-                        <br/><br/>
-                        <p:dataTable   id="tblFee" value="#{searchController.billFees}" var="bf" sortBy="#{bf.bill.billClass}">
-                            <p:column>
-                                <p:commandButton ajax="false" value="Pay" 
-                                                 action="channel_payment_staff_bill" 
-                                                 actionListener="#{channelStaffPaymentBillController.calculateDueFees}">
-                                    <f:setPropertyActionListener value="#{bf}" target="#{channelStaffPaymentBillController.billFee}"/>
-                                </p:commandButton>
-                            </p:column>
-                            <p:column headerText="Consutant" filterBy="#{bf.staff.person.nameWithTitle}" filterMatchMode="contains">
+                        <div class="row">
+                            <div class="col-2">
+                                <h:outputLabel value="From Date"/>
+                                <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" class="w-100" inputStyleClass="w-100">                                   
+                                </p:calendar>
+                                <h:outputLabel value="To Date"/>
+                                <p:calendar styleClass="dateTimePicker" id="toDate" value="#{searchController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" class="w-100" inputStyleClass="w-100">                                   
+                                </p:calendar>
+                                <h:outputLabel value="Bill No"/>
+                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" class="w-100"/>
+                                <h:outputLabel value="Patient Name"/>
+                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.patientName}" class="w-100"/>
+                                <h:outputLabel value="Speciality"/>
+                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.speciality}" class="w-100"/>
+                                <h:outputLabel value="Doctor Name"/>
+                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.staffName}" class="w-100"/>
+                                <h:outputLabel value="Charges"/>
+                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.total}" class="w-100"/>
+                                <p:selectBooleanCheckbox value="#{searchController.reportKeyWord.additionalDetails}" itemLabel="Search All" />
+                                <br/>
+                                <p:commandButton value="Search" ajax="false" action="#{searchController.createChannelDueBillFee()}" class="w-100 ui-button-warning"/>
 
-                                <h:outputLabel value="#{bf.staff.person.nameWithTitle}">
-                                </h:outputLabel>                                   
+                            </div>
+                            <div class="col-10">
+                                <p:dataTable   id="tblFee" value="#{searchController.billFees}" var="bf" sortBy="#{bf.bill.billClass}">
+                                    <p:column>
+                                        <p:commandButton ajax="false" value="Pay" 
+                                                         action="channel_payment_staff_bill" 
+                                                         actionListener="#{channelStaffPaymentBillController.calculateDueFees}">
+                                            <f:setPropertyActionListener value="#{bf}" target="#{channelStaffPaymentBillController.billFee}"/>
+                                        </p:commandButton>
+                                    </p:column>
+                                    <p:column headerText="Consutant" filterBy="#{bf.staff.person.nameWithTitle}" filterMatchMode="contains">
 
-                            </p:column>
+                                        <h:outputLabel value="#{bf.staff.person.nameWithTitle}">
+                                        </h:outputLabel>                                   
 
-                            <p:column headerText="Patient" filterBy="#{bf.bill.patient.person.nameWithTitle}" filterMatchMode="contains">
+                                    </p:column>
 
-                                <h:outputLabel value="#{bf.bill.patient.person.nameWithTitle}"/>                                    
+                                    <p:column headerText="Patient" filterBy="#{bf.bill.patient.person.nameWithTitle}" filterMatchMode="contains">
 
-                            </p:column>
+                                        <h:outputLabel value="#{bf.bill.patient.person.nameWithTitle}"/>                                    
 
-                            <p:column headerText="BilledAt">
+                                    </p:column>
 
-                                <h:outputLabel value="#{bf.bill.createdAt}">
-                                </h:outputLabel>
+                                    <p:column headerText="BilledAt">
 
-                            </p:column>
+                                        <p:outputLabel value="#{bf.bill.createdAt}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
+                                        </p:outputLabel>
 
-                            <p:column headerText="Charge" rendered="#{webUserController.hasPrivilege('Developers')}">                                
-                                <h:outputLabel value="#{bf.billItem.staffFee}" ></h:outputLabel>                                    
-                            </p:column>
-                            <p:column headerText="paidValue" rendered="#{webUserController.hasPrivilege('Developers')}">                                
-                                <h:outputLabel value="#{bf.paidValue}" ></h:outputLabel>                                    
-                            </p:column>
-                            <p:column headerText="feeValue" rendered="#{webUserController.hasPrivilege('Developers')}" >                                
-                                <h:outputLabel value="#{bf.feeValue}" ></h:outputLabel>                                    
-                            </p:column>
-                            <p:column headerText="paidAmount" rendered="#{webUserController.hasPrivilege('Developers')}" >                                
-                                <h:outputLabel value="#{bf.bill.paidAmount}" ></h:outputLabel>                                    
-                            </p:column>
-                            <p:column headerText="appointmentAt" rendered="#{webUserController.hasPrivilege('Developers')}" >                                
-                                <h:outputLabel value="#{bf.bill.appointmentAt}" ></h:outputLabel>                                    
-                            </p:column>
-                            <p:column headerText="billClass" rendered="#{webUserController.hasPrivilege('Developers')}" >                                
-                                <h:outputLabel value="#{bf.bill.billClass}" ></h:outputLabel>                                    
-                            </p:column>
-                            <p:column headerText="retired" rendered="#{webUserController.hasPrivilege('Developers')}" >                                
-                                <h:outputLabel value="#{bf.bill.retired}" ></h:outputLabel>                                    
-                            </p:column>
-                            <p:column headerText="feeType" rendered="#{webUserController.hasPrivilege('Developers')}" >                                
-                                <h:outputLabel value="#{bf.fee.feeType}" ></h:outputLabel>                                    
-                            </p:column>
-                            <p:column headerText="refunded" rendered="#{webUserController.hasPrivilege('Developers')}" >                                
-                                <h:outputLabel value="#{bf.bill.refunded}" ></h:outputLabel>                                    
-                            </p:column>
-                            <p:column headerText="cancelled" rendered="#{webUserController.hasPrivilege('Developers')}" >                                
-                                <h:outputLabel value="#{bf.bill.cancelled}" ></h:outputLabel>                                    
-                            </p:column>
-                            <p:column headerText="billType" rendered="#{webUserController.hasPrivilege('Developers')}" >                                
-                                <h:outputLabel value="#{bf.bill.billType}" ></h:outputLabel>                                    
-                            </p:column>
-                            <p:column headerText="absent" rendered="#{webUserController.hasPrivilege('Developers')}" >                                
-                                <h:outputLabel value="#{bf.bill.singleBillSession.absent}" ></h:outputLabel>                                    
-                            </p:column>
-                            <p:column headerText="bill" rendered="#{webUserController.hasPrivilege('Developers')}" >                                
-                                <h:outputLabel value="#{bf.bill.insId}" ></h:outputLabel>                                    
-                            </p:column>
-                        </p:dataTable>
+                                    </p:column>
+
+                                    <p:column headerText="Charge" rendered="#{webUserController.hasPrivilege('Developers')}">                                
+                                        <h:outputLabel value="#{bf.billItem.staffFee}" ></h:outputLabel>                                    
+                                    </p:column>
+                                    <p:column headerText="PaidValue" rendered="#{webUserController.hasPrivilege('Developers')}">                                
+                                        <h:outputLabel value="#{bf.paidValue}" ></h:outputLabel>                                    
+                                    </p:column>
+                                    <p:column headerText="FeeValue" rendered="#{webUserController.hasPrivilege('Developers')}" >                                
+                                        <h:outputLabel value="#{bf.feeValue}" ></h:outputLabel>                                    
+                                    </p:column>
+                                    <p:column headerText="PaidAmount" rendered="#{webUserController.hasPrivilege('Developers')}" >                                
+                                        <h:outputLabel value="#{bf.bill.paidAmount}" ></h:outputLabel>                                    
+                                    </p:column>
+                                    <p:column headerText="AppointmentAt" rendered="#{webUserController.hasPrivilege('Developers')}" >                                
+                                        <h:outputLabel value="#{bf.bill.appointmentAt}" ></h:outputLabel>                                    
+                                    </p:column>
+<!--                                    <p:column headerText="BillClass" rendered="#{webUserController.hasPrivilege('Developers')}" >                                
+                                        <h:outputLabel value="#{bf.bill.billClass}" ></h:outputLabel>                                    
+                                    </p:column>-->
+<!--                                    <p:column headerText="retired" rendered="#{webUserController.hasPrivilege('Developers')}" >                                
+                                        <h:outputLabel value="#{bf.bill.retired}" ></h:outputLabel>                                    
+                                    </p:column>-->
+                                    <p:column headerText="feeType" rendered="#{webUserController.hasPrivilege('Developers')}" >                                
+                                        <h:outputLabel value="#{bf.fee.feeType}" ></h:outputLabel>                                    
+                                    </p:column>
+                                    <p:column headerText="Remarks" rendered="#{webUserController.hasPrivilege('Developers')}" >                                
+                                        <h:outputLabel value="Cancelled" rendered="#{bf.bill.refunded eq true}"></h:outputLabel>  
+                                        <h:outputLabel value="Refunded" rendered="#{bf.bill.refunded eq true}"></h:outputLabel>        
+                                    </p:column>
+<!--                                    <p:column headerText="billType" rendered="#{webUserController.hasPrivilege('Developers')}" >                                
+                                        <h:outputLabel value="#{bf.bill.billType}" ></h:outputLabel>                                    
+                                    </p:column>-->
+<!--                                    <p:column headerText="absent" rendered="#{webUserController.hasPrivilege('Developers')}" >                                
+                                        <h:outputLabel value="#{bf.bill.singleBillSession.absent}" ></h:outputLabel>                                    
+                                    </p:column>-->
+<!--                                    <p:column headerText="bill" rendered="#{webUserController.hasPrivilege('Developers')}" >                                
+                                        <h:outputLabel value="#{bf.bill.insId}" ></h:outputLabel>                                    
+                                    </p:column>-->
+                                </p:dataTable>
+                            </div>
+                        </div>
+
 
                     </p:panel>
 
