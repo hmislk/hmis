@@ -31,7 +31,6 @@ import com.divudi.entity.pharmacy.Vmpp;
 import com.divudi.facade.ItemFacade;
 import com.divudi.facade.ItemFeeFacade;
 import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.entity.ItemMapping;
 import com.divudi.entity.UserPreference;
 import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.ItemMappingFacade;
@@ -49,11 +48,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
-import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
-import javax.faces.convert.ConverterException;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -520,18 +517,18 @@ public class ItemController implements Serializable {
         allItems = getFacade().findByJpql(jpql, m);
     }
 
-    public String toManageItemdIndex() {
-        return "/admin/items/index";
+    public String toManageItemIndex() {
+        return "/admin/items/index?faces-redirect=true";
     }
 
     public String toListInvestigations() {
         fillInvestigations();
-        return "/admin/investigations";
+        return "/admin/investigations?faces-redirect=true";
     }
 
     public String toAddNewInvestigation() {
         current = new Investigation();
-        return "/admin/investigation";
+        return "/admin/investigation?faces-redirect=true";
     }
 
     public String toEditInvestigation() {
@@ -539,7 +536,7 @@ public class ItemController implements Serializable {
             JsfUtil.addErrorMessage("Nothing selected");
             return "";
         }
-        return "/admin/institution";
+        return "/admin/institution?faces-redirect=true";
     }
 
     public String deleteInvestigation() {
@@ -1334,6 +1331,28 @@ public class ItemController implements Serializable {
         return lst;
     }
 
+    public List<Item> findItemsFromBarcode(String barcode) {
+        String sql;
+        List<Item> lst;
+        HashMap tmpMap = new HashMap();
+        if (barcode == null) {
+            lst = new ArrayList<>();
+        } else {
+            sql = "select c "
+                    + " from Item c "
+                    + " where c.retired=false ";
+
+            sql += " and c.barcode=:q ";
+            tmpMap.put("q", barcode);
+
+            sql += " order by c.name";
+
+            lst = getFacade().findByJpql(sql, tmpMap, TemporalType.TIMESTAMP);
+
+        }
+        return lst;
+    }
+
     public List<Item> completeMasterItems(String query) {
         String jpql;
         List<Item> lst;
@@ -1394,29 +1413,39 @@ public class ItemController implements Serializable {
     }
 
     public List<Item> completeAmpItem(String query) {
-//        DepartmentType[] dts = new DepartmentType[]{DepartmentType.Pharmacy, null};
-//        Class[] classes = new Class[]{Amp.class};
-//        return completeItem(query, classes, dts, 30);
-//        
-        String sql;
-        HashMap tmpMap = new HashMap();
-        if (query == null) {
-            suggestions = new ArrayList<>();
+        List<Item> suggestions = new ArrayList<>();
+        if (query == null || query.trim().isEmpty()) {
+            return suggestions;
         } else {
+            String[] words = query.split("\\s+");
+            String sql = "SELECT c FROM Item c WHERE c.retired = false AND type(c) = :amp AND "
+                    + "(c.departmentType IS NULL OR c.departmentType != :dep) AND (";
 
-            sql = "select c from Item c where c.retired=false "
-                    + " and (type(c)= :amp) and "
-                    + " ( c.departmentType is null or c.departmentType!=:dep ) "
-                    + " and ((c.name) like :str or (c.code) like :str or"
-                    + " (c.barcode) like :str ) order by c.name";
-            //////// // System.out.println(sql);
+            // Dynamic part of the query for the name field using each word
+            StringBuilder nameConditions = new StringBuilder();
+            for (int i = 0; i < words.length; i++) {
+                if (i > 0) {
+                    nameConditions.append(" AND ");
+                }
+                nameConditions.append("LOWER(c.name) LIKE :nameStr").append(i);
+            }
+
+            // Adding name conditions and the static conditions for code and barcode
+            sql += "(" + nameConditions + ") OR LOWER(c.code) LIKE :codeStr OR LOWER(c.barcode) LIKE :barcodeStr) "
+                    + "ORDER BY c.name";
+
+            // Setting parameters
+            HashMap<String, Object> tmpMap = new HashMap<>();
             tmpMap.put("dep", DepartmentType.Store);
             tmpMap.put("amp", Amp.class);
-            tmpMap.put("str", "%" + query.toUpperCase() + "%");
+            tmpMap.put("codeStr", "%" + query.toLowerCase() + "%");
+            tmpMap.put("barcodeStr", query.toLowerCase());
+            for (int i = 0; i < words.length; i++) {
+                tmpMap.put("nameStr" + i, "%" + words[i].toLowerCase() + "%");
+            }
             suggestions = getFacade().findByJpql(sql, tmpMap, TemporalType.TIMESTAMP, 30);
         }
         return suggestions;
-
     }
 
 //    @Deprecated(forRemoval = true)
@@ -2730,6 +2759,20 @@ public class ItemController implements Serializable {
 
         }
         return investigationsAndServices;
+    }
+
+    public List<Item> fillDepartmentItems(Department department) {
+        String jpql = "SELECT item"
+                + " FROM Item item "
+                + " WHERE item.retired=:ret ";
+        HashMap<String, Object> parameters = new HashMap<>();
+        parameters.put("ret", false);
+        if (department != null) {
+            jpql += " and item.department=:dep ";
+            parameters.put("dep", department);
+        }
+        jpql += " ORDER BY item.name ";
+        return itemFacade.findByJpql(jpql, parameters);
     }
 
     public List<Item> listInvestigationsAndServices(Institution institution, Department department) {

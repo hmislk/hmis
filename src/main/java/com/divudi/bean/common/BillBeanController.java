@@ -2185,6 +2185,28 @@ public class BillBeanController implements Serializable {
         return bill;
     }
 
+    public Bill fetchBill(String billId) {
+        // Assuming that the String billId needs to be converted to Long
+        // This conversion may need additional validation or error handling if the String is not a valid Long
+        Long longBillId;
+        try {
+            longBillId = Long.parseLong(billId);
+        } catch (NumberFormatException e) {
+            // Handle the case where billId is not a valid Long
+            System.err.println("Invalid bill ID format.");
+            return null;
+        }
+        return fetchBill(longBillId);
+    }
+
+    public Bill fetchBill(Long billId) {
+        String sql = "SELECT b FROM Bill b WHERE b.id = :billId";
+        HashMap<String, Object> hm = new HashMap<>();
+        hm.put("billId", billId);
+        Bill bill = getBillFacade().findFirstByJpql(sql, hm);
+        return bill;
+    }
+
     public double getTotalByBillFee(BillItem billItem) {
         String sql = "Select sum(bf.feeValue) from BillFee bf where "
                 + " bf.retired=false and bf.billItem=:bItm";

@@ -11,7 +11,7 @@
                     <div class="col-md-3">
                         <h:form>
                             <p:accordionPanel>
-                                <p:tab title="Manage Users"  rendered="#{webUserController.hasPrivilege('AdminManagingUsers') or sessionController.firstLogin }" >
+                                <p:tab title="Manage Users"  rendered="#{webUserController.hasPrivilege('AdminManagingUsers') or sessionController.firstLogin}" >
                                     <div class="d-grid gap-2">
                                         <p:commandButton  
                                             ajax="false" 
@@ -19,7 +19,7 @@
                                             action="#{webUserController.navigateToAddNewUser}"/>
                                         <p:commandButton 
                                             ajax="false" 
-                                            value="View Users" 
+                                            value="View Staff Users" 
                                             action="#{webUserController.navigateToListUsers()}" />
                                         <p:commandButton   
                                             ajax="false" 
@@ -27,7 +27,6 @@
                                             action="#{loginController.navigateToViewLogins()}" />
                                         <p:commandButton 
                                             ajax="false" 
-
                                             value="To Remove Multiple Users" 
                                             action="#{webUserController.navigateToRemoveMultipleUsers()}"
                                             />
@@ -36,6 +35,10 @@
                                             ajax="false" 
                                             value="User Roles" 
                                             action="#{webUserRoleController.navigateToManageWebUserRoles()}" />
+                                        <p:commandButton 
+                                            ajax="false" 
+                                            value="View Non Staff Users" 
+                                            action="#{webUserController.navigateToManageUsersWithoutStaff()}" />
                                         <hr/>
 
                                     </div>
