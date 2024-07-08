@@ -360,6 +360,7 @@ public class Bill implements Serializable {
     private Bill tmpRefBill;
     
     private String agentRefNo;
+    private boolean billClosed;
     
     
 
@@ -2200,6 +2201,14 @@ public class Bill implements Serializable {
 
     public void setAgentRefNo(String agentRefNo) {
         this.agentRefNo = agentRefNo;
+    }
+
+    public boolean isBillClosed() {
+        return billClosed;
+    }
+
+    public void setBillClosed(boolean billClosed) {
+        this.billClosed = billClosed;
     }
 
 }
