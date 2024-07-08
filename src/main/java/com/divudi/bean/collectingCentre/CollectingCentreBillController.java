@@ -860,7 +860,6 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         checkBillValues();
         printPreview = true;
 
-        
     }
 
     public void updateBallance(Institution ins, double transactionValue, HistoryType historyType, Bill bill, String refNo) {
@@ -1264,7 +1263,6 @@ public class CollectingCentreBillController implements Serializable, ControllerW
             return;
         }
 
-        
 //        New Session
         //   getCurrentBillItem().setBillSession(getServiceSessionBean().createBillSession(getCurrentBillItem()));
 //        New Session
@@ -1273,18 +1271,18 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         bi.copy(getCurrentBillItem());
         bi.setSessionDate(sessionDate);
         lastBillItem = bi;
-        if(bi.getQty()==null || bi.getQty()<1){
+        if (bi.getQty() == null || bi.getQty() < 1) {
             bi.setQty(1.0);
         }
         BillEntry addingEntry = new BillEntry();
         addingEntry.setBillItem(bi);
         addingEntry.setLstBillComponents(getBillBean().billComponentsFromBillItem(bi));
-        addingEntry.setLstBillFees(getBillBean().billFeefromBillItem(bi));
+        addingEntry.setLstBillFees(getBillBean().billFeefromBillItem(bi, collectingCentre, collectingCentre.getFeeListType()));
         addingEntry.setLstBillSessions(getBillBean().billSessionsfromBillItem(bi));
         getLstBillEntries().add(addingEntry);
         bi.setRate(getBillBean().billItemRate(addingEntry));
         bi.setQty(1.0);
-       
+
         bi.setNetValue(bi.getRate() * bi.getQty()); // Price == Rate as Qty is 1 here
         calTotals();
 

@@ -37,20 +37,16 @@ import javax.xml.bind.annotation.XmlTransient;
 @XmlRootElement
 public class Institution implements Serializable, IdentifiableWithNameOrCode {
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    
-    Institution institution;
-    @ManyToOne(cascade = CascadeType.ALL)
-    
-    private Person contactPerson;
-
     static final long serialVersionUID = 1L;
     @Id
-    
     @GeneratedValue(strategy = GenerationType.AUTO)
-    //Main Properties   
     Long id;
     String institutionCode;
+    @ManyToOne(fetch = FetchType.LAZY)
+    Institution institution;
+    @ManyToOne(cascade = CascadeType.ALL)
+    private Person contactPerson;
+
     String name;
     private String code;
     String address;
@@ -63,6 +59,13 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
     String chequePrintingName;
     private String ownerName;
 
+    @ManyToOne
+    private Institution labInstitution;
+    @ManyToOne
+    private Department labDepartment;
+    @ManyToOne
+    private Category feeListType;
+    
     @Lob
     String labBillHeading;
     @Lob
@@ -81,19 +84,19 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
     private Route route;
     //Created Properties
     @ManyToOne
-    
+
     WebUser creater;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-    
+
     Date createdAt;
     //Retairing properties
-    
+
     boolean retired;
     @ManyToOne
-    
+
     WebUser retirer;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-    
+
     Date retiredAt;
     String retireComments;
     double labBillDiscount;
@@ -125,12 +128,12 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
     String pointOfIssueNo;
 
     @OneToMany(mappedBy = "institution", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    
+
     List<Institution> branch = new ArrayList<>();
     @Lob
     String descreption;
     String accountNo;
-    
+
     Institution bankBranch;
 
     String emailSendingUsername;
@@ -481,7 +484,7 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
     }
 
     public String getChequePrintingName() {
-        if (chequePrintingName == null || chequePrintingName.trim().equals("")){
+        if (chequePrintingName == null || chequePrintingName.trim().equals("")) {
             chequePrintingName = name;
         }
         return chequePrintingName;
@@ -625,10 +628,10 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
     }
 
     public void setCode(String code) {
-        if(code==null || code.trim().equals("")){
-            if(institutionCode!=null && !institutionCode.trim().equals("")){
-                code=institutionCode;
-            }else{
+        if (code == null || code.trim().equals("")) {
+            if (institutionCode != null && !institutionCode.trim().equals("")) {
+                code = institutionCode;
+            } else {
                 code = CommonFunctions.nameToCode(name);
             }
         }
@@ -646,6 +649,8 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
     public Route getRoute() {
         return route;
     }
+    
+    
 
     public void setRoute(Route route) {
         this.route = route;
@@ -690,7 +695,29 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
     public void setParentInstitution(Institution parentInstitution) {
         this.parentInstitution = parentInstitution;
     }
-    
-    
+
+    public Institution getLabInstitution() {
+        return labInstitution;
+    }
+
+    public void setLabInstitution(Institution labInstitution) {
+        this.labInstitution = labInstitution;
+    }
+
+    public Department getLabDepartment() {
+        return labDepartment;
+    }
+
+    public void setLabDepartment(Department labDepartment) {
+        this.labDepartment = labDepartment;
+    }
+
+    public Category getFeeListType() {
+        return feeListType;
+    }
+
+    public void setFeeListType(Category feeListType) {
+        this.feeListType = feeListType;
+    }
 
 }
