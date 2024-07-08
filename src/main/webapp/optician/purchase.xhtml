@@ -103,17 +103,17 @@
                                         </p:column>
                                     </p:autoComplete>
                                 </div>
-                                <div class="col-2">
+                                <div class="col">
                                     <h:outputLabel value="Qty"/><br/>
                                     <p:inputText  
                                         autocomplete="off"
-                                        onfocus="this.select()"
+                                        onfocus="this.select();"
                                         id="txtQty" 
                                         styleClass="numericTxt"
                                         value="#{opticianPurchaseController.currentBillItem.tmpQty}"
                                         style="width:100%" />  
                                 </div>
-                                <div class="col-2">
+                                <div class="col">
                                     <h:outputLabel value="Free"/><br/>
                                     <p:inputText autocomplete="off" 
                                                  id="txtFreeQty" 
@@ -122,7 +122,7 @@
                                                  value="#{opticianPurchaseController.currentBillItem.pharmaceuticalBillItem.freeQty}" 
                                                  style="width:100%" /> 
                                 </div>
-                                <div class="col-2">
+                                <div class="col">
                                     <h:outputLabel value="Purchase Rate"></h:outputLabel><br/>
                                     <p:inputText autocomplete="off" 
                                                  id="txtPrate"  
@@ -132,8 +132,8 @@
                                         <f:ajax event="keyup" execute="@this acItem" render="tmpRetail" listener="#{opticianPurchaseController.calSaleRte()}"></f:ajax>
                                     </p:inputText>
                                 </div>
-                                <div class="col-2">
-                                    <h:outputLabel value="Sale Price"></h:outputLabel>
+                                <div class="col">
+                                    <h:outputLabel value="Sale Price"></h:outputLabel><br/>
                                     <p:inputText autocomplete="off" 
                                                  id="tmpRetail" 
                                                  onfocus="this.select()"
@@ -153,14 +153,14 @@
                                         <f:ajax event="dateSelect" execute="@this tmp" render="tmp" listener="#{opticianPurchaseController.setBatch()}"/>
                                     </p:calendar> 
                                 </div>
-                                <div class="col-2">
-                                    <h:outputLabel value="Batch No"/>
+                                <div class="col">
+                                    <h:outputLabel value="Batch No"/><br/>
                                     <p:inputText autocomplete="off" 
                                                  styleClass="numericTxt" 
                                                  id="tmp"
                                                  value="#{opticianPurchaseController.currentBillItem.pharmaceuticalBillItem.stringValue}"  /> 
                                 </div>
-                                <div class="col-2">
+                                <div class="col mt-3">
                                     <p:commandButton id="btnAdd" 
                                                      value="Add" 
                                                      class="ui-button-success"
