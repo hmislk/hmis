@@ -563,6 +563,19 @@ public class StockController implements Serializable {
         recreateModel();
         getItems();
     }
+    
+    public void save(Stock s) {
+        if (s==null) {
+            return;
+        }
+        if (s.getId() != null && s.getId() > 0) {
+            getFacade().edit(s);
+            JsfUtil.addSuccessMessage("Updated Successfully.");
+        } else {
+            getFacade().create(s);
+            JsfUtil.addSuccessMessage("Saved Successfully");
+        }
+    }
 
     public void setSelectText(String selectText) {
         this.selectText = selectText;
