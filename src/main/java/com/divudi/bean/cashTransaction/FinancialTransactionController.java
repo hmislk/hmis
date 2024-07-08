@@ -786,14 +786,12 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("Error");
             return "";
         }
-        System.out.println("fundTransferBillTocollect = " + fundTransferBillsToReceive.size());
-        if (fundTransferBillsToReceive.size()>0) {
-            System.out.println("fundTransferBillTocollect = " + fundTransferBillTocollect);
+        if (fundTransferBillsToReceive!=null && !fundTransferBillsToReceive.isEmpty()) {
             fundTransferBillTocollect = true;
         }
         
         if (fundTransferBillTocollect) {
-            JsfUtil.addErrorMessage("Please collect your transferred money.");
+            JsfUtil.addErrorMessage("Please collect funds transferred to you before closing.");
             return "";
         }
 
