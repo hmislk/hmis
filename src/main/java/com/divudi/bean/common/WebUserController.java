@@ -803,6 +803,7 @@ public class WebUserController implements Serializable {
             staff = new Staff();
             staff.setPerson(selected.getWebUserPerson());
             staffFacade.create(staff);
+            selected.setStaff(staff);
             getFacade().edit(selected);
         }
         getStaffController().setCurrent(selected.getStaff());
