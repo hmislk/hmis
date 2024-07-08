@@ -36,6 +36,8 @@ import com.divudi.facade.WebUserFacade;
 import com.divudi.facade.WebUserPrivilegeFacade;
 import com.divudi.facade.WebUserRoleFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.entity.Staff;
+import com.divudi.facade.StaffFacade;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -86,6 +88,8 @@ public class SessionController implements Serializable, HttpSessionListener {
     ApplicationEjb applicationEjb;
     @EJB
     PersonFacade personFacade;
+    @EJB
+    StaffFacade staffFacade;
     @EJB
     WebUserFacade webUserFacade;
     @EJB
@@ -329,8 +333,13 @@ public class SessionController implements Serializable, HttpSessionListener {
         p.setCreatedAt(new Date());
         personController.save(p);
 
+        Staff staff = new Staff();
+        staff.setPerson(p);
+        staffFacade.create(staff);
+
         WebUser wu = new WebUser();
         wu.setWebUserPerson(p);
+        wu.setStaff(staff);
         wu.setInstitution(ins);
         wu.setDepartment(dep);
         wu.setCreatedAt(new Date());
@@ -1081,7 +1090,7 @@ public class SessionController implements Serializable, HttpSessionListener {
 
                     departments = listLoggableDepts(u);
 
-                    if (webUserController.testRun) {
+                    if (webUserController.grantAllPrivilegesToAllUsersForTesting) {
                         departments = departmentController.fillAllItems();
                     }
 
@@ -1109,13 +1118,13 @@ public class SessionController implements Serializable, HttpSessionListener {
                     getFacede().edit(u);
                     setLoggedUser(u);
                     loggableDepartments = fillLoggableDepts();
-                    if (webUserController.testRun) {
+                    if (webUserController.grantAllPrivilegesToAllUsersForTesting) {
                         loggableDepartments = departmentController.fillAllItems();
                     }
 //                    loggableSubDepartments = fillLoggableSubDepts(loggableDepartments);
                     loggableInstitutions = fillLoggableInstitutions();
 
-                    if (webUserController.testRun) {
+                    if (webUserController.grantAllPrivilegesToAllUsersForTesting) {
                         loggableInstitutions = institutionController.fillAllItems();
                     }
                     loadDashboards();

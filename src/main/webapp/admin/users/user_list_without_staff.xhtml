@@ -67,7 +67,8 @@
 
                                         <p:commandButton immediate="true" disabled="#{webUserController.selected == null}" icon="fa fa-user-cog" value="Manage User" class="m-1" action="#{webUserController.navigateToEditUser()}" ajax="false" />
                                         <p:commandButton immediate="true"  disabled="#{webUserController.selected == null}" icon="fa fa-key" value="Manage Password" class="m-1" action="#{webUserController.navigateToEditPasswordByAdmin()}" ajax="false" />
-                                        <p:commandButton immediate="true"  disabled="#{webUserController.selected == null}" icon="fa fa-users-cog" value="Manage Staff" class="m-1" action="#{webUserController.navigateToManageStaff()}" ajax="false" />
+                                        <p:commandButton immediate="true" disabled="#{webUserController.selected == null}" icon="fa fa-users-cog" value="Convert to a Staff User" class="m-1" action="#{webUserController.navigateToManageStaff()}" ajax="false" onclick="return confirm('Are you sure you want to convert this user to a staff user?');" />
+
                                         <p:commandButton immediate="true"  disabled="#{webUserController.selected == null}" icon="fa fa-building" value="Manage User Departments" class="m-1" action="#{webUserController.navigateToManageDepartments()}" ajax="false" />
                                         <p:commandButton immediate="true"  disabled="#{webUserController.selected == null}" icon="fa fa-unlock-alt" value="Manage Privileges" class="m-1" action="#{webUserController.navigateToManagePrivileges()}" ajax="false" />
                                         <p:commandButton immediate="true"  disabled="#{webUserController.selected == null}" icon="fa fa-credit-card" value="Manage User Payment Schemes" class="m-1" action="#{webUserController.navigateToManagePaymentSchemes()}" ajax="false" />
