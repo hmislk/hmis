@@ -799,6 +799,12 @@ public class WebUserController implements Serializable {
             JsfUtil.addErrorMessage("Please select a user");
             return "";
         }
+        if(selected.getStaff()==null){
+            staff = new Staff();
+            staff.setPerson(selected.getWebUserPerson());
+            staffFacade.create(staff);
+            getFacade().edit(selected);
+        }
         getStaffController().setCurrent(selected.getStaff());
         return "/hr/hr_staff_admin?faces-redirect=true";
     }
