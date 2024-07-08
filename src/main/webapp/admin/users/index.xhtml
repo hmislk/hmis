@@ -19,7 +19,7 @@
                                             action="#{webUserController.navigateToAddNewUser}"/>
                                         <p:commandButton 
                                             ajax="false" 
-                                            value="View Users" 
+                                            value="View Staff Users" 
                                             action="#{webUserController.navigateToListUsers()}" />
                                         <p:commandButton   
                                             ajax="false" 
@@ -27,7 +27,6 @@
                                             action="#{loginController.navigateToViewLogins()}" />
                                         <p:commandButton 
                                             ajax="false" 
-
                                             value="To Remove Multiple Users" 
                                             action="#{webUserController.navigateToRemoveMultipleUsers()}"
                                             />
@@ -35,6 +34,10 @@
                                         <p:commandButton 
                                             ajax="false" 
                                             value="User Roles" 
+                                            action="#{webUserRoleController.navigateToManageWebUserRoles()}" />
+                                        <p:commandButton 
+                                            ajax="false" 
+                                            value="View Non Staff Users" 
                                             action="#{webUserRoleController.navigateToManageWebUserRoles()}" />
                                         <hr/>
 

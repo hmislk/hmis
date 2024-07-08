@@ -99,7 +99,7 @@ public class WebUserController implements Serializable {
     @Inject
     UserNotificationController userNotificationController;
     @Inject
-    WebUserRoleUserController webUserRoleUserController;   
+    WebUserRoleUserController webUserRoleUserController;
     /**
      * Class Variables
      */
@@ -136,9 +136,9 @@ public class WebUserController implements Serializable {
     private int manageDiscountIndex;
     private int manageUsersIndex;
     private List<Department> departmentsOfSelectedUsersInstitution;
-    
+
     private WebUserRole webUserRole;
-    
+
     private LoginPage loginPage;
 
     boolean grantAllPrivilegesToAllUsersForTesting = true;
@@ -148,6 +148,11 @@ public class WebUserController implements Serializable {
 
     public String navigateToRemoveMultipleUsers() {
         return "/admin/users/user_remove_multiple";
+    }
+
+    public String navigateToManageUsersWithoutStaff() {
+        fillLightUsersWithoutStaff();
+        return "/admin/users/user_list_without_staff?faces-redirect=true";
     }
 
     public void removeMultipleUsers() {
@@ -430,7 +435,7 @@ public class WebUserController implements Serializable {
         staff = null;
         department = null;
         institution = null;
-        loginPage=null;
+        loginPage = null;
         return "/admin/users/user_add_new";
     }
 
@@ -481,9 +486,9 @@ public class WebUserController implements Serializable {
         getCurrent().setActivator(getSessionController().getLoggedUser());
         getCurrent().getWebUserPerson().setCreatedAt(new Date());
         getCurrent().getWebUserPerson().setCreater(getSessionController().getLoggedUser());
-        
+
         getCurrent().setLoginPage(loginPage);
-        
+
         getPersonFacade().create(getCurrent().getWebUserPerson());
         if (createOnlyUserForExsistingUser) {
             getCurrent().getWebUserPerson().setName(getStaff().getPerson().getName());
@@ -528,21 +533,20 @@ public class WebUserController implements Serializable {
         } else {
             JsfUtil.addSuccessMessage("Add New User & Staff");
         }
-        
-        
-        if(webUserRole != null){
-        //Added the Current Department for Permission
-        userDepartmentController.setSelectedUser(current);
-        userDepartmentController.setCurrentDepartment(department);
-        userDepartmentController.addDepartmentForUser();
-        
-        //Add Permission to Web User From User Role
-        webUserRoleUserController.getCurrent().setWebUser(current);
-        webUserRoleUserController.getCurrent().setWebUserRole(webUserRole);
-        webUserRoleUserController.getCurrent().setWebUser(current);
-        webUserRoleUserController.setDepartment(department);
-        webUserRoleUserController.fillUsers();
-        webUserRoleUserController.addUsers();
+
+        if (webUserRole != null) {
+            //Added the Current Department for Permission
+            userDepartmentController.setSelectedUser(current);
+            userDepartmentController.setCurrentDepartment(department);
+            userDepartmentController.addDepartmentForUser();
+
+            //Add Permission to Web User From User Role
+            webUserRoleUserController.getCurrent().setWebUser(current);
+            webUserRoleUserController.getCurrent().setWebUserRole(webUserRole);
+            webUserRoleUserController.getCurrent().setWebUser(current);
+            webUserRoleUserController.setDepartment(department);
+            webUserRoleUserController.fillUsers();
+            webUserRoleUserController.addUsers();
         }
         recreateModel();
         selectText = "";
@@ -634,6 +638,19 @@ public class WebUserController implements Serializable {
         jpql = "Select new com.divudi.light.common.WebUserLight(wu.name, wu.webUserPerson.name, wu.id)"
                 + " from WebUser wu "
                 + " where wu.retired=:ret "
+                + " and wu.staff is not null "
+                + " order by wu.name";
+        m.put("ret", false);
+        webUseLights = (List<WebUserLight>) getPersonFacade().findLightsByJpql(jpql, m);
+    }
+    
+    private void fillLightUsersWithoutStaff() {
+        HashMap<String, Object> m = new HashMap<>();
+        String jpql;
+        jpql = "Select new com.divudi.light.common.WebUserLight(wu.name, wu.webUserPerson.name, wu.id)"
+                + " from WebUser wu "
+                + " where wu.retired=:ret "
+                + " and wu.staff is null "
                 + " order by wu.name";
         m.put("ret", false);
         webUseLights = (List<WebUserLight>) getPersonFacade().findLightsByJpql(jpql, m);
@@ -1144,6 +1161,5 @@ public class WebUserController implements Serializable {
     public void setUserNotificationCount(int userNotificationCount) {
         this.userNotificationCount = userNotificationCount;
     }
-    
-    
+
 }

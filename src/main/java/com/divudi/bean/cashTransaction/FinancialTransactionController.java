@@ -219,6 +219,7 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setBillType(BillType.ShiftStartFundBill);
         currentBill.setBillTypeAtomic(BillTypeAtomic.FUND_SHIFT_START_BILL);
         currentBill.setBillClassType(BillClassType.Bill);
+        currentBill.setStaff(sessionController.getLoggedUser().getStaff());
     }
 
     private void prepareToAddNewFundTransferBill() {
@@ -435,7 +436,7 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setDepartment(sessionController.getDepartment());
         currentBill.setInstitution(sessionController.getInstitution());
         currentBill.setStaff(sessionController.getLoggedUser().getStaff());
-
+        
         currentBill.setBillDate(new Date());
         currentBill.setBillTime(new Date());
 
