@@ -210,6 +210,7 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public String navigateToReceiveFundTransferBillsForMe() {
+        findNonClosedShiftStartFundBillIsAvailable();
         fillFundTransferBillsForMeToReceive();
         return "/cashier/fund_transfer_bills_for_me_to_receive?faces-redirect=true";
     }
@@ -771,8 +772,8 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public String settleShiftEndFundBill() {
-         boolean fundTransferBillTocollect = false;
-        
+        boolean fundTransferBillTocollect = false;
+
         if (currentBill == null) {
             JsfUtil.addErrorMessage("Error");
             return "";
@@ -785,17 +786,18 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("Error");
             return "";
         }
-        System.out.println("fundTransferBillTocollect = " + fundTransferBillsToReceive.size());
-        if (fundTransferBillsToReceive.size()>0) {
-            System.out.println("fundTransferBillTocollect = " + fundTransferBillTocollect);
-            fundTransferBillTocollect = true;
+
+        if (fundTransferBillsToReceive != null) {
+            if (fundTransferBillsToReceive.size() > 0) {
+                System.out.println("fundTransferBillTocollect = " + fundTransferBillTocollect);
+                fundTransferBillTocollect = true;
+            }
         }
-        
+
         if (fundTransferBillTocollect) {
             JsfUtil.addErrorMessage("Please collect your transferred money.");
             return "";
         }
-
 
         currentBill.setDepartment(sessionController.getDepartment());
         currentBill.setInstitution(sessionController.getInstitution());
