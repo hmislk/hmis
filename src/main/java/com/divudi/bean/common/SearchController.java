@@ -52,6 +52,7 @@ import com.divudi.facade.StockFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.opd.OpdBillController;
 import com.divudi.bean.pharmacy.PharmacyBillSearch;
+import com.divudi.bean.pharmacy.TransferRequestController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillFinanceType;
 import com.divudi.data.BillTypeAtomic;
@@ -151,6 +152,8 @@ public class SearchController implements Serializable {
     PharmacyBillSearch pharmacyBillSearch;
     @Inject
     OpdBillController opdBillController;
+    @Inject
+    TransferRequestController transferRequestController;
 
     /**
      * Properties
@@ -642,6 +645,12 @@ public class SearchController implements Serializable {
         patientInvestigations = null;
         searchKeyword = null;
         printPreview = false;
+    }
+    
+    public String navigateToCreateTransferRequest(){
+        makeListNull();
+        transferRequestController.recreate();
+        return "/pharmacy/pharmacy_transfer_request_save?faces-redirect=true";
     }
 
     public String navigateToSearchOpdBillsOfLoggedDepartment() {
@@ -2963,12 +2972,46 @@ public class SearchController implements Serializable {
         tmp.put("fromDate", getFromDate());
         tmp.put("toDep", getSessionController().getDepartment());
         tmp.put("bct", bct);
-        tmp.put("bTp", BillType.PharmacyTransferRequest);
+        tmp.put("bTp", billTypeAtomic.PHARMACY_TRANSFER_REQUEST);
 
         sql = "Select b From Bill b where "
                 + " b.retired=false and  b.toDepartment=:toDep"
                 + " and b.billClassType not in :bct"
-                + " and b.billType= :bTp and b.createdAt between :fromDate and :toDate ";
+                + " and b.billTypeAtomic= :bTp and b.createdAt between :fromDate and :toDate ";
+
+        if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
+            sql += " and  ((b.deptId) like :billNo )";
+            tmp.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getDepartment() != null && !getSearchKeyword().getDepartment().trim().equals("")) {
+            sql += " and  ((b.department.name) like :dep )";
+            tmp.put("dep", "%" + getSearchKeyword().getDepartment().trim().toUpperCase() + "%");
+        }
+
+        sql += " order by b.createdAt desc  ";
+
+        bills = getBillFacade().findByJpql(sql, tmp, TemporalType.TIMESTAMP, 50);
+
+        for (Bill b : bills) {
+            b.setListOfBill(getIssudBills(b));
+        }
+
+    }
+    
+    public void fillSavedTranserRequestBills() {
+        Date startTime = new Date();
+        String sql;
+
+        HashMap tmp = new HashMap();
+        tmp.put("toDate", getToDate());
+        tmp.put("fromDate", getFromDate());
+        tmp.put("dep", getSessionController().getDepartment());
+        tmp.put("bTp", BillTypeAtomic.PHARMACY_TRANSFER_REQUEST_PRE);
+
+        sql = "Select b From Bill b where "
+                + " b.retired=false and  b.department=:dep"
+                + " and b.billTypeAtomic= :bTp and b.createdAt between :fromDate and :toDate ";
 
         if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
             sql += " and  ((b.deptId) like :billNo )";

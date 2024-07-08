@@ -627,7 +627,20 @@
                                     action="/pharmacy/pharmacy_transfer_request?faces-redirect=true"  
                                     value="Request" 
                                     actionListener="#{searchController.makeListNull()}" 
-                                    rendered="#{webUserController.hasPrivilege('PharmacyDisbursementRequest')}" 
+                                    rendered="#{webUserController.hasPrivilege('PharmacyDisbursementRequest') and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Transer Request With Approval')}" 
+                                    icon="fas fa-hand-holding-medical"></p:menuitem>
+                        
+                        <p:menuitem ajax="false" 
+                                    action="#{searchController.navigateToCreateTransferRequest}"  
+                                    value="Create Transer Request" 
+                                    actionListener="#{searchController.makeListNull()}" 
+                                    rendered="#{webUserController.hasPrivilege('PharmacyDisbursementRequest') and configOptionApplicationController.getBooleanValueByKey('Pharmacy Transer Request With Approval')}" 
+                                    icon="fas fa-hand-holding-medical"></p:menuitem>
+                        <p:menuitem ajax="false" 
+                                    action="/pharmacy/pharmacy_transfer_request_list_search_for_approval?faces-redirect=true"  
+                                    value="Search Transer Request" 
+                                    actionListener="#{searchController.makeListNull()}" 
+                                    rendered="#{webUserController.hasPrivilege('PharmacyDisbursementRequest') and configOptionApplicationController.getBooleanValueByKey('Pharmacy Transer Request With Approval')}" 
                                     icon="fas fa-hand-holding-medical"></p:menuitem>
 
                         <p:menuitem ajax="false" 

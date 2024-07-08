@@ -10,35 +10,7 @@
     <ui:define name="content">
         <h:form>
             <p:panel rendered="#{!transferRequestController.printPreview}">
-                <h:panelGroup  class="row" rendered="#{transferRequestController.toDepartment eq null}"> 
-                    <p:panel >
-                        <f:facet name="header">
-                            <h:outputLabel styleClass="fas fa-building" />
-                            <h:outputLabel value="Select Department" class="mx-4" />
-                            <h:outputLabel value="#{transferRequestController.toDepartment.name}" class="mx-4" />
-                        </f:facet>
-                        <div class="row" >
-                            <div class="col-12" >
-                                <h:outputLabel value="Select a Department to Request : "/>
-
-                                <p:autoComplete  value="#{transferRequestController.toDepartment}" 
-                                                 forceSelection="true" size="30" inputStyleClass="w-100" class="mx-2"
-                                                 completeMethod="#{departmentController.completeDept}" var="vt" itemLabel="#{vt.name}" itemValue="#{vt}"
-                                                 > 
-                                    <p:ajax process="@this"></p:ajax>
-                                </p:autoComplete>
-
-                                <p:commandButton
-                                    id="btnSelect"
-                                    ajax="false"
-                                    value="Select"
-                                    />
-                            </div>
-                        </div>
-                    </p:panel>
-                </h:panelGroup>
-
-
+                
 
                 <p:panel rendered="#{transferRequestController.toDepartment ne null }">
                     <f:facet name="header" > 
@@ -49,7 +21,7 @@
                             </div>
                             <div>
                                 <p:commandButton  
-                                    value="Request" 
+                                    value="Finalize" 
                                     action="#{transferRequestController.request}" 
                                     ajax="false"
                                     icon="fas fa-check" 
@@ -76,7 +48,7 @@
                         
                                             </h:panelGrid>-->
                     </f:facet>
-                    <div class="row">
+<!--                    <div class="row">
                         <div class="col-10">
                             <p:panel >
                                 <f:facet name="header" >  
@@ -125,7 +97,7 @@
                             </p:panel>
                         </div>
 
-                    </div>
+                    </div>-->
 
                     <p:panel class="my-2">
                         <f:facet name="header" >  
@@ -164,13 +136,13 @@
                 </p:panel>  
             </p:panel>
             <p:panel rendered="#{transferRequestController.printPreview}" >
-                <p:commandButton 
+<!--                <p:commandButton 
                     value="New Bill" 
                     icon="fas fa-plus"
                     class="ui-button-warning"
                     ajax="false" 
                     action="#{transferRequestController.recreate}" >
-                </p:commandButton>
+                </p:commandButton>-->
                 <p:commandButton 
                     value="Reprint"
                     icon="fas fa-print"
