@@ -19,6 +19,7 @@ import com.divudi.data.DiscountType;
 import com.divudi.data.FeeType;
 import com.divudi.data.InvestigationItemType;
 import com.divudi.data.InvestigationItemValueType;
+import com.divudi.data.ItemBarcodeGenerationStrategy;
 import com.divudi.data.ItemListingStrategy;
 import com.divudi.data.ItemType;
 import com.divudi.data.LoginPage;
@@ -666,7 +667,7 @@ public class EnumController implements Serializable {
 
     public List<PaymentMethod> getPaymentMethodsNonCreditExceptMultiple(List<PaymentMethod> pm) {
         List<PaymentMethod> paymentMethod = new ArrayList<>();
-        if (pm == null){
+        if (pm == null) {
             paymentMethod.add(PaymentMethod.Cash);
             paymentMethod.add(PaymentMethod.Card);
             paymentMethod.add(PaymentMethod.Cheque);
@@ -674,7 +675,7 @@ public class EnumController implements Serializable {
             paymentMethod.add(PaymentMethod.ewallet);
             paymentMethod.add(PaymentMethod.Staff);
             paymentMethod.add(PaymentMethod.PatientDeposit);
-        }else{
+        } else {
             paymentMethod.addAll(pm);
             paymentMethod.remove(PaymentMethod.MultiplePaymentMethods);
         }
@@ -741,6 +742,10 @@ public class EnumController implements Serializable {
     public PaymentMethod[] getPaymentMethodsForChannelAgentSettle() {
         PaymentMethod[] p = {PaymentMethod.Cash, PaymentMethod.Agent};
         return p;
+    }
+
+    public List<ItemBarcodeGenerationStrategy> getItemBarcodeGenerationStrategies() {
+        return Arrays.asList(ItemBarcodeGenerationStrategy.values());
     }
 
     public PaymentMethod[] getAllPaymentMethods() {
