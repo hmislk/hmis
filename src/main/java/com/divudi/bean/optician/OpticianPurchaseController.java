@@ -480,12 +480,17 @@ public class OpticianPurchaseController implements Serializable {
                 case BY_INDIVIDUAL_UNIT: {
                     String initialPartOfBarcode = i.getItem().getBarcode();
                     Long startLongSecondPart = i.getItem().getLastBarcode() + 1;
-                    Long endLongSecondPart = i.getItem().getLastBarcode() + 1 + Math.round(i.getQty());
-                    Long startFullBarcode = createLongBarcode(initialPartOfBarcode, startLongSecondPart);
-                    Long endFullBarcode = createLongBarcode(initialPartOfBarcode, endLongSecondPart);
+                    Double qty = 0.0;
+                    if (i.getPharmaceuticalBillItem() != null) {
+                        qty += i.getPharmaceuticalBillItem().getQtyInUnit();
+                        qty += i.getPharmaceuticalBillItem().getFreeQtyInUnit();
+                    }
+                    Long endLongSecondPart = i.getItem().getLastBarcode() + Math.round(qty);
+                    Long startFullBarcode = createBarcode(initialPartOfBarcode, startLongSecondPart);
+                    Long endFullBarcode = createBarcode(initialPartOfBarcode, endLongSecondPart);
                     stock.setStartBarcode(startFullBarcode);
                     stock.setEndBarcode(endFullBarcode);
-                    i.getItem().setLastBarcode(endFullBarcode);
+                    i.getItem().setLastBarcode(endLongSecondPart);
                     itemController.saveSelected(i.getItem());
                     stockController.save(stock);
                     break;
@@ -493,18 +498,20 @@ public class OpticianPurchaseController implements Serializable {
                 case BY_BATCH: {
                     String initialPartOfBarcode = i.getItem().getBarcode();
                     Long startLongSecondPart = i.getItem().getLastBarcode() + 1;
-                    Long startFullBarcode = createLongBarcode(initialPartOfBarcode, startLongSecondPart);
-                    stock.setStartBarcode(startFullBarcode);
-                    i.getItem().setLastBarcode(startFullBarcode); // Fixed to use startFullBarcode instead of undefined endFullBarcode
+                    Long startFullBarcode = createBarcode(initialPartOfBarcode, startLongSecondPart);
+                    stock.setStartBarcode(startLongSecondPart);
+                    i.getItem().setLastBarcode(startFullBarcode); // Ensure the last barcode is updated to startFullBarcode
                     itemController.saveSelected(i.getItem());
                     stockController.save(stock);
                     break;
                 }
-                case BY_ITEM:
-                    // Handle case as necessary
+                case BY_ITEM: {
                     break;
+                }
                 default:
-                // Optional: handle the default case
+                    // Log or handle unexpected barcode generation strategies
+                    System.out.println("Unhandled barcode generation strategy: " + i.getItem().getItemBarcodeGenerationStrategy());
+                    break;
             }
 
             getPharmaceuticalBillItemFacade().edit(tmpPh);
@@ -527,30 +534,11 @@ public class OpticianPurchaseController implements Serializable {
 
     }
 
-    public Long createLongBarcode(String initialBarcode, Long number) {
-        // Convert both the initialBarcode and the full number to strings
-        String fullNumberStr = number.toString();
-        String initialBarcodeStr = initialBarcode;
-
-        // Check if the full number starts with the initial barcode
-        if (!fullNumberStr.startsWith(initialBarcodeStr)) {
-            // If it doesn't start with the initial barcode, prepend the initial barcode to the number
-            fullNumberStr = initialBarcodeStr + fullNumberStr;
-        } else {
-            // Remove the initial barcode part from the full number
-            fullNumberStr = fullNumberStr.substring(initialBarcodeStr.length());
-        }
-
-        // Format the number part (with or without the initial barcode added) with leading zeros to have at least 6 digits
-        String formattedNumberPart = String.format("%06d", Long.parseLong(fullNumberStr));
-
-        // Concatenate the initial barcode with the formatted number part
-        String combinedBarcode = initialBarcodeStr + formattedNumberPart;
-
-        // Convert the combined String back to a Long
-        Long longBarcode = Long.parseLong(combinedBarcode);
-
-        return longBarcode;
+    public Long createBarcode(String prefix, Long number) {
+        String formattedNumber = String.format("%06d", number);
+        String combinedString = prefix + formattedNumber;
+        Long barcode = Long.parseLong(combinedString);
+        return barcode;
     }
 
     public void removeItem(BillItem bi) {

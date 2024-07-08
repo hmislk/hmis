@@ -86,6 +86,10 @@
 
                                                  ></p:autoComplete>
 
+                                <h:outputText  value="Last Bar Code" class="w-100"></h:outputText>
+                                <p:inputText autocomplete="off"  value="#{ampController.current.lastBarcode}"  class="w-100"></p:inputText>
+
+
                                 <h:outputText value="Barcode Generation Strategy" class="w-100" />
                                 <p:selectOneMenu value="#{ampController.current.itemBarcodeGenerationStrategy}" filter="true" filterMatchMode="startsWith" panelStyle="width:250px">
                                     <f:selectItem itemLabel="Select One" itemValue="" noSelectionOption="true" />
