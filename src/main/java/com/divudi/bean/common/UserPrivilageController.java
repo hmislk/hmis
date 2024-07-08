@@ -570,15 +570,15 @@ public class UserPrivilageController implements Serializable {
         TreeNode PharmacyDisposalSearchIssueReturnBill = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDisposalSearchIssueReturnBill, "Pharmacy Adjustment Purchase Rate"), PharmacyDisposal);
         TreeNode PharmacyDisposalUnitIssueMargin = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDisposalUnitIssueMargin, "Pharmacy Disposal Unit Issue Margin"), PharmacyDisposal);
 
-        // Adding Ophthalmology node and subnodes
-        TreeNode ophthalmologyNode = new DefaultTreeNode(new PrivilegeHolder(null, "Ophthalmology"), allNode);
+        // Adding Optician node and subnodes
+        TreeNode opticianNode = new DefaultTreeNode(new PrivilegeHolder(null, "Optician"), allNode);
 
-        TreeNode ophthalmologyPatientManagementNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.OphthalmologyPatientManagement, "Patient Management"), ophthalmologyNode);
-        TreeNode ophthalmologyAppointmentManagementNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.OphthalmologyAppointmentManagement, "Appointment Management"), ophthalmologyNode);
-        TreeNode ophthalmologyEmrNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.OphthalmologyEmr, "EMR"), ophthalmologyNode);
-        TreeNode ophthalmologyStockManagementNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.OphthalmologyStockManagement, "Stock Management"), ophthalmologyNode);
-        TreeNode ophthalmologyProductCatalogNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.OphthalmologyProductCatalog, "Product Catalog"), ophthalmologyNode);
-        TreeNode ophthalmologyRepairManagementNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.OphthalmologyRepairManagement, "Repair Management"), ophthalmologyNode);
+        TreeNode opticianPatientManagementNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.OpticianPatientManagement, "Patient Management"), opticianNode);
+        TreeNode opticianAppointmentManagementNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.OpticianAppointmentManagement, "Appointment Management"), opticianNode);
+        TreeNode opticianEmrNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.OpticianEmr, "EMR"), opticianNode);
+        TreeNode opticianStockManagementNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.OpticianStockManagement, "Stock Management"), opticianNode);
+        TreeNode opticianProductCatalogNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.OpticianProductCatalog, "Product Catalog"), opticianNode);
+        TreeNode opticianRepairManagementNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.OpticianRepairManagement, "Repair Management"), opticianNode);
 
         TreeNode PharmacyItemSearch = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyItemSearch, "Item Search"), pharmacyNode);
         TreeNode PharmacyGenarateReports = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyGenarateReports, "Genarate Reports"), pharmacyNode);

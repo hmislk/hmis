@@ -479,14 +479,14 @@ public enum Privileges {
     PharmacyItemSearch,
     PharmacyGenarateReports,
     PharmacySummaryViews,
-    //Ophthalmology
-    Ophthalmology,
-    OphthalmologyPatientManagement,
-    OphthalmologyAppointmentManagement,
-    OphthalmologyEmr,
-    OphthalmologyStockManagement,
-    OphthalmologyProductCatalog,
-    OphthalmologyRepairManagement,;
+    //Optician
+    Optician,
+    OpticianPatientManagement,
+    OpticianAppointmentManagement,
+    OpticianEmr,
+    OpticianStockManagement,
+    OpticianProductCatalog,
+    OpticianRepairManagement,;
 
     public String getLabel() {
         switch (this) {
