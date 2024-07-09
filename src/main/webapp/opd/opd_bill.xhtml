@@ -237,7 +237,51 @@
                                         <h:outputText value="Added Items" class="mx-4"></h:outputText>
                                     </f:facet>
                                     <p:tabView id="tblBillItem" activeIndex="#{configOptionApplicationController.getLongValueByKey('OPD Bill Item and Fee Active Index')}" >
+                                        <p:tab id="tabBillItems" title="Bill Items" >
+                                            <p:dataTable id="tblRequests" rowIndexVar="rowIndex" value="#{opdBillController.lstBillEntries}" var="bi" >
+                                                <p:column  style="width: 2em;" >
+                                                    <f:facet name="header">No</f:facet>
+                                                        #{rowIndex+1}
+                                                </p:column>
+                                                <p:column  style="min-width: 9em; text-align: left;" >
+                                                    <f:facet name="header">
+                                                        <h:outputText style="min-width: 10em;" value="Item" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{bi.billItem.item.name}" style="width: 5em;"  ></h:outputText>
+
+                                                </p:column>
+
+                                                <p:column  style="width: 6em; text-align: left;" >
+                                                    <f:facet name="header">Department</f:facet>
+                                                        #{bi.billItem.item.department.name}
+                                                </p:column>
+                                                <p:column style="width: 6em;">
+                                                    <f:facet name="header">Priority</f:facet>
+                                                    <p:selectOneMenu value="#{bi.billItem.priority}"    >
+                                                        <p:ajax event="blur" process="@this" ></p:ajax>
+                                                        <f:selectItem itemLabel="Not Set" ></f:selectItem>
+                                                        <f:selectItems value="#{enumController.priorities}" ></f:selectItems>
+                                                    </p:selectOneMenu>
+                                                </p:column>
+                                                <p:column style="width: 4em;">
+                                                    <f:facet name="header">Fee</f:facet>
+                                                    <h:outputText value="#{bi.billItem.netValue}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </p:column>
+                                                <p:column style="width: 2em;">
+                                                    <h:commandButton id="btnRemove" value="X" action="#{opdBillController.removeBillItem}" >
+                                                        <f:setPropertyActionListener  value="#{rowIndex}" target="#{opdBillController.index}" />
+                                                        <p:ajax  process="btnRemove" update=":#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}" />
+                                                    </h:commandButton>
+                                                </p:column>
+                                            </p:dataTable>
+                                        </p:tab>
+
                                         <p:tab id="tabBillFee" title="Fees" >
+
+                                            #{opdBillController.billFeeBundleEntrys}
+
                                             <p:dataTable rowIndexVar="rowIndex" value="#{opdBillController.lstBillFees}" var="bif" rowKey="#{bif.id}" class="w-100">
                                                 <p:column>
                                                     <f:facet name="header">Item Name</f:facet>
@@ -344,48 +388,71 @@
                                                                      action="#{opdBillController.feeChangeListener(bif)}" />
                                                 </p:column>
                                             </p:dataTable>
+
+
                                         </p:tab>
 
-                                        <p:tab id="tabBillItems" title="Bill Items" >
-                                            <p:dataTable id="tblRequests" rowIndexVar="rowIndex" value="#{opdBillController.lstBillEntries}" var="bi" >
-                                                <p:column  style="width: 2em;" >
-                                                    <f:facet name="header">No</f:facet>
-                                                        #{rowIndex+1}
-                                                </p:column>
-                                                <p:column  style="min-width: 9em; text-align: left;" >
-                                                    <f:facet name="header">
-                                                        <h:outputText style="min-width: 10em;" value="Item" />
-                                                    </f:facet>
-                                                    <h:outputText value="#{bi.billItem.item.name}" style="width: 5em;"  ></h:outputText>
 
+                                        <p:tab id="tabBillFeeBundles" title="Fee Bundles" >
+
+
+                                            <p:dataTable var="entry" value="#{opdBillController.billFeeBundleEntrys}" rowIndexVar="rowIndex" rowKey="#{entry.selectedBillFee.id}" class="w-100">
+
+                                                <p:column>
+                                                    <f:facet name="header">Item Name</f:facet>
+                                                    <h:outputText value="#{entry.selectedBillFee.billItem.item.name}" />
+                                                    <h:outputText value=" - " />
+                                                    <h:outputText value="#{entry.selectedBillFee.fee.name}" rendered="#{entry.selectedBillFee.fee != null}" />
                                                 </p:column>
 
-                                                <p:column  style="width: 6em; text-align: left;" >
-                                                    <f:facet name="header">Department</f:facet>
-                                                        #{bi.billItem.item.department.name}
-                                                </p:column>
-                                                <p:column style="width: 6em;">
-                                                    <f:facet name="header">Priority</f:facet>
-                                                    <p:selectOneMenu value="#{bi.billItem.priority}"    >
-                                                        <p:ajax event="blur" process="@this" ></p:ajax>
-                                                        <f:selectItem itemLabel="Not Set" ></f:selectItem>
-                                                        <f:selectItems value="#{enumController.priorities}" ></f:selectItems>
+                                                <p:column>
+                                                    <f:facet name="header">Select Fee</f:facet>
+                                                    <p:selectOneMenu value="#{entry.selectedBillFee}"  var="fee" style="width:100%;">
+                                                        <f:selectItems value="#{entry.availableBillFees}" var="availableFee" itemLabel="#{availableFee.fee.name}" itemValue="#{availableFee}" />
+                                                        <p:ajax update="otherComponentsToUpdateOnFeeSelection" />
                                                     </p:selectOneMenu>
                                                 </p:column>
-                                                <p:column style="width: 4em;">
+
+                                                <p:column>
                                                     <f:facet name="header">Fee</f:facet>
-                                                    <h:outputText value="#{bi.billItem.netValue}">
+                                                    <p:inputText value="#{entry.selectedBillFee.feeGrossValue}" required="true" id="txtFeeVal#{rowIndex}">
                                                         <f:convertNumber pattern="#,##0.00" />
-                                                    </h:outputText>
+                                                        <f:ajax event="keyup" listener="#{opdBillController.feeChangeListener(entry.selectedBillFee)}" render="@form" />
+                                                    </p:inputText>
                                                 </p:column>
-                                                <p:column style="width: 2em;">
-                                                    <h:commandButton id="btnRemove" value="X" action="#{opdBillController.removeBillItem}" >
-                                                        <f:setPropertyActionListener  value="#{rowIndex}" target="#{opdBillController.index}" />
-                                                        <p:ajax  process="btnRemove" update=":#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}" />
-                                                    </h:commandButton>
+
+                                                <!-- Additional columns for actions like updating doctors, fee change, etc. -->
+                                                <p:column>
+                                                    <f:facet name="header">Payee</f:facet>
+                                                    <h:panelGroup rendered="#{entry.selectedBillFee.fee.feeType eq 'Staff'}">
+                                                        <h:outputLabel value="Speciality" rendered="#{entry.selectedBillFee.fee.speciality != null}">
+                                                        </h:outputLabel>
+                                                        <p:selectOneMenu value="#{entry.selectedBillFee.fee.speciality}" filter="true" filterMatchMode="contains">
+                                                            <f:selectItems value="#{specialityController.items}" var="speciality" itemLabel="#{speciality.name}" itemValue="#{speciality}" />
+                                                            <p:ajax update="docDropdown" listener="#{opdBillController.updateDoctors(entry)}" />
+                                                        </p:selectOneMenu>
+                                                        <h:outputLabel value="Doctor" style="margin-left: 10px;"></h:outputLabel>
+                                                        <p:selectOneMenu id="docDropdown" value="#{entry.selectedBillFee.staff}" filter="true" filterMatchMode="contains">
+                                                            <f:selectItems value="#{staffController.getSpecialityStaff(entry.selectedBillFee.fee.speciality)}" var="doc" itemLabel="#{doc.person.name}" itemValue="#{doc}" />
+                                                        </p:selectOneMenu>
+                                                        <p:commandButton value="Update Doctor" action="#{opdBillController.updateDoctor(entry)}" icon="pi pi-check" update="@form" />
+                                                    </h:panelGroup>
                                                 </p:column>
+
+                                                <p:column>
+                                                    <f:facet name="header">Fee Adjustment</f:facet>
+                                                    <p:inputText value="#{entry.selectedBillFee.feeGrossValue}" id="fee#{rowIndex}" required="true" disabled="#{!entry.selectedBillFee.billItem.item.userChangable}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                        <p:ajax event="change" listener="#{opdBillController.onFeeChange(entry)}" update="@form"/>
+                                                    </p:inputText>
+                                                    <p:commandButton value="Apply Change" action="#{opdBillController.applyFeeChange(entry)}" icon="pi pi-check" update="@form" disabled="#{!entry.selectedBillFee.billItem.item.userChangable}" />
+                                                </p:column>
+
                                             </p:dataTable>
+
+
                                         </p:tab>
+
                                         <p:tab id="tabBillIx" title="Tests" >
                                             <p:dataTable rowIndexVar="rowIndex" value="#{opdBillController.lstBillComponents}" var="bix" >
                                                 <p:column>
@@ -765,7 +832,7 @@
                                             </div>
                                         </div>
                                     </h:panelGroup>
-                                    
+
                                     <h:panelGrid 
                                         columns="2" 
                                         class="w-100 h5" >

@@ -67,6 +67,7 @@ import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.SmsFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.BillFeeBundleEntry;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.OptionScope;
 import com.divudi.entity.Token;
@@ -257,6 +258,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
     private List<BillFee> lstBillFees;
     private List<BillFee> lstBillFeesPrint;
+    private List<BillFeeBundleEntry> billFeeBundleEntrys;
 
     private List<Payment> payments;
 
@@ -2580,7 +2582,11 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         BillEntry addingEntry = new BillEntry();
         addingEntry.setBillItem(bi);
         addingEntry.setLstBillComponents(getBillBean().billComponentsFromBillItem(bi));
-        addingEntry.setLstBillFees(getBillBean().billFeefromBillItem(bi));
+
+        List<BillFee> allBillFees = getBillBean().billFeefromBillItem(bi);
+        billFeeBundleEntrys=getBillBean().bundleFeesByName(allBillFees);
+
+        addingEntry.setLstBillFees(getBillBean().billFeesSelected(billFeeBundleEntrys));
 
         addStaffToBillFees(addingEntry.getLstBillFees());
 
@@ -2658,6 +2664,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         currentBillItem = null;
         lstBillComponents = null;
         lstBillFees = null;
+        billFeeBundleEntrys = null;
         lstBillItems = null;
     }
 
@@ -2678,6 +2685,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         setLstBillComponents(null);
         setLstBillEntries(null);
         setLstBillFees(null);
+        setBillFeeBundleEntrys(null);
         setStaff(null);
         setToStaff(null);
         setComment(null);
@@ -2714,6 +2722,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         setLstBillComponents(null);
         setLstBillEntries(null);
         setLstBillFees(null);
+        setBillFeeBundleEntrys(null);
         setStaff(null);
         setToStaff(null);
         setComment(null);
@@ -4086,6 +4095,17 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
     public void setDepartmentOpdItems(List<ItemLight> departmentOpdItems) {
         this.departmentOpdItems = departmentOpdItems;
+    }
+
+    public List<BillFeeBundleEntry> getBillFeeBundleEntrys() {
+        if (billFeeBundleEntrys == null) {
+            billFeeBundleEntrys = new ArrayList<>();
+        }
+        return billFeeBundleEntrys;
+    }
+
+    public void setBillFeeBundleEntrys(List<BillFeeBundleEntry> billFeeBundleEntrys) {
+        this.billFeeBundleEntrys = billFeeBundleEntrys;
     }
 
 }
