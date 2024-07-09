@@ -32,7 +32,18 @@
                             <p:commandButton icon="fas fa-file-invoice" value="Sale 2" class="mx-2" action="/pharmacy/pharmacy_bill_retail_sale_for_cashier_1" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController1.pharmacyRetailSale()}" />
                             <p:commandButton icon="fas fa-file-invoice" value="Sale 3" action="/pharmacy/pharmacy_bill_retail_sale_for_cashier_2" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController2.pharmacyRetailSale()}" />
                             <p:commandButton icon="fas fa-file-invoice" value="Sale 4" class="mx-2" action="/pharmacy/pharmacy_bill_retail_sale_for_cashier_3" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController3.pharmacyRetailSale()}" />
-
+                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Create Token At Pharmacy Sale For Cashier')}" class="mx-4">
+                                <p:outputLabel value="Counter" ></p:outputLabel>
+                                <p:selectOneMenu class="mx-2" value="#{pharmacySaleController.counter}" >
+                                    <f:selectItem itemLabel="Any" ></f:selectItem>
+                                    <f:selectItems 
+                                        value="#{sessionController.loggableSubDepartments}" 
+                                        var="c" 
+                                        itemLabel="#{c.name}" 
+                                        itemValue="#{c}" >
+                                    </f:selectItems>
+                                </p:selectOneMenu>
+                            </h:panelGroup>
                         </p:panel>
                         <p:panel>
                             <f:facet name="header" >
