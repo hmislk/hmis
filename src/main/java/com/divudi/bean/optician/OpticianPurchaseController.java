@@ -5,11 +5,13 @@
 package com.divudi.bean.optician;
 
 import com.divudi.bean.common.CommonController;
+
 import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.pharmacy.AmpController;
 import com.divudi.bean.pharmacy.StockController;
+
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
@@ -101,10 +103,12 @@ public class OpticianPurchaseController implements Serializable {
     PharmacyCalculation pharmacyBillBean;
     @Inject
     CommonController commonController;
+
     @Inject
     ItemController itemController;
     @Inject
     StockController stockController;
+
     /**
      * Properties
      */
@@ -395,7 +399,9 @@ public class OpticianPurchaseController implements Serializable {
 
     public void calNetTotal() {
         double grossTotal = 0.0;
+
         if (getBill().getDiscount() > 0 || getBill().getTax() > 0) {
+
             grossTotal = getBill().getTotal() + getBill().getDiscount() - getBill().getTax();
             ////// // System.out.println("gross" + grossTotal);
             ////// // System.out.println("net1" + getBill().getNetTotal());
@@ -515,6 +521,7 @@ public class OpticianPurchaseController implements Serializable {
             }
 
             getPharmaceuticalBillItemFacade().edit(tmpPh);
+
             getBill().getBillItems().add(i);
         }
         if (billItemsTotalQty == 0.0) {
