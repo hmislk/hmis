@@ -116,14 +116,36 @@
                                     <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{p}"/>
                                 </h:commandLink>
                             </p:column>
+                            <p:column headerText="">
+                                <p:badge severity="danger" rendered="#{p.billClosed}" value="Closed" />
+                                    
+                            </p:column>
                             <p:column width="8%">
                                 <p:commandButton 
                                     ajax="false"
                                     value="Recieve"
                                     class="w-100 ui-button-warning"
                                     action="#{grnController.navigateToRecieveGrnPreBill()}" 
-                                    disabled="#{p.cancelled}">
+                                    disabled="#{p.cancelled or p.billClosed}">
                                     <f:setPropertyActionListener target="#{grnController.approveBill}" value="#{p}"/>
+                                </p:commandButton>
+
+                                <p:commandButton 
+                                    ajax="false" 
+                                    class="w-100 ui-button-success my-1"
+                                    value="PO Close" 
+                                    action="#{grnController.closeSelectedPurchesOrder()}" 
+                                    disabled="#{p.cancelled or p.billClosed}">
+                                    <f:setPropertyActionListener target="#{grnController.closeBill}" value="#{p}"/>
+                                </p:commandButton>
+
+                                <p:commandButton 
+                                    ajax="false" 
+                                    class="w-100 ui-button-success my-1"
+                                    value="PO Open" 
+                                    action="#{grnController.openSelectedPurchesOrder()}" 
+                                    disabled="#{p.cancelled}">
+                                    <f:setPropertyActionListener target="#{grnController.closeBill}" value="#{p}"/>
                                 </p:commandButton>
                             </p:column>
                             <p:column headerText="Goods Received Notes" width="35em">                   
@@ -191,7 +213,7 @@
                                                 class="m-1" 
                                                 icon="fas fa-file-alt" 
                                                 title="View PO" action="pharmacy_reprint_po" 
-                                                disabled="#{b.referenceBill.creater eq null or b.referenceBill.referenceBill eq null}">
+                                                disabled="#{b.referenceBill.creater eq null or b.referenceBill.referenceBill eq null or p.billClosed}">
                                                 <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b.referenceBill}"/>
                                             </p:commandButton>
                                         </h:panelGroup>

@@ -12,7 +12,10 @@
             <h:panelGroup rendered="#{!preReturnController.printPreview}" styleClass="alignTop" >
                 <p:panel>
                     <f:facet name="header" >
-                        <div class="d-flex justify-content-between" > 
+                        <div class="d-flex"> 
+                            <p:inputText value="#{preReturnController.returnBill.comments}" class="mx-2" id="comment"/>
+                                <p:watermark value="Comment" for="comment"/>
+
                             <p:commandButton  
                                 value="Return" 
                                 action="#{preReturnController.settle}" 
@@ -20,14 +23,14 @@
                                 icon="fa-solid fa-rotate-left">
                             </p:commandButton>
 
-
+                            </div>   
                             <div class="d-flex mt-2" style="float: right;">
                                 <p:outputLabel  value="Recievable Amount" /> 
                                 <p:outputLabel  value=":" style="width: 30px; text-align: center;" /> 
                                 <p:outputLabel id="total"  value="#{preReturnController.returnBill.total}" style="min-width: 30px; text-align: right;"/> 
                             </div>
 
-                        </div>
+                        
                     </f:facet>
 
                     <p:dataTable 

@@ -47,6 +47,10 @@ public class Stock implements Serializable {
 
     @OneToMany(mappedBy = "parentStock", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     List<Stock> childStocks;
+    
+    @Transient
+    private Double transItemStockQty;
+    
 
     @Transient
     private Double transItemStockQty;
