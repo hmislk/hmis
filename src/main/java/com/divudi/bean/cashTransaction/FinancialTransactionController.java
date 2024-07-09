@@ -772,7 +772,7 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public String settleShiftEndFundBill() {
-        boolean fundTransferBillTocollect = false;
+        fillFundTransferBillsForMeToReceive();
 
         if (currentBill == null) {
             JsfUtil.addErrorMessage("Error");
@@ -786,15 +786,8 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("Error");
             return "";
         }
-
-        if (fundTransferBillsToReceive != null) {
-            if (fundTransferBillsToReceive.size() > 0) {
-                System.out.println("fundTransferBillTocollect = " + fundTransferBillTocollect);
-                fundTransferBillTocollect = true;
-            }
-        }
-
-        if (fundTransferBillTocollect) {
+        System.out.println("fundTransferBillsToReceive = " + fundTransferBillsToReceive.size());
+        if (!fundTransferBillsToReceive.isEmpty()) {
             JsfUtil.addErrorMessage("Please collect your transferred money.");
             return "";
         }
