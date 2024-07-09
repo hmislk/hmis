@@ -5971,7 +5971,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             }
         }
 
-        if (settlePaymentMethod == PaymentMethod.Agent && institution == null) {
+        if (settlePaymentMethod == PaymentMethod.Agent && settleInstitution == null) {
             JsfUtil.addErrorMessage("Please select Agency");
             return true;
         }
@@ -6020,10 +6020,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         getBillSession().getBill().setPaidAmount(b.getPaidAmount());
         getBillSession().getBill().setBalance(0.0);
         getBillSession().getBill().setPaidBill(b);
-        if(settlePaymentMethod == PaymentMethod.Agent){
-            getBillSession().getBillItem().getBill().setCreditCompany(institution);
-            getBillSession().getBillItem().getBill().setAgentRefNo(agentRefNo);
-        }
         getBillFacade().edit(getBillSession().getBill());
 
         b.setSingleBillItem(bi);
@@ -6090,8 +6086,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         temp.setBillDate(new Date());
         temp.setBillTime(new Date());
         temp.setCreatedAt(new Date());
-        temp.setCreditCompany(institution);
-        temp.setAgentRefNo(agentRefNo);
         temp.setCreater(getSessionController().getLoggedUser());
 
         getBillFacade().create(temp);

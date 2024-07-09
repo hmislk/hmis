@@ -206,6 +206,7 @@ public class ItemFeeManager implements Serializable {
     }
 
     public String navigateToItemFees() {
+        item = null;
         return "/admin/pricing/manage_item_fees?faces-redirect=true";
     }
 
