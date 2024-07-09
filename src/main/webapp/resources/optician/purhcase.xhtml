@@ -71,7 +71,7 @@
             <div >
 
                 <p:dataTable rowIndexVar="rowIndex" value="#{cc.attrs.bill.billItems}" var="bip" >
-                    <p:column >
+                    <p:column width="500">
                         <f:facet name="header">Item</f:facet>
                         <h:outputText value="#{bip.item.name}" ></h:outputText>
                         <h:outputText value=" (#{bip.item.code})" ></h:outputText>
@@ -115,7 +115,7 @@
                   
                     <p:columnGroup type="footer">
                         <p:row>
-                            <p:column colspan="6" footerText="Total"/>
+                            <p:column colspan="4" footerText="Total"/>
                             <p:column footerText="#{0-cc.attrs.bill.total}" >
                                 <f:facet name="footer">
                                     <h:outputLabel value="#{0-cc.attrs.bill.total}">
