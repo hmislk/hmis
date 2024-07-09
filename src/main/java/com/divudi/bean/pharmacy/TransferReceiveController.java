@@ -80,6 +80,26 @@ public class TransferReceiveController implements Serializable {
         getPharmacyController().setPharmacyItem(tmp.getItem());
     }
 
+    public String navigateBackToRecieveList() {
+        return "/pharmacy/pharmacy_transfer_issued_list_with_approval?faces-redirect=true";
+    }
+
+    public String navigateToRecieveRequest() {
+        return "/pharmacy/pharmacy_transfer_receive_with_approval?faces-redirect=true";
+    }
+
+    public String navigateToEditRecieveIssue() {
+        return "/pharmacy/pharmacy_transfer_receive_with_approval?faces-redirect=true";
+    }
+
+    public String navigateToAproveRecieveIssue() {
+        return "/pharmacy/pharmacy_transfer_receive_approval?faces-redirect=true";
+    }
+    
+    public String navigateToReprintRecieveIssue() {
+        return "/pharmacy/pharmacy_reprint_transfer_receive?faces-redirect=true";
+    }
+
     public void makeNull() {
         issuedBill = null;
         receivedBill = null;
@@ -148,8 +168,8 @@ public class TransferReceiveController implements Serializable {
             if (i.getPharmaceuticalBillItem().getQtyInUnit() == 0.0 || i.getItem() instanceof Vmpp || i.getItem() instanceof Vmp) {
                 continue;
             }
-            
-            if(errorCheck(i)){
+
+            if (errorCheck(i)) {
                 continue;
             }
 
@@ -195,8 +215,8 @@ public class TransferReceiveController implements Serializable {
 
             getReceivedBill().getBillItems().add(i);
         }
-        
-        if(getReceivedBill().getBillItems().size()==0 || getReceivedBill().getBillItems() == null){
+
+        if (getReceivedBill().getBillItems().size() == 0 || getReceivedBill().getBillItems() == null) {
             JsfUtil.addErrorMessage("Nothing to Recive, Please check Recieved Quantity");
             return;
         }
@@ -225,6 +245,184 @@ public class TransferReceiveController implements Serializable {
 //        getBillFacade().edit(getIssuedBill());
         printPreview = true;
 
+    }
+
+    public void saveRequest() {
+
+        getReceivedBill().setBillType(BillType.PharmacyTransferReceive);
+        getReceivedBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_RECEIVE_PRE);
+        getReceivedBill().setBackwardReferenceBill(getIssuedBill());
+        getReceivedBill().setFromStaff(getIssuedBill().getToStaff());
+        getReceivedBill().setFromInstitution(getIssuedBill().getInstitution());
+        getReceivedBill().setFromDepartment(getIssuedBill().getDepartment());
+
+        if (getReceivedBill().getId() == null) {
+            getBillFacade().create(getReceivedBill());
+        }
+
+        getReceivedBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyTransferReceive, BillClassType.BilledBill, BillNumberSuffix.PHTI));
+        getReceivedBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyTransferReceive, BillClassType.BilledBill, BillNumberSuffix.PHTI));
+
+        getReceivedBill().setInstitution(getSessionController().getInstitution());
+        getReceivedBill().setDepartment(getSessionController().getDepartment());
+
+        getReceivedBill().setCreater(getSessionController().getLoggedUser());
+        getReceivedBill().setCreatedAt(Calendar.getInstance().getTime());
+
+        getReceivedBill().setBackwardReferenceBill(getIssuedBill());
+
+        getReceivedBill().setNetTotal(calTotal());
+        getReceivedBill().setTotal(calTotal());
+
+        getBillFacade().edit(getReceivedBill());
+
+        //Update Issue Bills Reference Bill
+        getIssuedBill().getForwardReferenceBills().add(getReceivedBill());
+        getBillFacade().edit(getIssuedBill());
+        JsfUtil.addSuccessMessage("Request Saved Successfully");
+    }
+
+    public void finalizeRequest() {
+        // Check if a bill has been selected
+        if (getReceivedBill() == null) {
+            JsfUtil.addErrorMessage("No Bill Selected");
+            return;
+        }
+
+        // Check if the request has been saved before finalizing
+        if (getReceivedBill().getId() == null || (getReceivedBill().getForwardReferenceBills() == null && getReceivedBill().getForwardReferenceBills().isEmpty())) {
+            // Save the request
+            getReceivedBill().setBillType(BillType.PharmacyTransferReceive);
+            getReceivedBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_RECEIVE_PRE);
+            getReceivedBill().setBackwardReferenceBill(getIssuedBill());
+            getReceivedBill().setFromStaff(getIssuedBill().getToStaff());
+            getReceivedBill().setFromInstitution(getIssuedBill().getInstitution());
+            getReceivedBill().setFromDepartment(getIssuedBill().getDepartment());
+
+            if (getReceivedBill().getId() == null) {
+                getBillFacade().create(getReceivedBill());
+            }
+
+            getReceivedBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyTransferReceive, BillClassType.BilledBill, BillNumberSuffix.PHTI));
+            getReceivedBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyTransferReceive, BillClassType.BilledBill, BillNumberSuffix.PHTI));
+
+            getReceivedBill().setInstitution(getSessionController().getInstitution());
+            getReceivedBill().setDepartment(getSessionController().getDepartment());
+
+            getReceivedBill().setCreater(getSessionController().getLoggedUser());
+            getReceivedBill().setCreatedAt(Calendar.getInstance().getTime());
+
+            getReceivedBill().setBackwardReferenceBill(getIssuedBill());
+
+            getReceivedBill().setNetTotal(calTotal());
+            getReceivedBill().setTotal(calTotal());
+
+            getReceivedBill().setBillItems(billItems);
+            getReceivedBill().setEditor(sessionController.getLoggedUser());
+            getReceivedBill().setEditedAt(new Date());
+            getReceivedBill().setCheckeAt(new Date());
+            getReceivedBill().setCheckedBy(sessionController.getLoggedUser());
+
+            //Update Issue Bills Reference Bill
+            getIssuedBill().getForwardReferenceBills().add(getReceivedBill());
+
+            // Update the received bill in the database
+            getBillFacade().edit(getReceivedBill());
+            getBillFacade().edit(getIssuedBill());
+            // Add success message
+            JsfUtil.addSuccessMessage("Request Finalized Successfully");
+        } else {
+            // Update the existing received bill with current details
+            getReceivedBill().setBillItems(billItems);
+            getReceivedBill().setEditor(sessionController.getLoggedUser());
+            getReceivedBill().setEditedAt(new Date());
+            getReceivedBill().setCheckeAt(new Date());
+            getReceivedBill().setCheckedBy(sessionController.getLoggedUser());
+
+            // Update the received bill in the database
+            getBillFacade().edit(getReceivedBill());
+
+            // Add success message
+            JsfUtil.addSuccessMessage("Request Finalized Successfully");
+        }
+    }
+
+    public void settleApprove() {
+        if (getReceivedBill().getId() == null) {
+            JsfUtil.addErrorMessage("No Bill");
+            return;
+        }
+
+        getReceivedBill().setApproveAt(new Date());
+        getReceivedBill().setApproveUser(getSessionController().getLoggedUser());
+
+        getReceivedBill().setBillType(BillType.PharmacyTransferReceive);
+        getReceivedBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_RECEIVE);
+        getReceivedBill().setBackwardReferenceBill(getIssuedBill());
+        List<BillItem> itemsToAdd = new ArrayList<>();
+
+        for (BillItem i : getBillItems()) {
+            if (i.getPharmaceuticalBillItem().getQtyInUnit() == 0.0 || i.getItem() instanceof Vmpp || i.getItem() instanceof Vmp) {
+                continue;
+            }
+
+            if (errorCheck(i)) {
+                continue;
+            }
+
+            i.setBill(getReceivedBill());
+            i.setCreatedAt(Calendar.getInstance().getTime());
+            i.setCreater(getSessionController().getLoggedUser());
+            i.setPharmaceuticalBillItem(i.getPharmaceuticalBillItem());
+
+            PharmaceuticalBillItem tmpPh = i.getPharmaceuticalBillItem();
+            i.setPharmaceuticalBillItem(null);
+
+            if (i.getId() == null) {
+                getBillItemFacade().create(i);
+            }
+
+            if (tmpPh.getId() == null) {
+                getPharmaceuticalBillItemFacade().create(tmpPh);
+            }
+            i.setPharmaceuticalBillItem(tmpPh);
+            getBillItemFacade().edit(i);
+
+            tmpPh.setItemBatch(tmpPh.getStaffStock().getItemBatch());
+
+            double qty = Math.abs(i.getPharmaceuticalBillItem().getQtyInUnit());
+
+            // Deduct Staff Stock
+            boolean returnFlag = getPharmacyBean().deductFromStock(tmpPh, Math.abs(qty), getIssuedBill().getToStaff());
+
+            if (returnFlag) {
+                // Add Stock To Department
+                Stock addedStock = getPharmacyBean().addToStock(tmpPh, Math.abs(qty), getSessionController().getDepartment());
+                tmpPh.setStock(addedStock);
+            } else {
+                i.setTmpQty(0);
+                getBillItemFacade().edit(i);
+            }
+
+            getPharmaceuticalBillItemFacade().edit(tmpPh);
+            itemsToAdd.add(i);
+        }
+
+        if (itemsToAdd.isEmpty()) {
+            JsfUtil.addErrorMessage("Nothing to Receive, Please check Received Quantity");
+            return;
+        }
+
+        getReceivedBill().setNetTotal(calTotal());
+        getReceivedBill().setTotal(calTotal());
+        
+        getIssuedBill().setReferenceBill(getReceivedBill());
+        getReceivedBill().setReferenceBill(getIssuedBill());
+
+        getBillFacade().edit(getReceivedBill());
+        getBillFacade().edit(getIssuedBill());
+
+        printPreview = true;
     }
 
     private double calTotal() {
