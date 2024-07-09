@@ -1361,7 +1361,7 @@ public class Item implements Serializable, Comparable<Item> {
     public void setLastBarcode(Long lastBarcode) {
         this.lastBarcode = lastBarcode;
     }
-      
+
     static class ReportItemComparator implements Comparator<ReportItem> {
 
         @Override
