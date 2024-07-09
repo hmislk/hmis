@@ -638,8 +638,11 @@ public class GrnController implements Serializable {
         getGrnBill().setCreater(getSessionController().getLoggedUser());
         getGrnBill().setCreatedAt(Calendar.getInstance().getTime());
 
+        getGrnBill().setBillExpenses(billExpenses);
+        getGrnBill().setExpenseTotal(calExpenses());
         calGrossTotal();
-
+        getGrnBill().setNetTotal(getGrnBill().getNetTotal() - calExpenses());
+        
         pharmacyCalculation.calculateRetailSaleValueAndFreeValueAtPurchaseRate(getGrnBill());
         updateBalanceForGrn(getGrnBill());
 
@@ -1257,9 +1260,17 @@ public class GrnController implements Serializable {
         getCurrentExpense().setSearialNo(getBillExpenses().size());
         getBillExpenses().add(currentExpense);
         currentExpense = null;
-        calTotal();
+        
     }
     
+    public double calExpenses(){
+        double tot = 0.0;
+        for (BillItem be : billExpenses){
+            tot = tot + be.getNetValue();
+        }
+        return tot;
+    }
+            
     public void calTotal() {
         double tot = 0.0;
         double exp = 0.0;

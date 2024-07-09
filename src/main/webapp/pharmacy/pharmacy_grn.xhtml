@@ -299,9 +299,10 @@
                             <p:commandButton id="btnAddExpense" value="Add Expense" 
                                              icon="fas fa-plus"
                                              class="ui-button-Warning mx-2"
-                                             action="#{grnController.addExpense()}" 
-                                             process="billExpenseGrid btnAddExpense" 
-                                             update=" billExpenseGrid "/>
+                                             action="#{grnController.addExpense()}"
+                                             ajax = "false"
+                                             process="billExpenseGrid btnAddExpense @this" 
+                                             update=" billExpenseGrid @all"/>
                         </h:panelGrid>
                         <p:dataTable id="tblExpenses" value="#{grnController.billExpenses}" var="be" class="mt-2"
                                      emptyMessage="No Bill Expenses" >
