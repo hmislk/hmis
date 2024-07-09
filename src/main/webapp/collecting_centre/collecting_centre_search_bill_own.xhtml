@@ -25,9 +25,33 @@
                                 </p:calendar>
                                 <p:spacer height="10"/>
                                 <div class="d-grid gap-2">
-                                    <p:commandButton id="btnSearch" class="ui-button-warning" icon="fas fa-search" ajax="false" value="Search" action="#{searchController.createCollectingCentreBillSearch}"/>
+                                    <p:commandButton 
+                                        id="btnSearch" 
+                                        class="ui-button-warning" 
+                                        icon="fas fa-search" 
+                                        ajax="false" 
+                                        value="Search" 
+                                        action="#{searchController.createCollectingCentreBillSearch}"/>
 
                                 </div>
+                                <h:outputLabel value="Collecting Center Name"/>
+                                <p:autoComplete 
+                                    converter="deal" 
+                                    value="#{searchController.institution}" 
+                                    forceSelection="true" 
+                                    id="acColl"
+                                    completeMethod="#{institutionController.completeCollectingCenter}" 
+                                    var="vt" 
+                                    itemLabel="#{vt.name}" 
+                                    itemValue="#{vt}" 
+                                    maxResults="20"
+                                    class="w-100 mb-1"
+                                    inputStyleClass="form-control">
+                                    <p:column style="padding: 4px;">#{vt.institutionCode}</p:column>
+                                    <p:column style="padding: 4px;">#{vt.name}</p:column>
+                                </p:autoComplete>
+                                <h:outputLabel value="Collecting Center Code"/>
+                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.code}" class="w-100"/>
                                 <h:outputLabel value="Bill No"/>
                                 <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" class="w-100" />
                                 <h:outputLabel value="Patient Name"/>
