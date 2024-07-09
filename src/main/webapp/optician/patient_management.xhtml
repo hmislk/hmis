@@ -109,7 +109,7 @@
                                     <!-- First three buttons -->
                                     <div>
                                         <p:commandButton value="New"
-                                                         action="#{patientController.navigateToAddNewPatientForOphthalmology()}" 
+                                                         action="#{patientController.navigateToAddNewPatientForOptician()}" 
                                                          ajax="false"
                                                          icon="fa-solid fa-plus"
                                                          class="m-1 ui-button-success" />
@@ -117,7 +117,7 @@
                                         <p:commandButton id="btnSearch"
                                                          value="Search"
                                                          icon="fa-solid fa-search"
-                                                         action="#{patientController.searchPatientForOphthalmology()}" 
+                                                         action="#{patientController.searchPatientForOptician()}" 
                                                          ajax="false" 
                                                          class="m-1 ui-button-warning" />
                                         <p:defaultCommand target="btnSearch"> </p:defaultCommand>
@@ -166,16 +166,16 @@
                                     <p:column headerText="Actions">
                                         <div class="row g-2">
                                             <div class="col-auto m-2 ">
-                                                <p:commandButton value="Profile" action="#{patientController.navigateToOphthalmologyProfile()}" ajax="false" icon="pi pi-user" styleClass="mx-1 mb-2">
+                                                <p:commandButton value="Profile" action="#{patientController.navigateToOpticianProfile()}" ajax="false" icon="pi pi-user" styleClass="mx-1 mb-2">
                                                     <f:setPropertyActionListener value="#{p}" target="#{patientController.current}" />
                                                 </p:commandButton>
                                                 <p:commandButton value="Edit" action="#{patientController.navigateToOpdPatientEdit()}" ajax="false" icon="pi pi-pencil" styleClass="mx-1 mb-2">
                                                     <f:setPropertyActionListener value="#{p}" target="#{patientController.current}" />
                                                 </p:commandButton>
-                                                <p:commandButton value="Sales" action="#{patientController.navigateToOphthalmologyBilling()}" ajax="false" icon="pi pi-shopping-cart" styleClass="mx-1 mb-2">
+                                                <p:commandButton value="Sales" action="#{patientController.navigateToOpticianBilling()}" ajax="false" icon="pi pi-shopping-cart" styleClass="mx-1 mb-2">
                                                     <f:setPropertyActionListener value="#{p}" target="#{patientController.current}" />
                                                 </p:commandButton>
-                                                <p:commandButton value="Repairs" action="#{patientController.navigateToSaleFromOphthalmologyRepair()}" ajax="false" icon="pi pi-wrench" styleClass="mx-1 mb-2">
+                                                <p:commandButton value="Repairs" action="#{patientController.navigateToSaleFromOpticianRepair()}" ajax="false" icon="pi pi-wrench" styleClass="mx-1 mb-2">
                                                     <f:setPropertyActionListener value="#{p}" target="#{patientController.current}" />
                                                 </p:commandButton>
                                                 <p:commandButton value="Appointments" action="#{patientController.navigateToCollectingCenterBillingFromPatientProfile()}" ajax="false" icon="pi pi-calendar" styleClass="mx-1 mb-2">
