@@ -47,16 +47,13 @@ public class Stock implements Serializable {
 
     @OneToMany(mappedBy = "parentStock", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     List<Stock> childStocks;
-    
-    @Transient
-    private Double transItemStockQty;
-    
 
     @Transient
     private Double transItemStockQty;
 
-    
-    
+    @Transient
+    private Double transItemStockQty;
+ 
     public List<Stock> getChildStocks() {
         return childStocks;
     }
@@ -161,7 +158,6 @@ public class Stock implements Serializable {
     public void setTransItemStockQty(Double transItemStockQty) {
         this.transItemStockQty = transItemStockQty;
     }
-
 
     public Long getStartBarcode() {
         return startBarcode;

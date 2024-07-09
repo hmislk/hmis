@@ -1439,7 +1439,6 @@ public class ItemController implements Serializable {
             tmpMap.put("dep", DepartmentType.Store);
             tmpMap.put("amp", Amp.class);
             tmpMap.put("codeStr", "%" + query.toLowerCase() + "%");
-
             tmpMap.put("barcodeStr", query.toLowerCase());
 
             for (int i = 0; i < words.length; i++) {
