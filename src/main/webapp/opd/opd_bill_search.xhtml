@@ -313,7 +313,7 @@
                                                 <h:outputText value="Department" ></h:outputText>
                                                 <p:spacer width="15" height="1" ></p:spacer>
                                                 <h:panelGroup>
-                                                    <h:outputText value="#{bill.cancelledBill.fromDepartment.name}" rendered="#{bill.cancelled}"></h:outputText>
+                                                    <h:outputText value="#{bill.cancelledBill.department.name}" rendered="#{bill.cancelled}"></h:outputText>
                                                     <h:outputText value="#{bill.refundedBill.department.name}" rendered="#{bill.refunded}"></h:outputText>
                                                 </h:panelGroup>
                                             </h:panelGrid>
