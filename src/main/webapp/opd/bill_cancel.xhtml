@@ -40,14 +40,15 @@
                                         value="Cancel Bill" 
                                         icon="fa fa-cancel"
                                         style="float: right"
-                                        class="ui-button-danger" action="#{billSearch.cancelOpdBill()}">
+                                        class="ui-button-danger" 
+                                        action="#{billSearch.cancelOpdBill()}">
                                     </p:commandButton>
                                     <p:commandButton  
                                         class="ui-button-secondary d-flex justify-content-end mx-2"
                                         style="float: right"
                                         value="Back To Search"
                                         icon="fa-solid fa-arrow-left"
-                                        action="/opd/opd_bill_search"
+                                        action="/opd/opd_bill_search?faces-redirect=true"
                                         ajax="false">
                                     </p:commandButton>
                                 </h:panelGrid>
@@ -141,7 +142,7 @@
                                             style="float: right"
                                             value="Back To Search"
                                             icon="fa-solid fa-arrow-left"
-                                            action="/opd/opd_bill_search"
+                                            action="/opd/opd_bill_search?faces-redirect=true"
                                             ajax="false">
                                         </p:commandButton>
                                     </h:panelGroup> 
