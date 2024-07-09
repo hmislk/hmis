@@ -257,7 +257,7 @@
                                     <p:column headerText="Billed By" sortBy="#{bill.fromDepartment.name}" filterBy="#{bill.fromDepartment.name}" filterMatchMode="contains">                                
                                         <h:outputLabel id="byDep" value="#{bill.fromDepartment.name}" />
                                         <h:panelGroup rendered="#{bill.cancelled or bill.refunded}" style="display: grid">
-                                            <h:outputLabel value="#{bill.cancelledBill.fromDepartment.name}" style="color: red" rendered="#{bill.cancelled}"></h:outputLabel>
+                                            <h:outputLabel value="#{bill.cancelledBill.department.name}" style="color: red" rendered="#{bill.cancelled}"></h:outputLabel>
                                             <h:outputLabel value="#{bill.refundedBill.department.name}" style="color: orange" rendered="#{bill.refunded}"></h:outputLabel>
                                         </h:panelGroup>
                                     </p:column>
