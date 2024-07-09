@@ -475,7 +475,7 @@ public class OpticianPurchaseController implements Serializable {
             Stock stock = getPharmacyBean().addToStock(tmpPh, Math.abs(addingQty), getSessionController().getDepartment());
 
             tmpPh.setStock(stock);
-          
+
             switch (i.getItem().getItemBarcodeGenerationStrategy()) {
                 case BY_INDIVIDUAL_UNIT: {
                     String initialPartOfBarcode = i.getItem().getBarcode();
