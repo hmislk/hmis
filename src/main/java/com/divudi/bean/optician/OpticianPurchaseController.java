@@ -396,6 +396,7 @@ public class OpticianPurchaseController implements Serializable {
     public void calNetTotal() {
         double grossTotal = 0.0;
         if (getBill().getDiscount() > 0 || getBill().getTax() > 0) {
+
             grossTotal = getBill().getTotal() + getBill().getDiscount() - getBill().getTax();
             ////// // System.out.println("gross" + grossTotal);
             ////// // System.out.println("net1" + getBill().getNetTotal());
@@ -515,6 +516,7 @@ public class OpticianPurchaseController implements Serializable {
             }
 
             getPharmaceuticalBillItemFacade().edit(tmpPh);
+
             getBill().getBillItems().add(i);
         }
         if (billItemsTotalQty == 0.0) {

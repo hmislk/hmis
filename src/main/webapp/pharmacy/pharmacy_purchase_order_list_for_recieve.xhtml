@@ -124,7 +124,7 @@
                                             value="Recieve"
                                             class="w-100 ui-button-warning"
                                             action="#{grnController.navigateToResive()}" 
-                                            disabled="#{p.cancelled}">
+                                            disabled="#{p.cancelled or p.billClosed}">
                                             <f:setPropertyActionListener target="#{grnController.approveBill}" value="#{p}"/>
                                         </p:commandButton>
                                         <p:commandButton 
@@ -133,7 +133,7 @@
                                             rendered="false"
                                             class="w-50 ui-button-info"
                                             action="#{grnController.navigateToResiveAll()}" 
-                                            disabled="#{p.cancelled}">
+                                            disabled="#{p.cancelled or p.billClosed}">
                                             <f:setPropertyActionListener target="#{grnController.approveBill}" value="#{p}"/>
                                         </p:commandButton>
                                     </div>
@@ -143,10 +143,32 @@
                                             class="w-100 ui-button-info"
                                             value="Recieve Wholesale" 
                                             action="#{grnController.navigateToReceiveWholesale()}" 
-                                            disabled="#{p.cancelled}">
+                                            disabled="#{p.cancelled or p.billClosed}">
                                             <f:setPropertyActionListener target="#{grnController.approveBill}" value="#{p}"/>
                                         </p:commandButton>
                                     </div>
+                                    <div class="col-md-12">
+                                        <p:commandButton 
+                                            ajax="false" 
+                                            class="w-100 ui-button-success my-1"
+                                            value="PO Close" 
+                                            action="#{grnController.closeSelectedPurchesOrder()}" 
+                                            disabled="#{p.cancelled or p.billClosed}">
+                                            <f:setPropertyActionListener target="#{grnController.closeBill}" value="#{p}"/>
+                                        </p:commandButton>
+                                    </div>
+                                    <div class="col-md-12">
+                                        <p:commandButton 
+                                            ajax="false" 
+                                            class="w-100 ui-button-success my-1"
+                                            value="PO Open" 
+                                            action="#{grnController.openSelectedPurchesOrder()}" 
+                                            disabled="#{p.cancelled}">
+                                            <f:setPropertyActionListener target="#{grnController.closeBill}" value="#{p}"/>
+                                        </p:commandButton>
+                                    </div>
+
+
                                 </div>
 
 
@@ -179,7 +201,7 @@
                                     <h:column >
                                         <h:panelGroup layout="block" styleClass="btn-group">
                                             <p:commandButton  
-                                                class="m-1"  
+                                                class="m-1 "  
                                                 icon="fa fa-eye"
                                                 title="View GRN" 
                                                 ajax="false"
@@ -191,7 +213,7 @@
                                                 class="m-1" 
                                                 icon="fas fa-file-alt" 
                                                 title="View PO" action="pharmacy_reprint_po" 
-                                                disabled="#{b.referenceBill.creater eq null or b.referenceBill.referenceBill eq null}">
+                                                disabled="#{b.referenceBill.creater eq null or b.referenceBill.referenceBill eq null or p.billClosed}">
                                                 <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b.referenceBill}"/>
                                             </p:commandButton>
                                         </h:panelGroup>

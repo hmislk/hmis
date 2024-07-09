@@ -116,6 +116,29 @@ public class GrnController implements Serializable {
     private double discount;
     private Date invoiceDate;
     private String invoiceNumber;
+    private Bill closeBill;
+    
+    public void closeSelectedPurchesOrder(){
+        if (closeBill==null) {
+            JsfUtil.addErrorMessage("Bill is Not Valid !");
+            return;
+        }
+        
+        closeBill.setBillClosed(true);
+        billFacade.edit(closeBill);
+        
+    }
+    
+    public void openSelectedPurchesOrder(){
+        if (closeBill==null) {
+            JsfUtil.addErrorMessage("Bill is Not Valid !");
+            return;
+        }
+        
+        closeBill.setBillClosed(false);
+        billFacade.edit(closeBill);
+        
+    }
 
     public double calDifference() {
         difference = Math.abs(insTotal) - Math.abs(getNetTotal());
@@ -1514,6 +1537,14 @@ public class GrnController implements Serializable {
 
     public void setInvoiceNumber(String invoiceNumber) {
         this.invoiceNumber = invoiceNumber;
+    }
+
+    public Bill getCloseBill() {
+        return closeBill;
+    }
+
+    public void setCloseBill(Bill closeBill) {
+        this.closeBill = closeBill;
     }
 
 }
