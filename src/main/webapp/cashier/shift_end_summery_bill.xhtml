@@ -293,6 +293,9 @@
 
 
                         <h:panelGroup rendered="true" layout="block" class="w-100" style="overflow-x: scroll;">
+                            <p:commandButton value="Export to excel" >
+                                <p:dataExporter type="xlsx" target="tblPayments" fileName="exportedData"/>
+                            </p:commandButton>
                             <p:dataTable 
                                 id="tblPayments" 
                                 value="#{financialTransactionController.paymentsFromShiftSratToNow}" 
@@ -331,6 +334,12 @@
                                 </p:column>
                                 <p:column headerText="Bill Type Atomic Cash Type" >
                                     <h:outputText value="#{bp.bill.billTypeAtomic.billFinanceType}" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Payment Method">
+                                    <h:outputText value="#{bp.bill.paymentMethod}" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Patient">
+                                    <h:outputText value="#{bp.bill.patient.person.nameWithTitle}" ></h:outputText>
                                 </p:column>
                                 <p:column headerText="Value" >
                                     <p:inputText value="#{bp.paidValue}" />
