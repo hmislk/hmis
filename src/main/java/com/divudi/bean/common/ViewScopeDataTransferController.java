@@ -60,15 +60,15 @@ public class ViewScopeDataTransferController  implements Serializable {
     }
     
     public void makeAdminFeesAsPreviousPage(){
-        previousPage = "/admin_fees";
+        previousPage = "/admin_fees?faces-redirect=true";
     }
     
     public void makeInvestigationAsPreviousPage(){
-        previousPage = "/lab/investigation";
+        previousPage = "/lab/investigation?faces-redirect=true";
     }
     
     public void makeBulkFeesAsPreviousPage(){
-        previousPage = "/dataAdmin/manage_item_fees_bulk";
+        previousPage = "/dataAdmin/manage_item_fees_bulk?faces-redirect=true";
     }
     
     public String backToPreviousPage(){

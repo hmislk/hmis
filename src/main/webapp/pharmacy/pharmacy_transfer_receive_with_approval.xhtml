@@ -20,27 +20,29 @@
                             <p:commandButton
                                 ajax="false"
                                 action="#{transferReceiveController.navigateBackToRecieveList()}"
-                                class="ui-button-secondary"
+                                class="ui-button-secondary mx-1"
                                 icon="fa fa-arrow-left"
                                 style="float: right;"
                                 value="Back to Recieve List">
                             </p:commandButton>
                             <p:commandButton
                                 value="Finalize"
-                                action="#"
+                                action="#{transferReceiveController.finalizeRequest()}"
                                 class="ui-button-warning mx-1"
                                 icon="fas fa-check"
                                 ajax="false"
+                                disabled="#{transferReceiveController.receivedBill.checkedBy ne null}"
                                 style="float: right;">
                             </p:commandButton>
                             <p:commandButton
                                 value="Save"
-                                action="#"
-                                class="ui-button-success"
+                                action="#{transferReceiveController.saveRequest()}"
+                                class="ui-button-success mx-1"
                                 icon="fas fa-floppy-disk"
+                                disabled="#{transferReceiveController.receivedBill.checkedBy ne null}"
                                 ajax="false"
                                 style="float: right;">
-                            </p:commandButton> 
+                            </p:commandButton>
 
                       
                     </f:facet>
