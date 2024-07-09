@@ -101,10 +101,12 @@ public class OpticianPurchaseController implements Serializable {
     PharmacyCalculation pharmacyBillBean;
     @Inject
     CommonController commonController;
+
     @Inject
     ItemController itemController;
     @Inject
     StockController stockController;
+
     /**
      * Properties
      */
@@ -395,7 +397,9 @@ public class OpticianPurchaseController implements Serializable {
 
     public void calNetTotal() {
         double grossTotal = 0.0;
+
         if (getBill().getDiscount() > 0 || getBill().getTax() > 0) {
+
             grossTotal = getBill().getTotal() + getBill().getDiscount() - getBill().getTax();
             ////// // System.out.println("gross" + grossTotal);
             ////// // System.out.println("net1" + getBill().getNetTotal());
@@ -475,7 +479,7 @@ public class OpticianPurchaseController implements Serializable {
             Stock stock = getPharmacyBean().addToStock(tmpPh, Math.abs(addingQty), getSessionController().getDepartment());
 
             tmpPh.setStock(stock);
-          
+
             switch (i.getItem().getItemBarcodeGenerationStrategy()) {
                 case BY_INDIVIDUAL_UNIT: {
                     String initialPartOfBarcode = i.getItem().getBarcode();
