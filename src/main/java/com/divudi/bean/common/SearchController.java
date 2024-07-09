@@ -52,7 +52,6 @@ import com.divudi.facade.StockFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.opd.OpdBillController;
 import com.divudi.bean.pharmacy.PharmacyBillSearch;
-import com.divudi.bean.pharmacy.TransferRequestController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillFinanceType;
 import com.divudi.data.BillTypeAtomic;
@@ -153,7 +152,7 @@ public class SearchController implements Serializable {
     @Inject
     OpdBillController opdBillController;
     @Inject
-    TransferRequestController transferRequestController;
+    ConfigOptionApplicationController configOptionApplicationController;
 
     /**
      * Properties
@@ -645,12 +644,6 @@ public class SearchController implements Serializable {
         patientInvestigations = null;
         searchKeyword = null;
         printPreview = false;
-    }
-    
-    public String navigateToCreateTransferRequest(){
-        makeListNull();
-        transferRequestController.recreate();
-        return "/pharmacy/pharmacy_transfer_request_save?faces-redirect=true";
     }
 
     public String navigateToSearchOpdBillsOfLoggedDepartment() {
@@ -2972,46 +2965,12 @@ public class SearchController implements Serializable {
         tmp.put("fromDate", getFromDate());
         tmp.put("toDep", getSessionController().getDepartment());
         tmp.put("bct", bct);
-        tmp.put("bTp", billTypeAtomic.PHARMACY_TRANSFER_REQUEST);
+        tmp.put("bTp", BillType.PharmacyTransferRequest);
 
         sql = "Select b From Bill b where "
                 + " b.retired=false and  b.toDepartment=:toDep"
                 + " and b.billClassType not in :bct"
-                + " and b.billTypeAtomic= :bTp and b.createdAt between :fromDate and :toDate ";
-
-        if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
-            sql += " and  ((b.deptId) like :billNo )";
-            tmp.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
-        }
-
-        if (getSearchKeyword().getDepartment() != null && !getSearchKeyword().getDepartment().trim().equals("")) {
-            sql += " and  ((b.department.name) like :dep )";
-            tmp.put("dep", "%" + getSearchKeyword().getDepartment().trim().toUpperCase() + "%");
-        }
-
-        sql += " order by b.createdAt desc  ";
-
-        bills = getBillFacade().findByJpql(sql, tmp, TemporalType.TIMESTAMP, 50);
-
-        for (Bill b : bills) {
-            b.setListOfBill(getIssudBills(b));
-        }
-
-    }
-    
-    public void fillSavedTranserRequestBills() {
-        Date startTime = new Date();
-        String sql;
-
-        HashMap tmp = new HashMap();
-        tmp.put("toDate", getToDate());
-        tmp.put("fromDate", getFromDate());
-        tmp.put("dep", getSessionController().getDepartment());
-        tmp.put("bTp", BillTypeAtomic.PHARMACY_TRANSFER_REQUEST_PRE);
-
-        sql = "Select b From Bill b where "
-                + " b.retired=false and  b.department=:dep"
-                + " and b.billTypeAtomic= :bTp and b.createdAt between :fromDate and :toDate ";
+                + " and b.billType= :bTp and b.createdAt between :fromDate and :toDate ";
 
         if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
             sql += " and  ((b.deptId) like :billNo )";
@@ -4429,19 +4388,20 @@ public class SearchController implements Serializable {
         temMap.put("btpc", BillType.CollectingCentreBill);
 
         billFees = getBillFeeFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 50);
-//        List<BillFee> removeingBillFees = new ArrayList<>();
-//        for (BillFee bf : billFees) {
-//            System.out.println("bf = " + bf.getFee().getFee());
-//            sql = "SELECT bi FROM BillItem bi where bi.retired=false and bi.referanceBillItem.id=" + bf.getBillItem().getId();
-//            BillItem rbi = getBillItemFacade().findFirstByJpql(sql);
-//            System.out.println("rbi = " + rbi.getItem().getName());
-//            if (rbi != null) {
-//                removeingBillFees.add(bf);
-//            }
-//
-//        }
-//        billFees.removeAll(removeingBillFees);
-//        calTotal();
+        List<BillFee> removeingBillFees = new ArrayList<>();
+        if (configOptionApplicationController.getBooleanValueByKey("Remove Refunded Bill From OPD Staff Payment")) {
+            for (BillFee bf : billFees) {
+                sql = "SELECT bi FROM BillItem bi where bi.retired=false and bi.referanceBillItem.id=" + bf.getBillItem().getId();
+                BillItem rbi = getBillItemFacade().findFirstByJpql(sql);
+
+                if (rbi != null) {
+                    removeingBillFees.add(bf);
+                }
+
+            }
+            billFees.removeAll(removeingBillFees);
+        }
+        calTotal();
 
     }
 
@@ -6860,12 +6820,12 @@ public class SearchController implements Serializable {
 
     public void createCollectingCentreBillSearch() {
         Date startTime = new Date();
-        createCCBillTableByKeyword(BillType.CollectingCentreBill,null,null);
+        createCCBillTableByKeyword(BillType.CollectingCentreBill, null, null);
         //checkLabReportsApproved(bills);
 
     }
-    
-    public void createCCBillTableByKeyword(BillType billType, Institution ins, Department dep){
+
+    public void createCCBillTableByKeyword(BillType billType, Institution ins, Department dep) {
         billLights = null;
         String sql;
         Map temMap = new HashMap();
@@ -6874,7 +6834,7 @@ public class SearchController implements Serializable {
                 + " where bill.billType = :billType "
                 + " and bill.createdAt between :fromDate and :toDate "
                 + " and bill.retired=false ";
-        
+
         if (ins != null) {
             sql += " and bill.institution=:ins ";
             temMap.put("ins", ins);
@@ -7175,9 +7135,7 @@ public class SearchController implements Serializable {
         createTableByKeyword(billType, ins, dep, null, null, null, null);
 
     }
-    
-    
-    
+
     public void createTableByKeyword(List<BillTypeAtomic> billTypesAtomics,
             Institution ins, Department dep,
             Institution fromIns,
@@ -7258,7 +7216,6 @@ public class SearchController implements Serializable {
         bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
-    
 
     public void createTableByKeyword(BillType billType,
             Institution ins, Department dep,

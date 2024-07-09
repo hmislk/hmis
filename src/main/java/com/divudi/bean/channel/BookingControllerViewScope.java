@@ -1406,6 +1406,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 }
             }  
         }
+
         return "/channel/manage_booking_by_date?faces-redirect=true";
     }
 

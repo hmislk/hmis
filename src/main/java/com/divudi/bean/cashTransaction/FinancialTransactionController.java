@@ -210,7 +210,6 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public String navigateToReceiveFundTransferBillsForMe() {
-        findNonClosedShiftStartFundBillIsAvailable();
         fillFundTransferBillsForMeToReceive();
         return "/cashier/fund_transfer_bills_for_me_to_receive?faces-redirect=true";
     }
@@ -220,6 +219,7 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setBillType(BillType.ShiftStartFundBill);
         currentBill.setBillTypeAtomic(BillTypeAtomic.FUND_SHIFT_START_BILL);
         currentBill.setBillClassType(BillClassType.Bill);
+        currentBill.setStaff(sessionController.getLoggedUser().getStaff());
     }
 
     private void prepareToAddNewFundTransferBill() {
@@ -436,7 +436,7 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setDepartment(sessionController.getDepartment());
         currentBill.setInstitution(sessionController.getInstitution());
         currentBill.setStaff(sessionController.getLoggedUser().getStaff());
-
+        
         currentBill.setBillDate(new Date());
         currentBill.setBillTime(new Date());
 
@@ -772,8 +772,8 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public String settleShiftEndFundBill() {
-        boolean fundTransferBillTocollect = false;
-
+         boolean fundTransferBillTocollect = false;
+        
         if (currentBill == null) {
             JsfUtil.addErrorMessage("Error");
             return "";
@@ -786,18 +786,15 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("Error");
             return "";
         }
-
-        if (fundTransferBillsToReceive != null) {
-            if (fundTransferBillsToReceive.size() > 0) {
-                System.out.println("fundTransferBillTocollect = " + fundTransferBillTocollect);
-                fundTransferBillTocollect = true;
-            }
+        if (fundTransferBillsToReceive!=null && !fundTransferBillsToReceive.isEmpty()) {
+            fundTransferBillTocollect = true;
         }
-
+        
         if (fundTransferBillTocollect) {
-            JsfUtil.addErrorMessage("Please collect your transferred money.");
+            JsfUtil.addErrorMessage("Please collect funds transferred to you before closing.");
             return "";
         }
+
 
         currentBill.setDepartment(sessionController.getDepartment());
         currentBill.setInstitution(sessionController.getInstitution());
