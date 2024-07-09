@@ -53,12 +53,12 @@
                             <p:commandButton 
                                 ajax="false" 
                                 value="Select" 
-                                action="#{collectingCentreBillController.selectCollectingCentre()}" ></p:commandButton>
+                                action="#{collectingCentreBillController.selectCollectingCentre()}" >
+                            </p:commandButton>
                         </div>
                     </h:panelGroup>
 
                 </p:panel>
-
                 <p:panel rendered="#{collectingCentreBillController.collectingCentre ne null}" >
                     <f:facet name="header" >
                         <h:outputText class="fa-solid fa-warehouse mt-2"  />
@@ -67,6 +67,7 @@
                         <p:commandButton 
                             ajax="false" 
                             value="Change Collecting Centre" 
+                            immediate="true"
                             style="float: right;"
                             action="#{collectingCentreBillController.navigateToCollectingCenterBillingromMenu()}"></p:commandButton>
                     </f:facet>
@@ -293,7 +294,6 @@
 
                         <div class="col-6" >
 
-
                             <p:panel class="my-1">
                                 <f:facet name="header" >
                                     <h:outputText styleClass="fas fa-bullseye" /> <!-- FontAwesome Icon -->
@@ -311,6 +311,7 @@
                                         style="float: right;"
                                         value="New Bill" 
                                         icon="fa fa-plus" 
+                                        immediate="true"
                                         ajax="false" 
                                         action="#{collectingCentreBillController.navigateToCollectingCenterBillingromCollectingCenterBilling()}" 
                                         class="ui-button-warning mx-1" >
