@@ -11,6 +11,7 @@ package com.divudi.bean.inward;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.BillController;
 import com.divudi.bean.common.CommonController;
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
 
@@ -138,6 +139,8 @@ public class BhtSummeryController implements Serializable {
     BillController billController;
     @Inject
     RoomChangeController roomChangeController;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
     ////////////////////////    
     private List<DepartmentBillItems> departmentBillItems;
     private List<BillFee> profesionallFee;
@@ -205,7 +208,7 @@ public class BhtSummeryController implements Serializable {
             return null;
         }
         if (surgeryBill == null) {
-            surgeryBill=surgeryBills.get(0);
+            surgeryBill = surgeryBills.get(0);
         }
         billBhtController.resetBillData();
         billBhtController.setBills(surgeryBills);
@@ -765,7 +768,6 @@ public class BhtSummeryController implements Serializable {
             return disTot;
         }
 
-       
         PriceMatrix pm = getPriceMatrixController().getInwardMemberDisCount(getPatientEncounter().getPaymentMethod(),
                 null,
                 getPatientEncounter().getCreditCompany(), inwardChargeType, getPatientEncounter().getAdmissionType());
@@ -1282,20 +1284,19 @@ public class BhtSummeryController implements Serializable {
     }
 
     public void dischargeCancel() {
-        
-        if(getPatientEncounter().isDischarged() == false){
+
+        if (getPatientEncounter().isDischarged() == false) {
             JsfUtil.addErrorMessage("There is no discharge to cancel");
             return;
         }
-        
+
         if (getPatientEncounter().getCurrentPatientRoom() != null) {
             if (getPatientEncounter().getCurrentPatientRoom().getDischargedAt() == getPatientEncounter().getDateOfDischarge()) {
                 getPatientEncounter().getCurrentPatientRoom().setDischargedAt(null);
                 getPatientRoomFacade().edit(getPatientEncounter().getCurrentPatientRoom());
             }
         }
-        
-        
+
         patientEncounter.setDischarged(false);
         patientEncounter.setDateOfDischarge(null);
         getPatientEncounterFacade().edit(patientEncounter);
@@ -1338,8 +1339,8 @@ public class BhtSummeryController implements Serializable {
             JsfUtil.addErrorMessage("Patient Already Discharged");
             return;
         }
-        
-        if (date == null){
+
+        if (date == null) {
             JsfUtil.addErrorMessage("Please Enter the Date");
             return;
         }
@@ -1356,7 +1357,7 @@ public class BhtSummeryController implements Serializable {
         getPatientEncounter().setDateOfDischarge(date);
         getDischargeController().setCurrent((Admission) getPatientEncounter());
         getDischargeController().discharge();
-        
+
         if (getPatientEncounter().isDischarged()) {
             getPatientEncounter().getCurrentPatientRoom().setDischargedAt(getPatientEncounter().getDateOfDischarge());
             roomChangeController.discharge(getPatientEncounter().getCurrentPatientRoom());
@@ -1449,12 +1450,14 @@ public class BhtSummeryController implements Serializable {
             getIntrimPrintController().getCurrentBill().getBillItems().add(billItem);
         }
 
-        
-
         return "inward_bill_intrim_print";
     }
 
     public boolean checkBill() {
+        if (configOptionApplicationController.getBooleanValueByKey("Need to check inward bills before discharge")) {
+            return false;
+        }
+
         if (getInwardBean().checkByBillFee(getPatientEncounter(), new BilledBill(), BillType.InwardBill)) {
             JsfUtil.addErrorMessage("Some Inward Service Bills Are Not Checked ");
             return true;
@@ -1548,8 +1551,6 @@ public class BhtSummeryController implements Serializable {
         calculateDiscount();
         createPatientRooms();
         updateTotal();
-
-        
 
         return "inward_bill_final";
 
@@ -1705,7 +1706,6 @@ public class BhtSummeryController implements Serializable {
             date = null;
         }
 
-        
     }
 
     public void createTablesWithEstimatedProfessionalFees() {
@@ -1740,8 +1740,6 @@ public class BhtSummeryController implements Serializable {
         } else {
             date = null;
         }
-
-        
 
     }
 
@@ -2037,15 +2035,14 @@ public class BhtSummeryController implements Serializable {
         }
 
         if (getPatientEncounter().getCurrentPatientRoom().equals(patientRoom)) {
-            if(patientRoom.isDischarged()){
+            if (patientRoom.isDischarged()) {
                 //System.out.println("value * getInwardBean().calCount(timedFee, patientRoom.getAdmittedAt(), dischargeAt); = " + value * getInwardBean().calCount(timedFee, patientRoom.getAdmittedAt(), dischargeAt));
                 return value * getInwardBean().calCount(timedFee, patientRoom.getAdmittedAt(), dischargeAt);
-            }else{
-               // System.out.println("value * getInwardBean().calCountWithoutOverShoot(timedFee, patientRoom.getAdmittedAt(), dischargeAt) = " + value * getInwardBean().calCountWithoutOverShoot(timedFee, patientRoom.getAdmittedAt(), dischargeAt));
+            } else {
+                // System.out.println("value * getInwardBean().calCountWithoutOverShoot(timedFee, patientRoom.getAdmittedAt(), dischargeAt) = " + value * getInwardBean().calCountWithoutOverShoot(timedFee, patientRoom.getAdmittedAt(), dischargeAt));
                 return value * getInwardBean().calCountWithoutOverShoot(timedFee, patientRoom.getAdmittedAt(), dischargeAt);
             }
-            
-            
+
         } else {
             //System.out.println("value * getInwardBean().calCount(timedFee, patientRoom.getAdmittedAt(), dischargeAt) = " + value * getInwardBean().calCount(timedFee, patientRoom.getAdmittedAt(), dischargeAt));
             return value * getInwardBean().calCount(timedFee, patientRoom.getAdmittedAt(), dischargeAt);
