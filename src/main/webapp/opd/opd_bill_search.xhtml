@@ -229,12 +229,15 @@
                                             <p:outputLabel id="billTime1" value="#{bill.createdAt}" >
                                                 <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" ></f:convertDateTime>
                                             </p:outputLabel>
-                                            <p:outputLabel value="#{bill.cancelledBill.createdAt}" rendered="#{bill.cancelled}" style="color: red">
-                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" ></f:convertDateTime>
-                                            </p:outputLabel>
-                                            <p:outputLabel value="#{bill.refundedBill.createdAt}" style="color: orange">
-                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" ></f:convertDateTime>
-                                            </p:outputLabel>
+                                            <div>
+                                                <p:outputLabel value="#{bill.cancelledBill.createdAt}" rendered="#{bill.cancelled}" style="color: red">
+                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" ></f:convertDateTime>
+                                                </p:outputLabel>
+                                                <p:outputLabel value="#{bill.refundedBill.createdAt}" style="color: orange">
+                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" ></f:convertDateTime>
+                                                </p:outputLabel>
+                                            </div>
+
                                         </h:panelGroup>
 
                                         <h:panelGroup rendered="#{fn:substring(searchController.fromDate, 0, 10) ne fn:substring(searchController.toDate, 0, 10)}">
@@ -296,7 +299,7 @@
                                                     <h:outputText value="#{bill.cancelledBill.creater.webUserPerson.name}" rendered="#{bill.cancelled}"></h:outputText>
                                                     <h:outputText value="#{bill.refundedBill.creater.webUserPerson.name}" rendered="#{bill.refunded}"></h:outputText>
                                                 </h:panelGroup>
-                                                
+
                                                 <h:outputText value="Created At" ></h:outputText>
                                                 <p:spacer width="15" height="1" ></p:spacer>
                                                 <h:panelGroup>
@@ -350,9 +353,9 @@
                                             <f:setPropertyActionListener value="#{bill}" target="#{opdBillController.bill}"/>
                                         </h:commandLink>  
                                     </p:column>
-                                    
+
                                 </p:dataTable>
-                                
+
                             </div>
                         </div>
                     </p:panel>
