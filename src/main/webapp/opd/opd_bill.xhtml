@@ -748,7 +748,7 @@
                                                 <h:outputText value="Tendered" class="h5"></h:outputText>
                                             </div>
                                             <div class="col-5">
-                                                <p:inputText autocomplete="off"  id="paid" value="#{opdBillController.strTenderedValue}" class="h5">
+                                                <p:inputText autocomplete="off"  id="paid" value="#{opdBillController.strTenderedValue}" class="h5" onfocus="this.select();">
                                                     <!--<p:ajax process="netTotal paid" update="balance" event="change"/>-->
                                                     <p:ajax event="keyup" process="netTotal paid" update="balance netTotal" listener="#{opdBillController.calTotals()}"/>
                                                 </p:inputText>

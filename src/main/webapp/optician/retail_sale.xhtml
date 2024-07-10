@@ -171,8 +171,10 @@
                                             <h:outputLabel value="Bill Items" class="mx-4"></h:outputLabel>
                                         </f:facet>
 
-                                        <p:dataTable id="tblBillItem" value="#{opticianSaleController.preBill.billItems}"
-                                                     var="bi" rowIndexVar="s" editable="true" sortBy="#{bi.searialNo}" class="w-100">
+                                        <p:dataTable 
+                                            id="tblBillItem" 
+                                            value="#{opticianSaleController.preBill.billItems}"
+                                            var="bi" rowIndexVar="s" editable="true" sortBy="#{bi.searialNo}" class="w-100">
 
                                             <p:ajax event="rowEdit" listener="#{opticianSaleController.onEdit}" update="@this gros :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}" />  
                                             <p:ajax event="rowEditCancel" listener="#{opticianSaleController.onEdit}" update="@this gros :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}" /> 
@@ -260,7 +262,14 @@
                                             <p:column style="width:4%"> 
 
                                                 <p:rowEditor />  
-                                                <p:commandButton icon="fas fa-trash" action="#{opticianSaleController.removeBillItem(bi)}" class="ui-button-danger" ajax="false" >
+                                                <p:commandButton 
+                                                    id="btnDelete"
+                                                    icon="fas fa-trash" 
+                                                    value="Remove"
+                                                    action="#{opticianSaleController.removeBillItem(bi)}" 
+                                                    class="ui-button-danger" 
+                                                    process="btnDelete"
+                                                    update="tblBillItem">
 
                                                 </p:commandButton>
                                             </p:column> 
