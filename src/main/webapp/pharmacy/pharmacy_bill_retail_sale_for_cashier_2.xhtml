@@ -92,7 +92,7 @@
                                                             accesskey="i"    
                                                             id="acStock" 
                                                             value="#{pharmacySaleController2.stock}" 
-                                                            completeMethod="#{stockController.completeAvailableStocks}" 
+                                                            completeMethod="#{stockController.completeAvailableStocksWithItemStock}" 
                                                             var="i"
                                                             class="w-100"
                                                             inputStyleClass="form-control"
@@ -117,6 +117,11 @@
                                                             </p:column>
                                                             <p:column headerText="Stocks" style="padding: 8px;" styleClass="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
                                                                 <h:outputLabel value="#{i.stock}" >
+                                                                    <f:convertNumber pattern="#,###" ></f:convertNumber>
+                                                                </h:outputLabel>
+                                                            </p:column>
+                                                            <p:column headerText="Total Stock" style="padding: 8px;" styleClass="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
+                                                                <h:outputLabel value="#{i.transItemStockQty}" >
                                                                     <f:convertNumber pattern="#,###" ></f:convertNumber>
                                                                 </h:outputLabel>
                                                             </p:column>
@@ -529,7 +534,7 @@
                                             <h:panelGroup id="slip" style="display: #{pharmacySaleController2.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
                                                 <pa:slip paymentMethodData="#{pharmacySaleController2.paymentMethodData}"/>
                                             </h:panelGroup>
-                                            
+
                                             <h:panelGroup id="credit" style="display: #{pharmacySaleController2.paymentMethod ne 'Credit' ? 'none' : 'block'} ;" >
                                                 <div class="row" >
                                                     <div class="col-2">
@@ -547,7 +552,7 @@
                                                             maxResults="15"
                                                             itemLabel="#{myi.name}" 
                                                             itemValue="#{myi}">
-                                                            
+
                                                             <p:column headerText="Name" style="padding: 6px;">
                                                                 <h:outputLabel value="#{myi.name}" ></h:outputLabel>
                                                             </p:column>
@@ -809,7 +814,7 @@
                                     </h:panelGroup>
                                 </div>
                             </h:panelGroup>
-                            
+
                             <h:panelGroup id="gpBillPreviewPosHeader" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'PosHeaderPaper'}"> 
                                 <div >
                                     <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}" > 

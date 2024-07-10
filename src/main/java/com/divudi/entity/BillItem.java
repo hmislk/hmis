@@ -38,6 +38,12 @@ import javax.persistence.Transient;
 @Entity
 public class BillItem implements Serializable {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    Long id;
+
+    static final long serialVersionUID = 1L;
+
     @OneToOne(mappedBy = "billItem", fetch = FetchType.LAZY)
     BillSession billSession;
 
@@ -47,10 +53,6 @@ public class BillItem implements Serializable {
     @OneToOne(mappedBy = "billItem", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private PharmaceuticalBillItem pharmaceuticalBillItem;
 
-    static final long serialVersionUID = 1L;
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    Long id;
     Double qty = 0.0;
     @Transient
     private Double absoluteQty;
@@ -165,6 +167,8 @@ public class BillItem implements Serializable {
     private List<BillFee> proFees = new ArrayList<>();
     @OneToMany(mappedBy = "parentBillItem")
     private List<BillItem> chiledBillItems;
+
+    
 
     @Transient
     double transCCFee;
@@ -908,6 +912,8 @@ public class BillItem implements Serializable {
         this.previousRecieveFreeQtyInUnit = previousRecieveFreeQtyInUnit;
     }
 
+    
+    
     @Transient
     private void calculateFeeTotals() {
         totalHospitalFeeValueTransient = 0.0;
@@ -952,5 +958,6 @@ public class BillItem implements Serializable {
         return totalProcedureFeeValueTransient;
     }
 
+   
 
 }

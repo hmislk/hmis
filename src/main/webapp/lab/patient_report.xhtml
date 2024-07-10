@@ -575,8 +575,7 @@
                                             </ui:repeat>
                                             <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
                                                 <div style="#{prv.investigationItem.cssStyle}; position:absolute;">
-                                                    <h:outputLabel value="#{prv.doubleValue}" rendered="#{prv.investigationItem.ixItemType eq 'Calculation' }" escape="false" >
-                                                        <f:convertNumber pattern="0.0" />
+                                                    <h:outputLabel value="#{prv.displayValue}" rendered="#{prv.investigationItem.ixItemType eq 'Calculation' }" escape="false" >
                                                     </h:outputLabel>
                                                 </div>
                                             </ui:repeat>

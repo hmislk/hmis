@@ -627,7 +627,20 @@
                                     action="/pharmacy/pharmacy_transfer_request?faces-redirect=true"  
                                     value="Request" 
                                     actionListener="#{searchController.makeListNull()}" 
-                                    rendered="#{webUserController.hasPrivilege('PharmacyDisbursementRequest')}" 
+                                    rendered="#{webUserController.hasPrivilege('PharmacyDisbursementRequest') and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Transer Request With Approval')}" 
+                                    icon="fas fa-hand-holding-medical"></p:menuitem>
+                        
+                        <p:menuitem ajax="false" 
+                                    action="#{searchController.navigateToCreateTransferRequest}"  
+                                    value="Create Transer Request" 
+                                    actionListener="#{searchController.makeListNull()}" 
+                                    rendered="#{webUserController.hasPrivilege('PharmacyDisbursementRequest') and configOptionApplicationController.getBooleanValueByKey('Pharmacy Transer Request With Approval')}" 
+                                    icon="fas fa-hand-holding-medical"></p:menuitem>
+                        <p:menuitem ajax="false" 
+                                    action="/pharmacy/pharmacy_transfer_request_list_search_for_approval?faces-redirect=true"  
+                                    value="Search Transer Request" 
+                                    actionListener="#{searchController.makeListNull()}" 
+                                    rendered="#{webUserController.hasPrivilege('PharmacyDisbursementRequest') and configOptionApplicationController.getBooleanValueByKey('Pharmacy Transer Request With Approval')}" 
                                     icon="fas fa-hand-holding-medical"></p:menuitem>
 
                         <p:menuitem ajax="false" 
@@ -648,10 +661,17 @@
                                     action="/pharmacy/pharmacy_transfer_issued_list?faces-redirect=true"  
                                     value="Receive" 
                                     actionListener="#{searchController.makeListNull()}" 
-                                    rendered="#{webUserController.hasPrivilege('PharmacyDisbursementRecieve')}" 
+                                    rendered="#{webUserController.hasPrivilege('PharmacyDisbursementRecieve') and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Receive With Approval')}"
                                     icon="fas fa-truck-loading"></p:menuitem>
 
                         <p:menuitem ajax="false" 
+                                    action="/pharmacy/pharmacy_transfer_issued_list_with_approval?faces-redirect=true"
+                                    value="Receive With Approval"
+                                    actionListener="#{searchController.makeListNull()}"
+                                    rendered="#{webUserController.hasPrivilege('PharmacyDisbursementRecieve') and configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Receive With Approval')}"
+                                    icon="fas fa-truck-loading"></p:menuitem>
+
+                        <p:menuitem ajax="false"
                                     action="/pharmacy/pharmacy_report_transfer?faces-redirect=true"  
                                     value="Reports" 
                                     actionListener="#{searchController.makeListNull()}" 
@@ -921,13 +941,13 @@
                     </p:menuitem>
                 </p:submenu>
 
-                <p:submenu id="smOpdOphthalmology"  icon="fa fa-eye" >
-                    <p:menuitem value="Patient Management" action="#{ophthalmologyController.navigateToOphthalmologyPatientManagement()}" ajax="false" icon="fa fa-users" />
-                    <p:menuitem value="Appointment Management" action="#{ophthalmologyController.navigateToOphthalmologyAppointmentManagement()}" ajax="false" icon="fa fa-calendar-alt" />
-                    <p:menuitem value="Retail Sale" action="#{ophthalmologySaleController.navigateToPharmacyRetailSale()}" ajax="false" icon="fa fa-shopping-cart" />
-                    <p:menuitem value="Repair Management" action="#{ophthalmologyRepairBillController.navigateToNewOpdBill()}" ajax="false" icon="fa fa-tools" />
-                    <p:menuitem value="Stock Management" action="#{ophthalmologyController.navigateToOphthalmologyStockManagement()}" ajax="false" icon="fa fa-warehouse" />
-                    <p:menuitem value="Product Catalog" action="#{ophthalmologyController.navigateToOphthalmologyProductCatalog()}" ajax="false" icon="fa fa-book-open" />
+                <p:submenu id="smOpdOptician"  icon="fa fa-eye" >
+                    <p:menuitem value="Patient Management" action="#{opticianController.navigateToOpticianPatientManagement()}" ajax="false" icon="fa fa-users" />
+                    <p:menuitem value="Appointment Management" action="#{opticianController.navigateToOpticianAppointmentManagement()}" ajax="false" icon="fa fa-calendar-alt" />
+                    <p:menuitem value="Retail Sale" action="#{opticianSaleController.navigateToPharmacyRetailSale()}" ajax="false" icon="fa fa-shopping-cart" />
+                    <p:menuitem value="Repair Management" action="#{opticianRepairBillController.navigateToNewOpdBill()}" ajax="false" icon="fa fa-tools" />
+                    <p:menuitem value="Stock Management" action="#{opticianController.navigateToOpticianStockManagement()}" ajax="false" icon="fa fa-warehouse" />
+                    <p:menuitem value="Product Catalog" action="#{opticianController.navigateToOpticianProductCatalog()}" ajax="false" icon="fa fa-book-open" />
                 </p:submenu>
 
 
@@ -938,7 +958,19 @@
                         value="Financial Transaction Manager" 
                         rendered="#{webUserController.hasPrivilege('PaymentBilling')}" >
                     </p:menuitem>
-                    <p:submenu label="Pay"
+                    <p:menuitem  
+                        ajax="false"  
+                        action="/payments/pay_index?faces-redirect=true"
+                        value="Cash To Pay" 
+                        rendered="#{webUserController.hasPrivilege('PaymentBilling')}" >
+                    </p:menuitem>
+                    <p:menuitem  
+                        ajax="false"  
+                        action="/payments/recieve_index?faces-redirect=true"
+                        value="Cash For Receive" 
+                        rendered="#{webUserController.hasPrivilege('Payment')}" >
+                    </p:menuitem>
+<!--                    <p:submenu label="Pay"
                                rendered="#{webUserController.hasPrivilege('Payment')}">
                         <p:submenu label="OPD">
                             <p:menuitem  ajax="false"  action="/payment_staff_bill?faces-redirect=true" value="Pay Doctor/Staff" rendered="#{webUserController.hasPrivilege('PaymentBilling')}" ></p:menuitem>
@@ -972,7 +1004,7 @@
                             <p:menuitem  ajax="false"  action="/petty_cash_bill_search_own?faces-redirect=true" actionListener="#{searchController.makeListNull}"  value="Petty Cash Bill Search"  ></p:menuitem>
                             <p:menuitem  ajax="false"  action="/iou_bill?faces-redirect=true" value="Petty Cash (IOU)"  ></p:menuitem>
                         </p:submenu>
-                    </p:submenu>
+                    </p:submenu>-->
 
                     <p:submenu label="Recieve"  rendered="#{webUserController.hasPrivilege('Payment')}">  
                         <p:submenu label="Inward Deposit">
@@ -1028,9 +1060,9 @@
                                          actionListener="#{searchController.makeListNull}"  value="Collecting Centre Bill Search"  ></p:menuitem>
                         </p:submenu>
 
-                        <p:submenu label="Patient Deposit"  rendered="#{webUserController.hasPrivilege('Payment')}">
+                        <p:menuitem  value="Patient Deposit"  rendered="#{webUserController.hasPrivilege('Payment')}" action="/payments/patient/receive?faces-redirect=true" actionListener="#{patientController.clearDataForPatientDeposite()}">
 
-                        </p:submenu>
+                        </p:menuitem >
 
                     </p:submenu>
 
@@ -1189,7 +1221,7 @@
                     </p:menuitem>
                     <p:menuitem  
                         ajax="false"  
-                        action="#{itemController.toManageItemdIndex()}" 
+                        action="#{itemController.toManageItemIndex()}" 
                         value="Manage Items" 
                         icon="fa fa-list"
                         rendered="#{webUserController.hasPrivilege('AdminItems')}" >

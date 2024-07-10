@@ -51,6 +51,8 @@ public class WebUserRoleController implements Serializable {
         return "/admin/users/user_roles?faces-redirect=true";
     }
     
+  
+    
     public String navigateToManageWebUserRolePrivileges(){
         if(current==null){
             JsfUtil.addErrorMessage("Select a role");
@@ -132,6 +134,8 @@ public class WebUserRoleController implements Serializable {
         m.put("ret", false);
         return getFacade().findByJpql(jpql, m);
     }
+    
+
     
     public WebUserRoleFacade getEjbFacade() {
         return ejbFacade;

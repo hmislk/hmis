@@ -52,6 +52,7 @@ import com.divudi.facade.StockFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.opd.OpdBillController;
 import com.divudi.bean.pharmacy.PharmacyBillSearch;
+import com.divudi.bean.pharmacy.TransferRequestController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillFinanceType;
 import com.divudi.data.BillTypeAtomic;
@@ -151,6 +152,8 @@ public class SearchController implements Serializable {
     PharmacyBillSearch pharmacyBillSearch;
     @Inject
     OpdBillController opdBillController;
+    @Inject
+    TransferRequestController transferRequestController;
 
     /**
      * Properties
@@ -251,6 +254,7 @@ public class SearchController implements Serializable {
     private double totalOfOtherPayments;
     private double billCount;
     private Token token;
+    private int managePaymentIndex = -1;
 
     private boolean duplicateBillView;
 
@@ -641,6 +645,12 @@ public class SearchController implements Serializable {
         patientInvestigations = null;
         searchKeyword = null;
         printPreview = false;
+    }
+    
+    public String navigateToCreateTransferRequest(){
+        makeListNull();
+        transferRequestController.recreate();
+        return "/pharmacy/pharmacy_transfer_request_save?faces-redirect=true";
     }
 
     public String navigateToSearchOpdBillsOfLoggedDepartment() {
@@ -1498,6 +1508,14 @@ public class SearchController implements Serializable {
 
     public void setDuplicateBillView(boolean duplicateBillView) {
         this.duplicateBillView = duplicateBillView;
+    }
+
+    public int getManagePaymentIndex() {
+        return managePaymentIndex;
+    }
+
+    public void setManagePaymentIndex(int managePaymentIndex) {
+        this.managePaymentIndex = managePaymentIndex;
     }
 
     public class billsWithbill {
@@ -2954,12 +2972,46 @@ public class SearchController implements Serializable {
         tmp.put("fromDate", getFromDate());
         tmp.put("toDep", getSessionController().getDepartment());
         tmp.put("bct", bct);
-        tmp.put("bTp", BillType.PharmacyTransferRequest);
+        tmp.put("bTp", billTypeAtomic.PHARMACY_TRANSFER_REQUEST);
 
         sql = "Select b From Bill b where "
                 + " b.retired=false and  b.toDepartment=:toDep"
                 + " and b.billClassType not in :bct"
-                + " and b.billType= :bTp and b.createdAt between :fromDate and :toDate ";
+                + " and b.billTypeAtomic= :bTp and b.createdAt between :fromDate and :toDate ";
+
+        if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
+            sql += " and  ((b.deptId) like :billNo )";
+            tmp.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getDepartment() != null && !getSearchKeyword().getDepartment().trim().equals("")) {
+            sql += " and  ((b.department.name) like :dep )";
+            tmp.put("dep", "%" + getSearchKeyword().getDepartment().trim().toUpperCase() + "%");
+        }
+
+        sql += " order by b.createdAt desc  ";
+
+        bills = getBillFacade().findByJpql(sql, tmp, TemporalType.TIMESTAMP, 50);
+
+        for (Bill b : bills) {
+            b.setListOfBill(getIssudBills(b));
+        }
+
+    }
+    
+    public void fillSavedTranserRequestBills() {
+        Date startTime = new Date();
+        String sql;
+
+        HashMap tmp = new HashMap();
+        tmp.put("toDate", getToDate());
+        tmp.put("fromDate", getFromDate());
+        tmp.put("dep", getSessionController().getDepartment());
+        tmp.put("bTp", BillTypeAtomic.PHARMACY_TRANSFER_REQUEST_PRE);
+
+        sql = "Select b From Bill b where "
+                + " b.retired=false and  b.department=:dep"
+                + " and b.billTypeAtomic= :bTp and b.createdAt between :fromDate and :toDate ";
 
         if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
             sql += " and  ((b.deptId) like :billNo )";
@@ -4377,18 +4429,19 @@ public class SearchController implements Serializable {
         temMap.put("btpc", BillType.CollectingCentreBill);
 
         billFees = getBillFeeFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 50);
-        List<BillFee> removeingBillFees = new ArrayList<>();
-        for (BillFee bf : billFees) {
-            sql = "SELECT bi FROM BillItem bi where bi.retired=false and bi.referanceBillItem.id=" + bf.getBillItem().getId();
-            BillItem rbi = getBillItemFacade().findFirstByJpql(sql);
-
-            if (rbi != null) {
-                removeingBillFees.add(bf);
-            }
-
-        }
-        billFees.removeAll(removeingBillFees);
-        calTotal();
+//        List<BillFee> removeingBillFees = new ArrayList<>();
+//        for (BillFee bf : billFees) {
+//            System.out.println("bf = " + bf.getFee().getFee());
+//            sql = "SELECT bi FROM BillItem bi where bi.retired=false and bi.referanceBillItem.id=" + bf.getBillItem().getId();
+//            BillItem rbi = getBillItemFacade().findFirstByJpql(sql);
+//            System.out.println("rbi = " + rbi.getItem().getName());
+//            if (rbi != null) {
+//                removeingBillFees.add(bf);
+//            }
+//
+//        }
+//        billFees.removeAll(removeingBillFees);
+//        calTotal();
 
     }
 
@@ -6830,6 +6883,16 @@ public class SearchController implements Serializable {
         if (dep != null) {
             sql += " and bill.department=:dep ";
             temMap.put("dep", dep);
+        }
+        
+        if (getInstitution() != null) {
+            sql += " and  ((bill.fromInstitution) =:ccName )";
+            temMap.put("ccName", getInstitution());
+        }
+        
+        if (getSearchKeyword().getCode()!= null && !getSearchKeyword().getCode().trim().equals("")) {
+            sql += " and  ((bill.fromInstitution.institutionCode) like :code )";
+            temMap.put("code", "%" + getSearchKeyword().getCode().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {

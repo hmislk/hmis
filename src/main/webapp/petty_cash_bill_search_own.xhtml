@@ -10,9 +10,10 @@
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form>
-                    <p:panel header="Search Bills" >
-                        <f:facet name="header" >
-
+                    <p:panel>
+                         <f:facet name="header">
+                            <h:outputLabel value="Petty Cash Bill Search"/>
+                            <p:commandButton value="Back" icon="fas fa-arrow-left" class="ui-button-warning" style="float: right;" action="/payments/pay_index?faces-redirect=true" ajax="false"/>     
                         </f:facet>
 
                         <div class="row">
