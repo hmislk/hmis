@@ -1663,6 +1663,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             return false;
         }
         savePatient();
+        bills = new ArrayList<>();
 //        int numberOfBillsForTheOrder = getBillBean().calculateNumberOfBillsPerOrder(getLstBillEntries());
 
         boolean oneOpdBillForAllDepartments = configOptionApplicationController.getBooleanValueByKey("One OPD Bill For All Departments and Categories", true);
@@ -1912,10 +1913,20 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     StaffBean staffBean;
 
     private void saveBillItemSessions() {
+        System.out.println("saveBillItemSessions");
         for (BillEntry be : lstBillEntries) {
-            be.getBillItem().setBillSession(getServiceSessionBean().createBillSession(be.getBillItem()));
+            System.out.println("be = " + be);
+            BillSession newlyCreatedBillItemSession;
+            newlyCreatedBillItemSession = getServiceSessionBean().createBillSession(be.getBillItem());
+            System.out.println("newlyCreatedBillItemSession = " + newlyCreatedBillItemSession);
+            be.getBillItem().setBillSession(newlyCreatedBillItemSession);
             if (be.getBillItem().getBillSession() != null) {
+                System.out.println("be.getBillItem().getBillSession() = " + be.getBillItem().getBillSession().getSerialNo());
                 getBillSessionFacade().create(be.getBillItem().getBillSession());
+            }
+            if (be.getBillItem().getBill().getSingleBillSession() == null) {
+                be.getBillItem().getBill().setSingleBillSession(newlyCreatedBillItemSession);
+                billFacade.edit(be.getBillItem().getBill());
             }
         }
     }
@@ -2565,10 +2576,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         BillItem bi = new BillItem();
         bi.copy(getCurrentBillItem());
         bi.setSessionDate(sessionDate);
-//        New Session
-        //   getCurrentBillItem().setBillSession(getServiceSessionBean().createBillSession(getCurrentBillItem()));
-//        New Session
-        //   getCurrentBillItem().setBillSession(getServiceSessionBean().createBillSession(getCurrentBillItem()));
         lastBillItem = bi;
         BillEntry addingEntry = new BillEntry();
         addingEntry.setBillItem(bi);
