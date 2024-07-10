@@ -52,8 +52,6 @@ public class Stock implements Serializable {
     private Double transItemStockQty;
     
 
-    @Transient
-    private Double transItemStockQty;
 
  
     public List<Stock> getChildStocks() {
