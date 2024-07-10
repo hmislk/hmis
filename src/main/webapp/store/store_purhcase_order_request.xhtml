@@ -78,6 +78,7 @@
                             <p:spacer height="50"/>
                             <st:history/>
                         </div>
+                        <!--started-->
                         <div class="col-3">
                             <p:panel>
                                 <f:facet name="header">
@@ -85,10 +86,11 @@
                                     <p:outputLabel value="Purchase Order"/>
                                 </f:facet>
 
-                                <p:spacer height="5" />
-                                <h:panelGrid columns="2">
+                                <p:spacer height="5" /> 
+                                <h:panelGrid columns="1" class="flex-column justify-content-between">
                                     <h:outputLabel value="Supplier"></h:outputLabel>
-                                    <p:autoComplete converter="deal" 
+                                    <p:autoComplete styleClass="width: 400px; my-1"
+                                                    converter="deal" 
                                                     value="#{storePurchaseOrderRequestController.currentBill.toInstitution}"  
                                                     forceSelection="true"
                                                     completeMethod="#{storeDealorController.completeDealor}"
@@ -96,14 +98,14 @@
                                         <f:ajax event="itemSelect" execute="@this" render=":#{p:resolveFirstComponentWithId('exDItem',view).clientId}" listener="#{storePurchaseOrderRequestController.setInsListener}"/>
                                     </p:autoComplete>
                                     <h:outputLabel value="Select Payment Method"/>
-                                    <p:selectOneMenu   id="cmbPs" value="#{storePurchaseOrderRequestController.currentBill.paymentMethod}">    
-                                        <f:selectItem itemLabel="SelectPayment method"/>
+                                    <p:selectOneMenu   id="cmbPs" styleClass="width: 200px; my-1" value="#{storePurchaseOrderRequestController.currentBill.paymentMethod}">    
+                                        <f:selectItem itemLabel="Select Payment Method"/>
                                         <f:selectItems value="#{enumController.paymentMethodsForPo}"/>
                                     </p:selectOneMenu>
                                     <h:outputLabel value="Qutation Number"/>
                                     <p:inputText value="#{storePurchaseOrderRequestController.currentBill.qutationNumber}"/>
                                     <h:outputLabel value="Total "/>
-                                    <p:outputLabel id="tot" style="font-weight: bold;" value="#{storePurchaseOrderRequestController.currentBill.netTotal}">
+                                    <p:outputLabel id="tot" style="font-weight: bold; " value="#{storePurchaseOrderRequestController.currentBill.netTotal}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </p:outputLabel>
                                 </h:panelGrid>
@@ -150,11 +152,11 @@
                                                        rendered="#{vt.class eq 'class com.divudi.entity.pharmacy.Ampp'}"/>                            
                                     </p:column>
                                 </p:selectOneMenu>
-                                <p:commandButton value="Add Item" class="mx-1 ui-button-success" action="#{storePurchaseOrderRequestController.addItem}" process="exDItem @this" update="exDItem :#{p:resolveFirstComponentWithId('itemList',view).clientId} :#{p:resolveFirstComponentWithId('tot',view).clientId} " />
+                                <p:commandButton value="Add Item" class="mx-1 my-2 ui-button-success" action="#{storePurchaseOrderRequestController.addItem}" process="exDItem @this" update="exDItem :#{p:resolveFirstComponentWithId('itemList',view).clientId} :#{p:resolveFirstComponentWithId('tot',view).clientId} " />
                                 <p:outputLabel 
                                     for="exItem" 
                                     class="form-label w-100"
-                                    value="Select An Item and Add" ></p:outputLabel>
+                                    value="Select an Item and Add" ></p:outputLabel>
                                 <p:autoComplete id="exItem" value="#{storePurchaseOrderRequestController.currentBillItem.item}"
                                                 forceSelection="true"
                                                 class="w-75"
@@ -172,7 +174,7 @@
                                                        rendered="#{vt.class eq 'class com.divudi.entity.pharmacy.Ampp'}"/>                            
                                     </p:column>
                                 </p:autoComplete>
-                                <p:commandButton value="Add Item" class="mx-1 ui-button-success"  action="#{storePurchaseOrderRequestController.addItem}" process="exItem @this" update="exItem :#{p:resolveFirstComponentWithId('itemList',view).clientId} :#{p:resolveFirstComponentWithId('tot',view).clientId}" />
+                                <p:commandButton value="Add Item" class="mx-1  my-2 ui-button-success"  action="#{storePurchaseOrderRequestController.addItem}" process="exItem @this" update="exItem :#{p:resolveFirstComponentWithId('itemList',view).clientId} :#{p:resolveFirstComponentWithId('tot',view).clientId}" />
 
 
                             </p:panel>
