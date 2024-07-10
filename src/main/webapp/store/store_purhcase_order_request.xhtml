@@ -87,9 +87,10 @@
                                 </f:facet>
 
                                 <p:spacer height="5" /> 
-                                <h:panelGrid columns="1" class="flex-column justify-content-between">
+                                <h:panelGrid columns="2" class="flex-column justify-content-between w-100">
                                     <h:outputLabel value="Supplier"></h:outputLabel>
-                                    <p:autoComplete styleClass="width: 400px; my-1"
+                                    <p:autoComplete class="w-100"
+                                                    inputStyleClass="w-100"
                                                     converter="deal" 
                                                     value="#{storePurchaseOrderRequestController.currentBill.toInstitution}"  
                                                     forceSelection="true"
@@ -98,12 +99,12 @@
                                         <f:ajax event="itemSelect" execute="@this" render=":#{p:resolveFirstComponentWithId('exDItem',view).clientId}" listener="#{storePurchaseOrderRequestController.setInsListener}"/>
                                     </p:autoComplete>
                                     <h:outputLabel value="Select Payment Method"/>
-                                    <p:selectOneMenu   id="cmbPs" styleClass="width: 200px; my-1" value="#{storePurchaseOrderRequestController.currentBill.paymentMethod}">    
+                                    <p:selectOneMenu   id="cmbPs" class="w-100" value="#{storePurchaseOrderRequestController.currentBill.paymentMethod}">    
                                         <f:selectItem itemLabel="Select Payment Method"/>
                                         <f:selectItems value="#{enumController.paymentMethodsForPo}"/>
                                     </p:selectOneMenu>
                                     <h:outputLabel value="Qutation Number"/>
-                                    <p:inputText value="#{storePurchaseOrderRequestController.currentBill.qutationNumber}"/>
+                                    <p:inputText class="w-100" value="#{storePurchaseOrderRequestController.currentBill.qutationNumber}"/>
                                     <h:outputLabel value="Total "/>
                                     <p:outputLabel id="tot" style="font-weight: bold; " value="#{storePurchaseOrderRequestController.currentBill.netTotal}">
                                         <f:convertNumber pattern="#,##0.00"/>
@@ -203,7 +204,7 @@
                                 </p:commandButton>
                                 <p:commandButton ajax="false"  value="New Order" 
                                                  icon="pi pi-plus" 
-                                                 class="ui-button-warning m-1"
+                                                 class="ui-button-warning"
                                                  action="#{storePurchaseOrderRequestController.recreate}"/>
                             </div>
                         </div>
@@ -276,9 +277,9 @@
                                                 <tr style="border: 1px solid black;">
                                                     <td style="border: 1px solid black;"><h:outputLabel value="#{bi.item.code}"/></td>
                                                     <td style="border: 1px solid black;"><h:outputLabel value="#{bi.item.name}"/></td>
-                                                    <td style="text-align: right; border: 1px solid black;">
-                                                        <h:outputLabel value="#{bi.pharmaceuticalBillItem.qty}">
-                                                            <f:convertNumber pattern="#,##0"/>
+                                                    <td style="text-align: right; border: 1px solid black;" >
+                                                        <h:outputLabel  value="#{bi.pharmaceuticalBillItem.qty}">
+                                                            <f:convertNumber pattern="#,##0" />
                                                         </h:outputLabel>
                                                     </td>
                                                     <td style="text-align: right; border: 1px solid black;">
