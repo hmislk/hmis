@@ -146,6 +146,7 @@
                                                     autocomplete="off" 
                                                     class="w-100 m-1"
                                                     value="#{opdBillController.currentBillItem.qty}" >
+                                                    <f:convertNumber pattern="#" ></f:convertNumber>
                                                 </p:inputText>
                                             </h:panelGrid>
                                             <p:commandButton 
@@ -680,7 +681,10 @@
                                                                     listener="#{opdBillController.calTotals()}"
                                                                     execute="@this" 
                                                                     render=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}  :#{p:resolveFirstComponentWithId('tblRequests',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId}" />
-                                                            </p:autoComplete> 
+                                                            </p:autoComplete>
+                                                            
+                                                            <p:inputText  ></p:inputText>
+                                                            
                                                             <p:commandLink 
                                                                 id="btnAddNewCreditCom" 
                                                                 value="(+)"
