@@ -28,6 +28,7 @@
                 <p:calendar value="#{cc.attrs.paymentMethodData.slip.date}" pattern="#{sessionController.applicationPreference.longDateFormat}" id="date" class="mx-2">                            
                     <p:ajax process="@this" ></p:ajax>
                 </p:calendar>
+                <p:inputText value="#{cc.attrs.paymentMethodData.slip.comment}" placeholder="Enter Slip Comments" ></p:inputText>
                 <p:watermark value="Date" for="date"/>
             </div>
         </div>
