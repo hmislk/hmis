@@ -1529,6 +1529,14 @@ public class CollectingCentreBillController implements Serializable, ControllerW
 
     public String navigateToCollectingCenterBillingromCollectingCenterBilling() {
         prepareNewBillKeepingCollectingCenter();
+        fillAvailableAgentReferanceNumbers(collectingCentre);
+        setPatient(getPatient());
+        return "/collecting_centre/bill?faces-redirect=true";
+    }
+    
+    public String navigateToCollectingCenterBillingfromBillPriview() {
+        prepareNewBillKeepingCollectingCenter();
+        fillAvailableAgentReferanceNumbers(collectingCentre);
         setPatient(getPatient());
         return "/collecting_centre/bill?faces-redirect=true";
     }
