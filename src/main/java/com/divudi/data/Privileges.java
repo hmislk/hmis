@@ -471,6 +471,7 @@ public enum Privileges {
     AutoOrderQModal,
     DirectPurchase,
     PurchaseOrdersApprovel,
+    TransferReciveApproval,
     GoodsRecipt,
     ReturnReceviedGoods,
     ReturnWithoutRecipt,
