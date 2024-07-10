@@ -20,7 +20,7 @@
                             value="Settle" 
                             action="#{storeGrnController.settle}"
                             class="ui-button-success"
-                            icon="fas fa-check"
+                            icon="pi pi-check"
                             ajax="false"  
                             style="float: right;">
                         </p:commandButton> 
@@ -55,7 +55,7 @@
                                 </div>
                             </div>
                         </h:panelGroup>
-                    </h:panelGrid>
+                    </h:panelGrid><br/>
 
 
 
@@ -110,7 +110,7 @@
                             <h:outputLabel value="#{bi.referanceBillItem.pharmaceuticalBillItem.freeQtyInUnit}"/>
                         </p:column>  
 
-                        <p:column headerText="Recieved Free">   
+                        <p:column headerText="Received Free">   
                             <p:cellEditor>  
                                 <f:facet name="output">  
                                     <h:outputLabel id="freeQty" value="#{bi.pharmaceuticalBillItem.freeQtyInUnit}"/>
@@ -223,8 +223,8 @@
                     <p:panel>
                         <p:panelGrid columns="3" style="min-width: 100%">
 
-                            <p:panelGrid columns="2">
-                                <p:outputLabel value="Invoice No : "/>
+                            <p:panelGrid columns="1">
+                                <p:outputLabel value="Invoice No  "/>
                                 <p:inputText autocomplete="off" value="#{storeGrnController.grnBill.invoiceNumber}" />
                                 <p:outputLabel value="Invoice Date"/>
                                 <p:calendar  value="#{storeGrnController.grnBill.invoiceDate}"   navigator="true" pattern="#{sessionController.applicationPreference.shortDateFormat}" /> 
@@ -245,14 +245,18 @@
                                     </p:autoComplete>
                                     <p:inputText autocomplete="off" id="txtExpense"
                                                  styleClass="numericTxt" 
-                                                 value="#{storeGrnController.currentExpense.rate}" style="width:100%" />  
-                                    <p:inputText maxlength="250" value="#{storeGrnController.currentExpense.descreption}" ></p:inputText>
-                                    <p:commandButton id="btnAddExpense" value="Add Expense" 
+                                                 value="#{storeGrnController.currentExpense.rate}" style="width:70%" />  
+                                    <p:inputText maxlength="250" 
+                                                 style="width: 450px; text-align: left;"
+                                                 value="#{storeGrnController.currentExpense.descreption}" >
+                                    </p:inputText>
+                                    <p:commandButton id="btnAddExpense" 
+                                                     value="Add Expense" 
+                                                     icon="fas fa-plus"
                                                      action="#{storeGrnController.addExpense()}" 
                                                      process="billExpenseGrid" 
                                                      update="tblExpenses billExpenseGrid tot focusExpense "/>
-                                </h:panelGrid>
-
+                                </h:panelGrid><br/>
                                 <p:dataTable id="tblExpenses" 
                                              value="#{storeGrnController.billExpenses}" var="be"
                                              emptyMessage="No Bill Expenses">
@@ -267,8 +271,12 @@
                                     <p:column headerText="Descreption" >
                                         <h:outputLabel value="#{be.descreption}" ></h:outputLabel>
                                     </p:column>
-                                    <p:column headerText="Remove" >
-                                        <p:commandButton value="Remove" ajax="false" action="#{storeGrnController.removeItemEx(be)}"/>
+                                    <p:column headerText="Action" >
+                                        <p:commandButton 
+                                                         icon="fas fa-trash"
+                                                         ajax="false" 
+                                                         action="#{storeGrnController.removeItemEx(be)}"
+                                                         class="ui-button-Danger"/>
                                     </p:column>
                                 </p:dataTable>
                             </p:panel>
