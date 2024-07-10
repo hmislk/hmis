@@ -344,6 +344,7 @@
 
 
                                 </f:facet>
+                                
                                 <div class="row">
                                     <div class="col-md-3">
                                         <p:outputLabel value="Reference No" class="mr-4"></p:outputLabel>
@@ -368,22 +369,31 @@
                                         </h:outputLabel>
                                     </div>
                                     <div class="col-md-3">
-                                        <h:outputLabel   id="ballance3" value="Max Credit Limit" class="my-1"/>    
+                                        <h:outputLabel id="ballance3" value="Available Balance" class="my-1"/>    
                                     </div>
                                     <div class="col-md-9">
-                                        <h:outputLabel class="my-1" id="ballance4" value="#{collectingCentreBillController.collectingCentre.maxCreditLimit}">
+                                        <h:outputLabel class="my-1" id="ballance4" value="#{collectingCentreBillController.collectingCentre.allowedCreditLimit + collectingCentreBillController.collectingCentre.ballance}">
                                             <f:convertNumber  pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </div>
                                     <div class="col-md-3">
-                                        <h:outputLabel id="ballance5" value="Credit Limit"  class="my-1" />
+                                        <h:outputLabel id="ballance5" value="Allowed Credit Limit"  class="my-1" />
                                     </div>
                                     <div class="col-md-9">
-                                        <h:outputLabel class="my-1" id="ballance6" value="#{collectingCentreBillController.collectingCentre.allowedCredit}">
+                                        <h:outputLabel class="my-1" id="ballance6" value="#{collectingCentreBillController.collectingCentre.allowedCreditLimit}">
+                                            <f:convertNumber  pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <h:outputLabel id="ballance7" value="Max Credit Limit"  class="my-1" />
+                                    </div>
+                                    <div class="col-md-9">
+                                        <h:outputLabel class="my-1" id="ballance8" value="#{collectingCentreBillController.collectingCentre.maxCreditLimit}">
                                             <f:convertNumber  pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </div>
                                 </div>
+                                
                                 <h:panelGrid columns="2" class="w-100 ">
                                     <p:dataTable 
                                         class="mt-2"
