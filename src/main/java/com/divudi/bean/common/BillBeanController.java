@@ -8,6 +8,7 @@ package com.divudi.bean.common;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.collectingCentre.CollectingCentreBillController;
 import com.divudi.bean.inward.InwardBeanController;
+import com.divudi.data.BillFeeBundleEntry;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
 import com.divudi.data.OpdBillingStrategy;
@@ -3506,6 +3507,31 @@ public class BillBeanController implements Serializable {
 
         }
         return t;
+    }
+
+    public List<BillFeeBundleEntry> bundleFeesByName(List<BillFee> fs) {
+        Map<String, BillFeeBundleEntry> map = new HashMap<>();
+        for (BillFee f : fs) {
+            String name = f.getFee().getName().toLowerCase();
+            if (!map.containsKey(name)) {
+                BillFeeBundleEntry entry = new BillFeeBundleEntry();
+                entry.setSelectedBillFee(f);
+                entry.setAvailableBillFees(new ArrayList<>());
+                map.put(name, entry);
+            }
+            map.get(name).getAvailableBillFees().add(f);
+        }
+        return new ArrayList<>(map.values());
+    }
+
+    public List<BillFee> billFeesSelected(List<BillFeeBundleEntry> bundledBillFees) {
+        List<BillFee> selectedFees = new ArrayList<>();
+        for (BillFeeBundleEntry entry : bundledBillFees) {
+            if (entry.getSelectedBillFee() != null) {
+                selectedFees.add(entry.getSelectedBillFee());
+            }
+        }
+        return selectedFees;
     }
 
     public List<BillFee> billFeefromBillItem(BillItem billItem) {

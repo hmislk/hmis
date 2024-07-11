@@ -71,18 +71,11 @@
             <div >
 
                 <p:dataTable rowIndexVar="rowIndex" value="#{cc.attrs.bill.billItems}" var="bip" >
-                    <p:column>
+                    <p:column width="500">
                         <f:facet name="header">Item</f:facet>
                         <h:outputText value="#{bip.item.name}" ></h:outputText>
                         <h:outputText value=" (#{bip.item.code})" ></h:outputText>
-                    </p:column>
-                    <p:column >
-                        <f:facet name="header">Expiry</f:facet>
-                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.doe}">
-                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
-                        </h:outputLabel>
-                    </p:column>                                 
-
+                    </p:column>                                          
                     <p:column >
                         <f:facet name="header">QTY</f:facet>
                             #{bip.pharmaceuticalBillItem.qty}
@@ -98,12 +91,7 @@
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
-                    <p:column>
-                        <f:facet name="header">Last P.R.</f:facet>
-                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.lastPurchaseRate}">
-                            <f:convertNumber pattern="#,##0.00" />
-                        </h:outputLabel>
-                    </p:column>
+                    
                     <p:column>
                         <f:facet name="header">P. Value</f:facet>
                         <h:outputLabel value="#{bip.pharmaceuticalBillItem.purchaseRate*bip.pharmaceuticalBillItem.qty}">
@@ -124,15 +112,10 @@
                         </h:outputLabel>
                     </p:column>
 
-                    <p:column rendered="#{webUserController.hasPrivilege('PharmacyPurchaseWh')}">
-                        <f:facet name="header">Whole S.P</f:facet>
-                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.wholesaleRate}">
-                            <f:convertNumber pattern="#,##0.00" />
-                        </h:outputLabel>
-                    </p:column>
+                  
                     <p:columnGroup type="footer">
                         <p:row>
-                            <p:column colspan="6" footerText="Total"/>
+                            <p:column colspan="4" footerText="Total"/>
                             <p:column footerText="#{0-cc.attrs.bill.total}" >
                                 <f:facet name="footer">
                                     <h:outputLabel value="#{0-cc.attrs.bill.total}">

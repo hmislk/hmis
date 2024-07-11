@@ -50,18 +50,46 @@
                                              icon="pi pi-times-circle" 
                                              styleClass="ui-button-danger">
                             </p:commandButton>
+
+
+                            <!-- Make Selected Items Discountable at Billing -->
+                            <p:commandButton ajax="false" 
+                                             value="Make Selected Items To Print Session Numbers"
+                                             action="#{itemController.markSelectedItemsAsPrintSessionNumber}"
+                                             icon="pi pi-check-square" 
+                                             styleClass="ui-button-success">
+                            </p:commandButton>
+
+                            <!-- Unmark Selected Items Discountable at Billing -->
+                            <p:commandButton ajax="false" 
+                                             value="Unmark Selected Items Not to Print SessionNumbers"
+                                             action="#{itemController.unmarkSelectedItemsAsNotToPrintSessionNumber}"
+                                             icon="pi pi-times-circle" 
+                                             styleClass="ui-button-danger">
+                            </p:commandButton>
+
+
                             <p:commandButton ajax="false" 
                                              value="Mark Selected Items for Print Separate Fees"
                                              action="#{itemController.markSelectedItemsForPrintSeparateFees()}"
                                              icon="pi pi-check-square" 
                                              styleClass="ui-button-success">
                             </p:commandButton>
-                            
+
                             <p:commandButton ajax="false" 
                                              value="Unmark Selected Items for Print Separate Fees"
                                              action="#{itemController.unMarkSelectedItemsForPrintSeparateFees()}"
                                              icon="pi pi-times-circle"  
                                              styleClass="ui-button-danger">
+                            </p:commandButton>
+
+
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Add Session Number Type"
+                                action="#{itemController.addSessionNumberType()}"
+                                icon="pi pi-times-circle"  
+                                styleClass="ui-button-danger">
                             </p:commandButton>
 
 
@@ -153,7 +181,7 @@
                                     <h:outputLabel value="#{i.discountAllowed?'Yes':'No'}" >
                                     </h:outputLabel>
                                 </p:column>
-                                
+
                                 <p:column sortBy="#{i.printFeesForBills}" width="10"
                                           filterMatchMode="contains" filterBy="#{i.printFeesForBills}">
                                     <f:facet name="header">
@@ -163,14 +191,14 @@
                                     <h:outputLabel value="#{i.printFeesForBills?'Yes':'No'}" >
                                     </h:outputLabel>
                                 </p:column>
-                                
-                                 <p:column sortBy="#{i.userChangable}" width="10"
+
+                                <p:column sortBy="#{i.userChangable}" width="10"
                                           filterMatchMode="contains" filterBy="#{i.userChangable}">
                                     <f:facet name="header">
                                         <h:outputLabel value="User can Change Fees at Billing" >
                                         </h:outputLabel>
                                     </f:facet>
-                                     <h:outputLabel value="#{i.userChangable ?'Yes':'No'}" >
+                                    <h:outputLabel value="#{i.userChangable ?'Yes':'No'}" >
                                     </h:outputLabel>
                                 </p:column>
 

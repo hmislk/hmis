@@ -151,20 +151,22 @@ public class Item implements Serializable, Comparable<Item> {
     InwardChargeType inwardChargeType;
     private double dblValue = 0.0f;
     SessionNumberType sessionNumberType;
-    boolean priceByBatch;
+    private boolean priceByBatch;
     @ManyToOne
     MeasurementUnit measurementUnit;
     @ManyToOne
     Category worksheet;
     @ManyToOne
     Category reportFormat;
-    boolean billable;
-    boolean vatable;
-    boolean formatable;
-    boolean patientNotRequired;
-    boolean chargesVisibleForInward;
-    boolean requestForQuentity;
-    boolean marginNotAllowed;
+    private boolean billable;
+    private boolean vatable;
+    private boolean formatable;
+    private boolean patientNotRequired;
+    private boolean chargesVisibleForInward;
+    private boolean requestForQuentity;
+    private boolean marginNotAllowed;
+    private boolean printSessionNumber;
+    private boolean canSechduleForOtherDays;
     @Column
     boolean inactive = false;
     @ManyToOne
@@ -814,6 +816,9 @@ public class Item implements Serializable, Comparable<Item> {
     }
 
     public SessionNumberType getSessionNumberType() {
+        if(sessionNumberType==null){
+            sessionNumberType=SessionNumberType.ByBill;
+        }
         return sessionNumberType;
     }
 
@@ -1361,6 +1366,25 @@ public class Item implements Serializable, Comparable<Item> {
     public void setLastBarcode(Long lastBarcode) {
         this.lastBarcode = lastBarcode;
     }
+
+    public boolean isPrintSessionNumber() {
+        return printSessionNumber;
+    }
+
+    public void setPrintSessionNumber(boolean printSessionNumber) {
+        this.printSessionNumber = printSessionNumber;
+    }
+
+    public boolean isCanSechduleForOtherDays() {
+        return canSechduleForOtherDays;
+    }
+
+    public void setCanSechduleForOtherDays(boolean canSechduleForOtherDays) {
+        this.canSechduleForOtherDays = canSechduleForOtherDays;
+    }
+    
+    
+    
 
     static class ReportItemComparator implements Comparator<ReportItem> {
 
