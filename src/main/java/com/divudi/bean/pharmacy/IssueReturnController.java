@@ -183,7 +183,7 @@ public class IssueReturnController implements Serializable {
         billItems = null;
 
     }
-    
+
     private void saveBill() {
         getBill().setEditor(getSessionController().getLoggedUser());
         getBill().setEditedAt(Calendar.getInstance().getTime());
@@ -191,7 +191,6 @@ public class IssueReturnController implements Serializable {
 
 //        getReturnBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyIssue, BillClassType.PreBill, BillNumberSuffix.PHISSRET));
 //        getReturnBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyIssue, BillClassType.PreBill, BillNumberSuffix.PHISSRET));
-
         //   getReturnBill().setInsId(getBill().getInsId());
         if (getBill().getId() == null) {
             getBillFacade().create(getBill());
@@ -268,11 +267,10 @@ public class IssueReturnController implements Serializable {
         }
 
     }
-    
+
     private void saveComponentForSaveReturnBill() {
         for (BillItem i : getBillItems()) {
             i.getPharmaceuticalBillItem().setQtyInUnit((double) (double) i.getQty());
-
             if (i.getPharmaceuticalBillItem().getQty() == 0.0) {
                 continue;
             }
@@ -280,25 +278,22 @@ public class IssueReturnController implements Serializable {
             i.setBill(getBill());
             i.setCreatedAt(Calendar.getInstance().getTime());
             i.setCreater(getSessionController().getLoggedUser());
-            i.setQty((double) i.getPharmaceuticalBillItem().getQty());
 
             double value = i.getRate() * i.getQty();
             i.setGrossValue(0 - value);
             i.setNetValue(0 - value);
 
             PharmaceuticalBillItem tmpPh = i.getPharmaceuticalBillItem();
-            i.setPharmaceuticalBillItem(null);
+            i.setPharmaceuticalBillItem(tmpPh);
+            System.out.println("tmpPh = " + tmpPh.getId());
             if (i.getId() == null) {
                 getBillItemFacade().create(i);
             }
-
+            getBillItemFacade().edit(i);
             if (tmpPh.getId() == null) {
                 getPharmaceuticalBillItemFacade().create(tmpPh);
             }
-
-            i.setPharmaceuticalBillItem(tmpPh);
-            getBillItemFacade().edit(i);
-            getBill().getBillItems().add(i);
+            getPharmaceuticalBillItemFacade().edit(tmpPh);
         }
 
     }
@@ -376,8 +371,9 @@ public class IssueReturnController implements Serializable {
     }
 
     public void generateBillComponent() {
-
+        billItems=new ArrayList<>();
         for (PharmaceuticalBillItem i : getPharmaceuticalBillItemFacade().getPharmaceuticalBillItems(getBill())) {
+            System.out.println("i = " + i.getId());
             BillItem bi = new BillItem();
             bi.setBill(getReturnBill());
             bi.setReferenceBill(getBill());
