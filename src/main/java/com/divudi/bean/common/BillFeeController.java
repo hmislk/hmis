@@ -7,6 +7,7 @@
  * (94) 71 5812399
  */
 package com.divudi.bean.common;
+
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.entity.BillFee;
 import com.divudi.facade.BillFeeFacade;
@@ -24,8 +25,8 @@ import javax.inject.Named;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- * Acting Consultant (Health Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -138,6 +139,56 @@ public class BillFeeController implements Serializable {
         return items;
     }
 
+    @FacesConverter(value = "billFeeConverter")
+    public static class BillFeeConverter implements Converter {
+
+        @Override
+        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
+            if (value == null || value.trim().isEmpty() || "null".equals(value.trim())) {
+                return null;
+            }
+            BillFeeController controller = (BillFeeController) facesContext.getApplication().getELResolver().
+                    getValue(facesContext.getELContext(), null, "billFeeController");
+
+            Long key = getKey(value);
+            if (key == null) {
+                // key is null, return null to avoid calling find with a null PK
+                return null;
+            }
+            return controller.getEjbFacade().find(key);
+        }
+
+        Long getKey(String value) {
+            try {
+                return Long.valueOf(value.trim());
+            } catch (NumberFormatException e) {
+                // Log or handle the error as appropriate
+                return null; // Return null if the input is not a valid long
+            }
+        }
+
+        String getStringKey(Long value) {
+            if (value == null) {
+                return null; // Handle null values gracefully
+            }
+            return value.toString();
+        }
+
+        @Override
+        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
+            if (object == null) {
+                return null;
+            }
+            if (object instanceof BillFee) {
+                BillFee o = (BillFee) object;
+                return getStringKey(o.getId());
+            } else {
+                throw new IllegalArgumentException("object " + object + " is of type "
+                        + object.getClass().getName() + "; expected type: " + BillFee.class.getName());
+            }
+        }
+    }
+
     /**
      *
      */
@@ -154,16 +205,20 @@ public class BillFeeController implements Serializable {
             return controller.getEjbFacade().find(getKey(value));
         }
 
-        java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
-            return key;
+        Long getKey(String value) {
+            try {
+                return Long.valueOf(value.trim());
+            } catch (NumberFormatException e) {
+                // Log or handle the error as appropriate
+                return null; // Return null if the input is not a valid long
+            }
         }
 
-        String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
+        String getStringKey(Long value) {
+            if (value == null) {
+                return null; // Handle null values gracefully
+            }
+            return value.toString();
         }
 
         @Override
@@ -176,7 +231,7 @@ public class BillFeeController implements Serializable {
                 return getStringKey(o.getId());
             } else {
                 throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + BillFeeController.class.getName());
+                        + object.getClass().getName() + "; expected type: " + BillFee.class.getName());
             }
         }
     }

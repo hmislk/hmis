@@ -106,7 +106,7 @@
                                 <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm a"  ></f:convertDateTime>
                             </h:outputLabel>
                         </td>
- 
+
                     </tr>
 
 
@@ -196,6 +196,18 @@
             </div>
 
 
+            <h:panelGroup  rendered="#{configOptionApplicationController.getBooleanValueByKey('Print OPD Bill Session Number')}" >
+                <h:panelGroup  rendered="#{cc.attrs.bill.singleBillSession ne null}" >
+                    <div class="billline">
+                        <div style="width: 100%;text-align: center;font-size: 10px;">
+                            <p:outputLabel value="Session No. : " ></p:outputLabel>
+                            <p:outputLabel value="#{cc.attrs.bill.singleBillSession.serialNo}" ></p:outputLabel>
+                        </div>
+                    </div>
+                </h:panelGroup>
+            </h:panelGroup>
+
+
             <h:panelGroup  rendered="#{sessionController.loggedPreference.printBarcodeInOpdBill or true}" >
                 <div class="billline">
                     <div style="width: 100%;text-align: center;font-size: 10px;">
@@ -228,18 +240,31 @@
                     </tr>
 
                     <h:panelGroup rendered="#{cc.attrs.bill.margin > 0? 'false':'true'}">
-                        <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip"   >
+                        <ui:repeat value="#{cc.attrs.bill.billItems}" var="billItem"   >
                             <tr>
                                 <td  style="overflow: visible;">
-                                    <h:outputLabel class="itemsBlockRightFiveFive" value="#{bip.item.printName}"  style="text-transform: capitalize!important;"  >
+                                    <h:outputLabel class="itemsBlockRightFiveFive" value="#{billItem.item.printName}"  style="text-transform: capitalize!important;"  >
                                     </h:outputLabel>
                                 </td>
                                 <td style="text-align: right;" >
-                                    <h:outputLabel class="itemsBlockRightFiveFive"   value="#{bip.grossValue}"    >
+                                    <h:outputLabel class="itemsBlockRightFiveFive"   value="#{billItem.grossValue}"    >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </td>
                             </tr>
+                            <h:panelGroup rendered="#{billItem.item.printSessionNumber}" >
+                                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Individual Bill Item Session Number in OPD Bills')}" >
+                                    <tr>
+                                        <td  style="overflow: visible;">
+                                            <p:spacer height="1" width="10" ></p:spacer>
+                                            <h:outputLabel class="itemsBlockRightFiveFive" value="Session No. : " >
+                                            </h:outputLabel>
+                                            <h:outputLabel class="itemsBlockRightFiveFive"   value="#{billItem.billSession.serialNo}"    >
+                                            </h:outputLabel>
+                                        </td>
+                                    </tr>
+                                </h:panelGroup>
+                            </h:panelGroup>
 
                         </ui:repeat>
                     </h:panelGroup>
