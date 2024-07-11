@@ -249,9 +249,9 @@
                                                         <h:outputText style="min-width: 10em;" value="Item" />
                                                     </f:facet>
                                                     <h:outputText value="#{bi.billItem.item.name}" style="width: 5em;"  ></h:outputText>
-                                                    
+
                                                     <h:outputText value="#{bi.billItem.qty}" class="mx-3" rendered="#{bi.billItem.item.requestForQuentity}" ></h:outputText>
-                                                    
+
                                                 </p:column>
 
                                                 <p:column  style="width: 6em; text-align: left;" >
@@ -396,7 +396,7 @@
                                                                                 </p:tab>-->
 
 
-                                        <p:tab id="tabBillFee" title="Fee Bundles" >
+                                        <p:tab id="tabBillFee" title="Fees" >
 
 
 
@@ -422,36 +422,19 @@
                                                     <ui:repeat value="#{opdBillController.billFeeBundleEntrys}" var="billFeeBundleEntry">
                                                         <tr>
                                                             <td>
-                                                                <h:panelGrid columns="1" >
-                                                                    <p:outputLabel value="#{billFeeBundleEntry.selectedBillFee.fee.item.name}" />
-                                                                    <p:outputLabel value="#{billFeeBundleEntry.selectedBillFee.fee.name}" />
-                                                                    <p:outputLabel value="#{billFeeBundleEntry.selectedBillFee.fee.feeType.label}" />
+                                                                <h:panelGrid columns="3" >
+                                                                    <p:outputLabel class="m-1" value="#{billFeeBundleEntry.selectedBillFee.fee.item.name}" />
+                                                                    <p:outputLabel value=" - " ></p:outputLabel>
+                                                                    <p:outputLabel  class="m-1"  value="#{billFeeBundleEntry.selectedBillFee.fee.name}" />
                                                                 </h:panelGrid>
 
 
-                                                                <table >
-                                                                    <ui:repeat 
-                                                                        id="repeatAvailableFees"
-                                                                        value="#{billFeeBundleEntry.availableBillFees}" 
-                                                                        var="availableFee">
-                                                                        <tr>
-                                                                            <td>
-                                                                                <h:outputLabel value="#{availableFee.staff.person.nameWithTitle}" ></h:outputLabel>
-                                                                                <h:outputLabel value="&nbsp;(" ></h:outputLabel>
-                                                                                <p:commandLink id="btnReplaceFee"
-                                                                                               process="btnReplaceFee"
-                                                                                               action="#{opdBillController.changeTheSelectedFeeFromFeeBundle(availableFee.fee)}"
-                                                                                               update="@form">
-                                                                                    <h:outputText value="#{availableFee.fee.fee}">
-                                                                                        <f:convertNumber pattern="#,##0.00" />
-                                                                                    </h:outputText>
-                                                                                </p:commandLink>
-                                                                                <h:outputLabel value=")" ></h:outputLabel>
-                                                                            </td>
-                                                                        </tr>
-
-                                                                    </ui:repeat>
-                                                                </table>
+                                                                <p:selectOneMenu id="feeDropdown" value="#{billFeeBundleEntry.selectedBillFee}" converter="billFeeConverter">
+                                                                    <f:selectItems value="#{billFeeBundleEntry.availableBillFees}" var="availableFee"
+                                                                                   itemValue="#{availableFee}"
+                                                                                   itemLabel="#{availableFee.staff.person.nameWithTitle} (#{availableFee.fee.fee})" />
+                                                                    <p:ajax event="change" listener="#{opdBillController.changeTheSelectedFeeFromFeeBundle(billFeeBundleEntry.selectedBillFee)}" update="@form" />
+                                                                </p:selectOneMenu>
 
 
                                                             </td>
@@ -498,7 +481,7 @@
                                                                             class="w-100 mx-2"
                                                                             inputStyleClass="w-100"
                                                                             forceSelection="true" 
-                                                                            rendered="#{billFeeBundleEntry.selectedBillFee.fee.speciality eq null}" 
+                                                                            rendered="#{billFeeBundleEntry.selectedBillFee.fee.speciality eq null and billFeeBundleEntry.selectedBillFee.fee.feeType eq 'Staff'}" 
                                                                             value="#{billFeeBundleEntry.selectedBillFee.staff}" 
                                                                             completeMethod="#{doctorController.completeDoctor}" var="mys" 
                                                                             itemLabel="#{mys.person.name}" 
@@ -682,9 +665,9 @@
                                                                     execute="@this" 
                                                                     render=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}  :#{p:resolveFirstComponentWithId('tblRequests',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId}" />
                                                             </p:autoComplete>
-                                                            
+
                                                             <p:inputText  ></p:inputText>
-                                                            
+
                                                             <p:commandLink 
                                                                 id="btnAddNewCreditCom" 
                                                                 value="(+)"

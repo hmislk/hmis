@@ -307,7 +307,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         return "/opd/patient_search?faces-redirect=true";
     }
 
-    public void changeTheSelectedFeeFromFeeBundle(Fee ibf) {
+    public void changeTheSelectedFeeFromFeeBundle(BillFee ibf) {
         System.out.println("changeTheSelectedFeeFromFeeBundle");
         System.out.println("ibf = " + ibf.getFee());
         if (billFeeBundleEntrys == null) {
@@ -317,12 +317,13 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             System.out.println("bfbe = " + bfbe);
             for (BillFee bf : bfbe.getAvailableBillFees()) {
                 System.out.println("bf = " + bf.getFee());
-                if (bf.getFee().equals(ibf)) {
+                if (bf.equals(ibf)) {
                     System.out.println("equal");
                     bfbe.setSelectedBillFee(bf);
                 }
             }
         }
+        calTotals();
     }
 
     public String navigateToOpdAnalyticsIndex() {
@@ -2780,22 +2781,19 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     MembershipSchemeController membershipSchemeController;
 
     public void calTotals() {
+        System.out.println("Cal Totals");
         if (paymentMethod == null) {
             return;
         }
 
-//        if (toStaff != null) {
-//            paymentScheme = null;
-//            creditCompany = null;
-//        }
         double billDiscount = 0.0;
         double billGross = 0.0;
         double billNet = 0.0;
         double billVat = 0.0;
-
-//        MembershipScheme membershipScheme = membershipSchemeController.fetchPatientMembershipScheme(getPatient(), getSessionController().getApplicationPreference().isMembershipExpires());
         for (BillEntry be : getLstBillEntries()) {
-            //////// // System.out.println("bill item entry");
+
+            System.out.println("be = " + be);
+
             double entryGross = 0.0;
             double entryDis = 0.0;
             double entryNet = 0.0;
@@ -2805,40 +2803,41 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             BillItem bi = be.getBillItem();
 
             for (BillFee bf : be.getLstBillFees()) {
+
+                System.out.println("bf = " + bf);
+
                 boolean needToAdd = billFeeIsThereAsSelectedInBillFeeBundle(bf);
-                if (!needToAdd) {
-                    continue;
-                }
+                if (needToAdd) {
 
-                Department department = null;
-                Item item = null;
-                PriceMatrix priceMatrix;
-                Category category = null;
+                    Department department = null;
+                    Item item = null;
+                    PriceMatrix priceMatrix;
+                    Category category = null;
 
-                if (bf.getBillItem() != null && bf.getBillItem().getItem() != null) {
-                    department = bf.getBillItem().getItem().getDepartment();
+                    if (bf.getBillItem() != null && bf.getBillItem().getItem() != null) {
+                        department = bf.getBillItem().getItem().getDepartment();
 
-                    item = bf.getBillItem().getItem();
-                }
-
-                priceMatrix = getPriceMatrixController().getPaymentSchemeDiscount(paymentMethod, paymentScheme, department, item);
-                getBillBean().setBillFees(bf, isForeigner(), paymentMethod, paymentScheme, getCreditCompany(), priceMatrix);
-
-                if (bf.getBillItem().getItem().isVatable()) {
-                    if (!(bf.getFee().getFeeType() == FeeType.CollectingCentre && collectingCentreBillController.getCollectingCentre() != null)) {
-                        bf.setFeeVat(bf.getFeeValue() * bf.getBillItem().getItem().getVatPercentage() / 100);
-                        bf.setFeeVat(roundOff(bf.getFeeVat()));
+                        item = bf.getBillItem().getItem();
                     }
+
+                    priceMatrix = getPriceMatrixController().getPaymentSchemeDiscount(paymentMethod, paymentScheme, department, item);
+                    getBillBean().setBillFees(bf, isForeigner(), paymentMethod, paymentScheme, getCreditCompany(), priceMatrix);
+
+                    if (bf.getBillItem().getItem().isVatable()) {
+                        if (!(bf.getFee().getFeeType() == FeeType.CollectingCentre && collectingCentreBillController.getCollectingCentre() != null)) {
+                            bf.setFeeVat(bf.getFeeValue() * bf.getBillItem().getItem().getVatPercentage() / 100);
+                            bf.setFeeVat(roundOff(bf.getFeeVat()));
+                        }
+                    }
+                    bf.setFeeVatPlusValue(bf.getFeeValue() + bf.getFeeVat());
+
+                    entryGross += bf.getFeeGrossValue();
+                    entryNet += bf.getFeeValue();
+                    entryDis += bf.getFeeDiscount();
+                    entryVat += bf.getFeeVat();
+                    entryVatPlusNet += bf.getFeeVatPlusValue();
+
                 }
-                bf.setFeeVatPlusValue(bf.getFeeValue() + bf.getFeeVat());
-
-                entryGross += bf.getFeeGrossValue();
-                entryNet += bf.getFeeValue();
-                entryDis += bf.getFeeDiscount();
-                entryVat += bf.getFeeVat();
-                entryVatPlusNet += bf.getFeeVatPlusValue();
-
-                //////// // System.out.println("fee net is " + bf.getFeeValue());
             }
 
             bi.setDiscount(entryDis);
@@ -2870,18 +2869,23 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     }
 
     private boolean billFeeIsThereAsSelectedInBillFeeBundle(BillFee bf) {
+        System.out.println("Going to check a bill fee is selected ");
         if (bf == null) {
             return false;
         }
         if (bf.getFee() == null) {
             return false;
         }
+        System.out.println("Input Fee Value is " + bf.getFee().getFee());
         boolean found = false;
         for (BillFeeBundleEntry bfbe : getBillFeeBundleEntrys()) {
-            if (bfbe.getSelectedBillFee().getFee().equals(bf.getFee())) {
+            System.out.println("Current one from Bill Fee Entries  " + bfbe);
+            if (bfbe.getSelectedBillFee().equals(bf)) {
+                System.out.println("Value of the Selected One " + bfbe.getSelectedBillFee().getFee().getFee());
                 found = true;
             }
         }
+        System.out.println("found = " + found);
         return found;
     }
 

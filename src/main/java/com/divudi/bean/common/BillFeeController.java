@@ -13,7 +13,9 @@ import com.divudi.entity.BillFee;
 import com.divudi.facade.BillFeeFacade;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -147,15 +149,23 @@ public class BillFeeController implements Serializable {
             if (value == null || value.trim().isEmpty() || "null".equals(value.trim())) {
                 return null;
             }
-            BillFeeController controller = (BillFeeController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "billFeeController");
 
-            Long key = getKey(value);
-            if (key == null) {
-                // key is null, return null to avoid calling find with a null PK
-                return null;
+            if (value.startsWith("TEMP_")) {
+                // Handle objects without ID
+                Map<String, BillFee> billFeeMap = (Map<String, BillFee>) facesContext.getExternalContext().getSessionMap().get("billFeeMap");
+                return billFeeMap.get(value);
+            } else {
+                // Handle objects with ID
+                BillFeeController controller = (BillFeeController) facesContext.getApplication().getELResolver().
+                        getValue(facesContext.getELContext(), null, "billFeeController");
+
+                Long key = getKey(value);
+                if (key == null) {
+                    // key is null, return null to avoid calling find with a null PK
+                    return null;
+                }
+                return controller.getEjbFacade().find(key);
             }
-            return controller.getEjbFacade().find(key);
         }
 
         Long getKey(String value) {
@@ -180,11 +190,18 @@ public class BillFeeController implements Serializable {
                 return null;
             }
             if (object instanceof BillFee) {
-                BillFee o = (BillFee) object;
-                return getStringKey(o.getId());
+                BillFee billFee = (BillFee) object;
+                if (billFee.getId() != null) {
+                    return getStringKey(billFee.getId());
+                } else {
+                    // Use a temporary key for objects without ID
+                    String key = "TEMP_" + billFee.hashCode();
+                    Map<String, BillFee> billFeeMap = (Map<String, BillFee>) facesContext.getExternalContext().getSessionMap().computeIfAbsent("billFeeMap", k -> new HashMap<>());
+                    billFeeMap.put(key, billFee);
+                    return key;
+                }
             } else {
-                throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + BillFee.class.getName());
+                throw new IllegalArgumentException("Object is not of type BillFee: " + object.getClass().getName());
             }
         }
     }
