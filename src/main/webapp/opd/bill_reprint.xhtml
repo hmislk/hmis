@@ -52,12 +52,11 @@
                                             icon="fa fa-times" > 
                                         </p:commandButton>
                                     </h:panelGroup>
-
                                     <h:panelGroup rendered="#{billSearch.opdBillRefundAllowedSameDay}">
                                         <p:commandButton
                                             ajax="false" 
                                             value="To Refund"
-                                            disabled="#{billSearch.bill.cancelled}" 
+                                            disabled="#{billSearch.bill.cancelled or billSearch.bill.refunded}" 
                                             action="#{billSearch.navigateToRefundOpdBill}" 
                                             class="ui-button-warning m-1 w-25" 
                                             icon="fa fa-money-bill-wave">                          
