@@ -2614,7 +2614,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         List<BillFee> allBillFees = getBillBean().billFeefromBillItem(bi);
         List<BillFeeBundleEntry> billItemBillFeeBundleEntries = getBillBean().bundleFeesByName(allBillFees);
 
-        addingEntry.setLstBillFees(getBillBean().billFeesSelected(billItemBillFeeBundleEntries));
+        addingEntry.setLstBillFees(allBillFees);
 
         getBillFeeBundleEntrys().addAll(billItemBillFeeBundleEntries);
 
