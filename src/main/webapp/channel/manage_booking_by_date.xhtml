@@ -25,7 +25,8 @@
                             <p:commandButton 
                                 ajax="false" 
                                 class="mx-1 ui-button-secondary"
-                                value="Back to Bookings" 
+                                value="Back to Bookings"
+                                immediate="true"
                                 action="#{bookingControllerViewScope.navigateBackToBookingsFromBillSession()}"
                                 icon="fa-solid fa-arrow-left" />
                         </div>
@@ -364,6 +365,7 @@
                                                             ajax="false"
                                                             icon="fa fa-check"
                                                             action="#{bookingControllerViewScope.settleCredit()}"
+                                                            immediate="true"
                                                             disabled="#{bookingControllerViewScope.selectedBillSession.bill.billType.parent ne 'ChannelCreditFlow'
                                                                         or bookingControllerViewScope.selectedBillSession.bill.cancelled==true
                                                                         or  bookingControllerViewScope.selectedBillSession.bill.paidAmount ne 0}"
