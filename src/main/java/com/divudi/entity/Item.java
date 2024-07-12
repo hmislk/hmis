@@ -151,22 +151,21 @@ public class Item implements Serializable, Comparable<Item> {
     InwardChargeType inwardChargeType;
     private double dblValue = 0.0f;
     SessionNumberType sessionNumberType;
-    private boolean priceByBatch;
+    boolean priceByBatch;
     @ManyToOne
     MeasurementUnit measurementUnit;
     @ManyToOne
     Category worksheet;
     @ManyToOne
     Category reportFormat;
-    private boolean billable;
-    private boolean vatable;
-    private boolean formatable;
-    private boolean patientNotRequired;
-    private boolean chargesVisibleForInward;
-    private boolean requestForQuentity;
-    private boolean marginNotAllowed;
+    boolean billable;
+    boolean vatable;
+    boolean formatable;
+    boolean patientNotRequired;
+    boolean chargesVisibleForInward;
+    boolean requestForQuentity;
+    boolean marginNotAllowed;
     private boolean printSessionNumber;
-    private boolean canSechduleForOtherDays;
     @Column
     boolean inactive = false;
     @ManyToOne
@@ -1374,15 +1373,6 @@ public class Item implements Serializable, Comparable<Item> {
     public void setPrintSessionNumber(boolean printSessionNumber) {
         this.printSessionNumber = printSessionNumber;
     }
-
-    public boolean isCanSechduleForOtherDays() {
-        return canSechduleForOtherDays;
-    }
-
-    public void setCanSechduleForOtherDays(boolean canSechduleForOtherDays) {
-        this.canSechduleForOtherDays = canSechduleForOtherDays;
-    }
-    
     
     
 

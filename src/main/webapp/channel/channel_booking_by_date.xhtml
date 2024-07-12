@@ -123,7 +123,7 @@
                                 <div class="col-7" >
                                     <h:panelGroup id="groupFilteredSessions" >
                                         <p:dataTable 
-                                            value="#{bookingControllerViewScope.sortedSessionInstances}"
+                                            value="#{bookingControllerViewScope.sessionInstancesFiltered}"
                                             var="s"
                                             selectionMode="single"
                                             selection="#{bookingControllerViewScope.selectedSessionInstance}"
@@ -145,7 +145,7 @@
                                                     </div>
                                                     <div class="align-items-center">
 
-                                                        <h:outputText value="#{s.staff.person.nameWithTitle}" style="font-weight: bolder" /> <p:badge class="mx-2" severity="success" value="Completed" rendered="#{s.completed}" /> <br/>
+                                                        <h:outputText value="#{s.staff.person.nameWithTitle}" style="font-weight: bolder" /> <p:badge class="mx-2" severity="success" value="Completed" rendered="#{s.completed}" /> <p:badge class="mx-2" severity="danger" value="Cancelled" rendered="#{s.cancelled}" /> <br/>
 
                                                         <h:outputText value="(#{s.staff.speciality.name})" /><p:badge class="mx-2" severity="warning" value="Scaning Session" rendered="#{s.originatingSession.category eq 'Scanning'}" /> 
                                                         <br/>
@@ -413,7 +413,7 @@
                                                             <h:outputLabel id="agent" value="Agent" />
                                                             <div class=" mx-4">
                                                                 <p:outputLabel class="mx-2" value="Agent Balance" />
-                                                                <h:outputLabel id="balance2" value="#{empty bookingControllerViewScope.institution.balance ? '00.00' : bookingControllerViewScope.institution.balance}" />
+                                                                <h:outputLabel id="balance2" value="#{empty bookingControllerViewScope.institution.ballance ? '00.00' : bookingControllerViewScope.institution.ballance}" />
                                                             </div>
                                                         </div>
                                                     </f:facet>
@@ -919,7 +919,7 @@
                                                 class="ui-button-info"
                                                 icon="fa fa-print"
                                                 action="#"
-                                                disabled="#{bookingControllerViewScope.printingBill.balance ne 0.0 or !bookingControllerViewScope.settleSucessFully}">
+                                                disabled="#{bookingControllerViewScope.printingBill.balance ne 0.0 or !bookingControllerViewScope.settleSucessFully or bookingControllerViewScope.printingBill.paymentMethod eq 'OnCall'}">
                                                 <p:printer 
                                                     target="gpBillPreview" >
                                                 </p:printer>
