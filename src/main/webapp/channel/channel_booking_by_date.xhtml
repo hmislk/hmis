@@ -919,7 +919,7 @@
                                                 class="ui-button-info"
                                                 icon="fa fa-print"
                                                 action="#"
-                                                disabled="#{bookingControllerViewScope.printingBill.balance ne 0.0 or !bookingControllerViewScope.settleSucessFully}">
+                                                disabled="#{bookingControllerViewScope.printingBill.balance ne 0.0 or !bookingControllerViewScope.settleSucessFully or bookingControllerViewScope.printingBill.paymentMethod eq 'OnCall'}">
                                                 <p:printer 
                                                     target="gpBillPreview" >
                                                 </p:printer>
