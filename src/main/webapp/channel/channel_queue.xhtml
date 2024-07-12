@@ -93,6 +93,8 @@
                                              icon="fa fa-list" 
                                              styleClass="ui-button-primary mx-1" 
                                              action="#{bookingController.listTodaysAllSesionInstances()}" />
+                            
+                            <p:commandButton id="btnLogout" ajax="false" icon="pi pi-sign-out" action="#{sessionController.logout}" />
                         </div>
 
                     </nav>
@@ -195,11 +197,15 @@
 
 
                                     <p:badge  value="Scheduled" severity="warning"
-                                                      rendered="#{not s.completed and not s.started}">
+                                              rendered="#{(not s.completed and not s.started) and !s.cancelled}">
                                     </p:badge>
 
                                     <p:badge severity="info"  value="Strated"
                                                      rendered="#{s.started and not s.completed}">
+                                    </p:badge>
+                                    
+                                    <p:badge severity="danger"  value="Cancelled"
+                                             rendered="#{s.cancelled}">
                                     </p:badge>
                                 </div>
                                 
@@ -207,6 +213,7 @@
                                      <p:commandButton class="mx-2" icon="fas fa-eye"
                                                       styleClass="rounded-button ui-button-outlined ui-button-info " ajax="false"
                                                       value="View"
+                                                      disabled="#{s.cancelled}"
                                                       rendered="#{bookingController.isSessionDateToday() or webUserController.hasPrivilege('ChannellingPastBookingPatientAttend')}"
                                                       style="font-size: 1em; text-align: center"
                                                      action="#{bookingController.navigateToManageSessionQueueAtConsultantRoom}"

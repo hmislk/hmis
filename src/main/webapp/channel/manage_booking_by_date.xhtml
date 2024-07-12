@@ -311,8 +311,11 @@
                                         <p:panelGrid id="panelBillDetailsForSettling" columns="2">
                                             <f:facet name="header">
                                                 <h:outputText styleClass="fas fa-user" />
-                                                <h:outputLabel class="mx-4" value="Billl Details" />
+                                                <h:outputLabel class="mx-4" value="Bill Details" />
                                             </f:facet>
+                                            <h:outputLabel value="Bill ID" ></h:outputLabel>
+                                            <h:outputLabel value="#{bookingControllerViewScope.selectedBillSession.billItem.bill.id}" >
+                                            </h:outputLabel>
                                             <h:outputLabel value="Total" ></h:outputLabel>
                                             <h:outputLabel value="#{bookingControllerViewScope.selectedBillSession.billItem.bill.total}" >
                                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
