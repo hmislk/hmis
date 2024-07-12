@@ -362,6 +362,22 @@ public class InstitutionController implements Serializable {
         }
         return i;
     }
+    
+    public Institution findExistingInstitutionByName(String name) {
+        if (name == null || name.trim().equals("")) {
+            return null;
+        }
+        String sql;
+        Map m = new HashMap();
+        m.put("name", name);
+        m.put("ret", false);
+        sql = "select i "
+                + " from Institution i "
+                + " where i.name=:name"
+                + " and i.retired=:ret";
+        Institution i = getFacade().findFirstByJpql(sql, m);
+        return i;
+    }
 
     private Boolean checkCodeExist() {
         String sql = "SELECT i FROM Institution i where i.retired=false and i.institutionCode is not null ";

@@ -16,7 +16,7 @@
                     <h:panelGroup rendered="#{!webUserController.hasPrivilege('AdminManagingUsers') and !sessionController.firstLogin }" >
                         <h:outputText value="You are NOT authorized"/>
                     </h:panelGroup>
-                    <h:panelGroup rendered="#{webUserController.hasPrivilege('AdminManagingUsers') or sessionController.firstLogin }" >
+                    <h:panelGroup rendered="#{webUserController.hasPrivilege('AdminManagingUsers') or sessionController.firstLogin}" >
                         <h:form  >
 
                             <div class="container-fluid p-2" >

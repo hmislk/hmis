@@ -220,6 +220,7 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setBillType(BillType.ShiftStartFundBill);
         currentBill.setBillTypeAtomic(BillTypeAtomic.FUND_SHIFT_START_BILL);
         currentBill.setBillClassType(BillClassType.Bill);
+        currentBill.setStaff(sessionController.getLoggedUser().getStaff());
     }
 
     private void prepareToAddNewFundTransferBill() {
@@ -436,7 +437,7 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setDepartment(sessionController.getDepartment());
         currentBill.setInstitution(sessionController.getInstitution());
         currentBill.setStaff(sessionController.getLoggedUser().getStaff());
-
+        
         currentBill.setBillDate(new Date());
         currentBill.setBillTime(new Date());
 
@@ -772,7 +773,7 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public String settleShiftEndFundBill() {
-        fillFundTransferBillsForMeToReceive();
+        boolean fundTransferBillTocollect = false;
 
         if (currentBill == null) {
             JsfUtil.addErrorMessage("Error");
@@ -786,9 +787,14 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("Error");
             return "";
         }
-        System.out.println("fundTransferBillsToReceive = " + fundTransferBillsToReceive.size());
-        if (!fundTransferBillsToReceive.isEmpty()) {
-            JsfUtil.addErrorMessage("Please collect your transferred money.");
+
+        if (fundTransferBillsToReceive!=null && !fundTransferBillsToReceive.isEmpty()) {
+            fundTransferBillTocollect = true;
+
+        }
+
+        if (fundTransferBillTocollect) {
+            JsfUtil.addErrorMessage("Please collect funds transferred to you before closing.");
             return "";
         }
 

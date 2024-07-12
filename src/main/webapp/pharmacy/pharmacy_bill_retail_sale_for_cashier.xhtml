@@ -32,7 +32,18 @@
                             <p:commandButton icon="fas fa-file-invoice" value="Sale 2" class="mx-2" action="/pharmacy/pharmacy_bill_retail_sale_for_cashier_1" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController1.pharmacyRetailSale()}" />
                             <p:commandButton icon="fas fa-file-invoice" value="Sale 3" action="/pharmacy/pharmacy_bill_retail_sale_for_cashier_2" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController2.pharmacyRetailSale()}" />
                             <p:commandButton icon="fas fa-file-invoice" value="Sale 4" class="mx-2" action="/pharmacy/pharmacy_bill_retail_sale_for_cashier_3" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController3.pharmacyRetailSale()}" />
-
+                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Create Token At Pharmacy Sale For Cashier')}" class="mx-4">
+                                <p:outputLabel value="Counter" ></p:outputLabel>
+                                <p:selectOneMenu class="mx-2" value="#{pharmacySaleController.counter}" >
+                                    <f:selectItem itemLabel="Any" ></f:selectItem>
+                                    <f:selectItems 
+                                        value="#{sessionController.loggableSubDepartments}" 
+                                        var="c" 
+                                        itemLabel="#{c.name}" 
+                                        itemValue="#{c}" >
+                                    </f:selectItems>
+                                </p:selectOneMenu>
+                            </h:panelGroup>
                         </p:panel>
                         <p:panel>
                             <f:facet name="header" >
@@ -91,7 +102,7 @@
                                                             accesskey="i"    
                                                             id="acStock" 
                                                             value="#{pharmacySaleController.stock}" 
-                                                            completeMethod="#{stockController.completeAvailableStocks}" 
+                                                            completeMethod="#{stockController.completeAvailableStocksWithItemStock}" 
                                                             var="i"
                                                             class="w-100"
                                                             inputStyleClass="form-control"
@@ -116,6 +127,11 @@
                                                             </p:column>
                                                             <p:column headerText="Stocks" style="padding: 8px;" styleClass="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
                                                                 <h:outputLabel value="#{i.stock}" >
+                                                                    <f:convertNumber pattern="#,###" ></f:convertNumber>
+                                                                </h:outputLabel>
+                                                            </p:column>
+                                                            <p:column headerText="Total Stock" style="padding: 8px;" styleClass="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
+                                                                <h:outputLabel value="#{i.transItemStockQty}" >
                                                                     <f:convertNumber pattern="#,###" ></f:convertNumber>
                                                                 </h:outputLabel>
                                                             </p:column>
@@ -546,7 +562,7 @@
                                                             maxResults="15"
                                                             itemLabel="#{myi.name}" 
                                                             itemValue="#{myi}">
-                                                            
+
                                                             <p:column headerText="Name" style="padding: 6px;">
                                                                 <h:outputLabel value="#{myi.name}" ></h:outputLabel>
                                                             </p:column>
@@ -808,7 +824,7 @@
                                     </h:panelGroup>
                                 </div>
                             </h:panelGroup>
-                            
+
                             <h:panelGroup id="gpBillPreviewPosHeader" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'PosHeaderPaper'}"> 
                                 <div >
                                     <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}" > 
