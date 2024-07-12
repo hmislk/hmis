@@ -296,6 +296,11 @@ public class SearchController implements Serializable {
         billSummaryRows = null;
         return "/analytics/all_financial_transaction_summary?faces-redirect=true";
     }
+    
+    public String navigateToUserFinancialTransactionSummaryByBill() {
+        billSummaryRows = null;
+        return "/analytics/user_financial_transaction_summary_by_bill?faces-redirect=true";
+    }
 
     public String navigateToAllFinancialTransactionSummaryCashier() {
         billSummaryRows = null;
@@ -7370,6 +7375,56 @@ public class SearchController implements Serializable {
 
         jpql += " group by b.billTypeAtomic order by b.billTypeAtomic";
 
+        params.put("toDate", getToDate());
+        params.put("fromDate", getFromDate());
+        params.put("ret", false);
+        params.put("abts", billTypesToFilter);
+
+        billSummaryRows = getBillFacade().findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+
+        for (BillSummaryRow bss : billSummaryRows) {
+            grossTotal += bss.getGrossTotal();
+            discount += bss.getDiscount();
+            netTotal += bss.getNetTotal();
+        }
+    }
+    
+    
+    public void processUserFinancialTransactionalSummaryByBill() {
+        billSummaryRows = null;
+        grossTotal = 0.0;
+        discount = 0.0;
+        netTotal = 0.0;
+        String jpql;
+        Map params = new HashMap();
+        List<BillTypeAtomic> billTypesToFilter = new ArrayList<>();
+        billTypesToFilter.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_IN));
+        billTypesToFilter.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_OUT));
+        billTypesToFilter.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CREDIT_SETTLEMENT));
+        billTypesToFilter.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CREDIT_SETTLEMENT_REVERSE));
+        jpql = "select new com.divudi.light.common.BillSummaryRow("
+                + "b.billTypeAtomic, "
+                + "sum(b.total), "
+                + "sum(b.discount), "
+                + "sum(b.netTotal),"
+                + "count(b)) "
+                + " from Bill b "
+                + " where b.retired=:ret"
+                + " and b.createdAt between :fromDate and :toDate "
+                + " and b.billTypeAtomic in :abts "
+                + " and b.creater=:user";
+
+//        Bill b = new Bill();
+//        b.getTotal();
+//        b.getDiscount();
+//        b.getNetTotal();
+//        b.getBillTypeAtomic();
+//        b.getCreater();
+        
+
+        jpql += " group by b.billTypeAtomic order by b.billTypeAtomic";
+
+        params.put("user", getWebUser());
         params.put("toDate", getToDate());
         params.put("fromDate", getFromDate());
         params.put("ret", false);
