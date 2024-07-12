@@ -931,6 +931,7 @@
                     <p:menuitem ajax="false" action="/analytics/opd/index?faces-redirect=true" value="Channel Analytics" rendered="#{webUserController.hasPrivilege('ChannelSummery')}" ></p:menuitem>
                     <p:menuitem ajax="false" action="/channel/management_index?faces-redirect=true" value="Management" rendered="#{webUserController.hasPrivilege('ChannelManagement')}" ></p:menuitem>
                     <p:menuitem ajax="false" action="/channel/patient_portal?faces-redirect=true" value="Patient Portal" ></p:menuitem>
+                    <p:menuitem ajax="false" action="/channel/doctor_card?faces-redirect=true" value="Doctor Card" ></p:menuitem>
                     <p:menuitem 
                         ajax="false"
                         styleClass="#{financialTransactionController.nonClosedShiftStartFundBill eq null ? 'bg-warning text-white font-weight-bold' : ''}"
