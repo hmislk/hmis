@@ -31,6 +31,7 @@
                 <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
                 <p:ajax process="@this" ></p:ajax>
             </p:selectOneMenu>
+            <p:inputText value="#{cc.attrs.paymentMethodData.slip.comment}" placeholder="Enter Credit Card Comments" ></p:inputText>
             <p:watermark value="Card Ref. No." for="refno" />
         </div>
 

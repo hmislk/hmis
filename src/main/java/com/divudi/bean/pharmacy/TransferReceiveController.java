@@ -126,6 +126,10 @@ public class TransferReceiveController implements Serializable {
         generateBillComponent();
     }
 
+    public String navigateToRecieveIssue(){  
+        return "/pharmacy/pharmacy_transfer_receive_with_approval?faces-redirect=true";
+    }
+
     public void generateBillComponent() {
 
         for (PharmaceuticalBillItem i : getPharmaceuticalBillItemFacade().getPharmaceuticalBillItems(getIssuedBill())) {

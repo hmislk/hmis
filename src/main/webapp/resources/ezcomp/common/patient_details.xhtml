@@ -181,7 +181,7 @@
                                                     autocomplete="off" 
                                                     id="year" 
                                                     placeholder="Years"
-
+                                                    onfocus="this.select();"
                                                     value="#{cc.attrs.controller.patient.person.ageYearsComponent}"
                                                     class="form-control">
                                                     <f:ajax event="keyup" execute="@this" render="dpDob" />
@@ -189,7 +189,7 @@
                                             </div>
                                             <div class="col-md-2">
                                                 <p:inputText
-
+                                                    onfocus="this.select();"
                                                     autocomplete="off" id="month" placeholder="Months"
                                                     value="#{cc.attrs.controller.patient.person.ageMonthsComponent}"
                                                     class="form-control">
@@ -198,7 +198,7 @@
                                             </div>
                                             <div class="col-md-2">
                                                 <p:inputText 
-
+                                                    onfocus="this.select();"
                                                     autocomplete="off" id="day" placeholder="Days"
                                                     value="#{cc.attrs.controller.patient.person.ageDaysComponent}"
                                                     class="form-control">

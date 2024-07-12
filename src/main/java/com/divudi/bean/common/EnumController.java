@@ -67,6 +67,7 @@ public class EnumController implements Serializable {
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
     List<PaymentMethod> paymentMethodsForOpdBilling;
+    List<PaymentMethod> paymentMethodsForPatientDeposit;
     List<PaymentMethod> paymentMethodsForChanneling;
     List<PaymentMethod> paymentMethodsForPharmacyBilling;
     SessionNumberType[] sessionNumberTypes;
@@ -97,6 +98,7 @@ public class EnumController implements Serializable {
     public void resetPaymentMethods() {
         paymentMethodsForOpdBilling = null;
         paymentMethodsForChanneling = null;
+        paymentMethodsForPatientDeposit = null;
     }
 
     public void fillPaymentMethodsForOpdBilling() {
@@ -115,6 +117,16 @@ public class EnumController implements Serializable {
             boolean include = configOptionApplicationController.getBooleanValueByKey(pm.getLabel() + " is available for Package Billing", true);
             if (include) {
                 paymentMethodsForOpdBilling.add(pm);
+            }
+        }
+    }
+    
+    public void fillPaymentMethodsForPatientDeposit() {
+        paymentMethodsForPatientDeposit = new ArrayList<>();
+        for (PaymentMethod pm : PaymentMethod.values()) {
+            boolean include = configOptionApplicationController.getBooleanValueByKey(pm.getLabel() + " is available for Patient Deposit", true);
+            if (include) {
+                paymentMethodsForPatientDeposit.add(pm);
             }
         }
     }
@@ -829,6 +841,17 @@ public class EnumController implements Serializable {
 
     public void setPaymentScheme(PaymentScheme paymentScheme) {
         this.paymentScheme = paymentScheme;
+    }
+
+    public List<PaymentMethod> getPaymentMethodsForPatientDeposit() {
+        if (paymentMethodsForPatientDeposit == null) {
+            fillPaymentMethodsForPatientDeposit();
+        }
+        return paymentMethodsForPatientDeposit;
+    }
+
+    public void setPaymentMethodsForPatientDeposit(List<PaymentMethod> paymentMethodsForPatientDeposit) {
+        this.paymentMethodsForPatientDeposit = paymentMethodsForPatientDeposit;
     }
 
 }
