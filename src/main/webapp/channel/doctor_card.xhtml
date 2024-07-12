@@ -1,0 +1,108 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                template="/resources/template/template.xhtml"
+                >
+
+    <ui:define name="content">
+        <h:form>
+
+
+            <h:panelGrid columns="1">
+                <p:panel header="Channel Sesion Report(Doctor Card)" >
+                    <p:panelGrid columns="2">
+                        <p:outputLabel value="From"></p:outputLabel>
+                        <p:calendar id="fromDate" value="#{channelReportController.fromDate}" locale="de"
+                                    pattern="dd.MM.yyyy HH:mm"/>
+                        <p:outputLabel value="To" ></p:outputLabel>
+                        <p:calendar id="toDate" value="#{channelReportController.toDate}" locale="de"
+                                    pattern="dd.MM.yyyy HH:mm"/>
+                    </p:panelGrid>
+
+                    <h:panelGrid columns="3" class="my-2">
+                        <p:commandButton value="Fill" action="#{channelReportController.fillSessionsForChannelDoctorCard}" ajax="false" />
+                        <p:commandButton style="margin-right: 10px; margin-left: 10px" ajax="false" value="Print" styleClass="noPrintButton"  >
+                            <p:printer target="reportPrint"  />
+                        </p:commandButton>
+
+                    </h:panelGrid>
+
+                    <p:panel id="reportPrint" styleClass="noBorder summeryBorder" >
+                        <p:dataTable value="#{channelReportController.sessioninstances}" var="i" id="tbl">
+                            <f:facet name="header" >
+                                <p:outputLabel value="Channel Session Report(Doctor Card)" />
+                                <br></br>
+                            </f:facet>
+                            <p:column>
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Consultant" />
+                                </f:facet>
+                                <p:outputLabel value="#{i.originatingSession.staff.person.name}" />
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Speciality" />
+                                </f:facet>
+                                <p:outputLabel value="#{i.originatingSession.staff.speciality.name}" />
+                            </p:column>
+
+                            <p:column headerText="Created At" >
+                                <h:outputLabel value="#{i.sessionDate}" >
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MMM yy  hh:mm a" ></f:convertDateTime>
+                                </h:outputLabel>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Session Name" />
+                                </f:facet>
+                                <p:outputLabel value="#{i.originatingSession.name}" />
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Starting Time" />
+                                </f:facet>
+                                <p:outputLabel value="#{i.originatingSession.startingTime}" >
+
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="HH:mm"  />
+
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}"  />
+
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Ending Time" />
+                                </f:facet>
+                                <p:outputLabel value="#{i.originatingSession.endingTime}" >
+
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="HH:mm"  />
+
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}"  />
+
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Appointment Count" />
+                                </f:facet>
+                                <p:outputLabel value="#{i.bookedPatientCount}" >
+                                    <f:convertDateTime pattern="dd MMM yyyy" />
+                                </p:outputLabel>
+                            </p:column>
+                        </p:dataTable>
+                    </p:panel>
+
+                </p:panel>
+
+
+
+            </h:panelGrid>
+
+        </h:form>
+    </ui:define>
+
+
+</ui:composition>
