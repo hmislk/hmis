@@ -496,7 +496,9 @@ public class EnumController implements Serializable {
             InwardChargeType.Procedure,
             InwardChargeType.Radiology,
             InwardChargeType.ReportingCharges,
-            InwardChargeType.WardProcedure};
+            InwardChargeType.WardProcedure,
+            InwardChargeType.BabyCare,
+        };
 
         return b;
     }
