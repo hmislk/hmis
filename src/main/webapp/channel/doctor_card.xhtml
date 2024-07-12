@@ -49,9 +49,9 @@
                                 <p:outputLabel value="#{i.originatingSession.staff.speciality.name}" />
                             </p:column>
 
-                            <p:column headerText="Created At" >
+                            <p:column headerText="Session Date" >
                                 <h:outputLabel value="#{i.sessionDate}" >
-                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MMM yy  hh:mm a" ></f:convertDateTime>
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MMM yy " ></f:convertDateTime>
                                 </h:outputLabel>
                             </p:column>
                             <p:column>
@@ -89,7 +89,7 @@
                                     <p:outputLabel value="Appointment Count" />
                                 </f:facet>
                                 <p:outputLabel value="#{i.bookedPatientCount}" >
-                                    <f:convertDateTime pattern="dd MMM yyyy" />
+
                                 </p:outputLabel>
                             </p:column>
                         </p:dataTable>
