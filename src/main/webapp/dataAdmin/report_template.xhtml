@@ -66,24 +66,15 @@
 
                         <!-- Filters -->
                         <p:outputLabel value="Bill Types:" for="billTypes" />
-                        <p:autoComplete id="billTypes"
-                                        value="#{reportTemplateController.current.billTypes}"
-                                        completeMethod="#{enumController.getBillTypesAtomic}"
-                                        var="bt"
-                                        itemLabel="#{bt.label}"
-                                        itemValue="#{bt.label}"
-                                        multiple="true"/>
-                        <p:inputTextarea id="txtComments" 
-                                                                 queryDelay="0" 
-                                                                 placeholder="Write comments here."
-                                                                 class="w-100 my-2" 
-                                                                 autoResize="true"
-                                                                 value="#{reportTemplateController.current.billTypes}" 
-                                                                 completeMethod="#{enumController.completeClinicalComments}" 
-                                                                 minQueryLength="1">
-
-                                                    <f:ajax event="keyup" execute="@this" ></f:ajax>
-                                                </p:inputTextarea>
+                        <p:inputTextarea id="billTypes" 
+                                         queryDelay="0" 
+                                         placeholder="Write comments here."
+                                         class="w-100 my-2" 
+                                         autoResize="true"
+                                         value="#{reportTemplateController.current.billTypes}" 
+                                         completeMethod="#{enumController.completeBillTypeAtomics}" 
+                                         minQueryLength="1">
+                        </p:inputTextarea>
 
 
                         <!-- Columns -->
