@@ -54,6 +54,7 @@ import com.divudi.bean.pharmacy.PharmacyBillSearch;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.OptionScope;
 import com.divudi.entity.Doctor;
+import com.divudi.facade.FeeFacade;
 import com.divudi.java.CommonFunctions;
 import com.divudi.light.common.BillLight;
 import java.io.Serializable;
@@ -130,6 +131,8 @@ public class BillSearch implements Serializable {
     CashTransactionBean cashTransactionBean;
     @EJB
     private EmailFacade emailFacade;
+    @EJB
+    FeeFacade feeFacade;
     /**
      * Controllers
      */
@@ -231,9 +234,8 @@ public class BillSearch implements Serializable {
 
     //Edit Bill details
     private Doctor referredBy;
-   
 
-    public String navigateToBillPaymentOpdBill() {        
+    public String navigateToBillPaymentOpdBill() {
         return "bill_payment_opd?faces-redirect=true";
     }
 
@@ -1228,6 +1230,9 @@ public class BillSearch implements Serializable {
 
             double refundingValue = 0;
             for (BillFee rbf : i.getBillFees()) {
+                System.out.println("rbf.getFeeValue() name = " + rbf.getFee().getName());
+                System.out.println("rbf.getFeeValue() = " + rbf.getFeeValue());
+                System.out.println("rbf.getFeeValue() fee = " + rbf.getFee().getFee());
                 refundingValue += rbf.getFeeValue();
             }
             i.setNetValue(refundingValue);
@@ -1656,10 +1661,10 @@ public class BillSearch implements Serializable {
         billController.save(rb);
         currentRefundBill = rb;
         for (BillItem bi : rb.getBillItems()) {
-            billController.saveBillItem(bi);
             for (BillFee bf : bi.getBillFees()) {
                 billController.saveBillFee(bf);
             }
+            billController.saveBillItem(bi);
         }
 
         List<Bill> refundBills = new ArrayDeque<>();
@@ -3070,7 +3075,6 @@ public class BillSearch implements Serializable {
         return billFees;
     }
 
-    
     public List<BillFee> getBillFees2() {
         System.out.println("getBill.getId() = " + getBill().getId());
         if (billFees == null) {
@@ -3098,7 +3102,7 @@ public class BillSearch implements Serializable {
 
         return billFees;
     }
-    
+
     public List<BillFee> getPayingBillFees() {
         if (getBill() != null) {
             String sql = "SELECT b FROM BillFee b WHERE b.retired=false and b.bill.id=" + getBill().getId();
@@ -3825,7 +3829,9 @@ public class BillSearch implements Serializable {
         for (BillItem bi : b.getBillItems()) {
             double billItemTotal = 0.0;
             for (BillFee bf : bi.getBillFees()) {
+                System.out.println("bf = " + bf.getFee().getName());
                 if (bf.getFeeValue() != 0.0) {
+                    System.out.println(bf.getFee().getName() + "  " + bf.getFeeValue());
                     double bfv = bf.getFeeValue();
                     bfv = Math.abs(bfv);
                     bf.setFeeValue(0 - bfv);

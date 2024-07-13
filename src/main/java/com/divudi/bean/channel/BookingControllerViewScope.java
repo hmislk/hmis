@@ -1389,7 +1389,23 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         viewScopeDataTransferController.setNeedToFillMembershipDetails(false);
         viewScopeDataTransferController.setNeedToPrepareForNewBooking(false);
         printPreviewC = false;
-
+        if (configOptionApplicationController.getBooleanValueByKey("Automatically Load and Display the Refund Amount Upon Page Load")) {
+            if(configOptionApplicationController.getBooleanValueByKey("Disable Hospital Fee Refunds")){
+                for(BillFee bf : bs.getBill().getBillFeesWIthoutZeroValue()){
+                    if(!(bf.getFee().getFeeType() == FeeType.OwnInstitution)){
+                        copyValue(bf);
+                        calRefundTotal();
+                        checkRefundTotal();
+                    }
+                }
+            }else{
+                for(BillFee bf : bs.getBill().getBillFeesWIthoutZeroValue()){
+                        copyValue(bf);
+                        calRefundTotal();
+                        checkRefundTotal();
+                }
+            }  
+        }
         return "/channel/manage_booking_by_date?faces-redirect=true";
     }
 
@@ -6504,6 +6520,10 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 refundableTotal += bf.getTmpChangedValue();
             }
         }
+    }
+    
+    public void copyValue(BillFee bf ){
+        bf.setTmpChangedValue(bf.getFeeValue());
     }
 
     public void checkRefundTotal() {

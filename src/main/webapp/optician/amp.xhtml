@@ -86,9 +86,16 @@
 
                                                  ></p:autoComplete>
 
+                                <h:outputText  value="Last Bar Code" class="w-100"></h:outputText>
+                                <p:inputText autocomplete="off"  value="#{ampController.current.lastBarcode}"  class="w-100"></p:inputText>
 
 
-
+                                <h:outputText value="Barcode Generation Strategy" class="w-100" />
+                                <p:selectOneMenu value="#{ampController.current.itemBarcodeGenerationStrategy}" filter="true" filterMatchMode="startsWith" panelStyle="width:250px">
+                                    <f:selectItem itemLabel="Select One" itemValue="" noSelectionOption="true" />
+                                    <f:selectItems value="#{enumController.itemBarcodeGenerationStrategies}" var="strategy"
+                                                   itemLabel="#{strategy}" itemValue="#{strategy}" />
+                                </p:selectOneMenu>
 
                                 <h:outputText  value="Manufacturer" class="w-100"></h:outputText>
                                 <p:autoComplete  completeMethod="#{manufacturerController.completeManu}"
@@ -119,7 +126,7 @@
                                     <f:selectItem itemLabel="Select" ></f:selectItem>
                                     <f:selectItems value="#{enumController.departmentType}" ></f:selectItems>
                                 </p:selectOneMenu>
-                                
+
                                 <h:outputText value="No of days to mark as Short Expiary" >
                                 </h:outputText>
                                 <p:inputText 
@@ -135,9 +142,6 @@
                                     onLabel="Yes"
                                     offLabel="No"
                                     class="w-100" />
-
-
-
 
                             </h:panelGrid>
                             <p:commandButton 
@@ -155,8 +159,6 @@
 
                     </div>
                 </div>
-
-
 
             </p:panel>
         </h:form>

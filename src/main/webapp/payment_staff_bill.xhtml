@@ -9,8 +9,8 @@
       >
 
     <h:body>
-        <ui:composition template="/resources/template/template.xhtml">
-            <ui:define name="content">
+        <ui:composition template="/payments/pay_index.xhtml">
+            <ui:define name="admin">
                 <h:panelGroup id="panbilledit" rendered="#{!staffPaymentBillController.printPreview}" styleClass="alignTop" >
                     <p:panel header="Staff Payments" >
                         <h:form>
@@ -87,7 +87,7 @@
                                 </p:column>
                                 <p:column headerText="Bill Id">
                                     <f:facet name="header">
-                                        <h:outputLabel value="Bill ID"/>
+                                        <h:outputLabel value="Status"/>
                                     </f:facet>    
                                     <h:outputLabel value="#{bf.billItem.refunded}">
                                     </h:outputLabel>
@@ -95,7 +95,7 @@
 
                                 <p:column headerText="Payment Methord">
                                     <f:facet name="header">
-                                        <h:outputLabel value="Payment Methord"/>
+                                        <h:outputLabel value="Payment Method"/>
                                     </f:facet>    
                                     <h:outputLabel value="#{bf.bill.paymentMethod}">
                                     </h:outputLabel>

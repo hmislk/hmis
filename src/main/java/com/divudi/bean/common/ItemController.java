@@ -1331,6 +1331,28 @@ public class ItemController implements Serializable {
         return lst;
     }
 
+    public List<Item> findItemsFromBarcode(String barcode) {
+        String sql;
+        List<Item> lst;
+        HashMap tmpMap = new HashMap();
+        if (barcode == null) {
+            lst = new ArrayList<>();
+        } else {
+            sql = "select c "
+                    + " from Item c "
+                    + " where c.retired=false ";
+
+            sql += " and c.barcode=:q ";
+            tmpMap.put("q", barcode);
+
+            sql += " order by c.name";
+
+            lst = getFacade().findByJpql(sql, tmpMap, TemporalType.TIMESTAMP);
+
+        }
+        return lst;
+    }
+
     public List<Item> completeMasterItems(String query) {
         String jpql;
         List<Item> lst;
@@ -1417,7 +1439,9 @@ public class ItemController implements Serializable {
             tmpMap.put("dep", DepartmentType.Store);
             tmpMap.put("amp", Amp.class);
             tmpMap.put("codeStr", "%" + query.toLowerCase() + "%");
-            tmpMap.put("barcodeStr", query.toLowerCase() );
+
+            tmpMap.put("barcodeStr", query.toLowerCase());
+
             for (int i = 0; i < words.length; i++) {
                 tmpMap.put("nameStr" + i, "%" + words[i].toLowerCase() + "%");
             }
