@@ -65,7 +65,7 @@ public enum InwardChargeType {
     @Deprecated
     MedicalCare("MedicalCare"),
     
-    
+    BabyCare("BabyCare Charges"),
     
     
     // New enum values
