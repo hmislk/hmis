@@ -468,6 +468,61 @@ public class ChannelStaffPaymentBillController implements Serializable {
         dueBillFees.addAll(nonRefundableBillFees);
 
     }
+    
+    
+    public void calculateSessionAllFees() {
+        Date startTime = new Date();
+        if (getSessionInstance() == null) {
+            JsfUtil.addErrorMessage("Select Specility");
+            return;
+        }
+
+        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelPaid};
+        List<BillType> bts = Arrays.asList(billTypes);
+        HashMap hm = new HashMap();
+        String sql = " SELECT b "
+                + " FROM BillFee b "
+                + " where type(b.bill)=:class "
+                + " and b.bill.retired=false "
+//                + " and b.bill.paidAmount!=0 "
+                + " and b.fee.feeType=:ftp"
+                + " and b.bill.refunded=false "
+                + " and b.bill.cancelled=false "
+//                + " and b.bill.singleBillSession.absent=false"
+//                + " and (b.feeValue - b.paidValue) > 0 "
+//                + " and b.bill.billType in :bt "
+                + " and b.bill.singleBillSession.sessionInstance=:si";
+        sql += " order by b.bill.singleBillSession.serialNo ";
+        hm.put("si", getSessionInstance());
+//        hm.put("bt", bts);
+        hm.put("ftp", FeeType.Staff);
+        hm.put("class", BilledBill.class);
+        dueBillFees = billFeeFacade.findByJpql(sql, hm, TemporalType.TIMESTAMP);
+
+        HashMap m = new HashMap();
+        sql = " SELECT b "
+                + " FROM BillFee b "
+                + " where type(b.bill)=:class "
+                + " and b.bill.retired=false "
+                + " and b.bill.paidAmount!=0 "
+                + " and b.fee.feeType=:ftp"
+                + " and b.bill.refunded=false  "
+                + " and b.bill.cancelled=false "
+                + " and (b.feeValue - b.paidValue) > 0 "
+                + " and b.bill.billType in :bt "
+                + " and b.bill.singleBillSession.sessionInstance=:si "
+                + " and b.bill.singleBillSession.absent=true "
+                + " and b.bill.singleBillSession.sessionInstance.originatingSession.refundable=false ";
+        sql += " order by b.bill.singleBillSession.serialNo ";
+        m.put("si", getSessionInstance());
+        m.put("bt", bts);
+        m.put("ftp", FeeType.Staff);
+        m.put("class", BilledBill.class);
+        List<BillFee> nonRefundableBillFees = billFeeFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
+        dueBillFees.addAll(nonRefundableBillFees);
+
+    }
+
 
     public void calculateDueFeesAgency() {
         Date startTime = new Date();
