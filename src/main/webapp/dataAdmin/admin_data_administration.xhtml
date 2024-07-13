@@ -16,6 +16,30 @@
                         <h:form >
                             <p:panel header="Data Administration" >
                                 <p:accordionPanel>
+
+                                    <p:tab title="Report Templates" disabled="false" >
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton 
+                                                value="Add New Template" 
+                                                ajax="false"
+                                                class="w-100 "
+                                                icon="fa fa-search"
+                                                action="#{reportTemplateController.navigateToAddNewReportTemplate()}" >
+                                            </p:commandButton>
+                                            <p:commandButton 
+                                                value="List Templates" 
+                                                ajax="false"
+                                                class="w-100 "
+                                                icon="fa fa-search"
+                                                action="#{reportTemplateController.navigateToReportTemplateList()}" >
+                                            </p:commandButton>
+
+                                        </div>
+
+                                    </p:tab>
+
+
+
                                     <p:tab title="Lists"  >
 
                                         <div class="d-grid gap-2">
