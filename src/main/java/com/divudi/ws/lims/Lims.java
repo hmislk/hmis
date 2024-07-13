@@ -50,6 +50,7 @@ import com.divudi.entity.Patient;
 import com.divudi.entity.Person;
 import com.divudi.entity.pharmacy.Stock;
 import com.divudi.facade.BillItemFacade;
+import java.text.DecimalFormat;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
@@ -567,7 +568,6 @@ public class Lims {
     }
 
     private JSONArray constructUnitBarcodesJson(BillItem bi, Long startBarcode, Long endBarcode) {
-
         System.out.println("constructUnitBarcodesJson - startBarcode: " + startBarcode + ", endBarcode: " + endBarcode);
         JSONArray jsonArray = new JSONArray();
 
@@ -576,17 +576,29 @@ public class Lims {
             return jsonArray;  // Return an empty array if input is invalid
         }
 
+        DecimalFormat rateFormatter = new DecimalFormat("#,##0.00");
+        String formattedRate = "";
+        try {
+            Double rate = bi.getPharmaceuticalBillItem().getRetailRate();
+            if (rate != null) {
+                formattedRate = rateFormatter.format(rate);
+            }
+        } catch (Exception e) {
+            System.out.println("Error in formatting rate: " + e);
+        }
+
         Long barcode = startBarcode;
         try {
             while (barcode <= endBarcode) {
                 JSONObject jsonObject = new JSONObject();
                 jsonObject.put("itemName", bi.getItem().getName() != null ? bi.getItem().getName() : "");
+                jsonObject.put("rate", formattedRate);
                 jsonObject.put("barcode", barcode);
                 jsonArray.put(jsonObject);
                 barcode++;
             }
         } catch (Exception e) {
-            System.out.println("e = " + e);
+            System.out.println("Error while constructing JSON array: " + e);
         }
 
         return jsonArray;
