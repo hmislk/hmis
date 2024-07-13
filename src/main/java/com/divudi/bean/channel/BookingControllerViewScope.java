@@ -935,6 +935,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         fillSessionInstanceDetails();
         calculateSelectedBillSessionTotal();
     }
+    
 
     public void fillSessionInstanceDetails() {
         if (selectedSessionInstance == null) {
@@ -1368,13 +1369,13 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public String navigateToManageBooking(BillSession bs) {
+        System.out.println("bs = " + bs);
         selectedBillSession = bs;
         if (selectedBillSession == null) {
             JsfUtil.addErrorMessage("Please select a Patient");
             return "";
         }
         
-        fillSessionInstanceByDoctor();
         // Setting the properties in the viewScopeDataTransferController
         viewScopeDataTransferController.setSelectedBillSession(selectedBillSession);
         viewScopeDataTransferController.setSelectedSessionInstance(selectedSessionInstance);
@@ -1406,6 +1407,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 }
             }  
         }
+        fillFees();
+        fillSessionInstanceByDoctor();
+        calculateSelectedBillSessionTotal();
         return "/channel/manage_booking_by_date?faces-redirect=true";
     }
 
@@ -6844,6 +6848,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                     }              
                 } else {
                     feeTotalForSelectedBill += itmf.getFee();
+                    System.out.println("itmf = " + itmf.getFee());
+                    System.out.println("feeTotalForSelectedBill = " + feeTotalForSelectedBill);
                     if(itmf.isDiscountAllowed()){
                         feeDiscountForSelectedBill += itmf.getFee() * (paymentSchemeDiscount.getDiscountPercent() / 100);
                     }
@@ -6854,14 +6860,23 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 System.out.println("itmf = " + itmf);
                 if (foriegn) {
                     feeTotalForSelectedBill += itmf.getFfee();
+                    System.out.println("itmf = " + itmf);
                 } else {
                     feeTotalForSelectedBill += itmf.getFee();
+                    System.out.println("itmf 2 = " + itmf);
                 }
             }
 
         }
+        
+        System.out.println("feeTotalForSelectedBill = " + feeTotalForSelectedBill);
+        System.out.println("feeDiscountForSelectedBill = " + feeDiscountForSelectedBill);
+        System.out.println("feeNetTotalForSelectedBill 3 = " + feeNetTotalForSelectedBill);
         feeNetTotalForSelectedBill = feeTotalForSelectedBill - feeDiscountForSelectedBill;
+        System.out.println("feeNetTotalForSelectedBill 4 = " + feeNetTotalForSelectedBill);
     }
+    
+   
 
     public SmsFacade getSmsFacade() {
         return smsFacade;
@@ -7277,7 +7292,11 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     public double getCashBalance() {
         if (feeTotalForSelectedBill != null) {
+            System.out.println("feeNetTotalForSelectedBill = " + feeNetTotalForSelectedBill);
+            System.out.println("cashPaid = " + cashPaid);
+        
             cashBalance = feeNetTotalForSelectedBill - cashPaid;
+            System.out.println("cashBalance = " + cashBalance);
         }
         return cashBalance;
     }
