@@ -271,16 +271,19 @@
                                                 </p:cellEditor> 
                                             </p:column>
 
-                                            <p:column style="width:4%"> 
-
-                                                <p:rowEditor />  
-                                                <p:commandButton icon="fas fa-trash" action="#{pharmacySaleController.removeBillItem(bi)}" class="ui-button-danger" ajax="false" >
-
+                                            <p:column>
+                                                <p:rowEditor style="display: inline-block; margin-right: 10px;"/>
+                                                <p:commandButton
+                                                    id="btnDelete"
+                                                    icon="fas fa-trash"
+                                                    action="#{pharmacySaleController.removeBillItem(bi)}" 
+                                                    class="ui-button-danger" 
+                                                    process="btnDelete"
+                                                    update="tblBillItem :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('panelPaymentDetails',view).clientId}"
+                                                    style="display: inline-block;">
                                                 </p:commandButton>
-                                            </p:column> 
-                                            <!--                                            <p:column headerText="Remove">
-                                                                                            
-                                                                                        </p:column>-->
+                                            </p:column>
+
 
                                         </p:dataTable>
                                     </p:panel>
@@ -336,13 +339,13 @@
                                 </div>
                                 <div class="col-md-5"  >
                                     <h:panelGrid id="sale" columns="1" class="alignTop w-100"  >
-                                        <common:patient_details  
+                                        <common:patient_details_not_mandatory  
                                             editable="true"
                                             focus="false"
                                             controller="#{pharmacySaleController}"/>
                                         <div class="row">
                                             <div class="col">
-                                                <p:panel class="w-100">
+                                                <p:panel  class="w-100">
                                                     <f:facet name="header" >
                                                         <h:outputText styleClass="fas fa-money-bill-wave" />
                                                         <h:outputLabel value="Payment Details" class="mx-4"></h:outputLabel>

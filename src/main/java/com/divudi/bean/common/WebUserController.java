@@ -141,7 +141,7 @@ public class WebUserController implements Serializable {
 
     private LoginPage loginPage;
 
-    boolean grantAllPrivilegesToAllUsersForTesting = true;
+    boolean grantAllPrivilegesToAllUsersForTesting = false;
 
     private List<UserNotification> userNotifications;
     private int userNotificationCount;
@@ -631,6 +631,7 @@ public class WebUserController implements Serializable {
         fillLightUsers();
         return "/admin/users/user_list?faces-redirect=true";
     }
+    
 
     private void fillLightUsers() {
         HashMap<String, Object> m = new HashMap<>();

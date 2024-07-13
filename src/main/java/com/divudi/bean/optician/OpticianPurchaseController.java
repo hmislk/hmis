@@ -5,11 +5,13 @@
 package com.divudi.bean.optician;
 
 import com.divudi.bean.common.CommonController;
+
 import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.pharmacy.AmpController;
 import com.divudi.bean.pharmacy.StockController;
+
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
@@ -519,6 +521,7 @@ public class OpticianPurchaseController implements Serializable {
             }
 
             getPharmaceuticalBillItemFacade().edit(tmpPh);
+
             getBill().getBillItems().add(i);
         }
         if (billItemsTotalQty == 0.0) {

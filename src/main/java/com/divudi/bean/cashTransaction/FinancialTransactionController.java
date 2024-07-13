@@ -210,7 +210,6 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public String navigateToReceiveFundTransferBillsForMe() {
-        findNonClosedShiftStartFundBillIsAvailable();
         fillFundTransferBillsForMeToReceive();
         return "/cashier/fund_transfer_bills_for_me_to_receive?faces-redirect=true";
     }
@@ -270,6 +269,7 @@ public class FinancialTransactionController implements Serializable {
         selectedBill = null;
         nonClosedShiftStartFundBill = null;
         paymentsFromShiftSratToNow = null;
+        
     }
 
     public void resetClassVariablesWithoutSelectedBill() {
@@ -695,8 +695,24 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public void calculateTotalFundsFromShiftStartToNow() {
-        additions = financialReportByPayments.getCashTotal() + financialReportByPayments.getNetCreditCardTotal() + financialReportByPayments.getCollectedVoucher() + financialReportByPayments.getNetOtherNonCreditTotal() + financialReportByPayments.getBankWithdrawals();
-        Deductions = financialReportByPayments.getRefundedCash() + financialReportByPayments.getRefundedCreditCard() + financialReportByPayments.getRefundedVoucher() + financialReportByPayments.getRefundedOtherNonCredit() + financialReportByPayments.getFloatHandover() + financialReportByPayments.getBankDeposits();
+        //System.out.println("additions");
+        //System.out.println("financialReportByPayments.getBankWithdrawals() = " + financialReportByPayments.getBankWithdrawals());
+        //System.out.println("financialReportByPayments.getCashTotal() = " + financialReportByPayments.getCashTotal());
+        //System.out.println("financialReportByPayments.getNetCreditCardTotal() = " + financialReportByPayments.getNetCreditCardTotal());
+        //System.out.println("financialReportByPayments.getCollectedVoucher() = " + financialReportByPayments.getCollectedVoucher());
+        //System.out.println("financialReportByPayments.getNetOtherNonCreditTotal() = " + financialReportByPayments.getNetOtherNonCreditTotal());
+        //System.out.println("financialReportByPayments.getBankWithdrawals() = " + financialReportByPayments.getFloatReceived());
+        
+        //additions = financialReportByPayments.getCashTotal() + financialReportByPayments.getNetCreditCardTotal() + financialReportByPayments.getCollectedVoucher() + financialReportByPayments.getNetOtherNonCreditTotal() + financialReportByPayments.getBankWithdrawals();
+        //Deductions = financialReportByPayments.getRefundedCash() + financialReportByPayments.getRefundedCreditCard() + financialReportByPayments.getRefundedVoucher() + financialReportByPayments.getRefundedOtherNonCredit() + financialReportByPayments.getFloatHandover() + financialReportByPayments.getBankDeposits();
+        
+        additions = financialReportByPayments.getBankWithdrawals() + financialReportByPayments.getCashTotal() + financialReportByPayments.getNetCreditCardTotal() + financialReportByPayments.getCollectedVoucher() + financialReportByPayments.getNetOtherNonCreditTotal() + financialReportByPayments.getFloatReceived();
+        Deductions = financialReportByPayments.getFloatHandover() + financialReportByPayments.getBankDeposits();
+        
+        //System.out.println("\n\nDeductions");
+        //System.out.println("financialReportByPayments.getFloatHandover() = " + financialReportByPayments.getFloatHandover());
+        //System.out.println("financialReportByPayments.getBankDeposits() = " + financialReportByPayments.getBankDeposits());
+        
         totalFunds = additions - Deductions;
         shiftEndTotalValue = totalFunds;
 
@@ -773,8 +789,8 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public String settleShiftEndFundBill() {
-        boolean fundTransferBillTocollect = false;
-
+         boolean fundTransferBillTocollect = false;
+        
         if (currentBill == null) {
             JsfUtil.addErrorMessage("Error");
             return "";
@@ -787,16 +803,15 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("Error");
             return "";
         }
-
         if (fundTransferBillsToReceive!=null && !fundTransferBillsToReceive.isEmpty()) {
             fundTransferBillTocollect = true;
-
         }
-
+        
         if (fundTransferBillTocollect) {
             JsfUtil.addErrorMessage("Please collect funds transferred to you before closing.");
             return "";
         }
+
 
         currentBill.setDepartment(sessionController.getDepartment());
         currentBill.setInstitution(sessionController.getInstitution());
@@ -966,6 +981,7 @@ public class FinancialTransactionController implements Serializable {
     }
 
     private void prepareToAddNewWithdrawalProcessingBill() {
+        currentBillPayments = null;
         currentBill = new Bill();
         currentBill.setBillType(BillType.WithdrawalFundBill);
         currentBill.setBillTypeAtomic(BillTypeAtomic.FUND_WITHDRAWAL_BILL);

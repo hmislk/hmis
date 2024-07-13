@@ -47,7 +47,7 @@
                     <nav class="navbar navbar-light p-2 sticky-top w-100" style="background-color: #e3f2fd;">
                         <div class="d-flex align-items-center mx-4">
                             <h:outputText styleClass="fa-solid fa-stethoscope"/>
-                            <h4 onclick="toggleFullScreen()" class="mx-4">Today's Session</h4>
+                            <h4 onclick="toggleFullScreen()" class="mx-4">Today's Session</h4>  <h:outputLabel style="font-weight: 600; font-size: 1.2em" value=" - #{sessionController.loggedUser.webUserPerson.nameWithTitle}" />
                         </div>
 
                         <div>
@@ -93,6 +93,8 @@
                                              icon="fa fa-list" 
                                              styleClass="ui-button-primary mx-1" 
                                              action="#{bookingController.listTodaysAllSesionInstances()}" />
+
+                            <p:commandButton id="btnLogout" ajax="false" icon="pi pi-sign-out" action="#{sessionController.logout}" />
                         </div>
 
                     </nav>
@@ -186,31 +188,36 @@
                         </div>
                         <div class="col-2 ">
                             <div class="d-flex justify-content-between align-items-center mt-3">
-                                
+
                                 <div>
                                     <p:badge severity="success"
-                                                     value="Completed"
-                                                     rendered="#{s.completed}">
+                                             value="Completed"
+                                             rendered="#{s.completed}">
                                     </p:badge>
 
 
                                     <p:badge  value="Scheduled" severity="warning"
-                                                      rendered="#{not s.completed and not s.started}">
+                                              rendered="#{(not s.completed and not s.started) and !s.cancelled}">
                                     </p:badge>
 
                                     <p:badge severity="info"  value="Strated"
-                                                     rendered="#{s.started and not s.completed}">
+                                             rendered="#{s.started and not s.completed}">
+                                    </p:badge>
+
+                                    <p:badge severity="danger"  value="Cancelled"
+                                             rendered="#{s.cancelled}">
                                     </p:badge>
                                 </div>
-                                
+
                                 <div>                                 
-                                     <p:commandButton class="mx-2" icon="fas fa-eye"
-                                                      styleClass="rounded-button ui-button-outlined ui-button-info " ajax="false"
-                                                      value="View"
-                                                      rendered="#{bookingController.isSessionDateToday() or webUserController.hasPrivilege('ChannellingPastBookingPatientAttend')}"
-                                                      style="font-size: 1em; text-align: center"
+                                    <p:commandButton class="mx-2" icon="fas fa-eye"
+                                                     styleClass="rounded-button ui-button-outlined ui-button-info " ajax="false"
+                                                     value="View"
+                                                     disabled="#{s.cancelled}"
+                                                     rendered="#{bookingController.isSessionDateToday() or webUserController.hasPrivilege('ChannellingPastBookingPatientAttend')}"
+                                                     style="font-size: 1em; text-align: center"
                                                      action="#{bookingController.navigateToManageSessionQueueAtConsultantRoom}"
-                                                    >
+                                                     >
                                         <f:setPropertyActionListener value="#{s}" target="#{bookingController.selectedSessionInstance}"/>
                                     </p:commandButton>
                                 </div>

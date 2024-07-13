@@ -211,10 +211,21 @@
             <h:panelGroup rendered="#{cc.attrs.bill.fromStaff ne null}" style="font-weight: bold;text-align: left;font-size: 14pt" >
                 <div >
                     <div style="width: 100%;text-align: center;font-size: 15px;font-weight: bolder" class="mt-2">
-<!--                        <h:outputLabel value="Doctor : " ></h:outputLabel>-->
+                        <!--                        <h:outputLabel value="Doctor : " ></h:outputLabel>-->
                         <h:outputLabel value="#{cc.attrs.bill.fromStaff.person.nameWithTitle}" ></h:outputLabel>
                     </div>
                 </div>
+            </h:panelGroup>
+            
+             <h:panelGroup  rendered="#{configOptionApplicationController.getBooleanValueByKey('Print OPD Bill Session Number')}" >
+                <h:panelGroup  rendered="#{cc.attrs.bill.singleBillSession ne null}" >
+                    <div class="billline">
+                        <div style="width: 100%;text-align: center;font-size: 10px;">
+                            <p:outputLabel value="Session No. : " ></p:outputLabel>
+                            <p:outputLabel value="#{cc.attrs.bill.singleBillSession.serialNo}" ></p:outputLabel>
+                        </div>
+                    </div>
+                </h:panelGroup>
             </h:panelGroup>
 
             <div class="" >
@@ -267,6 +278,20 @@
                                         </h:outputLabel>
                                     </td>
                                 </tr>
+                                <h:panelGroup rendered="#{bip.item.printSessionNumber}" >
+                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Individual Bill Item Session Number in OPD Bills')}" >
+                                        <tr>
+                                            <td  style="overflow: visible;">
+                                                <p:spacer height="1" width="10" ></p:spacer>
+                                                <h:outputLabel class="itemsBlockRightFiveFive" value="Session No. : " >
+                                                </h:outputLabel>
+                                                <h:outputLabel class="itemsBlockRightFiveFive"   value="#{bip.billSession.serialNo}"    >
+                                                </h:outputLabel>
+                                            </td>
+                                        </tr>
+                                    </h:panelGroup>
+                                </h:panelGroup>
+
                             </h:panelGroup>
                             <h:panelGroup rendered="#{bip.item.printFeesForBills}">
                                 <ui:repeat value="#{bip.billFees}" var="bf" >
@@ -304,7 +329,7 @@
                     </h:panelGroup>
 
                     <h:panelGroup rendered="#{cc.attrs.bill.margin ne 0.0}">
-                       
+
                         <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip"   >
                             <tr>
                                 <td  style="overflow: visible;">

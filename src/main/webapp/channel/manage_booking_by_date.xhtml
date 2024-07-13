@@ -25,7 +25,8 @@
                             <p:commandButton 
                                 ajax="false" 
                                 class="mx-1 ui-button-secondary"
-                                value="Back to Bookings" 
+                                value="Back to Bookings"
+                                immediate="true"
                                 action="#{bookingControllerViewScope.navigateBackToBookingsFromBillSession()}"
                                 icon="fa-solid fa-arrow-left" />
                         </div>
@@ -311,8 +312,11 @@
                                         <p:panelGrid id="panelBillDetailsForSettling" columns="2">
                                             <f:facet name="header">
                                                 <h:outputText styleClass="fas fa-user" />
-                                                <h:outputLabel class="mx-4" value="Billl Details" />
+                                                <h:outputLabel class="mx-4" value="Bill Details" />
                                             </f:facet>
+                                            <h:outputLabel value="Bill ID" ></h:outputLabel>
+                                            <h:outputLabel value="#{bookingControllerViewScope.selectedBillSession.billItem.bill.id}" >
+                                            </h:outputLabel>
                                             <h:outputLabel value="Total" ></h:outputLabel>
                                             <h:outputLabel value="#{bookingControllerViewScope.selectedBillSession.billItem.bill.total}" >
                                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
@@ -361,6 +365,7 @@
                                                             ajax="false"
                                                             icon="fa fa-check"
                                                             action="#{bookingControllerViewScope.settleCredit()}"
+                                                            immediate="true"
                                                             disabled="#{bookingControllerViewScope.selectedBillSession.bill.billType.parent ne 'ChannelCreditFlow'
                                                                         or bookingControllerViewScope.selectedBillSession.bill.cancelled==true
                                                                         or  bookingControllerViewScope.selectedBillSession.bill.paidAmount ne 0}"

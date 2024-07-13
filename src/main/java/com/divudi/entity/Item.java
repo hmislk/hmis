@@ -165,6 +165,7 @@ public class Item implements Serializable, Comparable<Item> {
     boolean chargesVisibleForInward;
     boolean requestForQuentity;
     boolean marginNotAllowed;
+    private boolean printSessionNumber;
     @Column
     boolean inactive = false;
     @ManyToOne
@@ -814,6 +815,9 @@ public class Item implements Serializable, Comparable<Item> {
     }
 
     public SessionNumberType getSessionNumberType() {
+        if(sessionNumberType==null){
+            sessionNumberType=SessionNumberType.ByBill;
+        }
         return sessionNumberType;
     }
 
@@ -1361,6 +1365,16 @@ public class Item implements Serializable, Comparable<Item> {
     public void setLastBarcode(Long lastBarcode) {
         this.lastBarcode = lastBarcode;
     }
+
+    public boolean isPrintSessionNumber() {
+        return printSessionNumber;
+    }
+
+    public void setPrintSessionNumber(boolean printSessionNumber) {
+        this.printSessionNumber = printSessionNumber;
+    }
+    
+    
 
     static class ReportItemComparator implements Comparator<ReportItem> {
 
