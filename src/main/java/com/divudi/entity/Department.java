@@ -84,10 +84,14 @@ public class Department implements Serializable {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date retiredAt;
     String retireComments;
+    private Boolean active;
 
     double margin;
     double pharmacyMarginFromPurchaseRate;
 
+    
+    
+    
     public double getPharmacyMarginFromPurchaseRate() {
         return pharmacyMarginFromPurchaseRate;
     }
@@ -341,5 +345,13 @@ public class Department implements Serializable {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public Boolean getActive() {
+        return active;
+    }
+
+    public void setActive(Boolean active) {
+        this.active = active;
     }
 }

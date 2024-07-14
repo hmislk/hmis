@@ -70,7 +70,7 @@ public class DepartmentController implements Serializable {
                 + " and i.retired=:ret";
         Department i = getFacade().findFirstByJpql(sql, m);
         if (i == null) {
-            i = new Department(); 
+            i = new Department();
             i.setName(name);
             getFacade().create(i);
         } else {
@@ -79,7 +79,7 @@ public class DepartmentController implements Serializable {
         }
         return i;
     }
-    
+
     public Department findAndSaveDepartmentByName(String name, Institution ins) {
         if (name == null || name.trim().equals("")) {
             return null;
@@ -94,7 +94,7 @@ public class DepartmentController implements Serializable {
                 + " and i.retired=:ret";
         Department i = getFacade().findFirstByJpql(sql, m);
         if (i == null) {
-            i = new Department(); 
+            i = new Department();
             i.setName(name);
             i.setInstitution(ins);
             getFacade().create(i);
@@ -104,7 +104,7 @@ public class DepartmentController implements Serializable {
         }
         return i;
     }
-    
+
     public Department findExistingDepartmentByName(String name, Institution ins) {
         if (name == null || name.trim().equals("")) {
             return null;
@@ -120,13 +120,45 @@ public class DepartmentController implements Serializable {
         Department i = getFacade().findFirstByJpql(sql, m);
         return i;
     }
-    
+
+    public DepartmentType findDepartmentType(String deptType) {
+        if (deptType == null || deptType.trim().isEmpty()) {
+            return DepartmentType.Other; // Default to 'Other' if the input is null or empty
+        }
+
+        String cleanedDeptType = deptType.trim().toLowerCase();
+
+        // First, try to match with enum name
+        for (DepartmentType type : DepartmentType.values()) {
+            if (type.name().equalsIgnoreCase(cleanedDeptType)) {
+                return type;
+            }
+        }
+
+        // Next, try to match with labels
+        for (DepartmentType type : DepartmentType.values()) {
+            if (type.getLabel().equalsIgnoreCase(cleanedDeptType)) {
+                return type;
+            }
+        }
+
+        // Finally, attempt partial match with labels
+        for (DepartmentType type : DepartmentType.values()) {
+            if (type.getLabel().toLowerCase().contains(cleanedDeptType)) {
+                return type;
+            }
+        }
+
+        // If no match found, default to 'Other'
+        return DepartmentType.Other;
+    }
+
     public void fillItems() {
         String j;
         j = "select i from Department i where i.retired=false order by i.name";
         items = getFacade().findByJpql(j);
     }
-    
+
     public List<Department> getInstitutionDepatrments(Institution ins) {
         List<Department> deps;
         if (ins == null) {
@@ -286,8 +318,6 @@ public class DepartmentController implements Serializable {
         departments = getFacade().findByJpql(sql);
         return departments;
     }
-
-    
 
     public Department getDefaultDepatrment(Institution ins) {
         Department dep;
