@@ -583,17 +583,19 @@ public class ChannelScheduleController implements Serializable {
 
     public List<Staff> getSpecialityStaff() {
         List<Staff> suggestions = new ArrayList<>();
-        if (getSpeciality() == null) {
-            return suggestions;
-        }
         String jpql;
-        Map params = new HashMap();
+        Map<String, Object> params = new HashMap<>();
         jpql = "select p "
                 + " from Staff p "
-                + " where p.retired=false "
-                + " and p.speciality =:sp "
-                + " order by p.person.name";
-        params.put("sp", speciality);
+                + " where p.retired=false ";
+
+        if (getSpeciality() != null) {
+            jpql += " and p.speciality = :sp ";
+            params.put("sp", getSpeciality());
+        }
+
+        jpql += " order by p.person.name";
+
         suggestions = getStaffFacade().findByJpql(jpql, params);
         return suggestions;
     }
@@ -803,8 +805,8 @@ public class ChannelScheduleController implements Serializable {
         itemFees = null;
         createFees();
     }
-    
-    public void assignOlddateAndOldTimFromCurrentSessionInstance(){
+
+    public void assignOlddateAndOldTimFromCurrentSessionInstance() {
         setSessionInstanceOldTime(currentSessionInstance.getStartingTime());
         setSessionInstanceOldDayMonth(currentSessionInstance.getSessionDate());
     }

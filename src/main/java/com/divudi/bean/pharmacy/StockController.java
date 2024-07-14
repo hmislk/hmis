@@ -206,7 +206,7 @@ public class StockController implements Serializable {
         if (inputStocks == null) {
             return;
         }
-        if(inputStocks.size()>20){
+        if (inputStocks.size() > 20) {
             return;
         }
         // Map to store the total stock quantity for each item
@@ -563,9 +563,9 @@ public class StockController implements Serializable {
         recreateModel();
         getItems();
     }
-    
+
     public void save(Stock s) {
-        if (s==null) {
+        if (s == null) {
             return;
         }
         if (s.getId() != null && s.getId() > 0) {
@@ -574,6 +574,17 @@ public class StockController implements Serializable {
         } else {
             getFacade().create(s);
             JsfUtil.addSuccessMessage("Saved Successfully");
+        }
+    }
+    
+    public void saveSilantly(Stock s) {
+        if (s == null) {
+            return;
+        }
+        if (s.getId() != null && s.getId() > 0) {
+            getFacade().edit(s);
+        } else {
+            getFacade().create(s);
         }
     }
 
@@ -648,6 +659,26 @@ public class StockController implements Serializable {
 
     public Stock getStock() {
         return stock;
+    }
+
+    public Stock findStockById(String strId) {
+        if (strId == null || strId.isEmpty()) {
+            throw new IllegalArgumentException("The provided ID string is null or empty.");
+        }
+
+        try {
+            Long id = Long.parseLong(strId);
+            return findStockById(id);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("The provided ID string is not a valid number.", e);
+        }
+    }
+
+    public Stock findStockById(Long id) {
+        if (id == null) {
+            throw new IllegalArgumentException("The provided ID is null.");
+        }
+        return getFacade().find(id);
     }
 
     public void setStock(Stock stock) {

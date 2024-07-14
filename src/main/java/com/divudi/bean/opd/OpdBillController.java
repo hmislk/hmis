@@ -67,8 +67,10 @@ import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.SmsFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.BillFeeBundleEntry;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.OptionScope;
+import com.divudi.entity.Fee;
 import com.divudi.entity.Token;
 import com.divudi.facade.TokenFacade;
 import com.divudi.java.CommonFunctions;
@@ -245,6 +247,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     private Bill bill;
     private Bill batchBill;
     private Bill billPrint;
+    private boolean billSettlingStarted;
 
     private List<Bill> bills;
     private List<Bill> selectedBills;
@@ -257,6 +260,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
     private List<BillFee> lstBillFees;
     private List<BillFee> lstBillFeesPrint;
+    private List<BillFeeBundleEntry> billFeeBundleEntrys;
 
     private List<Payment> payments;
 
@@ -301,6 +305,25 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         patientController.clearSearchDetails();
         patientController.setSearchedPatients(null);
         return "/opd/patient_search?faces-redirect=true";
+    }
+
+    public void changeTheSelectedFeeFromFeeBundle(BillFee ibf) {
+        System.out.println("changeTheSelectedFeeFromFeeBundle");
+        System.out.println("ibf = " + ibf.getFee());
+        if (billFeeBundleEntrys == null) {
+            return;
+        }
+        for (BillFeeBundleEntry bfbe : billFeeBundleEntrys) {
+            System.out.println("bfbe = " + bfbe);
+            for (BillFee bf : bfbe.getAvailableBillFees()) {
+                System.out.println("bf = " + bf.getFee());
+                if (bf.equals(ibf)) {
+                    System.out.println("equal");
+                    bfbe.setSelectedBillFee(bf);
+                }
+            }
+        }
+        calTotals();
     }
 
     public String navigateToOpdAnalyticsIndex() {
@@ -1644,9 +1667,15 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     }
 
     public String settleOpdBill() {
+        if (billSettlingStarted) {
+            return null;
+        }
+        billSettlingStarted = true;
+
         String eventUuid = auditEventController.createAuditEvent("OPD Bill Controller - Settle OPD Bill");
         if (!executeSettleBillActions()) {
             auditEventController.updateAuditEvent(eventUuid);
+            billSettlingStarted = false;
             return "";
         }
         UserPreference ap = sessionController.getApplicationPreference();
@@ -1655,6 +1684,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         }
 
         auditEventController.updateAuditEvent(eventUuid);
+        billSettlingStarted = false;
         return "/opd/opd_batch_bill_print?faces-redirect=true";
     }
 
@@ -2580,14 +2610,19 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         BillEntry addingEntry = new BillEntry();
         addingEntry.setBillItem(bi);
         addingEntry.setLstBillComponents(getBillBean().billComponentsFromBillItem(bi));
-        addingEntry.setLstBillFees(getBillBean().billFeefromBillItem(bi));
+
+        List<BillFee> allBillFees = getBillBean().billFeefromBillItem(bi);
+        List<BillFeeBundleEntry> billItemBillFeeBundleEntries = getBillBean().bundleFeesByName(allBillFees);
+
+        addingEntry.setLstBillFees(allBillFees);
+
+        getBillFeeBundleEntrys().addAll(billItemBillFeeBundleEntries);
 
         addStaffToBillFees(addingEntry.getLstBillFees());
 
         addingEntry.setLstBillSessions(getBillBean().billSessionsfromBillItem(bi));
         getLstBillEntries().add(addingEntry);
         bi.setRate(getBillBean().billItemRate(addingEntry));
-//            bi.setQty(1.0);
         bi.setNetValue(bi.getRate() * bi.getQty());
 
         if (bi.getItem().isVatable()) {
@@ -2678,6 +2713,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         setLstBillComponents(null);
         setLstBillEntries(null);
         setLstBillFees(null);
+        setBillFeeBundleEntrys(null);
         setStaff(null);
         setToStaff(null);
         setComment(null);
@@ -2696,6 +2732,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         opdEncounterComments = "";
         patientSearchTab = 0;
         token = null;
+        billSettlingStarted = false;
     }
 
     private void clearBillValuesForMember() {
@@ -2714,6 +2751,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         setLstBillComponents(null);
         setLstBillEntries(null);
         setLstBillFees(null);
+        setBillFeeBundleEntrys(null);
         setStaff(null);
         setToStaff(null);
         setComment(null);
@@ -2743,22 +2781,19 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     MembershipSchemeController membershipSchemeController;
 
     public void calTotals() {
+        System.out.println("Cal Totals");
         if (paymentMethod == null) {
             return;
         }
 
-//        if (toStaff != null) {
-//            paymentScheme = null;
-//            creditCompany = null;
-//        }
         double billDiscount = 0.0;
         double billGross = 0.0;
         double billNet = 0.0;
         double billVat = 0.0;
-
-//        MembershipScheme membershipScheme = membershipSchemeController.fetchPatientMembershipScheme(getPatient(), getSessionController().getApplicationPreference().isMembershipExpires());
         for (BillEntry be : getLstBillEntries()) {
-            //////// // System.out.println("bill item entry");
+
+            System.out.println("be = " + be);
+
             double entryGross = 0.0;
             double entryDis = 0.0;
             double entryNet = 0.0;
@@ -2768,35 +2803,41 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             BillItem bi = be.getBillItem();
 
             for (BillFee bf : be.getLstBillFees()) {
-                Department department = null;
-                Item item = null;
-                PriceMatrix priceMatrix;
-                Category category = null;
 
-                if (bf.getBillItem() != null && bf.getBillItem().getItem() != null) {
-                    department = bf.getBillItem().getItem().getDepartment();
+                System.out.println("bf = " + bf);
 
-                    item = bf.getBillItem().getItem();
-                }
+                boolean needToAdd = billFeeIsThereAsSelectedInBillFeeBundle(bf);
+                if (needToAdd) {
 
-                priceMatrix = getPriceMatrixController().getPaymentSchemeDiscount(paymentMethod, paymentScheme, department, item);
-                getBillBean().setBillFees(bf, isForeigner(), paymentMethod, paymentScheme, getCreditCompany(), priceMatrix);
+                    Department department = null;
+                    Item item = null;
+                    PriceMatrix priceMatrix;
+                    Category category = null;
 
-                if (bf.getBillItem().getItem().isVatable()) {
-                    if (!(bf.getFee().getFeeType() == FeeType.CollectingCentre && collectingCentreBillController.getCollectingCentre() != null)) {
-                        bf.setFeeVat(bf.getFeeValue() * bf.getBillItem().getItem().getVatPercentage() / 100);
-                        bf.setFeeVat(roundOff(bf.getFeeVat()));
+                    if (bf.getBillItem() != null && bf.getBillItem().getItem() != null) {
+                        department = bf.getBillItem().getItem().getDepartment();
+
+                        item = bf.getBillItem().getItem();
                     }
+
+                    priceMatrix = getPriceMatrixController().getPaymentSchemeDiscount(paymentMethod, paymentScheme, department, item);
+                    getBillBean().setBillFees(bf, isForeigner(), paymentMethod, paymentScheme, getCreditCompany(), priceMatrix);
+
+                    if (bf.getBillItem().getItem().isVatable()) {
+                        if (!(bf.getFee().getFeeType() == FeeType.CollectingCentre && collectingCentreBillController.getCollectingCentre() != null)) {
+                            bf.setFeeVat(bf.getFeeValue() * bf.getBillItem().getItem().getVatPercentage() / 100);
+                            bf.setFeeVat(roundOff(bf.getFeeVat()));
+                        }
+                    }
+                    bf.setFeeVatPlusValue(bf.getFeeValue() + bf.getFeeVat());
+
+                    entryGross += bf.getFeeGrossValue();
+                    entryNet += bf.getFeeValue();
+                    entryDis += bf.getFeeDiscount();
+                    entryVat += bf.getFeeVat();
+                    entryVatPlusNet += bf.getFeeVatPlusValue();
+
                 }
-                bf.setFeeVatPlusValue(bf.getFeeValue() + bf.getFeeVat());
-
-                entryGross += bf.getFeeGrossValue();
-                entryNet += bf.getFeeValue();
-                entryDis += bf.getFeeDiscount();
-                entryVat += bf.getFeeVat();
-                entryVatPlusNet += bf.getFeeVatPlusValue();
-
-                //////// // System.out.println("fee net is " + bf.getFeeValue());
             }
 
             bi.setDiscount(entryDis);
@@ -2825,6 +2866,27 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             }
         }
 
+    }
+
+    private boolean billFeeIsThereAsSelectedInBillFeeBundle(BillFee bf) {
+        System.out.println("Going to check a bill fee is selected ");
+        if (bf == null) {
+            return false;
+        }
+        if (bf.getFee() == null) {
+            return false;
+        }
+        System.out.println("Input Fee Value is " + bf.getFee().getFee());
+        boolean found = false;
+        for (BillFeeBundleEntry bfbe : getBillFeeBundleEntrys()) {
+            System.out.println("Current one from Bill Fee Entries  " + bfbe);
+            if (bfbe.getSelectedBillFee().equals(bf)) {
+                System.out.println("Value of the Selected One " + bfbe.getSelectedBillFee().getFee().getFee());
+                found = true;
+            }
+        }
+        System.out.println("found = " + found);
+        return found;
     }
 
     public void feeChanged() {
@@ -3043,32 +3105,27 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     }
 
     public void removeBillItem() {
-
-        //TODO: Need to add Logic
-        //////// // System.out.println(getIndex());
         if (getIndex() != null) {
-            //  boolean remove;
             BillEntry temp = getLstBillEntries().get(getIndex());
-            //////// // System.out.println("Removed Item:" + temp.getBillItem().getNetValue());
             recreateList(temp);
-            // remove = getLstBillEntries().remove(getIndex());
-
-            //  getLstBillEntries().remove(index);
-            ////////// // System.out.println("Is Removed:" + remove);
             calTotals();
-
         }
-
     }
 
     public void recreateList(BillEntry r) {
         List<BillEntry> temp = new ArrayList<>();
+        List<BillFeeBundleEntry> newListOfBillFeeBundleEntries = new ArrayList<>();
         for (BillEntry b : getLstBillEntries()) {
             if (b.getBillItem().getItem() != r.getBillItem().getItem()) {
                 temp.add(b);
-                //////// // System.out.println(b.getBillItem().getNetValue());
             }
         }
+        for (BillFeeBundleEntry bfe : billFeeBundleEntrys) {
+            if (bfe.getSelectedBillFee().getFee().getItem() != r.getBillItem().getItem()) {
+                newListOfBillFeeBundleEntries.add(bfe);
+            }
+        }
+        billFeeBundleEntrys = newListOfBillFeeBundleEntries;
         lstBillEntries = temp;
         lstBillComponents = getBillBean().billComponentsFromBillEntries(lstBillEntries);
         lstBillFees = getBillBean().billFeesFromBillEntries(lstBillEntries);
@@ -4086,6 +4143,25 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
     public void setDepartmentOpdItems(List<ItemLight> departmentOpdItems) {
         this.departmentOpdItems = departmentOpdItems;
+    }
+
+    public List<BillFeeBundleEntry> getBillFeeBundleEntrys() {
+        if (billFeeBundleEntrys == null) {
+            billFeeBundleEntrys = new ArrayList<>();
+        }
+        return billFeeBundleEntrys;
+    }
+
+    public void setBillFeeBundleEntrys(List<BillFeeBundleEntry> billFeeBundleEntrys) {
+        this.billFeeBundleEntrys = billFeeBundleEntrys;
+    }
+
+    public boolean isBillSettlingStarted() {
+        return billSettlingStarted;
+    }
+
+    public void setBillSettlingStarted(boolean billSettlingStarted) {
+        this.billSettlingStarted = billSettlingStarted;
     }
 
 }

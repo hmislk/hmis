@@ -9,6 +9,7 @@ import com.divudi.data.ApplicationInstitution;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillItemStatus;
 import com.divudi.data.BillType;
+import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.CalculationType;
 import com.divudi.data.CreditDuration;
 import com.divudi.data.CssVerticalAlign;
@@ -120,7 +121,7 @@ public class EnumController implements Serializable {
             }
         }
     }
-    
+
     public void fillPaymentMethodsForPatientDeposit() {
         paymentMethodsForPatientDeposit = new ArrayList<>();
         for (PaymentMethod pm : PaymentMethod.values()) {
@@ -347,6 +348,24 @@ public class EnumController implements Serializable {
         return BillType.values();
     }
 
+    public BillTypeAtomic[] getBillTypesAtomic() {
+        return BillTypeAtomic.values();
+    }
+
+    public List<BillTypeAtomic> getBillTypesAtomic(String query) {
+        return Arrays.stream(BillTypeAtomic.values())
+                .filter(bt -> bt.getLabel().toLowerCase().contains(query.toLowerCase()))
+                .collect(Collectors.toList());
+    }
+
+    
+    public List<String> completeBillTypeAtomics(String query) {
+        return Arrays.stream(BillTypeAtomic.values())
+                     .map(Enum::toString) // Using toString() to get the string representation of the enum
+                     .filter(name -> name.toLowerCase().contains(query.toLowerCase()))
+                     .collect(Collectors.toList());
+    }
+    
     public StaffWelfarePeriod[] getStaffWelfarePeriods() {
         return StaffWelfarePeriod.values();
     }
@@ -496,7 +515,8 @@ public class EnumController implements Serializable {
             InwardChargeType.Procedure,
             InwardChargeType.Radiology,
             InwardChargeType.ReportingCharges,
-            InwardChargeType.WardProcedure};
+            InwardChargeType.WardProcedure,
+            InwardChargeType.BabyCare,};
 
         return b;
     }

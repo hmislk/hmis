@@ -48,6 +48,7 @@ import com.divudi.facade.SmsFacade;
 import com.divudi.facade.StaffFacade;
 import com.divudi.facade.WebUserFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.facade.SessionInstanceFacade;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.text.DateFormat;
@@ -124,6 +125,7 @@ public class ChannelReportController implements Serializable {
     List<Bill> channelBills;
     List<Bill> channelBillsCancelled;
     List<Bill> channelBillsRefunded;
+    
     /////
     @EJB
     private BillSessionFacade billSessionFacade;
@@ -155,6 +157,10 @@ public class ChannelReportController implements Serializable {
     ServiceSessionFacade serviceSessionFacade;
     @EJB
     SmsManagerEjb smsManagerEjb;
+    @EJB
+    SessionInstanceFacade sessionInstanceFacade;
+    
+    private List<SessionInstance> sessioninstances;
 
     public Institution getInstitution() {
         return institution;
@@ -335,6 +341,20 @@ public class ChannelReportController implements Serializable {
     public void setServiceSessions(List<ServiceSession> serviceSessions) {
         this.serviceSessions = serviceSessions;
     }
+    
+    public void fillSessionsForChannelDoctorCard(){
+        String sql;
+        Map m = new HashMap();
+
+        sql = " select s from SessionInstance s "
+                + " where s.retired=false "
+                + " and s.sessionDate between :fromDate and :toDate ";
+        
+        m.put("fromDate", fromDate);
+        m.put("toDate", toDate);
+        sessioninstances=sessionInstanceFacade.findByJpql(sql,m);
+    }
+
 
     public void fillIncomeWithAgentBookings() {
         String j;
@@ -4171,6 +4191,14 @@ public class ChannelReportController implements Serializable {
 
     public void setChannelReportMenuIndex(int channelReportMenuIndex) {
         this.channelReportMenuIndex = channelReportMenuIndex;
+    }
+
+    public List<SessionInstance> getSessioninstances() {
+        return sessioninstances;
+    }
+
+    public void setSessioninstances(List<SessionInstance> sessioninstances) {
+        this.sessioninstances = sessioninstances;
     }
 
     public class ChannelReportColumnModelBundle implements Serializable {
