@@ -62,6 +62,24 @@
                                     itemLabel="#{d.name}" itemValue="#{d}" 
                                     />
                             </p:selectOneMenu>
+
+                            <h:outputText value="User" />
+                            <p:autoComplete 
+                                forceSelection="true"
+                                value="#{searchController.webUser}"
+                                placeholder="Select User"
+                                completeMethod="#{webUserController.completeUser}" 
+                                id="user"
+                                var="u" 
+                                itemLabel="#{u.webUserPerson.name}" 
+                                itemValue="#{u}"
+                                class="w-100 mx-4"
+                                inputStyleClass="w-100"
+                                >
+                            </p:autoComplete>
+
+
+
                         </h:panelGrid>
                         <h:panelGrid columns="6" class="my-2" >
                             <p:commandButton 
@@ -79,7 +97,7 @@
                                 value="Excel" >
                                 <p:dataExporter fileName="All Financial Transactions" type="xlsx" target="tbl" ></p:dataExporter>
                             </p:commandButton>
-                            
+
                             <p:commandButton 
                                 class="ui-button-info " 
                                 icon="fas fa-print" 
