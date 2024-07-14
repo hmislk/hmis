@@ -108,8 +108,15 @@
                 </h:form>
 
                 <h:form >
-                    <bi:staffBill_1  bill="#{billSearch.bill}" dup="true" controller="#{billSearch}" >
+                    <p:commandButton icon="fas fa-print"
+                                     class="ui-badge-info"
+                                     value="Print">
+                        <p:printer target="profpaybill" />
+                    </p:commandButton>
+                    <h:panelGroup id="profpaybill">
+                        <bi:staffBill_1  bill="#{billSearch.bill}" dup="true" controller="#{billSearch}" >
                     </bi:staffBill_1>
+                    </h:panelGroup>
                 </h:form>
 
             </ui:define>

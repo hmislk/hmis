@@ -246,7 +246,7 @@
                                 <h:outputLabel value="Total" />
                             </td>
                             <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 30px;">
-                                <h:outputLabel value="#{cc.attrs.bill.total}" >
+                                <h:outputLabel value="#{(cc.attrs.startbill.netTotal+cc.attrs.additions)-cc.attrs.deductions}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </td>

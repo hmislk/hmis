@@ -803,10 +803,8 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("Error");
             return "";
         }
-
         if (fundTransferBillsToReceive!=null && !fundTransferBillsToReceive.isEmpty()) {
             fundTransferBillTocollect = true;
-
         }
         
         if (fundTransferBillTocollect) {
