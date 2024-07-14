@@ -352,7 +352,7 @@
                                                             itemLabel="#{pm.label}"
                                                             itemValue="#{pm}"/>
                                                         <p:ajax process="@this" 
-                                                                update="paymentDetails"
+                                                                update="paymentDetails pnlTotals"
                                                                 event="change"/>
                                                     </p:selectOneMenu>
                                                 </div>
@@ -601,6 +601,82 @@
 
                                                 </h:panelGroup>
                                             </div>
+                                        </p:panel>
+                                        <p:panel class="my-1" id="pnlTotals">
+                                            <f:facet name="header">
+                                                <p:row>
+                                                    <p:column  colspan="2" >
+                                                        <h:outputText styleClass="fa-solid fa-money-bill-wave"/>
+                                                        <h:outputText class="mx-4" value="Payment Details"/>
+                                                    </p:column>
+                                                </p:row>
+                                            </f:facet>
+                                           
+
+                                            <h:panelGroup style="display: flex; flex-direction: column; align-items: start;" id="totalsPanel">
+
+                                                <!-- Total -->
+                                                <h:panelGroup style="display: flex; justify-content: space-between; width: 100%; font-weight: bolder;">
+                                                    <h:outputText value="Total:" />
+                                                    <h:outputText value="#{bookingControllerViewScope.feeTotalForSelectedBill}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </h:panelGroup>
+
+                                                <!-- Discount -->
+                                                <h:panelGroup style="display: flex; justify-content: space-between; width: 100%;">
+                                                    <h:outputText value="Discount:" />
+                                                    <h:outputText value="#{bookingControllerViewScope.feeDiscountForSelectedBill}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </h:panelGroup>
+
+                                                <!-- Net Total -->
+                                                <h:panelGroup style="display: flex; justify-content: space-between; width: 100%;">
+                                                    <h:outputText value="Net Total:" />
+                                                    <h:outputText value="#{bookingControllerViewScope.feeNetTotalForSelectedBill}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </h:panelGroup>
+                                            </h:panelGroup>
+
+                                            <h:panelGrid id="gdManageBookings" class="w-100 m-2" columns="2"  >
+                                                <p:outputLabel value="Tenderd Amount" />
+                                                <h:panelGroup class="w-100 my-2" style="font-weight: bolder" >
+                                                    <p:inputText id="paid" value="#{bookingControllerViewScope.strTenderedValue}">
+                                                        <p:ajax event="keyup" process=" paid" update="@this"/>
+                                                    </p:inputText>
+                                                </h:panelGroup>
+
+                                                <p:outputLabel value="Balance" />
+                                                <h:panelGroup id="balance" class="w-100 my-2" style="font-weight: bolder" >
+                                                    <p:outputLabel value="#{-bookingControllerViewScope.cashBalance}"/>
+                                                </h:panelGroup>
+
+                                                <h:outputLabel value="Foriegner"/>
+                                                <p:selectBooleanCheckbox class="w-75" id="f" value="#{bookingControllerViewScope.foriegn}">
+                                                    <f:ajax event="change" execute="@this" render="totalsPanel panelBookingDetails"/>
+                                                </p:selectBooleanCheckbox>
+
+                                                <p:outputLabel value="Discount Scheme"/>
+                                                <p:selectOneMenu 
+                                                    class="w-75" 
+                                                    autoWidth="false" 
+                                                    id="cmbPs2" 
+                                                    value="#{bookingControllerViewScope.paymentScheme}">
+                                                    <f:selectItem itemLabel="Select Discount Scheme"/>
+                                                    <f:selectItems 
+                                                        value="#{paymentSchemeController.paymentSchemesForChannel}"
+                                                        var="paysch" 
+                                                        itemLabel="#{paysch.name}" 
+                                                        itemValue="#{paysch}"  />
+                                                    <p:ajax 
+                                                        process="@this"
+                                                        update="gdManageBookings :#{p:resolveFirstComponentWithId('totalsPanel',view).clientId} paymentDetails lstItems"
+                                                        event="change"
+                                                        listener="#{bookingControllerViewScope.calculateSelectedBillSessionTotal()}"/>
+                                                </p:selectOneMenu>
+                                            </h:panelGrid>
                                         </p:panel>
 
                                         <p:panel header="Additional Items" >
