@@ -10,18 +10,18 @@
     <ui:define name="content">
         <h:form>
             <p:panel rendered="#{!transferRequestController.printPreview}">
-                <h:panelGroup  class="row" rendered="#{transferRequestController.bill.toDepartment eq null}"> 
+                <h:panelGroup  class="row" rendered="#{transferRequestController.toDepartment eq null}"> 
                     <p:panel >
                         <f:facet name="header">
                             <h:outputLabel styleClass="fas fa-building" />
                             <h:outputLabel value="Select Department" class="mx-4" />
-                            <h:outputLabel value="#{transferRequestController.bill.toDepartment.name}" class="mx-4" />
+                            <h:outputLabel value="#{transferRequestController.toDepartment.name}" class="mx-4" />
                         </f:facet>
                         <div class="row" >
                             <div class="col-12" >
                                 <h:outputLabel value="Select a Department to Request : "/>
 
-                                <p:autoComplete  value="#{transferRequestController.bill.toDepartment}" 
+                                <p:autoComplete  value="#{transferRequestController.toDepartment}" 
                                                  forceSelection="true" size="30" inputStyleClass="w-100" class="mx-2"
                                                  completeMethod="#{departmentController.completeDept}" var="vt" itemLabel="#{vt.name}" itemValue="#{vt}"
                                                  > 
@@ -40,12 +40,12 @@
 
 
 
-                <p:panel rendered="#{transferRequestController.bill.toDepartment ne null }">
+                <p:panel rendered="#{transferRequestController.toDepartment ne null }">
                     <f:facet name="header" > 
                         <div class="d-flex align-items-center justify-content-between">
                             <div>
                                 <h:outputLabel styleClass="fas fa-arrow-right-arrow-left" />
-                                <h:outputLabel value="Transfer Request To #{transferRequestController.bill.toDepartment} From #{sessionController.department}" class="mx-4" />
+                                <h:outputLabel value="Transfer Request To #{transferRequestController.toDepartment} From #{sessionController.department}" class="mx-4" />
                             </div>
                             <div>
                                 <p:commandButton  

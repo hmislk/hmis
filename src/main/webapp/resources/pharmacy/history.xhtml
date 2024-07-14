@@ -634,19 +634,19 @@
                                  rowsPerPageTemplate="5,10,15">
                         <p:column >
                             <f:facet name="header">
-                                Ins Id
+                                Ins ID
                             </f:facet>
                             <p:outputLabel value="#{bi.bill.insId}" />
                         </p:column>
                         <p:column >
                             <f:facet name="header">
-                                deptId
+                                dept ID
                             </f:facet>
                             <p:outputLabel value="#{bi.bill.deptId}" />
                         </p:column>
                         <p:column >
                             <f:facet name="header">
-                                department
+                                Department
                             </f:facet>
                             <p:outputLabel value="#{bi.bill.department.name}" />
                         </p:column>
@@ -1130,6 +1130,83 @@
                     </p:dataTable>
                 </p:tab>
 
+                <p:tab  title="Pending GRN"  >
+
+                    <p:dataTable styleClass="noBorder" id="pendinggrn" value="#{pharmacyController.grns}"
+                                 var="dd2" scrollable="true"  paginator="true"
+                                 rows="10"
+                                 paginatorPosition="bottom"
+                                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                 rowsPerPageTemplate="5,10,15" >
+                        <p:column headerText="GRN No">
+                            #{dd2.bill.deptId}
+                        </p:column>
+                        <p:column headerText="Department">
+                            #{dd2.bill.department.name}
+                        </p:column>
+                        <p:column headerText="Date">
+                            <h:outputLabel value="#{dd2.bill.createdAt}" >
+                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
+                            </h:outputLabel>
+                        </p:column>
+                        <p:column headerText="PO No">
+                            #{dd2.bill.referenceBill.deptId}
+                        </p:column>
+                        <p:column headerText="Supplier">
+                            #{dd2.bill.fromInstitution.name}
+                        </p:column>
+                        <p:column headerText="Qty">
+                            #{dd2.qty}
+                        </p:column>
+                        <p:column headerText="Fr. Qty">
+                            #{dd2.pharmaceuticalBillItem.freeQty}
+                        </p:column>
+                        <p:column headerText="Purchase Rate">
+                            <h:outputLabel value="#{dd2.pharmaceuticalBillItem.purchaseRateInUnit}" ></h:outputLabel>
+                        </p:column>
+                        <p:column headerText="Sale Rate">
+                            #{dd2.pharmaceuticalBillItem.retailRateInUnit}
+                        </p:column>
+                        <p:column headerText="Value">
+                            <h:outputLabel value= "#{0-dd2.netValue}" ></h:outputLabel>
+                        </p:column>
+                        <p:column headerText="Status">
+                            <h:outputLabel value= "#{0-dd2.netValue}" ></h:outputLabel>
+                        </p:column>
+                    </p:dataTable>
+                </p:tab>
+
+                <p:tab  title="GRN Return"  >
+
+                    <p:dataTable styleClass="noBorder" id="grnr" value="#{pharmacyController.grns}"
+                                 var="dd2" scrollable="true"  paginator="true"
+                                 rows="10"
+                                 paginatorPosition="bottom"
+                                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                 rowsPerPageTemplate="5,10,15" >
+                        <p:column headerText="GRN Return No">
+                            #{dd2.bill.deptId}
+                        </p:column>
+                        <p:column headerText="Date">
+                            <h:outputLabel value="#{dd2.bill.createdAt}" >
+                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
+                            </h:outputLabel>
+                        </p:column>
+                        <p:column headerText="GRN No">
+                            #{dd2.bill.referenceBill.deptId}
+                        </p:column>
+                        <p:column headerText="Supplier">
+                            #{dd2.bill.fromInstitution.name}
+                        </p:column>
+                        <p:column headerText="Qty">
+                            #{dd2.qty}
+                        </p:column>
+                        <p:column headerText="Value">
+                            #{dd2.pharmaceuticalBillItem.freeQty}
+                        </p:column>
+                    </p:dataTable>
+                </p:tab>
+
                 <p:tab  title="Purchase Orders"  >
 
                     <p:dataTable styleClass="noBorder" id="po" value="#{pharmacyController.pos}" var="dd3" 
@@ -1155,6 +1232,37 @@
                         <p:column headerText="Grn Qty">
                             #{dd3.totalGrnQty}
                         </p:column>                            
+                    </p:dataTable>
+                </p:tab>
+
+                <p:tab  title="Pending PO"  >
+
+                    <p:dataTable styleClass="noBorder" id="ppo" value="#{pharmacyController.pos}" var="dd3"
+                                 rows="10"
+                                 paginator="true"
+                                 paginatorPosition="bottom"
+                                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                 rowsPerPageTemplate="5,10,15" >
+                        <p:column headerText="Po No">
+                            #{dd3.bill.deptId}
+                        </p:column>
+                        <p:column headerText="PO Date">
+                            <p:outputLabel value="#{dd3.bill.createdAt}" >
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"></f:convertDateTime>
+                            </p:outputLabel>
+                        </p:column>
+                        <p:column headerText="Supplier">
+                            #{dd3.bill.toInstitution.name}
+                        </p:column>
+                        <p:column headerText="PO Qty">
+                            #{dd3.pharmaceuticalBillItem.qty}
+                        </p:column>
+                        <p:column headerText="Requested By">
+                            #{dd3.totalGrnQty}
+                        </p:column>
+                        <p:column headerText="Status">
+                            #{dd3.totalGrnQty}
+                        </p:column>
                     </p:dataTable>
                 </p:tab>
 

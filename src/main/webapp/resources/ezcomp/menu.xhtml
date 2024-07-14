@@ -627,7 +627,20 @@
                                     action="/pharmacy/pharmacy_transfer_request?faces-redirect=true"  
                                     value="Request" 
                                     actionListener="#{searchController.makeListNull()}" 
-                                    rendered="#{webUserController.hasPrivilege('PharmacyDisbursementRequest')}" 
+                                    rendered="#{webUserController.hasPrivilege('PharmacyDisbursementRequest') and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Transer Request With Approval')}" 
+                                    icon="fas fa-hand-holding-medical"></p:menuitem>
+                        
+                        <p:menuitem ajax="false" 
+                                    action="#{searchController.navigateToCreateTransferRequest}"  
+                                    value="Create Transer Request" 
+                                    actionListener="#{searchController.makeListNull()}" 
+                                    rendered="#{webUserController.hasPrivilege('PharmacyDisbursementRequest') and configOptionApplicationController.getBooleanValueByKey('Pharmacy Transer Request With Approval')}" 
+                                    icon="fas fa-hand-holding-medical"></p:menuitem>
+                        <p:menuitem ajax="false" 
+                                    action="/pharmacy/pharmacy_transfer_request_list_search_for_approval?faces-redirect=true"  
+                                    value="Search Transer Request" 
+                                    actionListener="#{searchController.makeListNull()}" 
+                                    rendered="#{webUserController.hasPrivilege('PharmacyDisbursementRequest') and configOptionApplicationController.getBooleanValueByKey('Pharmacy Transer Request With Approval')}" 
                                     icon="fas fa-hand-holding-medical"></p:menuitem>
 
                         <p:menuitem ajax="false" 
@@ -648,10 +661,17 @@
                                     action="/pharmacy/pharmacy_transfer_issued_list?faces-redirect=true"  
                                     value="Receive" 
                                     actionListener="#{searchController.makeListNull()}" 
-                                    rendered="#{webUserController.hasPrivilege('PharmacyDisbursementRecieve')}" 
+                                    rendered="#{webUserController.hasPrivilege('PharmacyDisbursementRecieve') and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Receive With Approval')}"
                                     icon="fas fa-truck-loading"></p:menuitem>
 
                         <p:menuitem ajax="false" 
+                                    action="/pharmacy/pharmacy_transfer_issued_list_with_approval?faces-redirect=true"
+                                    value="Receive With Approval"
+                                    actionListener="#{searchController.makeListNull()}"
+                                    rendered="#{webUserController.hasPrivilege('PharmacyDisbursementRecieve') and configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Receive With Approval')}"
+                                    icon="fas fa-truck-loading"></p:menuitem>
+
+                        <p:menuitem ajax="false"
                                     action="/pharmacy/pharmacy_report_transfer?faces-redirect=true"  
                                     value="Reports" 
                                     actionListener="#{searchController.makeListNull()}" 
@@ -911,6 +931,7 @@
                     <p:menuitem ajax="false" action="/analytics/opd/index?faces-redirect=true" value="Channel Analytics" rendered="#{webUserController.hasPrivilege('ChannelSummery')}" ></p:menuitem>
                     <p:menuitem ajax="false" action="/channel/management_index?faces-redirect=true" value="Management" rendered="#{webUserController.hasPrivilege('ChannelManagement')}" ></p:menuitem>
                     <p:menuitem ajax="false" action="/channel/patient_portal?faces-redirect=true" value="Patient Portal" ></p:menuitem>
+                    <p:menuitem ajax="false" action="/channel/doctor_card?faces-redirect=true" value="Doctor Card" ></p:menuitem>
                     <p:menuitem 
                         ajax="false"
                         styleClass="#{financialTransactionController.nonClosedShiftStartFundBill eq null ? 'bg-warning text-white font-weight-bold' : ''}"

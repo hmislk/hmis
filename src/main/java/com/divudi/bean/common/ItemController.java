@@ -31,6 +31,7 @@ import com.divudi.entity.pharmacy.Vmpp;
 import com.divudi.facade.ItemFacade;
 import com.divudi.facade.ItemFeeFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.SessionNumberType;
 import com.divudi.entity.UserPreference;
 import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.ItemMappingFacade;
@@ -1017,6 +1018,34 @@ public class ItemController implements Serializable {
         }
         JsfUtil.addSuccessMessage("All Unmarked as Fees Changable at Billing");
     }
+    
+    
+    
+    
+    public void markSelectedItemsAsPrintSessionNumber() {
+        if (selectedList == null || selectedList.isEmpty()) {
+            JsfUtil.addErrorMessage("Nothing is selected");
+            return;
+        }
+        for (Item i : selectedList) {
+            i.setPrintSessionNumber(true);
+            itemFacade.edit(i);
+        }
+        JsfUtil.addSuccessMessage("All Marked as Print Session Numbers");
+    }
+
+    public void unmarkSelectedItemsAsNotToPrintSessionNumber() {
+        if (selectedList == null || selectedList.isEmpty()) {
+            JsfUtil.addErrorMessage("Nothing is selected");
+            return;
+        }
+        for (Item i : selectedList) {
+            i.setPrintSessionNumber(false);
+            itemFacade.edit(i);
+        }
+        JsfUtil.addSuccessMessage("All Marked as Not to Print Session Numbers");
+    }
+    
 
     public void unmarkSelectedItemsAsDiscountableAtBilling() {
         if (selectedList == null || selectedList.isEmpty()) {
@@ -1049,6 +1078,18 @@ public class ItemController implements Serializable {
         }
         for (Item i : selectedList) {
             i.setPrintFeesForBills(false);
+            itemFacade.edit(i);
+        }
+        JsfUtil.addSuccessMessage("All Unmarked for Print Separate Fees");
+    }
+    
+    public void addSessionNumberType() {
+        if (selectedList == null || selectedList.isEmpty()) {
+            JsfUtil.addErrorMessage("Nothing is selected");
+            return;
+        }
+        for (Item i : selectedList) {
+            i.setSessionNumberType(SessionNumberType.ByBill);
             itemFacade.edit(i);
         }
         JsfUtil.addSuccessMessage("All Unmarked for Print Separate Fees");
@@ -1439,7 +1480,9 @@ public class ItemController implements Serializable {
             tmpMap.put("dep", DepartmentType.Store);
             tmpMap.put("amp", Amp.class);
             tmpMap.put("codeStr", "%" + query.toLowerCase() + "%");
+
             tmpMap.put("barcodeStr", query.toLowerCase());
+
             for (int i = 0; i < words.length; i++) {
                 tmpMap.put("nameStr" + i, "%" + words[i].toLowerCase() + "%");
             }

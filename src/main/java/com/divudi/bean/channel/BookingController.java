@@ -2790,6 +2790,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
 
         List<BillItem> savingBillItems = new ArrayList<>();
         savingBillItems.add(savingBillItem);
+        savingBillItems.add(additionalBillItem);
         getBillItemFacade().edit(savingBillItem);
         savingBillItem.setHospitalFee(billBeanController.calFeeValue(FeeType.OwnInstitution, savingBillItem));
         savingBillItem.setStaffFee(billBeanController.calFeeValue(FeeType.Staff, savingBillItem));
