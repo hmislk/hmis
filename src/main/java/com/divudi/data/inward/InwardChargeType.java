@@ -1,13 +1,5 @@
-/*
- * Dr M H B Ariyaratne
- * buddhika.ari@gmail.com
- */
 package com.divudi.data.inward;
 
-/**
- *
- * @author Buddhika
- */
 public enum InwardChargeType {
 
     AdmissionFee("Admission Fee"),
@@ -17,7 +9,7 @@ public enum InwardChargeType {
     CT("CT Scan"),
     DressingCharges("Dressing Charges"),
     Equipment("Equipment Charges"),
-    ECG_EEG("ECG/EEG"),//"ECG/EEG/ECHO/EXECG" request by piumini
+    ECG_EEG("ECG/EEG"),//"ECG/EEG/ECHO/EXECG" 
     ETUCharges("ETU Charges"),
     GeneralIssuing("General Issuing"),
     HomeVisiting("Home Visiting"),
@@ -66,6 +58,7 @@ public enum InwardChargeType {
     MedicalCare("MedicalCare"),
     BabyCare("BabyCare Charges"),
     LabourCharges("Labour Charges"),
+
     // New enum values
     Andrology("Andrology"),
     AudiogramTest("Audiogram Test"),
