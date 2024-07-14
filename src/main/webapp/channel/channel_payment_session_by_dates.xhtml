@@ -51,14 +51,14 @@
                                                 <p:outputLabel value="Session" />
                                                 <p:outputLabel value=":" />
                                                 <p:outputLabel value="#{channelStaffPaymentBillController.sessionInstance.originatingSession.name}" />
-                                                
+
                                                 <p:outputLabel value="Date" />
                                                 <p:outputLabel value=":" />
                                                 <p:outputLabel value="#{channelStaffPaymentBillController.sessionInstance.sessionDate}" >
                                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                                                     </f:convertDateTime>
                                                 </p:outputLabel>
-                                                
+
                                                 <h:outputLabel value="Payment Method" ></h:outputLabel>
                                                 <p:outputLabel value=":" />
                                                 <p:selectOneMenu 
@@ -66,17 +66,23 @@
                                                     value="#{channelStaffPaymentBillController.paymentMethod}" >
                                                     <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"/>
                                                 </p:selectOneMenu>
-                                                
-                                                
+
+
                                             </h:panelGrid>
                                             <div class="d-flex justify-content-end mt-2">
                                                 <div class="d-flex ">
                                                     <p:commandButton 
                                                         ajax="false"
-                                                        value="Process" 
+                                                        value="List Pending Payment" 
                                                         icon="fa-solid fa-arrows-rotate"
                                                         class="ui-button-warning my-1"
                                                         action="#{channelStaffPaymentBillController.calculateSessionDueFees()}"/>
+                                                    <p:commandButton 
+                                                        ajax="false"
+                                                        value="List All Payments" 
+                                                        icon="fa-solid fa-arrows-rotate"
+                                                        class="ui-button-warning my-1"
+                                                        action="#{channelStaffPaymentBillController.calculateSessionAllFees()}"/>
                                                     <p:commandButton 
                                                         ajax="false"
                                                         rendered="false"
@@ -182,6 +188,24 @@
 
                                     <p:column headerText="Charge" >
                                         <h:outputLabel  value="#{bf.feeValue}" />
+                                    </p:column>
+
+                                   
+
+                                    <p:column headerText="Bill Type" >
+                                        <h:outputLabel  value="#{bf.bill.billType}" />
+                                    </p:column>
+
+                                    <p:column headerText="Patient Paid Amount for the Bill" >
+                                        <h:outputLabel  value="#{bf.bill.paidAmount}" />
+                                    </p:column>
+                                    
+                                     <p:column headerText="Professional Fee Paid" >
+                                        <h:outputLabel  value="#{bf.paidValue}" />
+                                    </p:column>
+                                    
+                                     <p:column headerText="Paid Bill ID" >
+                                         <h:outputLabel  value="#{bf.id}" />
                                     </p:column>
 
                                 </p:dataTable>

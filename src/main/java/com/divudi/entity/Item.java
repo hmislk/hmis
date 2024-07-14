@@ -72,15 +72,17 @@ public class Item implements Serializable, Comparable<Item> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+
     Long id;
     int orderNo;
 
-    private Boolean canSechduleForOtherDays;
     private Long itemId;
 
     private boolean isMasterItem;
     private boolean hasReportFormat;
     private int numberOfDaysToMarkAsShortExpiary;
+    
+    private boolean canSechduleForOtherDays;
 
     @ManyToOne
     Category category;
@@ -110,7 +112,7 @@ public class Item implements Serializable, Comparable<Item> {
     Item billedAs;
     @ManyToOne
     Item reportedAs;
-
+    
     @ManyToOne
     private Item masterItemReference;
     String name;
@@ -241,7 +243,7 @@ public class Item implements Serializable, Comparable<Item> {
     double channelAgentFee;
     @Transient
     double channelOnCallFee;
-
+    
     @Transient
     private double totalStockQty;
 
@@ -254,6 +256,9 @@ public class Item implements Serializable, Comparable<Item> {
     @Column(name = "DTYPE", insertable = false, updatable = false)
     private String clazz;
 
+    
+    
+    
     public double getVatPercentage() {
         return 0;
     }
@@ -415,6 +420,7 @@ public class Item implements Serializable, Comparable<Item> {
     @Transient
     List<ItemFee> itemFees;
     private Boolean printFeesForBills;
+    
 
     @Transient
     private List<ItemFee> itemFeesActive;
@@ -814,8 +820,8 @@ public class Item implements Serializable, Comparable<Item> {
     }
 
     public SessionNumberType getSessionNumberType() {
-        if (sessionNumberType == null) {
-            sessionNumberType = SessionNumberType.ByBill;
+        if(sessionNumberType==null){
+            sessionNumberType=SessionNumberType.ByBill;
         }
         return sessionNumberType;
     }
@@ -1092,6 +1098,8 @@ public class Item implements Serializable, Comparable<Item> {
 
         return this.name.compareTo(o.name);
     }
+    
+    
 
     public ItemType getItemType() {
         if (itemType == null) {
@@ -1247,6 +1255,8 @@ public class Item implements Serializable, Comparable<Item> {
     public void setPackUnit(MeasurementUnit packUnit) {
         this.packUnit = packUnit;
     }
+    
+    
 
     public MeasurementUnit getBaseUnit() {
         return baseUnit;
@@ -1313,7 +1323,7 @@ public class Item implements Serializable, Comparable<Item> {
     }
 
     public int getNumberOfDaysToMarkAsShortExpiary() {
-        if (numberOfDaysToMarkAsShortExpiary == 0) {
+        if(numberOfDaysToMarkAsShortExpiary==0){
             numberOfDaysToMarkAsShortExpiary = 30;
         }
         return numberOfDaysToMarkAsShortExpiary;
@@ -1340,8 +1350,8 @@ public class Item implements Serializable, Comparable<Item> {
     }
 
     public ItemBarcodeGenerationStrategy getItemBarcodeGenerationStrategy() {
-        if (itemBarcodeGenerationStrategy == null) {
-            itemBarcodeGenerationStrategy = ItemBarcodeGenerationStrategy.BY_ITEM;
+        if(itemBarcodeGenerationStrategy==null){
+            itemBarcodeGenerationStrategy=ItemBarcodeGenerationStrategy.BY_ITEM;
         }
         return itemBarcodeGenerationStrategy;
     }
@@ -1351,13 +1361,11 @@ public class Item implements Serializable, Comparable<Item> {
     }
 
     public Long getLastBarcode() {
-        if (lastBarcode == null) {
-            lastBarcode = 0l;
+        if(lastBarcode==null){
+            lastBarcode=0l;
         }
         return lastBarcode;
     }
-    
-    
 
     public void setLastBarcode(Long lastBarcode) {
         this.lastBarcode = lastBarcode;
@@ -1371,13 +1379,15 @@ public class Item implements Serializable, Comparable<Item> {
         this.printSessionNumber = printSessionNumber;
     }
 
-    public Boolean getCanSechduleForOtherDays() {
+    public boolean isCanSechduleForOtherDays() {
         return canSechduleForOtherDays;
     }
 
-    public void setCanSechduleForOtherDays(Boolean canSechduleForOtherDays) {
+    public void setCanSechduleForOtherDays(boolean canSechduleForOtherDays) {
         this.canSechduleForOtherDays = canSechduleForOtherDays;
     }
+    
+    
 
     static class ReportItemComparator implements Comparator<ReportItem> {
 
