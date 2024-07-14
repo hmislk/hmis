@@ -9,6 +9,7 @@ import com.divudi.data.ApplicationInstitution;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillItemStatus;
 import com.divudi.data.BillType;
+import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.CalculationType;
 import com.divudi.data.CreditDuration;
 import com.divudi.data.CssVerticalAlign;
@@ -19,6 +20,7 @@ import com.divudi.data.DiscountType;
 import com.divudi.data.FeeType;
 import com.divudi.data.InvestigationItemType;
 import com.divudi.data.InvestigationItemValueType;
+import com.divudi.data.ItemBarcodeGenerationStrategy;
 import com.divudi.data.ItemListingStrategy;
 import com.divudi.data.ItemType;
 import com.divudi.data.LoginPage;
@@ -66,6 +68,7 @@ public class EnumController implements Serializable {
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
     List<PaymentMethod> paymentMethodsForOpdBilling;
+    List<PaymentMethod> paymentMethodsForPatientDeposit;
     List<PaymentMethod> paymentMethodsForChanneling;
     List<PaymentMethod> paymentMethodsForPharmacyBilling;
     SessionNumberType[] sessionNumberTypes;
@@ -96,6 +99,7 @@ public class EnumController implements Serializable {
     public void resetPaymentMethods() {
         paymentMethodsForOpdBilling = null;
         paymentMethodsForChanneling = null;
+        paymentMethodsForPatientDeposit = null;
     }
 
     public void fillPaymentMethodsForOpdBilling() {
@@ -114,6 +118,16 @@ public class EnumController implements Serializable {
             boolean include = configOptionApplicationController.getBooleanValueByKey(pm.getLabel() + " is available for Package Billing", true);
             if (include) {
                 paymentMethodsForOpdBilling.add(pm);
+            }
+        }
+    }
+
+    public void fillPaymentMethodsForPatientDeposit() {
+        paymentMethodsForPatientDeposit = new ArrayList<>();
+        for (PaymentMethod pm : PaymentMethod.values()) {
+            boolean include = configOptionApplicationController.getBooleanValueByKey(pm.getLabel() + " is available for Patient Deposit", true);
+            if (include) {
+                paymentMethodsForPatientDeposit.add(pm);
             }
         }
     }
@@ -334,6 +348,24 @@ public class EnumController implements Serializable {
         return BillType.values();
     }
 
+    public BillTypeAtomic[] getBillTypesAtomic() {
+        return BillTypeAtomic.values();
+    }
+
+    public List<BillTypeAtomic> getBillTypesAtomic(String query) {
+        return Arrays.stream(BillTypeAtomic.values())
+                .filter(bt -> bt.getLabel().toLowerCase().contains(query.toLowerCase()))
+                .collect(Collectors.toList());
+    }
+
+    
+    public List<String> completeBillTypeAtomics(String query) {
+        return Arrays.stream(BillTypeAtomic.values())
+                     .map(Enum::toString) // Using toString() to get the string representation of the enum
+                     .filter(name -> name.toLowerCase().contains(query.toLowerCase()))
+                     .collect(Collectors.toList());
+    }
+    
     public StaffWelfarePeriod[] getStaffWelfarePeriods() {
         return StaffWelfarePeriod.values();
     }
@@ -483,7 +515,8 @@ public class EnumController implements Serializable {
             InwardChargeType.Procedure,
             InwardChargeType.Radiology,
             InwardChargeType.ReportingCharges,
-            InwardChargeType.WardProcedure};
+            InwardChargeType.WardProcedure,
+            InwardChargeType.BabyCare,};
 
         return b;
     }
@@ -666,7 +699,7 @@ public class EnumController implements Serializable {
 
     public List<PaymentMethod> getPaymentMethodsNonCreditExceptMultiple(List<PaymentMethod> pm) {
         List<PaymentMethod> paymentMethod = new ArrayList<>();
-        if (pm == null){
+        if (pm == null) {
             paymentMethod.add(PaymentMethod.Cash);
             paymentMethod.add(PaymentMethod.Card);
             paymentMethod.add(PaymentMethod.Cheque);
@@ -674,7 +707,7 @@ public class EnumController implements Serializable {
             paymentMethod.add(PaymentMethod.ewallet);
             paymentMethod.add(PaymentMethod.Staff);
             paymentMethod.add(PaymentMethod.PatientDeposit);
-        }else{
+        } else {
             paymentMethod.addAll(pm);
             paymentMethod.remove(PaymentMethod.MultiplePaymentMethods);
         }
@@ -741,6 +774,10 @@ public class EnumController implements Serializable {
     public PaymentMethod[] getPaymentMethodsForChannelAgentSettle() {
         PaymentMethod[] p = {PaymentMethod.Cash, PaymentMethod.Agent};
         return p;
+    }
+
+    public List<ItemBarcodeGenerationStrategy> getItemBarcodeGenerationStrategies() {
+        return Arrays.asList(ItemBarcodeGenerationStrategy.values());
     }
 
     public PaymentMethod[] getAllPaymentMethods() {
@@ -822,6 +859,17 @@ public class EnumController implements Serializable {
 
     public void setPaymentScheme(PaymentScheme paymentScheme) {
         this.paymentScheme = paymentScheme;
+    }
+
+    public List<PaymentMethod> getPaymentMethodsForPatientDeposit() {
+        if (paymentMethodsForPatientDeposit == null) {
+            fillPaymentMethodsForPatientDeposit();
+        }
+        return paymentMethodsForPatientDeposit;
+    }
+
+    public void setPaymentMethodsForPatientDeposit(List<PaymentMethod> paymentMethodsForPatientDeposit) {
+        this.paymentMethodsForPatientDeposit = paymentMethodsForPatientDeposit;
     }
 
 }

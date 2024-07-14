@@ -27,10 +27,12 @@
                                     <h:form>
                                         <div>
                                             <p:inputText 
+                                                id="txtPhoneSearch"
                                                 value="#{patientController.searchPatientPhoneNumber}"
                                                 placeholder="Phone Number"
                                                 class="mx-2"
                                                 />
+                                            <p:focus id="focusPhoneSearch" for="txtPhoneSearch" ></p:focus>
 
                                             <p:commandButton 
                                                 id="btnSearchbyPhoneNo"

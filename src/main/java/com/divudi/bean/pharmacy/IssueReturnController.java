@@ -28,6 +28,7 @@ import com.divudi.facade.PharmaceuticalBillItemFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
@@ -65,6 +66,49 @@ public class IssueReturnController implements Serializable {
     private PharmacyBean pharmacyBean;
     @EJB
     private BillItemFacade billItemFacade;
+
+    public void saveIssueBillReturn() {
+        saveBill();
+        saveComponentForSaveReturnBill();
+        JsfUtil.addSuccessMessage("Saved");
+    }
+
+    public void finalizeIssueBillReturn() {
+        if (getBill().getId() == null) {
+            JsfUtil.addErrorMessage("No Bill");
+            return;
+        }
+        getBill().setEditedAt(new Date());
+        getBill().setEditor(sessionController.getLoggedUser());
+        getBill().setCheckeAt(new Date());
+        getBill().setCheckedBy(sessionController.getLoggedUser());
+        getBillFacade().edit(getBill());
+        JsfUtil.addSuccessMessage("Finalized");
+    }
+
+    public void settle() {
+
+        if (getBill().getCheckedBy() == null) {
+            JsfUtil.addErrorMessage("Pleace Finalise Bill First. Can not Return");
+            return;
+        }
+        saveReturnBill();
+        saveComponent();
+
+        if (getBill().getPatientEncounter() != null) {
+            updateMargin(getReturnBill().getBillItems(), getReturnBill(), getReturnBill().getFromDepartment(), getBill().getPatientEncounter().getPaymentMethod());
+        }
+
+        getBillFacade().edit(getReturnBill());
+
+        getBill().getReturnBhtIssueBills().add(getReturnBill());
+        getBillFacade().edit(getBill());
+
+        /// setOnlyReturnValue();
+        printPreview = true;
+        JsfUtil.addSuccessMessage("Successfully Returned");
+
+    }
 
     public Bill getBill() {
         return bill;
@@ -140,6 +184,20 @@ public class IssueReturnController implements Serializable {
 
     }
 
+    private void saveBill() {
+        getBill().setEditor(getSessionController().getLoggedUser());
+        getBill().setEditedAt(Calendar.getInstance().getTime());
+        System.out.println("getBill() = " + getBill().getBillClassType());
+
+//        getReturnBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyIssue, BillClassType.PreBill, BillNumberSuffix.PHISSRET));
+//        getReturnBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyIssue, BillClassType.PreBill, BillNumberSuffix.PHISSRET));
+        //   getReturnBill().setInsId(getBill().getInsId());
+        if (getBill().getId() == null) {
+            getBillFacade().create(getBill());
+        }
+
+    }
+
     private void saveReturnBill() {
 
         getReturnBill().copy(getBill());
@@ -210,6 +268,36 @@ public class IssueReturnController implements Serializable {
 
     }
 
+    private void saveComponentForSaveReturnBill() {
+        for (BillItem i : getBillItems()) {
+            i.getPharmaceuticalBillItem().setQtyInUnit((double) (double) i.getQty());
+            if (i.getPharmaceuticalBillItem().getQty() == 0.0) {
+                continue;
+            }
+
+            i.setBill(getBill());
+            i.setCreatedAt(Calendar.getInstance().getTime());
+            i.setCreater(getSessionController().getLoggedUser());
+
+            double value = i.getRate() * i.getQty();
+            i.setGrossValue(0 - value);
+            i.setNetValue(0 - value);
+
+            PharmaceuticalBillItem tmpPh = i.getPharmaceuticalBillItem();
+            i.setPharmaceuticalBillItem(tmpPh);
+            System.out.println("tmpPh = " + tmpPh.getId());
+            if (i.getId() == null) {
+                getBillItemFacade().create(i);
+            }
+            getBillItemFacade().edit(i);
+            if (tmpPh.getId() == null) {
+                getPharmaceuticalBillItemFacade().create(tmpPh);
+            }
+            getPharmaceuticalBillItemFacade().edit(tmpPh);
+        }
+
+    }
+
     public void updateMargin(BillItem bi, Department matrixDepartment, PaymentMethod paymentMethod) {
         double rate = Math.abs(bi.getRate());
         double margin = 0;
@@ -241,30 +329,6 @@ public class IssueReturnController implements Serializable {
         bill.setTotal(total);
         bill.setNetTotal(netTotal);
         getBillFacade().edit(bill);
-
-    }
-
-    public void settle() {
-
-//        if (getBill().getCheckedBy() != null) {
-//            JsfUtil.addErrorMessage("Checked Bill. Can not Return");
-//            return;
-//        }
-        saveReturnBill();
-        saveComponent();
-
-        if (getBill().getPatientEncounter() != null) {
-            updateMargin(getReturnBill().getBillItems(), getReturnBill(), getReturnBill().getFromDepartment(), getBill().getPatientEncounter().getPaymentMethod());
-        }
-
-        getBillFacade().edit(getReturnBill());
-
-        getBill().getReturnBhtIssueBills().add(getReturnBill());
-        getBillFacade().edit(getBill());
-
-        /// setOnlyReturnValue();
-        printPreview = true;
-        JsfUtil.addSuccessMessage("Successfully Returned");
 
     }
 
@@ -307,8 +371,9 @@ public class IssueReturnController implements Serializable {
     }
 
     public void generateBillComponent() {
-
+        billItems=new ArrayList<>();
         for (PharmaceuticalBillItem i : getPharmaceuticalBillItemFacade().getPharmaceuticalBillItems(getBill())) {
+            System.out.println("i = " + i.getId());
             BillItem bi = new BillItem();
             bi.setBill(getReturnBill());
             bi.setReferenceBill(getBill());

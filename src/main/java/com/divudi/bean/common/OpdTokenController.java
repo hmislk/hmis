@@ -154,10 +154,10 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
         if (currentToken.getTokenType() == null) {
             JsfUtil.addErrorMessage("Wrong Token");
             return "";
-        }
-        if (getPatient().getId() == null) {
-            JsfUtil.addErrorMessage("Please select a patient");
-            return "";
+//        }
+//        if (getPatient().getId() == null) {
+//            JsfUtil.addErrorMessage("Please select a patient");
+//            return "";
         } else if (getPatient().getPerson().getName() == null) {
             JsfUtil.addErrorMessage("Please select a patient");
             return "";

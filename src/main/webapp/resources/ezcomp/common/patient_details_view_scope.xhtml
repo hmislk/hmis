@@ -123,7 +123,7 @@
             <h:panelGroup id="editPatient" >
 
                 <h:panelGroup rendered="#{cc.attrs.controller.patientDetailsEditable}" >
-                    <h:panelGroup rendered="#{cc.attrs.controller.quickSearchPatientList eq null or empty cc.attrs.controller.quickSearchPatientList}">
+                    <h:panelGroup rendered="#{patientController.quickSearchPatientList eq null or empty patientController.quickSearchPatientList}">
                         <h:panelGroup class="mb-1 w-100" id="panelPatient" >
                             <h:panelGroup id="gpPatient" >
                                 <div class="row">
@@ -131,6 +131,8 @@
                                         <p:selectOneMenu 
                                             id="cmbTitle"
                                             class="form-control w-100"
+                                            required="#{configOptionApplicationController.getBooleanValueByKey('Patients Title is Mandatory')}"
+                                            requiredMessage="Please enter a title"
                                             value="#{cc.attrs.controller.patient.person.title}">
                                             <f:selectItem itemLabel="Select Title" />
                                             <f:selectItems value="#{opdBillController.title}" var="i"
@@ -140,7 +142,8 @@
                                     </div>
                                     <div class="col-md-9 p-1">
                                         <p:inputText 
-
+                                            required="true"
+                                            requiredMessage="Please enter a name for the patient"
                                             autocomplete="off" 
                                             id="txtNewPtName" 
                                             placeholder="Enter the Name of the patient"
@@ -159,7 +162,8 @@
                                     <div class="col-md-3 p-1">
                                         <p:selectOneMenu 
                                             id="cmbSex" 
-
+                                            required="#{configOptionApplicationController.getBooleanValueByKey('Patients Gender is Mandatory')}"
+                                            requiredMessage="Please select a gender"
                                             value="#{cc.attrs.controller.patient.person.sex}"
                                             class="form-control w-100">
                                             <f:selectItem itemLabel="Select Gender"/>
@@ -205,6 +209,8 @@
                                                     yearNavigator="true"
                                                     monthNavigator="true"
                                                     inputStyleClass="form-control"
+                                                    required="#{configOptionApplicationController.getBooleanValueByKey('Patients Date of Birth is Mandatory')}"
+                                                    requiredMessage="Please select a date of birth"
                                                     pattern="#{sessionController.applicationPreference.longDateFormat}"
                                                     placeholder="Date of Birth (dd/mm/yyyy)"
                                                     >
@@ -223,6 +229,8 @@
                                             placeholder="Mobile Number"
                                             value="#{cc.attrs.controller.patient.mobileNumberStringTransient}"
                                             class="form-control" 
+                                            required="#{configOptionApplicationController.getBooleanValueByKey('Patients Mobile Number is Mandatory')}"
+                                            requiredMessage="Please enter a Mobile Number"
                                             validatorMessage="Please enter valid Number">
                                             <c:if test="#{not empty sessionController.applicationPreference.mobileRegex}">
                                                 <f:validateRegex pattern="#{sessionController.applicationPreference.mobileRegex}"/>
@@ -232,7 +240,8 @@
                                     <div class="col-md-3 p-1">
                                         <p:inputText 
                                             id="txtPhone" 
-
+                                            required="#{configOptionApplicationController.getBooleanValueByKey('Patients Phone Number is Mandatory')}"
+                                            requiredMessage="Please enter a Phone Number"
                                             autocomplete="off" 
                                             placeholder="Phone Number"
                                             value="#{cc.attrs.controller.patient.phoneNumberStringTransient}"
@@ -244,7 +253,8 @@
                                     </div>
                                     <div class="col-md-3 p-1">
                                         <p:inputText 
-
+                                            required="#{configOptionApplicationController.getBooleanValueByKey('Patients Email is Mandatory')}"
+                                            requiredMessage="Please enter a Email"
                                             autocomplete="off" id="txtEmail" placeholder="Enter Email here"
                                             value="#{cc.attrs.controller.patient.person.email}"
                                             class="form-control"
@@ -252,12 +262,13 @@
                                             <c:if test="#{not empty sessionController.applicationPreference.emailRegex}">
                                                 <f:validateRegex pattern="#{sessionController.applicationPreference.emailRegex}"/>
                                             </c:if>
-
                                         </p:inputText>
                                     </div>
                                     <div class="col-md-3 p-1">
                                         <p:inputText 
                                             id="txtNic"
+                                            required="#{configOptionApplicationController.getBooleanValueByKey('Patients ID is Mandatory')}"
+                                            requiredMessage="Please enter a ID"
                                             autocomplete="off"
                                             placeholder="National ID Number"
                                             value="#{cc.attrs.controller.patient.person.nic}"
@@ -270,15 +281,17 @@
                                         <p:inputText
                                             id="txtAddress"
                                             autocomplete="off"
+                                            required="#{configOptionApplicationController.getBooleanValueByKey('Patients Address is Mandatory')}"
+                                            requiredMessage="Please enter an Address"
                                             placeholder="Address"
                                             value="#{cc.attrs.controller.patient.person.address}"
                                             class="form-control"/>
                                     </div>
                                     <div class="col-md-4 p-1">
                                         <p:autoComplete 
-
                                             id="acNewPtArea" 
-
+                                            required="#{configOptionApplicationController.getBooleanValueByKey('Patients Area is Mandatory')}"
+                                            requiredMessage="Please select an Area"
                                             placeholder="Search &amp; Select Area"
                                             completeMethod="#{areaController.completeArea}"
                                             var="pta" itemLabel="#{pta.name}"

@@ -61,6 +61,7 @@ public class GrnController implements Serializable {
 
     @Inject
     private SessionController sessionController;
+    private BilledBill bill;
     @EJB
     private BillNumberGenerator billNumberBean;
     @EJB
@@ -116,6 +117,32 @@ public class GrnController implements Serializable {
     private double discount;
     private Date invoiceDate;
     private String invoiceNumber;
+    private Bill closeBill;
+    private BillItem currentBillItem;
+    BillItem currentExpense;
+    List<BillItem> billExpenses;
+    
+    public void closeSelectedPurchesOrder(){
+        if (closeBill==null) {
+            JsfUtil.addErrorMessage("Bill is Not Valid !");
+            return;
+        }
+        
+        closeBill.setBillClosed(true);
+        billFacade.edit(closeBill);
+        
+    }
+    
+    public void openSelectedPurchesOrder(){
+        if (closeBill==null) {
+            JsfUtil.addErrorMessage("Bill is Not Valid !");
+            return;
+        }
+        
+        closeBill.setBillClosed(false);
+        billFacade.edit(closeBill);
+        
+    }
 
     public double calDifference() {
         difference = Math.abs(insTotal) - Math.abs(getNetTotal());
@@ -611,8 +638,11 @@ public class GrnController implements Serializable {
         getGrnBill().setCreater(getSessionController().getLoggedUser());
         getGrnBill().setCreatedAt(Calendar.getInstance().getTime());
 
+        getGrnBill().setBillExpenses(billExpenses);
+        getGrnBill().setExpenseTotal(calExpenses());
         calGrossTotal();
-
+        getGrnBill().setNetTotal(getGrnBill().getNetTotal() - calExpenses());
+        
         pharmacyCalculation.calculateRetailSaleValueAndFreeValueAtPurchaseRate(getGrnBill());
         updateBalanceForGrn(getGrnBill());
 
@@ -1191,6 +1221,83 @@ public class GrnController implements Serializable {
         bfp.setPayment(p);
         getBillFeePaymentFacade().create(bfp);
     }
+    
+    public BillItem getCurrentExpense() {
+        if (currentExpense == null) {
+            currentExpense = new BillItem();
+            currentExpense.setQty(1.0);
+        }
+        return currentExpense;
+    }
+    
+    public BilledBill getBill() {
+        if (bill == null) {
+            bill = new BilledBill();
+            bill.setBillType(BillType.StorePurchase);
+            bill.setReferenceInstitution(getSessionController().getInstitution());
+        }
+        return bill;
+    }
+    
+    public void addExpense() {
+        if (getBill().getId() == null) {
+            getBillFacade().create(getBill());
+        }
+        if (getCurrentExpense().getItem() == null) {
+            JsfUtil.addErrorMessage("Expense ?");
+            return;
+        }
+        if (currentExpense.getQty() == null || currentExpense.getQty().equals(0.0)) {
+            currentExpense.setQty(1.0);
+        }
+        if (currentExpense.getNetRate() == 0.0) {
+            currentExpense.setNetRate(currentExpense.getRate());
+        }
+
+        currentExpense.setNetValue(currentExpense.getNetRate() * currentExpense.getQty());
+        currentExpense.setGrossValue(currentExpense.getRate() * currentExpense.getQty());
+
+        getCurrentExpense().setSearialNo(getBillExpenses().size());
+        getBillExpenses().add(currentExpense);
+        currentExpense = null;
+        
+    }
+    
+    public double calExpenses(){
+        double tot = 0.0;
+        for (BillItem be : billExpenses){
+            tot = tot + be.getNetValue();
+        }
+        return tot;
+    }
+            
+    public void calTotal() {
+        double tot = 0.0;
+        double exp = 0.0;
+        int serialNo = 0;
+        for (BillItem p : getBillItems()) {
+            p.setQty((double) p.getPharmaceuticalBillItem().getQtyInUnit());
+            p.setRate(p.getPharmaceuticalBillItem().getPurchaseRateInUnit());
+            serialNo++;
+            p.setSearialNo(serialNo);
+            if (p.getParentBillItem() == null) {
+                double netValue = p.getQty() * p.getRate();
+                p.setNetValue(0 - netValue);
+                tot += p.getNetValue();
+            }
+        }
+
+        for (BillItem e : getBillExpenses()) {
+            double nv = e.getNetRate() * e.getQty();
+            e.setNetValue(0 - nv);
+            exp += e.getNetValue();
+        }
+
+        getBill().setExpenseTotal(exp);
+        getBill().setTotal(tot);
+        getBill().setNetTotal(tot + exp);
+
+    }
 
 //    public double getNetTotal() {
 //
@@ -1514,6 +1621,33 @@ public class GrnController implements Serializable {
 
     public void setInvoiceNumber(String invoiceNumber) {
         this.invoiceNumber = invoiceNumber;
+    }
+
+    public Bill getCloseBill() {
+        return closeBill;
+    }
+
+    public void setCloseBill(Bill closeBill) {
+        this.closeBill = closeBill;
+    }
+
+    public BillItem getCurrentBillItem() {
+        return currentBillItem;
+    }
+
+    public void setCurrentBillItem(BillItem currentBillItem) {
+        this.currentBillItem = currentBillItem;
+    }
+
+    public List<BillItem> getBillExpenses() {
+        if (billExpenses == null) {
+            billExpenses = new ArrayList<>();
+        }
+        return billExpenses;
+    }
+
+    public void setBillExpenses(List<BillItem> billExpenses) {
+        this.billExpenses = billExpenses;
     }
 
 }

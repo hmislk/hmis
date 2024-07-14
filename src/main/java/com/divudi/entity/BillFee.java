@@ -8,6 +8,7 @@ import com.divudi.data.FeeType;
 import com.divudi.entity.inward.PatientRoom;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.Objects;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -188,22 +189,25 @@ public class BillFee implements Serializable {
 
     @Override
     public int hashCode() {
-        int hash = 0;
-        hash += (id != null ? id.hashCode() : 0);
-        return hash;
+        // If id is not null, use id for hashcode, otherwise use fee and staff
+        return Objects.hash(id != null ? id : Objects.hash(fee, staff));
     }
 
     @Override
     public boolean equals(Object object) {
-
+        if (this == object) {
+            return true;
+        }
         if (!(object instanceof BillFee)) {
             return false;
         }
         BillFee other = (BillFee) object;
-        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
-            return false;
+        // If both objects have ids, compare ids
+        if (this.id != null && other.id != null) {
+            return this.id.equals(other.id);
         }
-        return true;
+        // Otherwise, compare other fields
+        return Objects.equals(this.fee, other.fee) && Objects.equals(this.staff, other.staff);
     }
 
     @Override

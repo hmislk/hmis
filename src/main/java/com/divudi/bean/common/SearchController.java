@@ -151,6 +151,8 @@ public class SearchController implements Serializable {
     PharmacyBillSearch pharmacyBillSearch;
     @Inject
     OpdBillController opdBillController;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
 
     /**
      * Properties
@@ -293,6 +295,11 @@ public class SearchController implements Serializable {
     public String navigateToAllFinancialTransactionSummary() {
         billSummaryRows = null;
         return "/analytics/all_financial_transaction_summary?faces-redirect=true";
+    }
+    
+    public String navigateToUserFinancialTransactionSummaryByBill() {
+        billSummaryRows = null;
+        return "/analytics/user_financial_transaction_summary_by_bill?faces-redirect=true";
     }
 
     public String navigateToAllFinancialTransactionSummaryCashier() {
@@ -4387,16 +4394,18 @@ public class SearchController implements Serializable {
 
         billFees = getBillFeeFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 50);
         List<BillFee> removeingBillFees = new ArrayList<>();
-        for (BillFee bf : billFees) {
-            sql = "SELECT bi FROM BillItem bi where bi.retired=false and bi.referanceBillItem.id=" + bf.getBillItem().getId();
-            BillItem rbi = getBillItemFacade().findFirstByJpql(sql);
+        if (configOptionApplicationController.getBooleanValueByKey("Remove Refunded Bill From OPD Staff Payment")) {
+            for (BillFee bf : billFees) {
+                sql = "SELECT bi FROM BillItem bi where bi.retired=false and bi.referanceBillItem.id=" + bf.getBillItem().getId();
+                BillItem rbi = getBillItemFacade().findFirstByJpql(sql);
 
-            if (rbi != null) {
-                removeingBillFees.add(bf);
+                if (rbi != null) {
+                    removeingBillFees.add(bf);
+                }
+
             }
-
+            billFees.removeAll(removeingBillFees);
         }
-        billFees.removeAll(removeingBillFees);
         calTotal();
 
     }
@@ -6816,12 +6825,12 @@ public class SearchController implements Serializable {
 
     public void createCollectingCentreBillSearch() {
         Date startTime = new Date();
-        createCCBillTableByKeyword(BillType.CollectingCentreBill,null,null);
+        createCCBillTableByKeyword(BillType.CollectingCentreBill, null, null);
         //checkLabReportsApproved(bills);
 
     }
-    
-    public void createCCBillTableByKeyword(BillType billType, Institution ins, Department dep){
+
+    public void createCCBillTableByKeyword(BillType billType, Institution ins, Department dep) {
         billLights = null;
         String sql;
         Map temMap = new HashMap();
@@ -6830,7 +6839,7 @@ public class SearchController implements Serializable {
                 + " where bill.billType = :billType "
                 + " and bill.createdAt between :fromDate and :toDate "
                 + " and bill.retired=false ";
-        
+
         if (ins != null) {
             sql += " and bill.institution=:ins ";
             temMap.put("ins", ins);
@@ -6839,6 +6848,16 @@ public class SearchController implements Serializable {
         if (dep != null) {
             sql += " and bill.department=:dep ";
             temMap.put("dep", dep);
+        }
+        
+        if (getInstitution() != null) {
+            sql += " and  ((bill.fromInstitution) =:ccName )";
+            temMap.put("ccName", getInstitution());
+        }
+        
+        if (getSearchKeyword().getCode()!= null && !getSearchKeyword().getCode().trim().equals("")) {
+            sql += " and  ((bill.fromInstitution.institutionCode) like :code )";
+            temMap.put("code", "%" + getSearchKeyword().getCode().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
@@ -7131,9 +7150,7 @@ public class SearchController implements Serializable {
         createTableByKeyword(billType, ins, dep, null, null, null, null);
 
     }
-    
-    
-    
+
     public void createTableByKeyword(List<BillTypeAtomic> billTypesAtomics,
             Institution ins, Department dep,
             Institution fromIns,
@@ -7214,7 +7231,6 @@ public class SearchController implements Serializable {
         bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
-    
 
     public void createTableByKeyword(BillType billType,
             Institution ins, Department dep,
@@ -7359,6 +7375,56 @@ public class SearchController implements Serializable {
 
         jpql += " group by b.billTypeAtomic order by b.billTypeAtomic";
 
+        params.put("toDate", getToDate());
+        params.put("fromDate", getFromDate());
+        params.put("ret", false);
+        params.put("abts", billTypesToFilter);
+
+        billSummaryRows = getBillFacade().findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+
+        for (BillSummaryRow bss : billSummaryRows) {
+            grossTotal += bss.getGrossTotal();
+            discount += bss.getDiscount();
+            netTotal += bss.getNetTotal();
+        }
+    }
+    
+    
+    public void processUserFinancialTransactionalSummaryByBill() {
+        billSummaryRows = null;
+        grossTotal = 0.0;
+        discount = 0.0;
+        netTotal = 0.0;
+        String jpql;
+        Map params = new HashMap();
+        List<BillTypeAtomic> billTypesToFilter = new ArrayList<>();
+        billTypesToFilter.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_IN));
+        billTypesToFilter.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_OUT));
+        billTypesToFilter.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CREDIT_SETTLEMENT));
+        billTypesToFilter.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CREDIT_SETTLEMENT_REVERSE));
+        jpql = "select new com.divudi.light.common.BillSummaryRow("
+                + "b.billTypeAtomic, "
+                + "sum(b.total), "
+                + "sum(b.discount), "
+                + "sum(b.netTotal),"
+                + "count(b)) "
+                + " from Bill b "
+                + " where b.retired=:ret"
+                + " and b.createdAt between :fromDate and :toDate "
+                + " and b.billTypeAtomic in :abts "
+                + " and b.creater=:user";
+
+//        Bill b = new Bill();
+//        b.getTotal();
+//        b.getDiscount();
+//        b.getNetTotal();
+//        b.getBillTypeAtomic();
+//        b.getCreater();
+        
+
+        jpql += " group by b.billTypeAtomic order by b.billTypeAtomic";
+
+        params.put("user", getWebUser());
         params.put("toDate", getToDate());
         params.put("fromDate", getFromDate());
         params.put("ret", false);

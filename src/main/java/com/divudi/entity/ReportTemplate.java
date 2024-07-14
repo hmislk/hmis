@@ -38,6 +38,8 @@ public class ReportTemplate implements Serializable {
     @Lob
     private String filters;
     @Lob
+    private String billTypes;
+    @Lob
     private String columns;
     @Lob
     private String totals;
@@ -62,6 +64,7 @@ public class ReportTemplate implements Serializable {
     public void setId(Long id) {
         this.id = id;
     }
+    
     
     
 
@@ -216,6 +219,14 @@ public class ReportTemplate implements Serializable {
 
     public void setRetired(boolean retired) {
         this.retired = retired;
+    }
+
+    public String getBillTypes() {
+        return billTypes;
+    }
+
+    public void setBillTypes(String billTypes) {
+        this.billTypes = billTypes;
     }
 
 }
