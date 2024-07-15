@@ -16,29 +16,29 @@
                 <p:panel  header="Channel Bill List">
                     <p:panelGrid columns="2" styleClass="noPrintButton"> 
                         <h:outputLabel value="From Date"/>
-                        <p:calendar id="frmDate" value="#{channelReportController.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
+                        <p:calendar id="frmDate" value="#{channelReportControllerOld.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
 
                         <h:outputLabel value="To Date"/>
-                        <p:calendar  id="toDate" value="#{channelReportController.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
+                        <p:calendar  id="toDate" value="#{channelReportControllerOld.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
 
                         <h:outputLabel value="Created Date"/>
-                        <p:selectBooleanCheckbox value="#{channelReportController.sessoinDate}" />
+                        <p:selectBooleanCheckbox value="#{channelReportControllerOld.sessoinDate}" />
 
                         <h:outputLabel value="Summary"/>
-                        <p:selectBooleanCheckbox value="#{channelReportController.summery}" >
+                        <p:selectBooleanCheckbox value="#{channelReportControllerOld.summery}" >
                             <f:ajax event="change" execute="@this" render="p1" />
                         </p:selectBooleanCheckbox>
                     </p:panelGrid>
                     <h:panelGrid columns="3" id="p1" class="my-2"> 
-                        <p:commandButton style="margin-right: 10px" ajax="false" id="btnRefresh2" value="Process" action="#{channelReportController.createAreaWithCountTable()}">
+                        <p:commandButton style="margin-right: 10px" ajax="false" id="btnRefresh2" value="Process" action="#{channelReportControllerOld.createAreaWithCountTable()}">
                         </p:commandButton>
                         <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right; margin-right: 10px" >
                             <p:printer target="reportPrint"  />
                         </p:commandButton>
-                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right; margin-right: 10px" rendered="#{!channelReportController.summery}" >
+                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right; margin-right: 10px" rendered="#{!channelReportControllerOld.summery}" >
                             <p:dataExporter type="xlsx" target="tbl" fileName="hr_bill_list"   />
                         </p:commandButton>
-                        <p:commandButton ajax="false" value="Excel(Summary)" styleClass="noPrintButton" style="float: right; margin-right: 10px" rendered="#{channelReportController.summery}" >
+                        <p:commandButton ajax="false" value="Excel(Summary)" styleClass="noPrintButton" style="float: right; margin-right: 10px" rendered="#{channelReportControllerOld.summery}" >
                             <p:dataExporter type="xlsx" target="tbl2" fileName="hr_bill_list" />
                         </p:commandButton>
                     </h:panelGrid>
@@ -48,15 +48,15 @@
 
 
                     <p:panel id="reportPrint">
-                        <p:dataTable value="#{channelReportController.areaWithCount}" var="b" id="tbl2" rowIndexVar="i" rendered="#{channelReportController.summery}" >
+                        <p:dataTable value="#{channelReportControllerOld.areaWithCount}" var="b" id="tbl2" rowIndexVar="i" rendered="#{channelReportControllerOld.summery}" >
                             <f:facet name="header" >
                                 <p:outputLabel value="Area Wise Count Summary" />
                                 <h:outputLabel class="ml-5" value="From : " style=" white-space:pre-line;"/>
-                                <h:outputLabel class="ml-2" value="#{channelReportController.fromDate}" >
+                                <h:outputLabel class="ml-2" value="#{channelReportControllerOld.fromDate}" >
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>                          
                                 <h:outputLabel value="&emsp;&emsp;To :"/>
-                                <h:outputLabel class="ml-2" value="#{channelReportController.toDate}" >
+                                <h:outputLabel class="ml-2" value="#{channelReportControllerOld.toDate}" >
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                             </f:facet>
@@ -83,28 +83,28 @@
                                     <f:convertNumber parent="#,##0"/>
                                 </p:outputLabel>
                                 <f:facet name="footer"  >
-                                    <p:outputLabel value="#{channelReportController.total}" >
+                                    <p:outputLabel value="#{channelReportControllerOld.total}" >
                                         <f:convertNumber pattern="#,##0" />
                                     </p:outputLabel>
                                 </f:facet>
                             </p:column>
                         </p:dataTable>
-                        <p:dataTable value="#{channelReportController.staffWithAreaRows}" var="a" id="tbl" rendered="#{!channelReportController.summery}" >
+                        <p:dataTable value="#{channelReportControllerOld.staffWithAreaRows}" var="a" id="tbl" rendered="#{!channelReportControllerOld.summery}" >
                             <f:facet name="header" >
                                 <p:outputLabel value="Staff Wise Area Count Summary" />
                                 <h:outputLabel class="ml-5" value="From : " style=" white-space:pre-line;"/>
-                                <h:outputLabel class="ml-2" value="#{channelReportController.fromDate}" >
+                                <h:outputLabel class="ml-2" value="#{channelReportControllerOld.fromDate}" >
                                     <f:convertDateTime pattern="dd MMM yyyy HH:mm:ss"/>
                                 </h:outputLabel>                          
                                 <h:outputLabel value="&emsp;&emsp;To :"/>
-                                <h:outputLabel class="ml-2" value="#{channelReportController.toDate}" >
+                                <h:outputLabel class="ml-2" value="#{channelReportControllerOld.toDate}" >
                                     <f:convertDateTime pattern="dd MMM yyyy HH:mm:ss"/>
                                 </h:outputLabel>
                             </f:facet>
                             <p:column>
                                     <f:facet name="footer" >
                                         <p:outputLabel value="Total" style="float: left;" />
-                                        <p:outputLabel value="#{channelReportController.total}" style="float: right;">
+                                        <p:outputLabel value="#{channelReportControllerOld.total}" style="float: right;">
                                             <f:convertNumber pattern="#,##0" />
                                         </p:outputLabel>
                                     </f:facet>

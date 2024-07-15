@@ -16,14 +16,14 @@
                 <p:panel  header="Channel Bill List">
                     <p:panelGrid columns="2" styleClass="noPrintButton"> 
                         <h:outputLabel value="From Date"/>
-                        <p:calendar id="frmDate" value="#{channelReportController.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
+                        <p:calendar id="frmDate" value="#{channelReportControllerOld.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                         <h:outputLabel value="To Date"/>
-                        <p:calendar id="toDate" value="#{channelReportController.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
+                        <p:calendar id="toDate" value="#{channelReportControllerOld.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                     </p:panelGrid>
                     <h:panelGrid columns="4" class="my-2"> 
-                        <p:commandButton style="margin-right: 10px" ajax="false" id="btnRefresh" value="Process Created Date" action="#{channelReportController.createConsultantCountTableByCreatedDate}">
+                        <p:commandButton style="margin-right: 10px" ajax="false" id="btnRefresh" value="Process Created Date" action="#{channelReportControllerOld.createConsultantCountTableByCreatedDate}">
                         </p:commandButton>
-                        <p:commandButton style="margin-right: 10px" ajax="false" id="btnRefresh2" value="Process Session Date" action="#{channelReportController.createConsultantCountTableBySessionDate}">
+                        <p:commandButton style="margin-right: 10px" ajax="false" id="btnRefresh2" value="Process Session Date" action="#{channelReportControllerOld.createConsultantCountTableBySessionDate}">
                         </p:commandButton>
                         <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right; margin-right: 10px" >
                             <p:printer target="reportPrint"  />
@@ -38,15 +38,15 @@
 
 
                     <p:panel id="reportPrint">
-                        <p:dataTable value="#{channelReportController.bookingCountSummryRows}" var="b" id="tbl" >
+                        <p:dataTable value="#{channelReportControllerOld.bookingCountSummryRows}" var="b" id="tbl" >
                             <f:facet name="header" >
                                 <p:outputLabel value="Bill Summary" />
                                 <h:outputLabel class="ml-5" value="From : " style=" white-space:pre-line;"/>
-                                <h:outputLabel class="ml-2" value="#{channelReportController.fromDate}" >
+                                <h:outputLabel class="ml-2" value="#{channelReportControllerOld.fromDate}" >
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>                          
                                 <h:outputLabel value="&emsp;&emsp;To :"/>
-                                <h:outputLabel class="ml-2" value="#{channelReportController.toDate}" >
+                                <h:outputLabel class="ml-2" value="#{channelReportControllerOld.toDate}" >
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                             </f:facet>
@@ -66,7 +66,7 @@
                                     <f:convertNumber pattern="#,###,##0" />
                                 </p:outputLabel>
                                 <f:facet name="footer" >
-                                    <p:outputLabel value="#{channelReportController.channelTotal.vat}" >
+                                    <p:outputLabel value="#{channelReportControllerOld.channelTotal.vat}" >
                                         <f:convertNumber pattern="#,###,##0" />
                                     </p:outputLabel>
                                 </f:facet>
@@ -80,7 +80,7 @@
                                     <f:convertNumber pattern="#,###,##0" />
                                 </p:outputLabel>
                                 <f:facet name="footer" >
-                                    <p:outputLabel value="#{channelReportController.channelTotal.discount}" >
+                                    <p:outputLabel value="#{channelReportControllerOld.channelTotal.discount}" >
                                         <f:convertNumber pattern="#,###,##0" />
                                     </p:outputLabel>
                                 </f:facet>                                   
@@ -94,7 +94,7 @@
                                     <f:convertNumber pattern="#,###,##0" />
                                 </p:outputLabel>
                                 <f:facet name="footer" >
-                                    <p:outputLabel value="#{channelReportController.channelTotal.hosFee}" >
+                                    <p:outputLabel value="#{channelReportControllerOld.channelTotal.hosFee}" >
                                         <f:convertNumber pattern="#,###,##0" />
                                     </p:outputLabel>
                                 </f:facet>                                    
@@ -108,7 +108,7 @@
                                     <f:convertNumber pattern="#,###,##0" />
                                 </p:outputLabel>
                                 <f:facet name="footer" >
-                                    <p:outputLabel value="#{channelReportController.channelTotal.netTotal}" >
+                                    <p:outputLabel value="#{channelReportControllerOld.channelTotal.netTotal}" >
                                         <f:convertNumber pattern="#,###,##0" />
                                     </p:outputLabel>
                                 </f:facet>                                    
@@ -122,7 +122,7 @@
                                     <f:convertNumber pattern="#,###,##0" />
                                 </p:outputLabel>
                                 <f:facet name="footer" >
-                                    <p:outputLabel value="#{channelReportController.channelTotal.vat+channelReportController.channelTotal.netTotal+channelReportController.channelTotal.hosFee+channelReportController.channelTotal.discount}" >
+                                    <p:outputLabel value="#{channelReportControllerOld.channelTotal.vat+channelReportControllerOld.channelTotal.netTotal+channelReportControllerOld.channelTotal.hosFee+channelReportControllerOld.channelTotal.discount}" >
                                         <f:convertNumber pattern="#,###,##0" />
                                     </p:outputLabel>
                                 </f:facet>                                    
