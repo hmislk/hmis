@@ -215,6 +215,7 @@ public class PatientPortalController implements Serializable {
         addNewProfile = false;
         bookingCompleted = false;
         addNewPatient = false;
+        sessionInstances = null;
     }
 
     public List<Staff> fillConsultants() {

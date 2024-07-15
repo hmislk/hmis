@@ -70,9 +70,12 @@
                                 placeholder="Phone Number"
                                 class="form-control-sm mx-1"
                                 onfocus="this.select()" 
-                                />
+                                >
+                                <p:ajax process="txtQuickSearchPhoneNumber" ></p:ajax>
+                            </p:inputText>
                             <p:commandButton 
                                 id="btnSearchbyPhoneNo"
+                                immediate="true"
                                 icon="fa fa-search" 
                                 title="Quick Search from Phone Number"
                                 action="#{cc.attrs.controller.quickSearchPatientLongPhoneNumber()}" 

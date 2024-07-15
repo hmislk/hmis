@@ -1411,13 +1411,13 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public String navigateToManageBooking(BillSession bs) {
+        System.out.println("bs = " + bs);
         selectedBillSession = bs;
         if (selectedBillSession == null) {
             JsfUtil.addErrorMessage("Please select a Patient");
             return "";
         }
 
-        fillSessionInstanceByDoctor();
         // Setting the properties in the viewScopeDataTransferController
         viewScopeDataTransferController.setSelectedBillSession(selectedBillSession);
         viewScopeDataTransferController.setSelectedSessionInstance(selectedSessionInstance);
@@ -1449,6 +1449,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 }
             }
         }
+        fillFees();
+        fillSessionInstanceByDoctor();
+        calculateSelectedBillSessionTotal();
         return "/channel/manage_booking_by_date?faces-redirect=true";
     }
 
@@ -6097,17 +6100,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             return;
         }
 
-        if (configOptionApplicationController.getBooleanValueByKey("Channelling Patients Cannot Be Added After the Channel Has Been Completed")) {
-            if (selectedSessionInstance.isCompleted()) {
-                JsfUtil.addErrorMessage("This Session Has Been Completed");
-                return;
-            }
-        }
-        if (selectedSessionInstance.isCancelled()) {
-            JsfUtil.addErrorMessage("Cannot add patient to a canceled session. Please select an active session.");
-            return;
-        }
-
         if (configOptionApplicationController.getBooleanValueByKey("Channel Credit Booking Settle Requires Additional Information")) {
 
             if (settlePaymentMethod == PaymentMethod.Card) {
@@ -6997,6 +6989,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                     }
                 } else {
                     feeTotalForSelectedBill += itmf.getFee();
+                    System.out.println("itmf = " + itmf.getFee());
+                    System.out.println("feeTotalForSelectedBill = " + feeTotalForSelectedBill);
                     if (itmf.isDiscountAllowed()) {
                         feeDiscountForSelectedBill += itmf.getFee() * (paymentSchemeDiscount.getDiscountPercent() / 100);
                     }
@@ -7007,13 +7001,20 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 System.out.println("itmf = " + itmf);
                 if (foriegn) {
                     feeTotalForSelectedBill += itmf.getFfee();
+                    System.out.println("itmf = " + itmf);
                 } else {
                     feeTotalForSelectedBill += itmf.getFee();
+                    System.out.println("itmf 2 = " + itmf);
                 }
             }
 
         }
+
+        System.out.println("feeTotalForSelectedBill = " + feeTotalForSelectedBill);
+        System.out.println("feeDiscountForSelectedBill = " + feeDiscountForSelectedBill);
+        System.out.println("feeNetTotalForSelectedBill 3 = " + feeNetTotalForSelectedBill);
         feeNetTotalForSelectedBill = feeTotalForSelectedBill - feeDiscountForSelectedBill;
+        System.out.println("feeNetTotalForSelectedBill 4 = " + feeNetTotalForSelectedBill);
     }
 
     public SmsFacade getSmsFacade() {
@@ -7430,7 +7431,13 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     public double getCashBalance() {
         if (feeTotalForSelectedBill != null) {
+            System.out.println("feeNetTotalForSelectedBill = " + feeNetTotalForSelectedBill);
+            System.out.println("cashPaid = " + cashPaid);
+            if (feeNetTotalForSelectedBill == null) {
+                feeNetTotalForSelectedBill = 0.0;
+            }
             cashBalance = feeNetTotalForSelectedBill - cashPaid;
+            System.out.println("cashBalance = " + cashBalance);
         }
         return cashBalance;
     }

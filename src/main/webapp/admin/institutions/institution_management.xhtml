@@ -34,7 +34,7 @@
                                 id="btnDelete" 
                                 icon="fa fa-trash"
                                 onclick="if (!confirm('Are you sure you want to delete this record?'))
-                                                         return false;" 
+                                            return false;" 
                                 action="#{institutionController.delete()}"  
                                 value="Delete"
                                 update="lstSelect gpDetail msg" process="btnDelete"
@@ -67,16 +67,36 @@
                                             <h:outputText id="lblPName" value="Printing Name"  ></h:outputText>
                                             <p:inputText autocomplete="off" class="w-100 form-control m-1"
                                                          id="txtPName" value="#{institutionController.current.chequePrintingName}"></p:inputText>
-                                            <h:outputText value="Institution Code"  ></h:outputText>
+                                            <h:outputText value="Bill Prefix"  ></h:outputText>
                                             <p:inputText autocomplete="off" class="w-100 form-control m-1"
                                                          value="#{institutionController.current.institutionCode}"></p:inputText>
                                             <h:outputText id="lblCode" value="Code"  ></h:outputText>
                                             <p:inputText autocomplete="off" class="w-100 form-control m-1"
                                                          id="txtCode" value="#{institutionController.current.code}"></p:inputText>
-                                            <h:outputText id="lblSCode" value="Short Code" ></h:outputText>
-                                            <p:inputText autocomplete="off" class="w-100 form-control m-1"
-                                                         id="txtSCode" value="#{institutionController.current.institutionCode}" >
-                                            </p:inputText>
+                                            
+
+                                            <h:outputText id="lblParent" value="Parent" ></h:outputText>
+                                            <p:autoComplete value="#{institutionController.current.parentInstitution}"
+                                                            completeMethod="#{institutionController.completeIns}"
+                                                            var="r"
+                                                            class="w-100"
+                                                            inputStyleClass="w-100"
+                                                            itemLabel="#{r.name}"
+                                                            itemValue="#{r}"
+                                                            forceSelection="true">
+                                            </p:autoComplete>
+
+
+                                            <h:outputText  value="Route" ></h:outputText>
+                                            <p:autoComplete 
+                                                completeMethod="#{routeController.completeRoute}" 
+                                                class="w-100 form-control m-1" placeholder="Route"
+                                                inputStyleClass="w-100"
+                                                var="r" itemLabel="#{r.name}" itemValue="#{r}" forceSelection="true" value="#{institutionController.current.route}" ></p:autoComplete>
+
+
+
+
                                             <h:outputText  value="Description" ></h:outputText>
                                             <p:inputTextarea class="w-100 form-control m-1" value="#{institutionController.current.descreption}"  ></p:inputTextarea>
                                             <h:outputText id="lblDept" value="Type"></h:outputText>
@@ -126,14 +146,6 @@
 
                                             <h:outputText value="Owner Email" ></h:outputText>
                                             <p:inputText class="w-100 form-control m-1" autocomplete="off"  value="#{institutionController.current.ownerEmail}"  ></p:inputText>
-
-                                            <h:outputText  value="Route" ></h:outputText>
-                                            <p:autoComplete 
-                                                completeMethod="#{routeController.completeRoute}" 
-                                                class="w-100 form-control m-1" placeholder="Route"
-                                                inputStyleClass="w-100"
-                                                var="r" itemLabel="#{r.name}" itemValue="#{r}" forceSelection="true" value="#{institutionController.current.route}" ></p:autoComplete>
-
 
                                             <h:outputText  value="Email Sending Account" ></h:outputText>
                                             <p:inputText class="w-100 form-control m-1" autocomplete="off" id="txtEmUn" value="#{institutionController.current.emailSendingUsername}"></p:inputText>

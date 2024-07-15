@@ -9,6 +9,7 @@ import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.SecurityController;
+import com.divudi.bean.pharmacy.StockController;
 import com.divudi.data.InvestigationItemType;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
@@ -50,6 +51,7 @@ import com.divudi.entity.Patient;
 import com.divudi.entity.Person;
 import com.divudi.entity.pharmacy.Stock;
 import com.divudi.facade.BillItemFacade;
+import java.text.DecimalFormat;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
@@ -87,6 +89,8 @@ public class Lims {
     ItemController itemController;
     @Inject
     BillBeanController billBeanController;
+    @Inject
+    StockController stockController;
 
     /**
      * Creates a new instance of LIMS
@@ -349,6 +353,52 @@ public class Lims {
         return jSONObjectOut.toString();
     }
 
+    public String processBarcodeFromStock(String barcode, WebUser requestSendingUser) {
+        JSONArray array = new JSONArray();
+        if (barcode == null) {
+            return "";
+        }
+
+        Stock stock = stockController.findStockById(barcode);
+        if (stock == null) {
+            return "";
+        }
+
+        Item i = stock.getItemBatch().getItem();
+        if (i == null || i.getItemBarcodeGenerationStrategy() == null) {
+            return "";
+        }
+
+        switch (i.getItemBarcodeGenerationStrategy()) {
+            case BY_INDIVIDUAL_UNIT:
+                JSONArray jArray = constructUnitBarcodesJson(stock);
+                if (jArray != null) {
+                    for (int index = 0; index < jArray.length(); index++) {
+                        array.put(jArray.get(index));
+                    }
+                }
+                break;
+            case BY_BATCH:
+                JSONObject bcBatch = constructBatchBarcodeJson(stock);
+                if (bcBatch != null) {
+                    array.put(bcBatch);
+                }
+                break;
+            case BY_ITEM:
+                JSONObject bcItem = constructItemBarcodeJson(i);
+                if (bcItem != null) {
+                    array.put(bcItem);
+                }
+                break;
+            default:
+                break;
+        }
+
+        JSONObject jSONObjectOut = new JSONObject();
+        jSONObjectOut.put("Barcodes", array);
+        return jSONObjectOut.toString();
+    }
+
     public String processSamplesFromBill(String billId, String username, String password) {
 
         String validationError = validateInput(billId, username, password);
@@ -376,7 +426,7 @@ public class Lims {
             return constructErrorJson(1, "Username / password mismatch.", billId);
         }
 
-        return processBarcodeFromBill(billId, requestSendingUser);
+        return processBarcodeFromStock(billId, requestSendingUser);
     }
 
     public String generateSamplesForInternalUse(String billId, WebUser user) {
@@ -567,7 +617,6 @@ public class Lims {
     }
 
     private JSONArray constructUnitBarcodesJson(BillItem bi, Long startBarcode, Long endBarcode) {
-
         System.out.println("constructUnitBarcodesJson - startBarcode: " + startBarcode + ", endBarcode: " + endBarcode);
         JSONArray jsonArray = new JSONArray();
 
@@ -576,17 +625,83 @@ public class Lims {
             return jsonArray;  // Return an empty array if input is invalid
         }
 
+        DecimalFormat rateFormatter = new DecimalFormat("#,##0.00");
+        String formattedRate = "";
+        try {
+            Double rate = bi.getPharmaceuticalBillItem().getRetailRate();
+            if (rate != null) {
+                formattedRate = rateFormatter.format(rate);
+            }
+        } catch (Exception e) {
+            System.out.println("Error in formatting rate: " + e);
+        }
+
         Long barcode = startBarcode;
         try {
             while (barcode <= endBarcode) {
                 JSONObject jsonObject = new JSONObject();
                 jsonObject.put("itemName", bi.getItem().getName() != null ? bi.getItem().getName() : "");
+                jsonObject.put("itemCode", bi.getItem().getCode()!= null ? bi.getItem().getCode() : "");
+                jsonObject.put("rate", formattedRate);
                 jsonObject.put("barcode", barcode);
                 jsonArray.put(jsonObject);
                 barcode++;
             }
         } catch (Exception e) {
-            System.out.println("e = " + e);
+            System.out.println("Error while constructing JSON array: " + e);
+        }
+
+        return jsonArray;
+    }
+
+    public Long createBarcode(String prefix, Long number) {
+        String formattedNumber = String.format("%06d", number);
+        String combinedString = prefix + formattedNumber;
+        Long barcode = Long.parseLong(combinedString);
+        return barcode;
+    }
+
+    private JSONArray constructUnitBarcodesJson(Stock stock) {
+
+        String initialPartOfBarcode = stock.getItemBatch().getItem().getBarcode();
+        Long startLongSecondPart = stock.getItemBatch().getItem().getLastBarcode() + 1;
+        Double qty = stock.getStock();
+        Long endLongSecondPart = stock.getItemBatch().getItem().getLastBarcode() + Math.round(qty);
+        Long startFullBarcode = createBarcode(initialPartOfBarcode, startLongSecondPart);
+        Long endFullBarcode = createBarcode(initialPartOfBarcode, endLongSecondPart);
+        stock.setStartBarcode(startFullBarcode);
+        stock.setEndBarcode(endFullBarcode);
+        stock.getItemBatch().getItem().setLastBarcode(endLongSecondPart);
+        itemController.saveSelected(stock.getItemBatch().getItem());
+        stockController.saveSilantly(stock);
+
+        JSONArray jsonArray = new JSONArray();
+
+        DecimalFormat rateFormatter = new DecimalFormat("#,##0.00");
+        String formattedRate = "";
+        try {
+            Double rate = stock.getItemBatch().getRetailsaleRate();
+            if (rate != null) {
+                formattedRate = rateFormatter.format(rate);
+            }
+        } catch (Exception e) {
+            System.out.println("Error in formatting rate: " + e);
+        }
+
+        Long barcode = stock.getStartBarcode();
+        Long endBarcode = stock.getEndBarcode();
+        try {
+            while (barcode <= endBarcode) {
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put("itemName", stock.getItemBatch().getItem().getName() != null ? stock.getItemBatch().getItem().getName() : "");
+                jsonObject.put("itemCode", stock.getItemBatch().getItem().getCode() != null ? stock.getItemBatch().getItem().getCode() : "");
+                jsonObject.put("rate", formattedRate);
+                jsonObject.put("barcode", barcode);
+                jsonArray.put(jsonObject);
+                barcode++;
+            }
+        } catch (Exception e) {
+            System.out.println("Error while constructing JSON array: " + e);
         }
 
         return jsonArray;
@@ -598,6 +713,7 @@ public class Lims {
         }
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("itemName", stock.getItemBatch().getItem().getName() != null ? stock.getItemBatch().getItem().getName() : "");
+        jsonObject.put("itemCode", stock.getItemBatch().getItem().getCode() != null ? stock.getItemBatch().getItem().getCode() : "");
         jsonObject.put("barcode", stock.getStartBarcode());
         return jsonObject;
     }
@@ -608,6 +724,7 @@ public class Lims {
         }
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("itemName", item.getName() != null ? item.getName() : "");
+        jsonObject.put("itemCode", item.getCode() != null ? item.getCode() : "");
         jsonObject.put("barcode", item.getBarcode());
         return jsonObject;
     }

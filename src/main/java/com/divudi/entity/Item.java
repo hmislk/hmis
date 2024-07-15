@@ -81,6 +81,8 @@ public class Item implements Serializable, Comparable<Item> {
     private boolean isMasterItem;
     private boolean hasReportFormat;
     private int numberOfDaysToMarkAsShortExpiary;
+    
+    private boolean canSechduleForOtherDays;
 
     @ManyToOne
     Category category;
@@ -165,6 +167,7 @@ public class Item implements Serializable, Comparable<Item> {
     boolean chargesVisibleForInward;
     boolean requestForQuentity;
     boolean marginNotAllowed;
+    private boolean printSessionNumber;
     @Column
     boolean inactive = false;
     @ManyToOne
@@ -253,6 +256,9 @@ public class Item implements Serializable, Comparable<Item> {
     @Column(name = "DTYPE", insertable = false, updatable = false)
     private String clazz;
 
+    
+    
+    
     public double getVatPercentage() {
         return 0;
     }
@@ -814,6 +820,9 @@ public class Item implements Serializable, Comparable<Item> {
     }
 
     public SessionNumberType getSessionNumberType() {
+        if(sessionNumberType==null){
+            sessionNumberType=SessionNumberType.ByBill;
+        }
         return sessionNumberType;
     }
 
@@ -1361,6 +1370,24 @@ public class Item implements Serializable, Comparable<Item> {
     public void setLastBarcode(Long lastBarcode) {
         this.lastBarcode = lastBarcode;
     }
+
+    public boolean isPrintSessionNumber() {
+        return printSessionNumber;
+    }
+
+    public void setPrintSessionNumber(boolean printSessionNumber) {
+        this.printSessionNumber = printSessionNumber;
+    }
+
+    public boolean isCanSechduleForOtherDays() {
+        return canSechduleForOtherDays;
+    }
+
+    public void setCanSechduleForOtherDays(boolean canSechduleForOtherDays) {
+        this.canSechduleForOtherDays = canSechduleForOtherDays;
+    }
+    
+    
 
     static class ReportItemComparator implements Comparator<ReportItem> {
 

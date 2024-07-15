@@ -42,16 +42,26 @@
                                     <p:inputText autocomplete="off"  value="#{institutionController.current.code}"  style="width: 650px">
                                     </p:inputText> 
 
-                                    <h:outputText value="Short Code" >                                        
+                                    <h:outputText value="Bill Prefix" >                                        
                                     </h:outputText>
                                     <p:inputText autocomplete="off"  value="#{institutionController.current.institutionCode}" style="width: 650px" >
                                     </p:inputText> 
+                                    
+                                    <h:outputText id="lblParent" value="Parent" ></h:outputText>
+                                    <p:autoComplete value="#{institutionController.current.parentInstitution}"
+                                                    completeMethod="#{institutionController.completeIns}"
+                                                    var="r"
+                                                    class="w-100"
+                                                    inputStyleClass="w-100"
+                                                    itemLabel="#{r.name}"
+                                                    itemValue="#{r}"
+                                                    forceSelection="true">
+                                    </p:autoComplete>
 
                                     <h:outputText id="lblRoute" value="Route" ></h:outputText>
                                     <p:autoComplete value="#{institutionController.current.route}"
                                                     completeMethod="#{routeController.completeRoute}"
                                                     var="r"
-                                                    style="width: 650px"
                                                     inputStyleClass="w-100"
                                                     itemLabel="#{r.name}"
                                                     itemValue="#{r}"
@@ -62,7 +72,7 @@
                                     </h:outputText>
                                     <p:inputText autocomplete="off"
                                                  value="#{institutionController.current.pointOfIssueNo}"
-                                                 style="width: 650px;">
+                                                 class="w-100">
                                     </p:inputText>
                                     <h:outputText value="Description" >                                        
                                     </h:outputText>

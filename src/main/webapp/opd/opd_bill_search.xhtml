@@ -187,26 +187,26 @@
 
                             <div class="col-md-10">
                                 <p:defaultCommand target="btnSearch" />
-                                <p:dataTable rowIndexVar="i" 
-                                             id="tblBills" 
-                                             value="#{searchController.bills}" 
-                                             var="bill"  
-                                             style="min-width: 100%;"  
-                                             rows ="10"
-                                             rowStyleClass="#{bill.cancelled?'text-danger':''} "
-                                             paginator="true"
-                                             paginatorPosition="bottom"
-                                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                             rowsPerPageTemplate="5,10,25,50"
-                                             >
+                                <p:dataTable 
+                                    rowIndexVar="i" 
+                                    id="tblBills" 
+                                    value="#{searchController.bills}" 
+                                    var="bill"  
+                                    style="min-width: 100%;"  
+                                    rows ="10"
+                                    paginator="true"
+                                    paginatorPosition="bottom"
+                                    paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                    rowsPerPageTemplate="5,10,25,50"
+                                    >
                                     <p:column 
                                         headerText="No" 
                                         filterBy="#{bill.id}" 
                                         filterMatchMode="contains"
-                                              sortBy="#{bill.id}"
-                                              rendered="false"
-                                              styleClass="alignTop" 
-                                              width="15">
+                                        sortBy="#{bill.id}"
+                                        rendered="false"
+                                        styleClass="alignTop" 
+                                        width="15">
                                         <h:outputLabel value="#{bill.id}"/>
                                     </p:column>
                                     <p:column headerText="Bill No" sortBy="#{bill.deptId}" filterBy="#{bill.deptId}" >                                
@@ -223,29 +223,57 @@
                                             <f:setPropertyActionListener value="#{bill}" target="#{opdBillController.bill}"/>
                                         </h:commandLink>  
                                     </p:column>
-                                    <p:column headerText="Billed At" filterBy="#{bill.billDate}" sortBy="#{bill.billDate}"  >
-                                        <p:outputLabel id="billTime1" value="#{bill.createdAt}" rendered="#{fn:substring(searchController.fromDate, 0, 10) eq fn:substring(searchController.toDate, 0, 10)}">
-                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" ></f:convertDateTime>
-                                        </p:outputLabel>
-                                        <p:outputLabel id="billTime2" value="#{bill.createdAt}" rendered="#{fn:substring(searchController.fromDate, 0, 10) ne fn:substring(searchController.toDate, 0, 10)}">
-                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" ></f:convertDateTime>
-                                        </p:outputLabel>
+
+                                    <p:column headerText="Billed At" filterBy="#{bill.billDate}" sortBy="#{bill.billDate}">
+                                        <h:panelGroup rendered="#{fn:substring(searchController.fromDate, 0, 10) eq fn:substring(searchController.toDate, 0, 10)}">
+                                            <p:outputLabel id="billTime1" value="#{bill.createdAt}" >
+                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" ></f:convertDateTime>
+                                            </p:outputLabel>
+                                            <div>
+                                                <p:outputLabel value="#{bill.cancelledBill.createdAt}" rendered="#{bill.cancelled}" style="color: red">
+                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" ></f:convertDateTime>
+                                                </p:outputLabel>
+                                                <p:outputLabel value="#{bill.refundedBill.createdAt}" style="color: orange">
+                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" ></f:convertDateTime>
+                                                </p:outputLabel>
+                                            </div>
+
+                                        </h:panelGroup>
+
+                                        <h:panelGroup rendered="#{fn:substring(searchController.fromDate, 0, 10) ne fn:substring(searchController.toDate, 0, 10)}">
+                                            <p:outputLabel id="billTime2" value="#{bill.createdAt}">
+                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" ></f:convertDateTime>
+                                            </p:outputLabel>
+                                            <p:outputLabel value="#{bill.cancelledBill.createdAt}" rendered="#{bill.cancelled}" style="color: red">
+                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" ></f:convertDateTime>
+                                            </p:outputLabel>
+                                            <p:outputLabel value="#{bill.refundedBill.createdAt}" rendered="#{bill.refunded}" style="color: orange">
+                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" ></f:convertDateTime>
+                                            </p:outputLabel>
+                                        </h:panelGroup>
+
                                     </p:column>
-                                    <p:column headerText="Billed By" sortBy="#{bill.fromDepartment.name}" 
-                                              filterBy="#{bill.fromDepartment.name}" filterMatchMode="contains" >                                
+
+                                    <p:column headerText="Billed By" sortBy="#{bill.fromDepartment.name}" filterBy="#{bill.fromDepartment.name}" filterMatchMode="contains">                                
                                         <h:outputLabel id="byDep" value="#{bill.fromDepartment.name}" />
+                                        <h:panelGroup rendered="#{bill.cancelled or bill.refunded}" style="display: grid">
+                                            <h:outputLabel value="#{bill.cancelledBill.department.name}" style="color: red" rendered="#{bill.cancelled}"></h:outputLabel>
+                                            <h:outputLabel value="#{bill.refundedBill.department.name}" style="color: orange" rendered="#{bill.refunded}"></h:outputLabel>
+                                        </h:panelGroup>
                                     </p:column>
                                     <p:column headerText="Billed For" sortBy="#{bill.toDepartment.name}" 
                                               filterBy="#{bill.toDepartment.name}" filterMatchMode="contains" >                                
                                         <h:outputLabel id="insDep" value="#{bill.toDepartment.name}" />
                                     </p:column>
-<!--                                    <p:column headerText="Billed At"  sortBy="#{bill.departmentName}" filterBy="#{bill.departmentName}"  >                                
-                                        <h:outputLabel value="#{bill.departmentName}" />
-                                    </p:column>-->
-                                    <p:column headerText="Billed by"  sortBy="#{bill.creater.name}" filterBy="#{bill.creater.name}" >
-                                        <h:outputLabel value="#{bill.creater.name}" >                                      
-                                        </h:outputLabel>
-                                    </p:column>    
+
+                                    <p:column headerText="Billed by"  sortBy="#{bill.creater.name}" filterBy="#{bill.creater.name}">
+                                        <h:outputLabel value="#{bill.creater.webUserPerson.name}" ></h:outputLabel>
+                                        <h:panelGroup rendered="#{bill.cancelled or bill.refunded}" style="display: grid">
+                                            <h:outputLabel value="#{bill.cancelledBill.creater.webUserPerson.name}" style="color: red" rendered="#{bill.cancelled}"></h:outputLabel>
+                                            <h:outputLabel value="#{bill.refundedBill.creater.webUserPerson.name}" style="color: orange" rendered="#{bill.refunded}"></h:outputLabel>
+                                        </h:panelGroup>
+                                    </p:column>   
+
                                     <p:column headerText="Client"  sortBy="#{bill.patient.person.name}" 
                                               filterBy="#{bill.patient.person.name}" >                               
                                         <h:panelGroup id="pt">
@@ -256,9 +284,40 @@
                                             </h:outputLabel>
                                         </h:panelGroup>
                                     </p:column>
-                                    <p:column headerText="Remarks"   >  
-                                        <p:badge rendered="#{bill.cancelled}" value="Cancelled" severity="danger" styleClass="mr-2"></p:badge>
-                                        <p:badge rendered="#{bill.refunded}" value="Refunded" severity="warning" styleClass="mr-2"></p:badge>
+
+                                    <p:column headerText="Remarks" >  
+                                        <h:panelGroup id="remark">
+                                            <p:badge rendered="#{bill.cancelled}" value="Cancelled" severity="danger" styleClass="mr-2"></p:badge>
+                                            <p:badge rendered="#{bill.refunded}" value="Refunded" severity="warning" styleClass="mr-2"></p:badge>
+                                        </h:panelGroup>
+
+                                        <p:tooltip for="remark" value="df" rendered="#{configOptionApplicationController.getBooleanValueByKey('OPD - Display Bill Details in Tooltip')}" >
+                                            <h:panelGrid columns="3" >
+                                                <h:outputText value="Creater" ></h:outputText>
+                                                <p:spacer width="15" height="1" ></p:spacer>
+                                                <h:panelGroup>
+                                                    <h:outputText value="#{bill.cancelledBill.creater.webUserPerson.name}" rendered="#{bill.cancelled}"></h:outputText>
+                                                    <h:outputText value="#{bill.refundedBill.creater.webUserPerson.name}" rendered="#{bill.refunded}"></h:outputText>
+                                                </h:panelGroup>
+
+                                                <h:outputText value="Created At" ></h:outputText>
+                                                <p:spacer width="15" height="1" ></p:spacer>
+                                                <h:panelGroup>
+                                                    <h:outputText value="#{bill.cancelledBill.createdAt}" rendered="#{bill.cancelled}">
+                                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
+                                                    </h:outputText>
+                                                    <h:outputText value="#{bill.refundedBill.createdAt}" rendered="#{bill.refunded}">
+                                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
+                                                    </h:outputText>
+                                                </h:panelGroup>
+                                                <h:outputText value="Department" ></h:outputText>
+                                                <p:spacer width="15" height="1" ></p:spacer>
+                                                <h:panelGroup>
+                                                    <h:outputText value="#{bill.cancelledBill.department.name}" rendered="#{bill.cancelled}"></h:outputText>
+                                                    <h:outputText value="#{bill.refundedBill.department.name}" rendered="#{bill.refunded}"></h:outputText>
+                                                </h:panelGroup>
+                                            </h:panelGrid>
+                                        </p:tooltip>
 
                                     </p:column>
 
@@ -280,10 +339,6 @@
                                         </h:outputLabel>
                                     </p:column> 
 
-
-
-
-
                                     <p:column headerText="Actions">                                
                                         <p:commandLink 
                                             ajax="false" 
@@ -299,11 +354,8 @@
                                         </h:commandLink>  
                                     </p:column>
 
-
-
-
-
                                 </p:dataTable>
+
                             </div>
                         </div>
                     </p:panel>

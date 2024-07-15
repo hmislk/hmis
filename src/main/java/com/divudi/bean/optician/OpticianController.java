@@ -33,6 +33,12 @@ public class OpticianController implements Serializable {
     public String navigateToOpticianAppointmentManagement() {
         return "/optician/appointment_management?faces-redirect=true";
     }
+    
+    
+     // Navigation to the optician Appointment Management page
+    public String navigateToStockReport() {
+        return "/optician/stock_by_batch?faces-redirect=true";
+    }
 
     // Navigation to the optician Stock Management page
     public String navigateToOpticianStockManagement() {
