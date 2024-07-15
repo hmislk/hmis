@@ -240,10 +240,10 @@
                                     <div class="col-md-3 p-1">
                                         <p:inputText 
                                             id="txtPhone" 
-                                            required="#{configOptionApplicationController.getBooleanValueByKey('Patients Phone Number is Mandatory')}"
-                                            requiredMessage="Please enter a Phone Number"
                                             autocomplete="off" 
                                             placeholder="Phone Number"
+                                            required="#{configOptionApplicationController.getBooleanValueByKey('Patients Phone Number is Mandatory')}"
+                                            requiredMessage="Please enter a Mobile Number"
                                             value="#{cc.attrs.controller.patient.phoneNumberStringTransient}"
                                             class="form-control" validatorMessage="Please enter valid Number">
                                             <c:if test="#{not empty sessionController.applicationPreference.mobileRegex}">

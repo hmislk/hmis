@@ -178,8 +178,8 @@
                                             <f:setPropertyActionListener value="#{pi.bill}" target="#{billSearch.billSearch}"/>
                                         </h:commandLink>
                                     </p:column>
-                                    <p:column headerText="Comment" styleClass="alignTop"  >
-                                        <p:outputLabel value="#{pi.bill.comments}" />
+                                    <p:column headerText="Doctor" filterBy="#{pi.bill.fromStaff.person.nameWithTitle}" filterMatchMode="contains" >
+                                        <p:outputLabel value="#{pi.bill.fromStaff.person.nameWithTitle}" />
                                     </p:column>
 
                                 </p:dataTable>

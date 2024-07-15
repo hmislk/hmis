@@ -520,6 +520,11 @@ public class FinancialTransactionController implements Serializable {
     // <editor-fold defaultstate="collapsed" desc="Sample Code Block">
     // </editor-fold>  
     // <editor-fold defaultstate="collapsed" desc="ShiftEndFundBill">
+    public void refreshCashNetTotalForMenu(){
+        findNonClosedShiftStartFundBillIsAvailable();
+        fillPaymentsFromShiftStartToNow();
+    }
+    
     public String navigateToCreateShiftEndSummaryBill() {
         resetClassVariables();
         findNonClosedShiftStartFundBillIsAvailable();

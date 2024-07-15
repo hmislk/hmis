@@ -73,6 +73,8 @@
                             <p:outputLabel value="Bill Date From" ></p:outputLabel>
                             <p:datePicker 
                                 class="mt-1 mx-2"
+                                showTime="true"
+                                showButtonBar="true"
                                 value="#{reportController.fromDate}" 
                                 pattern="#{sessionController.applicationPreference.longDateFormat}">
                             </p:datePicker>
@@ -80,6 +82,8 @@
                             <p:outputLabel value="Bill Date To" ></p:outputLabel>
                             <p:datePicker 
                                 class="mt-1 mx-2"
+                                showTime="true"
+                                showButtonBar="true"
                                 value="#{reportController.toDate}"
                                 pattern="#{sessionController.applicationPreference.longDateFormat}">
                             </p:datePicker>

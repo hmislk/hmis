@@ -39,6 +39,7 @@
                                 <p:outputLabel value="Channel Session Report(Doctor Card)" />
                                 <br></br>
                             </f:facet>
+                            
                             <p:column style="padding: 6px">
                                 <f:facet name="header" >
                                     <p:outputLabel value="Consultant" />
@@ -69,9 +70,9 @@
                                 </f:facet>
                                 <p:outputLabel value="#{i.startingTime}" >
 
-                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="HH:mm"  />
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm a"  />
 
-                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}"  />
+<!--                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}"  />-->
 
                                 </p:outputLabel>
                             </p:column>
@@ -86,7 +87,7 @@
                             <p:column style="padding: 6px">
                                 <f:facet name="header" >
                                     <p:outputLabel value="Room No" />
-                                </f:facet>
+                             0   </f:facet>
                                 
                             </p:column>
                         </p:dataTable>
