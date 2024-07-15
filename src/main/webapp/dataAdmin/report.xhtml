@@ -18,7 +18,7 @@
                     <p:panelGrid columns="1"  class="w-100 m-2 p-2">
                         <f:facet name="header" >
                             <p:outputLabel value="Report" ></p:outputLabel>
-                            <p:commandButton class="mx-5" value="Save" ajax="false" action="#{reportTemplateController.saveSelected()}" ></p:commandButton>
+                            <p:commandButton class="mx-5" value="Save" ajax="false" action="#{reportTemplateController.processReport()}" ></p:commandButton>
                         </f:facet>
                         
                         <h:panelGroup rendered="#{reportTemplateController.current.matchesReportTemplateFilter('DATE')}" >
@@ -35,6 +35,11 @@
                             <p:outputLabel value="Name:" for="name" />
                             <p:calendar id="calFromDate" value="#{reportTemplateController.toDate}" required="true"  class="w-100"/>
                         </h:panelGroup>
+                        
+                       
+                        <p:dataTable value="#{reportTemplateController.reportTemplateRows}" var="rtr" rowKey="" >
+                        
+                        </p:dataTable>
                         
                         
                     </p:panelGrid>
