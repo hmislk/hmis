@@ -19,8 +19,16 @@
 
             <p:panel >
                 <f:facet name="header">
-                    <div class="d-flex justify-content-between">
-                        <h:outputText value="Manage Booking" class="mt-2"></h:outputText>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="d-flex">
+                            <div>
+                                <h:outputText value="Manage Booking"></h:outputText> |
+                            </div>
+                            <h:outputLabel class="mx-1" value="#{bookingControllerViewScope.selectedSessionInstance.staff.person.nameWithTitle}" ></h:outputLabel>
+                                (<h:outputLabel value="#{bookingControllerViewScope.selectedSessionInstance.staff.speciality.name}" ></h:outputLabel>) -<br />
+                                <h:outputLabel class="mx-1" value="#{bookingControllerViewScope.selectedSessionInstance.originatingSession.name}" ></h:outputLabel>
+                        </div>
+                        
                         <div class="d-flex gap-2">
                             <p:commandButton 
                                 ajax="false" 
@@ -28,6 +36,13 @@
                                 value="Back to Bookings"
                                 immediate="true"
                                 action="#{bookingControllerViewScope.navigateBackToBookingsFromBillSession()}"
+                                icon="fa-solid fa-arrow-left" />
+                            <p:commandButton 
+                                ajax="false" 
+                                class="mx-1 ui-button-secondary"
+                                value="Back"
+                                immediate="true"
+                                action="#{bookingControllerViewScope.navigateToManageSessionInstance(bookingControllerViewScope.selectedSessionInstance)}"
                                 icon="fa-solid fa-arrow-left" />
                         </div>
                     </div>
@@ -353,7 +368,8 @@
                                                             itemValue="#{pm}"/>
                                                         <p:ajax process="@this" 
                                                                 update="paymentDetails"
-                                                                event="change"/>
+                                                                event="change"
+                                                                listener="#{bookingControllerViewScope.listnerForPaymentMethodChangeOnCreditSettle()}"/>
                                                     </p:selectOneMenu>
                                                 </div>
 
@@ -1038,6 +1054,7 @@
                                     <p:commandButton 
                                         value="To Print as Original"
                                         ajax="false"
+                                        immediate="true"
                                         class="ui-button-danger m-2"
                                         disabled="#{!webUserController.hasPrivilege('ChannellingReprintOriginalBill')}"
                                         action="#{bookingControllerViewScope.toReprintAsOriginal()}"
@@ -1046,6 +1063,7 @@
                                     <p:commandButton
                                         value="To Print Online Booking"
                                         ajax="false"
+                                        immediate="true"
                                         class="ui-button-warning m-2"
                                         action="#{bookingControllerViewScope.toPrintOnlineBill()}"
                                         rendered="#{bookingControllerViewScope.selectedBillSession.bill.paymentMethod eq 'OnlineSettlement' and !bookingControllerViewScope.selectedBillSession.bill.printed}"
@@ -1360,7 +1378,7 @@
                                 <p:panel header="Current Patient for Booking" >
                                     <ezcommon:patient patient="#{bookingControllerViewScope.selectedBillSession.bill.patient}" ></ezcommon:patient>
                                 </p:panel>
-                                <ezcommon:patient_details_view_scope controller="#{bookingControllerViewScope}" ></ezcommon:patient_details_view_scope>
+                                <ezcommon:patient_details_view_scope_1 controller="#{bookingControllerViewScope}" ></ezcommon:patient_details_view_scope_1>
                             </p:panelGrid>
                         </p:tab>
 

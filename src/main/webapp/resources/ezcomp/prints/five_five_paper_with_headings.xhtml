@@ -131,8 +131,8 @@
                         </td>
 
                         <td>
-                            <h:outputLabel value="#{cc.attrs.bill.deptId}" class="billDetailsFiveFive">
-                            </h:outputLabel>
+                            <h:outputLabel value="#{cc.attrs.bill.cancelledBill.deptId}" class="billDetailsFiveFive" rendered="#{cc.attrs.bill.cancelled}"></h:outputLabel>
+                            <h:outputLabel value="#{cc.attrs.bill.deptId}" class="billDetailsFiveFive" rendered="#{!cc.attrs.bill.cancelled}"></h:outputLabel>
                         </td>
 
                     </tr>
@@ -380,10 +380,11 @@
 
             </div>
 
-            <div style="text-decoration: overline; margin-top: 10px;">
+            <div style=" margin-top: 10px;" class="d-flex justify-content-between">
                 <h:outputLabel value="Cashier : #{cc.attrs.bill.creater.webUserPerson.name}"/>
+                <h:outputLabel value="Original Bill : #{cc.attrs.bill.deptId}" rendered="#{cc.attrs.bill.cancelled and configOptionApplicationController.getBooleanValueByKey('Package Billing - Display the Original Bill Number in Canceled Bill',false)}"/>
             </div>
-
+            
             <h:panelGroup rendered="#{cc.attrs.bill.paymentMethod eq 'Card'}" style="margin-top: 10px;font-size: 8pt">
                 <h:outputLabel value="Payments : #{cc.attrs.bill.paymentMethod.label}"/>
                 <ui:repeat value="#{cc.attrs.payments}" var="p">
