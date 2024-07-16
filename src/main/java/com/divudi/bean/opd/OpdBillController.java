@@ -831,6 +831,15 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         getCurrentlyWorkingStaff().add(bf.getStaff());
         selectedCurrentlyWorkingStaff = bf.getStaff();
     }
+    
+    public void changeBillDoctorByReferral() {
+        if (referredBy == null) {
+            JsfUtil.addErrorMessage("No referring doctor");
+            return;
+        }
+        getCurrentlyWorkingStaff().add(referredBy);
+        selectedCurrentlyWorkingStaff = referredBy;
+    }
 
     public String getStrTenderedValue() {
         return strTenderedValue;
