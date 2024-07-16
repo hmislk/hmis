@@ -407,7 +407,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     private String createChanelBookingRescheduleSms(Bill b, BillSession s) {
 //        String template = sessionController.getDepartmentPreference().getSmsTemplateForChannelBooking();
-        String template = configOptionController.getLongTextValueByKey("Template for SMS sent on Patient Feedback", OptionScope.APPLICATION, null, null, null);
+        String template = configOptionController.getLongTextValueByKey("Template for SMS sent on Booking Rescheduled", OptionScope.APPLICATION, null, null, null);
         if (template == null || template.isEmpty()) {
             template = "Dear {patient_name}, Your appointment No. {serial_no} with {doctor} is rescheduled to appointment No. {new_serial_no} with {new_doctor} on {new_appointment_date} at {new_appointment_time} . {ins_name}";
         }
