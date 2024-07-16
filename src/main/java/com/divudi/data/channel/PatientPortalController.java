@@ -326,6 +326,8 @@ public class PatientPortalController implements Serializable {
         } else {
             JsfUtil.addSuccessMessage("SMS Failed");
         }
+        e.setSentSuccessfully(sent);
+        getSmsFacade().edit(e);
 
     }
     

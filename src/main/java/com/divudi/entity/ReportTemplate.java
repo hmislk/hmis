@@ -246,24 +246,28 @@ public class ReportTemplate implements Serializable {
         this.billTypes = billTypes;
     }
 
+    @Transient
     public boolean matchesBillTypeAtomic(String input) {
         List<BillTypeAtomic> bts = getBillTypeAtomics();
         return bts.stream()
                 .anyMatch(e -> e.name().equalsIgnoreCase(input.trim()));
     }
 
+    @Transient
     public boolean matchesReportTemplateColumn(String input) {
         List<ReportTemplateColumn> columns = getReportColumns();
         return columns.stream()
                 .anyMatch(e -> e.name().equalsIgnoreCase(input.trim()));
     }
 
+    @Transient
     public boolean matchesReportTemplateFilter(String input) {
         List<ReportTemplateFilter> filters = getReportFilters();
         return filters.stream()
                 .anyMatch(e -> e.name().equalsIgnoreCase(input.trim()));
     }
 
+    @Transient
     public List<BillTypeAtomic> getBillTypeAtomics() {
         if (billTypeAtomics == null) {
             billTypeAtomics = convertToBillTypeAtomicList(this.billTypes);
@@ -271,6 +275,7 @@ public class ReportTemplate implements Serializable {
         return billTypeAtomics;
     }
 
+    @Transient
     public List<ReportTemplateColumn> getReportColumns() {
         if (reportColumns == null) {
             reportColumns = convertToReportTemplateColumnList(this.columns);
@@ -278,6 +283,7 @@ public class ReportTemplate implements Serializable {
         return reportColumns;
     }
 
+    @Transient
     public List<BillTypeAtomic> convertToBillTypeAtomicList(String input) {
         return Arrays.stream(input.split("\n"))
                 .map(String::trim)
@@ -293,6 +299,7 @@ public class ReportTemplate implements Serializable {
                 .collect(Collectors.toList());
     }
 
+    @Transient
     public List<ReportTemplateColumn> convertToReportTemplateColumnList(String input) {
         return Arrays.stream(input.split("\n"))
                 .map(String::trim)
@@ -305,6 +312,7 @@ public class ReportTemplate implements Serializable {
                 .collect(Collectors.toList());
     }
 
+    @Transient
     public List<ReportTemplateFilter> convertToReportTemplateFilterList(String input) {
         return Arrays.stream(input.split("\n"))
                 .map(String::trim)
@@ -317,6 +325,7 @@ public class ReportTemplate implements Serializable {
                 .collect(Collectors.toList());
     }
 
+    @Transient
     public List<ReportTemplateFilter> getReportFilters() {
         if (reportFilters == null) {
             reportFilters = convertToReportTemplateFilterList(this.filters);

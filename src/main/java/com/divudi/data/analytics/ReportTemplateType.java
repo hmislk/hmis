@@ -10,6 +10,7 @@ public enum ReportTemplateType {
     BILL_FEE_LIST("Bill Fee List"),
     PATIENT_LIST("Patient List"),
     ENCOUNTER_LIST("Encounter List"),
+    BILL_FEE_GROUPED_BY_TO_DEPARTMENT_AND_CATEGORY("Bill fees grouped by to departmetnt and category"),
     BILL_TYPE_ATOMIC_SUMMARY_USING_BILLS("Bill Type Summary by using Bills"),
     BILLT_TYPE_AND_PAYMENT_METHOD_SUMMARY_USING_BILLS("Bill Type Summary by using Bills"),
     PAYMENT_TYPE_SUMMARY_USING_BILLS("Payment Method Summary by using Bills"),

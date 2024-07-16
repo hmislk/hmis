@@ -313,6 +313,109 @@ public class ChannelStaffPaymentBillController implements Serializable {
         }
 
     }
+    
+    
+     public void debugDueFees() {
+         Date startTime = new Date();
+
+        if (getSpeciality() == null) {
+            JsfUtil.addErrorMessage("Select Specility");
+            return;
+        }
+
+        if (getCurrentStaff() == null) {
+            JsfUtil.addErrorMessage("Select Doctor");
+            return;
+        }
+        if (considerDate) {
+            if (getToDate().getTime() > commonFunctions.getEndOfDay().getTime()) {
+                JsfUtil.addErrorMessage("You Can't search after current Date");
+                return;
+            }
+        }
+
+        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelPaid, BillType.ChannelStaff};
+        List<BillType> bts = Arrays.asList(billTypes);
+        String sql = " SELECT b FROM BillFee b "
+                + "  where type(b.bill)=:class "
+                + " and b.bill.retired=false "
+                + " and b.bill.paidAmount!=0 "
+                + " and b.fee.feeType=:ftp"
+                + " and b.bill.refunded=false "
+                + " and b.bill.cancelled=false "
+                + " and b.bill.singleBillSession.absent=false"
+                + " and (b.feeValue - b.paidValue) > 0 "
+                + " and b.bill.billType in :bt "
+                + " and b.staff=:stf ";
+
+        HashMap hm = new HashMap();
+        if (getFromDate() != null && getToDate() != null && considerDate) {
+            sql += " and b.bill.appointmentAt between :frm and  :to";
+            hm.put("frm", getFromDate());
+            hm.put("to", getToDate());
+        } else {
+            sql += " and b.bill.appointmentAt <= :nd";
+            hm.put("nd", commonFunctions.getEndOfDay());
+        }
+
+        if (getSelectedServiceSession() != null) {
+            sql += " and b.bill.singleBillSession.sessionInstance.originatingSession=:ss";
+            hm.put("ss", getSelectedServiceSession());
+        }
+
+        sql += " and b.bill.singleBillSession.absent=false "
+                + " order by b.bill.singleBillSession.serviceSession.sessionDate,"
+                + " b.bill.singleBillSession.serviceSession.sessionTime,"
+                + " b.bill.singleBillSession.serialNo ";
+
+        hm.put("stf", getCurrentStaff());
+        //hm.put("ins", sessionController.getInstitution());
+        hm.put("bt", bts);
+        hm.put("ftp", FeeType.Staff);
+        hm.put("class", BilledBill.class);
+        dueBillFees = billFeeFacade.findByJpql(sql, hm, TemporalType.TIMESTAMP);
+        //// // System.out.println("dueBillFees.size() = " + dueBillFees.size());
+        //// // System.out.println("hm = " + hm);
+        //// // System.out.println("sql = " + sql);
+
+        HashMap m = new HashMap();
+        sql = " SELECT b FROM BillFee b "
+                + "  where type(b.bill)=:class "
+                + " and b.bill.retired=false "
+                + " and b.bill.paidAmount!=0 "
+                + " and b.fee.feeType=:ftp"
+                + " and b.bill.refunded=false  "
+                + " and b.bill.cancelled=false "
+                + " and (b.feeValue - b.paidValue) > 0 "
+                + " and b.bill.billType in :bt "
+                + " and b.staff=:stf ";
+
+        if (getFromDate() != null && getToDate() != null && considerDate) {
+            sql += " and b.bill.appointmentAt between :frm and  :to";
+            m.put("frm", getFromDate());
+            m.put("to", getToDate());
+        }
+
+        if (getSelectedServiceSession() != null) {
+            sql += " and b.bill.singleBillSession.serviceSession.originatingSession=:ss";
+            m.put("ss", getSelectedServiceSession());
+        }
+
+        sql += " and b.bill.singleBillSession.absent=true "
+                + " and b.bill.singleBillSession.serviceSession.originatingSession.refundable=false "
+                + " order by b.bill.singleBillSession.serviceSession.sessionDate,"
+                + " b.bill.singleBillSession.serviceSession.sessionTime,"
+                + " b.bill.singleBillSession.serialNo ";
+        m.put("stf", getCurrentStaff());
+        //hm.put("ins", sessionController.getInstitution());
+        m.put("bt", bts);
+        m.put("ftp", FeeType.Staff);
+        m.put("class", BilledBill.class);
+        List<BillFee> nonRefundableBillFees = new ArrayList<>();
+        nonRefundableBillFees = billFeeFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
+        dueBillFees.addAll(nonRefundableBillFees);
+
+     }
 
     public void calculateDueFees() {
         Date startTime = new Date();
@@ -934,7 +1037,8 @@ public class ChannelStaffPaymentBillController implements Serializable {
         } else {
             JsfUtil.addSuccessMessage("SMS Failed");
         }
-
+        e.setSentSuccessfully(sent);
+        getSmsFacade().edit(e);
     }
 
     public void sendSmsAfterSessionPayment() {
@@ -957,6 +1061,8 @@ public class ChannelStaffPaymentBillController implements Serializable {
         } else {
             JsfUtil.addSuccessMessage("SMS Failed");
         }
+        e.setSentSuccessfully(sent);
+        getSmsFacade().edit(e);
 
     }
 
