@@ -1665,12 +1665,52 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         lstBillItemsPrint = lstBillItems;
         ////// // System.out.println("Out Print");
     }
+    
+    public boolean validatePaymentMethodDeta(){
+        boolean error = false;
+
+        if(getPaymentMethod() == PaymentMethod.Card){
+            if(getPaymentMethodData().getCreditCard().getComment().trim().equals("") &&  configOptionApplicationController.getBooleanValueByKey("OPD Billing - CreditCard Comment is Mandatory", false)){
+                System.out.println("Card Comment");
+                JsfUtil.addErrorMessage("Please Enter a Credit Card Comment..");
+                error = true;
+            }
+            System.out.println("Card Error = " + error);
+        }else if(getPaymentMethod() == PaymentMethod.Cheque){
+            if(getPaymentMethodData().getCheque().getComment().trim().equals("") &&  configOptionApplicationController.getBooleanValueByKey("OPD Billing - Cheque Comment is Mandatory", false)){
+                System.out.println("Cheque Comment");
+                JsfUtil.addErrorMessage("Please Enter a Cheque Comment..");
+                error = true;
+            }
+            System.out.println("Cheque Error = " + error);
+        }else if(getPaymentMethod() == PaymentMethod.ewallet){
+            if(getPaymentMethodData().getEwallet().getComment().trim().equals("") &&  configOptionApplicationController.getBooleanValueByKey("OPD Billing - E-Wallet Comment is Mandatory", false)){
+                System.out.println("E-Wallet Comment");
+                JsfUtil.addErrorMessage("Please Enter a E-Wallet Comment..");
+                error = true;
+            }
+            System.out.println("Cheque Error = " + error);
+        }else if(getPaymentMethod() == PaymentMethod.Slip){
+            if(getPaymentMethodData().getSlip().getComment().trim().equals("") &&  configOptionApplicationController.getBooleanValueByKey("OPD Billing - Slip Comment is Mandatory", false)){
+                System.out.println("Slip Comment");
+                JsfUtil.addErrorMessage("Please Enter a Slip Comment..");
+                error = true;
+            }
+            System.out.println("Cheque Error = " + error);
+        }
+        return error;
+    }
 
     public String settleOpdBill() {
         if (billSettlingStarted) {
             return null;
         }
         billSettlingStarted = true;
+        
+        if(validatePaymentMethodDeta()){
+            billSettlingStarted = false;
+            return null;
+        }
 
         String eventUuid = auditEventController.createAuditEvent("OPD Bill Controller - Settle OPD Bill");
         if (!executeSettleBillActions()) {
