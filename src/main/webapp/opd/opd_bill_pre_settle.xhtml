@@ -379,26 +379,26 @@
                                                     </h:panelGrid>
                                                 </div>
                                                 <div class="col-md-9">
-                                                    <p:dataTable rowIndexVar="rowIndex" value="#{preBill.billItems}" var="bip" >
+                                                    <p:dataTable rowIndexVar="rowIndex" value="#{preBill.billItems}" var="bipi" >
                                                         <p:column>
                                                             <f:facet name="header">No</f:facet>
                                                                 #{rowIndex+1}
                                                         </p:column>
                                                         <p:column>
                                                             <f:facet name="header">Item</f:facet>
-                                                                #{bip.item.name}
+                                                                #{bipi.item.name}
                                                         </p:column>
                                                         <p:column>
                                                             <f:facet name="header">Qty</f:facet>
-                                                                #{bip.qty}
+                                                                #{bipi.qty}
                                                         </p:column>
                                                         <p:column>
-                                                            <f:facet name="header">Rate</f:facet>
-                                                                #{bip.rate}
+                                                            <f:facet name="header">Base Value</f:facet>
+                                                                #{bipi.rate}
                                                         </p:column>
                                                         <p:column>
                                                             <f:facet name="header">Value</f:facet>
-                                                                #{bip.grossValue}
+                                                                #{bipi.netValue}
                                                         </p:column>
                                                     </p:dataTable>
                                                 </div>
