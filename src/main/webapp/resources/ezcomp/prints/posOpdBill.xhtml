@@ -90,12 +90,21 @@
                             <h:outputLabel value="Inv.No" style="text-align: center!important;
                                            font-size: 12px!important;
                                            font-family:Arial, Helvetica, sans-serif!important;"></h:outputLabel>
+
                         </td>
                         <td>:</td>
                         <td style="width: 30%;" >
-                            <h:outputLabel value="#{cc.attrs.bill.deptId}"  style="text-align: center!important;
-                                           font-size: 12px!important;
-                                           font-family:Arial, Helvetica, sans-serif!important;">
+                            <h:outputLabel 
+                                value="#{cc.attrs.bill.cancelledBill.deptId}"
+                                style="text-align: center!important;font-size: 12px!important;font-family:Arial, Helvetica, sans-serif!important;" 
+                                class="billDetailsFiveFive" 
+                                rendered="#{cc.attrs.bill.cancelled}">
+                            </h:outputLabel>
+                            <h:outputLabel 
+                                value="#{cc.attrs.bill.deptId}" 
+                                style="text-align: center!important;font-size: 12px!important;font-family:Arial, Helvetica, sans-serif!important;" 
+                                class="billDetailsFiveFive" 
+                                rendered="#{!cc.attrs.bill.cancelled}">
                             </h:outputLabel>
                         </td>
                     </tr>
@@ -424,6 +433,10 @@
 
                 </table>
 
+            </div>
+            
+            <div class="billDetails d-flex justify-content-end">
+                <h:outputLabel value="Original Bill : #{cc.attrs.bill.deptId}" class="mx-3" rendered="#{cc.attrs.bill.cancelled and configOptionApplicationController.getBooleanValueByKey('Package Billing - Display the Original Bill Number in Canceled Bill',false)}"/>
             </div>
 
             <div class="billDetails">
