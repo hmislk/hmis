@@ -311,11 +311,13 @@ public class DataUploadController implements Serializable {
         return "/admin/items/item_and_fee_upload_for_outsource_Investigation?faces-redirect=true";
     }
 
+    
     public String navigateToUploadOpdItemsAndHospitalFees() {
         pollActive = false;
         return "/admin/items/opd_items_and_hospital_fee_upload?faces-redirect=true";
     }
 
+    
     public String navigateToCollectingCentreSpecialFeeUpload() {
         pollActive = false;
         return "/admin/items/collecting_centre_special_fee_upload?faces-redirect=true";
