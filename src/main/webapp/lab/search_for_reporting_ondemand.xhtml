@@ -300,6 +300,11 @@
                                         <h:outputLabel value="#{pi.billItem.item.name}" >
                                         </h:outputLabel>
                                     </p:column>
+                                    
+                                    <p:column rendered="#{configOptionApplicationController.getBooleanValueByKey('Allow Local Number For Opd Billing')}" headerText="Local Number"  styleClass="alignTop" style="width: 32em;">
+                                        <h:outputLabel value="#{pi.billItem.bill.localNumber}" >
+                                        </h:outputLabel>
+                                    </p:column>
 
                                     <p:column  headerText="Actions" style="width: 11em;">
                                         <p:commandLink process="btnSample" update="tblBills"
