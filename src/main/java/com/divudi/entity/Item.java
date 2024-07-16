@@ -72,9 +72,13 @@ public class Item implements Serializable, Comparable<Item> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    
+    
 
     Long id;
     int orderNo;
+    
+    private boolean canSechduleForOtherDays;
 
     private Long itemId;
 
@@ -1372,6 +1376,14 @@ public class Item implements Serializable, Comparable<Item> {
 
     public void setPrintSessionNumber(boolean printSessionNumber) {
         this.printSessionNumber = printSessionNumber;
+    }
+
+    public boolean isCanSechduleForOtherDays() {
+        return canSechduleForOtherDays;
+    }
+
+    public void setCanSechduleForOtherDays(boolean canSechduleForOtherDays) {
+        this.canSechduleForOtherDays = canSechduleForOtherDays;
     }
     
     
