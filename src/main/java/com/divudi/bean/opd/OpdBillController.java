@@ -295,7 +295,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     private Double totalHospitalFee;
     private Double totalSaffFee;
     private boolean canChangeSpecialityAndDoctorInAddedBillItem;
-
+    private int localNumber;
     /**
      *
      * Navigation Methods
@@ -1993,6 +1993,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         newBatchBill.setCreatedAt(new Date());
         newBatchBill.setCreater(getSessionController().getLoggedUser());
         newBatchBill.setFromStaff(selectedCurrentlyWorkingStaff);
+        newBatchBill.setLocalNumber(localNumber);
 
         getBillFacade().create(newBatchBill);
 
@@ -4162,6 +4163,14 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
     public void setBillSettlingStarted(boolean billSettlingStarted) {
         this.billSettlingStarted = billSettlingStarted;
+    }
+
+    public int getLocalNumber() {
+        return localNumber;
+    }
+
+    public void setLocalNumber(int localNumber) {
+        this.localNumber = localNumber;
     }
 
 }
