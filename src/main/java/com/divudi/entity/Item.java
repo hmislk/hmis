@@ -72,9 +72,13 @@ public class Item implements Serializable, Comparable<Item> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    
+    
 
     Long id;
     int orderNo;
+    
+    private boolean canSechduleForOtherDays;
 
     private Long itemId;
 
@@ -82,7 +86,7 @@ public class Item implements Serializable, Comparable<Item> {
     private boolean hasReportFormat;
     private int numberOfDaysToMarkAsShortExpiary;
     
-    private boolean canSechduleForOtherDays;
+
 
     @ManyToOne
     Category category;
