@@ -362,7 +362,7 @@ public class Bill implements Serializable {
     private String agentRefNo;
     private boolean billClosed;
     
-    private int localNumber;
+    private String localNumber;
     
     
 
@@ -2216,11 +2216,11 @@ public class Bill implements Serializable {
         this.billClosed = billClosed;
     }
 
-    public int getLocalNumber() {
+    public String getLocalNumber() {
         return localNumber;
     }
 
-    public void setLocalNumber(int localNumber) {
+    public void setLocalNumber(String localNumber) {
         this.localNumber = localNumber;
     }
 
