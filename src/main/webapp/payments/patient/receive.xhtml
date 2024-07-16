@@ -7,6 +7,7 @@
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui"            
                 xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill"
+                xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
                 xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod">
 
     <ui:define name="content">
@@ -15,133 +16,137 @@
         <h:panelGroup rendered="#{!patientController.printPreview}" >
             <h:form  >
                 <p:panel>
-                <f:facet name="header">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <h:outputText value="Receive Deposits"/>
+                    <f:facet name="header">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <h:outputText value="Receive Deposits"/>
+                            </div>
+                            <div>
+                                <p:commandButton class="ui-button-success"
+                                                 icon="fas fa-check"
+                                                 id="btnSettle"
+                                                 value="Settle"
+                                                 action="#{patientController.settlePatientDepositReceive}"
+                                                 ajax="false"
+                                                 style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;" >
+                                </p:commandButton>
+                                <p:defaultCommand target="btnSettle"/>
+                                <p:commandButton icon="fas fa-plus" class="mx-2" value="New Bill" ajax="false" action="#{patientController.navigateToReceiveDepositsFromPatientProfile()}"  >
+                                </p:commandButton>
+                            </div>
                         </div>
-                        <div>
-                            <p:commandButton class="ui-button-success"
-                                             icon="fas fa-check"
-                                             id="btnSettle"
-                                             value="Settle"
-                                             action="#{patientController.settlePatientDepositReceive}"
-                                             ajax="false"
-                                             style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;" >
-                            </p:commandButton>
-                            <p:defaultCommand target="btnSettle"/>
-                            <p:commandButton icon="fas fa-plus" class="mx-2" value="New Bill" ajax="false" action="#{patientController.navigateToReceiveDepositsFromPatientProfile()}"  >
-                            </p:commandButton>
-                        </div>
-                    </div>
-                </f:facet> 
-                <div class="row" >
+                    </f:facet> 
+                    <div class="row" >
                         <div class="col-6" >
+                            <common:patient_details
+                                id="ccPatientDetails"
+                                editable="true"
+                                controller="#{patientController}"/>
 
-                            <p:panel>
-                                <f:facet name="header">
-                                    <h:outputLabel value="Patient Details" />
-                                </f:facet>
-                                <div class="row">
-                                    <div class="col-md-3 p-1">
-                                        <p:selectOneMenu id="cmbTitle" class="form-control w-100"
-                                                         value="#{patientController.current.person.title}">
-                                            <f:selectItem itemLabel="Select Title" />
-                                            <f:selectItems value="#{enumController.title}" var="i"
-                                                           itemLabel="#{i.label}" itemValue="#{i}"/>
-                                        </p:selectOneMenu>
-                                    </div>
-                                    <div class="col-md-9 p-1">
-                                        <p:inputText 
-                                            autocomplete="off" id="txtNewPtName" placeholder="Enter the Name of the patient"
-                                            value="#{patientController.current.person.name}"
-                                            class="form-control" />
-                                    </div>
-                                </div>
-
-                                <div class="row">
-                                    <div class="col-md-3 p-1">
-                                        <p:selectOneMenu id="txtNewSex" value="#{patientController.current.person.sex}"
-                                                         class="form-control w-100">
-                                            <f:selectItem itemLabel="Select Gender"/>
-                                            <f:selectItems value="#{opdBillController.sex}"/>
-                                        </p:selectOneMenu>
-                                    </div>
-                                    <div class="col-md-9 p-1">
-                                        <div class="row">
-                                            <div class="col-md-2">
-                                                <p:inputText autocomplete="off" id="year" placeholder="Years"
-                                                             value="#{patientController.current.person.ageYearsComponent}"
-                                                             class="form-control">
-                                                    <f:ajax event="blur" execute="@this" render="calDob" />
-                                                </p:inputText>
-                                            </div>
-                                            <div class="col-md-2">
-                                                <p:inputText autocomplete="off" id="month" placeholder="Months"
-                                                             value="#{patientController.current.person.ageMonthsComponent}"
-                                                             class="form-control">
-                                                    <f:ajax event="blur" execute="@this"  render="calDob"  />
-                                                </p:inputText>
-                                            </div>
-                                            <div class="col-md-2">
-                                                <p:inputText autocomplete="off" id="day" placeholder="Days"
-                                                             value="#{patientController.current.person.ageDaysComponent}"
-                                                             class="form-control">
-                                                    <f:ajax event="blur" execute="@this"  render="calDob" />
-                                                </p:inputText>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <p:datePicker value="#{patientController.current.person.dob}"
-                                                              id="calDob" 
-                                                              class="w-100"
-                                                              inputStyleClass="form-control"
-                                                              pattern="#{sessionController.applicationPreference.shortDateFormat}"
-                                                              placeholder="Data of Birth (dd/MM/yyyy)"
-                                                              >
-                                                    <f:ajax event="dateSelect" execute="@this" render="year month day" />
-                                                </p:datePicker>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="row">
-                                    <div class="col-md-4 p-1">
-                                        <p:inputText id="txtNewPtPhone" autocomplete="off" maxlength="11" placeholder="Phone Number"
-                                                     value="#{patientController.current.person.phone}"
-                                                     class="form-control" />
-                                    </div>
-                                    <div class="col-md-4 p-1">
-                                        <p:inputText autocomplete="off" id="txtEmail" placeholder="Enter Email here"
-                                                     value="#{patientController.current.person.email}"
-                                                     class="form-control">
-                                        </p:inputText>
-                                    </div>
-                                    <div class="col-md-4 p-1">
-                                        <p:inputText placeholder="National ID No."
-                                                     value="#{patientController.current.person.nic}"
-                                                     class="form-control"/>
-                                    </div>
-                                </div>
-
-                                <div class="row">
-                                    <div class="col-md-8 p-1">
-                                        <p:inputText placeholder="Address"
-                                                     value="#{patientController.current.person.address}"
-                                                     class="form-control"/>
-                                    </div>
-                                    <div class="col-md-4 p-1">
-                                        <p:autoComplete id="acNewPtArea" 
-                                                        placeholder="Search &amp; Select Area"
-                                                        completeMethod="#{areaController.completeArea}"
-                                                        var="pta" itemLabel="#{pta.name}"
-                                                        itemValue="#{pta}" forceSelection="true"
-                                                        value="#{patientController.current.person.area}"
-                                                        inputStyleClass="form-control"
-                                                        class="w-100"/>
-                                    </div>
-                                </div>
-                            </p:panel>
+                            <!--                            <p:panel>
+                                                            <f:facet name="header">
+                                                                <h:outputLabel value="Patient Details" />
+                                                            </f:facet>
+                                                            <div class="row">
+                                                                <div class="col-md-3 p-1">
+                                                                    <p:selectOneMenu id="cmbTitle" class="form-control w-100"
+                                                                                     value="#{patientController.current.person.title}">
+                                                                        <f:selectItem itemLabel="Select Title" />
+                                                                        <f:selectItems value="#{enumController.title}" var="i"
+                                                                                       itemLabel="#{i.label}" itemValue="#{i}"/>
+                                                                    </p:selectOneMenu>
+                                                                </div>
+                                                                <div class="col-md-9 p-1">
+                                                                    <p:inputText 
+                                                                        autocomplete="off" id="txtNewPtName" placeholder="Enter the Name of the patient"
+                                                                        value="#{patientController.current.person.name}"
+                                                                        class="form-control" />
+                                                                </div>
+                                                            </div>
+                            
+                                                            <div class="row">
+                                                                <div class="col-md-3 p-1">
+                                                                    <p:selectOneMenu id="txtNewSex" value="#{patientController.current.person.sex}"
+                                                                                     class="form-control w-100">
+                                                                        <f:selectItem itemLabel="Select Gender"/>
+                                                                        <f:selectItems value="#{opdBillController.sex}"/>
+                                                                    </p:selectOneMenu>
+                                                                </div>
+                                                                <div class="col-md-9 p-1">
+                                                                    <div class="row">
+                                                                        <div class="col-md-2">
+                                                                            <p:inputText autocomplete="off" id="year" placeholder="Years"
+                                                                                         value="#{patientController.current.person.ageYearsComponent}"
+                                                                                         class="form-control">
+                                                                                <f:ajax event="blur" execute="@this" render="calDob" />
+                                                                            </p:inputText>
+                                                                        </div>
+                                                                        <div class="col-md-2">
+                                                                            <p:inputText autocomplete="off" id="month" placeholder="Months"
+                                                                                         value="#{patientController.current.person.ageMonthsComponent}"
+                                                                                         class="form-control">
+                                                                                <f:ajax event="blur" execute="@this"  render="calDob"  />
+                                                                            </p:inputText>
+                                                                        </div>
+                                                                        <div class="col-md-2">
+                                                                            <p:inputText autocomplete="off" id="day" placeholder="Days"
+                                                                                         value="#{patientController.current.person.ageDaysComponent}"
+                                                                                         class="form-control">
+                                                                                <f:ajax event="blur" execute="@this"  render="calDob" />
+                                                                            </p:inputText>
+                                                                        </div>
+                                                                        <div class="col-md-6">
+                                                                            <p:datePicker value="#{patientController.current.person.dob}"
+                                                                                          id="calDob" 
+                                                                                          class="w-100"
+                                                                                          inputStyleClass="form-control"
+                                                                                          pattern="#{sessionController.applicationPreference.shortDateFormat}"
+                                                                                          placeholder="Data of Birth (dd/MM/yyyy)"
+                                                                                          >
+                                                                                <f:ajax event="dateSelect" execute="@this" render="year month day" />
+                                                                            </p:datePicker>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                            
+                                                            <div class="row">
+                                                                <div class="col-md-4 p-1">
+                                                                    <p:inputText id="txtNewPtPhone" autocomplete="off" maxlength="11" placeholder="Phone Number"
+                                                                                 value="#{patientController.current.person.phone}"
+                                                                                 class="form-control" />
+                                                                </div>
+                                                                <div class="col-md-4 p-1">
+                                                                    <p:inputText autocomplete="off" id="txtEmail" placeholder="Enter Email here"
+                                                                                 value="#{patientController.current.person.email}"
+                                                                                 class="form-control">
+                                                                    </p:inputText>
+                                                                </div>
+                                                                <div class="col-md-4 p-1">
+                                                                    <p:inputText placeholder="National ID No."
+                                                                                 value="#{patientController.current.person.nic}"
+                                                                                 class="form-control"/>
+                                                                </div>
+                                                            </div>
+                            
+                                                            <div class="row">
+                                                                <div class="col-md-8 p-1">
+                                                                    <p:inputText placeholder="Address"
+                                                                                 value="#{patientController.current.person.address}"
+                                                                                 class="form-control"/>
+                                                                </div>
+                                                                <div class="col-md-4 p-1">
+                                                                    <p:autoComplete id="acNewPtArea" 
+                                                                                    placeholder="Search &amp; Select Area"
+                                                                                    completeMethod="#{areaController.completeArea}"
+                                                                                    var="pta" itemLabel="#{pta.name}"
+                                                                                    itemValue="#{pta}" forceSelection="true"
+                                                                                    value="#{patientController.current.person.area}"
+                                                                                    inputStyleClass="form-control"
+                                                                                    class="w-100"/>
+                                                                </div>
+                                                            </div>
+                                                        </p:panel>-->
 
 
                         </div>
@@ -153,7 +158,7 @@
 
                                 <div class="d-flex flex-wrap w-100">
                                     <p:selectOneMenu   id="cmbPs" value="#{patientController.bill.paymentMethod}">                                                                     
-                                        <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"/>
+                                        <f:selectItems value="#{enumController.paymentMethodsForPatientDeposit}"/>
                                         <p:ajax process="cmbPs" update="creditCard cheque slip" event="change" />
                                     </p:selectOneMenu>
 
@@ -178,36 +183,40 @@
                                 </div>
                             </p:panel>
                         </div>
-                </div>
+                    </div>
                 </p:panel>
             </h:form>
         </h:panelGroup>
 
 
-            <h:panelGroup rendered="#{patientController.printPreview}">
-                <h:form >
-                    <p:panel>
+        <h:panelGroup rendered="#{patientController.printPreview}">
+            <h:form >
+                <p:panel>
 
                     <f:facet name="header">
-                            <h:panelGrid columns="3" style="size: 0.5rem; float: right" >
-                                <p:commandButton value="Print Bill" icon="pi pi-print" class="ui-button-info" ajax="false">
-                                    <p:printer target="billPanel"></p:printer>
-                                </p:commandButton>
-                                <p:commandButton ajax="false" icon="fas fa-search" value="Patient Lookup" class="mx-2 ui-button-warning"
-                                                 action="#{patientController.navigateToSearchPatients}"></p:commandButton>
-                                <p:commandButton
-                                    value="Profile"
-                                    ajax="false"
-                                    icon="fa fa-user"
-                                    class="ui-button-warning  w-100"
-                                    action="#{patientController.navigateToOpdPatientProfile()}"
-                                    >
-                                    <f:setPropertyActionListener
-                                        value="#{patientController.bill.patient}"
-                                        target="#{patientController.current}" ></f:setPropertyActionListener>
-                                </p:commandButton>
-                            </h:panelGrid>
-                        </f:facet>
+                        <h:panelGrid columns="4" style="size: 0.5rem; float: right" >
+                            <p:commandButton value="Print Bill" icon="pi pi-print" class="ui-button-info" ajax="false">
+                                <p:printer target="billPanel"></p:printer>
+                            </p:commandButton>
+                            <p:commandButton icon="fas fa-plus" class="mx-1" value="New Bill" 
+                                             ajax="false" action="/payments/patient/receive?faces-redirect=true"
+                                             actionListener="#{patientController.clearDataForPatientDeposite()}" >
+                            </p:commandButton>
+                            <p:commandButton ajax="false" icon="fas fa-search" value="Patient Lookup" class="mx-1 ui-button-warning"
+                                             action="#{patientController.navigateToSearchPatients}"></p:commandButton>
+                            <p:commandButton
+                                value="Profile"
+                                ajax="false"
+                                icon="fa fa-user"
+                                class="ui-button-warning  w-100"
+                                action="#{patientController.navigateToOpdPatientProfile()}"
+                                >
+                                <f:setPropertyActionListener
+                                    value="#{patientController.bill.patient}"
+                                    target="#{patientController.current}" ></f:setPropertyActionListener>
+                            </p:commandButton>
+                        </h:panelGrid>
+                    </f:facet>
 
 
                     <h:outputStylesheet library="css" name="/printing/fivefiveprinting.css" ></h:outputStylesheet>
@@ -311,9 +320,9 @@
                         </div>
                     </div>
                 </p:panel>
-                 </h:form>
+            </h:form>
 
-            </h:panelGroup>
+        </h:panelGroup>
 
     </ui:define>
 

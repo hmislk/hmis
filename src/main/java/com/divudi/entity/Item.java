@@ -6,6 +6,7 @@ package com.divudi.entity;
 
 import com.divudi.data.BillType;
 import com.divudi.data.DepartmentType;
+import com.divudi.data.ItemBarcodeGenerationStrategy;
 import com.divudi.data.ItemType;
 import com.divudi.data.SessionNumberType;
 import com.divudi.data.SymanticType;
@@ -80,6 +81,8 @@ public class Item implements Serializable, Comparable<Item> {
     private boolean isMasterItem;
     private boolean hasReportFormat;
     private int numberOfDaysToMarkAsShortExpiary;
+    
+    private boolean canSechduleForOtherDays;
 
     @ManyToOne
     Category category;
@@ -117,6 +120,7 @@ public class Item implements Serializable, Comparable<Item> {
     String tname;
     String code;
     String barcode;
+    private Long lastBarcode;
     String printName;
     String shortName;
     String fullName;
@@ -163,6 +167,7 @@ public class Item implements Serializable, Comparable<Item> {
     boolean chargesVisibleForInward;
     boolean requestForQuentity;
     boolean marginNotAllowed;
+    private boolean printSessionNumber;
     @Column
     boolean inactive = false;
     @ManyToOne
@@ -212,6 +217,8 @@ public class Item implements Serializable, Comparable<Item> {
     private ItemType itemType;
     @Enumerated(EnumType.STRING)
     private Priority priority;
+    @Enumerated
+    private ItemBarcodeGenerationStrategy itemBarcodeGenerationStrategy;
 
     private boolean hasMoreThanOneComponant;
 
@@ -236,6 +243,9 @@ public class Item implements Serializable, Comparable<Item> {
     double channelAgentFee;
     @Transient
     double channelOnCallFee;
+    
+    @Transient
+    private double totalStockQty;
 
     @Transient
     String transName;
@@ -246,6 +256,9 @@ public class Item implements Serializable, Comparable<Item> {
     @Column(name = "DTYPE", insertable = false, updatable = false)
     private String clazz;
 
+    
+    
+    
     public double getVatPercentage() {
         return 0;
     }
@@ -807,6 +820,9 @@ public class Item implements Serializable, Comparable<Item> {
     }
 
     public SessionNumberType getSessionNumberType() {
+        if(sessionNumberType==null){
+            sessionNumberType=SessionNumberType.ByBill;
+        }
         return sessionNumberType;
     }
 
@@ -1239,6 +1255,8 @@ public class Item implements Serializable, Comparable<Item> {
     public void setPackUnit(MeasurementUnit packUnit) {
         this.packUnit = packUnit;
     }
+    
+    
 
     public MeasurementUnit getBaseUnit() {
         return baseUnit;
@@ -1322,7 +1340,52 @@ public class Item implements Serializable, Comparable<Item> {
     public void setFinancialCategory(Category financialCategory) {
         this.financialCategory = financialCategory;
     }
-    
+
+    public double getTotalStockQty() {
+        return totalStockQty;
+    }
+
+    public void setTotalStockQty(double totalStockQty) {
+        this.totalStockQty = totalStockQty;
+    }
+
+    public ItemBarcodeGenerationStrategy getItemBarcodeGenerationStrategy() {
+        if(itemBarcodeGenerationStrategy==null){
+            itemBarcodeGenerationStrategy=ItemBarcodeGenerationStrategy.BY_ITEM;
+        }
+        return itemBarcodeGenerationStrategy;
+    }
+
+    public void setItemBarcodeGenerationStrategy(ItemBarcodeGenerationStrategy itemBarcodeGenerationStrategy) {
+        this.itemBarcodeGenerationStrategy = itemBarcodeGenerationStrategy;
+    }
+
+    public Long getLastBarcode() {
+        if(lastBarcode==null){
+            lastBarcode=0l;
+        }
+        return lastBarcode;
+    }
+
+    public void setLastBarcode(Long lastBarcode) {
+        this.lastBarcode = lastBarcode;
+    }
+
+    public boolean isPrintSessionNumber() {
+        return printSessionNumber;
+    }
+
+    public void setPrintSessionNumber(boolean printSessionNumber) {
+        this.printSessionNumber = printSessionNumber;
+    }
+
+    public boolean isCanSechduleForOtherDays() {
+        return canSechduleForOtherDays;
+    }
+
+    public void setCanSechduleForOtherDays(boolean canSechduleForOtherDays) {
+        this.canSechduleForOtherDays = canSechduleForOtherDays;
+    }
     
     
 

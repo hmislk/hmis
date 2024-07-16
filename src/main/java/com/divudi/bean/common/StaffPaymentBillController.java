@@ -96,6 +96,8 @@ public class StaffPaymentBillController implements Serializable {
     Speciality speciality;
     @EJB
     StaffFacade staffFacade;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
     private SearchKeyword searchKeyword;
 
     public PaymentMethod getPaymentMethod() {
@@ -247,6 +249,7 @@ public class StaffPaymentBillController implements Serializable {
             List<BillTypeAtomic> btcs = new ArrayList<>();
             btcs.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
             btcs.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+            btcs.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
             btcs.add(BillTypeAtomic.CC_BILL);
             String sql;
             HashMap h = new HashMap();
@@ -263,7 +266,8 @@ public class StaffPaymentBillController implements Serializable {
 
             dueBillFees = getBillFeeFacade().findByJpql(sql, h, TemporalType.TIMESTAMP);
 
-            List<BillFee> removeingBillFees = new ArrayList<>();
+            if(configOptionApplicationController.getBooleanValueByKey("Remove Refunded Bill From OPD Staff Payment")){
+                List<BillFee> removeingBillFees = new ArrayList<>();
             for (BillFee bf : dueBillFees) {
                 h = new HashMap();
                 sql = "SELECT bi FROM BillItem bi where "
@@ -280,6 +284,7 @@ public class StaffPaymentBillController implements Serializable {
 
             }
             dueBillFees.removeAll(removeingBillFees);
+            }
 
         }
     }
@@ -403,6 +408,13 @@ public class StaffPaymentBillController implements Serializable {
         tmp.setTotal(0 - totalPaying);
 
         return tmp;
+    }
+    
+    public String navigateToStaffPaymentFromDuePayment(Staff s){
+        currentStaff = s;
+        speciality = s.getSpeciality();
+        calculateDueFees();
+        return "/payment_staff_bill?faces-redirect=true";
     }
 
     private boolean errorCheck() {

@@ -48,6 +48,7 @@ import com.divudi.facade.SmsFacade;
 import com.divudi.facade.StaffFacade;
 import com.divudi.facade.WebUserFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.facade.SessionInstanceFacade;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.text.DateFormat;
@@ -124,6 +125,7 @@ public class ChannelReportController implements Serializable {
     List<Bill> channelBills;
     List<Bill> channelBillsCancelled;
     List<Bill> channelBillsRefunded;
+
     /////
     @EJB
     private BillSessionFacade billSessionFacade;
@@ -147,7 +149,7 @@ public class ChannelReportController implements Serializable {
 
     @EJB
     DepartmentFacade departmentFacade;
-    
+
     CommonFunctions commonFunctions;
     @EJB
     StaffFacade staffFacade;
@@ -155,6 +157,10 @@ public class ChannelReportController implements Serializable {
     ServiceSessionFacade serviceSessionFacade;
     @EJB
     SmsManagerEjb smsManagerEjb;
+    @EJB
+    SessionInstanceFacade sessionInstanceFacade;
+
+    private List<SessionInstance> sessioninstances;
 
     public Institution getInstitution() {
         return institution;
@@ -334,6 +340,32 @@ public class ChannelReportController implements Serializable {
 
     public void setServiceSessions(List<ServiceSession> serviceSessions) {
         this.serviceSessions = serviceSessions;
+    }
+
+    public void fillSessionsForChannelDoctorCard() {
+        List<SessionInstance> canceledSessionInstances = new ArrayList<>();
+        String sql;
+        Map<String, Object> m = new HashMap<>();
+
+        sql = "SELECT s FROM SessionInstance s "
+                + "WHERE s.retired = false "
+                + "AND s.originatingSession.retired = false "
+                + "AND s.sessionDate BETWEEN :fromDate AND :toDate";
+
+        m.put("fromDate", fromDate);
+        m.put("toDate", toDate);
+        sessioninstances = sessionInstanceFacade.findByJpql(sql, m);
+
+        for (SessionInstance s : sessioninstances) {
+            if (s.isCancelled()) {
+                canceledSessionInstances.add(s);
+            }
+        }
+
+        System.out.println("canceledSessionInstances = " + canceledSessionInstances.size());
+        sessioninstances.removeAll(canceledSessionInstances);
+        System.out.println("sessionInstances = " + sessioninstances.size());
+
     }
 
     public void fillIncomeWithAgentBookings() {
@@ -1197,7 +1229,7 @@ public class ChannelReportController implements Serializable {
 
         createSummary();
     }
-    
+
     public void createCashierBillList() {
 
         getBilledBillList().setBills(createUserCashierBills(new BilledBill(), getWebUser(), getDepartment()));
@@ -1226,7 +1258,7 @@ public class ChannelReportController implements Serializable {
 
         createSummary();
     }
-    
+
     public void createAllBillList() {
 
         getBilledBillList().setBills(createUserAllBills(new BilledBill(), getWebUser(), getDepartment()));
@@ -1353,7 +1385,7 @@ public class ChannelReportController implements Serializable {
         return getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
-    
+
     public List<Bill> createUserCashierBills(Bill billClass, WebUser webUser, Department department) {
 
         BillType[] billTypes = {BillType.OpdBill, BillType.PharmacySale, BillType.PharmacyWholeSale, BillType.GrnPaymentPre, BillType.PaymentBill, BillType.PettyCash, BillType.CashRecieveBill, BillType.AgentPaymentReceiveBill, BillType.CollectingCentrePaymentReceiveBill, BillType.InwardPaymentBill, BillType.CashIn, BillType.CashOut, BillType.DrawerAdjustment};
@@ -1387,7 +1419,7 @@ public class ChannelReportController implements Serializable {
         return getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
-    
+
     public List<Bill> createUserAllBills(Bill billClass, WebUser webUser, Department department) {
 
         BillType[] billTypes = {BillType.OpdBill, BillType.PharmacySale, BillType.PharmacyWholeSale, BillType.GrnPaymentPre, BillType.PaymentBill, BillType.PettyCash, BillType.CashRecieveBill, BillType.AgentPaymentReceiveBill, BillType.CollectingCentrePaymentReceiveBill, BillType.InwardPaymentBill, BillType.CashIn, BillType.CashOut, BillType.DrawerAdjustment, BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelPaid, BillType.ChannelProPayment, BillType.ChannelAgencyCommission, BillType.ChannelIncomeBill, BillType.ChannelExpenesBill, BillType.AgentCreditNoteBill, BillType.AgentDebitNoteBill};
@@ -1460,7 +1492,7 @@ public class ChannelReportController implements Serializable {
 
     }
 
-     public double calCashierTotal(Bill billClass, WebUser wUser, Department department, PaymentMethod paymentMethod) {
+    public double calCashierTotal(Bill billClass, WebUser wUser, Department department, PaymentMethod paymentMethod) {
 
         BillType[] billTypes = {BillType.OpdBill, BillType.PharmacySale, BillType.PharmacyWholeSale, BillType.GrnPaymentPre, BillType.PaymentBill, BillType.PettyCash, BillType.CashRecieveBill, BillType.AgentPaymentReceiveBill, BillType.CollectingCentrePaymentReceiveBill, BillType.InwardPaymentBill, BillType.CashIn, BillType.CashOut, BillType.DrawerAdjustment};
         List<BillType> bts = Arrays.asList(billTypes);
@@ -3292,7 +3324,7 @@ public class ChannelReportController implements Serializable {
         HashMap hh = new HashMap();
         hh.put("class", BilledBill.class);
         hh.put("si", sessionInstance);
-        
+
         List<BillType> bts = new ArrayList<>();
         bts.add(BillType.ChannelAgent);
         bts.add(BillType.ChannelCash);
@@ -3473,10 +3505,6 @@ public class ChannelReportController implements Serializable {
         m += ". Sorry for the inconvenience";
         return m;
     }
-
-   
-
-  
 
     public void sendCancellationSms() {
 
@@ -3872,8 +3900,6 @@ public class ChannelReportController implements Serializable {
     public void setServiceSession(ServiceSession serviceSession) {
         this.serviceSession = serviceSession;
     }
-    
-    
 
     public void setBillSessions(List<BillSession> billSessions) {
         this.billSessions = billSessions;
@@ -4164,13 +4190,21 @@ public class ChannelReportController implements Serializable {
     public void setSessionInstance(SessionInstance sessionInstance) {
         this.sessionInstance = sessionInstance;
     }
-  
+
     public int getChannelReportMenuIndex() {
         return channelReportMenuIndex;
     }
 
     public void setChannelReportMenuIndex(int channelReportMenuIndex) {
         this.channelReportMenuIndex = channelReportMenuIndex;
+    }
+
+    public List<SessionInstance> getSessioninstances() {
+        return sessioninstances;
+    }
+
+    public void setSessioninstances(List<SessionInstance> sessioninstances) {
+        this.sessioninstances = sessioninstances;
     }
 
     public class ChannelReportColumnModelBundle implements Serializable {
@@ -4416,8 +4450,6 @@ public class ChannelReportController implements Serializable {
         public void setScanFee(double scanFee) {
             this.scanFee = scanFee;
         }
-        
-        
 
         public double getTax() {
             return tax;
@@ -4892,8 +4924,6 @@ public class ChannelReportController implements Serializable {
         public void setDate(Date date) {
             this.date = date;
         }
-        
-        
 
     }
 

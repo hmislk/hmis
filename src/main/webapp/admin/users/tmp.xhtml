@@ -7,38 +7,63 @@
       xmlns:p="http://primefaces.org/ui">
 
     <h:body>
-        
-        #{configOptionApplicationController.getLongValueByKey("Application Time Out",15)}
 
-        <div class="ui-selectlistbox-listcontainer" style="height:200px">
-            <table class="ui-selectlistbox-list">
-                <tbody>
-                    <tr class="ui-selectlistbox-item ui-corner-all">
-                        <td><span> Angiotensin-Converting Enzyme (ACE)  GC</span></td>
-                        <td><span>12100.0</span></td>
-                        <td><span>Outsource Lab</span></td>
-                    </tr>
-                    <tr class="ui-selectlistbox-item ui-corner-all">
-                        <td><span> Blood Transfusion Charges Blood Transfusion Charges</span></td>
-                        <td><span>7500.0</span></td>
-                        <td><span>Inward</span></td>
-                    </tr>
-                    <tr class="ui-selectlistbox-item ui-corner-all">
-                        <td><span> Serum Albumin Corrected Calcium( AS)</span>
-                        </td><td><span>1560.0</span></td>
-                        <td><span>Outsource Lab</span></td>
-                    </tr>
-                    <tr class="ui-selectlistbox-item ui-corner-all">
-                        <td><span>(25) OH D3 LEVEL (A)</span>
-                        </td><td><span>9150.0</span></td>
-                        <td><span>Outsource Lab</span>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+        <ui:repeat value="#{opdBillController.billFeeBundleEntrys}" var="billFeeBundleEntry">
+            <tr>
+                <td>
+                    <h:panelGrid columns="1" >
+                        <p:outputLabel value="#{billFeeBundleEntry.selectedBillFee.fee.item.name}" />
+                        <p:outputLabel value="#{billFeeBundleEntry.selectedBillFee.fee.name}" />
+                        <p:outputLabel value="#{billFeeBundleEntry.selectedBillFee.fee.feeType.label}" />
+                    </h:panelGrid>
 
 
+                    <table >
+                        <ui:repeat 
+                            id="repeatAvailableFees"
+                            value="#{billFeeBundleEntry.availableBillFees}" 
+                            var="availableFee">
+                            <tr>
+                                <td>
+                                    <h:outputLabel value="#{availableFee.staff.person.nameWithTitle}" ></h:outputLabel>
+                                    <h:outputLabel value="&nbsp;(" ></h:outputLabel>
+                                    <p:commandLink id="btnReplaceFee"
+                                                   process="btnReplaceFee"
+                                                   action="#{opdBillController.changeTheSelectedFeeFromFeeBundle(availableFee.fee)}"
+                                                   update="@form">
+                                        <h:outputText value="#{availableFee.fee.fee}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </p:commandLink>
+                                    <h:outputLabel value=")" ></h:outputLabel>
+                                </td>
+                            </tr>
+
+                        </ui:repeat>
+                    </table>
+
+
+                </td>
+
+                <td>
+                    <h:panelGroup id="gpFeeBundleStaff"  >
+
+                      
+                    </h:panelGroup>
+                </td>
+
+                <td>
+                    <p:outputLabel id="lblFeeBundleFeeValue" value="#{billFeeBundleEntry.selectedBillFee.fee.fee}" >
+                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                    </p:outputLabel>
+                </td>
+
+
+
+            </tr>
+
+
+        </ui:repeat>
 
 
     </h:body>

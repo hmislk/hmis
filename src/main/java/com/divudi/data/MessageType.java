@@ -26,6 +26,7 @@ public enum MessageType {
     ChannelPatientReschedule,
     ChannelReminder,
     ChannelBookingCancellation,
+    ChannelTimeDateChange,
     ChannelDoctorReminder,
     ChannelStatusUpdate,
     DoctorPayment

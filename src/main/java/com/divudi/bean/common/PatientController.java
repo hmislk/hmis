@@ -1,8 +1,8 @@
 package com.divudi.bean.common;
 
 // Modified by Dr M H B Ariyaratne with assistance from ChatGPT from OpenAI
-import com.divudi.bean.Ophthalmology.OphthalmologyRepairBillController;
-import com.divudi.bean.Ophthalmology.OphthalmologySaleController;
+import com.divudi.bean.optician.OpticianRepairBillController;
+import com.divudi.bean.optician.OpticianSaleController;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
@@ -147,7 +147,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
     @Inject
     PatientEncounterController patientEncounterController;
     @Inject
-    OphthalmologySaleController ophthalmologySaleController;
+    OpticianSaleController opticianSaleController;
     @Inject
     private CommonController commonController;
     @Inject
@@ -163,7 +163,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
     @Inject
     OpdBillController opdBillController;
     @Inject
-    OphthalmologyRepairBillController ophthalmologyRepairBillController;
+    OpticianRepairBillController opticianRepairBillController;
     @Inject
     BillPackageController billPackageController;
     @Inject
@@ -787,16 +787,16 @@ public class PatientController implements Serializable, ControllerWithPatient {
         return "/pharmacy/pharmacy_bill_retail_sale?faces-redirect=true;";
     }
     
-    public String navigateToOphthalmologyBilling() {
+    public String navigateToOpticianBilling() {
         if (current == null) {
             JsfUtil.addErrorMessage("No patient selected");
             return "";
         }
-        ophthalmologySaleController.setPatient(current);
+        opticianSaleController.setPatient(current);
         patientEncounterController.setPatient(current);
         patientEncounterController.fillCurrentPatientLists(current);
         patientEncounterController.fillPatientInvestigations(current);
-        return "/Ophthalmology/sale?faces-redirect=true;";
+        return "/optician/sale?faces-redirect=true;";
     }
 
     public String navigateToOpdPatientProfile() {
@@ -807,12 +807,12 @@ public class PatientController implements Serializable, ControllerWithPatient {
         return "/opd/patient?faces-redirect=true";
     }
 
-    public String navigateToOphthalmologyProfile() {
+    public String navigateToOpticianProfile() {
         if (current == null) {
             JsfUtil.addErrorMessage("No patient selected");
             return "";
         }
-        return "/Ophthalmology/patient?faces-redirect=true";
+        return "/optician/patient?faces-redirect=true";
     }
 
     public String navigateToAdmitFromPatientProfile() {
@@ -911,6 +911,15 @@ public class PatientController implements Serializable, ControllerWithPatient {
         printPreview = false;
         return "/payments/patient/receive?faces-redirect=true;";
     }
+    
+    public void clearDataForPatientDeposite(){
+        current = null;
+        paymentMethodData = new PaymentMethodData();
+        bill = new Bill();
+        billItem = new BillItem();
+        billItems = new ArrayList<>();
+        printPreview = false;
+    }
 
     public String navigateToCollectingCenterBillingFromPatientProfile() {
         if (current == null) {
@@ -953,12 +962,12 @@ public class PatientController implements Serializable, ControllerWithPatient {
         return opdBillController.navigateToNewOpdBill(current);
     }
 
-    public String navigateToSaleFromOphthalmologyRepair() {
+    public String navigateToSaleFromOpticianRepair() {
         if (current == null) {
             JsfUtil.addErrorMessage("No patient selected");
             return "";
         }
-        return ophthalmologyRepairBillController.navigateToNewOpdBill(current);
+        return opticianRepairBillController.navigateToNewOpdBill(current);
     }
 
     public String navigateToOpdBillFromFamilyMembership() {
@@ -1037,6 +1046,19 @@ public class PatientController implements Serializable, ControllerWithPatient {
         Date startTime = new Date();
         Date fromDate = null;
         Date toDate = null;
+        if (getBill().getPaymentMethod() == null) {
+            JsfUtil.addErrorMessage("Please select a Payment Method");
+            return;
+        }
+        if (!current.getHasAnAccount()){
+            JsfUtil.addErrorMessage("Please Create Patient Account");
+            return;
+        }
+        if (paymentSchemeController.checkPaymentMethodError(getBill().getPaymentMethod(), paymentMethodData)) {
+            JsfUtil.addErrorMessage("Please enter all relavent Payment Method Details");
+            return;
+        }
+
         settleBill(BillType.PatientPaymentReceiveBill, HistoryType.PatientDeposit, BillNumberSuffix.PD, current);
         printPreview = true;
     }
@@ -1049,15 +1071,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
     }
 
     public void settleBill(BillType billType, HistoryType historyType, BillNumberSuffix billNumberSuffix, Patient patient) {
-        if (getBill().getPaymentMethod() == null) {
-            JsfUtil.addErrorMessage("Please select a Payment Method");
-            return;
-        }
-        if (paymentSchemeController.checkPaymentMethodError(getBill().getPaymentMethod(), paymentMethodData)) {
-            JsfUtil.addErrorMessage("Please enter all relavent Payment Method Details");
-            return;
-        }
-
+        
         saveBill(billType, billNumberSuffix, patient);
         billBeanController.setPaymentMethodData(getBill(), getBill().getPaymentMethod(), getPaymentMethodData());
         addToBill();
@@ -1270,17 +1284,17 @@ public class PatientController implements Serializable, ControllerWithPatient {
         return "";
     }
 
-    public String searchPatientForOphthalmology() {
+    public String searchPatientForOptician() {
         boolean noError = searchPatientCommon();
         if (!noError) {
             return "";
         }
         if (searchedPatients == null || searchedPatients.isEmpty()) {
             JsfUtil.addErrorMessage("No Matches. Please use different criteria");
-            return navigateToAddNewPatientForOphthalmology(getSearchName(), getSearchNic(), getSearchPhone());
+            return navigateToAddNewPatientForOptician(getSearchName(), getSearchNic(), getSearchPhone());
         } else if (searchedPatients.size() == 1) {
             setCurrent(searchedPatients.get(0));
-            return navigateToOphthalmologyProfile();
+            return navigateToOpticianProfile();
         }
         clearSearchDetails();
         return "";
@@ -2189,10 +2203,10 @@ public class PatientController implements Serializable, ControllerWithPatient {
         return "/opd/patient_edit?faces-redirect=true;";
     }
 
-    public String navigateToAddNewPatientForOphthalmology() {
+    public String navigateToAddNewPatientForOptician() {
         current = null;
         getCurrent();
-        return "/Ophthalmology/patient_edit?faces-redirect=true;";
+        return "/optician/patient_edit?faces-redirect=true;";
     }
 
     public String navigateToAddNewPatientForOpd(String name, String nic, String phone) {
@@ -2205,14 +2219,14 @@ public class PatientController implements Serializable, ControllerWithPatient {
         return "/opd/patient_edit?faces-redirect=true;";
     }
 
-    public String navigateToAddNewPatientForOphthalmology(String name, String nic, String phone) {
+    public String navigateToAddNewPatientForOptician(String name, String nic, String phone) {
         current = null;
         getCurrent();
         getCurrent().getPerson().setName(name);
         getCurrent().getPerson().setNic(nic);
         getCurrent().getPerson().setPhone(phone);
         getCurrent().getPerson().setMobile(phone);
-        return "/Ophthalmology/patient_edit?faces-redirect=true;";
+        return "/optician/patient_edit?faces-redirect=true;";
     }
 
     public String navigateToAddNewPatientForOpd(String phone) {
@@ -2359,6 +2373,9 @@ public class PatientController implements Serializable, ControllerWithPatient {
         if (p.getPerson().getName().trim().equals("")) {
             JsfUtil.addErrorMessage("Please enter a name");
             return;
+        }
+        if (p.getHasAnAccount() && p.getCreditLimit()==null){
+            p.setCreditLimit(0.0);
         }
         if(configOptionApplicationController.getBooleanValueByKey("Need Patient Title And Gender to Save Patient", false)){
             if (p.getPerson().getTitle() == null) {

@@ -27,6 +27,7 @@ import com.divudi.data.OptionScope;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.Sex;
 import com.divudi.data.Title;
+import com.divudi.data.TokenType;
 import com.divudi.data.dataStructure.ComponentDetail;
 import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.data.dataStructure.YearMonthDay;
@@ -40,6 +41,7 @@ import com.divudi.entity.BillFee;
 import com.divudi.entity.BillFeePayment;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
+import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.Patient;
@@ -193,6 +195,8 @@ public class PharmacySaleController3 implements Serializable, ControllerWithPati
     Staff toStaff;
     Institution toInstitution;
     String errorMessage = "";
+    private Department counter;
+    private Token currentToken;
 
     /////////////////
     List<Stock> replaceableStocks;
@@ -1591,6 +1595,56 @@ public class PharmacySaleController3 implements Serializable, ControllerWithPati
 
     }
 
+    public void settlePharmacyToken() {
+        currentToken = new Token();
+        currentToken.setTokenType(TokenType.PHARMACY_TOKEN);
+        currentToken.setDepartment(sessionController.getDepartment());
+        currentToken.setFromDepartment(sessionController.getDepartment());
+        currentToken.setPatient(getPatient());
+        currentToken.setInstitution(sessionController.getInstitution());
+        currentToken.setFromInstitution(sessionController.getInstitution());
+        if (getCounter() == null) {
+            if (sessionController.getLoggableSubDepartments() != null
+                    && !sessionController.getLoggableSubDepartments().isEmpty()) {
+                counter = sessionController.getLoggableSubDepartments().get(0);
+            }
+        }
+        currentToken.setCounter(getCounter());
+        if (counter != null) {
+            currentToken.setToDepartment(counter.getSuperDepartment());
+            if (counter.getSuperDepartment() != null) {
+                currentToken.setToInstitution(counter.getSuperDepartment().getInstitution());
+            }
+        }
+        if (getPatient().getId() == null) {
+            JsfUtil.addErrorMessage("Please select a patient");
+            return;
+        } else if (getPatient().getPerson().getName() == null) {
+            JsfUtil.addErrorMessage("Please select a patient");
+            return;
+        } else if (getPatient().getPerson().getName().trim().equals("")) {
+            JsfUtil.addErrorMessage("Please select a patient");
+            return;
+        } else {
+            Patient pt = savePatient();
+            currentToken.setPatient(pt);
+        }
+        if (currentToken.getToDepartment() == null) {
+            currentToken.setToDepartment(sessionController.getDepartment());
+        }
+        if (currentToken.getToInstitution() == null) {
+            currentToken.setToInstitution(sessionController.getInstitution());
+        }
+        tokenFacade.create(currentToken);
+        currentToken.setTokenNumber(billNumberBean.generateDailyTokenNumber(currentToken.getFromDepartment(), null, null, TokenType.PHARMACY_TOKEN));
+        currentToken.setCounter(counter);
+        currentToken.setTokenDate(new Date());
+        currentToken.setTokenAt(new Date());
+        currentToken.setBill(getPreBill());
+        tokenFacade.edit(currentToken);
+        setToken(currentToken);
+    }
+
     public void settlePreBill() {
         editingQty = null;
 
@@ -1598,7 +1652,7 @@ public class PharmacySaleController3 implements Serializable, ControllerWithPati
             JsfUtil.addErrorMessage("No Items added to bill to sale");
             return;
         }
-
+        
         if (!getPreBill().getBillItems().isEmpty()) {
             for (BillItem bi : getPreBill().getBillItems()) {
                 if (!userStockController.isStockAvailable(bi.getPharmaceuticalBillItem().getStock(), bi.getQty(), getSessionController().getLoggedUser())) {
@@ -1636,11 +1690,18 @@ public class PharmacySaleController3 implements Serializable, ControllerWithPati
         }
         getPreBill().setBillItems(null);
 
-        //savePreBillFinally(pt);
         savePreBillFinallyForRetailSaleForCashier(pt);
         savePreBillItemsFinally(tmpBillItems);
         setPrintBill(getBillFacade().find(getPreBill().getId()));
+        if (configOptionApplicationController.getBooleanValueByKey("Create Token At Pharmacy Sale For Cashier")) {
+            if (getPatient() != null) {
+                Token t = tokenController.findPharmacyTokens(getPreBill());
+                if (t == null) {
+                    settlePharmacyToken();
+                }
+            }
 
+        }
         if (getToken() != null) {
             getToken().setBill(getPreBill());
             tokenFacade.edit(getToken());
@@ -2941,6 +3002,22 @@ public class PharmacySaleController3 implements Serializable, ControllerWithPati
 
     public void setSelectedBillItems(List<BillItem> selectedBillItems) {
         this.selectedBillItems = selectedBillItems;
+    }
+
+    public Department getCounter() {
+        return counter;
+    }
+
+    public void setCounter(Department counter) {
+        this.counter = counter;
+    }
+
+    public Token getCurrentToken() {
+        return currentToken;
+    }
+
+    public void setCurrentToken(Token currentToken) {
+        this.currentToken = currentToken;
     }
 
 }

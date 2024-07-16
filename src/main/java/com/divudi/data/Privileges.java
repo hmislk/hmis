@@ -292,6 +292,7 @@ public enum Privileges {
     ChannellingEditCreditLimitUserLevel,
     ChannellingEditCreditLimitAdminLevel,
     ChannellingReprintOriginalBill,
+    ChannellingPastBookingPatientAttend,
     ChannelReports,
     ChannelSummery,
     ChannelManagement,
@@ -470,6 +471,7 @@ public enum Privileges {
     AutoOrderQModal,
     DirectPurchase,
     PurchaseOrdersApprovel,
+    TransferReciveApproval,
     GoodsRecipt,
     ReturnReceviedGoods,
     ReturnWithoutRecipt,
@@ -477,14 +479,14 @@ public enum Privileges {
     PharmacyItemSearch,
     PharmacyGenarateReports,
     PharmacySummaryViews,
-    //Ophthalmology
-    Ophthalmology,
-    OphthalmologyPatientManagement,
-    OphthalmologyAppointmentManagement,
-    OphthalmologyEmr,
-    OphthalmologyStockManagement,
-    OphthalmologyProductCatalog,
-    OphthalmologyRepairManagement,;
+    //Optician
+    Optician,
+    OpticianPatientManagement,
+    OpticianAppointmentManagement,
+    OpticianEmr,
+    OpticianStockManagement,
+    OpticianProductCatalog,
+    OpticianRepairManagement,;
 
     public String getLabel() {
         switch (this) {

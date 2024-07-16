@@ -12,6 +12,10 @@
             <ui:define name="content">
                 <h:form>
                     <p:panel header="OPD Search Professional Payments Done" >
+                        <f:facet name="header">
+                            <h:outputLabel value="OPD Search Professional Payments Done"/>
+                            <p:commandButton value="Back" icon="fas fa-arrow-left" class="ui-button-warning" style="float: right;" action="/payments/pay_index?faces-redirect=true" ajax="false"/>     
+                        </f:facet>
                         <div class="row">
                             <div class="col-2">
                                 <h:outputLabel value="From Date"/>
@@ -144,7 +148,7 @@
                                     </p:column>
                                     <p:column headerText="Action">
                                         <p:commandButton class="ui-button-primary" icon="fas fa-eye" ajax="false" value="View Bill" action="payment_bill_reprint">
-                                            <f:setPropertyActionListener value="#{bi.bill}" target="#{billSearch.bill}"/>
+                                            <f:setPropertyActionListener value="#{bi.bill}" target="#{billSearch.bill}"/>                   
                                         </p:commandButton>
                                     </p:column>
 

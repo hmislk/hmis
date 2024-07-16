@@ -109,7 +109,8 @@
                                     </p:column>
 
                                     <p:column headerText="Name" >
-                                        <h:outputText value="#{bs.bill.patient.person.nameWithTitle}" />
+                                        <h:outputText value="#{bs.bill.patient.person.nameWithTitle}" /> <br/>
+                                        <h:outputText style="font-size: 0.9em" value="(#{bs.bill.patient.person.phone})" />
                                     </p:column>
 
                                     <p:column rendered="true" headerText="Status">

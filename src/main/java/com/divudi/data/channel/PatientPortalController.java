@@ -215,6 +215,7 @@ public class PatientPortalController implements Serializable {
         addNewProfile = false;
         bookingCompleted = false;
         addNewPatient = false;
+        sessionInstances = null;
     }
 
     public List<Staff> fillConsultants() {
@@ -325,6 +326,8 @@ public class PatientPortalController implements Serializable {
         } else {
             JsfUtil.addSuccessMessage("SMS Failed");
         }
+        e.setSentSuccessfully(sent);
+        getSmsFacade().edit(e);
 
     }
     

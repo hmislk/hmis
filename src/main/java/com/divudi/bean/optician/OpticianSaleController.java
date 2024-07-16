@@ -3,7 +3,7 @@
  * Dr M H B Ariyaratne
  * buddhika.ari@gmail.com
  */
-package com.divudi.bean.Ophthalmology;
+package com.divudi.bean.optician;
 
 import com.divudi.bean.pharmacy.*;
 import com.divudi.bean.common.BillBeanController;
@@ -101,12 +101,12 @@ import org.primefaces.event.TabChangeEvent;
  */
 @Named
 @SessionScoped
-public class OphthalmologySaleController implements Serializable, ControllerWithPatient, ControllerWithMultiplePayments {
+public class OpticianSaleController implements Serializable, ControllerWithPatient, ControllerWithMultiplePayments {
 
     /**
      * Creates a new instance of PharmacySaleController
      */
-    public OphthalmologySaleController() {
+    public OpticianSaleController() {
     }
 
     @Inject
@@ -648,7 +648,7 @@ public class OphthalmologySaleController implements Serializable, ControllerWith
 
     public String navigateToPharmacyRetailSale() {
         resetAll();
-        return "/pharmacy/pharmacy_bill_retail_sale?faces-redirect=true";
+        return "/optician/retail_sale?faces-redirect=true";
     }
 
     public void resetAll() {

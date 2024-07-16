@@ -71,7 +71,7 @@
                                                     class="w-100"
                                                     forceSelection="true"
                                                     value="#{pharmacySaleController3.stock}" 
-                                                    completeMethod="#{stockController.completeAvailableStocks}" 
+                                                    completeMethod="#{stockController.completeAvailableStocksWithItemStock}" 
                                                     scrollHeight="400"
                                                     var="i" 
                                                     itemLabel="#{i.itemBatch.item.name}" 
@@ -92,6 +92,11 @@
                                                     </p:column>
                                                     <p:column headerText="Stocks" style="padding: 8px;" styleClass="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
                                                         <h:outputLabel value="#{i.stock}" >
+                                                            <f:convertNumber pattern="#,###" ></f:convertNumber>
+                                                        </h:outputLabel>
+                                                    </p:column>
+                                                    <p:column headerText="Total Stock" style="padding: 8px;" styleClass="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
+                                                        <h:outputLabel value="#{i.transItemStockQty}" >
                                                             <f:convertNumber pattern="#,###" ></f:convertNumber>
                                                         </h:outputLabel>
                                                     </p:column>
@@ -323,14 +328,11 @@
                                                 </h:panelGroup>
                                             </p:column>
                                         </p:dataTable>
-
-
-
                                     </p:panel> 
                                 </div>
                                 <div class="col-md-5"  >
                                     <h:panelGrid id="sale" columns="1" class="alignTop w-100"  >
-                                        <common:patient_details  
+                                        <common:patient_details_not_mandatory  
                                             editable="true"
                                             controller="#{pharmacySaleController3}"/>
                                         <div class="row">
