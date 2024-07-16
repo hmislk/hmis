@@ -259,14 +259,14 @@
                                         <div class="col-2">
                                             <div class="mx-2">
                                                 <h6>#{bs.bill.patient.person.nameWithTitle}</h6>
-                                                <h6>(#{bs.bill.patient.person.mobile})</h6>
+                                                <h6>(#{bs.bill.patient.person.smsNumber})</h6>
                                             </div>
                                         </div>
                                         <div class="col-3">
                                             <div class="d-flex align-items-center justify-content-center">
 
                                                 <div class="mx-4 align-items-center justify-content-center">
-                                                    <p:badge value="Not Paid" severity="warning" rendered="#{bs.bill.paidAmount eq 0}" styleClass="p-badge-green mx-1" />
+                                                    <p:badge value="Not Paid" severity="warning" rendered="#{bs.bill.paidAmount eq 0 and bs.paidBillSession eq null}" styleClass="p-badge-green mx-1" />
 <!--                                                    <p:badge value="On Call" severity="light" rendered="#{bs.bill.paidAmount eq 0 and bs.bill.paymentMethod eq 'OnCall'}" styleClass="p-badge-green" />
                                                     <p:badge value="Staff" severity="light" rendered="#{bs.bill.paidAmount eq 0 and bs.bill.paymentMethod eq 'Staff'}" styleClass="p-badge-green" />-->
                                                     <p:badge value="Paid" class="mx-1" severity="success" rendered="#{bs.paidBillSession ne null}" />

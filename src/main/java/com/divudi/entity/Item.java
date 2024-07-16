@@ -85,6 +85,8 @@ public class Item implements Serializable, Comparable<Item> {
     private boolean isMasterItem;
     private boolean hasReportFormat;
     private int numberOfDaysToMarkAsShortExpiary;
+    
+    private boolean canSechduleForOtherDays;
 
     @ManyToOne
     Category category;
@@ -258,6 +260,9 @@ public class Item implements Serializable, Comparable<Item> {
     @Column(name = "DTYPE", insertable = false, updatable = false)
     private String clazz;
 
+    
+    
+    
     public double getVatPercentage() {
         return 0;
     }

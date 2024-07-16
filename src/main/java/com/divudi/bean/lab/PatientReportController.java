@@ -1736,6 +1736,8 @@ public class PatientReportController implements Serializable {
             getSmsFacade().create(e);
 
             Boolean sent = smsManager.sendSms(e);
+            e.setSentSuccessfully(sent);
+            getSmsFacade().edit(e);
 
         }
 

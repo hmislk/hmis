@@ -26,7 +26,7 @@
                 value="#{cc.attrs.paymentMethodData.creditCard.no}" class="mx-2 w-100" id="refno">
                 <p:ajax process="@this" ></p:ajax>
             </p:inputText>                          
-            <p:selectOneMenu value="#{cc.attrs.paymentMethodData.creditCard.institution}"  class="mx-2 w-100"  >
+            <p:selectOneMenu value="#{cc.attrs.paymentMethodData.creditCard.institution}"  class="mx-2 w-100" filter="true" filterMatchMode="contains"  >
                 <f:selectItem itemLabel="Select Bank"/>
                 <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
                 <p:ajax process="@this" ></p:ajax>

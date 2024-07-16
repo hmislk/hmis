@@ -370,6 +370,8 @@ public abstract class AbstractFacade<T> {
         return resultList;
     }
     
+    
+    
     public List<?> findLightsByJpql(String jpql, Map<String, Object> parameters, TemporalType tt, int maxRecords) {
         Query qry = getEntityManager().createQuery(jpql);
         Set<Map.Entry<String, Object>> entries = parameters.entrySet();
