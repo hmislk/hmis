@@ -62,7 +62,18 @@
 
                         <!-- Filters -->
                         <p:outputLabel value="Filters:" for="filters" />
-                        <p:inputTextarea id="filters" value="#{reportTemplateController.current.filters}" rows="3"  class="w-100"/>
+                        <p:inputTextarea id="filters" 
+                                         queryDelay="0" 
+                                         placeholder="Write comments here."
+                                         class="w-100 my-2" 
+                                         autoResize="true"
+                                         value="#{reportTemplateController.current.filters}" 
+                                         completeMethod="#{enumController.completeReportTemplateFilters}" 
+                                         minQueryLength="1">
+                        </p:inputTextarea>
+
+
+
 
                         <!-- Filters -->
                         <p:outputLabel value="Bill Types:" for="billTypes" />
@@ -79,16 +90,22 @@
 
                         <!-- Columns -->
                         <p:outputLabel value="Columns:" for="columns" />
-                        <p:inputTextarea id="columns" value="#{reportTemplateController.current.columns}" rows="3"  class="w-100"/>
+                        <p:inputTextarea id="columns" 
+                                         queryDelay="0" 
+                                         placeholder="Enter Columns"
+                                         class="w-100 my-2" 
+                                         autoResize="true"
+                                         value="#{reportTemplateController.current.columns}" 
+                                         completeMethod="#{enumController.completeReportTemplateColumns}" 
+                                         minQueryLength="1">
+                        </p:inputTextarea>
 
                         <!-- Totals -->
                         <p:outputLabel value="Totals:" for="totals" />
                         <p:inputTextarea id="totals" value="#{reportTemplateController.current.totals}" rows="3"  class="w-100"/>
                     </p:panelGrid>
 
-                    <!-- Save Button -->
-                    <p:commandButton value="Save" action="#{reportTemplateController.saveSelected()}"
-                                     update="messages reportForm" />
+
                 </h:form>
 
 

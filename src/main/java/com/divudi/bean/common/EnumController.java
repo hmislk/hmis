@@ -34,6 +34,8 @@ import com.divudi.data.PaymentContext;
 import com.divudi.data.RestAuthenticationType;
 import com.divudi.data.SymanticType;
 import com.divudi.data.Title;
+import com.divudi.data.analytics.ReportTemplateColumn;
+import com.divudi.data.analytics.ReportTemplateFilter;
 import com.divudi.data.hr.DayType;
 import com.divudi.data.hr.LeaveType;
 import com.divudi.data.hr.PaysheetComponentType;
@@ -358,14 +360,27 @@ public class EnumController implements Serializable {
                 .collect(Collectors.toList());
     }
 
-    
     public List<String> completeBillTypeAtomics(String query) {
         return Arrays.stream(BillTypeAtomic.values())
-                     .map(Enum::toString) // Using toString() to get the string representation of the enum
-                     .filter(name -> name.toLowerCase().contains(query.toLowerCase()))
-                     .collect(Collectors.toList());
+                .map(Enum::toString) // Using toString() to get the string representation of the enum
+                .filter(name -> name.toLowerCase().contains(query.toLowerCase()))
+                .collect(Collectors.toList());
+    }
+
+    public List<String> completeReportTemplateColumns(String query) {
+        return Arrays.stream(ReportTemplateColumn.values())
+                .map(ReportTemplateColumn::getLabel) // Using getLabel() to get the user-friendly string
+                .filter(label -> label.toLowerCase().contains(query.toLowerCase())) // Filtering based on query
+                .collect(Collectors.toList()); // Collecting results into a List
     }
     
+    public List<String> completeReportTemplateFilters(String query) {
+        return Arrays.stream(ReportTemplateFilter.values())
+                .map(ReportTemplateFilter::getLabel) // Using getLabel() to get the user-friendly string
+                .filter(label -> label.toLowerCase().contains(query.toLowerCase())) // Filtering based on query
+                .collect(Collectors.toList()); // Collecting results into a List
+    }
+
     public StaffWelfarePeriod[] getStaffWelfarePeriods() {
         return StaffWelfarePeriod.values();
     }
