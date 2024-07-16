@@ -2200,6 +2200,38 @@ public class BillBeanController implements Serializable {
         return fetchBill(longBillId);
     }
 
+    public Bill fetchBillWithItemsAndFees(Long billId) {
+        System.out.println("fetchBillWithItemsAndFees called with billId: " + billId);
+        if (billId == null) {
+            System.out.println("billId is null, returning null.");
+            return null;
+        }
+        Bill fb = fetchBill(billId);
+        System.out.println("Fetched bill: " + fb);
+        if (fb == null) {
+            System.out.println("Fetched bill is null, returning null.");
+            return null;
+        }
+        List<BillItem> billItems = fillBillItems(fb);
+        System.out.println("Fetched bill items: " + billItems);
+        if (billItems == null) {
+            System.out.println("Bill items are null, returning fetched bill without items.");
+            return fb;
+        }
+        for (BillItem fbi : billItems) {
+            System.out.println("Processing bill item: " + fbi);
+            List<BillFee> fbfs = billFeefromBillItem(fbi);
+            System.out.println("Fetched bill fees for item: " + fbfs);
+            if (fbfs != null) {
+                fbi.setBillFees(fbfs);
+                fb.getBillFees().addAll(fbfs);
+                System.out.println("Added bill fees to bill item and bill: " + fbfs);
+            }
+        }
+        System.out.println("Returning final bill: " + fb);
+        return fb;
+    }
+
     public Bill fetchBill(Long billId) {
         String sql = "SELECT b FROM Bill b WHERE b.id = :billId";
         HashMap<String, Object> hm = new HashMap<>();

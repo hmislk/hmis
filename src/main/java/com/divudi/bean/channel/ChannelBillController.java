@@ -2282,7 +2282,9 @@ public class ChannelBillController implements Serializable {
             e.setInstitution(getSessionController().getLoggedUser().getInstitution());
             e.setSmsType(MessageType.ChannelBooking);
             getSmsFacade().create(e);
-            boolean suc = smsManagerEjb.sendSms(e);
+            boolean sent = smsManagerEjb.sendSms(e);
+            e.setSentSuccessfully(sent);
+            getSmsFacade().edit(e);
         } catch (Exception e) {
         }
     }

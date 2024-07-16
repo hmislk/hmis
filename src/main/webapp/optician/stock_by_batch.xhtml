@@ -9,7 +9,7 @@
 
     <h:body>
 
-        <ui:composition template="/pharmacy/pharmacy_analytics.xhtml">
+        <ui:composition template="/optician/stock_management.xhtml">
 
             <ui:define name="subcontent">
                 <h:form id="frm">
@@ -79,16 +79,21 @@
                                          value="#{reportsStock.stocks}" var="i" 
                                          rows="#{reportsStock.rows}"
                                          paginator="#{reportsStock.paginator}"
-                                         paginatorPosition="bottom"
+                                         paginatorPosition="both"
                                          paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                          rowsPerPageTemplate="20, 50, 100" 
                                          >
-                                <f:facet name="header">
-                                    <h:outputLabel value="Batch Stock Report - #{reportsStock.department.name}"/>                                     
-                                </f:facet> 
-
-
-
+                                <p:column headerText="ID" 
+                                          style="text-align: left;"
+                                          sortBy="#{i.id}"
+                                          filterBy="#{i.id}"
+                                          filterMatchMode="contains">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="ID"/>                                     
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.id}"  >
+                                    </h:outputLabel>                                 
+                                </p:column>
                                 <p:column headerText="Category" 
                                           style="text-align: left;"
                                           sortBy="#{i.itemBatch.item.category.name}"
@@ -126,17 +131,17 @@
                                 </p:column>
 
 
-<!--                                <p:column headerText="Code" 
-                                          styleClass="averageNumericColumn"
-                                          sortBy="#{i.itemBatch.item.code}"
-                                          filterBy="#{i.itemBatch.item.code}"
-                                          filterMatchMode="contains"
-                                          style="text-align: right;">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Code"/>                                     
-                                    </f:facet>
-                                    <h:outputLabel value="#{i.itemBatch.item.code}" style="width: 100px!important;" ></h:outputLabel>
-                                </p:column>-->
+                                <!--                                <p:column headerText="Code" 
+                                                                          styleClass="averageNumericColumn"
+                                                                          sortBy="#{i.itemBatch.item.code}"
+                                                                          filterBy="#{i.itemBatch.item.code}"
+                                                                          filterMatchMode="contains"
+                                                                          style="text-align: right;">
+                                                                    <f:facet name="header">
+                                                                        <h:outputLabel value="Code"/>                                     
+                                                                    </f:facet>
+                                                                    <h:outputLabel value="#{i.itemBatch.item.code}" style="width: 100px!important;" ></h:outputLabel>
+                                                                </p:column>-->
 
                                 <p:column headerText="Quantity" 
                                           style="text-align: right;"
