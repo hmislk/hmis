@@ -523,7 +523,7 @@
                                                                     id="txtFeeVal" 
                                                                     class="m-2"
                                                                     style="width: 6em;"
-                                                                    value="#{billFeeBundleEntry.selectedBillFee.feeGrossValue}" disabled="#{!billFeeBundleEntry.selectedBillFee.billItem.item.userChangable}" >
+                                                                    value="#{billFeeBundleEntry.selectedBillFee.feeGrossValue}" >
                                                                     <f:convertNumber pattern="#,##0.00" />
                                                                     <f:ajax event="keyup" execute="@this" 
                                                                             render=":#{p:resolveFirstComponentWithId('tblRequests',view).clientId}  :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}"
@@ -536,7 +536,6 @@
                                                                 </p:inputText>
                                                                 <p:commandButton ajax="false" 
                                                                                  icon="fa fa-refresh" 
-                                                                                 disabled="#{!bif.billItem.item.userChangable}" 
                                                                                  action="#{opdBillController.feeChangeListener(bif)}" />
                                                             </td>
 
