@@ -118,6 +118,14 @@
                                     <h:outputLabel value="#{bip.referanceBillItem.bill.insId}" 
                                                    />
                                 </h:column>
+                                
+                                <h:column  >
+                                    <f:facet name="header" >
+                                        <h:outputLabel value="Bill Date" ></h:outputLabel>
+                                    </f:facet>
+                                    <h:outputLabel value="#{bip.referanceBillItem.bill.createdAt}" 
+                                                   />
+                                </h:column>
                                 <h:column   >
                                     <f:facet name="header" >
                                         <h:outputLabel value="Name" ></h:outputLabel>
