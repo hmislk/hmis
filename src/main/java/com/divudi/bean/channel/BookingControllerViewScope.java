@@ -1083,7 +1083,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         // Adding sorting to JPQL
         jpql.append(" order by i.sessionDate, i.originatingSession.name");
 
-        sessionInstancesFiltered = sessionInstanceFacade.findByJpql(jpql.toString(), params, TemporalType.DATE);
+        Long numberOfSessionToLoad = configOptionApplicationController.getLongValueByKey("Maximum Number of Sessions to Load during channel booking by dates page.", 30L);
+
+        sessionInstancesFiltered = sessionInstanceFacade.findByJpql(jpql.toString(), params, TemporalType.DATE, numberOfSessionToLoad.intValue());
 
         // Select the first item if the filtered list is not empty
         if (!sessionInstancesFiltered.isEmpty()) {
@@ -1477,7 +1479,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         }
 
     }
-    
+
     public String navigateToChannelBookingFromMenuByDateNew() {
         Boolean opdBillingAfterShiftStart = sessionController.getApplicationPreference().isOpdBillingAftershiftStart();
 
