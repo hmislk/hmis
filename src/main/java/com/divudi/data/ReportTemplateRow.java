@@ -1,5 +1,9 @@
 package com.divudi.data;
 
+import com.divudi.entity.Category;
+import com.divudi.entity.Department;
+import com.divudi.entity.Institution;
+
 /**
  *
  * @author buddhika
@@ -15,9 +19,11 @@ public class ReportTemplateRow {
     private Long rowCount;
     private Long id;
 
-    public String getFeeName() {
-        return feeName;
-    }
+    private Category category;
+    private ServiceType serviceType;
+    private BillTypeAtomic billTypeAtomic;
+    private Institution creditCompany;
+    private Department toDepartment;
 
     public void setFeeName(String feeName) {
         this.feeName = feeName;
@@ -92,6 +98,53 @@ public class ReportTemplateRow {
         this.id = id;
     }
 
-    
-    
+    public Category getCategory() {
+        return category;
+    }
+
+    public void setCategory(Category category) {
+        this.category = category;
+    }
+
+    public ServiceType getServiceType() {
+        return serviceType;
+    }
+
+    public void setServiceType(ServiceType serviceType) {
+        this.serviceType = serviceType;
+    }
+
+    public Institution getCreditCompany() {
+        return creditCompany;
+    }
+
+    public void setCreditCompany(Institution creditCompany) {
+        this.creditCompany = creditCompany;
+    }
+
+    public Department getToDepartment() {
+        return toDepartment;
+    }
+
+    public void setToDepartment(Department toDepartment) {
+        this.toDepartment = toDepartment;
+    }
+
+    public BillTypeAtomic getBillTypeAtomic() {
+        return billTypeAtomic;
+    }
+
+    public void setBillTypeAtomic(BillTypeAtomic billTypeAtomic) {
+        this.billTypeAtomic = billTypeAtomic;
+    }
+
+    // Custom method to generate a unique key string, handling null values
+    public String getCustomKey() {
+        return (category != null ? category.getName() : "") + "|"
+                + (creditCompany != null ? creditCompany.getName() : "") + "|"
+                + (toDepartment != null ? toDepartment.getName() : "") + "|"
+                + (serviceType != null ? serviceType.getLabel() : "") + "|"
+                + (billTypeAtomic != null ? billTypeAtomic.getLabel() : "");
+    }
+
 }
