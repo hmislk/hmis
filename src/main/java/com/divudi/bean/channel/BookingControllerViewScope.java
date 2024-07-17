@@ -333,6 +333,12 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     private String encryptedBillSessionId;
     private String encryptedExpiary;
 
+    private boolean listOngoing;
+    private boolean listPending;
+    private boolean listCancelled;
+    private boolean listCompleted;
+    private boolean listAll;
+
     public void sessionReschedule() {
         if (getSelectedSessionInstanceForRechedule() == null) {
             JsfUtil.addErrorMessage("Pleace Select Session For Rechedule");
@@ -727,7 +733,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         }
         JsfUtil.addSuccessMessage("SMS Sent to all Patients.");
     }
-    
+
     public void sendSmsChannelSessionTImeChangeNotification() {
 
         if (selectedSessionInstance == null) {
@@ -755,7 +761,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             Boolean sent = smsManager.sendSms(e);
             e.setSentSuccessfully(sent);
             getSmsFacade().edit(e);
-            
+
         }
         JsfUtil.addSuccessMessage("SMS Sent to all Patients.");
     }
@@ -803,11 +809,11 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             JsfUtil.addErrorMessage("Starting Time and Endtime are the same or Endtime is before Starting Time");
             return;
         }
-        
+
         if (!selectedSessionInstance.getStartingTime().equals(selectedSessionInstance.getOriginatingSession().getStartingTime()) || !selectedSessionInstance.getEndingTime().equals(selectedSessionInstance.getOriginatingSession().getEndingTime())) {
             sendSmsChannelSessionTImeChangeNotification();
         }
-        
+
         selectedSessionInstance.setEditedAt(new Date());
         selectedSessionInstance.setEditer(sessionController.getLoggedUser());
         sessionInstanceFacade.edit(selectedSessionInstance);
@@ -910,6 +916,180 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         toDate = cal.getTime();
         listAllSesionInstances();
         filterSessionInstances();
+    }
+
+    public void addMonthNew() {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(getFromDate());
+        cal.add(Calendar.MONTH, 1);
+        toDate = cal.getTime();
+        listAndFilterSessionInstances();
+    }
+
+    public void addSingleDateToToDateNew() {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(getFromDate());
+        cal.add(Calendar.DATE, 1);
+        toDate = cal.getTime();
+        listAndFilterSessionInstances();
+    }
+
+    public void addToDayToToDateNew() {
+        toDate = new Date();
+        listAndFilterSessionInstances();
+    }
+
+    public void filterSessionInstancesNew() {
+        sessionInstancesFiltered = new ArrayList<>();
+        if (sessionInstanceFilter == null) {
+            return;
+        }
+        if (sessionInstanceFilter.trim().equals("")) {
+            return;
+        }
+        if (sessionInstanceFilter.length() < 4) {
+            return;
+        }
+        listAndFilterSessionInstances();
+    }
+
+    public void addTwoDaysNew() {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(getFromDate());
+        cal.add(Calendar.DATE, 2);
+        toDate = cal.getTime();
+        listAndFilterSessionInstances();
+    }
+
+    public void addSevenDaysNew() {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(getFromDate());
+        cal.add(Calendar.DATE, 7);
+        toDate = cal.getTime();
+        listAndFilterSessionInstances();
+    }
+
+    public void listAll() {
+        listAll = true;
+        listPending = false;
+        listCancelled = false;
+        listOngoing = false;
+        listCompleted = false;
+        listAndFilterSessionInstances();
+
+    }
+
+    public void listPending() {
+        listAll = false;
+        listPending = true;
+        listCancelled = false;
+        listOngoing = false;
+        listCompleted = false;
+        listAndFilterSessionInstances();
+    }
+
+    public void listOngoing() {
+        listAll = false;
+        listPending = false;
+        listCancelled = false;
+        listOngoing = true;
+        listCompleted = false;
+        listAndFilterSessionInstances();
+    }
+
+    public void listCompleted() {
+        listAll = false;
+        listPending = false;
+        listCancelled = false;
+        listOngoing = false;
+        listCompleted = true;
+        listAndFilterSessionInstances();
+    }
+
+    public void addBillSessionData() {
+        if (configOptionApplicationController.getBooleanValueByKey("Calculate All Patient Count When Loading Channel Booking By Dates")) {
+            if (sessionInstances != null) {
+                if (sessionInstances.size() < 21) {
+                    for (SessionInstance s : sessionInstances) {
+                        fillBillSessions(s);
+                    }
+                }
+            }
+        }
+    }
+
+    public void listAndFilterSessionInstances() {
+        loadSessionInstances();
+        addBillSessionData();
+    }
+
+    public void loadSessionInstances() {
+        sessionInstancesFiltered = new ArrayList<>();
+        StringBuilder jpql = new StringBuilder("select i from SessionInstance i where i.retired=:ret and i.originatingSession.retired=:ret");
+
+        // Initializing the parameters map
+        Map<String, Object> params = new HashMap<>();
+        params.put("ret", false);
+
+        // Adding date conditions
+        if (fromDate != null && toDate != null) {
+            jpql.append(" and i.sessionDate between :fromDate and :toDate");
+            params.put("fromDate", fromDate);
+            params.put("toDate", toDate);
+        } else if (fromDate != null) {
+            jpql.append(" and i.sessionDate >= :fromDate");
+            params.put("fromDate", fromDate);
+        } else if (toDate != null) {
+            jpql.append(" and i.sessionDate <= :toDate");
+            params.put("toDate", toDate);
+        } else {
+            jpql.append(" and i.sessionDate = :sd");
+            params.put("sd", new Date());
+        }
+
+        // Dynamically appending conditions based on parameters
+        List<String> conditions = new ArrayList<>();
+        if (listOngoing) {
+            conditions.add("(i.started = true and i.completed = false)");
+        }
+        if (listCompleted) {
+            conditions.add("i.completed = true");
+        }
+        if (listPending) {
+            conditions.add("(i.started = false and i.completed = false)");
+        }
+        if (listCancelled) {
+            conditions.add("i.cancelled = true");
+        }
+
+        // Adding the conditions to the JPQL query
+        if (!conditions.isEmpty()) {
+            jpql.append(" and (").append(String.join(" or ", conditions)).append(")");
+        }
+
+        // Adding string filter conditions
+        if (sessionInstanceFilter != null && !sessionInstanceFilter.trim().isEmpty()) {
+            String[] filterKeywords = sessionInstanceFilter.trim().toLowerCase().split("\\s+");
+            List<String> filterConditions = new ArrayList<>();
+            for (String keyword : filterKeywords) {
+                filterConditions.add("(lower(i.originatingSession.name) like :keyword"
+                        + " or lower(i.originatingSession.staff.person.name) like :keyword"
+                        + " or lower(i.originatingSession.staff.speciality.name) like :keyword)");
+            }
+            jpql.append(" and (").append(String.join(" or ", filterConditions)).append(")");
+            params.put("keyword", "%" + sessionInstanceFilter.trim().toLowerCase() + "%");
+        }
+
+        // Adding sorting to JPQL
+        jpql.append(" order by i.sessionDate, i.originatingSession.name");
+
+        sessionInstancesFiltered = sessionInstanceFacade.findByJpql(jpql.toString(), params, TemporalType.DATE);
+
+        // Select the first item if the filtered list is not empty
+        if (!sessionInstancesFiltered.isEmpty()) {
+            selectedSessionInstance = sessionInstancesFiltered.get(0);
+            sessionInstanceSelected();
+        }
     }
 
     public void filterSessionInstances() {
@@ -1292,6 +1472,41 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             fromDate = new Date();
             toDate = new Date();
             listAllSesionInstances();
+            prepareForNewChannellingBill();
+            return "/channel/channel_booking_by_date?faces-redirect=true";
+        }
+
+    }
+    
+    public String navigateToChannelBookingFromMenuByDateNew() {
+        Boolean opdBillingAfterShiftStart = sessionController.getApplicationPreference().isOpdBillingAftershiftStart();
+
+        viewScopeDataTransferController.setFromDate(fromDate);
+        viewScopeDataTransferController.setToDate(toDate);
+
+        viewScopeDataTransferController.setNeedToFillBillSessions(false);
+        viewScopeDataTransferController.setNeedToFillBillSessionDetails(false);
+        viewScopeDataTransferController.setNeedToFillSessionInstances(true);
+        viewScopeDataTransferController.setNeedToFillSessionInstanceDetails(true);
+        viewScopeDataTransferController.setNeedToFillMembershipDetails(false);
+        viewScopeDataTransferController.setNeedToPrepareForNewBooking(true);
+
+        if (opdBillingAfterShiftStart) {
+            financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
+            if (financialTransactionController.getNonClosedShiftStartFundBill() != null) {
+                fromDate = new Date();
+                toDate = new Date();
+                listAndFilterSessionInstances();
+                prepareForNewChannellingBill();
+                return "/channel/channel_booking_by_date?faces-redirect=true";
+            } else {
+                JsfUtil.addErrorMessage("Start Your Shift First !");
+                return "/cashier/index?faces-redirect=true";
+            }
+        } else {
+            fromDate = new Date();
+            toDate = new Date();
+            listAndFilterSessionInstances();
             prepareForNewChannellingBill();
             return "/channel/channel_booking_by_date?faces-redirect=true";
         }
@@ -1857,7 +2072,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         comment = null;
         printPreviewC = true;
     }
-    
+
     public void cancel(Bill bill, BillItem billItem, BillSession billSession) {
         if (errorCheckCancelling()) {
             return;
@@ -1877,7 +2092,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
         if (bill.getPaidBill().equals(bill)) {
             CancelledBill cb = createCancelCashBill(bill);
-            createPaymentForCancellationsAndRefunds(cb,cb.getPaymentMethod());
+            createPaymentForCancellationsAndRefunds(cb, cb.getPaymentMethod());
             BillItem cItem = cancelBillItems(billItem, cb);
             BillSession cbs = cancelBillSession(billSession, cb, cItem);
             bill.setCancelled(true);
@@ -1896,7 +2111,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
         } else {
             CancelledBill cb = createCancelBill(bill);
-            createPaymentForCancellationsAndRefunds(cb,bill.getPaidBill().getPaymentMethod());
+            createPaymentForCancellationsAndRefunds(cb, bill.getPaidBill().getPaymentMethod());
             BillItem cItem = cancelBillItems(billItem, cb);
             BillSession cbs = cancelBillSession(billSession, cb, cItem);
             bill.setCancelled(true);
@@ -2941,7 +3156,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         }
         return createSmsForChannelBooking(b, smsTemplateForchannelSessionCancellation);
     }
-    
+
     private String createChanellSessionTimeChangeSms(Bill b) {
 //        String template = sessionController.getDepartmentPreference().getSmsTemplateForChannelBooking();
         String smsTemplateForchannelSessionCancellation = configOptionController.getLongTextValueByKey("Template for SMS sent on Channel Booking Appointment Time Changed", OptionScope.APPLICATION, null, null, null);
@@ -2990,7 +3205,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
         return s;
     }
-    
+
     public String createSmsForChannelBookingTimeChange(Bill b, String template) {
         if (b == null) {
             return "";
@@ -4630,7 +4845,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         if (savingBill.getPaidAmount() == 0.0) {
             if (!(savingBill.getPaymentMethod() == PaymentMethod.OnCall)) {
                 savingBill.setPaidAmount(feeNetTotalForSelectedBill);
-            }else{
+            } else {
                 savingBill.setNetTotal(feeNetTotalForSelectedBill);
             }
         }
@@ -5607,7 +5822,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             listnerStaffListForRowSelect();
         }
     }
-    
+
     public void listnerForPaymentMethodChangeOnCreditSettle() {
         if (settlePaymentMethod == PaymentMethod.Card) {
             getPaymentMethodData().getCreditCard().setTotalValue(getBillSession().getBill().getNetTotal());
@@ -6526,7 +6741,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             getBillFacade().edit(bill);
 
         } else {
-            if(refundPaymentMethod == null){
+            if (refundPaymentMethod == null) {
                 refundPaymentMethod = bill.getPaidBill().getPaymentMethod();
             }
             RefundBill rb = (RefundBill) createRefundBill(bill);
@@ -6546,7 +6761,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             BillItem rpBilItm = refundBillItems(bill.getSingleBillItem(), rb);
             BillSession rpSession = refundBillSession(billSession.getPaidBillSession(), rpb, rpBilItm);
 
-           billSession.getPaidBillSession().setReferenceBillSession(rpSession);
+            billSession.getPaidBillSession().setReferenceBillSession(rpSession);
             billSessionFacade.edit(billSession.getPaidBillSession());
 
             if (bill.getPaymentMethod() == PaymentMethod.Agent) {
@@ -6612,7 +6827,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             RefundBill rpb = (RefundBill) createRefundBill1(bill.getPaidBill());
             BillItem rpBilItm = refundBillItems(bill.getSingleBillItem(), rb);
             BillSession rpSession = refundBillSession(billSession.getPaidBillSession(), rpb, rpBilItm);
-           
+
             billSession.getPaidBillSession().setReferenceBillSession(rpSession);
             billSessionFacade.edit(billSession.getPaidBillSession());
 
@@ -6630,20 +6845,20 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         }
 
     }
-    
+
     public Payment createPaymentForCancellationsAndRefunds(Bill bill, PaymentMethod pm) {
         Payment p = new Payment();
         p.setBill(bill);
         double valueToSet = 0 - Math.abs(bill.getNetTotal());
         p.setPaidValue(valueToSet);
-        if(pm == null){
+        if (pm == null) {
             pm = bill.getPaymentMethod();
         }
         setPaymentMethodData(p, pm);
         return p;
     }
-      
-     public void setPaymentMethodData(Payment p, PaymentMethod pm) {
+
+    public void setPaymentMethodData(Payment p, PaymentMethod pm) {
         p.setInstitution(getSessionController().getInstitution());
         p.setDepartment(getSessionController().getDepartment());
         p.setCreatedAt(new Date());
@@ -6750,7 +6965,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
         calRefundTotal();
     }
-
 
     private Bill createRefundBill(Bill bill) {
         RefundBill rb = new RefundBill();
@@ -7644,6 +7858,46 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     public void setEncryptedExpiary(String encryptedExpiary) {
         this.encryptedExpiary = encryptedExpiary;
+    }
+
+    public boolean isListOngoing() {
+        return listOngoing;
+    }
+
+    public void setListOngoing(boolean listOngoing) {
+        this.listOngoing = listOngoing;
+    }
+
+    public boolean isListPending() {
+        return listPending;
+    }
+
+    public void setListPending(boolean listPending) {
+        this.listPending = listPending;
+    }
+
+    public boolean isListCancelled() {
+        return listCancelled;
+    }
+
+    public void setListCancelled(boolean listCancelled) {
+        this.listCancelled = listCancelled;
+    }
+
+    public boolean isListCompleted() {
+        return listCompleted;
+    }
+
+    public void setListCompleted(boolean listCompleted) {
+        this.listCompleted = listCompleted;
+    }
+
+    public boolean isListAll() {
+        return listAll;
+    }
+
+    public void setListAll(boolean listAll) {
+        this.listAll = listAll;
     }
 
 }
