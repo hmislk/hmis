@@ -470,7 +470,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         bs.setReferenceBillSession(newBillSession);
         getBillSessionFacade().edit(bs);
         newBillSessionForSMS = newBillSession;
-    }
+        }
 
     public void fillSessionInstanceByDoctor() {
         sessionInstanceByDoctor = new ArrayList<>();
@@ -1018,6 +1018,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         if (selectedSessionInstance == null) {
             JsfUtil.addErrorMessage("No session selected");
             return;
+        }
+        if(!selectedSessionInstance.isArrived()){
+            markAsArrived();
         }
         selectedSessionInstance.setStarted(true);
         selectedSessionInstance.setStartedAt(new Date());
@@ -1598,6 +1601,15 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         if (preSet()) {
             getChannelReportController().fillNurseView();
             return "/channel/channel_views/channel_nurse_view?faces-redirect=true";
+        } else {
+            return "";
+        }
+    }
+    
+    public String navigateToNurseViewWithItems() {
+        if (preSet()) {
+            getChannelReportController().fillNurseView();
+            return "/channel/channel_views/channel_nurse_view_with_items?faces-redirect=true";
         } else {
             return "";
         }
@@ -2535,7 +2547,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             return true;
         }
 
-        if (!(paymentMethod == PaymentMethod.Cash || paymentMethod == PaymentMethod.Card || paymentMethod == PaymentMethod.MultiplePaymentMethods)) {
+        if (!(paymentMethod == PaymentMethod.Cash || paymentMethod == PaymentMethod.Card || paymentMethod == PaymentMethod.MultiplePaymentMethods || paymentMethod == PaymentMethod.Agent)) {
             if (selectedSessionInstance.getOriginatingSession().isPaidAppointmentsOnly()) {
                 JsfUtil.addErrorMessage("This session is only available for paid appointments.");
                 return true;
@@ -2711,6 +2723,10 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 int maxNo = selectedSessionInstance.getMaxNo();
                 long bookedPatientCount = selectedSessionInstance.getBookedPatientCount();
                 long totalPatientCount;
+                
+                List<Integer> reservedNumbers = CommonFunctions.convertStringToIntegerList(selectedSessionInstance.getReserveNumbers());
+                bookedPatientCount = bookedPatientCount + reservedNumbers.size();
+                
                 if (selectedSessionInstance.getCancelPatientCount() != null) {
                     long canceledPatientCount = selectedSessionInstance.getCancelPatientCount();
                     totalPatientCount = bookedPatientCount - canceledPatientCount;
@@ -2752,9 +2768,18 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             createPayment(printingBill, paymentMethod);
         }
         sendSmsAfterBooking();
+        if(selectedSessionInstance.isStarted()){
+            sendChannellingStatusUpdateNotificationSms(printingBill.getSingleBillSession());
+        }
         settleSucessFully = true;
         printPreview = true;
         JsfUtil.addSuccessMessage("Channel Booking Added.");
+    }
+    
+    public long totalReservedNumberCount(SessionInstance s){
+        List<Integer> reservedNumbers = CommonFunctions.convertStringToIntegerList(s.getReserveNumbers());
+        long reservedNumberCount = reservedNumbers.size();
+        return reservedNumberCount;
     }
 
     public BillSession addChannelBookingForOnlinePayment() {
@@ -7167,6 +7192,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         Collections.sort(sortedSessionInstances, new Comparator<SessionInstance>() {
             @Override
             public int compare(SessionInstance s1, SessionInstance s2) {
+                // First, compare based on start and completion status
                 if (s1.isStarted() && !s2.isStarted() && !s1.isCompleted()) {
                     return -1;
                 } else if (!s1.isStarted() && s2.isStarted() && !s2.isCompleted()) {
@@ -7176,7 +7202,17 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 } else if (!s1.isCompleted() && s2.isCompleted()) {
                     return -1;
                 }
-                return 0;
+
+                // If statuses are the same, compare based on startingTime
+                if (s1.getStartingTime() != null && s2.getStartingTime() != null) {
+                    return s1.getStartingTime().compareTo(s2.getStartingTime());
+                } else if (s1.getStartingTime() != null) {
+                    return -1; // s1 has startingTime, s2 does not
+                } else if (s2.getStartingTime() != null) {
+                    return 1; // s2 has startingTime, s1 does not
+                }
+
+                return 0; // Both startingTime are null or equal
             }
         });
     }
