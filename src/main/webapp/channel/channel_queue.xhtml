@@ -116,7 +116,7 @@
                                 <h:outputText value="#{s.sessionDate}"  style="font-size: 8pt;">
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                                 </h:outputText>
-                                <h:outputText class="mx-2" value="#{s.originatingSession.startingTime}"  style="font-weight: bold; font-size: 8pt;">
+                                <h:outputText class="mx-2" value="#{s.startingTime}"  style="font-weight: bold; font-size: 8pt;">
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.shortTimeFormat}"/>
                                 </h:outputText>
                             </div>

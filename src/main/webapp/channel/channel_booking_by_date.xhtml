@@ -56,6 +56,7 @@
                                         </div>
 
                                         <div class="d-flex align-items-center w-100">
+
                                             <p:commandButton value="Today" action="#{bookingControllerViewScope.addToDayToToDateNew()}" ajax="false" class="mx-1 ui-button-info"></p:commandButton>
                                             <p:commandButton value="+1" action="#{bookingControllerViewScope.addSingleDateToToDateNew()}" ajax="false" class="mx-1 ui-button-info"></p:commandButton>
                                             <p:commandButton value="+2" action="#{bookingControllerViewScope.addTwoDaysNew()}" ajax="false" class="mx-1 ui-button-info"></p:commandButton>
@@ -68,7 +69,7 @@
                                         <div class="d-flex align-items-center">
                                             <p:commandButton 
                                                 ajax="false" 
-                                                title="OPD Billing" 
+                                                title="OPD Billing"
                                                 icon="fa fa-fw fa-notes-medical" 
                                                 styleClass="ui-button-warning mx-1" 
                                                 action="#{opdBillController.navigateToNewOpdBill()}"
@@ -87,13 +88,14 @@
                                             <p:commandButton 
                                                 ajax="false" 
                                                 title="Completed" 
-                                                icon="fa fa-check" 
+                                                icon="fa fa-check"
                                                 styleClass="ui-button-secondary mx-1" 
                                                 action="#{bookingControllerViewScope.listCompleted()}" />
 
                                             <!-- View Ongoing Session Data Button -->
                                             <p:commandButton 
                                                 ajax="false" 
+
                                                 title="Ongoing" 
                                                 icon="fa fa-sync-alt" 
                                                 styleClass="ui-button-success mx-1" 
@@ -102,17 +104,24 @@
                                             <!-- View Pending Session Data Button -->
                                             <p:commandButton 
                                                 ajax="false" 
+
                                                 title="Pending" 
                                                 icon="fa fa-hourglass-half" 
                                                 styleClass="ui-button-warning mx-1" 
                                                 action="#{bookingControllerViewScope.listPending()}" />
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                title="Pending" 
+                                                icon="fa fa-hourglass-half" 
+                                                styleClass="ui-button-warning mx-1" 
+                                                action="#{bookingControllerViewScope.listPendingSesionInstances()}" />
 
                                             <!-- View Cancelled Session Data Button -->
                                             <p:commandButton 
                                                 ajax="false" 
                                                 title="Cancelled" 
                                                 icon="fa fa-times" 
-                                                styleClass="ui-button-danger mx-1" 
+                                                icon="fa fa-times-circle"
                                                 action="#{bookingControllerViewScope.listCancelled()}" />
 
 
@@ -128,7 +137,7 @@
                                 <div class="col-7" >
                                     <h:panelGroup id="groupFilteredSessions" >
                                         <p:dataTable 
-                                            value="#{bookingControllerViewScope.sessionInstancesFiltered}"
+                                            value="#{bookingControllerViewScope.sortedSessionInstances}"
                                             var="s"
                                             selectionMode="single"
                                             selection="#{bookingControllerViewScope.selectedSessionInstance}"
@@ -221,14 +230,14 @@
                                                                 <p:badge value="0" size="large" styleClass="mr-2" rendered="#{0 >= s.maxNo - s.bookedPatientCount}" severity="danger"></p:badge>
                                                             </h:panelGroup>
                                                             <h:panelGroup rendered="#{s.cancelPatientCount ne null}" >
-                                                                <p:badge value="#{s.maxNo - (s.bookedPatientCount - s.cancelPatientCount)}" size="large" styleClass="mr-2" rendered="#{s.maxNo - (s.bookedPatientCount - s.cancelPatientCount) > 3}"></p:badge>
-                                                                <p:badge value="#{s.maxNo - (s.bookedPatientCount - s.cancelPatientCount)}" size="large" styleClass="mr-2" rendered="#{3 >= (s.maxNo - (s.bookedPatientCount - s.cancelPatientCount)) and (s.maxNo - (s.bookedPatientCount - s.cancelPatientCount)) > 0}" severity="warning"></p:badge>
-                                                                <p:badge value="0" size="large" styleClass="mr-2" rendered="#{0 >= s.maxNo - (s.bookedPatientCount - s.cancelPatientCount)}" severity="danger"></p:badge>
+                                                                <p:badge value="#{s.maxNo - ((s.bookedPatientCount + bookingControllerViewScope.totalReservedNumberCount(s))- s.cancelPatientCount)}" size="large" styleClass="mr-2" rendered="#{s.maxNo - ((s.bookedPatientCount + bookingControllerViewScope.totalReservedNumberCount(s)) - s.cancelPatientCount) > 3}"></p:badge>
+                                                                <p:badge value="#{s.maxNo - ((s.bookedPatientCount + bookingControllerViewScope.totalReservedNumberCount(s)) - s.cancelPatientCount)}" size="large" styleClass="mr-2" rendered="#{3 >= (s.maxNo - ((s.bookedPatientCount + bookingControllerViewScope.totalReservedNumberCount(s)) - s.cancelPatientCount)) and (s.maxNo - ((s.bookedPatientCount + bookingControllerViewScope.totalReservedNumberCount(s)) - s.cancelPatientCount)) > 0}" severity="warning"></p:badge>
+                                                                <p:badge value="0" size="large" styleClass="mr-2" rendered="#{0 >= s.maxNo - ((s.bookedPatientCount + bookingControllerViewScope.totalReservedNumberCount(s)) - s.cancelPatientCount)}" severity="danger"></p:badge>
                                                             </h:panelGroup>                                  
                                                         </div>
                                                         <div class="text-center">
                                                             <h:outputLabel style="font-weight: bolder" value="N"/><br/>
-                                                            <p:badge value="#{s.bookedPatientCount + 1}" size="large" styleClass="mr-2"></p:badge>
+                                                            <p:badge value="#{(s.bookedPatientCount + bookingControllerViewScope.totalReservedNumberCount(s)) + 1}" size="large" styleClass="mr-2"></p:badge>
                                                         </div>
                                                     </div>
 
