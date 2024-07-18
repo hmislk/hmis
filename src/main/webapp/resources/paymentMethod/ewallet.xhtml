@@ -18,9 +18,9 @@
             <p:inputText autocomplete="off"   value="#{cc.attrs.paymentMethodData.ewallet.totalValue}"  id="txtVal"/>
             <p:watermark value="Value" for="txtVal" />
         </h:panelGroup>
-        <div class="d-flex">
+        <div class="d-flex gap-2">
 
-            <p:inputText autocomplete="off"   value="#{cc.attrs.paymentMethodData.ewallet.no}" id="refno" class="mx-1"/>                                
+            <p:inputText autocomplete="off"   value="#{cc.attrs.paymentMethodData.ewallet.no}" id="refno" class=""/>                                
 
 
             <p:selectOneMenu value="#{cc.attrs.paymentMethodData.ewallet.institution}" >
@@ -28,7 +28,7 @@
                 <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
             </p:selectOneMenu>
 
-            <p:inputText autocomplete="off"   value="#{cc.attrs.paymentMethodData.ewallet.comment}" id="memo" class="mx-1"/>
+            <p:inputText autocomplete="off"   value="#{cc.attrs.paymentMethodData.ewallet.comment}" id="memo" class=""/>
             <p:watermark value="Memo" for="memo" />
             <p:watermark value="eWallet Ref. No." for="refno" />
 

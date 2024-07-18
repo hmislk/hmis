@@ -49,16 +49,18 @@
 
                                         <div class="d-flex align-items-center w-100">
                                             <p:inputText id="txtFilter" class="w-100" value="#{bookingControllerViewScope.sessionInstanceFilter}" placeholder="Search">
-                                                <p:ajax event="keyup" process="@this" update="groupFilteredSessions gdManageBookings panelBookingDetails" listener="#{bookingControllerViewScope.filterSessionInstances}"></p:ajax>
+                                                <p:ajax event="keyup" process="@this" update="groupFilteredSessions gdManageBookings panelBookingDetails" 
+                                                        listener="#{bookingControllerViewScope.filterSessionInstancesNew}"></p:ajax>
                                             </p:inputText>
 
                                         </div>
+
                                         <div class="d-flex align-items-center w-100">
-                                            <p:commandButton value="Today" action="#{bookingControllerViewScope.addToDayToToDate()}" ajax="false" class="mx-1 ui-button-info"></p:commandButton>
-                                            <p:commandButton value="+1" action="#{bookingControllerViewScope.addSingleDateToToDate()}" ajax="false" class="mx-1 ui-button-info"></p:commandButton>
-                                            <p:commandButton value="+2" action="#{bookingControllerViewScope.addTwoDays()}" ajax="false" class="mx-1 ui-button-info"></p:commandButton>
-                                            <p:commandButton value="+7" action="#{bookingControllerViewScope.addSevenDays()}" ajax="false" class="mx-1 ui-button-info"></p:commandButton>
-                                            <p:commandButton value="+1 Month" action="#{bookingControllerViewScope.addMonth()}" ajax="false" class="mx-1 ui-button-info"></p:commandButton>
+                                            <p:commandButton value="Today" action="#{bookingControllerViewScope.addToDayToToDateNew()}" ajax="false" class="mx-1 ui-button-info"></p:commandButton>
+                                            <p:commandButton value="+1" action="#{bookingControllerViewScope.addSingleDateToToDateNew()}" ajax="false" class="mx-1 ui-button-info"></p:commandButton>
+                                            <p:commandButton value="+2" action="#{bookingControllerViewScope.addTwoDaysNew()}" ajax="false" class="mx-1 ui-button-info"></p:commandButton>
+                                            <p:commandButton value="+7" action="#{bookingControllerViewScope.addSevenDaysNew()}" ajax="false" class="mx-1 ui-button-info"></p:commandButton>
+                                            <p:commandButton value="+1 Month" action="#{bookingControllerViewScope.addMonthNew()}" ajax="false" class="mx-1 ui-button-info"></p:commandButton>
                                         </div>
                                     </div>
 
@@ -71,46 +73,49 @@
                                                 styleClass="ui-button-warning mx-1" 
                                                 action="#{opdBillController.navigateToNewOpdBill()}"
                                                 rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable Navigation Button To OPD Billing From Channel Booking By Date')}"/>
-                                            
+
+
+                                            <!-- List All Session Data Button -->
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                title="All" 
+                                                icon="fa fa-list" 
+                                                styleClass="ui-button-primary mx-1" 
+                                                action="#{bookingControllerViewScope.listAll}" />
+
+                                            <!-- View Completed Session Data Button -->
                                             <p:commandButton 
                                                 ajax="false" 
                                                 title="Completed" 
                                                 icon="fa fa-check" 
                                                 styleClass="ui-button-secondary mx-1" 
-                                                action="#{bookingControllerViewScope.listCompletedSesionInstances()}" />
+                                                action="#{bookingControllerViewScope.listCompleted()}" />
 
                                             <!-- View Ongoing Session Data Button -->
                                             <p:commandButton 
                                                 ajax="false" 
-                                                title="Ongoing"
+                                                title="Ongoing" 
                                                 icon="fa fa-sync-alt" 
                                                 styleClass="ui-button-success mx-1" 
-                                                action="#{bookingControllerViewScope.listOngoingSesionInstances()}" />
+                                                action="#{bookingControllerViewScope.listOngoing()}" />
 
-                                            <!-- List Pending Button -->
+                                            <!-- View Pending Session Data Button -->
                                             <p:commandButton 
                                                 ajax="false" 
-                                                title="Pending"
-                                                icon="fa fa-hourglass-start" 
-                                                styleClass="ui-button-primary mx-1" 
-                                                action="#{bookingControllerViewScope.listPendingSesionInstances()}" />
+                                                title="Pending" 
+                                                icon="fa fa-hourglass-half" 
+                                                styleClass="ui-button-warning mx-1" 
+                                                action="#{bookingControllerViewScope.listPending()}" />
 
-                                            <!-- List Cancelled Button -->
+                                            <!-- View Cancelled Session Data Button -->
                                             <p:commandButton 
-                                                title="Cancelled"
                                                 ajax="false" 
-                                                icon="fa fa-times-circle" 
+                                                title="Cancelled" 
+                                                icon="fa fa-times" 
                                                 styleClass="ui-button-danger mx-1" 
-                                                action="#{bookingControllerViewScope.listCancelledSesionInstances()}" />
+                                                action="#{bookingControllerViewScope.listCancelled()}" />
 
 
-                                            <!-- List All Button -->
-                                            <p:commandButton 
-                                                ajax="false" 
-                                                title="All"
-                                                icon="fa fa-list" 
-                                                styleClass="ui-button-primary mx-1" 
-                                                action="#{bookingControllerViewScope.listAllSesionInstances()}" />
 
 
                                         </div>
@@ -148,6 +153,7 @@
                                                         <h:outputText value="#{s.staff.person.nameWithTitle}" style="font-weight: bolder" /> <p:badge class="mx-2" severity="success" value="Completed" rendered="#{s.completed}" /> <p:badge class="mx-2" severity="danger" value="Cancelled" rendered="#{s.cancelled}" /> <br/>
 
                                                         <h:outputText value="(#{s.staff.speciality.name})" /><p:badge class="mx-2" severity="warning" value="Scaning Session" rendered="#{s.originatingSession.category eq 'Scanning'}" /> 
+                                                        <p:badge class="mx-2" severity="info" value="Arried" rendered="#{s.arrived}" /> 
                                                         <br/>
 
                                                         <div>
@@ -186,7 +192,7 @@
                                                             <h:outputText rendered="true" value="#{s.name}" style="font-weight: bolder;font-size: 10pt" />
                                                             <br/>
                                                             <p:badge class="d-flex justify-content-end m-2" rendered="#{!s.started and !s.cancelled}" value="Room: #{s.roomNo}"  severity="primary" ></p:badge>
-                                                            <p:badge rendered="#{s.started}" value="Room: #{s.roomNo}"  severity="success" styleClass="mr-2"></p:badge>
+                                                            <p:badge rendered="#{s.started and !s.completed}" value="Room: #{s.roomNo}"  severity="success" styleClass="mr-2"></p:badge>
                                                             <p:badge rendered="#{s.completed}" value="Room: #{s.roomNo}"  severity="warning" styleClass="mr-2"></p:badge>
                                                             <p:badge rendered="#{s.cancelled}" value="Room: #{s.roomNo}"  severity="danger" styleClass="mr-2"></p:badge>
                                                         </div>
@@ -245,6 +251,7 @@
                                                                     <h:outputLabel /><br/>
                                                                     <p:commandButton 
                                                                         icon="fas fa-cog"
+                                                                        immediate="true"
                                                                         styleClass="rounded-button ui-button-secondary mr-2"
                                                                         action="#{bookingControllerViewScope.navigateToManageSessionInstance(s)}" 
                                                                         ajax="false" >
@@ -266,6 +273,53 @@
                                         <common:patient_details_view_scope
                                             editable="#{true}"
                                             controller="#{bookingControllerViewScope}"/>
+
+                                        <h:panelGroup id="gpAdditionalItems" >
+                                            <p:panel header="Additional Items" rendered="#{not empty bookingControllerViewScope.itemsAvailableToAddToBooking}">
+                                                <p:row >
+                                                    <p:column >
+                                                        <p:outputLabel  value="Item" ></p:outputLabel>
+                                                    </p:column>
+                                                    <p:column >
+                                                        <p:selectOneMenu class="w-75 mx-1" autoWidth="false" id="lstItems" value="#{bookingControllerViewScope.itemToAddToBooking}" >
+                                                            <f:selectItem itemLabel="Select" ></f:selectItem>
+                                                            <f:selectItems  value="#{bookingControllerViewScope.itemsAvailableToAddToBooking}" var="iata" itemValue="#{iata}"  itemLabel="#{iata.name}" ></f:selectItems>
+                                                            <p:ajax event="change" process="lstItems" update="totalsPanel :#{p:resolveFirstComponentWithId('gpFeeTotal',view).clientId}" listener="#{bookingControllerViewScope.fillFees}" ></p:ajax>
+                                                        </p:selectOneMenu>
+                                                    </p:column>
+                                                    <p:column >
+                                                        <p:commandButton 
+                                                            id="btnAddItem"
+                                                            process="lstItems btnAddItem"
+                                                            value="Add Item" 
+                                                            icon="fas fa-plus"
+                                                            class="ui-button-success"
+                                                            action="#{bookingControllerViewScope.addItemToBooking}"
+                                                            update="totalsPanel paymentDetails :#{p:resolveFirstComponentWithId('gpFeeTotal',view).clientId} :#{p:resolveFirstComponentWithId('lstAddedItems',view).clientId} lstItems panelBookingDetails"
+                                                            ></p:commandButton>
+                                                    </p:column>
+                                                </p:row>
+
+                                                <h:panelGroup id="lstAddedItems" >
+                                                    <ui:repeat  value="#{bookingControllerViewScope.itemsAddedToBooking}" var="item" rendered="#{not empty bookingControllerViewScope.itemsAddedToBooking}">
+                                                        <div class="row">
+                                                            <div class="d-flex justify-content-between align-items-center my-2">
+                                                                <h6>#{item.name}</h6>
+                                                                <h6>#{item.itemFee.fee}</h6>
+                                                                <p:commandButton 
+                                                                    id="btnRemoveAdditem" 
+                                                                    icon="fas fa-trash" 
+                                                                    class="ui-button-danger" 
+                                                                    action="#{bookingControllerViewScope.removeAddedAditionalItems(item)}" 
+                                                                    process="btnRemoveAdditem" 
+                                                                    update=":#{p:resolveFirstComponentWithId('lstAddedItems',view).clientId} :#{p:resolveFirstComponentWithId('paymentDetails',view).clientId} :#{p:resolveFirstComponentWithId('gpFeeTotal',view).clientId} :#{p:resolveFirstComponentWithId('panelBookingDetails',view).clientId}"/>
+                                                            </div>
+                                                        </div>
+                                                    </ui:repeat>
+
+                                                </h:panelGroup>
+                                            </p:panel>
+                                        </h:panelGroup>
 
                                         <p:panel class="my-1">
                                             <f:facet name="header">
@@ -475,7 +529,7 @@
                                                             <p:outputLabel id="creditCardbnkLbl" value="Select Bank" />
                                                         </p:column>
                                                         <p:column>
-                                                            <p:selectOneMenu class="w-75 mx-2" autoWidth="false" id="creditCardSlc" value="#{bookingControllerViewScope.paymentMethodData.creditCard.institution}">
+                                                            <p:selectOneMenu class="w-75 mx-2" autoWidth="false" id="creditCardSlc" filter="true" filterMatchMode="contains" value="#{bookingControllerViewScope.paymentMethodData.creditCard.institution}">
                                                                 <f:selectItem itemLabel="Select Bank" noSelectionOption="true"/>
                                                                 <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}" />
                                                             </p:selectOneMenu>
@@ -625,53 +679,6 @@
                                             </h:panelGroup>
 
                                         </p:panel>
-                                        <h:panelGroup id="gpAdditionalItems" >
-                                            <p:panel header="Additional Items" rendered="#{not empty bookingControllerViewScope.itemsAvailableToAddToBooking}">
-                                                <p:row >
-                                                    <p:column >
-                                                        <p:outputLabel  value="Item" ></p:outputLabel>
-                                                    </p:column>
-                                                    <p:column >
-                                                        <p:selectOneMenu class="w-75 mx-1" autoWidth="false" id="lstItems" value="#{bookingControllerViewScope.itemToAddToBooking}" >
-                                                            <f:selectItem itemLabel="Select" ></f:selectItem>
-                                                            <f:selectItems  value="#{bookingControllerViewScope.itemsAvailableToAddToBooking}" var="iata" itemValue="#{iata}"  itemLabel="#{iata.name}" ></f:selectItems>
-                                                            <p:ajax event="change" process="lstItems" update="totalsPanel :#{p:resolveFirstComponentWithId('gpFeeTotal',view).clientId}" listener="#{bookingControllerViewScope.fillFees}" ></p:ajax>
-                                                        </p:selectOneMenu>
-                                                    </p:column>
-                                                    <p:column >
-                                                        <p:commandButton 
-                                                            id="btnAddItem"
-                                                            process="lstItems btnAddItem"
-                                                            value="Add Item" 
-                                                            icon="fas fa-plus"
-                                                            class="ui-button-success"
-                                                            action="#{bookingControllerViewScope.addItemToBooking}"
-                                                            update="totalsPanel paymentDetails :#{p:resolveFirstComponentWithId('gpFeeTotal',view).clientId} :#{p:resolveFirstComponentWithId('lstAddedItems',view).clientId} lstItems panelBookingDetails"
-                                                            ></p:commandButton>
-                                                    </p:column>
-                                                </p:row>
-
-                                                <h:panelGroup id="lstAddedItems" >
-                                                    <ui:repeat  value="#{bookingControllerViewScope.itemsAddedToBooking}" var="item" rendered="#{not empty bookingControllerViewScope.itemsAddedToBooking}">
-                                                        <div class="row">
-                                                            <div class="d-flex justify-content-between align-items-center my-2">
-                                                                <h6>#{item.name}</h6>
-                                                                <h6>#{item.itemFee.fee}</h6>
-                                                                <p:commandButton 
-                                                                    id="btnRemoveAdditem" 
-                                                                    icon="fas fa-trash" 
-                                                                    class="ui-button-danger" 
-                                                                    action="#{bookingControllerViewScope.removeAddedAditionalItems(item)}" 
-                                                                    process="btnRemoveAdditem" 
-                                                                    update=":#{p:resolveFirstComponentWithId('lstAddedItems',view).clientId} :#{p:resolveFirstComponentWithId('paymentDetails',view).clientId} :#{p:resolveFirstComponentWithId('gpFeeTotal',view).clientId} :#{p:resolveFirstComponentWithId('panelBookingDetails',view).clientId}"/>
-                                                            </div>
-                                                        </div>
-                                                    </ui:repeat>
-
-                                                </h:panelGroup>
-                                            </p:panel>
-                                        </h:panelGroup>
-
 
                                         <p:panel id="panelBillReferrals" class="my-1" >
                                             <f:facet name="header" >

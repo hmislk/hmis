@@ -879,7 +879,7 @@
                     <p:menuitem 
                         ajax="false"  
                         value="Channel Booking - By Dates"  
-                        action="#{bookingControllerViewScope.navigateToChannelBookingFromMenuByDate()}" 
+                        action="#{bookingControllerViewScope.navigateToChannelBookingFromMenuByDateNew()}" 
                         rendered="#{webUserController.hasPrivilege('ChannellingChannelBooking')}" >
                     </p:menuitem>
                     <p:menuitem 
@@ -1273,6 +1273,13 @@
 
                 <f:facet name="options">
                     <div class="d-flex align-items-center">
+                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Display Cashiers Cash Total on Menu')}">
+                            <h:outputLabel class="mx-2" style="font-size: 1.2em; color: green; font-weight: 600" value="Cash in Hand : #{(financialTransactionController.financialReportByPayments.netCashTotal+(financialTransactionController.financialReportByPayments.floatReceived - financialTransactionController.financialReportByPayments.floatHandover)+ financialTransactionController.financialReportByPayments.shiftStartFunds)}" />
+                            <p:commandButton class="ui-button-info"
+                                            icon="fas fa-refresh"
+                                            ajax="false"
+                                            action="#{financialTransactionController.refreshCashNetTotalForMenu()}" />
+                        </h:panelGroup>
                         <div class="mx-4">
                             <h:panelGroup>
                                 <p:poll

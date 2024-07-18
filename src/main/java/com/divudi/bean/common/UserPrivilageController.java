@@ -841,12 +841,12 @@ public class UserPrivilageController implements Serializable {
         }
         String j = "SELECT i "
                 + " FROM WebUserPrivilege i "
-                + " where i.webUser=:wu "
+                + " where i.webUser<>:wu "
                 + " and i.retired=:ret "
                 + " and i.department=:dep";
         Map m = new HashMap();
         m.put("wu", currentWebUser);
-        m.put("ret", false);
+        m.put("ret", true);
         m.put("dep", department);
         currentWebUserPrivileges = getEjbFacade().findByJpql(j, m);
         currentUserPrivilegeHolders = createPrivilegeHolders(currentWebUserPrivileges);

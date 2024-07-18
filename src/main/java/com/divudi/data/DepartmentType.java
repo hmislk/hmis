@@ -5,24 +5,36 @@
 package com.divudi.data;
 
 /**
- * @author Buddhika
+ * Author: Buddhika
  */
 public enum DepartmentType {
+    Clinical("Clinical"),
+    NonClinical("Non-Clinical"),
+    Pharmacy("Pharmacy"),
+    Lab("Lab"),
+    Channelling("Channelling"),
+    Opd("Out Patient Department (OPD)"),
+    Inward("Inward"),
+    Theatre("Theatre"),
+    Etu("Emergency Treatment Unit (ETU)"),
+    CollectingCentre("Collecting Centre"),
+    Store("Store"),
+    Inventry("Inventory"),
+    Kitchen("Kitchen"),
+    Optician("Optician"),
+    Counter("Counter"),
+    Cashier("Cashier"),
+    Office("Office"),
+    Ict("Information and Communication Technology (ICT)"),
+    Other("Other");
 
-    Pharmacy,
-    Lab,
-    Channelling,
-    Store,
-    Theatre,
-    Kitchen,
-    Opd,
-    Inventry,
-    Counter,
-    Inward,
-    Optician,
-    Other;
+    private final String label;
+
+    DepartmentType(String label) {
+        this.label = label;
+    }
 
     public String getLabel() {
-        return this.toString();
+        return label;
     }
 }

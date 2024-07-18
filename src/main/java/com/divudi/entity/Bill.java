@@ -362,6 +362,8 @@ public class Bill implements Serializable {
     private String agentRefNo;
     private boolean billClosed;
     
+    private String localNumber;
+    
     
 
     private void generateBillPrintFromBillTemplate() {
@@ -1540,6 +1542,9 @@ public class Bill implements Serializable {
     }
 
     public List<BillFee> getBillFees() {
+        if(billFees==null){
+            billFees=new ArrayList<>();
+        }
         return billFees;
     }
 
@@ -2209,6 +2214,14 @@ public class Bill implements Serializable {
 
     public void setBillClosed(boolean billClosed) {
         this.billClosed = billClosed;
+    }
+
+    public String getLocalNumber() {
+        return localNumber;
+    }
+
+    public void setLocalNumber(String localNumber) {
+        this.localNumber = localNumber;
     }
 
 }
