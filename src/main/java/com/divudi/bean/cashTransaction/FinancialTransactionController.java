@@ -1,8 +1,7 @@
 package com.divudi.bean.cashTransaction;
-// <editor-fold defaultstate="collapsed" desc="Imports">
 
 import java.util.HashMap;
-// </editor-fold>  
+
 import com.divudi.bean.common.BillController;
 import com.divudi.bean.common.BillSearch;
 import com.divudi.bean.common.SearchController;
