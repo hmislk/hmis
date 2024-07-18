@@ -21,38 +21,38 @@
                     </f:facet>
                     <p:panelGrid columns="2" styleClass="noPrintButton" > 
                         <h:outputLabel value="From Date"/>
-                        <p:calendar id="frmDate" value="#{channelReportController.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                        <p:calendar id="frmDate" value="#{channelReportControllerOld.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                         </p:calendar>
 
                         <h:outputLabel value="To Date"/>
-                        <p:calendar id="toDate" value="#{channelReportController.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                        <p:calendar id="toDate" value="#{channelReportControllerOld.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                         </p:calendar>
                         <h:outputLabel styleClass="noPrintButton" value="User Name"/>
                         <p:autoComplete  completeMethod="#{webUserController.completeUser}" styleClass="noPrintButton"
                                          forceSelection="true"
                                          var="w" itemLabel="#{w.webUserPerson.name}" itemValue="#{w}"
-                                         value="#{channelReportController.webUser}" >
+                                         value="#{channelReportControllerOld.webUser}" >
                         </p:autoComplete>
                     </p:panelGrid>
 
                     <p:commandButton 
-                        id="btnRefresh" ajax="false" value="Process" action="#{channelReportController.createFeeTypeBillFeeList()}" class="mt-2 mb-2">
+                        id="btnRefresh" ajax="false" value="Process" action="#{channelReportControllerOld.createFeeTypeBillFeeList()}" class="mt-2 mb-2">
                     </p:commandButton>
 
                     <p:panel id="billFeeData">
 
                         <p:spacer width="30px"></p:spacer>
 
-                        <p:dataTable value="#{channelReportController.feetypeFees}" var="ftf" >
+                        <p:dataTable value="#{channelReportControllerOld.feetypeFees}" var="ftf" >
                             <f:facet name="header">
-                                <p:outputLabel value="BILL FEES  &emsp; #{channelReportController.webUser.webUserPerson.name}" ></p:outputLabel>
-                                <p:outputLabel value="Billed Bill Total - #{channelReportController.billedBillTotal}" style="float: right"></p:outputLabel>
+                                <p:outputLabel value="BILL FEES  &emsp; #{channelReportControllerOld.webUser.webUserPerson.name}" ></p:outputLabel>
+                                <p:outputLabel value="Billed Bill Total - #{channelReportControllerOld.billedBillTotal}" style="float: right"></p:outputLabel>
                                 <h:outputLabel value="From : " style=" white-space:pre-line;"/>
-                                <h:outputLabel class="ml-2" value="#{channelReportController.fromDate}" >
+                                <h:outputLabel class="ml-2" value="#{channelReportControllerOld.fromDate}" >
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>                          
                                 <h:outputLabel value="&emsp;&emsp;To :"/>
-                                <h:outputLabel class="ml-2" value="#{channelReportController.toDate}" >
+                                <h:outputLabel class="ml-2" value="#{channelReportControllerOld.toDate}" >
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                             </f:facet>
@@ -159,10 +159,10 @@
 
                         <p:spacer width="50px"></p:spacer>
 
-                        <p:dataTable value="#{channelReportController.feetypeFees}" var="ftf" >
+                        <p:dataTable value="#{channelReportControllerOld.feetypeFees}" var="ftf" >
                             <f:facet name="header">
                                 <p:outputLabel value="Canceled Bill List"></p:outputLabel>
-                                <p:outputLabel value="Canceled Bill Total - #{channelReportController.canceledBillTotl}" style="float: right"></p:outputLabel>
+                                <p:outputLabel value="Canceled Bill Total - #{channelReportControllerOld.canceledBillTotl}" style="float: right"></p:outputLabel>
                             </f:facet>
                             <p:columnGroup type="header" >
                                 <p:row>
@@ -267,10 +267,10 @@
 
                         <p:spacer width="50px"></p:spacer>
 
-                        <p:dataTable value="#{channelReportController.feetypeFees}" var="ftf" >
+                        <p:dataTable value="#{channelReportControllerOld.feetypeFees}" var="ftf" >
                             <f:facet name="header">
                                 <p:outputLabel value="Refund Bill List"></p:outputLabel>
-                                <p:outputLabel value="Refund Bill Total - #{channelReportController.refundBillTotal}" style="float: right"></p:outputLabel>
+                                <p:outputLabel value="Refund Bill Total - #{channelReportControllerOld.refundBillTotal}" style="float: right"></p:outputLabel>
                             </f:facet>
                             <p:columnGroup type="header" >
                                 <p:row>
@@ -376,11 +376,11 @@
                         <p:spacer width="50px"></p:spacer>
                         <p:panelGrid columns="2">
                             <p:outputLabel value="Billed Bill Total"></p:outputLabel>
-                            <p:outputLabel value="#{channelReportController.billedBillTotal}"></p:outputLabel>
+                            <p:outputLabel value="#{channelReportControllerOld.billedBillTotal}"></p:outputLabel>
                             <p:outputLabel value="Canceled Bill total"></p:outputLabel>
-                            <p:outputLabel value="#{channelReportController.canceledBillTotl}"></p:outputLabel>
+                            <p:outputLabel value="#{channelReportControllerOld.canceledBillTotl}"></p:outputLabel>
                             <p:outputLabel value="Refund Bill Total"></p:outputLabel>
-                            <p:outputLabel value="#{channelReportController.refundBillTotal}"></p:outputLabel>
+                            <p:outputLabel value="#{channelReportControllerOld.refundBillTotal}"></p:outputLabel>
                         </p:panelGrid>
 
                     </p:panel>

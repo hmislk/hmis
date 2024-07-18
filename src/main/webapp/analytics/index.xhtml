@@ -20,6 +20,12 @@
                                         <div class="d-grid gap-2">
                                             <p:commandButton 
                                                 ajax="false" 
+                                                value="Day End Summary" 
+                                                action="#{financialTransactionController.navigateToDayEndSummary()}"
+                                                class="w-100">
+                                            </p:commandButton>
+                                            <p:commandButton 
+                                                ajax="false" 
                                                 value="User Bill Summary" 
                                                 actionListener="#{searchController.makeNull()}"
                                                 action="#{searchController.navigateToUserFinancialTransactionSummaryByBill()}"

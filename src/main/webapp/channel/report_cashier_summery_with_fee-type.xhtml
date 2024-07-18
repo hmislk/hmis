@@ -19,52 +19,52 @@
                 <p:panel  header="Casheir Session Report Detail">
                     <p:panel>
                         <f:facet name="header" >
-                            <h:outputLabel value="#{channelReportController.webUser.institution.name}"/> <br/>
+                            <h:outputLabel value="#{channelReportControllerOld.webUser.institution.name}"/> <br/>
 
-                            <h:outputLabel value="Cashier Summary Report - &nbsp;&nbsp; #{channelReportController.webUser.webUserPerson.name}"/>
+                            <h:outputLabel value="Cashier Summary Report - &nbsp;&nbsp; #{channelReportControllerOld.webUser.webUserPerson.name}"/>
                         </f:facet>
                         <p:panelGrid columns="2" styleClass="noPrintButton" >
                             <h:outputLabel value="From Date"/>
-                            <p:calendar id="frmDate" value="#{channelReportController.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                            <p:calendar id="frmDate" value="#{channelReportControllerOld.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                             </p:calendar>
 
                             <h:outputLabel value="To Date"/>
-                            <p:calendar id="toDate" value="#{channelReportController.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                            <p:calendar id="toDate" value="#{channelReportControllerOld.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                             </p:calendar>
                             <h:outputLabel styleClass="noPrintButton" value="User Name"/>
                             <p:autoComplete  completeMethod="#{webUserController.completeUser}" styleClass="noPrintButton"
                                             forceSelection="true"
                                             var="w" itemLabel="#{w.webUserPerson.name}" itemValue="#{w}"
-                                            value="#{channelReportController.webUser}" ></p:autoComplete>
+                                            value="#{channelReportControllerOld.webUser}" ></p:autoComplete>
                             <p:outputLabel value="Fee Type"></p:outputLabel>
-                            <p:selectOneMenu  id="cmbPs" value="#{channelReportController.feeType}">  
+                            <p:selectOneMenu  id="cmbPs" value="#{channelReportControllerOld.feeType}">  
                                 <f:selectItems value="#{enumController.feeTypes}"/>                                                               
                             </p:selectOneMenu>
 
                         </p:panelGrid>
                         
                         <h:panelGrid columns="4" class="mt-2 mb-2">
-                            <p:commandButton style="margin-right: 10px" id="btnRefresh" ajax="false" value="Process" styleClass="noPrintButton" action="#{channelReportController.getUsersWithFeeType}"/>
+                            <p:commandButton style="margin-right: 10px" id="btnRefresh" ajax="false" value="Process" styleClass="noPrintButton" action="#{channelReportControllerOld.getUsersWithFeeType}"/>
                             <p:defaultCommand target="btnRefresh"/>
 
                             <p:commandButton style="margin-right: 10px" ajax="false" value="Print" styleClass="noPrintButton"  >
                                 <p:printer target="reportPrint"  />
                             </p:commandButton>
-                            <p:commandButton style="margin-right: 10px" actionListener="#{channelReportController.getUsersWithFeeType}" ajax="false" value="Excel" styleClass="noPrintButton">
+                            <p:commandButton style="margin-right: 10px" actionListener="#{channelReportControllerOld.getUsersWithFeeType}" ajax="false" value="Excel" styleClass="noPrintButton">
                                 <p:dataExporter type="xlsx" target="tbl" fileName="Cashier_Detailed_Report"  />
                             </p:commandButton> 
                         </h:panelGrid>
                         
                         <p:panel id="reportPrint" >
-                            <p:dataTable value="#{channelReportController.listBilledBillFees}" var="b" id="tbl" >
+                            <p:dataTable value="#{channelReportControllerOld.listBilledBillFees}" var="b" id="tbl" >
                                 <f:facet name="header" >
-                                    <p:outputLabel value="Bill Fees With Fee Types &emsp; #{channelReportController.webUser.webUserPerson.name}" />
+                                    <p:outputLabel value="Bill Fees With Fee Types &emsp; #{channelReportControllerOld.webUser.webUserPerson.name}" />
                                     <h:outputLabel value="From : " style=" white-space:pre-line;"/>
-                                    <h:outputLabel class="ml-2" value="#{channelReportController.fromDate}" >
+                                    <h:outputLabel class="ml-2" value="#{channelReportControllerOld.fromDate}" >
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                     </h:outputLabel>                          
                                     <h:outputLabel value="&emsp;&emsp;To :"/>
-                                    <h:outputLabel class="ml-2" value="#{channelReportController.toDate}" >
+                                    <h:outputLabel class="ml-2" value="#{channelReportControllerOld.toDate}" >
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                     </h:outputLabel>
                                 </f:facet>

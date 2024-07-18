@@ -18,13 +18,13 @@
                     
                     <p:panelGrid columns="2" styleClass="noPrintButton"> 
                         <h:outputLabel value="From Date"/>
-                        <p:calendar id="frmDate" value="#{channelReportController.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
+                        <p:calendar id="frmDate" value="#{channelReportControllerOld.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
 
                         <h:outputLabel value="To Date"/>
-                        <p:calendar id="toDate" value="#{channelReportController.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
+                        <p:calendar id="toDate" value="#{channelReportControllerOld.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                     </p:panelGrid>
                     <h:panelGrid columns="3" class="my-2"> 
-                        <p:commandButton style="margin-right: 10px" ajax="false" id="btnRefresh" value="Process" action="#{channelReportController.createDailyDoctorAnalysis}">
+                        <p:commandButton style="margin-right: 10px" ajax="false" id="btnRefresh" value="Process" action="#{channelReportControllerOld.createDailyDoctorAnalysis}">
                         </p:commandButton>
                         <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right; margin-right: 10px" >
                             <p:printer target="reportPrint"  />
@@ -39,7 +39,7 @@
 
 
                     <p:panel id="reportPrint">
-                        <p:dataTable value="#{channelReportController.doctorDayChannelCounts}" var="b" id="tbl" >
+                        <p:dataTable value="#{channelReportControllerOld.doctorDayChannelCounts}" var="b" id="tbl" >
                             
                             <p:column style="text-align: center;" >
                                 <f:facet name="header" >
