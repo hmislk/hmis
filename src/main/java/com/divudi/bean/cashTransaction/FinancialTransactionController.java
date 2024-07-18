@@ -565,35 +565,67 @@ public class FinancialTransactionController implements Serializable {
     private void createPaymentSummery() {
         System.out.println("createPaymentSummery");
         System.out.println("paymentsFromShiftSratToNow = " + paymentsFromShiftSratToNow);
+
         if (paymentsFromShiftSratToNow == null) {
             return;
         }
+
         paymentSummaryBundle = new ReportTemplateRowBundle();
         Map<String, Double> aggregatedPayments = new HashMap<>();
         Map<String, ReportTemplateRow> keyMap = new HashMap<>();
 
         for (Payment p : paymentsFromShiftSratToNow) {
             System.out.println("p = " + p);
+
+            if (p == null || p.getBill() == null) {
+                continue; // Skip this iteration if p or p.getBill() is null
+            }
+
             ReportTemplateRow row = new ReportTemplateRow();
-            row.setCategory(p.getBill().getCategory());
-            row.setBillTypeAtomic(p.getBill().getBillTypeAtomic());
-            row.setCreditCompany(p.getBill().getCreditCompany());
-            row.setToDepartment(p.getBill().getToDepartment());
-            row.setServiceType(p.getBill().getBillTypeAtomic().getServiceType());
+
+            if (p.getBill().getCategory() != null) {
+                row.setCategory(p.getBill().getCategory());
+            }
+
+            if (p.getBill().getBillTypeAtomic() != null) {
+                row.setBillTypeAtomic(p.getBill().getBillTypeAtomic());
+
+                if (p.getBill().getBillTypeAtomic().getServiceType() != null) {
+                    row.setServiceType(p.getBill().getBillTypeAtomic().getServiceType());
+                }
+            }
+
+            if (p.getBill().getCreditCompany() != null) {
+                row.setCreditCompany(p.getBill().getCreditCompany());
+            }
+
+            if (p.getBill().getToDepartment() != null) {
+                row.setToDepartment(p.getBill().getToDepartment());
+            }
+
             row.setRowValue(p.getPaidValue());
 
             String keyString = row.getCustomKey();
-            keyMap.putIfAbsent(keyString, row);
-            aggregatedPayments.merge(keyString, p.getPaidValue(), Double::sum);
+
+            if (keyString != null) {
+                keyMap.putIfAbsent(keyString, row);
+                aggregatedPayments.merge(keyString, p.getPaidValue(), Double::sum);
+            }
         }
 
         List<ReportTemplateRow> rows = aggregatedPayments.entrySet().stream().map(entry -> {
             ReportTemplateRow row = keyMap.get(entry.getKey());
-            row.setRowValue(entry.getValue());
+
+            if (row != null) {
+                row.setRowValue(entry.getValue());
+            }
+
             return row;
         }).collect(Collectors.toList());
 
-        paymentSummaryBundle.getReportTemplateRows().addAll(rows);
+        if (paymentSummaryBundle != null) {
+            paymentSummaryBundle.getReportTemplateRows().addAll(rows);
+        }
     }
 
     public String navigateToCreateShiftEndSummaryBillByBills() {

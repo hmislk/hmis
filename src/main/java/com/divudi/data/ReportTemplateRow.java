@@ -86,6 +86,28 @@ public class ReportTemplateRow {
         this.rowValue = rowValue;
         this.rowCount = rowCount;
     }
+    
+    public ReportTemplateRow(String categoryName, Double rowValue) {
+        this.categoryName = categoryName;
+        this.rowValue = rowValue;
+    }
+    
+    public ReportTemplateRow(BillTypeAtomic billTypeAtomic, String categoryName, String toDepartmentName, Double rowValue) {
+        this.billTypeAtomic = billTypeAtomic;
+        this.categoryName = categoryName;
+        this.toDepartmentName = toDepartmentName;
+        this.rowValue = rowValue;
+    }
+
+    public ReportTemplateRow(BillTypeAtomic billTypeAtomic, Double rowValue) {
+        this.billTypeAtomic = billTypeAtomic;
+        this.rowValue = rowValue;
+    }
+
+    
+    public ReportTemplateRow(Double rowValue) {
+        this.rowValue = rowValue;
+    }
 
     public ReportTemplateRow() {
     }
@@ -145,6 +167,10 @@ public class ReportTemplateRow {
                 + (toDepartment != null ? toDepartment.getName() : "") + "|"
                 + (serviceType != null ? serviceType.getLabel() : "") + "|"
                 + (billTypeAtomic != null ? billTypeAtomic.getLabel() : "");
+    }
+
+    public String getFeeName() {
+        return feeName;
     }
 
 }
