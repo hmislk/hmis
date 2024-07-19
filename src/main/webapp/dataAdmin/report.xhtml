@@ -1,11 +1,10 @@
-<?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
-      xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp">
+      xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp/report_templates">
 
     <h:body>
         <ui:composition template="/dataAdmin/admin_data_administration.xhtml">
@@ -14,11 +13,10 @@
                 <h:form id="reportForm">
                     <p:messages id="messages" showDetail="true" closable="true" />
 
-                    
-                    <p:panelGrid columns="1"  class="w-100 m-2 p-2">
-                        <f:facet name="header" >
-                            <p:outputLabel value="Report" ></p:outputLabel>
-                            <p:commandButton class="mx-5" value="Save" ajax="false" action="#{reportTemplateController.processReport()}" ></p:commandButton>
+                    <p:panelGrid columns="1" class="w-100 m-2 p-2">
+                        <f:facet name="header">
+                            <p:outputLabel value="Report" />
+                            <p:commandButton class="mx-5" value="Process" ajax="false" action="#{reportTemplateController.processReport()}" />
                         </f:facet>
                         
                         <h:panelGroup rendered="#{reportTemplateController.current.matchesReportTemplateFilter('DATE')}" >
@@ -39,13 +37,86 @@
                         <p:dataTable value="#{reportTemplateController.reportTemplateRows}" var="rtr" rowKey="" >
                         
                         </p:dataTable>
-                       
-                        
+                                 
                     </p:panelGrid>
 
 
-                </h:form>
+                        <h:panelGroup >
+                            <h1>
+                                <p:outputLabel value="Report : " />
+                                <p:outputLabel value="#{reportTemplateController.current.name}" />
+                            </h1>
+                        </h:panelGroup>
 
+                        <h:panelGroup >
+                            <p:outputLabel value="Report Type:"  />
+                            <p:selectOneMenu  value="#{reportTemplateController.current.reportTemplateType}"
+                                              filter="true"
+                                              filterMatchMode="contains"
+                                              class="w-100">
+                                <f:selectItems value="#{reportTemplateController.reportTemplateTypes}" var="type"
+                                               itemLabel="#{type}" itemValue="#{type}" />
+                            </p:selectOneMenu>
+                        </h:panelGroup>
+
+
+
+
+                        <h:panelGroup rendered="#{reportTemplateController.current.matchesReportTemplateFilter('DATE')}">
+                            <p:outputLabel value="Date:"  />
+                            <p:calendar id="calDate" value="#{reportTemplateController.date}" required="true" class="w-100"/>
+                        </h:panelGroup>
+
+                        <h:panelGroup rendered="#{reportTemplateController.current.matchesReportTemplateFilter('FROM_DATE')}">
+                            <p:outputLabel value="From Date"  />
+                            <p:calendar id="calFromDate" value="#{reportTemplateController.fromDate}" required="true" class="w-100"/>
+                        </h:panelGroup>
+
+                        <h:panelGroup rendered="#{reportTemplateController.current.matchesReportTemplateFilter('TO_DATE')}">
+                            <p:outputLabel value="To Date"  />
+                            <p:calendar id="calToDate" value="#{reportTemplateController.toDate}" required="true" class="w-100"/>
+                        </h:panelGroup>
+
+
+
+                        <h:panelGroup rendered="#{reportTemplateController.current.matchesReportTemplateFilter('CREDIT_COMPANY')}">
+                            <p:outputLabel value="Credit Company"  />
+                            <p:autoComplete class="w-75 mx-2" id="agent2" forceSelection="true"
+                                            value="#{reportTemplateController.creditCompany}" completeMethod="#{agencyController.completeAgency}" var="ix"
+                                            itemLabel="#{ix.name}" itemValue="#{ix}" size="38">
+                            </p:autoComplete>
+                        </h:panelGroup>
+
+
+
+                        <h:panelGroup rendered="#{reportTemplateController.current.reportTemplateType eq 'BILL_FEE_GROUPED_BY_TO_DEPARTMENT_AND_CATEGORY'}">
+                            <ez:report_bill_fee_grouped_by_category_bill_type_atomic_and_to_department 
+                                bundle="#{reportTemplateController.reportTemplateRowBundle}"/>
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{reportTemplateController.current.reportTemplateType eq 'BILL_TYPE_ATOMIC_SUMMARY_USING_FEES'}">
+                            <ez:report_bill_fee_grouped_by_atomic_bill_type
+                                bundle="#{reportTemplateController.reportTemplateRowBundle}"/>
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{reportTemplateController.current.reportTemplateType eq 'BILL_TYPE_ATOMIC_SUMMARY_USING_BILLS'}">
+                            <ez:report_bill_fee_grouped_by_atomic_bill_type
+                                bundle="#{reportTemplateController.reportTemplateRowBundle}"/>
+                        </h:panelGroup>
+
+
+                        <h:panelGroup rendered="#{reportTemplateController.current.reportTemplateType eq 'BILL_TYPE_ATOMIC_SUMMARY_USING_BILLS'}">
+                            <ez:report_bill_fee_grouped_by_atomic_bill_type
+                                bundle="#{reportTemplateController.reportTemplateRowBundle}"/>
+                        </h:panelGroup>
+
+
+                        <h:panelGroup rendered="#{reportTemplateController.current.reportTemplateType eq 'ITEM_CATEGORY_SUMMARY_BY_BILL_ITEM'}">
+                            <ez:report_item_cateroy_value
+                                bundle="#{reportTemplateController.reportTemplateRowBundle}"/>
+                        </h:panelGroup>
+
+                    </p:panelGrid>
+
+                </h:form>
 
             </ui:define>
         </ui:composition>

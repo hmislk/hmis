@@ -40,6 +40,7 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.persistence.TemporalType;
 
 /**
  *
@@ -72,6 +73,7 @@ public class ReportTemplateController implements Serializable {
     private Date fromDate;
     private Date toDate;
     private Institution institution;
+    private Institution creditCompany;
     private Department department;
     private Institution fromInstitution;
     private Department fromDepartment;
@@ -79,7 +81,7 @@ public class ReportTemplateController implements Serializable {
     private Department toDepartment;
     private WebUser user;
     private Staff staff;
-    
+
     private List<ReportTemplateRow> ReportTemplateRows;
     private ReportTemplateRowBundle reportTemplateRowBundle;
 
@@ -160,6 +162,9 @@ public class ReportTemplateController implements Serializable {
             case BILLT_TYPE_AND_PAYMENT_METHOD_SUMMARY_USING_BILLS:
                 handleBillTypeAndPaymentMethodSummaryUsingBills();
                 break;
+            case BILL_TYPE_ATOMIC_SUMMARY_USING_FEES:
+                handleBillFeeGroupedByBillTypeAtomic();
+                break;
             case BILL_FEE_GROUPED_BY_TO_DEPARTMENT_AND_CATEGORY:
                 handleBillFeeGroupedByToDepartmentAndCategory();
                 break;
@@ -196,6 +201,24 @@ public class ReportTemplateController implements Serializable {
             case PAYMENT_TYPE_SUMMARY_USING_BILLS:
                 handlePaymentTypeSummaryUsingBills();
                 break;
+            case ITEM_CATEGORY_SUMMARY_BY_BILL_FEE:
+                handleItemCategorySummaryByBillFee();
+                break;
+            case ITEM_CATEGORY_SUMMARY_BY_BILL_ITEM:
+                handleItemCategorySummaryByBillItem();
+                break;
+            case ITEM_CATEGORY_SUMMARY_BY_BILL:
+                handleItemCategorySummaryByBill();
+                break;
+            case TO_DEPARTMENT_SUMMARY_BY_BILL_FEE:
+                handleToDepartmentSummaryByBillFee();
+                break;
+            case TO_DEPARTMENT_SUMMARY_BY_BILL_ITEM:
+                handleToDepartmentSummaryByBillItem();
+                break;
+            case TO_DEPARTMENT_SUMMARY_BY_BILL:
+                handleToDepartmentSummaryByBill();
+                break;
             default:
                 JsfUtil.addErrorMessage("Unknown Report Type");
                 return "";
@@ -211,67 +234,151 @@ public class ReportTemplateController implements Serializable {
         // Method implementation here
     }
 
-    private void handleBillFeeGroupedByToDepartmentAndCategory() {
+    private void handleBillFeeGroupedByBillTypeAtomic() {
         String jpql;
         Map<String, Object> parameters = new HashMap<>();
+        reportTemplateRowBundle = new ReportTemplateRowBundle();
 
-        jpql = "select new com.divudi.data.ReportTemplateRow(bf.bill.billTypeAtomic, bf.bill.category.name, bf.bill.toDepartment.name, sum(bf.fee)) "
+        jpql = "select new com.divudi.data.ReportTemplateRow("
+                + " bill.billTypeAtomic, sum(bf.feeValue)) "
                 + " from BillFee bf "
-                + " where bf.retired=:bfr "
-                + " and bf.billItem.retired=:bir "
-                + " and bf.bill.retired=:br "
-                + " and bf.bill.billTypeAtomic in :btas ";
-
-        boolean testing = true;
-        if (!testing) {
-            BillFee bf = new BillFee();
-            bf.getBill().getBillTypeAtomic(); // Enum
-            bf.getBill().getCategory().getName(); // String
-            bf.getBill().getToDepartment().getName(); // String
-            bf.getFeeValue(); // double
-        }
+                + " join bf.bill bill "
+                + " where bf.retired<>:bfr "
+                + " and bf.billItem.retired<>:bir "
+                + " and bill.retired<>:br ";
+        parameters.put("bfr", true);
+        parameters.put("bir", true);
+        parameters.put("br", true);
 
         if (current.getBillTypeAtomics() != null) {
-            jpql += " and bf.bill.billTypeAtomic in :btas ";
+            jpql += " and bill.billTypeAtomic in :btas ";
             parameters.put("btas", current.getBillTypeAtomics());
         }
 
         for (ReportTemplateFilter f : current.getReportFilters()) {
             switch (f) {
                 case DATE:
-                    jpql += " and bf.bill.billDate=:bd ";
+                    jpql += " and bill.billDate=:bd ";
                     parameters.put("bd", date);
                     break;
                 case TO_DATE:
-                    jpql += " and bf.bill.billDate < :td ";
+                    jpql += " and bill.billDate < :td ";
                     parameters.put("td", toDate);
                     break;
                 case FROM_DATE:
-                    jpql += " and bf.bill.billDate > :fd ";
+                    jpql += " and bill.billDate > :fd ";
                     parameters.put("fd", fromDate);
                     break;
                 case INSTITUTION:
-                    jpql += " and bf.bill.institution=:ins ";
+                    jpql += " and bill.institution=:ins ";
                     parameters.put("ins", institution);
                     break;
                 case DEPARTMENT:
-                    jpql += " and bf.bill.department=:dep ";
+                    jpql += " and bill.department=:dep ";
                     parameters.put("dep", department);
                     break;
                 case FROM_INSTITUTION:
-                    jpql += " and bf.bill.fromInstitution=:fins ";
+                    jpql += " and bill.fromInstitution=:fins ";
                     parameters.put("fins", fromInstitution);
                     break;
                 case FROM_DEPARTMENT:
-                    jpql += " and bf.bill.fromDepartment=:fdep ";
+                    jpql += " and bill.fromDepartment=:fdep ";
                     parameters.put("fdep", fromDepartment);
                     break;
                 case TO_INSTITUTION:
-                    jpql += " and bf.bill.toInstitution=:tins ";
+                    jpql += " and bill.toInstitution=:tins ";
                     parameters.put("tins", toInstitution);
                     break;
                 case TO_DEPARTMENT:
-                    jpql += " and bf.bill.toDepartment=:tdep ";
+                    jpql += " and bill.toDepartment=:tdep ";
+                    parameters.put("tdep", toDepartment);
+                    break;
+                case CREDIT_COMPANY:
+                    jpql += " and bill.creditCompany=:creditCompany ";
+                    parameters.put("creditCompany", creditCompany);
+                    break;
+                default:
+                    throw new AssertionError();
+            }
+        }
+
+        jpql += " group by bill.billTypeAtomic";
+
+        System.out.println("jpql = " + jpql);
+        System.out.println("parameters = " + parameters);
+
+        List<ReportTemplateRow> rs = (List<ReportTemplateRow>) ejbFacade.findLightsByJpql(jpql, parameters, TemporalType.DATE);
+
+        if (rs == null || rs.isEmpty()) {
+            System.out.println("No results found.");
+        } else {
+            System.out.println("Results found: " + rs.size());
+        }
+
+        long idCounter = 1;
+        for (ReportTemplateRow row : rs) {
+            row.setId(idCounter++);
+        }
+        reportTemplateRowBundle.setReportTemplateRows(rs);
+    }
+
+    private void handleBillFeeGroupedByToDepartmentAndCategory() {
+        String jpql;
+        Map<String, Object> parameters = new HashMap<>();
+        reportTemplateRowBundle = new ReportTemplateRowBundle();
+
+        jpql = "select new com.divudi.data.ReportTemplateRow("
+                + " bill.billTypeAtomic, sum(bf.feeValue)) "
+                + " from BillFee bf "
+                + " join bf.bill bill "
+                + " where bf.retired<>:bfr "
+                + " and bf.billItem.retired<>:bir "
+                + " and bill.retired<>:br ";
+        parameters.put("bfr", true);
+        parameters.put("bir", true);
+        parameters.put("br", true);
+
+        if (current.getBillTypeAtomics() != null) {
+            jpql += " and bill.billTypeAtomic in :btas ";
+            parameters.put("btas", current.getBillTypeAtomics());
+        }
+
+        for (ReportTemplateFilter f : current.getReportFilters()) {
+            switch (f) {
+                case DATE:
+                    jpql += " and bill.billDate=:bd ";
+                    parameters.put("bd", date);
+                    break;
+                case TO_DATE:
+                    jpql += " and bill.billDate < :td ";
+                    parameters.put("td", toDate);
+                    break;
+                case FROM_DATE:
+                    jpql += " and bill.billDate > :fd ";
+                    parameters.put("fd", fromDate);
+                    break;
+                case INSTITUTION:
+                    jpql += " and bill.institution=:ins ";
+                    parameters.put("ins", institution);
+                    break;
+                case DEPARTMENT:
+                    jpql += " and bill.department=:dep ";
+                    parameters.put("dep", department);
+                    break;
+                case FROM_INSTITUTION:
+                    jpql += " and bill.fromInstitution=:fins ";
+                    parameters.put("fins", fromInstitution);
+                    break;
+                case FROM_DEPARTMENT:
+                    jpql += " and bill.fromDepartment=:fdep ";
+                    parameters.put("fdep", fromDepartment);
+                    break;
+                case TO_INSTITUTION:
+                    jpql += " and bill.toInstitution=:tins ";
+                    parameters.put("tins", toInstitution);
+                    break;
+                case TO_DEPARTMENT:
+                    jpql += " and bill.toDepartment=:tdep ";
                     parameters.put("tdep", toDepartment);
                     break;
                 default:
@@ -279,7 +386,24 @@ public class ReportTemplateController implements Serializable {
             }
         }
 
-        // Add the code to execute the JPQL query using the parameters map
+        jpql += " group by bill.billTypeAtomic";
+
+        System.out.println("jpql = " + jpql);
+        System.out.println("parameters = " + parameters);
+
+        List<ReportTemplateRow> rs = (List<ReportTemplateRow>) ejbFacade.findLightsByJpql(jpql, parameters, TemporalType.DATE);
+
+        if (rs == null || rs.isEmpty()) {
+            System.out.println("No results found.");
+        } else {
+            System.out.println("Results found: " + rs.size());
+        }
+
+        long idCounter = 1;
+        for (ReportTemplateRow row : rs) {
+            row.setId(idCounter++);
+        }
+        reportTemplateRowBundle.setReportTemplateRows(rs);
     }
 
     private void handleBillFeeList() {
@@ -295,7 +419,87 @@ public class ReportTemplateController implements Serializable {
     }
 
     private void handleBillTypeAtomicSummaryUsingBills() {
-        // Method implementation here
+        String jpql;
+        Map<String, Object> parameters = new HashMap<>();
+        reportTemplateRowBundle = new ReportTemplateRowBundle();
+
+        jpql = "select new com.divudi.data.ReportTemplateRow("
+                + " bill.billTypeAtomic, sum(bill.netTotal)) "
+                + " from Bill bill "
+                + " where bill.retired<>:br ";
+        parameters.put("br", true);
+
+        if (current.getBillTypeAtomics() != null) {
+            jpql += " and bill.billTypeAtomic in :btas ";
+            parameters.put("btas", current.getBillTypeAtomics());
+        }
+
+        for (ReportTemplateFilter f : current.getReportFilters()) {
+            switch (f) {
+                case DATE:
+                    jpql += " and bill.billDate=:bd ";
+                    parameters.put("bd", date);
+                    break;
+                case TO_DATE:
+                    jpql += " and bill.billDate < :td ";
+                    parameters.put("td", toDate);
+                    break;
+                case FROM_DATE:
+                    jpql += " and bill.billDate > :fd ";
+                    parameters.put("fd", fromDate);
+                    break;
+                case INSTITUTION:
+                    jpql += " and bill.institution=:ins ";
+                    parameters.put("ins", institution);
+                    break;
+                case DEPARTMENT:
+                    jpql += " and bill.department=:dep ";
+                    parameters.put("dep", department);
+                    break;
+                case FROM_INSTITUTION:
+                    jpql += " and bill.fromInstitution=:fins ";
+                    parameters.put("fins", fromInstitution);
+                    break;
+                case FROM_DEPARTMENT:
+                    jpql += " and bill.fromDepartment=:fdep ";
+                    parameters.put("fdep", fromDepartment);
+                    break;
+                case TO_INSTITUTION:
+                    jpql += " and bill.toInstitution=:tins ";
+                    parameters.put("tins", toInstitution);
+                    break;
+                case TO_DEPARTMENT:
+                    jpql += " and bill.toDepartment=:tdep ";
+                    parameters.put("tdep", toDepartment);
+                    break;
+                case CREDIT_COMPANY:
+                    jpql += " and bill.creditCompany=:creditCompany ";
+                    parameters.put("creditCompany", creditCompany);
+                    break;
+                default:
+                    throw new AssertionError();
+            }
+        }
+
+        jpql += " group by bill.billTypeAtomic";
+
+        System.out.println("jpql = " + jpql);
+        System.out.println("parameters = " + parameters);
+
+        List<ReportTemplateRow> rs = (List<ReportTemplateRow>) ejbFacade.findLightsByJpql(jpql, parameters, TemporalType.DATE);
+
+        if (rs == null || rs.isEmpty()) {
+            System.out.println("No results found.");
+        } else {
+            System.out.println("Results found: " + rs.size());
+        }
+
+        long idCounter = 1;
+        for (ReportTemplateRow row : rs) {
+            row.setId(idCounter++);
+        }
+        reportTemplateRowBundle.setReportTemplateRows(rs);
+
     }
 
     private void handleBillTypeAtomicSummaryUsingPayments() {
@@ -618,11 +822,128 @@ public class ReportTemplateController implements Serializable {
     public void setReportTemplateRowBundle(ReportTemplateRowBundle reportTemplateRowBundle) {
         this.reportTemplateRowBundle = reportTemplateRowBundle;
     }
-    
+
+    public Institution getCreditCompany() {
+        return creditCompany;
+    }
+
+    public void setCreditCompany(Institution creditCompany) {
+        this.creditCompany = creditCompany;
+    }
+
+
     /**
      *
      */
-    @FacesConverter(forClass = ReportTemplate.class)
+    private void handleItemCategorySummaryByBillFee() {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
+    private void handleItemCategorySummaryByBillItem() {
+        String jpql;
+        Map<String, Object> parameters = new HashMap<>();
+        reportTemplateRowBundle = new ReportTemplateRowBundle();
+
+        jpql = "select new com.divudi.data.ReportTemplateRow("
+                + " bi.item.category.name, sum(bi.netValue)) "
+                + " from BillItem bi"
+                + " join bi.bill bill "
+                + " where bill.retired<>:br "
+                + " and bi.retired<>:br ";
+        parameters.put("br", true);
+
+        if (current.getBillTypeAtomics() != null) {
+            jpql += " and bill.billTypeAtomic in :btas ";
+            parameters.put("btas", current.getBillTypeAtomics());
+        }
+
+        for (ReportTemplateFilter f : current.getReportFilters()) {
+            switch (f) {
+                case DATE:
+                    jpql += " and bill.billDate=:bd ";
+                    parameters.put("bd", date);
+                    break;
+                case TO_DATE:
+                    jpql += " and bill.billDate < :td ";
+                    parameters.put("td", toDate);
+                    break;
+                case FROM_DATE:
+                    jpql += " and bill.billDate > :fd ";
+                    parameters.put("fd", fromDate);
+                    break;
+                case INSTITUTION:
+                    jpql += " and bill.institution=:ins ";
+                    parameters.put("ins", institution);
+                    break;
+                case DEPARTMENT:
+                    jpql += " and bill.department=:dep ";
+                    parameters.put("dep", department);
+                    break;
+                case FROM_INSTITUTION:
+                    jpql += " and bill.fromInstitution=:fins ";
+                    parameters.put("fins", fromInstitution);
+                    break;
+                case FROM_DEPARTMENT:
+                    jpql += " and bill.fromDepartment=:fdep ";
+                    parameters.put("fdep", fromDepartment);
+                    break;
+                case TO_INSTITUTION:
+                    jpql += " and bill.toInstitution=:tins ";
+                    parameters.put("tins", toInstitution);
+                    break;
+                case TO_DEPARTMENT:
+                    jpql += " and bill.toDepartment=:tdep ";
+                    parameters.put("tdep", toDepartment);
+                    break;
+                case CREDIT_COMPANY:
+                    jpql += " and bill.creditCompany=:creditCompany ";
+                    parameters.put("creditCompany", creditCompany);
+                    break;
+                default:
+                    throw new AssertionError();
+            }
+        }
+
+        jpql += " and bi.item is not null "
+                + " and bi.item.category is not null ";
+        
+        jpql += " group by bi.item.category ";
+
+        System.out.println("jpql = " + jpql);
+        System.out.println("parameters = " + parameters);
+
+        List<ReportTemplateRow> rs = (List<ReportTemplateRow>) ejbFacade.findLightsByJpql(jpql, parameters, TemporalType.DATE);
+
+        if (rs == null || rs.isEmpty()) {
+            System.out.println("No results found.");
+        } else {
+            System.out.println("Results found: " + rs.size());
+        }
+
+        long idCounter = 1;
+        for (ReportTemplateRow row : rs) {
+            row.setId(idCounter++);
+        }
+        reportTemplateRowBundle.setReportTemplateRows(rs);
+    }
+
+    private void handleItemCategorySummaryByBill() {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
+    private void handleToDepartmentSummaryByBillFee() {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
+    private void handleToDepartmentSummaryByBillItem() {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
+    private void handleToDepartmentSummaryByBill() {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
+ 
     public static class ReportTemplateConverter implements Converter {
 
         @Override
