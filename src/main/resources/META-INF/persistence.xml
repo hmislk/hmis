@@ -8,9 +8,10 @@
         </properties>
     </persistence-unit>
     <persistence-unit name="hmisAuditPU" transaction-type="JTA">
-        <jta-data-source>jdbc/arogyaAudit</jta-data-source>
+        <jta-data-source>jdbc/ruhunuDemoAudit</jta-data-source>
         <exclude-unlisted-classes>false</exclude-unlisted-classes>
         <properties>
         </properties>
     </persistence-unit>
 </persistence>
+
