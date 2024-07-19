@@ -76,22 +76,22 @@
                                     </p:commandButton>
                                 </f:facet>
                                 <p:panelGrid id="gpDetail" columns="1" class="w-100" >
-                                    <h:panelGrid id="gpDetailText" columns="2" class="w-100">
+                                    <h:panelGrid id="gpDetailText" columns="2" class="w-100 ">
                                         <h:outputText id="lblName" value="Name" ></h:outputText>
-                                        <p:inputText autocomplete="off" id="txtName" value="#{paymentSchemeController.current.name}" class="w-100" ></p:inputText>
+                                        <p:inputText autocomplete="off" id="txtName" value="#{paymentSchemeController.current.name}" class="w-100 my-1" ></p:inputText>
                                         <h:outputText id="lblPrintingName" value="Printing Name" ></h:outputText>
-                                        <p:inputText autocomplete="off" id="txtPrintingName" value="#{paymentSchemeController.current.printingName}" class="w-100"></p:inputText>
+                                        <p:inputText autocomplete="off" id="txtPrintingName" value="#{paymentSchemeController.current.printingName}" class="w-100 my-1"></p:inputText>
                                         <h:outputText id="lblOrder" value="Order No" />
-                                        <p:inputText autocomplete="off" id="txtOrder" value="#{paymentSchemeController.current.orderNo}" class="w-100"/>
+                                        <p:inputText autocomplete="off" id="txtOrder" value="#{paymentSchemeController.current.orderNo}" class="w-100 my-1"/>
                                         <h:outputLabel rendered="#{paymentSchemeController.current!=null}"  value="Valid for Pharmacy" />
                                         <p:selectBooleanCheckbox rendered="#{paymentSchemeController.current!=null}" value="#{paymentSchemeController.current.validForPharmacy}" ></p:selectBooleanCheckbox>
-                                        <h:outputLabel rendered="#{paymentSchemeController.current!=null}"  value="Valid for Billing" />
+                                        <h:outputLabel rendered="#{paymentSchemeController.current!=null}" class="my-1" value="Valid for Billing" />
                                         <p:selectBooleanCheckbox rendered="#{paymentSchemeController.current!=null}" value="#{paymentSchemeController.current.validForBilledBills}" ></p:selectBooleanCheckbox>
-                                        <h:outputLabel rendered="#{paymentSchemeController.current!=null}"  value="Valid for Cancellings and Refunds" />
+                                        <h:outputLabel rendered="#{paymentSchemeController.current!=null}" class="my-1" value="Valid for Cancellings and Refunds" />
                                         <p:selectBooleanCheckbox rendered="#{paymentSchemeController.current!=null}" value="#{paymentSchemeController.current.validForCrBills}" ></p:selectBooleanCheckbox>
-                                        <h:outputLabel rendered="#{paymentSchemeController.current!=null}"  value="Valid for Channeling" />
+                                        <h:outputLabel rendered="#{paymentSchemeController.current!=null}" class="my-1" value="Valid for Channeling" />
                                         <p:selectBooleanCheckbox rendered="#{paymentSchemeController.current!=null}" value="#{paymentSchemeController.current.validForChanneling}"></p:selectBooleanCheckbox>
-                                        <h:outputText value="Creator" ></h:outputText>
+                                        <h:outputText value="Creator" class="my-1" ></h:outputText>
                                         <h:outputText value="#{paymentSchemeController.current.creater.webUserPerson.name}"  />
                                         <h:outputText value="Created At" ></h:outputText>
                                         <p:outputLabel value="#{paymentSchemeController.current.createdAt}" >
