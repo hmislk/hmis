@@ -429,9 +429,15 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             return;
         }
 
+        Bill printingBill = createBillForChannelReshedule(selectedBillSession);
+        BillItem savingBillItem = createSessionItemForReshedule(printingBill);
+        if (printingBill.getBillTypeAtomic().getBillFinanceType() == BillFinanceType.CASH_IN) {
+            createPayment(printingBill, paymentMethod);
+        }
+
         newBillSession.copy(bs);
-        newBillSession.setBill(bs.getBill());
-        newBillSession.setBillItem(bs.getBillItem());
+        newBillSession.setBill(printingBill);
+        newBillSession.setBillItem(savingBillItem);
         newBillSession.setReferenceBillSession(bs);
         newBillSession.setCreatedAt(new Date());
         newBillSession.setCreater(getSessionController().getLoggedUser());
@@ -476,6 +482,124 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         bs.setReferenceBillSession(newBillSession);
         getBillSessionFacade().edit(bs);
         newBillSessionForSMS = newBillSession;
+        System.out.println("newBillSessionForSMS = " + newBillSessionForSMS);
+        printingBill.setSingleBillSession(newBillSession);
+        billFacade.edit(printingBill);
+        for (BillItem bi : printingBill.getBillItems()) {
+            bi.setBillSession(newBillSession);
+            billItemFacade.edit(bi);
+        }
+    }
+
+    private Bill createBillForChannelReshedule(BillSession bs) {
+        Bill bill = new BilledBill();
+        List<BillItem> billItems = new ArrayList<>();
+        bill.setBillItems(billItems);
+        bill.setStaff(getSelectedSessionInstanceForRechedule().getOriginatingSession().getStaff());
+        bill.setToStaff(toStaff);
+        bill.setAppointmentAt(getSelectedSessionInstanceForRechedule().getSessionDate());
+        bill.setTotal(getSelectedSessionInstanceForRechedule().getOriginatingSession().getTotal());
+        bill.setNetTotal(getSelectedSessionInstanceForRechedule().getOriginatingSession().getTotal());
+        bill.setPaymentMethod(bs.getBill().getPaymentMethod());
+        bill.setPatient(bs.getBill().getPatient());
+        switch (bs.getBill().getPaymentMethod()) {
+            case OnCall:
+                bill.setBillType(BillType.ChannelResheduleWithOutPayment);
+                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_RESHEDULE_WITH_OUT_PAYMENT);
+                break;
+
+            case Cash:
+                bill.setBillType(BillType.ChannelResheduleWithOutPayment);
+                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_RESHEDULE_WITH_PAYMENT);
+                break;
+
+            case Card:
+                bill.setBillType(BillType.ChannelResheduleWithPayment);
+                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_RESHEDULE_WITH_PAYMENT);
+                break;
+
+            case Cheque:
+                bill.setBillType(BillType.ChannelResheduleWithOutPayment);
+                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_RESHEDULE_WITH_OUT_PAYMENT);
+                break;
+
+            case Slip:
+                bill.setBillType(BillType.ChannelResheduleWithOutPayment);
+                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_RESHEDULE_WITH_OUT_PAYMENT);
+                break;
+            case Agent:
+                bill.setBillType(BillType.ChannelResheduleWithOutPayment);
+                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_RESHEDULE_WITH_OUT_PAYMENT);
+                break;
+            case Staff:
+                bill.setBillType(BillType.ChannelResheduleWithOutPayment);
+                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_RESHEDULE_WITH_OUT_PAYMENT);
+                break;
+            case Credit:
+                bill.setBillType(BillType.ChannelResheduleWithOutPayment);
+                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_RESHEDULE_WITH_OUT_PAYMENT);
+                break;
+            case OnlineSettlement:
+                bill.setBillType(BillType.ChannelResheduleWithOutPayment);
+                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_RESHEDULE_WITH_OUT_PAYMENT);
+                break;
+
+            case MultiplePaymentMethods:
+                bill.setBillType(BillType.ChannelResheduleWithPayment);
+                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_RESHEDULE_WITH_PAYMENT);
+                break;
+        }
+
+        String deptId = generateBillNumberDeptId(bill);
+        if (deptId.equals("")) {
+            return null;
+        }
+        bill.setDeptId(deptId);
+        bill.setInsId(deptId);
+
+        bill.setPaidAmount(getSelectedSessionInstanceForRechedule().getOriginatingSession().getTotal());
+        bill.setPaidAt(new Date());
+
+        bill.setBillDate(new Date());
+        bill.setBillTime(new Date());
+        bill.setCreatedAt(new Date());
+        bill.setCreater(getSessionController().getLoggedUser());
+        bill.setDepartment(getSessionController().getDepartment());
+        bill.setInstitution(sessionController.getInstitution());
+
+        bill.setToDepartment(getSelectedSessionInstanceForRechedule().getDepartment());
+        bill.setToInstitution(getSelectedSessionInstanceForRechedule().getInstitution());
+        getBillFacade().create(bill);
+        BillItem savingBillItem = createSessionItemForReshedule(bill);
+        billItems.add(savingBillItem);
+        bill.setBillItems(billItems);
+        getBillFacade().edit(bill);
+        if (bs.getBill().getBillType() == BillType.ChannelCash || bs.getBill().getBillType() == BillType.ChannelAgent) {
+            bill.setPaidBill(bill);
+            getBillFacade().edit(bill);
+        }
+        return bill;
+    }
+    
+    private BillItem createSessionItemForReshedule(Bill bill) {
+        BillItem bi = new BillItem();
+        bi.setAdjustedValue(0.0);
+        bi.setAgentRefNo(agentRefNo);
+        bi.setBill(bill);
+        bi.setBillTime(new Date());
+        bi.setCreatedAt(new Date());
+        bi.setCreater(getSessionController().getLoggedUser());
+        bi.setGrossValue(getSelectedSessionInstanceForRechedule().getOriginatingSession().getTotal());
+        bi.setItem(getSelectedSessionInstanceForRechedule().getOriginatingSession());
+//        bi.setItem(getSelectedSessionInstance().getOriginatingSession());
+        bi.setNetRate(getSelectedSessionInstanceForRechedule().getOriginatingSession().getTotal());
+        bi.setNetValue(getSelectedSessionInstanceForRechedule().getOriginatingSession().getTotal());
+        bi.setQty(1.0);
+        bi.setRate(getSelectedSessionInstanceForRechedule().getOriginatingSession().getTotal());
+        bi.setSessionDate(getSelectedSessionInstanceForRechedule().getSessionAt());
+
+        billItemFacade.create(bi);
+        return bi;
     }
 
     public void fillSessionInstanceByDoctor() {
@@ -1201,6 +1325,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             JsfUtil.addErrorMessage("No session selected");
             return;
         }
+        if (!selectedSessionInstance.isArrived()) {
+            markAsArrived();
+        }
         selectedSessionInstance.setStarted(true);
         selectedSessionInstance.setStartedAt(new Date());
         selectedSessionInstance.setStartedBy(sessionController.getLoggedUser());
@@ -1815,6 +1942,15 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         if (preSet()) {
             getChannelReportController().fillNurseView();
             return "/channel/channel_views/channel_nurse_view?faces-redirect=true";
+        } else {
+            return "";
+        }
+    }
+
+    public String navigateToNurseViewWithItems() {
+        if (preSet()) {
+            getChannelReportController().fillNurseView();
+            return "/channel/channel_views/channel_nurse_view_with_items?faces-redirect=true";
         } else {
             return "";
         }
@@ -2752,7 +2888,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             return true;
         }
 
-        if (!(paymentMethod == PaymentMethod.Cash || paymentMethod == PaymentMethod.Card || paymentMethod == PaymentMethod.MultiplePaymentMethods)) {
+        if (!(paymentMethod == PaymentMethod.Cash || paymentMethod == PaymentMethod.Card || paymentMethod == PaymentMethod.MultiplePaymentMethods || paymentMethod == PaymentMethod.Agent)) {
             if (selectedSessionInstance.getOriginatingSession().isPaidAppointmentsOnly()) {
                 JsfUtil.addErrorMessage("This session is only available for paid appointments.");
                 return true;
@@ -2928,6 +3064,10 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 int maxNo = selectedSessionInstance.getMaxNo();
                 long bookedPatientCount = selectedSessionInstance.getBookedPatientCount();
                 long totalPatientCount;
+
+                List<Integer> reservedNumbers = CommonFunctions.convertStringToIntegerList(selectedSessionInstance.getReserveNumbers());
+                bookedPatientCount = bookedPatientCount + reservedNumbers.size();
+
                 if (selectedSessionInstance.getCancelPatientCount() != null) {
                     long canceledPatientCount = selectedSessionInstance.getCancelPatientCount();
                     totalPatientCount = bookedPatientCount - canceledPatientCount;
@@ -2969,9 +3109,18 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             createPayment(printingBill, paymentMethod);
         }
         sendSmsAfterBooking();
+        if (selectedSessionInstance.isStarted()) {
+            sendChannellingStatusUpdateNotificationSms(printingBill.getSingleBillSession());
+        }
         settleSucessFully = true;
         printPreview = true;
         JsfUtil.addSuccessMessage("Channel Booking Added.");
+    }
+
+    public long totalReservedNumberCount(SessionInstance s) {
+        List<Integer> reservedNumbers = CommonFunctions.convertStringToIntegerList(s.getReserveNumbers());
+        long reservedNumberCount = reservedNumbers.size();
+        return reservedNumberCount;
     }
 
     public BillSession addChannelBookingForOnlinePayment() {
@@ -7383,6 +7532,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         Collections.sort(sortedSessionInstances, new Comparator<SessionInstance>() {
             @Override
             public int compare(SessionInstance s1, SessionInstance s2) {
+                // First, compare based on start and completion status
                 if (s1.isStarted() && !s2.isStarted() && !s1.isCompleted()) {
                     return -1;
                 } else if (!s1.isStarted() && s2.isStarted() && !s2.isCompleted()) {
@@ -7392,7 +7542,17 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 } else if (!s1.isCompleted() && s2.isCompleted()) {
                     return -1;
                 }
-                return 0;
+
+                // If statuses are the same, compare based on startingTime
+                if (s1.getStartingTime() != null && s2.getStartingTime() != null) {
+                    return s1.getStartingTime().compareTo(s2.getStartingTime());
+                } else if (s1.getStartingTime() != null) {
+                    return -1; // s1 has startingTime, s2 does not
+                } else if (s2.getStartingTime() != null) {
+                    return 1; // s2 has startingTime, s1 does not
+                }
+
+                return 0; // Both startingTime are null or equal
             }
         });
     }

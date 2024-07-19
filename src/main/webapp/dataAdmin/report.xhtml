@@ -18,6 +18,28 @@
                             <p:outputLabel value="Report" />
                             <p:commandButton class="mx-5" value="Process" ajax="false" action="#{reportTemplateController.processReport()}" />
                         </f:facet>
+                        
+                        <h:panelGroup rendered="#{reportTemplateController.current.matchesReportTemplateFilter('DATE')}" >
+                            <p:outputLabel value="Name:" for="name" />
+                            <p:calendar id="calDate" value="#{reportTemplateController.date}" required="true"  class="w-100"/>
+                        </h:panelGroup>
+                        
+                        <h:panelGroup rendered="#{reportTemplateController.current.matchesReportTemplateFilter('FROM_DATE')}" >
+                            <p:outputLabel value="Name:" for="name" />
+                            <p:calendar id="calFromDate" value="#{reportTemplateController.fromDate}" required="true"  class="w-100"/>
+                        </h:panelGroup>
+                        
+                         <h:panelGroup rendered="#{reportTemplateController.current.matchesReportTemplateFilter('TO_DATE')}" >
+                            <p:outputLabel value="Name:" for="name" />
+                            <p:calendar id="calFromDate" value="#{reportTemplateController.toDate}" required="true"  class="w-100"/>
+                        </h:panelGroup>                       
+                       
+                        <p:dataTable value="#{reportTemplateController.reportTemplateRows}" var="rtr" rowKey="" >
+                        
+                        </p:dataTable>
+                                 
+                    </p:panelGrid>
+
 
                         <h:panelGroup >
                             <h1>
