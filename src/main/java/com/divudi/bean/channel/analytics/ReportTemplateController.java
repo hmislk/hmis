@@ -16,7 +16,6 @@ import com.divudi.data.ReportTemplateRowBundle;
 import com.divudi.data.analytics.ReportTemplateColumn;
 import com.divudi.data.analytics.ReportTemplateFilter;
 import com.divudi.data.analytics.ReportTemplateType;
-import com.divudi.entity.BillFee;
 import com.divudi.entity.Department;
 import com.divudi.entity.ReportTemplate;
 import com.divudi.entity.Institution;
@@ -30,14 +29,11 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
-import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
@@ -58,19 +54,21 @@ public class ReportTemplateController implements Serializable {
     private ReportTemplateFacade ejbFacade;
     private ReportTemplate current;
     private List<ReportTemplate> items = null;
-
+    
+    
     private Date date;
     private Date fromDate;
     private Date toDate;
     private Institution institution;
-    private Institution creditCompany;
     private Department department;
+    private WebUser user;
+    private Staff staff;
+    private Institution creditCompany;
     private Institution fromInstitution;
     private Department fromDepartment;
     private Institution toInstitution;
     private Department toDepartment;
-    private WebUser user;
-    private Staff staff;
+
 
     private List<ReportTemplateRow> ReportTemplateRows;
     private ReportTemplateRowBundle reportTemplateRowBundle;
@@ -89,6 +87,10 @@ public class ReportTemplateController implements Serializable {
             JsfUtil.addSuccessMessage("Saved Successfully");
         }
     }
+
+    
+    
+    
 
     public ReportTemplate findReportTemplateByName(String name) {
         if (name == null) {
@@ -678,6 +680,14 @@ public class ReportTemplateController implements Serializable {
         return "/dataAdmin/report?faces-redirect=true";
     }
 
+    public String navigateToEditGenerateReport() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Nothing Selected");
+            return null;
+        }
+        return "/dataAdmin/report";
+    }
+
     public List<ReportTemplate> getAllItems() {
         List<ReportTemplate> allItems;
         String j;
@@ -797,6 +807,7 @@ public class ReportTemplateController implements Serializable {
         this.reportTemplateRowBundle = reportTemplateRowBundle;
     }
 
+
     public Institution getCreditCompany() {
         return creditCompany;
     }
@@ -804,6 +815,7 @@ public class ReportTemplateController implements Serializable {
     public void setCreditCompany(Institution creditCompany) {
         this.creditCompany = creditCompany;
     }
+
 
     /**
      *
