@@ -7,7 +7,7 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core">
     <h:body>
         <ui:composition template="/analytics/index.xhtml">
-            <ui:define name="subcontent">
+            <ui:define name="report">
                 <h:form >
 
                     <p:panel>
@@ -16,7 +16,7 @@
                         </f:facet>
                         <h:panelGrid columns="2" class="my-2" >
                             <h:outputLabel value="Cashier"/>
-                            <h:outputLabel value="#{sessionController.loggedUser.webUserPerson.nameWithTitle}"/>
+                            <h:outputLabel value="#{financialTransactionController.nonClosedShiftStartFundBill.creater.webUserPerson.name}"/>
 
                             <h:outputLabel value="Start Bill ID"/>
                             <p:inputText 

@@ -58,7 +58,7 @@
                                 </h:outputText>
                             </p:column>
                             <p:column headerText="User" >
-                                #{ssb.creater}
+                                #{ssb.creater} - #{ssb.creater.role.name} - #{ssb.creater.staff.speciality.name}
                             </p:column>
 
                             <p:column headerText="Shift End" rendered="true" width="15em" >
