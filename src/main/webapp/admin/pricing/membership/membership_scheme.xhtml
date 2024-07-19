@@ -88,15 +88,15 @@
                                         >
                                     </p:commandButton>
                                 </f:facet>
-                                <h:panelGrid id="gpDetailText" columns="2">
-                                    <p:outputLabel for="txtName" id="lblName" value="Name"></p:outputLabel>
-                                    <p:inputText autocomplete="off" required="true" class="mb-1" id="txtName" value="#{membershipSchemeController.current.name}"  ></p:inputText>
+                                <p:panelGrid id="gpDetailText" columns="2" class="w-100">
+                                    <p:outputLabel for="txtName" id="lblName" value="Name" class="w-100"></p:outputLabel>
+                                    <p:inputText autocomplete="off" required="true" class="mb-1 w-100" id="txtName" value="#{membershipSchemeController.current.name}"  ></p:inputText>
                                     
                                     <p:outputLabel for="txtCode" id="lblCode" value="Code" ></p:outputLabel>
-                                    <p:inputText autocomplete="off" id="txtCode" class="mb-1" value="#{membershipSchemeController.current.code}" ></p:inputText>
+                                    <p:inputText autocomplete="off" id="txtCode" class="mb-1 w-100" value="#{membershipSchemeController.current.code}" ></p:inputText>
 
                                     <p:outputLabel for="txtPoints" id="lblPoints" value="Pointes for 1000" ></p:outputLabel>
-                                    <p:inputText autocomplete="off" id="txtPoints" class="mb-1" value="#{membershipSchemeController.current.pointesForThousand}"  ></p:inputText>
+                                    <p:inputText autocomplete="off" id="txtPoints" class="mb-1 w-100" value="#{membershipSchemeController.current.pointesForThousand}"  ></p:inputText>
 
 
                                     <p:outputLabel for="lstDiscountScheme" id="lblDs" value="Discount Scheme" ></p:outputLabel>
@@ -111,7 +111,7 @@
                                         <f:ajax render="gpDetail" execute="lstSelect" >
                                         </f:ajax>
                                     </p:selectOneMenu>
-                                </h:panelGrid>
+                                </p:panelGrid>
                             </p:panel>
 
                             <p:messages id="msg"  />
