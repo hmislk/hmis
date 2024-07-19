@@ -1119,7 +1119,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
 //        }
     double awailableBalance = Math.abs(collectingCentre.getBallance() + Math.abs(collectingCentre.getAllowedCredit()));
 
-        if (awailableBalance > Math.abs(feeTotalExceptCcfs)) {
+        if (awailableBalance < Math.abs(feeTotalExceptCcfs)) {
             JsfUtil.addErrorMessage("Collecting Centre Balance is Not Enough");
             return true;
         }

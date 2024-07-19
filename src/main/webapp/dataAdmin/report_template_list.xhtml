@@ -23,7 +23,7 @@
                             <p:commandButton value="Edit" action="#{reportTemplateController.navigateToEditReportTemplate()}" ajax="false" >
                                 <f:setPropertyActionListener value="#{t}" target="#{reportTemplateController.current}" ></f:setPropertyActionListener>
                             </p:commandButton>
-                            <p:commandButton value="Edit" action="#{reportTemplateController.navigateToEditGenerateReport()}" ajax="false" >
+                            <p:commandButton value="To Run" action="#{reportTemplateController.navigateToGenerateReport()}" ajax="false" >
                                 <f:setPropertyActionListener value="#{t}" target="#{reportTemplateController.current}" ></f:setPropertyActionListener>
                             </p:commandButton>
                         </p:column>
