@@ -83,7 +83,8 @@
                                 action="#{patientController.quickSearchPatientLongPhoneNumber(cc.attrs.controller)}" 
                                 process="btnSearchbyPhoneNo txtQuickSearchPhoneNumber"
                                 update="ptImp selectPatient editPatient viewPatient"
-                                styleClass="btn-sm mx-1"/>
+                                styleClass="btn-sm mx-1">
+                            </p:commandButton>
                             <p:defaultCommand target="btnSearchbyPhoneNo"> </p:defaultCommand>
                             <p:commandButton 
                                 id="btnAddNewPatient"
@@ -145,7 +146,7 @@
                                     </div>
                                     <div class="col-md-9 p-1">
                                         <p:inputText 
-                                            
+
                                             requiredMessage="Please enter a name for the patient"
                                             autocomplete="off" 
                                             id="txtNewPtName" 
@@ -165,7 +166,7 @@
                                     <div class="col-md-3 p-1">
                                         <p:selectOneMenu 
                                             id="cmbSex" 
-                                            
+
                                             requiredMessage="Please select a gender"
                                             value="#{cc.attrs.controller.patient.person.sex}"
                                             class="form-control w-100">
@@ -275,7 +276,7 @@
                                 </div>
 
                                 <div class="row">
-                                    <div class="col-md-8 p-1">
+                                    <div class="col-md-7 p-1">
                                         <p:inputText
                                             id="txtAddress"
                                             autocomplete="off"
@@ -284,7 +285,18 @@
                                             value="#{cc.attrs.controller.patient.person.address}"
                                             class="form-control"/>
                                     </div>
-                                    <div class="col-md-4 p-1">
+
+                                    <h:panelGroup class="col-md-2 p-1" rendered="#{configOptionApplicationController.getBooleanValueByKey('Save the Patient with Patient Status')}">
+                                        <p:selectBooleanButton 
+                                            id="scbforigner"
+                                            value="#{cc.attrs.controller.patient.person.foreigner}"
+                                            offLabel="Patient is Local"
+                                            class="w-100"
+                                            onLabel="Patient is Forigner" >
+                                        </p:selectBooleanButton>
+                                    </h:panelGroup>
+
+                                    <div class="#{configOptionApplicationController.getBooleanValueByKey('Save the Patient with Patient Status')?'col-md-3 p-1':'col-md-5 p-1'}">
                                         <p:autoComplete 
                                             id="acNewPtArea" 
                                             requiredMessage="Please select an Area"
@@ -308,7 +320,7 @@
                                 <p:tooltip for="cmbTitle" value="Title"  showDelay="0" hideDelay="0"></p:tooltip>
                                 <p:tooltip for="acNewPtArea" value="Area"  showDelay="0" hideDelay="0"></p:tooltip>
                                 <p:tooltip for="txtEmail" value="Email"  showDelay="0" hideDelay="0"></p:tooltip>
-
+                                <p:tooltip for="scbforigner" value="Mark Status"  showDelay="0" hideDelay="0"></p:tooltip>
                                 <p:tooltip for="year" value="Age- Years Component"  showDelay="0" hideDelay="0"></p:tooltip>
                                 <p:tooltip for="month" value="Age- Month Component"  showDelay="0" hideDelay="0"></p:tooltip>
                                 <p:tooltip for="day" value="Age- Days Component"  showDelay="0" hideDelay="0"></p:tooltip>
@@ -361,6 +373,16 @@
                             <h:outputLabel value="Address " class="mx-3"/>
                             <h:outputLabel value=" : " class="mx-3"/>
                             <h:outputText value="#{cc.attrs.controller.patient.person.address}" />
+
+                            
+                            <h:outputLabel value="Patient Status " class="mx-3" rendered="#{configOptionApplicationController.getBooleanValueByKey('Save the Patient with Patient Status')}"/>
+                            <h:outputLabel value=" : " class="mx-3" rendered="#{configOptionApplicationController.getBooleanValueByKey('Save the Patient with Patient Status')}"/>
+                            <p:badge 
+                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Save the Patient with Patient Status')}"
+                                value="#{cc.attrs.controller.patient.person.foreigner?'Patient is Forigner':'Patient is Local'}" 
+                                severity="#{cc.attrs.controller.patient.person.foreigner?'warning':'success'}" 
+                                styleClass="mr-2">
+                            </p:badge>
 
                             <h:outputLabel value="Area " class="mx-3"/>
                             <h:outputLabel value=" : " class="mx-3"/>
