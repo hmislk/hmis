@@ -43,7 +43,7 @@
         <url-pattern>/image</url-pattern>
     </servlet-mapping>
     <session-config>
-        <session-timeout>30</session-timeout>
+        <session-timeout>90</session-timeout>
     </session-config>
     <!-- Welcome File -->
     <welcome-file-list>
