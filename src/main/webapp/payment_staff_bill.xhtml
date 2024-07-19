@@ -124,7 +124,14 @@
                                     </f:facet>    
                                     <h:outputLabel value="#{bf.billItem.item.name}" />
                                 </p:column>
-
+                                
+                                <p:column headerText="Charge" >
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Charge Type"/>
+                                    </f:facet>    
+                                    <h:outputLabel value="#{bf.fee.feeType}" />
+                                </p:column>
+                                
                                 <p:column headerText="Charge" >
                                     <f:facet name="header">
                                         <h:outputLabel value="Charge"/>

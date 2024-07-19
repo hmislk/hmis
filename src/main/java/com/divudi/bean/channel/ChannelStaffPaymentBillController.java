@@ -1037,7 +1037,8 @@ public class ChannelStaffPaymentBillController implements Serializable {
         } else {
             JsfUtil.addSuccessMessage("SMS Failed");
         }
-
+        e.setSentSuccessfully(sent);
+        getSmsFacade().edit(e);
     }
 
     public void sendSmsAfterSessionPayment() {
@@ -1060,6 +1061,8 @@ public class ChannelStaffPaymentBillController implements Serializable {
         } else {
             JsfUtil.addSuccessMessage("SMS Failed");
         }
+        e.setSentSuccessfully(sent);
+        getSmsFacade().edit(e);
 
     }
 

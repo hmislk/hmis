@@ -1055,7 +1055,7 @@ public class OpdTabPreBillController implements Serializable, ControllerWithPati
         updatingPreBill.setPaymentScheme(getPaymentScheme());
         updatingPreBill.setPaymentMethod(paymentMethod);
         updatingPreBill.setCreatedAt(new Date());
-        updatingPreBill.setCreater(getSessionController().getLoggedUser());
+        updatingPreBill.setCreater(getToken().getCreatedBy());
 
         //SETTING INS ID
         recurseCount = 0;

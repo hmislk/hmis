@@ -1540,6 +1540,9 @@ public class Bill implements Serializable {
     }
 
     public List<BillFee> getBillFees() {
+        if(billFees==null){
+            billFees=new ArrayList<>();
+        }
         return billFees;
     }
 

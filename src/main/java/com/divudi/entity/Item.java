@@ -72,9 +72,13 @@ public class Item implements Serializable, Comparable<Item> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    
+    
 
     Long id;
     int orderNo;
+    
+    private boolean canSechduleForOtherDays;
 
     private Long itemId;
 

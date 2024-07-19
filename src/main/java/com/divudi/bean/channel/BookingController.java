@@ -466,6 +466,8 @@ public class BookingController implements Serializable, ControllerWithPatient {
         e.setSmsType(MessageType.ChannelPatientReschedule);
         getSmsFacade().create(e);
         Boolean sent = smsManager.sendSms(e);
+        e.setSentSuccessfully(sent);
+        getSmsFacade().edit(e);
 
 //        JsfUtil.addSuccessMessage("SMS Sent to all Patients.");
     }
@@ -1171,6 +1173,8 @@ public class BookingController implements Serializable, ControllerWithPatient {
         e.setSmsType(MessageType.ChannelBooking);
         getSmsFacade().create(e);
         Boolean sent = smsManager.sendSms(e);
+        e.setSentSuccessfully(sent);
+        getSmsFacade().edit(e);
         if (sent) {
             JsfUtil.addSuccessMessage("SMS Sent");
         } else {
@@ -1202,6 +1206,8 @@ public class BookingController implements Serializable, ControllerWithPatient {
             e.setSmsType(MessageType.ChannelDoctorArrival);
             getSmsFacade().create(e);
             Boolean sent = smsManager.sendSms(e);
+            e.setSentSuccessfully(sent);
+            getSmsFacade().edit(e);
 
         }
         JsfUtil.addSuccessMessage("SMS Sent to all Patients.");
@@ -1229,6 +1235,8 @@ public class BookingController implements Serializable, ControllerWithPatient {
         e.setSmsType(MessageType.ChannelPatientFeedback);
         getSmsFacade().create(e);
         Boolean sent = smsManager.sendSms(e);
+        e.setSentSuccessfully(sent);
+        getSmsFacade().edit(e);
 
 //        JsfUtil.addSuccessMessage("SMS Sent to all Patients.");
     }
@@ -1259,6 +1267,8 @@ public class BookingController implements Serializable, ControllerWithPatient {
             e.setSmsType(MessageType.ChannelNoShow);
             getSmsFacade().create(e);
             Boolean sent = smsManager.sendSms(e);
+            e.setSentSuccessfully(sent);
+            getSmsFacade().edit(e);
 
         }
         JsfUtil.addSuccessMessage("SMS Sent to all No Show Patients.");
