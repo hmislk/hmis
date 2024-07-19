@@ -679,6 +679,7 @@ public class FinancialTransactionController implements Serializable {
         nonClosedShiftStartFundBill = startBill;
         fillPaymentsFromShiftStartToEnd(startBill, endBill, startBill.getCreater());
         return "/cashier/shift_end_summery_bill_of_selected_user_not_closed?faces-redirect=true";
+
     }
 
     public String navigateToCreateShiftEndSummaryBillByBills() {
