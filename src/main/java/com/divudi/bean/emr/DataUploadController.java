@@ -84,6 +84,7 @@ import com.divudi.data.SymanticType;
 import com.divudi.entity.Doctor;
 import com.divudi.entity.inward.InwardService;
 import com.divudi.java.CommonFunctions;
+import com.mysql.cj.jdbc.interceptors.SessionAssociationInterceptor;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import javax.inject.Named;
@@ -198,6 +199,7 @@ public class DataUploadController implements Serializable {
     private List<Item> items;
     private List<ItemFee> itemFees;
     private List<Institution> collectingCentres;
+    private List<Department> departments;
     private List<Area> areas;
     private StreamedContent templateForItemWithFeeUpload;
     private StreamedContent templateForCollectingCentreUpload;
@@ -231,6 +233,11 @@ public class DataUploadController implements Serializable {
     public String navigateToCollectingCenterUpload() {
         uploadComplete = false;
         return "/admin/institutions/collecting_centre_upload?faces-redirect=true";
+    }
+
+    public String navigateToDepartmentUpload() {
+        uploadComplete = false;
+        return "/admin/institutions/department_upload?faces-redirect=true";
     }
 
     public void uploadPatientAreas() {
@@ -876,6 +883,14 @@ public class DataUploadController implements Serializable {
         }
         JsfUtil.addSuccessMessage("Saved");
         staffToSave = new ArrayList<>();
+    }
+
+    public void saveDepartments() {
+        for (Department stf : departments) {
+            departmentController.save(stf);
+        }
+        JsfUtil.addSuccessMessage("Saved");
+        departments = new ArrayList<>();
     }
 
     private List<Item> readOpdItemsAndFeesFromExcel(InputStream inputStream) throws IOException {
@@ -2308,6 +2323,21 @@ public class DataUploadController implements Serializable {
         JsfUtil.addSuccessMessage("Successfully Uploaded");
     }
 
+    public void uploadDepartments() {
+        departments = new ArrayList<>();
+        if (file != null) {
+            try ( InputStream inputStream = file.getInputStream()) {
+                departments = readDepartmentFromExcel(inputStream);
+            } catch (IOException e) {
+                e.printStackTrace();
+                uploadComplete = false;
+                JsfUtil.addErrorMessage("Error in Uploading. " + e.getMessage());
+            }
+        }
+        uploadComplete = true;
+        JsfUtil.addSuccessMessage("Uploaded. Please click the save button to save.");
+    }
+
     public void uploadCreditCOmpanies() {
         creditCompanies = new ArrayList<>();
         if (file != null) {
@@ -2553,6 +2583,130 @@ public class DataUploadController implements Serializable {
         }
 
         return collectingCentresList;
+    }
+
+    private List<Department> readDepartmentFromExcel(InputStream inputStream) throws IOException {
+        Workbook workbook = new XSSFWorkbook(inputStream);
+        Sheet sheet = workbook.getSheetAt(0);
+        Iterator<Row> rowIterator = sheet.rowIterator();
+
+        List<Department> departmentList = new ArrayList<>();
+
+        // Assuming the first row contains headers, skip it
+        if (rowIterator.hasNext()) {
+            rowIterator.next();
+        }
+
+        while (rowIterator.hasNext()) {
+            Row row = rowIterator.next();
+
+            Department department;
+            String departmentCode = null;
+            String departmentName = null;
+            String billPrefix = null;
+            String departmentType = null;
+            String phone = null;
+            String email = null;
+            String address = null;
+            String institutionName = null;
+            Boolean active = null;
+
+            // Column A: Department Code (Required)
+            Cell departmentCodeCell = row.getCell(0);
+            if (departmentCodeCell != null && departmentCodeCell.getCellType() == CellType.STRING) {
+                departmentCode = departmentCodeCell.getStringCellValue();
+            }
+            if (departmentCode == null || departmentCode.trim().isEmpty()) {
+                continue;
+            }
+
+            // Column B: Department Name (Required)
+            Cell departmentNameCell = row.getCell(1);
+            if (departmentNameCell != null && departmentNameCell.getCellType() == CellType.STRING) {
+                departmentName = departmentNameCell.getStringCellValue();
+            }
+            if (departmentName == null || departmentName.trim().isEmpty()) {
+                continue;
+            }
+
+            // Column C: Bill Prefix (Optional)
+            Cell billPrefixCell = row.getCell(2);
+            if (billPrefixCell != null && billPrefixCell.getCellType() == CellType.STRING) {
+                billPrefix = billPrefixCell.getStringCellValue();
+            }
+
+            // Column D: Department Type (Optional)
+            Cell departmentTypeCell = row.getCell(3);
+            if (departmentTypeCell != null && departmentTypeCell.getCellType() == CellType.STRING) {
+                departmentType = departmentTypeCell.getStringCellValue();
+            }
+            if (departmentType == null || departmentType.trim().isEmpty()) {
+                departmentType = "Other";
+            }
+
+            // Column E: Phone (Optional)
+            Cell phoneCell = row.getCell(4);
+            if (phoneCell != null) {
+                if (phoneCell.getCellType() == CellType.NUMERIC) {
+                    DecimalFormat decimalFormat = new DecimalFormat("#");
+                    phone = decimalFormat.format(phoneCell.getNumericCellValue());
+                } else if (phoneCell.getCellType() == CellType.STRING) {
+                    phone = phoneCell.getStringCellValue();
+                }
+            }
+
+            // Column F: Email (Optional)
+            Cell emailCell = row.getCell(5);
+            if (emailCell != null && emailCell.getCellType() == CellType.STRING) {
+                email = emailCell.getStringCellValue();
+            }
+
+            // Column G: Address (Optional)
+            Cell addressCell = row.getCell(6);
+            if (addressCell != null && addressCell.getCellType() == CellType.STRING) {
+                address = addressCell.getStringCellValue();
+            }
+
+            // Column H: Institution (Optional)
+            Cell institutionCell = row.getCell(7);
+            if (institutionCell != null && institutionCell.getCellType() == CellType.STRING) {
+                institutionName = institutionCell.getStringCellValue();
+            }
+            Institution parentInstitution = institutionController.findExistingInstitutionByName(institutionName);
+            if (parentInstitution == null) {
+                parentInstitution = sessionController.getInstitution();
+            }
+
+            // Column I: Active (True/False)
+            Cell activeCell = row.getCell(8);
+            if (activeCell != null && activeCell.getCellType() == CellType.BOOLEAN) {
+                active = activeCell.getBooleanCellValue();
+            }
+            if (active == null) {
+                active = false;
+            }
+
+            department = departmentController.findExistingDepartmentByName(departmentName, parentInstitution);
+            if (department == null) {
+                department = new Department();
+                department.setName(departmentName);
+                department.setCode(departmentCode);
+                department.setDepartmentCode(billPrefix);
+                department.setDepartmentType(departmentController.findDepartmentType(departmentType));
+                department.setTelephone1(phone);
+                department.setTelephone2(phone);
+                department.setEmail(email);
+                department.setAddress(address);
+                department.setInstitution(parentInstitution);
+                department.setActive(active);
+                department.setCreatedAt(new Date());
+                department.setCreater(sessionController.getLoggedUser());
+            }
+
+            departmentList.add(department);
+        }
+
+        return departmentList;
     }
 
     private List<Institution> readCreditCOmpanyFromExcel(InputStream inputStream) throws IOException {
@@ -4529,6 +4683,14 @@ public class DataUploadController implements Serializable {
 
     public void setDepartment(Department department) {
         this.department = department;
+    }
+
+    public List<Department> getDepartments() {
+        return departments;
+    }
+
+    public void setDepartments(List<Department> departments) {
+        this.departments = departments;
     }
 
 }
