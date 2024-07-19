@@ -9,6 +9,7 @@ public enum ReportTemplateFilter {
     FROM_DATE("From Date"),
     TO_DATE("To Date"),
     INSTITUTION("Institution"),
+
     DEPARTMENT("Department"),
     FROM_INSTITUTION("From Institution"),
     FROM_DEPARTMENT("From Department"),
