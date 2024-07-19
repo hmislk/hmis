@@ -324,6 +324,42 @@ public class ReportTemplateController implements Serializable {
         parameters.put("bir", true);
         parameters.put("br", true);
 
+        jpql += " group by bill.billTypeAtomic";
+
+        System.out.println("jpql = " + jpql);
+        System.out.println("parameters = " + parameters);
+
+        List<ReportTemplateRow> rs = (List<ReportTemplateRow>) ejbFacade.findLightsByJpql(jpql, parameters, TemporalType.DATE);
+
+        if (rs == null || rs.isEmpty()) {
+            System.out.println("No results found.");
+        } else {
+            System.out.println("Results found: " + rs.size());
+        }
+
+        long idCounter = 1;
+        for (ReportTemplateRow row : rs) {
+            row.setId(idCounter++);
+        }
+        reportTemplateRowBundle.setReportTemplateRows(rs);
+    }
+
+    private void handleBillFeeGroupedByToDepartmentAndCategory() {
+        String jpql;
+        Map<String, Object> parameters = new HashMap<>();
+        reportTemplateRowBundle = new ReportTemplateRowBundle();
+
+        jpql = "select new com.divudi.data.ReportTemplateRow("
+                + " bill.billTypeAtomic, sum(bf.feeValue)) "
+                + " from BillFee bf "
+                + " join bf.bill bill "
+                + " where bf.retired<>:bfr "
+                + " and bf.billItem.retired<>:bir "
+                + " and bill.retired<>:br ";
+        parameters.put("bfr", true);
+        parameters.put("bir", true);
+        parameters.put("br", true);
+
         if (current.getBillTypeAtomics() != null) {
             jpql += " and bill.billTypeAtomic in :btas ";
             parameters.put("btas", current.getBillTypeAtomics());

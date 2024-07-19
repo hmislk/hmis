@@ -39,6 +39,7 @@
             </p:commandButton>
         </div>
         <p:dataTable id="tbl" value="#{reportTemplateController.reportTemplateRowBundle.reportTemplateRows}" var="rtr" rowKey="#{rtr.id}">
+
             <p:column headerText="Category Name">
                 <h:outputText value="#{rtr.categoryName}" />
             </p:column>

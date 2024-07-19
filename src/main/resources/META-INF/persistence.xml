@@ -16,7 +16,6 @@
         <properties>
             <property name="eclipselink.logging.level.sql" value="SEVERE"/>
             <property name="eclipselink.logging.parameters" value="false"/>
-
         </properties>
     </persistence-unit>
 </persistence>
