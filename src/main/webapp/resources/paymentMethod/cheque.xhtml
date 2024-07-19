@@ -14,22 +14,22 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <div class="d-flex gap-2">
+        <div class="d-flex">
             <h:panelGroup rendered="#{cc.attrs.valueRequired}" class="" layout="block"  >
-                <p:inputText autocomplete="off"   value="#{cc.attrs.paymentMethodData.cheque.totalValue}" style="width: 10em;" id="txtVal" >
+                <p:inputText autocomplete="off"   value="#{cc.attrs.paymentMethodData.cheque.totalValue}" style="width: 10em;" class="mx-2"  id="txtVal" >
                     <p:ajax process="@this" ></p:ajax>
                 </p:inputText>
                 <p:watermark value="Value" for="txtVal" />
             </h:panelGroup>
 
             <div class="" >
-                <p:inputText autocomplete="off"  value="#{cc.attrs.paymentMethodData.cheque.no}" style="width: 10em;" id="chequNo" >
+                <p:inputText placeholder="Cheque No" autocomplete="off"  value="#{cc.attrs.paymentMethodData.cheque.no}" style="width: 10em;" class="mx-2" id="chequNo" >
                     <p:ajax process="@this" ></p:ajax>
                 </p:inputText>
             </div>
 
             <div class="" >
-                <p:selectOneMenu  value="#{cc.attrs.paymentMethodData.cheque.institution}" style="width: 15em;" >
+                <p:selectOneMenu  value="#{cc.attrs.paymentMethodData.cheque.institution}" style="width: 10em;" class="mx-2">
                     <f:selectItem itemLabel="Select Bank"/>
                     <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
                     <p:ajax process="@this" ></p:ajax>
@@ -37,16 +37,15 @@
             </div>
 
             <div class="" >
-                <p:calendar  value="#{cc.attrs.paymentMethodData.cheque.date}" pattern="#{sessionController.applicationPreference.longDateFormat}" id="ChequeDate" class=" w-50" inputStyleClass="w-100">                            
+                <p:calendar placeholder="Cheque Date" value="#{cc.attrs.paymentMethodData.cheque.date}" pattern="#{sessionController.applicationPreference.longDateFormat}" id="ChequeDate" class="mx-1 w-50" inputStyleClass="w-100">                            
                     <p:ajax process="@this" ></p:ajax>
                 </p:calendar>
             </div>
 
-            <p:inputText value="#{cc.attrs.paymentMethodData.cheque.comment}" placeholder="Enter Cheque Comments" ></p:inputText>
-            <p:watermark value="Date" for="ChequeDate"/>
+            <p:inputText value="#{cc.attrs.paymentMethodData.slip.comment}" placeholder="Enter Cheque Comments" ></p:inputText>
+            
 
-            <p:watermark value="Cheque No" for="chequNo"/>
-            <p:watermark value="Cheque Date" for="ChequeDate"/>
+        
 
         </div>
 

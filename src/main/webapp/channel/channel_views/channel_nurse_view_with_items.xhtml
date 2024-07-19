@@ -13,7 +13,7 @@
                     <p:panel >
                         <f:facet name="header">
                             <div class="d-flex justify-content-between">
-                                <p:outputLabel value="Nurse View" class="mt-2"/>
+                                <p:outputLabel value="Nurse View With Items" class="mt-2"/>
                                 <div class="d-flex gap-1">
                                     <p:commandButton 
                                         ajax="false" 
@@ -99,22 +99,41 @@
                                 <p:outputLabel value="#{bs.serialNo}" style="font-size: 12px;" />
                             </p:column>
 
-                            <p:column headerText="Patient Name" style="font-size: 12px; width: 70%; padding: 1px" >
+                            <p:column headerText="Patient Name" style="font-size: 12px; width: 30%; padding: 1px" >
                                 <p:outputLabel value="#{bs.bill.patient.person.nameWithTitle}" style="font-size: 12px;" />
                             </p:column>
-                            <p:column headerText="Booked At" style="font-size: 12px; width: 33%!important; padding: 1px" >
+<!--                            <p:column headerText="Booked At" style="font-size: 12px; width: 23%!important; padding: 1px" >
                                 <p:outputLabel value="#{bs.createdAt}" style="font-size: 12px;" >
                                     <f:convertDateTime pattern="dd MMM yyyy hh:mm a"/>
                                 </p:outputLabel>
 
-                            </p:column>
-                            <p:column headerText="Mobile Number" style="font-size: 12px; width: 28%!important; padding: 1px">
+                            </p:column>-->
+                            <p:column headerText="Mobile Number" style="font-size: 12px; width: 18%!important; padding: 1px">
                                 <p:outputLabel value="#{bs.bill.patient.person.phone}" style="font-size: 12px;" />
                             </p:column>
-                            <p:column headerText="Remarks" style="font-size: 12px; width: 20%!important; padding: 1px" >
+                            
+                            <p:column headerText="Items" style="font-size: 12px; width: 50%!important; padding: 1px">
+                                <ui:repeat value="#{bs.bill.billItems}" var="bi" varStatus="loop">
+                                    <p:outputLabel value="#{bi.item.name}" style="font-size: 12px;" rendered="#{not loop.first}" /><br/>
+                                </ui:repeat>
+                            </p:column>
+
+                            <p:column headerText="Value" style="font-size: 12px; width: 10%!important; padding: 1px">
+                                <ui:repeat value="#{bs.bill.billItems}" var="bi" varStatus="loop">
+                                    <p:outputLabel value="#{bi.netValue}" style="font-size: 12px;" rendered="#{not loop.first}" /><br/>
+                                </ui:repeat>
+                            </p:column>
+                            
+<!--                             <p:column headerText="Status" style="font-size: 12px; width: 18%!important; padding: 1px">
+                                    <p:outputLabel value="Cancelled" rendered="#{bs.bill.cancelled eq true}" style="color: red; font-size: 12px;"/>
+                                    <p:outputLabel value="Refunded" rendered="#{bs.bill.refunded eq true}" style="color: red; font-size: 12px;"/>
+                                    <p:outputLabel value="Booked" rendered="#{bs.bill.refunded eq false and bs.bill.cancelled eq false}" style="font-size: 12px;"/>
+                             </p:column>
+                            
+                            <p:column headerText="Remarks" style="font-size: 12px; width: 15%!important; padding: 1px" >
                                 <p:outputLabel rendered="#{bs.bill.balance ne 0.0 or bs.bill.paymentMethod eq 'OnCall'}" value="Not Paid" style="color: red;font-size: 12px;font-weight: bold" />
                                 <p:outputLabel rendered="#{bs.bill.balance eq 0.0 and bs.bill.paymentMethod ne 'OnCall' }" value="Paid" style="color: green;font-size: 12px;font-weight: bold"/>
-                            </p:column>
+                            </p:column>-->
 <!--                            <p:column headerText="Billed By" style="font-size: 12px;width: 15%!important;" >
                                 <p:outputLabel value="#{bs.bill.creater.name}" style="font-size: 11px;font-weight: bold" />
                             </p:column>

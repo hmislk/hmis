@@ -293,7 +293,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     private Double totalHospitalFee;
     private Double totalSaffFee;
     private boolean canChangeSpecialityAndDoctorInAddedBillItem;
-
+    private String localNumber;
     /**
      *
      * Navigation Methods
@@ -830,6 +830,15 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         }
         getCurrentlyWorkingStaff().add(bf.getStaff());
         selectedCurrentlyWorkingStaff = bf.getStaff();
+    }
+    
+    public void changeBillDoctorByReferral() {
+        if (referredBy == null) {
+            JsfUtil.addErrorMessage("No referring doctor");
+            return;
+        }
+        getCurrentlyWorkingStaff().add(referredBy);
+        selectedCurrentlyWorkingStaff = referredBy;
     }
 
     public String getStrTenderedValue() {
@@ -1993,6 +2002,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         newBatchBill.setCreatedAt(new Date());
         newBatchBill.setCreater(getSessionController().getLoggedUser());
         newBatchBill.setFromStaff(selectedCurrentlyWorkingStaff);
+       
 
         getBillFacade().create(newBatchBill);
 
@@ -2081,6 +2091,10 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         newBill.setBillDate(new Date());
         newBill.setBillTime(new Date());
         newBill.setPatient(patient);
+        
+        if (localNumber != null) {
+             newBill.setLocalNumber(localNumber);
+        }
 
 //        newBill.setMembershipScheme(membershipSchemeController.fetchPatientMembershipScheme(patient, getSessionController().getApplicationPreference().isMembershipExpires()));
         newBill.setPaymentScheme(getPaymentScheme());
@@ -4141,6 +4155,14 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
     public void setBillSettlingStarted(boolean billSettlingStarted) {
         this.billSettlingStarted = billSettlingStarted;
+    }
+
+    public String getLocalNumber() {
+        return localNumber;
+    }
+
+    public void setLocalNumber(String localNumber) {
+        this.localNumber = localNumber;
     }
 
 }

@@ -15,6 +15,7 @@ import com.divudi.bean.common.DoctorSpecialityController;
 import com.divudi.bean.common.ItemForItemController;
 import com.divudi.bean.common.PatientController;
 import com.divudi.bean.common.PriceMatrixController;
+import com.divudi.bean.common.SecurityController;
 import com.divudi.bean.common.SessionController;
 
 import com.divudi.data.ApplicationInstitution;
@@ -199,6 +200,10 @@ public class BookingController implements Serializable, ControllerWithPatient {
     FinancialTransactionController financialTransactionController;
     @Inject 
     BookingControllerViewScope bookingControllerViewScope;
+    @Inject
+    SecurityController securityController;
+    @Inject
+    private CommonController commonController;
     /** 
      * Properties
      */
@@ -496,6 +501,9 @@ public class BookingController implements Serializable, ControllerWithPatient {
             JsfUtil.addErrorMessage("No session selected");
             return;
         }
+        if(!selectedSessionInstance.isArrived()){
+            markAsArrived();
+        }
         selectedSessionInstance.setStarted(true);
         selectedSessionInstance.setStartedAt(new Date());
         selectedSessionInstance.setStartedBy(sessionController.getLoggedUser());
@@ -504,13 +512,19 @@ public class BookingController implements Serializable, ControllerWithPatient {
         if (sessionController.getDepartmentPreference().isSendSmsOnChannelDoctorArrival()) {
             sendSmsOnChannelDoctorArrival();
         }
+        boolean firstIncompleteFound = false;
+
         for (BillSession bs : billSessions) {
-            if (!bs.isCompleted()) {
+            if (configOptionApplicationController.getBooleanValueByKey("Sent Channelling Status Update Notification SMS on Channel Session Start", true)) {
+                sendChannellingStatusUpdateNotificationSms(bs);
+                System.out.println("bs = " + bs);
+            }
+            if (!firstIncompleteFound && !bs.isCompleted()) {
                 bs.setNextInLine(true);
                 billSessionFacade.edit(bs);
                 selectedSessionInstance.setNextInLineBillSession(bs);
                 sessionInstanceFacade.edit(selectedSessionInstance);
-                return;
+                firstIncompleteFound = true;
             }
         }
     }
@@ -554,6 +568,69 @@ public class BookingController implements Serializable, ControllerWithPatient {
         sessionInstanceController.save(selectedSessionInstance);
         JsfUtil.addSuccessMessage("Session Completed");
         sendSmsOnChannelMissingChannelBookings();
+    }
+    
+    public void sendChannellingStatusUpdateNotificationSms(BillSession methodBillSession) {
+        if (methodBillSession == null) {
+            JsfUtil.addErrorMessage("Nothing to send");
+            return;
+        }
+        if (methodBillSession.getSessionInstance() == null) {
+            JsfUtil.addErrorMessage("No Session");
+            return;
+        }
+        if (methodBillSession.getSessionInstance().getOriginatingSession() == null) {
+            JsfUtil.addErrorMessage("No Originating Session");
+            return;
+        }
+        if (methodBillSession.getBill() == null) {
+            JsfUtil.addErrorMessage("No Bill");
+            return;
+        }
+        if (methodBillSession.getBill().getPatient() == null) {
+            JsfUtil.addErrorMessage("No Bill");
+            return;
+        }
+
+        if (!methodBillSession.getBill().getPatient().getPerson().getSmsNumber().trim().equals("")) {
+            Sms e = new Sms();
+            e.setCreatedAt(new Date());
+            e.setCreater(sessionController.getLoggedUser());
+            e.setBill(methodBillSession.getBill());
+            e.setCreatedAt(new Date());
+            e.setSmsType(MessageType.ChannelStatusUpdate);
+            e.setCreater(sessionController.getLoggedUser());
+            e.setReceipientNumber(methodBillSession.getBill().getPatient().getPerson().getSmsNumber());
+            e.setSendingMessage(smsBody(methodBillSession));
+            e.setDepartment(getSessionController().getLoggedUser().getDepartment());
+            e.setInstitution(getSessionController().getLoggedUser().getInstitution());
+            e.setPending(false);
+            getSmsFacade().create(e);
+
+            Boolean sent = smsManager.sendSms(e);
+            e.setSentSuccessfully(sent);
+            getSmsFacade().edit(e);
+
+        }
+
+        JsfUtil.addSuccessMessage("SMS Sent");
+    }
+    
+    public String smsBody(BillSession r) {
+        String securityKey = sessionController.getApplicationPreference().getEncrptionKey();
+        if (securityKey == null || securityKey.trim().equals("")) {
+            sessionController.getApplicationPreference().setEncrptionKey(securityController.generateRandomKey(10));
+            sessionController.savePreferences(sessionController.getApplicationPreference());
+        }
+        Calendar c = Calendar.getInstance();
+        c.add(Calendar.DATE, 2);
+        String temId = securityController.encryptAlphanumeric(r.getId().toString(), securityKey);
+        String url = commonController.getBaseUrl() + "faces/requests/cbss.xhtml?id=" + temId;
+        String b = "Your session of "
+                + r.getSessionInstance().getOriginatingSession().getName()
+                + " Started. "
+                + url;
+        return b;
     }
 
     public String navigateToAddBooking() {
@@ -987,11 +1064,46 @@ public class BookingController implements Serializable, ControllerWithPatient {
         Collections.sort(sortedSessionInstances, new Comparator<SessionInstance>() {
             @Override
             public int compare(SessionInstance s1, SessionInstance s2) {
-                if (s1.isStarted() && !s2.isStarted()) {
-                    return -1;
-                } else if (!s1.isStarted() && s2.isStarted()) {
-                    return 1;
+                // Check if s1 is cancelled or completed
+                boolean s1CancelledOrCompleted = s1.isCancelled() || s1.isCompleted();
+                // Check if s2 is cancelled or completed
+                boolean s2CancelledOrCompleted = s2.isCancelled() || s2.isCompleted();
+
+                // Handle cancelled or completed sessions going to the bottom
+                if (s1CancelledOrCompleted && !s2CancelledOrCompleted) {
+                    return 1; // s1 is cancelled/completed, s2 is not, so s1 goes after s2
+                } else if (!s1CancelledOrCompleted && s2CancelledOrCompleted) {
+                    return -1; // s2 is cancelled/completed, s1 is not, so s2 goes after s1
+                } else if (s1CancelledOrCompleted && s2CancelledOrCompleted) {
+                    // Both s1 and s2 are cancelled/completed, compare them by startingTime if available
+                    if (s1.getStartingTime() != null && s2.getStartingTime() != null) {
+                        return s1.getStartingTime().compareTo(s2.getStartingTime());
+                    } else if (s1.getStartingTime() != null) {
+                        return -1; // s1 has startingTime, s2 does not
+                    } else if (s2.getStartingTime() != null) {
+                        return 1; // s2 has startingTime, s1 does not
+                    } else {
+                        return 0; // Both are cancelled/completed and startingTime is not available or equal
+                    }
                 }
+
+                // Compare by start status and startingTime for non-cancelled and non-completed sessions
+                if (s1.isStarted() && !s2.isStarted()) {
+                    return -1; // s1 started before s2
+                } else if (!s1.isStarted() && s2.isStarted()) {
+                    return 1; // s1 not started after s2
+                } else if (s1.isStarted() && s2.isStarted()) {
+                    // Both sessions are started, compare by startingTime
+                    if (s1.getStartingTime() != null && s2.getStartingTime() != null) {
+                        return s1.getStartingTime().compareTo(s2.getStartingTime());
+                    } else if (s1.getStartingTime() != null) {
+                        return -1; // s1 has startingTime, s2 does not
+                    } else if (s2.getStartingTime() != null) {
+                        return 1; // s2 has startingTime, s1 does not
+                    }
+                }
+
+                // Default case: both sessions have the same start status and startingTime or neither have startingTime
                 return 0;
             }
         });
