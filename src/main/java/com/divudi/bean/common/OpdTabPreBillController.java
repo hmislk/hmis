@@ -952,7 +952,7 @@ public class OpdTabPreBillController implements Serializable, ControllerWithPati
         tmp.setPaymentScheme(paymentScheme);
         tmp.setPaymentMethod(paymentMethod);
         tmp.setCreatedAt(new Date());
-        tmp.setCreater(getSessionController().getLoggedUser());
+        tmp.setCreater(getToken().getCreatedBy());
         //Institution ID (INS ID)
         String insId = getBillNumberGenerator().institutionBillNumberGenerator(getSessionController().getInstitution(), getSessionController().getDepartment(), tmp.getBillType(), tmp.getBillClassType(), BillNumberSuffix.NONE);
         tmp.setInsId(insId);

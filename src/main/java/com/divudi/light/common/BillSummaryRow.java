@@ -15,6 +15,12 @@ public class BillSummaryRow {
     private Person person;
     private Double paidValue;
 
+    public BillSummaryRow(PaymentMethod paymentMethod, double paidValue, long billCount) {
+        this.paymentMethod = paymentMethod;
+        this.paidValue = paidValue;
+        this.billCount = billCount;
+    }
+
     public BillSummaryRow(BillTypeAtomic billTypeAtomic, Double grossTotal, Double discount, Double netTotal, Long billCount, PaymentMethod paymentMethod) {
         this.billTypeAtomic = billTypeAtomic;
         this.grossTotal = grossTotal;
@@ -23,7 +29,7 @@ public class BillSummaryRow {
         this.billCount = billCount;
         this.paymentMethod = paymentMethod;
     }
-    
+
     public BillSummaryRow(BillTypeAtomic billTypeAtomic, Double paidValue, Long billCount, PaymentMethod paymentMethod) {
         this.billTypeAtomic = billTypeAtomic;
         this.paidValue = paidValue;
@@ -58,15 +64,15 @@ public class BillSummaryRow {
         this.paymentMethod = paymentMethod;
         this.person = person;
     }
-    
+
     public BillSummaryRow(Double grossTotal, Double discount, Double netTotal, Long billCount, PaymentMethod paymentMethod) {
         this.grossTotal = grossTotal;
         this.discount = discount;
         this.netTotal = netTotal;
         this.billCount = billCount;
         this.paymentMethod = paymentMethod;
-     }
-    
+    }
+
     public BillTypeAtomic getBillTypeAtomic() {
         return billTypeAtomic;
     }
