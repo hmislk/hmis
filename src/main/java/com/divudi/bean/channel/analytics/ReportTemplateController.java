@@ -10,9 +10,14 @@ package com.divudi.bean.channel.analytics;
 
 import com.divudi.bean.common.*;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.BillTypeAtomic;
+import com.divudi.data.analytics.ReportTemplateColumn;
 import com.divudi.data.analytics.ReportTemplateType;
+import com.divudi.entity.Department;
 import com.divudi.entity.ReportTemplate;
 import com.divudi.entity.Institution;
+import com.divudi.entity.Staff;
+import com.divudi.entity.WebUser;
 import com.divudi.facade.ReportTemplateFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -21,6 +26,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -46,6 +53,16 @@ public class ReportTemplateController implements Serializable {
     private ReportTemplateFacade ejbFacade;
     private ReportTemplate current;
     private List<ReportTemplate> items = null;
+    
+    
+    private Date date;
+    private Date fromDate;
+    private Date toDate;
+    private Institution institution;
+    private Department department;
+    private WebUser user;
+    private Staff staff;
+    
 
     public void save(ReportTemplate reportTemplate) {
         if (reportTemplate == null) {
@@ -61,6 +78,10 @@ public class ReportTemplateController implements Serializable {
             JsfUtil.addSuccessMessage("Saved Successfully");
         }
     }
+
+    
+    
+    
 
     public ReportTemplate findReportTemplateByName(String name) {
         if (name == null) {
@@ -102,6 +123,10 @@ public class ReportTemplateController implements Serializable {
 
     public void recreateModel() {
         items = null;
+    }
+
+    public void processReport() {
+
     }
 
     public void saveSelected() {
@@ -207,6 +232,14 @@ public class ReportTemplateController implements Serializable {
         return "/dataAdmin/report_template";
     }
 
+    public String navigateToEditGenerateReport() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Nothing Selected");
+            return null;
+        }
+        return "/dataAdmin/report";
+    }
+
     public List<ReportTemplate> getAllItems() {
         List<ReportTemplate> allItems;
         String j;
@@ -220,6 +253,62 @@ public class ReportTemplateController implements Serializable {
 
     public List<ReportTemplate> getItems() {
         return items;
+    }
+
+    public Date getDate() {
+        return date;
+    }
+
+    public void setDate(Date date) {
+        this.date = date;
+    }
+
+    public Date getFromDate() {
+        return fromDate;
+    }
+
+    public void setFromDate(Date fromDate) {
+        this.fromDate = fromDate;
+    }
+
+    public Date getToDate() {
+        return toDate;
+    }
+
+    public void setToDate(Date toDate) {
+        this.toDate = toDate;
+    }
+
+    public Institution getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
+    }
+
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
+    }
+
+    public WebUser getUser() {
+        return user;
+    }
+
+    public void setUser(WebUser user) {
+        this.user = user;
+    }
+
+    public Staff getStaff() {
+        return staff;
+    }
+
+    public void setStaff(Staff staff) {
+        this.staff = staff;
     }
 
     /**

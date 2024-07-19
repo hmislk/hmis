@@ -4,6 +4,7 @@
   <persistence-unit name="hmisPU" transaction-type="JTA">
     <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
     <jta-data-source>jdbc/demohos</jta-data-source>
+
     <exclude-unlisted-classes>false</exclude-unlisted-classes>
     <properties>
       <property name="eclipselink.logging.level.sql" value="SEVERE"/>
