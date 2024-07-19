@@ -66,21 +66,23 @@
                 </h:form>
 
                 <h:form >
-
-                    <h:panelGroup id="gpBillPreview">
-
-                        <p:commandButton value="Print" styleClass="noPrintButton" ajax="false" action="#" >
+                    <p:commandButton value="Print" styleClass="noPrintButton" ajax="false" action="#" >
                             <p:printer target="gpBillPreview" ></p:printer>
                         </p:commandButton>
 
-                        <h:panelGroup rendered="#{sessionController.loggedPreference.opdBillPaperType eq 'FiveFivePaper'}">
+                    <h:panelGroup id="gpBillPreview">
+                        <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'FiveFivePrintedPaper'}">
+                            <bi:staff_payment_five_five_paper_without_headings controller="#{channelSearchController}" bill="#{channelSearchController.bill}" duplicate="true"/>
+                        </h:panelGroup>
+          
+                        <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'FiveFivePaper'}">
                             <h:panelGroup rendered="#{!sessionController.loggedPreference.pharmacyBillPrabodha}">
                                 <bi:staffBill_1  controller="#{channelSearchController}" bill="#{channelSearchController.bill}" dup="true"/>
                             </h:panelGroup>
                         </h:panelGroup>
 
 
-                        <h:panelGroup rendered="#{sessionController.loggedPreference.opdBillPaperType eq 'PosPaper'}">
+                        <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'PosPaper'}">
                             <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha}" > 
                                 <bi:paymentReciptPosDouble controller="#{channelSearchController}" bill="#{channelSearchController.bill}" dup="true"/>
                             </h:panelGroup>

@@ -69,9 +69,6 @@
                                             layout="block" 
                                             id="cheque" 
                                             rendered="#{financialTransactionController.currentPayment.paymentMethod eq 'Cheque'}" >
-
-
-
                                             <div class="d-flex mt-1">
                                                 <p:inputText autocomplete="off"   value="#{financialTransactionController.currentPayment.paidValue}"  id="txtVal">
                                                     <p:ajax process="@this" ></p:ajax>

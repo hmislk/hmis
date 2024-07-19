@@ -109,7 +109,8 @@
                                     </p:column>
 
                                     <p:column headerText="Name" >
-                                        <h:outputText value="#{bs.bill.patient.person.nameWithTitle}" />
+                                        <h:outputText value="#{bs.bill.patient.person.nameWithTitle}" /> <br/>
+                                        <h:outputText style="font-size: 0.9em" value="(#{bs.bill.patient.person.phone})" />
                                     </p:column>
 
                                     <p:column rendered="true" headerText="Status">
@@ -513,7 +514,29 @@
                                                 <p:outputLabel value="#{bookingControllerViewScope.selectedSessionInstance.editedAt}">
                                                     <f:convertDateTime pattern="yyyy-MM-dd hh:mm:ss a" />
                                                 </p:outputLabel>
-                                            </h:panelGrid>
+                                                
+                                                <p:outputLabel value="Canceled By"></p:outputLabel>
+                                                <p:outputLabel value="#{bookingControllerViewScope.selectedSessionInstance.cancelledBy.webUserPerson.name}"></p:outputLabel>
+                                                <p:outputLabel value="Last Edited At"></p:outputLabel>
+                                                <p:outputLabel value="#{bookingControllerViewScope.selectedSessionInstance.cancelledAt}">
+                                                    <f:convertDateTime pattern="yyyy-MM-dd hh:mm:ss a" />
+                                                </p:outputLabel>
+                                           
+                                            
+                                            <p:outputLabel value="Started By"></p:outputLabel>
+                                            <p:outputLabel value="#{bookingControllerViewScope.selectedSessionInstance.startedBy.webUserPerson.name}"></p:outputLabel>
+                                                <p:outputLabel value="Last Edited At"></p:outputLabel>
+                                                <p:outputLabel value="#{bookingControllerViewScope.selectedSessionInstance.startedAt}">
+                                                    <f:convertDateTime pattern="yyyy-MM-dd hh:mm:ss a" />
+                                                </p:outputLabel>
+                                                
+                                                <p:outputLabel value="Completed By"></p:outputLabel>
+                                                <p:outputLabel value="#{bookingControllerViewScope.selectedSessionInstance.completedBy.webUserPerson.name}"></p:outputLabel>
+                                                <p:outputLabel value="Last Edited At"></p:outputLabel>
+                                                <p:outputLabel value="#{bookingControllerViewScope.selectedSessionInstance.completedAt}">
+                                                    <f:convertDateTime pattern="yyyy-MM-dd hh:mm:ss a" />
+                                                </p:outputLabel>
+                                                 </h:panelGrid>
                                         </p:tab>
 
                                     </p:tabView>

@@ -19,8 +19,16 @@
 
             <p:panel >
                 <f:facet name="header">
-                    <div class="d-flex justify-content-between">
-                        <h:outputText value="Manage Booking" class="mt-2"></h:outputText>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="d-flex">
+                            <div>
+                                <h:outputText value="Manage Booking"></h:outputText> |
+                            </div>
+                            <h:outputLabel class="mx-1" value="#{bookingControllerViewScope.selectedSessionInstance.staff.person.nameWithTitle}" ></h:outputLabel>
+                                (<h:outputLabel value="#{bookingControllerViewScope.selectedSessionInstance.staff.speciality.name}" ></h:outputLabel>) -<br />
+                                <h:outputLabel class="mx-1" value="#{bookingControllerViewScope.selectedSessionInstance.originatingSession.name}" ></h:outputLabel>
+                        </div>
+                        
                         <div class="d-flex gap-2">
                             <p:commandButton 
                                 ajax="false" 
@@ -28,6 +36,13 @@
                                 value="Back to Bookings"
                                 immediate="true"
                                 action="#{bookingControllerViewScope.navigateBackToBookingsFromBillSession()}"
+                                icon="fa-solid fa-arrow-left" />
+                            <p:commandButton 
+                                ajax="false" 
+                                class="mx-1 ui-button-secondary"
+                                value="Back"
+                                immediate="true"
+                                action="#{bookingControllerViewScope.navigateToManageSessionInstance(bookingControllerViewScope.selectedSessionInstance)}"
                                 icon="fa-solid fa-arrow-left" />
                         </div>
                     </div>
@@ -207,14 +222,14 @@
                                             <h:panelGroup id="groupChannelBillReprintAsDuplicate">
                                                 <ui:repeat value="#{sessionController.departmentPreference.channellingBillCopiesList}" var="copy">
                                                     <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'PosPaper'}" >
-                                                        <ez:bmsChannelBill  bill="#{bookingControllerViewScope.selectedBillSession.billItem.bill}" dup="true" />
+                                                        <ez:bmsChannelBill  bill="#{bookingControllerViewScope.selectedBillSession.bill}" dup="true" />
                                                     </h:panelGroup>
                                                     <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'FiveFivePaper'}" >
-                                                        <ez:bms5x5ChannelBill bill="#{bookingControllerViewScope.selectedBillSession.billItem.bill}" duplicate="true" />
+                                                        <ez:bms5x5ChannelBill bill="#{bookingControllerViewScope.selectedBillSession.bill}" duplicate="true" />
                     <!--                                <bg:fiveFiveCCBill_CC bill="#{bookingControllerViewScope.printingBill}"/>  -->
                                                     </h:panelGroup>
                                                     <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'FiveFivePrintedPaper'}" >
-                                                        <ez:bms5x5WIthoutHeaderChannelBill bill="#{bookingControllerViewScope.selectedBillSession.billItem.bill}" duplicate="true"/>
+                                                        <ez:bms5x5WIthoutHeaderChannelBill bill="#{bookingControllerViewScope.selectedBillSession.bill}" duplicate="true"/>
                     <!--                                <bg:fiveFiveCCBill_CC bill="#{bookingControllerViewScope.printingBill}"/>  -->
                                                     </h:panelGroup>
                                                 </ui:repeat>
@@ -353,7 +368,8 @@
                                                             itemValue="#{pm}"/>
                                                         <p:ajax process="@this" 
                                                                 update="paymentDetails"
-                                                                event="change"/>
+                                                                event="change"
+                                                                listener="#{bookingControllerViewScope.listnerForPaymentMethodChangeOnCreditSettle()}"/>
                                                     </p:selectOneMenu>
                                                 </div>
 
@@ -601,6 +617,82 @@
 
                                                 </h:panelGroup>
                                             </div>
+                                        </p:panel>
+                                        <p:panel class="my-1" id="pnlTotals">
+                                            <f:facet name="header">
+                                                <p:row>
+                                                    <p:column  colspan="2" >
+                                                        <h:outputText styleClass="fa-solid fa-money-bill-wave"/>
+                                                        <h:outputText class="mx-4" value="Payment Details"/>
+                                                    </p:column>
+                                                </p:row>
+                                            </f:facet>
+                                           
+
+                                            <h:panelGroup style="display: flex; flex-direction: column; align-items: start;" id="totalsPanel">
+
+                                                <!-- Total -->
+                                                <h:panelGroup style="display: flex; justify-content: space-between; width: 100%; font-weight: bolder;">
+                                                    <h:outputText value="Total:" />
+                                                    <h:outputText value="#{bookingControllerViewScope.feeTotalForSelectedBill}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </h:panelGroup>
+
+                                                <!-- Discount -->
+                                                <h:panelGroup style="display: flex; justify-content: space-between; width: 100%;">
+                                                    <h:outputText value="Discount:" />
+                                                    <h:outputText value="#{bookingControllerViewScope.feeDiscountForSelectedBill}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </h:panelGroup>
+
+                                                <!-- Net Total -->
+                                                <h:panelGroup style="display: flex; justify-content: space-between; width: 100%;">
+                                                    <h:outputText value="Net Total:" />
+                                                    <h:outputText value="#{bookingControllerViewScope.feeNetTotalForSelectedBill}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </h:panelGroup>
+                                            </h:panelGroup>
+
+                                            <h:panelGrid id="gdManageBookings" class="w-100 m-2" columns="2"  >
+                                                <p:outputLabel value="Tenderd Amount" />
+                                                <h:panelGroup class="w-100 my-2" style="font-weight: bolder" >
+                                                    <p:inputText id="paid" value="#{bookingControllerViewScope.strTenderedValue}">
+                                                        <p:ajax event="keyup" process=" paid" update="@this"/>
+                                                    </p:inputText>
+                                                </h:panelGroup>
+
+                                                <p:outputLabel value="Balance" />
+                                                <h:panelGroup id="balance" class="w-100 my-2" style="font-weight: bolder" >
+                                                    <p:outputLabel value="#{-bookingControllerViewScope.cashBalance}"/>
+                                                </h:panelGroup>
+
+                                                <h:outputLabel value="Foriegner"/>
+                                                <p:selectBooleanCheckbox class="w-75" id="f" value="#{bookingControllerViewScope.foriegn}">
+                                                    <f:ajax event="change" execute="@this" render="totalsPanel panelBookingDetails"/>
+                                                </p:selectBooleanCheckbox>
+
+                                                <p:outputLabel value="Discount Scheme"/>
+                                                <p:selectOneMenu 
+                                                    class="w-75" 
+                                                    autoWidth="false" 
+                                                    id="cmbPs2" 
+                                                    value="#{bookingControllerViewScope.paymentScheme}">
+                                                    <f:selectItem itemLabel="Select Discount Scheme"/>
+                                                    <f:selectItems 
+                                                        value="#{paymentSchemeController.paymentSchemesForChannel}"
+                                                        var="paysch" 
+                                                        itemLabel="#{paysch.name}" 
+                                                        itemValue="#{paysch}"  />
+                                                    <p:ajax 
+                                                        process="@this"
+                                                        update="gdManageBookings :#{p:resolveFirstComponentWithId('totalsPanel',view).clientId} paymentDetails lstItems"
+                                                        event="change"
+                                                        listener="#{bookingControllerViewScope.calculateSelectedBillSessionTotal()}"/>
+                                                </p:selectOneMenu>
+                                            </h:panelGrid>
                                         </p:panel>
 
                                         <p:panel header="Additional Items" >
@@ -1038,6 +1130,7 @@
                                     <p:commandButton 
                                         value="To Print as Original"
                                         ajax="false"
+                                        immediate="true"
                                         class="ui-button-danger m-2"
                                         disabled="#{!webUserController.hasPrivilege('ChannellingReprintOriginalBill')}"
                                         action="#{bookingControllerViewScope.toReprintAsOriginal()}"
@@ -1046,6 +1139,7 @@
                                     <p:commandButton
                                         value="To Print Online Booking"
                                         ajax="false"
+                                        immediate="true"
                                         class="ui-button-warning m-2"
                                         action="#{bookingControllerViewScope.toPrintOnlineBill()}"
                                         rendered="#{bookingControllerViewScope.selectedBillSession.bill.paymentMethod eq 'OnlineSettlement' and !bookingControllerViewScope.selectedBillSession.bill.printed}"
@@ -1360,7 +1454,7 @@
                                 <p:panel header="Current Patient for Booking" >
                                     <ezcommon:patient patient="#{bookingControllerViewScope.selectedBillSession.bill.patient}" ></ezcommon:patient>
                                 </p:panel>
-                                <ezcommon:patient_details_view_scope controller="#{bookingControllerViewScope}" ></ezcommon:patient_details_view_scope>
+                                <ezcommon:patient_details_view_scope_1 controller="#{bookingControllerViewScope}" ></ezcommon:patient_details_view_scope_1>
                             </p:panelGrid>
                         </p:tab>
 
