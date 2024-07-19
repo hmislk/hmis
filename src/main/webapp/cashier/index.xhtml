@@ -9,8 +9,8 @@
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form>
-                    <div class="row" >
-                        <div class="col-2">
+                <div class="row" >
+                    <div class="col-2">
                             <p:panel header="Financial Transaction Manager" rendered="true">
                                 <div class="d-grid gap-2">
                                     <p:commandButton 
@@ -26,7 +26,7 @@
                                         ajax="false" 
                                         action="#{financialTransactionController.navigateToCreateShiftEndSummaryBill()}" >
                                     </p:commandButton>
-                                    
+
                                     <p:commandButton 
                                         value="Shift End Funds By Bills (Temporarily)"
                                         icon=""
@@ -77,8 +77,8 @@
                                         ajax="false" 
                                         action="#{financialTransactionController.navigateToCashierSummaryBreakdown()}" >
                                     </p:commandButton>
-                                    
-                                     <p:commandButton 
+
+                                    <p:commandButton 
                                         value="Cashier Bill List"
                                         icon=""
                                         ajax="false" 
@@ -87,13 +87,13 @@
 
                                 </div>
                             </p:panel>
-
-                        </div>
-                        <div class="col-10" >
-                            <ui:insert name="subcontent" >
-                            </ui:insert>
-                        </div>
+                        
                     </div>
+                    <div class="col-10" >
+                        <ui:insert name="subcontent" >
+                        </ui:insert>
+                    </div>
+                </div>
                 </h:form>
             </ui:define>
         </ui:composition>

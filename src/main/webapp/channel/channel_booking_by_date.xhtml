@@ -54,11 +54,11 @@
 
                                         </div>
                                         <div class="d-flex align-items-center w-100">
-                                            <p:commandButton value="Today" action="#{bookingControllerViewScope.addToDayToToDate()}" ajax="false" class="mx-1 ui-button-info"></p:commandButton>
-                                            <p:commandButton value="+1" action="#{bookingControllerViewScope.addSingleDateToToDate()}" ajax="false" class="mx-1 ui-button-info"></p:commandButton>
-                                            <p:commandButton value="+2" action="#{bookingControllerViewScope.addTwoDays()}" ajax="false" class="mx-1 ui-button-info"></p:commandButton>
-                                            <p:commandButton value="+7" action="#{bookingControllerViewScope.addSevenDays()}" ajax="false" class="mx-1 ui-button-info"></p:commandButton>
-                                            <p:commandButton value="+1 Month" action="#{bookingControllerViewScope.addMonth()}" ajax="false" class="mx-1 ui-button-info"></p:commandButton>
+                                            <p:commandButton value="Today" action="#{bookingControllerViewScope.addToDayToToDate()}" ajax="false" class="mx-1 ui-button-info" ></p:commandButton>
+                                            <p:commandButton value="+1" action="#{bookingControllerViewScope.addSingleDateToToDate()}" ajax="false" class="mx-1 ui-button-info" ></p:commandButton>
+                                            <p:commandButton value="+2" action="#{bookingControllerViewScope.addTwoDays()}" ajax="false" class="mx-1 ui-button-info" ></p:commandButton>
+                                            <p:commandButton value="+7" action="#{bookingControllerViewScope.addSevenDays()}" ajax="false" class="mx-1 ui-button-info" ></p:commandButton>
+                                            <p:commandButton value="+1 Month" action="#{bookingControllerViewScope.addMonth()}" ajax="false" class="mx-1 ui-button-info" ></p:commandButton>
                                         </div>
                                     </div>
 
@@ -66,7 +66,7 @@
                                         <div class="d-flex align-items-center">
                                             <p:commandButton 
                                                 ajax="false" 
-                                                title="OPD Billing" 
+                                                title="OPD Billing"
                                                 icon="fa fa-fw fa-notes-medical" 
                                                 styleClass="ui-button-warning mx-1" 
                                                 action="#{opdBillController.navigateToNewOpdBill()}"
@@ -75,7 +75,7 @@
                                             <p:commandButton 
                                                 ajax="false" 
                                                 title="Completed" 
-                                                icon="fa fa-check" 
+                                                icon="fa fa-check"
                                                 styleClass="ui-button-secondary mx-1" 
                                                 action="#{bookingControllerViewScope.listCompletedSesionInstances()}" />
 
@@ -83,7 +83,7 @@
                                             <p:commandButton 
                                                 ajax="false" 
                                                 title="Ongoing"
-                                                icon="fa fa-sync-alt" 
+                                                icon="fa fa-sync-alt"
                                                 styleClass="ui-button-success mx-1" 
                                                 action="#{bookingControllerViewScope.listOngoingSesionInstances()}" />
 
@@ -91,7 +91,7 @@
                                             <p:commandButton 
                                                 ajax="false" 
                                                 title="Pending"
-                                                icon="fa fa-hourglass-start" 
+                                                icon="fa fa-hourglass-start"
                                                 styleClass="ui-button-primary mx-1" 
                                                 action="#{bookingControllerViewScope.listPendingSesionInstances()}" />
 
@@ -99,7 +99,7 @@
                                             <p:commandButton 
                                                 title="Cancelled"
                                                 ajax="false" 
-                                                icon="fa fa-times-circle" 
+                                                icon="fa fa-times-circle"
                                                 styleClass="ui-button-danger mx-1" 
                                                 action="#{bookingControllerViewScope.listCancelledSesionInstances()}" />
 
@@ -162,7 +162,7 @@
                                                             <h:outputText class="mx-2" value="#{s.endingTime}">
                                                                 <f:convertDateTime pattern="hh:mm a"/>
                                                             </h:outputText>
-
+                                                            
                                                             <!-- Conditional message for delayed start time -->
                                                             <h:panelGroup rendered="#{s.startingTime gt s.originatingSession.startingTime}">
                                                                 <br/>
@@ -216,14 +216,14 @@
                                                                 <p:badge value="0" size="large" styleClass="mr-2" rendered="#{0 >= s.maxNo - s.bookedPatientCount}" severity="danger"></p:badge>
                                                             </h:panelGroup>
                                                             <h:panelGroup rendered="#{s.cancelPatientCount ne null}" >
-                                                                <p:badge value="#{s.maxNo - (s.bookedPatientCount - s.cancelPatientCount)}" size="large" styleClass="mr-2" rendered="#{s.maxNo - (s.bookedPatientCount - s.cancelPatientCount) > 3}"></p:badge>
-                                                                <p:badge value="#{s.maxNo - (s.bookedPatientCount - s.cancelPatientCount)}" size="large" styleClass="mr-2" rendered="#{3 >= (s.maxNo - (s.bookedPatientCount - s.cancelPatientCount)) and (s.maxNo - (s.bookedPatientCount - s.cancelPatientCount)) > 0}" severity="warning"></p:badge>
-                                                                <p:badge value="0" size="large" styleClass="mr-2" rendered="#{0 >= s.maxNo - (s.bookedPatientCount - s.cancelPatientCount)}" severity="danger"></p:badge>
+                                                                <p:badge value="#{s.maxNo - ((s.bookedPatientCount + bookingControllerViewScope.totalReservedNumberCount(s))- s.cancelPatientCount)}" size="large" styleClass="mr-2" rendered="#{s.maxNo - ((s.bookedPatientCount + bookingControllerViewScope.totalReservedNumberCount(s)) - s.cancelPatientCount) > 3}"></p:badge>
+                                                                <p:badge value="#{s.maxNo - ((s.bookedPatientCount + bookingControllerViewScope.totalReservedNumberCount(s)) - s.cancelPatientCount)}" size="large" styleClass="mr-2" rendered="#{3 >= (s.maxNo - ((s.bookedPatientCount + bookingControllerViewScope.totalReservedNumberCount(s)) - s.cancelPatientCount)) and (s.maxNo - ((s.bookedPatientCount + bookingControllerViewScope.totalReservedNumberCount(s)) - s.cancelPatientCount)) > 0}" severity="warning"></p:badge>
+                                                                <p:badge value="0" size="large" styleClass="mr-2" rendered="#{0 >= s.maxNo - ((s.bookedPatientCount + bookingControllerViewScope.totalReservedNumberCount(s)) - s.cancelPatientCount)}" severity="danger"></p:badge>
                                                             </h:panelGroup>                                  
                                                         </div>
                                                         <div class="text-center">
                                                             <h:outputLabel style="font-weight: bolder" value="N"/><br/>
-                                                            <p:badge value="#{s.bookedPatientCount + 1}" size="large" styleClass="mr-2"></p:badge>
+                                                            <p:badge value="#{(s.bookedPatientCount + bookingControllerViewScope.totalReservedNumberCount(s)) + 1}" size="large" styleClass="mr-2"></p:badge>
                                                         </div>
                                                     </div>
 
