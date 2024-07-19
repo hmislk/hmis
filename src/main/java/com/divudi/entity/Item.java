@@ -86,7 +86,6 @@ public class Item implements Serializable, Comparable<Item> {
     private boolean hasReportFormat;
     private int numberOfDaysToMarkAsShortExpiary;
     
-    private boolean canSechduleForOtherDays;
 
     @ManyToOne
     Category category;
