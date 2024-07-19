@@ -7991,6 +7991,80 @@ public class SearchController implements Serializable {
             totalBillCount += bss.getBillCount();
         }
     }
+    
+    
+    public void processAllFinancialTransactionalSummarybySingleUserByIdsAdmin() {
+        if (startBillId == null && endBillId == null) {
+            JsfUtil.addErrorMessage("Enter at leat on bill number");
+            return;
+        }
+        if (webUser == null) {
+            webUser = sessionController.getLoggedUser();
+        }
+        billSummaryRows = null;
+        grossTotal = 0.0;
+        discount = 0.0;
+        netTotal = 0.0;
+        totalBillCount = 0.0;
+        String jpql;
+        Map params = new HashMap();
+        List<BillTypeAtomic> billTypesToFilter = new ArrayList<>();
+        billTypesToFilter.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_IN));
+        billTypesToFilter.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_OUT));
+        billTypesToFilter.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CREDIT_SETTLEMENT));
+        billTypesToFilter.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CREDIT_SETTLEMENT_REVERSE));
+
+        jpql = "select new com.divudi.light.common.BillSummaryRow("
+                + "b.billTypeAtomic, "
+                + "sum(b.total), "
+                + "sum(b.discount), "
+                + "sum(b.netTotal), "
+                + "count(b),"
+                + "b.paymentMethod "
+                + ") "
+                + " from Bill b "
+                + " where b.retired=:ret "
+                + " and b.creater=:wu "
+                + " and b.billTypeAtomic in :abts ";
+
+        if (startBillId != null) {
+            jpql += " and b.id > :sid ";
+            params.put("sid", startBillId);
+        }
+        if (endBillId != null) {
+            jpql += " and b.id < :eid ";
+            params.put("eid", endBillId);
+        }
+
+        if (paymentMethod != null) {
+            jpql += " and b.paymentMethod=:pm ";
+            params.put("pm", paymentMethod);
+        }
+        if (paymentMethods != null) {
+            jpql += " and b.paymentMethod in :pms ";
+            params.put("pms", paymentMethods);
+        }
+        jpql += " group by b.paymentMethod, b.billTypeAtomic "
+                + " order by b.creater.webUserPerson";
+
+        params.put("wu", webUser);
+        params.put("ret", false);
+        params.put("abts", billTypesToFilter);
+
+        System.out.println("jpql = " + jpql);
+        System.out.println("params = " + params);
+
+        billSummaryRows = getBillFacade().findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+
+        System.out.println("billSummaryRows = " + billSummaryRows);
+
+        for (BillSummaryRow bss : billSummaryRows) {
+            grossTotal += bss.getGrossTotal();
+            discount += bss.getDiscount();
+            netTotal += bss.getNetTotal();
+            totalBillCount += bss.getBillCount();
+        }
+    }
 
     public void processAllFinancialTransactionalSummarybyDepartment() {
         billSummaryRows = null;
