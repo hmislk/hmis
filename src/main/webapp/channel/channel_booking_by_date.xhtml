@@ -62,6 +62,7 @@
                                             <p:commandButton value="+2" action="#{bookingControllerViewScope.addTwoDaysNew()}" ajax="false" class="mx-1 ui-button-info"></p:commandButton>
                                             <p:commandButton value="+7" action="#{bookingControllerViewScope.addSevenDaysNew()}" ajax="false" class="mx-1 ui-button-info"></p:commandButton>
                                             <p:commandButton value="+1 Month" action="#{bookingControllerViewScope.addMonthNew()}" ajax="false" class="mx-1 ui-button-info"></p:commandButton>
+
                                         </div>
                                     </div>
 
@@ -95,7 +96,6 @@
                                             <!-- View Ongoing Session Data Button -->
                                             <p:commandButton 
                                                 ajax="false" 
-
                                                 title="Ongoing" 
                                                 icon="fa fa-sync-alt" 
                                                 styleClass="ui-button-success mx-1" 
@@ -104,28 +104,19 @@
                                             <!-- View Pending Session Data Button -->
                                             <p:commandButton 
                                                 ajax="false" 
-
                                                 title="Pending" 
                                                 icon="fa fa-hourglass-half" 
                                                 styleClass="ui-button-warning mx-1" 
                                                 action="#{bookingControllerViewScope.listPending()}" />
-                                            <p:commandButton 
-                                                ajax="false" 
-                                                title="Pending" 
-                                                icon="fa fa-hourglass-half" 
-                                                styleClass="ui-button-warning mx-1" 
-                                                action="#{bookingControllerViewScope.listPendingSesionInstances()}" />
+
 
                                             <!-- View Cancelled Session Data Button -->
                                             <p:commandButton 
                                                 ajax="false" 
                                                 title="Cancelled" 
                                                 icon="fa fa-times" 
-                                                icon="fa fa-times-circle"
+                                                styleClass="ui-button-danger mx-1" 
                                                 action="#{bookingControllerViewScope.listCancelled()}" />
-
-
-
 
                                         </div>
                                     </div>
@@ -176,7 +167,7 @@
                                                             <h:outputText class="mx-2" value="#{s.endingTime}">
                                                                 <f:convertDateTime pattern="hh:mm a"/>
                                                             </h:outputText>
-
+                                                            
                                                             <!-- Conditional message for delayed start time -->
                                                             <h:panelGroup rendered="#{s.startingTime gt s.originatingSession.startingTime}">
                                                                 <br/>
