@@ -830,7 +830,6 @@ public class ReportTemplateController implements Serializable {
     public void setCreditCompany(Institution creditCompany) {
         this.creditCompany = creditCompany;
     }
-
     /**
      *
      */
