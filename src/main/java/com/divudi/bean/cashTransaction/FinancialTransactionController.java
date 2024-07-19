@@ -16,11 +16,11 @@ import com.divudi.facade.PaymentFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.AtomicBillTypeTotals;
 import com.divudi.data.BillFinanceType;
+import static com.divudi.data.BillType.CollectingCentreBill;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.FinancialReport;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.PaymentMethodValues;
-
 import com.divudi.data.ReportTemplateRow;
 import com.divudi.data.ReportTemplateRowBundle;
 import com.divudi.entity.WebUser;
@@ -127,6 +127,9 @@ public class FinancialTransactionController implements Serializable {
     private double additions;
 
     private int fundTransferBillsToReceiveCount;
+    private Date fromDate;
+    private Date toDate;
+
     private Date fromDate;
     private Date toDate;
 
@@ -649,7 +652,6 @@ public class FinancialTransactionController implements Serializable {
         if (paymentSummaryBundle != null) {
             paymentSummaryBundle.getReportTemplateRows().addAll(rows);
         }
-    }
 
     public String navigateToViewEndOfSelectedShiftStartSummaryBill(Bill startBill) {
         resetClassVariables();
@@ -677,7 +679,6 @@ public class FinancialTransactionController implements Serializable {
         nonClosedShiftStartFundBill = startBill;
         fillPaymentsFromShiftStartToEnd(startBill, endBill, startBill.getCreater());
         return "/cashier/shift_end_summery_bill_of_selected_user_not_closed?faces-redirect=true";
-
     }
 
     public String navigateToCreateShiftEndSummaryBillByBills() {
@@ -726,22 +727,6 @@ public class FinancialTransactionController implements Serializable {
 //        calculateTotalFundsFromShiftStartToNow();
         financialReportByPayments = new FinancialReport(atomicBillTypeTotalsByPayments);
 
-    }
-
-    public void fillPaymentsForDateRange() {
-        System.out.println("fillPaymentsForDateRange");
-        paymentsFromShiftSratToNow = new ArrayList<>();
-        String jpql = "SELECT p "
-                + "FROM Payment p "
-                + "WHERE p.bill.retired <> :ret "
-                + "AND p.bill.createdAt between :fd and :td "
-                + "ORDER BY p.id DESC";
-        Map<String, Object> m = new HashMap<>();
-        m.put("fd", getFromDate());
-        m.put("td", getToDate());
-        m.put("ret", true);
-        System.out.println("m = " + m);
-        System.out.println("jpql = " + jpql);
     }
 
     public void fillPaymentsFromShiftStartToNow(Bill startBill, WebUser user) {
@@ -800,7 +785,6 @@ public class FinancialTransactionController implements Serializable {
         m.put("ret", false);
         m.put("sid", shiftStartBillId);
         m.put("eid", shiftEndBillId);
-
         paymentsFromShiftSratToNow = paymentFacade.findByJpql(jpql, m);
         atomicBillTypeTotalsByPayments = new AtomicBillTypeTotals();
         for (Payment p : paymentsFromShiftSratToNow) {
@@ -1624,7 +1608,6 @@ public class FinancialTransactionController implements Serializable {
 
     public void setPaymentSummaryBundle(ReportTemplateRowBundle paymentSummaryBundle) {
         this.paymentSummaryBundle = paymentSummaryBundle;
-    }
 
     public List<Bill> getShiaftStartBills() {
         return shiaftStartBills;
@@ -1632,6 +1615,7 @@ public class FinancialTransactionController implements Serializable {
 
     public void setShiaftStartBills(List<Bill> shiaftStartBills) {
         this.shiaftStartBills = shiaftStartBills;
+
     }
 
 }

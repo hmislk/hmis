@@ -41,9 +41,9 @@ public class PaymentGatewayController implements Serializable {
     @Inject
     PatientPortalController patientPortalController;
 
-    private String merchantId = "TESTSETHMAHOSLKR"; // Actual Merchant ID
-    private String apiUsername = "merchant.TESTSETHMAHOSLKR"; // Actual API Username
-    private String apiPassword = "49de22fcd8ade9ecb3d81790f3ad152c"; // Actual API Password
+    private String merchantId = "SETHMAHOSLKR"; // Actual Merchant ID
+    private String apiUsername = "merchant.SETHMAHOSLKR"; // Actual API Username
+    private String apiPassword = "ae02020ce9b3d999767d17d5f36a5c4f"; // Actual API Password
     private String paymentStatus;
     private String sessionId;
     private String paymentUrl;
