@@ -641,6 +641,7 @@ public class Lims {
             while (barcode <= endBarcode) {
                 JSONObject jsonObject = new JSONObject();
                 jsonObject.put("itemName", bi.getItem().getName() != null ? bi.getItem().getName() : "");
+                jsonObject.put("itemCode", bi.getItem().getCode()!= null ? bi.getItem().getCode() : "");
                 jsonObject.put("rate", formattedRate);
                 jsonObject.put("barcode", barcode);
                 jsonArray.put(jsonObject);
@@ -693,6 +694,7 @@ public class Lims {
             while (barcode <= endBarcode) {
                 JSONObject jsonObject = new JSONObject();
                 jsonObject.put("itemName", stock.getItemBatch().getItem().getName() != null ? stock.getItemBatch().getItem().getName() : "");
+                jsonObject.put("itemCode", stock.getItemBatch().getItem().getCode() != null ? stock.getItemBatch().getItem().getCode() : "");
                 jsonObject.put("rate", formattedRate);
                 jsonObject.put("barcode", barcode);
                 jsonArray.put(jsonObject);
@@ -711,6 +713,7 @@ public class Lims {
         }
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("itemName", stock.getItemBatch().getItem().getName() != null ? stock.getItemBatch().getItem().getName() : "");
+        jsonObject.put("itemCode", stock.getItemBatch().getItem().getCode() != null ? stock.getItemBatch().getItem().getCode() : "");
         jsonObject.put("barcode", stock.getStartBarcode());
         return jsonObject;
     }
@@ -721,6 +724,7 @@ public class Lims {
         }
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("itemName", item.getName() != null ? item.getName() : "");
+        jsonObject.put("itemCode", item.getCode() != null ? item.getCode() : "");
         jsonObject.put("barcode", item.getBarcode());
         return jsonObject;
     }
