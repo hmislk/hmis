@@ -246,6 +246,7 @@ public class ReportTemplate implements Serializable {
         this.billTypes = billTypes;
     }
 
+
     @Transient
     public boolean matchesBillTypeAtomic(String input) {
         List<BillTypeAtomic> bts = getBillTypeAtomics();

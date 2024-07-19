@@ -58,6 +58,16 @@ public class ReportTemplateController implements Serializable {
     private ReportTemplateFacade ejbFacade;
     private ReportTemplate current;
     private List<ReportTemplate> items = null;
+    
+    
+    private Date date;
+    private Date fromDate;
+    private Date toDate;
+    private Institution institution;
+    private Department department;
+    private WebUser user;
+    private Staff staff;
+    
 
     private Date date;
     private Date fromDate;
@@ -89,6 +99,10 @@ public class ReportTemplateController implements Serializable {
             JsfUtil.addSuccessMessage("Saved Successfully");
         }
     }
+
+    
+    
+    
 
     public ReportTemplate findReportTemplateByName(String name) {
         if (name == null) {
@@ -514,6 +528,10 @@ public class ReportTemplateController implements Serializable {
 
     private void handlePaymentTypeSummaryUsingBills() {
         // Method implementation here
+
+    public void processReport() {
+
+
     }
 
     public void saveSelected() {
@@ -676,6 +694,14 @@ public class ReportTemplateController implements Serializable {
             return null;
         }
         return "/dataAdmin/report?faces-redirect=true";
+    }
+
+    public String navigateToEditGenerateReport() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Nothing Selected");
+            return null;
+        }
+        return "/dataAdmin/report";
     }
 
     public List<ReportTemplate> getAllItems() {
