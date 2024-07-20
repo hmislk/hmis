@@ -482,6 +482,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         bs.setReferenceBillSession(newBillSession);
         getBillSessionFacade().edit(bs);
         newBillSessionForSMS = newBillSession;
+
         System.out.println("newBillSessionForSMS = " + newBillSessionForSMS);
         printingBill.setSingleBillSession(newBillSession);
         billFacade.edit(printingBill);
@@ -601,6 +602,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         billItemFacade.create(bi);
         return bi;
     }
+
 
     public void fillSessionInstanceByDoctor() {
         sessionInstanceByDoctor = new ArrayList<>();
@@ -1325,7 +1327,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             JsfUtil.addErrorMessage("No session selected");
             return;
         }
-        if (!selectedSessionInstance.isArrived()) {
+
+        if(!selectedSessionInstance.isArrived()){
             markAsArrived();
         }
         selectedSessionInstance.setStarted(true);
@@ -1942,6 +1945,15 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         if (preSet()) {
             getChannelReportController().fillNurseView();
             return "/channel/channel_views/channel_nurse_view?faces-redirect=true";
+        } else {
+            return "";
+        }
+    }
+    
+    public String navigateToNurseViewWithItems() {
+        if (preSet()) {
+            getChannelReportController().fillNurseView();
+            return "/channel/channel_views/channel_nurse_view_with_items?faces-redirect=true";
         } else {
             return "";
         }
@@ -3064,10 +3076,10 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 int maxNo = selectedSessionInstance.getMaxNo();
                 long bookedPatientCount = selectedSessionInstance.getBookedPatientCount();
                 long totalPatientCount;
-
+                
                 List<Integer> reservedNumbers = CommonFunctions.convertStringToIntegerList(selectedSessionInstance.getReserveNumbers());
                 bookedPatientCount = bookedPatientCount + reservedNumbers.size();
-
+                
                 if (selectedSessionInstance.getCancelPatientCount() != null) {
                     long canceledPatientCount = selectedSessionInstance.getCancelPatientCount();
                     totalPatientCount = bookedPatientCount - canceledPatientCount;
@@ -3109,12 +3121,19 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             createPayment(printingBill, paymentMethod);
         }
         sendSmsAfterBooking();
-        if (selectedSessionInstance.isStarted()) {
+      
+        if(selectedSessionInstance.isStarted()){
             sendChannellingStatusUpdateNotificationSms(printingBill.getSingleBillSession());
         }
         settleSucessFully = true;
         printPreview = true;
         JsfUtil.addSuccessMessage("Channel Booking Added.");
+    }
+    
+    public long totalReservedNumberCount(SessionInstance s){
+        List<Integer> reservedNumbers = CommonFunctions.convertStringToIntegerList(s.getReserveNumbers());
+        long reservedNumberCount = reservedNumbers.size();
+        return reservedNumberCount;
     }
 
     public long totalReservedNumberCount(SessionInstance s) {
