@@ -59,6 +59,15 @@ import javax.persistence.Transient;
 @DiscriminatorColumn(name = "DTYPE")
 public class Item implements Serializable, Comparable<Item> {
 
+
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    Long id;
+    int orderNo;
+
+    static final long serialVersionUID = 1L;
+
     @OneToMany(mappedBy = "item", fetch = FetchType.LAZY)
     List<InvestigationItem> reportItems;
 
@@ -67,25 +76,13 @@ public class Item implements Serializable, Comparable<Item> {
 
     @OneToMany(mappedBy = "item", fetch = FetchType.EAGER)
     List<ItemFee> itemFeesAuto;
-
-    static final long serialVersionUID = 1L;
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
     
-    
-
-    Long id;
-    int orderNo;
-    
-    private boolean canSechduleForOtherDays;
 
     private Long itemId;
 
     private boolean isMasterItem;
     private boolean hasReportFormat;
     private int numberOfDaysToMarkAsShortExpiary;
-    
     private boolean canSechduleForOtherDays;
 
     @ManyToOne
