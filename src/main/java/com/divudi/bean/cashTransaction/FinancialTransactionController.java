@@ -23,6 +23,7 @@ import com.divudi.data.PaymentMethodValues;
 
 import com.divudi.data.ReportTemplateRow;
 import com.divudi.data.ReportTemplateRowBundle;
+import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.entity.WebUser;
 import com.divudi.java.CommonFunctions;
 import javax.inject.Named;
@@ -74,6 +75,7 @@ public class FinancialTransactionController implements Serializable {
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
     private Bill currentBill;
     private Payment currentPayment;
+    private PaymentMethodData paymentMethodData;
     private Payment removingPayment;
     private List<Payment> currentBillPayments;
     private List<Bill> currentBills;
@@ -643,6 +645,7 @@ public class FinancialTransactionController implements Serializable {
         getCurrentBillPayments().add(currentPayment);
         calculateInitialFundBillTotal();
         currentPayment = null;
+        getCurrentPayment();
     }
 
     public void addPaymentToFundTransferBill() {
@@ -1522,7 +1525,21 @@ public class FinancialTransactionController implements Serializable {
         if (currentPayment == null) {
             currentPayment = new Payment();
         }
+        if (currentPayment.getCurrencyDenominations() == null) {
+            currentPayment.setCurrencyDenominations(configOptionApplicationController.getDenominations());
+        }
         return currentPayment;
+    }
+
+    public PaymentMethodData getPaymentMethodData() {
+        if (paymentMethodData == null) {
+            paymentMethodData = new PaymentMethodData();
+        }
+        return paymentMethodData;
+    }
+
+    public void setPaymentMethodData(PaymentMethodData paymentMethodData) {
+        this.paymentMethodData = paymentMethodData;
     }
 
     public void updateCashDenominations(AjaxBehaviorEvent event) {
@@ -1534,7 +1551,7 @@ public class FinancialTransactionController implements Serializable {
         }
 
         double total = 0;
-        List<Denomination> denominations = configOptionApplicationController.getDenominations();
+        List<Denomination> denominations = currentPayment.getCurrencyDenominations();
         for (Denomination denomination : denominations) {
             int value = denomination.getCount();
             System.out.println("Processing denomination: " + denomination.getValue() + " with count: " + value);
