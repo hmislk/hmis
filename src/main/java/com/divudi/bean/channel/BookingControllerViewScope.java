@@ -1959,15 +1959,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         }
     }
 
-    public String navigateToNurseViewWithItems() {
-        if (preSet()) {
-            getChannelReportController().fillNurseView();
-            return "/channel/channel_views/channel_nurse_view_with_items?faces-redirect=true";
-        } else {
-            return "";
-        }
-    }
-
     public String navigateToDoctorView() {
         if (preSet()) {
             getChannelReportController().fillDoctorView();
@@ -3136,11 +3127,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         return reservedNumberCount;
     }
 
-    public long totalReservedNumberCount(SessionInstance s) {
-        List<Integer> reservedNumbers = CommonFunctions.convertStringToIntegerList(s.getReserveNumbers());
-        long reservedNumberCount = reservedNumbers.size();
-        return reservedNumberCount;
-    }
 
     public BillSession addChannelBookingForOnlinePayment() {
         errorText = "";
