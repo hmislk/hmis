@@ -35,10 +35,10 @@
                 font-weight: bold;
                 color: #333;
             }
-/*            .patient-name {
-                font-size: 1em;
-                color: #555;
-            }*/
+            /*            .patient-name {
+                            font-size: 1em;
+                            color: #555;
+                        }*/
             .token-item {
                 margin-bottom: 20px;
                 padding: 10px;
@@ -47,10 +47,10 @@
                 background-color: #f9f9f9;
             }
 
-/*            .drDetails{
-                font-size: 18pt;
-                font-weight: bolder;
-            }*/
+            /*            .drDetails{
+                            font-size: 18pt;
+                            font-weight: bolder;
+                        }*/
 
             @keyframes gradientChange {
                 0% {
@@ -123,21 +123,36 @@
                 }
             }
 
-            body {
-                background: linear-gradient(to right, rgba(78, 115, 223, 0.8), rgba(34, 74, 190, 0.6), rgba(44, 129, 222, 0.7), rgba(83, 131, 232, 0.9));
-                background-size: 200% 100%;
-                animation: backgroundAnimation 10s ease infinite;
+            /*            body {
+                            background: linear-gradient(to right, rgba(78, 115, 223, 0.8), rgba(34, 74, 190, 0.6), rgba(44, 129, 222, 0.7), rgba(83, 131, 232, 0.9));
+                            background-size: 200% 100%;
+                            animation: backgroundAnimation 10s ease infinite;
+                        }*/
+
+            .department-a {
+                background-color: #1abc9c; /* Light red */
             }
+            .department-b {
+                background-color: #ff6b6b; /* Light green */
+            }
+            .department-c {
+                background-color: #9b59b6; /* Light blue */
+            }
+            .department-d {
+                background-color: #f39c12; /* Light blue */
+            }
+            .section2{
+                background-color: white;
+            }
+            .section3{
+                background-color: white;
+            }
+
 
 
         </style>
     </h:head>
-    <h:body >
-
-
-
-
-
+    <h:body class="bg-dark">
 
         <h:form>
 
@@ -164,41 +179,65 @@
             <div class="container-fluid" style="margin-top: 160px">
 
                 <ui:repeat var="token" value="#{opdTokenController.currentTokens}" >
-                    <div class="card shadow mb-2 p-2" style="height: 125px">
-                        <div class="row d-flex align-items-center" >
-                            <div class="col-3">
-                                <div class="mx-2">
-                                    <div class="counter-name">
-                                        <h:outputText value="#{token.counter.name}" />
-                                    </div>
-                                    <h4>#{token.department.name}</h4>
-                                </div>
-                            </div>
-                            <div class="col-3">
-                                <div class="token-circle element">
-                                    <h:outputText value="#{token.tokenNumber}" />
-                                </div>
-                            </div>
-                            <div class="col-3">
-                                <div class="">
-                                    <h:panelGroup rendered="#{token.bill ne null}" >
-                                        <h:panelGroup rendered="#{token.bill.referenceBill eq null}" >
-                                            <img width="120px" src="https://cdn.dribbble.com/users/1280935/screenshots/6974685/media/ec4c386222b837da0ff6eabec3f59ba3.gif"/>
-                                        </h:panelGroup>
-                                        <h:panelGroup rendered="#{token.bill.referenceBill ne null}" >
-                                            <img width="120px"  src="https://assets.materialup.com/uploads/083260f1-7f97-4355-bc34-aef89827b8fb/preview.gif"/>
-                                        </h:panelGroup>
-                                    </h:panelGroup>
 
+
+                    <div class="box my-2">
+                        <div class="row">
+                            <div class="col-4  d-flex justify-content-center align-items-center #{token.counter.name == 'Dressing' ? 'department-a' : 
+                                                                                                  (token.counter.name == 'Consultation' ? 'department-b' : 
+                                                                                                  (token.counter.name == 'department-c' ? 'department-c' : 'department-d'))}">
+                                <div class="mx-2">
+                                    <div>
+                                        <p style="font-size: 38pt;font-weight: bolder">#{token.counter.name}</p>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="col-3">
-                                <div >
-                                    <h:outputText value="#{token.staff.person.nameWithTitle}" style="font-size: 1.5em;font-weight: bold; text-transform: uppercase"/><br/>
+                            <div class="col-4 section2">
+                                <div class="row">
+                                    <div class="col-6">
+                                        <div >
+                                            <div class="token-circle element" style="background-color: #{token.counter.name == 'Dressing' ? '#1abc9c' :
+                                                                                                         (token.counter.name == 'Consultation' ? '#ff6b6b' :
+                                                                                                         (token.counter.name == 'DepartmentC' ? '#9b59b6' :
+                                                                                                         '#f39c12'))}">
+                                                <h:outputText value="#{token.tokenNumber}" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div>
+                                            <h:panelGroup rendered="#{token.bill ne null}">
+                                                <h:panelGroup rendered="#{token.bill.referenceBill eq null}">
+                                                    <img width="120px" src="https://cdn.dribbble.com/users/1280935/screenshots/6974685/media/ec4c386222b837da0ff6eabec3f59ba3.gif"/>
+                                                </h:panelGroup>
+                                                <h:panelGroup rendered="#{token.bill.referenceBill ne null}">
+                                                    <img width="120px" src="https://assets.materialup.com/uploads/083260f1-7f97-4355-bc34-aef89827b8fb/preview.gif"/>
+                                                </h:panelGroup>
+                                            </h:panelGroup>
+                                        </div>
+                                    </div>
                                 </div>
+
+                            </div>
+                            <div class="col-4 section3 ">
+                                <div class="row">
+                                    <div class="col-6 d-flex justify-content-center align-items-center">
+                                        <div class="mt-2">
+                                            <img width="90px" src="https://i.pinimg.com/564x/a4/04/08/a4040890a14cf4de8ecea56265f66cf7.jpg"/>
+                                        </div>
+                                    </div>
+                                    <div class="col-6 d-flex justify-content-center align-items-center">
+                                        <div>
+                                            <div class="d-flex justify-content-center align-items-center">
+                                                <p style="font-size: 1.2em;font-weight: bold; text-transform: uppercase">#{token.staff.person.nameWithTitle}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+
                             </div>
                         </div>
-
                     </div>
                 </ui:repeat>
             </div>

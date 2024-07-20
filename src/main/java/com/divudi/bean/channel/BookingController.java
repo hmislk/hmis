@@ -198,13 +198,13 @@ public class BookingController implements Serializable, ControllerWithPatient {
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     FinancialTransactionController financialTransactionController;
-    @Inject 
+    @Inject
     BookingControllerViewScope bookingControllerViewScope;
     @Inject
     SecurityController securityController;
     @Inject
     private CommonController commonController;
-    /** 
+
      * Properties
      */
     private Speciality speciality;
@@ -264,6 +264,61 @@ public class BookingController implements Serializable, ControllerWithPatient {
     private Integer selectedReserverdBookingNumber;
     private Double feeTotalForSelectedBill;
     private BillSession recheduledBillSession;
+    private List<SessionInstance> sessionInstancesToday;
+    private String sessionInstanceFilter;
+    private List<SessionInstance> sessionInstancesFiltered;
+
+    public void filterSessionInstances() {
+        sessionInstancesToday = getSessionInstances();
+        if (sessionInstanceFilter == null || sessionInstanceFilter.trim().isEmpty()) {
+            if (sessionInstances != null) {
+                sessionInstancesFiltered = new ArrayList<>(sessionInstances);
+            } else {
+                sessionInstancesFiltered = new ArrayList<>();
+                return;
+            }
+            return;
+        }
+
+        sessionInstancesFiltered = new ArrayList<>();
+        String[] filterKeywords = sessionInstanceFilter.trim().toLowerCase().split("\\s+");
+
+        for (SessionInstance si : getSortedSessionInstances()) {
+            System.out.println("si = " + si);
+            String match1 = (si.getOriginatingSession() != null && si.getOriginatingSession().getName() != null)
+                    ? si.getOriginatingSession().getName().toLowerCase() : "";
+            String match2 = (si.getOriginatingSession() != null && si.getOriginatingSession().getStaff() != null
+                    && si.getOriginatingSession().getStaff().getPerson() != null
+                    && si.getOriginatingSession().getStaff().getPerson().getName() != null)
+                    ? si.getOriginatingSession().getStaff().getPerson().getName().toLowerCase() : "";
+            String match3 = (si.getOriginatingSession() != null && si.getOriginatingSession().getStaff() != null
+                    && si.getOriginatingSession().getStaff().getSpeciality() != null
+                    && si.getOriginatingSession().getStaff().getSpeciality().getName() != null)
+                    ? si.getOriginatingSession().getStaff().getSpeciality().getName().toLowerCase() : "";
+
+            boolean matchesAll = true;
+            for (String keyword : filterKeywords) {
+                if (!(match1.contains(keyword) || match2.contains(keyword) || match3.contains(keyword))) {
+                    matchesAll = false;
+                    break;
+                }
+            }
+
+            if (matchesAll) {
+                sessionInstancesFiltered.add(si);
+            }
+        }
+        sessionInstancesToday = sessionInstancesFiltered;
+        if (!sessionInstancesFiltered.isEmpty()) {
+            selectedSessionInstance = selectedSessionInstance = sessionInstancesFiltered.get(0);
+            sessionInstanceSelected();
+        }
+
+    }
+
+    public void sessionInstanceSelected() {
+        sortSessions();
+    }
 
     public void fillSessionInstanceByDoctor() {
         Staff selectedConsultant;
@@ -346,7 +401,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
         if (b.getSingleBillSession().getSessionInstance().getOriginatingSession() == null) {
             return "";
         }
-        if (b1==null) {
+        if (b1 == null) {
             System.out.println("billsession = " + b1);
         }
         SessionInstance si = b.getSingleBillSession().getSessionInstance();
@@ -442,8 +497,8 @@ public class BookingController implements Serializable, ControllerWithPatient {
         bs.setRecheduledSession(true);
         bs.setReferenceBillSession(newBillSession);
         getBillSessionFacade().edit(bs);
-        recheduledBillSession=newBillSession;
-        
+        recheduledBillSession = newBillSession;
+
     }
 
     public void sendSmsOnChannelBookingReschedule() {
@@ -501,6 +556,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
             JsfUtil.addErrorMessage("No session selected");
             return;
         }
+
         if(!selectedSessionInstance.isArrived()){
             markAsArrived();
         }
@@ -633,6 +689,69 @@ public class BookingController implements Serializable, ControllerWithPatient {
         return b;
     }
 
+    public void sendChannellingStatusUpdateNotificationSms(BillSession methodBillSession) {
+        if (methodBillSession == null) {
+            JsfUtil.addErrorMessage("Nothing to send");
+            return;
+        }
+        if (methodBillSession.getSessionInstance() == null) {
+            JsfUtil.addErrorMessage("No Session");
+            return;
+        }
+        if (methodBillSession.getSessionInstance().getOriginatingSession() == null) {
+            JsfUtil.addErrorMessage("No Originating Session");
+            return;
+        }
+        if (methodBillSession.getBill() == null) {
+            JsfUtil.addErrorMessage("No Bill");
+            return;
+        }
+        if (methodBillSession.getBill().getPatient() == null) {
+            JsfUtil.addErrorMessage("No Bill");
+            return;
+        }
+
+        if (!methodBillSession.getBill().getPatient().getPerson().getSmsNumber().trim().equals("")) {
+            Sms e = new Sms();
+            e.setCreatedAt(new Date());
+            e.setCreater(sessionController.getLoggedUser());
+            e.setBill(methodBillSession.getBill());
+            e.setCreatedAt(new Date());
+            e.setSmsType(MessageType.ChannelStatusUpdate);
+            e.setCreater(sessionController.getLoggedUser());
+            e.setReceipientNumber(methodBillSession.getBill().getPatient().getPerson().getSmsNumber());
+            e.setSendingMessage(smsBody(methodBillSession));
+            e.setDepartment(getSessionController().getLoggedUser().getDepartment());
+            e.setInstitution(getSessionController().getLoggedUser().getInstitution());
+            e.setPending(false);
+            getSmsFacade().create(e);
+
+            Boolean sent = smsManager.sendSms(e);
+            e.setSentSuccessfully(sent);
+            getSmsFacade().edit(e);
+
+        }
+
+        JsfUtil.addSuccessMessage("SMS Sent");
+    }
+
+    public String smsBody(BillSession r) {
+        String securityKey = sessionController.getApplicationPreference().getEncrptionKey();
+        if (securityKey == null || securityKey.trim().equals("")) {
+            sessionController.getApplicationPreference().setEncrptionKey(securityController.generateRandomKey(10));
+            sessionController.savePreferences(sessionController.getApplicationPreference());
+        }
+        Calendar c = Calendar.getInstance();
+        c.add(Calendar.DATE, 2);
+        String temId = securityController.encryptAlphanumeric(r.getId().toString(), securityKey);
+        String url = commonController.getBaseUrl() + "faces/requests/cbss.xhtml?id=" + temId;
+        String b = "Your session of "
+                + r.getSessionInstance().getOriginatingSession().getName()
+                + " Started. "
+                + url;
+        return b;
+    }
+
     public String navigateToAddBooking() {
         if (staff == null) {
             JsfUtil.addErrorMessage("Please select a Docter");
@@ -719,6 +838,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
 
     public String navigateToChannelQueueFromMenu() {
         sessionInstances = channelBean.listTodaysSesionInstances();
+        sessionInstancesToday=sessionInstances;
         return "/channel/channel_queue?faces-redirect=true";
     }
 
@@ -743,18 +863,18 @@ public class BookingController implements Serializable, ControllerWithPatient {
     public void listTodaysCompletedSesionInstances() {
         sessionInstances = channelBean.listTodaysSessionInstances(null, true, null);
     }
-    
+
     public void listSessionInstancesByDate() {
-        sessionInstances = channelBean.listSessionInstancesByDate(fromDate,null, null, null);
-        if(configOptionApplicationController.getBooleanValueByKey("Load Past Patient Data")){
-            for( SessionInstance s : sessionInstances){
-               bookingControllerViewScope.fillBillSessions(s);
+        sessionInstances = channelBean.listSessionInstancesByDate(fromDate, null, null, null);
+        if (configOptionApplicationController.getBooleanValueByKey("Load Past Patient Data")) {
+            for (SessionInstance s : sessionInstances) {
+                bookingControllerViewScope.fillBillSessions(s);
             }
         }
     }
-    
+
     public boolean isSessionDateToday() {
-        if(fromDate == null){
+        if (fromDate == null) {
             fromDate = new Date();
         }
 
@@ -762,8 +882,8 @@ public class BookingController implements Serializable, ControllerWithPatient {
         Calendar sessionCalendar = Calendar.getInstance();
         sessionCalendar.setTime(fromDate);
 
-        return today.get(Calendar.YEAR) == sessionCalendar.get(Calendar.YEAR) &&
-               today.get(Calendar.DAY_OF_YEAR) == sessionCalendar.get(Calendar.DAY_OF_YEAR);
+        return today.get(Calendar.YEAR) == sessionCalendar.get(Calendar.YEAR)
+                && today.get(Calendar.DAY_OF_YEAR) == sessionCalendar.get(Calendar.DAY_OF_YEAR);
     }
 
     public void listTodaysPendingSesionInstances() {
@@ -1060,7 +1180,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
     }
 
     private void sortSessions() {
-        sortedSessionInstances = new ArrayList<>(sessionInstances);
+        sortedSessionInstances = new ArrayList<>(sessionInstancesToday);
         Collections.sort(sortedSessionInstances, new Comparator<SessionInstance>() {
             @Override
             public int compare(SessionInstance s1, SessionInstance s2) {
@@ -3743,8 +3863,8 @@ public class BookingController implements Serializable, ControllerWithPatient {
                 count = serviceSessionBean.getNextNonReservedSerialNumber(getSelectedSessionInstance(), reservedNumbers);
                 JsfUtil.addErrorMessage("No reserved numbers available. Normal number is given");
             }
-            
-        bs.setReservedBooking(true);
+
+            bs.setReservedBooking(true);
         } else {
             count = serviceSessionBean.getNextNonReservedSerialNumber(getSelectedSessionInstance(), reservedNumbers);
         }
@@ -4446,6 +4566,30 @@ public class BookingController implements Serializable, ControllerWithPatient {
 
     public void setFromDate(Date fromDate) {
         this.fromDate = fromDate;
+    }
+
+    public List<SessionInstance> getSessionInstancesToday() {
+        return sessionInstancesToday;
+    }
+
+    public void setSessionInstancesToday(List<SessionInstance> sessionInstancesToday) {
+        this.sessionInstancesToday = sessionInstancesToday;
+    }
+
+    public String getSessionInstanceFilter() {
+        return sessionInstanceFilter;
+    }
+
+    public void setSessionInstanceFilter(String sessionInstanceFilter) {
+        this.sessionInstanceFilter = sessionInstanceFilter;
+    }
+
+    public List<SessionInstance> getSessionInstancesFiltered() {
+        return sessionInstancesFiltered;
+    }
+
+    public void setSessionInstancesFiltered(List<SessionInstance> sessionInstancesFiltered) {
+        this.sessionInstancesFiltered = sessionInstancesFiltered;
     }
 
 }

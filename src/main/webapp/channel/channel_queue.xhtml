@@ -54,6 +54,7 @@
                             <h:panelGroup rendered="#{webUserController.hasPrivilege('ChannellingPastBookingPatientAttend')}" >
                                 <p:datePicker
                                     value="#{bookingController.fromDate}"
+                                    size="6"
                                     showButtonBar="true"
                                     inputStyleClass="form-control"
                                     maxdate="#{commonFunctionsController.endOfDay}"
@@ -124,128 +125,144 @@
                         <div class="col-3 bg-dark">
                             <div class="d-flex align-items-center text-white p-2">
                                 <div class="px-4">
-                                    <h:outputText style="font-size: 20pt" styleClass="fas fa-user-md"/>
+                                    <h:outputText style="font-size: 30pt;color: black" styleClass="far fa-clock"/>
                                 </div>
-                                <div class="text-white">
-                                    <h:outputText value="#{s.staff.person.nameWithTitle}" style="font-weight: bold; font-size: 10pt;"/><br/>
-                                    <h:outputText value="(#{s.staff.speciality.name})" style="font-weight: bold; font-size: 0.5em;"/>
-                                </div>
-                                <div>
-                                    <p:badge class="mx-2" value="Arrived" rendered="#{s.arrived}"/>
+                                <div class="p-1 px-2 text-black">
+                                    <h:outputText value="#{s.name}" style="font-weight: bold;font-size: 10pt"/><br/>
+                                    <h:outputText value="#{s.sessionDate}"  style="font-size: 8pt;">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                    </h:outputText>
+                                    <h:outputText class="mx-2" value="#{s.startingTime}"  style="font-weight: bold; font-size: 8pt;">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortTimeFormat}"/>
+                                    </h:outputText>
                                 </div>
                             </div>
+                            <div class="col-3 bg-dark">
+                                <div class="d-flex align-items-center text-white p-2">
+                                    <div class="px-4">
+                                        <h:outputText style="font-size: 20pt" styleClass="fas fa-user-md"/>
+                                    </div>
+                                    <div class="text-white">
+                                        <h:outputText value="#{s.staff.person.nameWithTitle}" style="font-weight: bold; font-size: 10pt;"/><br/>
+                                        <h:outputText value="(#{s.staff.speciality.name})" style="font-weight: bold; font-size: 0.5em;"/>
+                                    </div>
+                                    <div>
+                                        <p:badge class="mx-2" value="Arrived" rendered="#{s.arrived}"/>
+                                    </div>
+                                </div>
 
-                        </div>
-                        <div class="col-2" style="box-sizing: border-box;border-right: 2px solid black">
-                            <div class="text-center ">
-                                <h:panelGroup rendered="#{s.completedPatientCount ne null and s.paidPatientCount ne null}">
-                                    <div class="d-flex justify-content-center align-items-center mt-3">
-                                        <span style="font-size: 20pt;font-weight: bold">
-                                            <span class="text-success">
-                                                <span class="blink" style="font-size: 8pt">&#x25CF;</span>
-                                                <h:outputText value="#{s.completedPatientCount}">
-                                                    <f:convertNumber pattern="#,##00"/>
-                                                </h:outputText>
+                            </div>
+                            <div class="col-2" style="box-sizing: border-box;border-right: 2px solid black">
+                                <div class="text-center ">
+                                    <h:panelGroup rendered="#{s.completedPatientCount ne null and s.paidPatientCount ne null}">
+                                        <div class="d-flex justify-content-center align-items-center mt-3">
+                                            <span style="font-size: 20pt;font-weight: bold">
+                                                <span class="text-success">
+                                                    <span class="blink" style="font-size: 8pt">&#x25CF;</span>
+                                                    <h:outputText value="#{s.completedPatientCount}">
+                                                        <f:convertNumber pattern="#,##00"/>
+                                                    </h:outputText>
+                                                </span>
+                                                :
+                                                <span class="text-primary" style="font-size: 20pt;font-weight: bold"> 
+                                                    <h:outputText value="#{s.paidPatientCount}">
+                                                        <f:convertNumber pattern="#,##00"/>
+                                                    </h:outputText>
+                                                </span>
                                             </span>
-                                            :
-                                            <span class="text-primary" style="font-size: 20pt;font-weight: bold"> 
-                                                <h:outputText value="#{s.paidPatientCount}">
-                                                    <f:convertNumber pattern="#,##00"/>
-                                                </h:outputText>
-                                            </span>
+                                        </div>
+                                    </h:panelGroup>
+                                </div>
+
+                            </div>
+                            <div class="col-2" style="box-sizing: border-box;border-right: 2px solid black;">
+                                <h:panelGroup rendered="#{s.paidPatientCount ne null and s.bookedPatientCount ne null}">
+                                    <div class="d-flex justify-content-center align-items-center">
+                                        <span>
+                                            <div class="d-flex align-items-center mt-2">
+                                                <span class="text-center mx-4">
+                                                    <h:panelGrid columns="1">
+                                                        <h:outputText  style="font-size: 8pt;font-weight: bold" value="Paid"/>
+                                                        <h:outputText style="font-size: 20pt;font-weight: bold" value="#{s.paidPatientCount}">
+                                                            <f:convertNumber pattern="#,##00"/>
+                                                        </h:outputText>
+                                                    </h:panelGrid>
+                                                </span>
+
+                                                <span class="text-center"> 
+                                                    <h:panelGrid columns="1">
+                                                        <h:outputText style="font-size: 8pt;font-weight: bold" value="Booked"/>
+                                                        <h:outputText style="font-size: 20pt;font-weight: bold" value="#{s.bookedPatientCount}">
+                                                            <f:convertNumber pattern="#,##00"/>
+                                                        </h:outputText>
+                                                    </h:panelGrid>
+                                                </span>
+                                            </div>
                                         </span>
                                     </div>
                                 </h:panelGroup>
                             </div>
+                            <div class="col-2 ">
+                                <div class="d-flex justify-content-between align-items-center mt-3">
 
-                        </div>
-                        <div class="col-2" style="box-sizing: border-box;border-right: 2px solid black;">
-                            <h:panelGroup rendered="#{s.paidPatientCount ne null and s.bookedPatientCount ne null}">
-                                <div class="d-flex justify-content-center align-items-center">
-                                    <span>
-                                        <div class="d-flex align-items-center mt-2">
-                                            <span class="text-center mx-4">
-                                                <h:panelGrid columns="1">
-                                                    <h:outputText  style="font-size: 8pt;font-weight: bold" value="Paid"/>
-                                                    <h:outputText style="font-size: 20pt;font-weight: bold" value="#{s.paidPatientCount}">
-                                                        <f:convertNumber pattern="#,##00"/>
-                                                    </h:outputText>
-                                                </h:panelGrid>
-                                            </span>
-
-                                            <span class="text-center"> 
-                                                <h:panelGrid columns="1">
-                                                    <h:outputText style="font-size: 8pt;font-weight: bold" value="Booked"/>
-                                                    <h:outputText style="font-size: 20pt;font-weight: bold" value="#{s.bookedPatientCount}">
-                                                        <f:convertNumber pattern="#,##00"/>
-                                                    </h:outputText>
-                                                </h:panelGrid>
-                                            </span>
-                                        </div>
-                                    </span>
-                                </div>
-                            </h:panelGroup>
-                        </div>
-                        <div class="col-2 ">
-                            <div class="d-flex justify-content-between align-items-center mt-3">
-
-                                <div>
-                                    <p:badge severity="success"
-                                             value="Completed"
-                                             rendered="#{s.completed}">
-                                    </p:badge>
+                                    <div>
+                                        <p:badge severity="success"
+                                                 value="Completed"
+                                                 rendered="#{s.completed}">
+                                        </p:badge>
 
 
-                                    <p:badge  value="Scheduled" severity="warning"
-                                              rendered="#{(not s.completed and not s.started) and !s.cancelled}">
-                                    </p:badge>
+                                        <p:badge  value="Scheduled" severity="warning"
+                                                  rendered="#{(not s.completed and not s.started) and !s.cancelled}">
+                                        </p:badge>
 
-                                    <p:badge severity="info"  value="Strated"
-                                             rendered="#{s.started and not s.completed}">
-                                    </p:badge>
+                                        <p:badge severity="info"  value="Strated"
+                                                 rendered="#{s.started and not s.completed}">
+                                        </p:badge>
 
-                                    <p:badge severity="danger"  value="Cancelled"
-                                             rendered="#{s.cancelled}">
-                                    </p:badge>
-                                </div>
+                                        <p:badge severity="danger"  value="Cancelled"
+                                                 rendered="#{s.cancelled}">
+                                        </p:badge>
+                                    </div>
 
-                                <div>                                 
-                                    <p:commandButton class="mx-2" icon="fas fa-eye"
-                                                     styleClass="rounded-button ui-button-outlined ui-button-info " ajax="false"
-                                                     value="View"
-                                                     disabled="#{s.cancelled}"
-                                                     rendered="#{bookingController.isSessionDateToday() or webUserController.hasPrivilege('ChannellingPastBookingPatientAttend')}"
-                                                     style="font-size: 1em; text-align: center"
-                                                     action="#{bookingController.navigateToManageSessionQueueAtConsultantRoom}"
-                                                     >
-                                        <f:setPropertyActionListener value="#{s}" target="#{bookingController.selectedSessionInstance}"/>
-                                    </p:commandButton>
+                                    <div>                                 
+                                        <p:commandButton class="mx-2" icon="fas fa-eye"
+                                                         styleClass="rounded-button ui-button-outlined ui-button-info " ajax="false"
+                                                         value="View"
+                                                         disabled="#{s.cancelled}"
+                                                         rendered="#{bookingController.isSessionDateToday() or webUserController.hasPrivilege('ChannellingPastBookingPatientAttend')}"
+                                                         style="font-size: 1em; text-align: center"
+                                                         action="#{bookingController.navigateToManageSessionQueueAtConsultantRoom}"
+                                                         >
+                                            <f:setPropertyActionListener value="#{s}" target="#{bookingController.selectedSessionInstance}"/>
+                                        </p:commandButton>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    <!--                    <div class="card mt-1">
-                                            <div class="card-body">
-                                                <div class="row">
-                                                   
-                                                                                                        <div class="col-2 bg-dark text-white">
-                                                        <div>
-                                                                                                                    </div>
-                                                    </div>
-                                                    <div class="col-4">
-                                                        <div class="d-flex justify-content-between align-items-center">
-                                                            
-                                                            <h:panelGroup class="mx-2">
-                                                                                                                            </h:panelGroup>
+                        <!--                    <div class="card mt-1">
+                                                <div class="card-body">
+                                                    <div class="row">
+                                                       
+                                                                                                            <div class="col-2 bg-dark text-white">
+                                                            <div>
+                                                                                                                        </div>
+                                                        </div>
+                                                        <div class="col-4">
+                                                            <div class="d-flex justify-content-between align-items-center">
+                                                                
+                                                                <h:panelGroup class="mx-2">
+                                                                                                                                </h:panelGroup>
+                                                            </div>
                                                         </div>
                                                     </div>
+                        
+                        
                                                 </div>
-                    
-                    
-                                            </div>
-                                        </div>-->
-                </ui:repeat>
+                                            </div>-->
+                    </ui:repeat>
+                </h:panelGroup>
             </div>
 
         </h:form>
