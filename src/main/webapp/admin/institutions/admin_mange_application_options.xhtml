@@ -23,11 +23,12 @@
                                      paginator="true" rows="10" 
                                      paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                      rowsPerPageTemplate="5,10,15"
-                                     selection="#{configOptionController.option}">
+                                     selection="#{configOptionController.option}"
+                                     filteredValue="#{configOptionController.filteredOptions}">
                             <p:column headerText="Key" 
                                       sortBy="#{option.optionKey}" 
                                       filterBy="#{option.optionKey}"
-                                      filterMatchMode="contains">
+                                      filterFunction="#{configOptionController.filterByCustom}">
                                 #{option.optionKey}
                             </p:column>
                             <p:column headerText="Type" width="10em" sortBy="#{option.valueType}">
@@ -75,8 +76,8 @@
                                 class="w-100" 
                                 id="valueInputShortText" value="#{configOptionController.option.optionValue}"
                                 rendered="#{configOptionController.option.valueType eq 'SHORT_TEXT'}" />
-                            
-                             <!-- For Long -->
+
+                            <!-- For Long -->
                             <p:inputText 
                                 class="w-100" 
                                 id="valueInputLong" 

@@ -5,11 +5,14 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:prints="http://xmlns.jcp.org/jsf/composite/ezcomp/prints"
+      xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
     <h:body>
-        <h:form>
-            <ui:composition template="./index.xhtml">
-                <ui:define name="subcontent">
+
+        <ui:composition template="./index.xhtml">
+            <ui:define name="subcontent">
+                <h:form>
+
                     <p:panel >
                         <f:facet name="header">
                             <i class="fa fa-money-bill-wave mt-2"/>
@@ -75,19 +78,81 @@
 
                                         </h:panelGroup>
 
-                                        <h:panelGroup
-                                            class="d-flex"
-                                            layout="block" 
-                                            id="cash"  
-                                            rendered="#{financialTransactionController.currentPayment.paymentMethod eq 'Cash'}" >
-                                            <p:outputLabel value="Value" class="mt-2"></p:outputLabel>
-                                            <p:inputText 
-                                                class="mx-3"
-                                                id="txtCashValue" 
-                                                value="#{financialTransactionController.currentPayment.paidValue}" >
-                                            </p:inputText>
-
+                                        <h:panelGroup class="container" layout="block" id="cash" rendered="#{financialTransactionController.currentPayment.paymentMethod eq 'Cash'}">
+                                            <h:panelGroup layout="block" class="w-100">
+                                                <div class="row">
+                                                    <div class="col-md-12">
+                                                        <div class="row">
+                                                            <div class="col-md-6">
+                                                                <label>Total Value</label>
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <p:inputText id="txtCashPaidValue" value="#{financialTransactionController.currentPayment.paidValue}" readonly="true" class="form-control" />
+                                                            </div>
+                                                        </div>
+                                                        <div class="row">
+                                                            <div class="col-md-12">
+                                                                <label>Denominations</label>
+                                                            </div>
+                                                        </div>
+                                                        <ui:repeat value="#{financialTransactionController.currentPayment.currencyDenominations}" var="denomination">
+                                                            <div class="row">
+                                                                <div class="col-md-4">
+                                                                    <p:outputLabel value="#{denomination.value}:" class="m-2" />
+                                                                </div>
+                                                                <div class="col-md-4">
+                                                                    <p:inputText 
+                                                                        class="ml-5 m-2 form-control" 
+                                                                        style="width:10em;"
+                                                                        value="#{denomination.count}"
+                                                                        required="true"
+                                                                        requiredMessage="Please enter the amount for #{denomination.value}">
+                                                                        <p:ajax 
+                                                                            event="keyup" 
+                                                                            process="@this" 
+                                                                            update=":#{p:resolveFirstComponentWithId('txtCashPaidValue', view).clientId}" 
+                                                                            listener="#{financialTransactionController.updateCashDenominations}" />
+                                                                    </p:inputText>
+                                                                </div>
+                                                            </div>
+                                                        </ui:repeat>
+                                                    </div>
+                                                </div>
+                                            </h:panelGroup>
                                         </h:panelGroup>
+
+
+
+                                        <h:panelGroup
+                                            class="row my-1"
+                                            layout="block"  
+                                            id="creditCard" rendered="#{opdBillController.paymentMethod eq 'Card'}" >
+                                            <pa:creditCard paymentMethodData="#{opdBillController.paymentMethodData}"/>
+                                        </h:panelGroup>
+                                        <h:panelGroup 
+                                            class="row my-1"
+                                            layout="block" 
+                                            id="eWallet"  rendered="#{opdBillController.paymentMethod eq 'ewallet'}" >
+                                            <pa:ewallet paymentMethodData="#{opdBillController.paymentMethodData}" />
+                                        </h:panelGroup>
+                                        <h:panelGroup
+                                            class="row my-1"
+                                            layout="block" 
+                                            id="cheque"  rendered="#{opdBillController.paymentMethod eq 'Cheque'}" >
+                                            <pa:cheque paymentMethodData="#{opdBillController.paymentMethodData}"/>
+                                        </h:panelGroup>
+                                        <h:panelGroup 
+                                            class="row my-1"
+                                            layout="block" 
+                                            id="slip"  rendered="#{opdBillController.paymentMethod eq 'Slip'}" >
+                                            <pa:slip paymentMethodData="#{opdBillController.paymentMethodData}"/>
+                                        </h:panelGroup>
+
+
+
+
+
+
 
                                         <h:panelGroup
                                             class="d-flex"
@@ -104,7 +169,7 @@
                                         </h:panelGroup>
 
                                         <p:watermark value="0.00" for="txtCardValue" />
-                                        <p:watermark value="0.00" for="txtCashValue" />
+
                                     </h:panelGroup>
 
 
@@ -169,6 +234,14 @@
                                     <h:outputText value="#{bp.paidValue}" ></h:outputText>
                                 </p:column>
 
+                                <p:column headerText="Denominations" width="20%">
+                                    <ui:repeat value="#{bp.humanReadableDenominations}" var="denomination">
+                                        <h:outputText value="#{denomination}" />
+                                        <br />
+                                    </ui:repeat>
+                                    #{bp.currencyDenominationsJson}
+                                </p:column>
+
                                 <p:column headerText="Action" width="20%">
                                     <p:commandButton 
                                         class="ui-button-danger"
@@ -186,8 +259,11 @@
 
                         </p:panel>
                     </p:panel>
-                </ui:define>
-            </ui:composition>
-        </h:form>
+
+                </h:form>
+
+            </ui:define>
+        </ui:composition>
+
     </h:body>
 </html>

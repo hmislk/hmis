@@ -15,54 +15,194 @@
                 <p:panel header="Add Investigation to Package" styleClass="panel-margin">
 
                     <div class="row">
-                        <div class="col-6">
+                        <div class="col-5">
                             <p:panel header="Packages">
-                                <p:selectOneListbox id="lstSelect" value="#{packageItemController.currentPackege}" filter="true">
+                                <p:selectOneListbox id="lstSelect" value="#{packageItemController.currentPackege}" scrollHeight="500" filter="true">
                                     <f:selectItems value="#{packageNameController.withoutInativeItems}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" />
-                                    <f:ajax render="gpDetail packageItem" execute="lstSelect" />
+                                    <f:ajax render="gpDetail packageItem dig" execute="lstSelect" />
                                 </p:selectOneListbox>
                             </p:panel>
 
                         </div>
-                        <div class="col-6">
-                            <p:panel header="Available Items" >
+                        <div class="col-7">
+                            <p:panel >
+                                <f:facet name="header">
+                                    <div class="d-flex justify-content-between">
+                                        <h:outputText id="lblName" value="Available Items" class="mt-2" ></h:outputText>
+                                        <div class="d-flex gap-2">
+                                            <p:commandButton 
+                                                value="To Add New Item" 
+                                                type="button" 
+                                                actionListener="#{packageItemController.clearValus()}"
+                                                icon="fa fa-plus" 
+                                                onclick="PF('dlg3').show()"/>
 
-                                <p:selectOneListbox id="packageItem" value="#{packageItemController.current}" >
-                                    <f:selectItems value="#{packageItemController.items}" var="myPis" itemLabel="#{myPis.item.name}" itemValue="#{myPis}" />
+                                            <p:commandButton 
+                                                value="To Edit Item"
+                                                actionListener="#{packageItemController.clearValus()}"
+                                                class="ui-button-warning" 
+                                                rendered="false"
+                                                icon="fas fa-pencil"  
+                                                onclick="PF('dlg1').show()">
+                                            </p:commandButton>
+
+                                            <p:commandButton 
+                                                value="Remove" 
+                                                action="#{packageItemController.removeFromPackage()}" 
+                                                class="ui-button-danger" 
+                                                icon="fas fa-trash"  
+                                                ajax="false">
+                                            </p:commandButton>
+                                        </div>
+
+                                    </div>
+                                </f:facet>
+
+                                <p:selectOneListbox 
+                                    id="packageItem" 
+                                    value="#{packageItemController.current}"
+                                    var="i" 
+                                    scrollHeight="500"
+                                    filter="true" 
+                                    filterMatchMode="contains">
+                                    <p:ajax process="@this" update="digEdit" event="change"/>
+                                    <f:selectItems 
+                                        value="#{packageItemController.items}" 
+                                        var="item" 
+                                        itemLabel="#{item.item.name}" 
+                                        itemValue="#{item}"/>
+                                    <p:column style="padding: 5px;">
+                                        <h:outputText value="#{i.item.name}"/>
+                                    </p:column>
+                                    <p:column style="padding: 5px; align-self: center;" >
+                                        <p:badge 
+                                            value="#{i.item.canRemoveItemfromPackage?'Can Remove Item':'Can not Remove Item'}" 
+                                            severity="#{i.item.canRemoveItemfromPackage?'success':'warning'}"
+                                            >
+                                        </p:badge>
+                                    </p:column>     
                                 </p:selectOneListbox>
                             </p:panel>
                         </div>
-                    </div>
+                    </div>   
 
-                    <div  class="w-50">
-                        <p:commandButton value="Add" action="#{packageItemController.addToPackage()}" class="ui-button-success w-25" icon="fas fa-plus" ajax="false"/>
-                        <p:commandButton value="Remove" action="#{packageItemController.removeFromPackage()}" class="ui-button-Danger w-25 mx-1" icon="fas fa-trash"  ajax="false"/>
-                    </div>
+                    <p:dialog rendered="false" header="Edit #{packageItemController.current.item} Item" modal="true" widgetVar="dlg1" id="digEdit" minHeight="400" width="800" showEffect="fade" focus="btnEdit" closeOnEscape="true">
 
-                    <p:dataTable value="#{packageItemController.serviceItems}" var="i" 
-                                 rowKey="#{i.id}"
-                                 rows="10"
-                                 paginator="true" paginatorPosition="bottom"
-                                 paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                 currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
-                                 rowsPerPageTemplate="5,10,{ShowAll|'All'}"
-                                 scrollable="true" 
-                                 class="w-100" selectionMode="single" 
-                                 selection="#{packageItemController.currentItem}"
-                                 filteredValue="#{packageItemController.filteredItems}">
-                        <p:column headerText="Department" filterBy="#{i.department.name}" filterMatchMode="contains">
-                            #{i.department.name}
-                        </p:column>
-                        <p:column headerText="Parent Category" filterBy="#{i.category.parentCategory.name}" filterMatchMode="contains">
-                            #{i.category.parentCategory.name}
-                        </p:column>
-                        <p:column headerText="Category" filterBy="#{i.category.name}" filterMatchMode="contains">
-                            #{i.category.name}
-                        </p:column>
-                        <p:column headerText="Item" filterBy="#{i.name}" filterMatchMode="contains">
-                            #{i.name}
-                        </p:column>
-                    </p:dataTable>
+                        <div class="row">
+                            <div class="col-5">
+                                <h:outputText value="Item" style="font-size: 16px; font-weight: 600;"></h:outputText>
+                            </div>
+                            <div class="col-7">
+                                <p:inputText 
+                                    autocomplete="off"
+                                    class="w-100"
+                                    style="font-size: 16px; font-weight: 600;"
+                                    disabled="true"
+                                    value="#{packageItemController.current.item.name}">
+                                </p:inputText>
+                            </div>
+                        </div>
+
+                        <div class="row mt-2">
+                            <div class="col-5">
+                                <h:outputText 
+                                    value="Remove the Item at the Time of Billing" 
+                                    class="mt-2" 
+                                    style="font-size: 16px; font-weight: 600;">
+
+                                </h:outputText>
+                            </div>
+                            
+                            <div class="col-7">
+                                <p:selectBooleanButton 
+                                    onLabel="Yes" 
+                                    offLabel="No"
+                                    class=""
+                                    onIcon="pi pi-check" 
+                                    offIcon="pi pi-times" 
+                                    value="#{packageItemController.current.item.canRemoveItemfromPackage}" 
+                                    style="width:6rem" >
+                                </p:selectBooleanButton>
+                            </div>
+                        </div>
+
+                        #{packageItemController.current.item.canRemoveItemfromPackage}
+                        
+                        <f:facet name="footer">
+                            <p:commandButton 
+                                id="btnEdit"
+                                value="Edit" 
+                                action="#{packageItemController.EditPackageItem()}" 
+                                style="width:150px;"
+                                class="ui-button-success"
+                                icon="fas fa-plus" 
+                                ajax="false">
+                            </p:commandButton>
+                        </f:facet>
+                    </p:dialog>
+
+                    <p:dialog header="Add Item for #{packageItemController.currentPackege.name} Package" modal="true" widgetVar="dlg3" id="dig" minHeight="500" width="1600" showEffect="fade" focus="btnadd" closeOnEscape="true">
+                        <div>
+                            <p:dataTable 
+                                value="#{packageItemController.serviceItems}" 
+                                var="i" 
+                                rows="10000"
+                                rowKey="#{i.id}"
+                                scrollHeight="500"
+                                currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
+                                scrollable="true" 
+                                class="w-100" 
+                                selectionMode="single" 
+                                selection="#{packageItemController.currentItem}"
+                                filteredValue="#{packageItemController.filteredItems}">
+
+                                <p:column headerText="Item" sortBy="#{i.name}" filterBy="#{i.name}" style="padding: 5px; " filterMatchMode="contains">
+                                    #{i.name}
+                                </p:column>
+                                <p:column headerText="Category" style="padding: 5px; width: 250px;" filterBy="#{i.category.name}" filterMatchMode="contains">
+                                    #{i.category.name}
+                                </p:column>
+                                <p:column headerText="Parent Category" style="padding: 5px; width: 250px;" filterBy="#{i.category.parentCategory.name}" filterMatchMode="contains">
+                                    #{i.category.parentCategory.name}
+                                </p:column>
+                                <p:column headerText="Department" style="padding: 5px; width: 250px;" filterBy="#{i.department.name}" filterMatchMode="contains">
+                                    #{i.department.name}
+                                </p:column>
+
+                            </p:dataTable>
+                        </div>
+
+                        <f:facet name="footer">
+                            <div class="d-flex gap-2 justify-content-end">
+                                <h:outputText value="Remove the Item at the Time of Billing" class="mt-1" style="font-size: 18px; font-weight: 600;"></h:outputText>
+
+                                <p:selectBooleanButton 
+                                    id="editrd" 
+                                    onLabel="Yes" 
+                                    offLabel="No"
+                                    class=""
+                                    onIcon="pi pi-check" 
+                                    offIcon="pi pi-times" 
+                                    value="#{packageItemController.canRemovePackageItemfromPackage}" 
+                                    style="width:6rem" >
+                                </p:selectBooleanButton>
+
+                                <p:spacer width="20"/>
+                                <p:commandButton 
+                                    id="btnadd"
+                                    value="Add" 
+                                    action="#{packageItemController.addToPackage()}" 
+                                    style="width:150px;"
+                                    class="ui-button-success"
+                                    icon="fas fa-plus" 
+                                    ajax="false">
+                                </p:commandButton>
+                            </div>
+
+
+                        </f:facet>
+                    </p:dialog>
+
                 </p:panel>
             </h:form>
         </h:panelGroup>
