@@ -42,7 +42,7 @@
             </div>
 
             <div class="headingBillFiveFive" style="text-align: center;font-weight: bold;">
-                <h:outputLabel value="RECEIPT"   />    
+                <h:outputLabel value="SHIFT START BILL"   />    
                 <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
                 <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
             </div>
@@ -67,7 +67,7 @@
                         </td>
                         <td style="width: 50px;"></td>
                         <td>
-                            <h:outputLabel value="Bill Date" class="billDetailsFiveFive" ></h:outputLabel>
+                            <h:outputLabel value="Shift Start Date" class="billDetailsFiveFive" ></h:outputLabel>
                         </td>
                         <td>
                             <h:outputLabel value=":" class="billDetailsFiveFive" ></h:outputLabel>
@@ -83,7 +83,7 @@
 
                     <tr>
                         <td style="text-align: left;" >
-                            <h:outputLabel value="Bill No" class="billDetailsFiveFive" ></h:outputLabel>
+                            <h:outputLabel value="Shift No" class="billDetailsFiveFive" ></h:outputLabel>
                         </td>
                         <td style="width: 10px;"></td>
                         <td >:</td>
@@ -95,7 +95,7 @@
                         </td>
                         <td style="width: 50px;"></td>
                         <td>
-                            <h:outputLabel value="Bill Time" class="billDetailsFiveFive" ></h:outputLabel>
+                            <h:outputLabel value="Shift Start Time" class="billDetailsFiveFive" ></h:outputLabel>
                         </td>
                         <td>
                             <h:outputLabel value=":" class="billDetailsFiveFive" ></h:outputLabel>
@@ -128,6 +128,9 @@
                                 <h:outputLabel class="itemsBlockRightFiveFive" value="#{bip.paymentMethod}"  style="text-transform: capitalize!important;"  >
                                 </h:outputLabel>
                             </td>
+                            <td>
+                                <h:outputLabel value="#{bip.getCurrencyDenominationsJson}"></h:outputLabel>
+                            </td>   
                             <td style="text-align: right;" >
                                 <h:outputLabel class="itemsBlockRightFiveFive"   value="#{bip.paidValue}"    >
                                     <f:convertNumber pattern="#,##0.00" />

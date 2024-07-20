@@ -1959,14 +1959,14 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         }
     }
 
-    public String navigateToNurseViewWithItems() {
-        if (preSet()) {
-            getChannelReportController().fillNurseView();
-            return "/channel/channel_views/channel_nurse_view_with_items?faces-redirect=true";
-        } else {
-            return "";
-        }
-    }
+//    public String navigateToNurseViewWithItems() {
+//        if (preSet()) {
+//            getChannelReportController().fillNurseView();
+//            return "/channel/channel_views/channel_nurse_view_with_items?faces-redirect=true";
+//        } else {
+//            return "";
+//        }
+//    }
 
     public String navigateToDoctorView() {
         if (preSet()) {
@@ -2838,22 +2838,22 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         this.absentCount = absentCount;
     }
 
-//    public void errorCheckChannelNumber() {
-//
-//        for (BillSession bs : billSessions) {
-//            //System.out.println("billSessions" + bs.getName());
-//            for (BillItem bi : getSelectedBillSession().getBill().getBillItems()) {
-//                //System.out.println("billitem" + bi.getId());
-//                if (bs.getSerialNo() == bi.getBillSession().getSerialNo()) {
-//                    JsfUtil.addErrorMessage("Number you entered already exist");
-//                    setSelectedBillSession(bs);
-//
-//                }
-//
-//            }
-//        }
-//
-//    }
+    public void errorCheckChannelNumber() {
+
+        for (BillSession bs : billSessions) {
+            //System.out.println("billSessions" + bs.getName());
+            for (BillItem bi : getSelectedBillSession().getBill().getBillItems()) {
+                //System.out.println("billitem" + bi.getId());
+                if (bs.getSerialNo() == bi.getBillSession().getSerialNo()) {
+                    JsfUtil.addErrorMessage("Number you entered already exist");
+                    setSelectedBillSession(bs);
+
+                }
+
+            }
+        }
+
+    }
     public void updatePatient() {
         getPersonFacade().edit(getSelectedBillSession().getBill().getPatient().getPerson());
         JsfUtil.addSuccessMessage("Patient Updated");
@@ -3135,12 +3135,12 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         long reservedNumberCount = reservedNumbers.size();
         return reservedNumberCount;
     }
-
-    public long totalReservedNumberCount(SessionInstance s) {
-        List<Integer> reservedNumbers = CommonFunctions.convertStringToIntegerList(s.getReserveNumbers());
-        long reservedNumberCount = reservedNumbers.size();
-        return reservedNumberCount;
-    }
+// ALREADY DEFINED in line 3133
+//    public long totalReservedNumberCount(SessionInstance s) {
+//        List<Integer> reservedNumbers = CommonFunctions.convertStringToIntegerList(s.getReserveNumbers());
+//        long reservedNumberCount = reservedNumbers.size();
+//        return reservedNumberCount;
+//    }
 
     public BillSession addChannelBookingForOnlinePayment() {
         errorText = "";
