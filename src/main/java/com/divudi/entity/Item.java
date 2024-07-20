@@ -72,9 +72,6 @@ public class Item implements Serializable, Comparable<Item> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    
-    
-
     Long id;
     int orderNo;
     
@@ -258,10 +255,9 @@ public class Item implements Serializable, Comparable<Item> {
 
     @Column(name = "DTYPE", insertable = false, updatable = false)
     private String clazz;
-
     
-    
-    
+     private boolean canRemoveItemfromPackage;
+ 
     public double getVatPercentage() {
         return 0;
     }
@@ -1389,8 +1385,14 @@ public class Item implements Serializable, Comparable<Item> {
     public void setCanSechduleForOtherDays(boolean canSechduleForOtherDays) {
         this.canSechduleForOtherDays = canSechduleForOtherDays;
     }
-    
-    
+
+    public boolean isCanRemoveItemfromPackage() {
+        return canRemoveItemfromPackage;
+    }
+
+    public void setCanRemoveItemfromPackage(boolean canRemoveItemfromPackage) {
+        this.canRemoveItemfromPackage = canRemoveItemfromPackage;
+    }
 
     static class ReportItemComparator implements Comparator<ReportItem> {
 
