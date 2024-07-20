@@ -711,6 +711,11 @@ public class FinancialTransactionController implements Serializable {
         if (paymentSummaryBundle != null) {
             paymentSummaryBundle.getReportTemplateRows().addAll(rows);
         }
+      
+        endBill = startBill.getReferenceBill();
+        nonClosedShiftStartFundBill = startBill;
+        fillPaymentsFromShiftStartToEnd(startBill, endBill, startBill.getCreater());
+        return "/cashier/shift_end_summery_bill_of_selected_user_not_closed?faces-redirect=true";
     }
 
     public String navigateToCreateShiftEndSummaryBillByBills() {
