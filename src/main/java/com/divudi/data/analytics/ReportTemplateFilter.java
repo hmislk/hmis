@@ -9,13 +9,13 @@ public enum ReportTemplateFilter {
     FROM_DATE("From Date"),
     TO_DATE("To Date"),
     INSTITUTION("Institution"),
+
     DEPARTMENT("Department"),
+    CREDIT_COMPANY("Credit Company"),
     FROM_INSTITUTION("From Institution"),
     FROM_DEPARTMENT("From Department"),
     TO_INSTITUTION("To Institution"),
-    TO_DEPARTMENT("To Department"),
-    
-    ;
+    TO_DEPARTMENT("To Department"),;
 
     private final String label;
 
