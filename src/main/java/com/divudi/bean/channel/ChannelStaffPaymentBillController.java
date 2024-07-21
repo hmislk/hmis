@@ -540,11 +540,13 @@ public class ChannelStaffPaymentBillController implements Serializable {
                 + " and b.bill.singleBillSession.absent=false"
                 + " and (b.feeValue - b.paidValue) > 0 "
                 + " and b.bill.billType in :bt "
-                + " and b.bill.singleBillSession.sessionInstance=:si";
+                + " and b.bill.singleBillSession.sessionInstance=:si"
+                + " and b.bill.singleBillSession.completed=:com";
         sql += " order by b.bill.singleBillSession.serialNo ";
         hm.put("si", getSessionInstance());
         hm.put("bt", bts);
         hm.put("ftp", FeeType.Staff);
+        hm.put("com", true);
         hm.put("class", BilledBill.class);
         dueBillFees = billFeeFacade.findByJpql(sql, hm, TemporalType.TIMESTAMP);
 
@@ -594,11 +596,13 @@ public class ChannelStaffPaymentBillController implements Serializable {
 //                + " and b.bill.singleBillSession.absent=false"
 //                + " and (b.feeValue - b.paidValue) > 0 "
 //                + " and b.bill.billType in :bt "
-                + " and b.bill.singleBillSession.sessionInstance=:si";
+                + " and b.bill.singleBillSession.sessionInstance=:si"
+                + " and b.bill.singleBillSession.completed=:com";
         sql += " order by b.bill.singleBillSession.serialNo ";
         hm.put("si", getSessionInstance());
 //        hm.put("bt", bts);
         hm.put("ftp", FeeType.Staff);
+        hm.put("com", true);
         hm.put("class", BilledBill.class);
         dueBillFees = billFeeFacade.findByJpql(sql, hm, TemporalType.TIMESTAMP);
 

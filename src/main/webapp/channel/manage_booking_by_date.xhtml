@@ -880,7 +880,7 @@
                                                             <f:convertDateTime pattern="HH:mm a"/>
                                                         </h:outputText>
                                                         <p:outputLabel value="Session Date" style="font-weight: bold"/>
-                                                        <h:outputText value="#{bookingControllerViewScope.selectedBillSession.sessionInstance.sessionDate}"  >
+                                                        <h:outputText value="#{bookingControllerViewScope.selectedBillSession.referenceBillSession.sessionInstance.sessionDate}"  >
                                                             <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                                                         </h:outputText>
                                                         <p:outputLabel value="Booked At" style="font-weight: bold"/>
