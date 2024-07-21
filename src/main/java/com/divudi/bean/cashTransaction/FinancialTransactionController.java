@@ -3,6 +3,7 @@ package com.divudi.bean.cashTransaction;
 import java.util.HashMap;
 import com.divudi.bean.common.BillController;
 import com.divudi.bean.common.BillSearch;
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SearchController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.data.BillClassType;
@@ -15,12 +16,14 @@ import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.AtomicBillTypeTotals;
 import com.divudi.data.BillFinanceType;
 import com.divudi.data.BillTypeAtomic;
+import com.divudi.data.Denomination;
 import com.divudi.data.FinancialReport;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.PaymentMethodValues;
 
 import com.divudi.data.ReportTemplateRow;
 import com.divudi.data.ReportTemplateRowBundle;
+import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.entity.WebUser;
 import com.divudi.java.CommonFunctions;
 import javax.inject.Named;
@@ -32,8 +35,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import javax.ejb.EJB;
+import javax.faces.event.AjaxBehaviorEvent;
+import javax.faces.event.ValueChangeEvent;
 import javax.inject.Inject;
 import javax.persistence.TemporalType;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 /**
  *
@@ -61,11 +68,14 @@ public class FinancialTransactionController implements Serializable {
     SearchController searchController;
     @Inject
     BillSearch billSearch;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
     // </editor-fold>  
 
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
     private Bill currentBill;
     private Payment currentPayment;
+    private PaymentMethodData paymentMethodData;
     private Payment removingPayment;
     private List<Payment> currentBillPayments;
     private List<Bill> currentBills;
@@ -331,8 +341,6 @@ public class FinancialTransactionController implements Serializable {
         paymentsSelected = selectedPayments;
     }
 
-    
-    
     public void selectCollectedOtherNonCreditDetails() {
         List<PaymentMethod> paymentMethods = financialReportByPayments.getPaymentMethodsForCollectedDebitCard();
         List<BillTypeAtomic> billTypes = financialReportByPayments.getBillTypesForCollectedDebitCard();
@@ -347,7 +355,6 @@ public class FinancialTransactionController implements Serializable {
         paymentsSelected = selectedPayments;
     }
 
-  
     public void selectRefundedOtherNonCreditDetails() {
         List<PaymentMethod> paymentMethods = financialReportByPayments.getPaymentMethodsForRefundedDebitCard();
         List<BillTypeAtomic> billTypes = financialReportByPayments.getBillTypesForRefundedDebitCard();
@@ -362,7 +369,6 @@ public class FinancialTransactionController implements Serializable {
         paymentsSelected = selectedPayments;
     }
 
-    
     public void selectNetOtherNonCreditTotalDetails() {
         List<PaymentMethod> paymentMethods = financialReportByPayments.getPaymentMethodsForBankDeposits();
         List<BillTypeAtomic> billTypes = financialReportByPayments.getBillTypesForBankDeposits();
@@ -416,7 +422,7 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public void selectNetFloatDetails() {
-        
+
         List<BillTypeAtomic> billTypes = financialReportByPayments.getBillTypesForFloatCollected();
         billTypes.addAll(financialReportByPayments.getBillTypesForFloatHandover());
         List<Payment> allPayments = paymentsFromShiftSratToNow;
@@ -644,6 +650,9 @@ public class FinancialTransactionController implements Serializable {
         getCurrentBillPayments().add(currentPayment);
         calculateInitialFundBillTotal();
         currentPayment = null;
+        getCurrentPayment();
+        getCurrentPayment().setCurrencyDenominations(null);
+        getCurrentPayment().setCurrencyDenominationsJson("");
     }
 
     public void addPaymentToFundTransferBill() {
@@ -781,6 +790,8 @@ public class FinancialTransactionController implements Serializable {
             p.setBill(currentBill);
             p.setDepartment(sessionController.getDepartment());
             p.setInstitution(sessionController.getInstitution());
+            // Serialize denominations before saving
+            p.serializeDenominations();
             paymentController.save(p);
         }
         return "/cashier/initial_fund_bill_print?faces-redirect=true";
@@ -942,7 +953,9 @@ public class FinancialTransactionController implements Serializable {
 
             return row;
         }).collect(Collectors.toList());
+
         getPaymentSummaryBundle().getReportTemplateRows().addAll(rows);
+
     }
 
     public String navigateToViewEndOfSelectedShiftStartSummaryBill(Bill startBill) {
@@ -967,6 +980,7 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("No Start Bill");
             return null;
         }
+
         endBill = startBill.getReferenceBill();
         nonClosedShiftStartFundBill = startBill;
         fillPaymentsFromShiftStartToEnd(startBill, endBill, startBill.getCreater());
@@ -1521,7 +1535,51 @@ public class FinancialTransactionController implements Serializable {
         if (currentPayment == null) {
             currentPayment = new Payment();
         }
+        if (currentPayment.getCurrencyDenominations() == null) {
+            currentPayment.setCurrencyDenominations(configOptionApplicationController.getDenominations());
+        }
         return currentPayment;
+    }
+
+    public PaymentMethodData getPaymentMethodData() {
+        if (paymentMethodData == null) {
+            paymentMethodData = new PaymentMethodData();
+        }
+        return paymentMethodData;
+    }
+
+    public void setPaymentMethodData(PaymentMethodData paymentMethodData) {
+        this.paymentMethodData = paymentMethodData;
+    }
+
+    public void updateCashDenominations(AjaxBehaviorEvent event) {
+        System.out.println("updateCashDenominations called");
+
+        if (currentPayment == null) {
+            System.out.println("currentPayment is null");
+            return;
+        }
+
+        double total = 0;
+        List<Denomination> denominations = currentPayment.getCurrencyDenominations();
+        for (Denomination denomination : denominations) {
+            int value = denomination.getCount();
+            System.out.println("Processing denomination: " + denomination.getValue() + " with count: " + value);
+            total += denomination.getValue() * value;
+        }
+        currentPayment.setPaidValue(total);
+        System.out.println("Total value calculated: " + total);
+
+        // Serialize updated denominations to JSON
+        JSONArray jsonArray = new JSONArray();
+        for (Denomination denomination : denominations) {
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("value", denomination.getValue());
+            jsonObject.put("count", denomination.getCount());
+            jsonArray.put(jsonObject);
+        }
+        currentPayment.setCurrencyDenominationsJson(jsonArray.toString());
+        System.out.println("Updated currencyDenominationsJson: " + currentPayment.getCurrencyDenominationsJson());
     }
 
     public void setCurrentPayment(Payment currentPayment) {
