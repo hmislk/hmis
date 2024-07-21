@@ -79,6 +79,10 @@ public class PackageItemController implements Serializable {
 
         return serviceItems;
     }
+    
+    public String navigateToPackageItemList(){
+         return "/admin/pricing/package_item?faces-redirect=true";
+     }
 
     public void updateFee() {
         if (getCurrentPackege() == null) {
