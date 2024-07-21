@@ -667,6 +667,11 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
     }
 
     public boolean isForeigner() {
+        if (configOptionApplicationController.getBooleanValueByKey("Save the Patient with Patient Status")) {
+            if (patient != null) {
+                foreigner = patient.getPerson().isForeigner();
+            }
+        }
         return foreigner;
     }
 

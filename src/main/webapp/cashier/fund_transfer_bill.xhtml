@@ -109,6 +109,18 @@
                                                 value="#{financialTransactionController.currentPayment.paidValue}" >
                                             </p:inputText>
                                         </h:panelGroup>
+                                        
+                                        <h:panelGroup
+                                            class="row my-1"
+                                            layout="block" 
+                                            id="card"  rendered="#{financialTransactionController.currentPayment.paymentMethod eq 'Card'}" >
+                                            <p:outputLabel value="Value" ></p:outputLabel>
+                                            <p:inputText 
+                                                class="mx-2"
+                                                id="txtValueCard" 
+                                                value="#{financialTransactionController.currentPayment.paidValue}" >
+                                            </p:inputText>
+                                        </h:panelGroup>
 
                                     </h:panelGroup>
 

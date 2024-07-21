@@ -87,7 +87,6 @@ public class Item implements Serializable, Comparable<Item> {
     private int numberOfDaysToMarkAsShortExpiary;
     
 
-
     @ManyToOne
     Category category;
     @ManyToOne

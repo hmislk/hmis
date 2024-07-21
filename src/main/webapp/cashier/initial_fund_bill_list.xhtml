@@ -58,14 +58,14 @@
                                 </h:outputText>
                             </p:column>
                             <p:column headerText="User" >
-                                #{ssb.creater}
+                                #{ssb.creater} - #{ssb.creater.role.name} - #{ssb.creater.staff.speciality.name}
                             </p:column>
 
-                            <p:column headerText="Shift End" rendered="false">
-                                <h:panelGroup rendered="#{ssb.referenceBill eq null}" >
+                            <p:column headerText="Shift End" rendered="true" width="15em" >
+                                <h:panelGroup rendered="#{ssb.referenceBill eq null}" class="text-danger">
                                     <h:outputText value="NOT Ended" ></h:outputText>
                                 </h:panelGroup>
-                                <h:panelGroup rendered="#{ssb.referenceBill ne null}" >
+                                <h:panelGroup rendered="#{ssb.referenceBill ne null}" class="text-success">
                                     <h:outputText value="Ended at " ></h:outputText>
                                     <h:outputText value="#{ssb.referenceBill.createdAt}" >
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
@@ -79,7 +79,7 @@
                                         ajax="false"
                                         class="ui-button-danger"
                                         value="View Summery - Not Closed" 
-                                        action="#{financialTransactionController.navigateToViewEndOfSelectedShiftStartSummaryBill(ssb)}"  
+                                        action="#{financialTransactionController.navigateToViewStartToEndOfSelectedShiftStartSummaryBill(ssb)}"  
                                         ></p:commandButton>
                                 </h:panelGroup>
                                 <h:panelGroup rendered="#{ssb.referenceBill ne null}" >
@@ -87,7 +87,7 @@
                                         ajax="false"
                                         class="ui-button-success"
                                         value="View Closed Summery" 
-                                        action="#{financialTransactionController.navigateToViewStartToEndOfSelectedShiftStartSummaryBill(ssb)}"  
+                                        action="#{financialTransactionController.navigateToViewEndOfSelectedShiftStartSummaryBill(ssb)}"  
                                         ></p:commandButton>
                                 </h:panelGroup>
                             </p:column>
