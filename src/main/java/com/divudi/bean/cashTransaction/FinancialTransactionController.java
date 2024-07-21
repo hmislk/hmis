@@ -646,6 +646,8 @@ public class FinancialTransactionController implements Serializable {
         calculateInitialFundBillTotal();
         currentPayment = null;
         getCurrentPayment();
+        getCurrentPayment().setCurrencyDenominations(null);
+        getCurrentPayment().setCurrencyDenominationsJson("");
     }
 
     public void addPaymentToFundTransferBill() {
