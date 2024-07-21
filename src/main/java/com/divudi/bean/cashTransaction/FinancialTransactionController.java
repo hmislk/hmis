@@ -948,7 +948,9 @@ public class FinancialTransactionController implements Serializable {
 
             return row;
         }).collect(Collectors.toList());
+
         getPaymentSummaryBundle().getReportTemplateRows().addAll(rows);
+
     }
 
     public String navigateToViewEndOfSelectedShiftStartSummaryBill(Bill startBill) {
@@ -973,6 +975,7 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("No Start Bill");
             return null;
         }
+
         endBill = startBill.getReferenceBill();
         nonClosedShiftStartFundBill = startBill;
         fillPaymentsFromShiftStartToEnd(startBill, endBill, startBill.getCreater());
@@ -1961,6 +1964,7 @@ public class FinancialTransactionController implements Serializable {
 
     public void setShiaftStartBills(List<Bill> shiaftStartBills) {
         this.shiaftStartBills = shiaftStartBills;
+
     }
 
     public List<Payment> getPaymentsSelected() {
@@ -1969,6 +1973,7 @@ public class FinancialTransactionController implements Serializable {
 
     public void setPaymentsSelected(List<Payment> paymentsSelected) {
         this.paymentsSelected = paymentsSelected;
+
     }
 
 }
