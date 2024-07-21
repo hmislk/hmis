@@ -405,7 +405,7 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
         m.put("prog", false); // Tokens that are not in progress
         m.put("ty", TokenType.OPD_TOKEN); // Chack Token Type that are called
         m.put("com", false); // Tokens that are not completed
-        j += " order by t.id";
+        j += " group by t.counter, t.staff";
         currentTokens = tokenFacade.findByJpql(j, m, TemporalType.DATE);
         tokenCounts = (List<TokenCount>) tokenFacade.findLightsByJpql(j, m);
         //System.out.println("currentTokens = " + currentTokens);
