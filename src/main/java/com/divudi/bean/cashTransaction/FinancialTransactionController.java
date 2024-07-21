@@ -23,6 +23,7 @@ import com.divudi.data.PaymentMethod;
 import com.divudi.data.PaymentMethodValues;
 import com.divudi.data.ReportTemplateRow;
 import com.divudi.data.ReportTemplateRowBundle;
+import com.divudi.entity.WebUser;
 import com.divudi.java.CommonFunctions;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
@@ -35,6 +36,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.inject.Inject;
+import javax.persistence.TemporalType;
 import org.bouncycastle.mail.smime.handlers.pkcs7_mime;
 
 /**
@@ -71,6 +73,7 @@ public class FinancialTransactionController implements Serializable {
     private Payment removingPayment;
     private List<Payment> currentBillPayments;
     private List<Bill> currentBills;
+    private List<Bill> shiaftStartBills;
     private List<Bill> fundTransferBillsToReceive;
     private List<Bill> fundBillsForClosureBills;
     private Bill selectedBill;
@@ -124,6 +127,13 @@ public class FinancialTransactionController implements Serializable {
     private double additions;
 
     private int fundTransferBillsToReceiveCount;
+    private Date fromDate;
+    private Date toDate;
+
+    private Date fromDate;
+    private Date toDate;
+
+    private ReportTemplateRowBundle paymentSummaryBundle;
 
     private Date fromDate;
     private Date toDate;
@@ -147,6 +157,27 @@ public class FinancialTransactionController implements Serializable {
         resetClassVariables();
         prepareToAddNewInitialFundBill();
         return "/cashier/initial_fund_bill?faces-redirect=true;";
+    }
+
+    public String navigateToListShiftEndSummaries() {
+        resetClassVariables();
+        shiaftStartBills = new ArrayList<>();
+        return "/cashier/initial_fund_bill_list?faces-redirect=true;";
+    }
+
+    public void listShiftStartBills() {
+        String jpql = "select b "
+                + " from Bill b "
+                + " where b.retired=:ret"
+                + " and b.billTypeAtomic=:bta "
+                + " and b.createdAt between :fd and :td "
+                + " order by b.id ";
+        Map params = new HashMap<>();
+        params.put("ret", false);
+        params.put("bta", BillTypeAtomic.FUND_SHIFT_START_BILL);
+        params.put("fd", fromDate);
+        params.put("td", toDate);
+        shiaftStartBills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
     public String navigateToFundTransferBill() {
@@ -565,6 +596,7 @@ public class FinancialTransactionController implements Serializable {
     private void createPaymentSummery() {
         System.out.println("createPaymentSummery");
         System.out.println("paymentsFromShiftSratToNow = " + paymentsFromShiftSratToNow);
+
         if (paymentsFromShiftSratToNow == null) {
             return;
         }
@@ -574,26 +606,85 @@ public class FinancialTransactionController implements Serializable {
 
         for (Payment p : paymentsFromShiftSratToNow) {
             System.out.println("p = " + p);
+
+            if (p == null || p.getBill() == null) {
+                continue; // Skip this iteration if p or p.getBill() is null
+            }
+
             ReportTemplateRow row = new ReportTemplateRow();
-            row.setCategory(p.getBill().getCategory());
-            row.setBillTypeAtomic(p.getBill().getBillTypeAtomic());
-            row.setCreditCompany(p.getBill().getCreditCompany());
-            row.setToDepartment(p.getBill().getToDepartment());
-            row.setServiceType(p.getBill().getBillTypeAtomic().getServiceType());
+
+            if (p.getBill().getCategory() != null) {
+                row.setCategory(p.getBill().getCategory());
+            }
+
+            if (p.getBill().getBillTypeAtomic() != null) {
+                row.setBillTypeAtomic(p.getBill().getBillTypeAtomic());
+
+                if (p.getBill().getBillTypeAtomic().getServiceType() != null) {
+                    row.setServiceType(p.getBill().getBillTypeAtomic().getServiceType());
+                }
+            }
+
+            if (p.getBill().getCreditCompany() != null) {
+                row.setCreditCompany(p.getBill().getCreditCompany());
+            }
+
+            if (p.getBill().getToDepartment() != null) {
+                row.setToDepartment(p.getBill().getToDepartment());
+            }
+
             row.setRowValue(p.getPaidValue());
 
             String keyString = row.getCustomKey();
-            keyMap.putIfAbsent(keyString, row);
-            aggregatedPayments.merge(keyString, p.getPaidValue(), Double::sum);
+
+            if (keyString != null) {
+                keyMap.putIfAbsent(keyString, row);
+                aggregatedPayments.merge(keyString, p.getPaidValue(), Double::sum);
+            }
+
         }
 
         List<ReportTemplateRow> rows = aggregatedPayments.entrySet().stream().map(entry -> {
             ReportTemplateRow row = keyMap.get(entry.getKey());
-            row.setRowValue(entry.getValue());
+          
+            if (row != null) {
+                row.setRowValue(entry.getValue());
+            }
+
             return row;
         }).collect(Collectors.toList());
 
-        paymentSummaryBundle.getReportTemplateRows().addAll(rows);
+        if (paymentSummaryBundle != null) {
+            paymentSummaryBundle.getReportTemplateRows().addAll(rows);
+        }
+    }
+
+    public String navigateToViewEndOfSelectedShiftStartSummaryBill(Bill startBill) {
+        resetClassVariables();
+        if (startBill == null) {
+            JsfUtil.addErrorMessage("No Start Bill");
+            return null;
+        }
+        nonClosedShiftStartFundBill = startBill;
+        fillPaymentsFromShiftStartToNow(startBill, startBill.getCreater());
+        return "/cashier/shift_end_summery_bill_of_selected_user_not_closed?faces-redirect=true";
+    }
+
+    public String navigateToViewStartToEndOfSelectedShiftStartSummaryBill(Bill startBill) {
+        resetClassVariables();
+        if (startBill == null) {
+            JsfUtil.addErrorMessage("No Start Bill");
+            return null;
+        }
+        Bill endBill;
+        if (startBill.getReferenceBill() == null) {
+            JsfUtil.addErrorMessage("No Start Bill");
+            return null;
+        }
+        endBill = startBill.getReferenceBill();
+        nonClosedShiftStartFundBill = startBill;
+        fillPaymentsFromShiftStartToEnd(startBill, endBill, startBill.getCreater());
+        return "/cashier/shift_end_summery_bill_of_selected_user_not_closed?faces-redirect=true";
     }
 
     public String navigateToCreateShiftEndSummaryBillByBills() {
@@ -644,20 +735,62 @@ public class FinancialTransactionController implements Serializable {
 
     }
 
-    public void fillPaymentsForDateRange() {
-        System.out.println("fillPaymentsForDateRange");
+    public void fillPaymentsFromShiftStartToNow(Bill startBill, WebUser user) {
         paymentsFromShiftSratToNow = new ArrayList<>();
+        if (startBill == null) {
+            JsfUtil.addErrorMessage("No Start Bill");
+            return;
+        }
+        if (user == null) {
+            JsfUtil.addErrorMessage("No User");
+            return;
+        }
+        Long shiftStartBillId = startBill.getId();
         String jpql = "SELECT p "
                 + "FROM Payment p "
-                + "WHERE p.bill.retired <> :ret "
-                + "AND p.bill.createdAt between :fd and :td "
+                + "WHERE p.creater = :cr "
+                + "AND p.retired = :ret "
+                + "AND p.id > :cid "
                 + "ORDER BY p.id DESC";
         Map<String, Object> m = new HashMap<>();
-        m.put("fd", getFromDate());
-        m.put("td", getToDate());
-        m.put("ret", true);
-        System.out.println("m = " + m);
-        System.out.println("jpql = " + jpql);
+        m.put("cr", user);
+        m.put("ret", false);
+        m.put("cid", shiftStartBillId);
+        paymentsFromShiftSratToNow = paymentFacade.findByJpql(jpql, m);
+        atomicBillTypeTotalsByPayments = new AtomicBillTypeTotals();
+        for (Payment p : paymentsFromShiftSratToNow) {
+            if (p.getBill().getBillTypeAtomic() == null) {
+            } else {
+                atomicBillTypeTotalsByPayments.addOrUpdateAtomicRecord(p.getBill().getBillTypeAtomic(), p.getPaymentMethod(), p.getPaidValue());
+            }
+        }
+        financialReportByPayments = new FinancialReport(atomicBillTypeTotalsByPayments);
+    }
+
+    public void fillPaymentsFromShiftStartToEnd(Bill startBill, Bill endBill, WebUser user) {
+        paymentsFromShiftSratToNow = new ArrayList<>();
+        if (startBill == null) {
+            JsfUtil.addErrorMessage("No Start Bill");
+            return;
+        }
+        if (user == null) {
+            JsfUtil.addErrorMessage("No User");
+            return;
+        }
+        Long shiftStartBillId = startBill.getId();
+        Long shiftEndBillId = endBill.getId();
+        String jpql = "SELECT p "
+                + "FROM Payment p "
+                + "WHERE p.creater = :cr "
+                + "AND p.retired = :ret "
+                + "AND p.id > :sid "
+                + "AND p.id < :eid "
+                + "ORDER BY p.id DESC";
+        Map<String, Object> m = new HashMap<>();
+        m.put("cr", user);
+        m.put("ret", false);
+        m.put("sid", shiftStartBillId);
+        m.put("eid", shiftEndBillId);
         paymentsFromShiftSratToNow = paymentFacade.findByJpql(jpql, m);
         atomicBillTypeTotalsByPayments = new AtomicBillTypeTotals();
         for (Payment p : paymentsFromShiftSratToNow) {
@@ -1481,6 +1614,13 @@ public class FinancialTransactionController implements Serializable {
 
     public void setPaymentSummaryBundle(ReportTemplateRowBundle paymentSummaryBundle) {
         this.paymentSummaryBundle = paymentSummaryBundle;
+    }
+    public List<Bill> getShiaftStartBills() {
+        return shiaftStartBills;
+    }
+
+    public void setShiaftStartBills(List<Bill> shiaftStartBills) {
+        this.shiaftStartBills = shiaftStartBills;
     }
 
 }

@@ -115,7 +115,7 @@
 
                     <p:column headerText="Remark">
                         <p:outputLabel rendered="#{bs.bill.paidAmount eq 0}" value="Credit" style="color: red;"/>
-                        <p:outputLabel rendered="#{bs.bill.paidAmount ne 0}" value="Paid" style="color: green;"/>
+                        <p:outputLabel rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod ne 'OnCall'}" value="Paid" style="color: green;"/>
                     </p:column>
 
 

@@ -11,12 +11,11 @@ public enum ReportTemplateFilter {
     INSTITUTION("Institution"),
 
     DEPARTMENT("Department"),
+    CREDIT_COMPANY("Credit Company"),
     FROM_INSTITUTION("From Institution"),
     FROM_DEPARTMENT("From Department"),
     TO_INSTITUTION("To Institution"),
-    TO_DEPARTMENT("To Department"),
-    
-    ;
+    TO_DEPARTMENT("To Department"),;
 
     private final String label;
 
