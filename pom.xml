@@ -6,6 +6,7 @@
     <version>3.0.0</version>
     <packaging>war</packaging>
     <name>sethma</name>
+
     <properties>
         <endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -306,7 +307,11 @@
             <artifactId>reflections</artifactId>
             <version>0.10.2</version>
         </dependency>
-       
+        <dependency>
+            <groupId>org.apache.tomcat</groupId>
+            <artifactId>tomcat-catalina</artifactId>
+            <version>9.0.83</version> <!-- or the version compatible with your setup -->
+        </dependency>
 
     </dependencies>
 

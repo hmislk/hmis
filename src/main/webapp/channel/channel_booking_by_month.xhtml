@@ -10,7 +10,8 @@
       xmlns:au="http://xmlns.jcp.org/jsf/composite/autocomplete"
       xmlns:pat="http://xmlns.jcp.org/jsf/composite/patient"
       xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
-      xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp">
+      xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp"
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
 
     <h:head>
         <title>Channel Booking By Date</title>
@@ -49,16 +50,19 @@
 
                                         <div class="d-flex align-items-center w-100">
                                             <p:inputText id="txtFilter" class="w-100" value="#{bookingControllerViewScopeMonth.sessionInstanceFilter}" placeholder="Search">
-                                                <p:ajax event="keyup" process="@this" update="groupFilteredSessions gdManageBookings panelBookingDetails" listener="#{bookingControllerViewScopeMonth.filterSessionInstances}"></p:ajax>
+                                                <p:ajax event="keyup" 
+                                                        process="@this" 
+                                                        update="groupFilteredSessions gdManageBookings panelBookingDetails" 
+                                                        listener="#{bookingControllerViewScopeMonth.listAndFilterSessionInstances}"></p:ajax>
                                             </p:inputText>
 
                                         </div>
                                         <div class="d-flex align-items-center w-100">
-                                            <p:commandButton value="Today" action="#{bookingControllerViewScopeMonth.addToDayToToDate()}" ajax="false" class="mx-1 ui-button-info" ></p:commandButton>
-                                            <p:commandButton value="+1" action="#{bookingControllerViewScopeMonth.addSingleDateToToDate()}" ajax="false" class="mx-1 ui-button-info" ></p:commandButton>
-                                            <p:commandButton value="+2" action="#{bookingControllerViewScopeMonth.addTwoDays()}" ajax="false" class="mx-1 ui-button-info" ></p:commandButton>
-                                            <p:commandButton value="+7" action="#{bookingControllerViewScopeMonth.addSevenDays()}" ajax="false" class="mx-1 ui-button-info" ></p:commandButton>
-                                            <p:commandButton value="+1 Month" action="#{bookingControllerViewScopeMonth.addMonth()}" ajax="false" class="mx-1 ui-button-info" ></p:commandButton>
+                                            <p:commandButton value="Today" action="#{bookingControllerViewScopeMonth.addToDayToToDateNew()}" ajax="false" class="mx-1 ui-button-info" ></p:commandButton>
+                                            <p:commandButton value="+1" action="#{bookingControllerViewScopeMonth.addSingleDateToToDateNew()}" ajax="false" class="mx-1 ui-button-info" ></p:commandButton>
+                                            <p:commandButton value="+2" action="#{bookingControllerViewScopeMonth.addTwoDaysNew()}" ajax="false" class="mx-1 ui-button-info" ></p:commandButton>
+                                            <p:commandButton value="+7" action="#{bookingControllerViewScopeMonth.addSevenDaysNew()}" ajax="false" class="mx-1 ui-button-info" ></p:commandButton>
+                                            <p:commandButton value="+1 Month" action="#{bookingControllerViewScopeMonth.addMonthNew()}" ajax="false" class="mx-1 ui-button-info" ></p:commandButton>
                                         </div>
                                     </div>
 
@@ -71,13 +75,13 @@
                                                 styleClass="ui-button-warning mx-1" 
                                                 action="#{opdBillController.navigateToNewOpdBill()}"
                                                 rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable Navigation Button To OPD Billing From Channel Booking By Date')}"/>
-                                            
+
                                             <p:commandButton 
                                                 ajax="false" 
                                                 title="Completed" 
                                                 icon="fa fa-check"
                                                 styleClass="ui-button-secondary mx-1" 
-                                                action="#{bookingControllerViewScopeMonth.listCompletedSesionInstances()}" />
+                                                action="#{bookingControllerViewScopeMonth.listCompleted}" />
 
                                             <!-- View Ongoing Session Data Button -->
                                             <p:commandButton 
@@ -85,7 +89,7 @@
                                                 title="Ongoing"
                                                 icon="fa fa-sync-alt"
                                                 styleClass="ui-button-success mx-1" 
-                                                action="#{bookingControllerViewScopeMonth.listOngoingSesionInstances()}" />
+                                                action="#{bookingControllerViewScopeMonth.listOngoing}" />
 
                                             <!-- List Pending Button -->
                                             <p:commandButton 
@@ -93,7 +97,7 @@
                                                 title="Pending"
                                                 icon="fa fa-hourglass-start"
                                                 styleClass="ui-button-primary mx-1" 
-                                                action="#{bookingControllerViewScopeMonth.listPendingSesionInstances()}" />
+                                                action="#{bookingControllerViewScopeMonth.listPending}" />
 
                                             <!-- List Cancelled Button -->
                                             <p:commandButton 
@@ -101,8 +105,7 @@
                                                 ajax="false" 
                                                 icon="fa fa-times-circle"
                                                 styleClass="ui-button-danger mx-1" 
-                                                action="#{bookingControllerViewScopeMonth.listCancelledSesionInstances()}" />
-
+                                                action="#{bookingControllerViewScopeMonth.listCancelled}" />
 
                                             <!-- List All Button -->
                                             <p:commandButton 
@@ -110,9 +113,7 @@
                                                 title="All"
                                                 icon="fa fa-list" 
                                                 styleClass="ui-button-primary mx-1" 
-                                                action="#{bookingControllerViewScopeMonth.listAllSesionInstances()}" />
-
-
+                                                action="#{bookingControllerViewScopeMonth.listAll}" />
                                         </div>
                                     </div>
 
@@ -123,7 +124,7 @@
                                 <div class="col-7" >
                                     <h:panelGroup id="groupFilteredSessions" >
                                         <p:dataTable 
-                                            value="#{bookingControllerViewScopeMonth.sortedSessionInstances}"
+                                            value="#{bookingControllerViewScopeMonth.sessionInstancesFiltered}"
                                             var="s"
                                             selectionMode="single"
                                             selection="#{bookingControllerViewScopeMonth.selectedSessionInstance}"
@@ -162,7 +163,7 @@
                                                             <h:outputText class="mx-2" value="#{s.endingTime}">
                                                                 <f:convertDateTime pattern="hh:mm a"/>
                                                             </h:outputText>
-                                                            
+
                                                             <!-- Conditional message for delayed start time -->
                                                             <h:panelGroup rendered="#{s.startingTime gt s.originatingSession.startingTime}">
                                                                 <br/>
@@ -265,10 +266,352 @@
                                 </div>
                                 <div class="col-5" > 
                                     <div class="sticky-top shadow " style="max-height: 100vh; overflow-y: auto;z-index: 100;">
-                                        <common:patient_details_view_scope
-                                            editable="#{true}"
-                                            controller="#{bookingControllerViewScopeMonth}"/>
-                                        
+                                        <p:panel id="ptImp">
+                                            <p:growl id="msg"/>
+                                            <f:facet name="header">
+                                                <h:panelGroup layout="block" styleClass="d-flex justify-content-between align-items-center">
+                                                    <!-- Left aligned content -->
+                                                    <h:panelGroup id="headerFacet">
+                                                        <h:outputText value="Select a Patient" rendered="#{bookingControllerViewScopeMonth.patient eq null}"></h:outputText>
+                                                        <h:outputText styleClass="fas fa-user" />
+                                                        <h:panelGroup 
+                                                            rendered="#{bookingControllerViewScopeMonth.quickSearchPatientList eq null or empty bookingControllerViewScopeMonth.quickSearchPatientList}">
+                                                            <h:outputText
+                                                                rendered="#{bookingControllerViewScopeMonth.patient.id eq null}"
+                                                                value="Patient" 
+                                                                class="mx-4"
+                                                                >
+                                                            </h:outputText>
+                                                            <h:outputText
+                                                                rendered="#{bookingControllerViewScopeMonth.patient.id ne null}"
+                                                                value="Searched Patient Details" 
+                                                                class="mx-2"
+                                                                ></h:outputText>
+                                                            <h:panelGroup id="edit" >
+                                                                <p:selectBooleanButton 
+                                                                    value="#{bookingControllerViewScopeMonth.patientDetailsEditable}" 
+                                                                    offIcon="pi pi-pencil" 
+                                                                    onIcon="pi pi-eye"                                 
+                                                                    class="mx-2"
+                                                                    >
+                                                                    <p:ajax 
+                                                                        process="@this" 
+                                                                        update="viewPatient editPatient btnDone edit" />
+                                                                </p:selectBooleanButton>
+                                                                <p:commandButton id="btnDone" alt="Save Patient Details" class="ui-button-success" icon="fas fa-check" action="#{bookingControllerViewScopeMonth.saveSelected}" rendered="#{bookingControllerViewScopeMonth.patientDetailsEditable}" />
+                                                            </h:panelGroup>
+
+                                                        </h:panelGroup>
+                                                    </h:panelGroup>
+
+
+                                                    <p:focus id="focusIx" for="txtQuickSearchPhoneNumber" />
+                                                    <p:focus context="txtQuickSearchPhoneNumber"/>
+
+
+                                                    <!-- Right aligned quick search -->
+                                                    <h:panelGroup id="quickSearch" >
+                                                        <h:panelGroup layout="block"  styleClass="form-inline">
+                                                            <p:focus  for="txtQuickSearchPhoneNumber" />
+                                                            <p:inputText 
+                                                                autocomplete="off"
+                                                                id="txtQuickSearchPhoneNumber"
+                                                                value="#{bookingControllerViewScopeMonth.quickSearchPhoneNumber}"
+                                                                placeholder="Phone Number"
+                                                                class="form-control-sm mx-1"
+                                                                onfocus="this.select()" 
+                                                                >
+                                                                <p:ajax process="txtQuickSearchPhoneNumber" ></p:ajax>
+                                                            </p:inputText>
+                                                            <p:commandButton 
+                                                                id="btnSearchbyPhoneNo"
+                                                                immediate="true"
+                                                                icon="fa fa-search" 
+                                                                title="Quick Search from Phone Number"
+                                                                action="#{bookingControllerViewScopeMonth.quickSearchPatientLongPhoneNumber()}" 
+                                                                process="btnSearchbyPhoneNo txtQuickSearchPhoneNumber"
+                                                                update="ptImp selectPatient editPatient viewPatient"
+                                                                ajax="false"
+                                                                styleClass="btn-sm mx-1"/>
+                                                            <p:defaultCommand target="btnSearchbyPhoneNo"> </p:defaultCommand>
+                                                            <p:commandButton 
+                                                                id="btnAddNewPatient"
+                                                                icon="fa fa-plus-circle" 
+                                                                title="Add New Patient"
+                                                                action="#{bookingControllerViewScopeMonth.quickSearchNewPatient()}" 
+                                                                process="btnAddNewPatient"
+                                                                update="ptImp selectPatient editPatient viewPatient"
+                                                                styleClass="btn-sm mx-1"/>
+                                                        </h:panelGroup>
+                                                    </h:panelGroup>
+                                                </h:panelGroup>
+                                            </f:facet>
+
+                                            <h:panelGroup id="selectPatient" >
+                                                <h:panelGroup rendered="#{bookingControllerViewScopeMonth.quickSearchPatientList ne null and not empty bookingControllerViewScopeMonth.quickSearchPatientList}">
+                                                    <p:dataTable id="tblPatients" value="#{bookingControllerViewScopeMonth.quickSearchPatientList}" var="ps">
+                                                        <p:column headerText="Name">
+                                                            #{ps.person.name}
+                                                        </p:column>
+                                                        <p:column headerText="Phone Number">
+                                                            #{ps.person.phone}
+                                                        </p:column>
+                                                        <p:column headerText="Mobile Number">
+                                                            #{ps.person.mobile}
+                                                        </p:column>
+                                                        <p:column>
+                                                            <p:commandButton 
+                                                                action="#{bookingControllerViewScopeMonth.selectQuickOneFromQuickSearchPatient}" 
+                                                                id="btnSelectPt"
+                                                                process="btnSelectPt tblPatients"
+                                                                update=":#{p:resolveFirstComponentWithId('ptImp',view).clientId}"
+                                                                value="select">
+                                                                <f:setPropertyActionListener value="#{ps}" target="#{bookingControllerViewScopeMonth.patient}" />
+                                                            </p:commandButton>
+                                                        </p:column>
+                                                    </p:dataTable>
+                                                </h:panelGroup>
+                                            </h:panelGroup>
+
+                                            <h:panelGroup id="editPatient" >
+
+                                                <h:panelGroup rendered="#{bookingControllerViewScopeMonth.patientDetailsEditable}" >
+                                                    <h:panelGroup rendered="#{patientController.quickSearchPatientList eq null or empty patientController.quickSearchPatientList}">
+                                                        <h:panelGroup class="mb-1 w-100" id="panelPatient" >
+                                                            <h:panelGroup id="gpPatient" >
+                                                                <div class="row">
+                                                                    <div class="col-md-3 p-1">
+                                                                        <p:selectOneMenu 
+                                                                            id="cmbTitle"
+                                                                            class="form-control w-100"
+                                                                            value="#{bookingControllerViewScopeMonth.patient.person.title}">
+                                                                            <f:selectItem itemLabel="Select Title" />
+                                                                            <f:selectItems value="#{opdBillController.title}" var="i"
+                                                                                           itemLabel="#{i.label}" itemValue="#{i}"/>
+                                                                            <p:ajax event="change" process="cmbTitle" update="cmbSex" ></p:ajax>
+                                                                        </p:selectOneMenu>
+                                                                    </div>
+                                                                    <div class="col-md-9 p-1">
+                                                                        <p:inputText 
+                                                                            autocomplete="off" 
+                                                                            id="txtNewPtName" 
+                                                                            placeholder="Enter the Name of the patient"
+                                                                            value="#{bookingControllerViewScopeMonth.patient.person.name}"
+                                                                            validatorMessage="Please enter only letters and spaces."
+                                                                            class="form-control" >
+                                                                            <c:if test="#{not empty sessionController.applicationPreference.nameRegex}">
+                                                                                <f:validateRegex pattern="#{sessionController.applicationPreference.nameRegex}"/>
+                                                                            </c:if>
+
+                                                                        </p:inputText>
+                                                                    </div>
+                                                                </div>
+
+                                                                <div class="row">
+                                                                    <div class="col-md-3 p-1">
+                                                                        <p:selectOneMenu 
+                                                                            id="cmbSex" 
+                                                                            value="#{bookingControllerViewScopeMonth.patient.person.sex}"
+                                                                            class="form-control w-100">
+                                                                            <f:selectItem itemLabel="Select Gender"/>
+                                                                            <f:selectItems value="#{opdBillController.sex}"/>
+                                                                        </p:selectOneMenu>
+                                                                    </div>
+                                                                    <div class="col-md-9 p-1">
+                                                                        <div class="row">
+                                                                            <div class="col-md-2">
+                                                                                <p:inputText 
+                                                                                    autocomplete="off" 
+                                                                                    id="year" 
+                                                                                    placeholder="Years"
+
+                                                                                    value="#{bookingControllerViewScopeMonth.patient.person.ageYearsComponent}"
+                                                                                    class="form-control">
+                                                                                    <f:ajax event="keyup" execute="@this" render="dpDob" />
+                                                                                </p:inputText>
+                                                                            </div>
+                                                                            <div class="col-md-2">
+                                                                                <p:inputText
+
+                                                                                    autocomplete="off" id="month" placeholder="Months"
+                                                                                    value="#{bookingControllerViewScopeMonth.patient.person.ageMonthsComponent}"
+                                                                                    class="form-control">
+                                                                                    <f:ajax event="keyup" execute="@this"  render="dpDob"  />
+                                                                                </p:inputText>
+                                                                            </div>
+                                                                            <div class="col-md-2">
+                                                                                <p:inputText 
+
+                                                                                    autocomplete="off" id="day" placeholder="Days"
+                                                                                    value="#{bookingControllerViewScopeMonth.patient.person.ageDaysComponent}"
+                                                                                    class="form-control">
+                                                                                    <f:ajax event="keyup" execute="@this"  render="dpDob" />
+                                                                                </p:inputText>
+                                                                            </div>
+                                                                            <div class="col-md-6">
+                                                                                <p:datePicker  
+                                                                                    value="#{bookingControllerViewScopeMonth.patient.person.dob}"
+                                                                                    id="dpDob" 
+                                                                                    class="w-100"
+                                                                                    yearNavigator="true"
+                                                                                    monthNavigator="true"
+                                                                                    inputStyleClass="form-control"
+                                                                                    pattern="#{sessionController.applicationPreference.longDateFormat}"
+                                                                                    placeholder="Date of Birth (dd/mm/yyyy)"
+                                                                                    >
+                                                                                    <p:ajax event="dateSelect" process="@this" update="year month day" />
+                                                                                </p:datePicker>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+
+                                                                <div class="row">
+                                                                    <div class="col-md-3 p-1">
+                                                                        <p:inputText 
+                                                                            id="txtMobile" 
+                                                                            autocomplete="off" 
+                                                                            placeholder="Mobile Number"
+                                                                            value="#{bookingControllerViewScopeMonth.patient.mobileNumberStringTransient}"
+                                                                            class="form-control" 
+                                                                            validatorMessage="Please enter valid Number">
+                                                                            <c:if test="#{not empty sessionController.applicationPreference.mobileRegex}">
+                                                                                <f:validateRegex pattern="#{sessionController.applicationPreference.mobileRegex}"/>
+                                                                            </c:if>
+                                                                        </p:inputText>
+                                                                    </div>
+                                                                    <div class="col-md-3 p-1">
+                                                                        <p:inputText 
+                                                                            id="txtPhone" 
+                                                                            autocomplete="off" 
+                                                                            placeholder="Phone Number"
+                                                                            value="#{bookingControllerViewScopeMonth.patient.phoneNumberStringTransient}"
+                                                                            class="form-control" validatorMessage="Please enter valid Number">
+                                                                            <c:if test="#{not empty sessionController.applicationPreference.mobileRegex}">
+                                                                                <f:validateRegex pattern="#{sessionController.applicationPreference.mobileRegex}"/>
+                                                                            </c:if>
+                                                                        </p:inputText>
+                                                                    </div>
+                                                                    <div class="col-md-3 p-1">
+                                                                        <p:inputText 
+                                                                            autocomplete="off" id="txtEmail" placeholder="Enter Email here"
+                                                                            value="#{bookingControllerViewScopeMonth.patient.person.email}"
+                                                                            class="form-control"
+                                                                            >
+                                                                            <c:if test="#{not empty sessionController.applicationPreference.emailRegex}">
+                                                                                <f:validateRegex pattern="#{sessionController.applicationPreference.emailRegex}"/>
+                                                                            </c:if>
+                                                                        </p:inputText>
+                                                                    </div>
+                                                                    <div class="col-md-3 p-1">
+                                                                        <p:inputText 
+                                                                            id="txtNic"
+                                                                            autocomplete="off"
+                                                                            placeholder="National ID Number"
+                                                                            value="#{bookingControllerViewScopeMonth.patient.person.nic}"
+                                                                            class="form-control"/>
+                                                                    </div>
+                                                                </div>
+
+                                                                <div class="row">
+                                                                    <div class="col-md-8 p-1">
+                                                                        <p:inputText
+                                                                            id="txtAddress"
+                                                                            autocomplete="off"
+                                                                            placeholder="Address"
+                                                                            value="#{bookingControllerViewScopeMonth.patient.person.address}"
+                                                                            class="form-control"/>
+                                                                    </div>
+                                                                    <div class="col-md-4 p-1">
+                                                                        <p:autoComplete 
+                                                                            id="acNewPtArea" 
+                                                                            placeholder="Search &amp; Select Area"
+                                                                            completeMethod="#{areaController.completeArea}"
+                                                                            var="pta" itemLabel="#{pta.name}"
+                                                                            minQueryLength="4"
+                                                                            itemValue="#{pta}" forceSelection="true"
+                                                                            value="#{bookingControllerViewScopeMonth.patient.person.area}"
+                                                                            inputStyleClass="form-control"
+                                                                            class="w-100"/>
+                                                                    </div>
+                                                                </div>
+
+                                                                <p:tooltip for="txtNewPtName" value="Patient Name"  showDelay="0" hideDelay="0"></p:tooltip>
+                                                                <p:tooltip for="txtNic" value="NIC No"  showDelay="0" hideDelay="0"></p:tooltip>
+                                                                <p:tooltip for="dpDob" value="Date Of Birth"  showDelay="0" hideDelay="0"></p:tooltip>
+                                                                <p:tooltip for="txtAddress" value="Address"  showDelay="0" hideDelay="0"></p:tooltip>
+                                                                <p:tooltip for="txtMobile" value="Mobile Number"  showDelay="0" hideDelay="0"></p:tooltip>
+                                                                <p:tooltip for="txtPhone" value="Home Phone Number"  showDelay="0" hideDelay="0"></p:tooltip>
+                                                                <p:tooltip for="cmbSex" value="Sex"  showDelay="0" hideDelay="0"></p:tooltip>
+                                                                <p:tooltip for="cmbTitle" value="Title"  showDelay="0" hideDelay="0"></p:tooltip>
+                                                                <p:tooltip for="acNewPtArea" value="Area"  showDelay="0" hideDelay="0"></p:tooltip>
+                                                                <p:tooltip for="txtEmail" value="Email"  showDelay="0" hideDelay="0"></p:tooltip>
+
+                                                                <p:tooltip for="year" value="Age- Years Component"  showDelay="0" hideDelay="0"></p:tooltip>
+                                                                <p:tooltip for="month" value="Age- Month Component"  showDelay="0" hideDelay="0"></p:tooltip>
+                                                                <p:tooltip for="day" value="Age- Days Component"  showDelay="0" hideDelay="0"></p:tooltip>
+
+
+                                                            </h:panelGroup>
+                                                        </h:panelGroup>
+                                                    </h:panelGroup>
+                                                </h:panelGroup>
+                                            </h:panelGroup>
+                                            <h:panelGroup id="viewPatient" >
+
+                                                <h:panelGroup  rendered="#{not bookingControllerViewScopeMonth.patientDetailsEditable}"  >
+                                                    <h:panelGroup  rendered="#{bookingControllerViewScopeMonth.quickSearchPatientList eq null}" >
+                                                        <h:panelGrid columns="3" class="my-1" id="panelPatientDisplay" rendered="#{bookingControllerViewScopeMonth.patient ne null}" >
+                                                            <h:outputLabel value="Name " class="mx-3"/>
+                                                            <h:outputLabel value=" : " class="mx-3"/>
+                                                            <h:outputText value="#{bookingControllerViewScopeMonth.patient.person.nameWithTitle}" />
+
+                                                            <h:outputLabel value="Gender " class="mx-3"/>
+                                                            <h:outputLabel value=" : " class="mx-3"/>
+                                                            <h:outputText value="#{bookingControllerViewScopeMonth.patient.person.sex}" />
+
+                                                            <h:outputLabel value="Date of Birth " class="mx-3"/>
+                                                            <h:outputLabel value=" : " class="mx-3"/>
+                                                            <h:outputText value="#{bookingControllerViewScopeMonth.patient.person.dob}" >
+                                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
+                                                            </h:outputText>
+
+                                                            <h:outputLabel value="Age  " class="mx-3"/>
+                                                            <h:outputLabel value=" : " class="mx-3"/>
+                                                            <h:outputText value="#{bookingControllerViewScopeMonth.patient.person.ageAsString}" />
+
+                                                            <h:outputLabel value="Mobile No. " class="mx-3"/>
+                                                            <h:outputLabel value=" : " class="mx-3"/>
+                                                            <h:outputText value="#{bookingControllerViewScopeMonth.patient.person.mobile}" />
+
+                                                            <h:outputLabel value="Phone No. " class="mx-3"/>
+                                                            <h:outputLabel value=" : " class="mx-3"/>
+                                                            <h:outputText value="#{bookingControllerViewScopeMonth.patient.person.phone}" />
+
+                                                            <h:outputLabel value="Email " class="mx-3"/>
+                                                            <h:outputLabel value=" : " class="mx-3"/>
+                                                            <h:outputText value="#{bookingControllerViewScopeMonth.patient.person.email}" />
+
+                                                            <h:outputLabel value="National ID No. " class="mx-3"/>
+                                                            <h:outputLabel value=" : " class="mx-3"/>
+                                                            <h:outputText value="#{bookingControllerViewScopeMonth.patient.person.nic}" />
+
+                                                            <h:outputLabel value="Address " class="mx-3"/>
+                                                            <h:outputLabel value=" : " class="mx-3"/>
+                                                            <h:outputText value="#{bookingControllerViewScopeMonth.patient.person.address}" />
+
+                                                            <h:outputLabel value="Area " class="mx-3"/>
+                                                            <h:outputLabel value=" : " class="mx-3"/>
+                                                            <h:outputText value="#{bookingControllerViewScopeMonth.patient.person.area.name}" />
+
+                                                        </h:panelGrid>
+                                                    </h:panelGroup>
+                                                </h:panelGroup>
+
+                                            </h:panelGroup>
+
+                                        </p:panel>
+
                                         <h:panelGroup id="gpAdditionalItems" >
                                             <p:panel header="Additional Items" rendered="#{not empty bookingControllerViewScopeMonth.itemsAvailableToAddToBooking}">
                                                 <p:row >
