@@ -36,7 +36,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.faces.event.AjaxBehaviorEvent;
-import javax.faces.event.ValueChangeEvent;
 import javax.inject.Inject;
 import javax.persistence.TemporalType;
 import org.json.JSONArray;
@@ -789,6 +788,8 @@ public class FinancialTransactionController implements Serializable {
             p.serializeDenominations();
             paymentController.save(p);
         }
+        currentBill.setPayments(currentBillPayments);
+        billController.save(currentBill);
         return "/cashier/initial_fund_bill_print?faces-redirect=true";
     }
 
