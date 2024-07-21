@@ -294,6 +294,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     private Double totalSaffFee;
     private boolean canChangeSpecialityAndDoctorInAddedBillItem;
     private String localNumber;
+
     /**
      *
      * Navigation Methods
@@ -831,7 +832,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         getCurrentlyWorkingStaff().add(bf.getStaff());
         selectedCurrentlyWorkingStaff = bf.getStaff();
     }
-    
+
     public void changeBillDoctorByReferral() {
         if (referredBy == null) {
             JsfUtil.addErrorMessage("No referring doctor");
@@ -1398,6 +1399,11 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     }
 
     public boolean isForeigner() {
+        if (configOptionApplicationController.getBooleanValueByKey("Save the Patient with Patient Status")) {
+            if (patient != null) {
+                foreigner = patient.getPerson().isForeigner();
+            }
+        }
         return foreigner;
     }
 
@@ -2002,7 +2008,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         newBatchBill.setCreatedAt(new Date());
         newBatchBill.setCreater(getSessionController().getLoggedUser());
         newBatchBill.setFromStaff(selectedCurrentlyWorkingStaff);
-       
 
         getBillFacade().create(newBatchBill);
 
@@ -2091,9 +2096,9 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         newBill.setBillDate(new Date());
         newBill.setBillTime(new Date());
         newBill.setPatient(patient);
-        
+
         if (localNumber != null) {
-             newBill.setLocalNumber(localNumber);
+            newBill.setLocalNumber(localNumber);
         }
 
 //        newBill.setMembershipScheme(membershipSchemeController.fetchPatientMembershipScheme(patient, getSessionController().getApplicationPreference().isMembershipExpires()));

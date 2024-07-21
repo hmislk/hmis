@@ -844,26 +844,26 @@
                                         </div>
 
                                         <div class="col-md-4" >
-                                            <h:panelGroup id="gpLocalForeign"  class="col-md-6" >
-                                                <p:commandButton value="Mark Foreigner" 
-                                                                 class="mx-2"
-                                                                 action="#{opdBillController.markAsForeigner}" 
-                                                                 rendered="#{!opdBillController.foreigner}" 
-                                                                 process="@this" 
-                                                                 update="gpLocalForeign :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} tblBillItem paymentDetails" 
-                                                                 ></p:commandButton>
-                                                <p:commandButton value="Mark Local" 
-                                                                 class="mx-2"
-                                                                 action="#{opdBillController.markAsLocal}" 
-                                                                 rendered="#{opdBillController.foreigner}" 
-                                                                 process="@this" 
-                                                                 update="gpLocalForeign :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} tblBillItem paymentDetails" 
-                                                                 ></p:commandButton>
-                                                <!--                                                <p:commandButton value="Print Last Bill" 
-                                                                                                                 class="btn m-1"
-                                                                                                                 ajax="false" 
-                                                                                                                 action="opd_bill_print_last" >
-                                                                                                </p:commandButton>-->
+                                            <h:panelGroup id="gpLocalForeign"  class="col-md-6" rendered="#{!configOptionApplicationController.getBooleanValueByKey('Save the Patient with Patient Status')}">
+                                                <p:commandButton 
+                                                    value="Mark Foreigner" 
+                                                    class="mx-2"
+                                                    action="#{opdBillController.markAsForeigner}" 
+                                                    rendered="#{!opdBillController.foreigner}" 
+                                                    process="@this" 
+                                                    update="gpLocalForeign :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} tblBillItem paymentDetails" 
+                                                    >
+                                                </p:commandButton>
+                                                <p:commandButton 
+                                                    value="Mark Local" 
+                                                    class="mx-2"
+                                                    action="#{opdBillController.markAsLocal}" 
+                                                    rendered="#{opdBillController.foreigner}" 
+                                                    process="@this" 
+                                                    update="gpLocalForeign :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} tblBillItem paymentDetails" 
+                                                    >
+                                                </p:commandButton>
+
                                             </h:panelGroup>
                                         </div>
                                     </div>

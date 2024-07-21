@@ -317,10 +317,12 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
         String j = "Select t "
                 + " from Token t"
                 + " where t.department=:dep"
+                + " and t.tokenDate=:date "
                 + " and t.tokenType=:ty"
                 + " and t.completed=:com";
         Map m = new HashMap();
         m.put("dep", sessionController.getDepartment());
+        m.put("date", new Date());
         m.put("ty", TokenType.OPD_TOKEN);
         m.put("com", false);
         if (counter != null) {
@@ -356,13 +358,15 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
         String j = "Select t "
                 + " from Token t"
                 + " where t.department=:dep"
+                + " and t.tokenDate=:date "
                 + " and t.called=:cal "
                 + " and t.tokenType=:ty"
                 + " and t.inProgress=:prog "
                 + " and t.completed=:com"; // Add conditions to filter out tokens that are in progress or completed
         m.put("dep", sessionController.getDepartment());
+        m.put("date", new Date());
         m.put("cal", true); // Tokens that are called
-        m.put("prog", true); // Tokens that are not in progress
+        m.put("prog", false); // Tokens that are not in progress
         m.put("ty", TokenType.OPD_TOKEN); // Chack Token Type that are called
         m.put("com", false); // Tokens that are not completed
         j += " order by t.id";

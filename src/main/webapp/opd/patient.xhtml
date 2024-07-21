@@ -93,7 +93,13 @@
                                         <p:outputLabel value="Blood Group:" rendered="#{not empty patientController.current.person.bloodGroup.name}" />
                                         <p:outputLabel value="#{patientController.current.person.bloodGroup.name}" rendered="#{not empty patientController.current.person.bloodGroup.name}" />
 
-
+                                        <p:outputLabel value="Patient Status :" rendered="#{configOptionApplicationController.getBooleanValueByKey('Save the Patient with Patient Status')}"/>
+                                        <p:badge 
+                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Save the Patient with Patient Status')}"
+                                            value="#{patientController.current.person.foreigner?'Patient is Forigner':'Patient is Local'}" 
+                                            severity="#{patientController.current.person.foreigner?'warning':'success'}" 
+                                            styleClass="mr-2">
+                                        </p:badge>
                                         <p:outputLabel value="Has an Account:"  />
                                         <p:outputLabel value="#{patientController.current.hasAnAccount?'Has an account':'No Account'}" />
 
@@ -103,7 +109,6 @@
 
                                         <p:outputLabel value="Credit Limit:" rendered="#{patientController.current.hasAnAccount}" />
                                         <p:outputLabel value="#{patientController.current.creditLimit}" rendered="#{patientController.current.hasAnAccount}" />
-
 
 
                                     </p:panelGrid>
