@@ -135,6 +135,11 @@ public class FinancialTransactionController implements Serializable {
 
     private ReportTemplateRowBundle paymentSummaryBundle;
 
+    private Date fromDate;
+    private Date toDate;
+
+    private ReportTemplateRowBundle paymentSummaryBundle;
+
     // </editor-fold>  
     // <editor-fold defaultstate="collapsed" desc="Constructors">
     public FinancialTransactionController() {
@@ -595,7 +600,6 @@ public class FinancialTransactionController implements Serializable {
         if (paymentsFromShiftSratToNow == null) {
             return;
         }
-
         paymentSummaryBundle = new ReportTemplateRowBundle();
         Map<String, Double> aggregatedPayments = new HashMap<>();
         Map<String, ReportTemplateRow> keyMap = new HashMap<>();
@@ -637,11 +641,12 @@ public class FinancialTransactionController implements Serializable {
                 keyMap.putIfAbsent(keyString, row);
                 aggregatedPayments.merge(keyString, p.getPaidValue(), Double::sum);
             }
+
         }
 
         List<ReportTemplateRow> rows = aggregatedPayments.entrySet().stream().map(entry -> {
             ReportTemplateRow row = keyMap.get(entry.getKey());
-
+          
             if (row != null) {
                 row.setRowValue(entry.getValue());
             }
@@ -652,6 +657,7 @@ public class FinancialTransactionController implements Serializable {
         if (paymentSummaryBundle != null) {
             paymentSummaryBundle.getReportTemplateRows().addAll(rows);
         }
+    }
 
     public String navigateToViewEndOfSelectedShiftStartSummaryBill(Bill startBill) {
         resetClassVariables();
@@ -679,7 +685,6 @@ public class FinancialTransactionController implements Serializable {
         nonClosedShiftStartFundBill = startBill;
         fillPaymentsFromShiftStartToEnd(startBill, endBill, startBill.getCreater());
         return "/cashier/shift_end_summery_bill_of_selected_user_not_closed?faces-redirect=true";
-
     }
 
     public String navigateToCreateShiftEndSummaryBillByBills() {
@@ -1609,14 +1614,13 @@ public class FinancialTransactionController implements Serializable {
 
     public void setPaymentSummaryBundle(ReportTemplateRowBundle paymentSummaryBundle) {
         this.paymentSummaryBundle = paymentSummaryBundle;
-
+    }
     public List<Bill> getShiaftStartBills() {
         return shiaftStartBills;
     }
 
     public void setShiaftStartBills(List<Bill> shiaftStartBills) {
         this.shiaftStartBills = shiaftStartBills;
-
     }
 
 }
