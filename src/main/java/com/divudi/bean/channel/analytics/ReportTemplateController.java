@@ -58,19 +58,22 @@ public class ReportTemplateController implements Serializable {
     private ReportTemplateFacade ejbFacade;
     private ReportTemplate current;
     private List<ReportTemplate> items = null;
-
+    
+    
     private Date date;
     private Date fromDate;
     private Date toDate;
     private Institution institution;
-    private Institution creditCompany;
     private Department department;
+    private WebUser user;
+    private Staff staff;
+    
+
+    private Institution creditCompany;
     private Institution fromInstitution;
     private Department fromDepartment;
     private Institution toInstitution;
     private Department toDepartment;
-    private WebUser user;
-    private Staff staff;
 
     private List<ReportTemplateRow> ReportTemplateRows;
     private ReportTemplateRowBundle reportTemplateRowBundle;
@@ -89,6 +92,10 @@ public class ReportTemplateController implements Serializable {
             JsfUtil.addSuccessMessage("Saved Successfully");
         }
     }
+
+    
+    
+    
 
     public ReportTemplate findReportTemplateByName(String name) {
         if (name == null) {
@@ -324,42 +331,6 @@ public class ReportTemplateController implements Serializable {
         parameters.put("bir", true);
         parameters.put("br", true);
 
-        jpql += " group by bill.billTypeAtomic";
-
-        System.out.println("jpql = " + jpql);
-        System.out.println("parameters = " + parameters);
-
-        List<ReportTemplateRow> rs = (List<ReportTemplateRow>) ejbFacade.findLightsByJpql(jpql, parameters, TemporalType.DATE);
-
-        if (rs == null || rs.isEmpty()) {
-            System.out.println("No results found.");
-        } else {
-            System.out.println("Results found: " + rs.size());
-        }
-
-        long idCounter = 1;
-        for (ReportTemplateRow row : rs) {
-            row.setId(idCounter++);
-        }
-        reportTemplateRowBundle.setReportTemplateRows(rs);
-    }
-
-    private void handleBillFeeGroupedByToDepartmentAndCategory() {
-        String jpql;
-        Map<String, Object> parameters = new HashMap<>();
-        reportTemplateRowBundle = new ReportTemplateRowBundle();
-
-        jpql = "select new com.divudi.data.ReportTemplateRow("
-                + " bill.billTypeAtomic, sum(bf.feeValue)) "
-                + " from BillFee bf "
-                + " join bf.bill bill "
-                + " where bf.retired<>:bfr "
-                + " and bf.billItem.retired<>:bir "
-                + " and bill.retired<>:br ";
-        parameters.put("bfr", true);
-        parameters.put("bir", true);
-        parameters.put("br", true);
-
         if (current.getBillTypeAtomics() != null) {
             jpql += " and bill.billTypeAtomic in :btas ";
             parameters.put("btas", current.getBillTypeAtomics());
@@ -549,7 +520,7 @@ public class ReportTemplateController implements Serializable {
     }
 
     private void handlePaymentTypeSummaryUsingBills() {
-        // Method implementation here
+
     }
 
     public void saveSelected() {
@@ -712,6 +683,14 @@ public class ReportTemplateController implements Serializable {
             return null;
         }
         return "/dataAdmin/report?faces-redirect=true";
+    }
+
+    public String navigateToEditGenerateReport() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Nothing Selected");
+            return null;
+        }
+        return "/dataAdmin/report";
     }
 
     public List<ReportTemplate> getAllItems() {
