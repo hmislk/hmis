@@ -99,10 +99,9 @@ public class Payment implements Serializable {
     @ManyToOne
     Department department;
 
-
     @Transient
     private List<Denomination> currencyDenominations;
-    
+
     @Transient
     private List<String> humanReadableDenominations;
 
@@ -113,14 +112,19 @@ public class Payment implements Serializable {
     public void setId(Long id) {
         this.id = id;
     }
-    
+
     public List<String> getHumanReadableDenominations() {
         List<String> humanReadableList = new ArrayList<>();
         deserializeDenominations();
         if (this.currencyDenominations != null) {
             for (Denomination denomination : this.currencyDenominations) {
-                String humanReadable = "Denomination: " + denomination.getValue() + ", Count: " + denomination.getCount() + ", Value: " + (denomination.getValue() * denomination.getCount());
-                humanReadableList.add(humanReadable);
+                if (denomination.getCount() > 0) {
+                    String valueFormatted = String.format("%.2f", denomination.getValue());
+                    String countFormatted = String.format("%d", denomination.getCount());
+                    String totalFormatted = String.format("%.2f", denomination.getValue() * denomination.getCount());
+                    String humanReadable = "(" + valueFormatted + "x" + countFormatted + "=" + totalFormatted + ")";
+                    humanReadableList.add(humanReadable);
+                }
             }
         }
         return humanReadableList;
@@ -389,8 +393,6 @@ public class Payment implements Serializable {
             this.currencyDenominationsJson = "[]"; // Empty JSON array if currencyDenominations is null
         }
     }
-    
-    
 
     public void deserializeDenominations() {
         if (this.currencyDenominationsJson != null && !this.currencyDenominationsJson.isEmpty()) {
@@ -414,7 +416,6 @@ public class Payment implements Serializable {
         }
     }
 
-
     public String getCurrencyDenominationsJson() {
         return currencyDenominationsJson;
     }
@@ -426,6 +427,5 @@ public class Payment implements Serializable {
     public void setCurrencyDenominations(List<Denomination> currencyDenominations) {
         this.currencyDenominations = currencyDenominations;
     }
-    
-    
+
 }
