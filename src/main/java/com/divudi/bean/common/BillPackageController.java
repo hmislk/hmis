@@ -226,7 +226,6 @@ public class BillPackageController implements Serializable, ControllerWithPatien
                 }
             }
             myBill.setBillItems(list);
-            //////System.out.println("555");
             getBillBean().calculateBillItems(myBill, tmp);
             bills.add(myBill);
         }
@@ -293,7 +292,6 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             getBillSearch().setBill((BilledBill) b);
             getBillSearch().setPaymentMethod(b.getPaymentMethod());
             getBillSearch().setComment("Batch Cancell");
-            //////System.out.println("ggg : " + getBillSearch().getComment());
             getBillSearch().cancelOpdBill();
         }
 
@@ -307,9 +305,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     private void saveBillItemSessions() {
         for (BillEntry be : lstBillEntries) {
             BillItem temBi = be.getBillItem();
-            ////System.out.println("temBi = " + temBi);
             BillSession temBs = getServiceSessionBean().createBillSession(temBi);
-            ////System.out.println("temBs = " + temBs);
             temBi.setBillSession(temBs);
             if (temBs != null) {
                 getBillSessionFacade().create(temBs);
@@ -331,9 +327,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             getBills().add(b);
 
         } else {
-            //    //////System.out.println("11");
             putToBills();
-            //   //////System.out.println("22");
         }
 
         saveBatchBill();
@@ -359,7 +353,6 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         saveBillItemSessions();
 
         clearBillItemValues();
-        //////System.out.println("33");
 
         JsfUtil.addSuccessMessage(
                 "Bill Saved");
@@ -803,8 +796,6 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     }
 
     public void addToBill() {
-//        System.out.println("getCurrentBillItem = " + getCurrentBillItem());
-//        System.out.println("getCurrentBillItem.item = " + getCurrentBillItem().getItem().getName());
         if (getLstBillEntries().size() > 0) {
             JsfUtil.addErrorMessage("You can not add more than on package at a time create new bill");
             return;
@@ -950,7 +941,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         for (BillEntry b : getLstBillEntries()) {
             if (b.getBillItem().getItem() != r.getBillItem().getItem()) {
                 temp.add(b);
-                //////System.out.println(b.getBillItem().getNetValue());
+
             }
         }
         lstBillEntries = temp;
@@ -1480,23 +1471,23 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     
 
     public List<Item> getGenderBasedPackaes() {
-        System.out.println("getPackages");
+        //System.out.println("getPackages");
         if (packaes == null) {
             fillPackages();
         }
         if (configOptionApplicationController.getBooleanValueByKey("Package bill – Reloading of Packages with Consideration of Gender")) {
-            System.out.println("option ok");
+            //System.out.println("option ok");
             if (getPatient() == null) {
-                System.out.println("pt is null");
+                //System.out.println("pt is null");
                 return packaes;
             } else if (getPatient().getPerson().getSex() == null) {
-                System.out.println("sex is null");
-                return bothPackaes;
+                //System.out.println("sex is null");
+                return packaes;
             } else if (getPatient().getPerson().getSex() == Sex.Male) {
-                System.out.println("males");
+                //System.out.println("males");
                 return malePackaes;
             } else if (getPatient().getPerson().getSex() == Sex.Female) {
-                System.out.println("females");
+                //System.out.println("females");
                 return femalePackaes;
             } else {
                 return bothPackaes;
@@ -1518,9 +1509,9 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     }
 
     private void fillPackages() {
-        System.out.println("fillPackages");
+        //System.out.println("fillPackages");
         packaes = itemController.getPackaes();
-        System.out.println("packaes = " + packaes);
+        //System.out.println("packaes = " + packaes);
         if (packaes == null) {
             return;
         }
@@ -1528,15 +1519,15 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         femalePackaes = new ArrayList<>();
         bothPackaes = new ArrayList<>();
         for (Item i : packaes) {
-            System.out.println("i = " + i);
+            //System.out.println("i = " + i);
             if (i.getForGender() == null) {
-                System.out.println("gender nill");
+                //System.out.println("gender nill");
                 bothPackaes.add(i);
             } else if (i.getForGender().equalsIgnoreCase("Male")) {
-                System.out.println("mp = " );
+                //System.out.println("mp = " );
                 malePackaes.add(i);
             } else if (i.getForGender().equalsIgnoreCase("Female")) {
-                System.out.println("fp = " );
+                //System.out.println("fp = " );
                 femalePackaes.add(i);
             } else if (i.getForGender().equalsIgnoreCase("Both")) {
                 bothPackaes.add(i);
