@@ -252,6 +252,9 @@ public class Item implements Serializable, Comparable<Item> {
 
     @Transient
     private String transCodeFromName;
+    
+    @Lob
+    private String forGender;
 
     @Column(name = "DTYPE", insertable = false, updatable = false)
     private String clazz;
@@ -1392,6 +1395,14 @@ public class Item implements Serializable, Comparable<Item> {
 
     public void setCanRemoveItemfromPackage(boolean canRemoveItemfromPackage) {
         this.canRemoveItemfromPackage = canRemoveItemfromPackage;
+    }
+
+    public String getForGender() {
+        return forGender;
+    }
+
+    public void setForGender(String forGender) {
+        this.forGender = forGender;
     }
 
     static class ReportItemComparator implements Comparator<ReportItem> {

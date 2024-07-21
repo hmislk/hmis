@@ -20,92 +20,103 @@
                                                 ajax="false" 
                                                 value="Item Fees"
                                                 actionListener="#{viewScopeDataTransferController.makeAdminFeesAsPreviousPage()}"
-                                                action="#{itemFeeManager.navigateToItemFees()}"/>
-                                            
-                                             <p:commandButton 
+                                                action="#{itemFeeManager.navigateToItemFees()}">
+                                            </p:commandButton>
+
+                                            <p:commandButton 
                                                 class="w-100"
                                                 ajax="false" 
                                                 value="Fee List Types"
-                                                action="#{categoryController.navigateToManageFeeListTypes()}"/>
-                                            
+                                                action="#{categoryController.navigateToManageFeeListTypes()}">
+                                            </p:commandButton>
+
                                             <p:commandButton 
                                                 class="w-100"
                                                 ajax="false" 
                                                 value="Collecting Centre Item Fees"
-                                                action="#{itemFeeManager.navigateToCollectingCentreItemFees()}"/>
-                                            
-                                             <p:commandButton 
+                                                action="#{itemFeeManager.navigateToCollectingCentreItemFees()}">
+                                            </p:commandButton>
+
+                                            <p:commandButton 
                                                 class="w-100"
                                                 ajax="false" 
                                                 value="Fee List Item Fees"
-                                                action="#{itemFeeManager.navigateToFeeListFees()}"/>
-
+                                                action="#{itemFeeManager.navigateToFeeListFees()}">
+                                            </p:commandButton>
 
                                             <p:commandButton
                                                 class="w-100"
                                                 ajax="false" 
                                                 value="Item Fees - Multiple"
-                                                action="#{itemFeeManager.navigateToItemFeesMultiple()}"/>
+                                                action="#{itemFeeManager.navigateToItemFeesMultiple()}">
+                                            </p:commandButton>
 
-                                            <p:commandButton class="w-100"
-                                                             ajax="false"
-                                                             value="Item Vise Fees List"
-                                                             action="#{itemFeeManager.navigateItemViseFeeList}"/>
+                                            <p:commandButton 
+                                                class="w-100"
+                                                ajax="false"
+                                                value="Item Vise Fees List"
+                                                action="#{itemFeeManager.navigateItemViseFeeList}">
+                                            </p:commandButton>
 
-                                            <p:commandButton class="w-100"
-                                                             ajax="false"
-                                                             value="Item Fees List"
-                                                             action="#{itemFeeManager.navigateItemFeeList}"/>
+                                            <p:commandButton 
+                                                class="w-100"
+                                                ajax="false"
+                                                value="Item Fees List"
+                                                action="#{itemFeeManager.navigateItemFeeList}">
+                                            </p:commandButton>
 
-                                            <p:commandButton class="w-100"
-                                                             ajax="false"
-                                                             value="Collecting Centre Item Fees List"
-                                                             action="#{itemFeeManager.navigateToCollectingCentreItemFeeList}"/>
+                                            <p:commandButton 
+                                                class="w-100"
+                                                ajax="false"
+                                                value="Collecting Centre Item Fees List"
+                                                action="#{itemFeeManager.navigateToCollectingCentreItemFeeList}">
+                                            </p:commandButton>
 
-                                            <p:commandButton class="w-100"
-                                                             ajax="false"
-                                                             value="Upload Item Fees"
-                                                             action="#{itemFeeManager.navigateToUploadItemFees()}"/>
+                                            <p:commandButton 
+                                                class="w-100"
+                                                ajax="false"
+                                                value="Upload Item Fees"
+                                                action="#{itemFeeManager.navigateToUploadItemFees()}">
+                                            </p:commandButton>
 
+                                            <p:commandButton 
+                                                class="w-100"
+                                                ajax="false"
+                                                value="Upload Collecting Centre Item Fees"
+                                                action="#{itemFeeManager.navigateToUploadItemFees()}">
+                                            </p:commandButton>
 
-                                            <p:commandButton class="w-100"
-                                                             ajax="false"
-                                                             value="Upload Collecting Centre Item Fees"
-                                                             action="#{itemFeeManager.navigateToUploadItemFees()}"/>
-
-
-
-                                            <p:commandButton class="w-100"
-                                                             ajax="false"
-                                                             value="Correct Item Fees"
-                                                             action="/dataAdmin/bulk_update_itemsFees"/>
+                                            <p:commandButton 
+                                                class="w-100"
+                                                ajax="false"
+                                                value="Correct Item Fees"
+                                                action="/dataAdmin/bulk_update_itemsFees">
+                                            </p:commandButton>
                                         </div>
                                     </p:tab>
 
-
-
-
-
                                     <p:tab title="Manage Packages">
                                         <div class="d-grid gap-2">
-                                            <p:commandButton class="w-100"
-                                                             ajax="false" value="Package Names"
-                                                             action="/admin/pricing/package_name"/>
-                                            <p:commandButton class="w-100"
-                                                             ajax="false" value="Add Item to Package"
-                                                             action="/admin/pricing/package_item"/>
-                                            <p:commandButton class="w-100"
-                                                             ajax="false" value="Manage Package Prices"
-                                                             action="/admin/pricing/package_item_prices"/>
-                                            <!--                                            <p:commandButton class="w-100"
-                                                                                                         ajax="false" value="Medical Package Names"
-                                                                                                         action="/admin/pricing/opd_medical_package_name"/>
-                                                                                        <p:commandButton class="w-100"
-                                                                                                         ajax="false" value="Add Item to Package"
-                                                                                                         action="/admin/pricing/opd_medical_package_item"/>
-                                                                                        <p:commandButton class="w-100"
-                                                                                                         ajax="false" value="Manage Package Prices"
-                                                                                                         action="/admin/pricing/opd_medical_package_item_prices"/>-->
+                                            <p:commandButton 
+                                                class="w-100"
+                                                ajax="false" 
+                                                value="Package Names"
+                                                action="#{packageNameController.navigateToPackageNames()}">
+                                            </p:commandButton>
+                                            
+                                            <p:commandButton 
+                                                class="w-100"
+                                                ajax="false" 
+                                                value="Add Item to Package"
+                                                action="#{packageItemController.navigateToPackageItemList()}">
+                                            </p:commandButton>
+                                            
+                                            <p:commandButton 
+                                                class="w-100"
+                                                ajax="false" 
+                                                value="Manage Package Prices"
+                                                action="#{packageItemFeeController.navigateToPackageItemFees()}">
+                                            </p:commandButton>
                                         </div>
                                     </p:tab>
 
@@ -134,7 +145,7 @@
                                             <p:commandButton 
                                                 class="w-100"
                                                 ajax="false" value="Pharmacy Discounts"
-                                                action="/admin/pricing/membership/payment_scheme_discount_pharmacy_by_category"/>
+                                                action="/admin/pricing/membership/payment_scheme_discount_pharmacy_by_category?faces-redirect=true"/>
                                             <p:commandButton 
                                                 class="w-100" 
                                                 action="#{navigationController.navigateToPaymentSchemeDiscountPharmacyByCategory()}" 
@@ -203,12 +214,8 @@
                                             <p:commandButton ajax="false" value="Channelling Discounts" 
                                                              action="#{navigationController.navigateToMembershipSchemeDiscountChannelingByDepartment()}"></p:commandButton>
 
-
                                         </div>
                                     </p:tab>
-
-
-
                                 </p:accordionPanel>
                             </p:panel>
 

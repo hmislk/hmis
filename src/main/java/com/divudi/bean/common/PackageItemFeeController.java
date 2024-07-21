@@ -159,6 +159,10 @@ public class PackageItemFeeController implements Serializable {
         currentPackege.setTotal(total);
         getPackegeFacade().edit(currentPackege);
     }
+    
+    public String navigateToPackageItemFees(){
+         return "/admin/pricing/package_item_prices?faces-redirect=true";
+     }
 
     public ItemFacade getEjbFacade() {
         return ejbFacade;
