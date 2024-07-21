@@ -978,6 +978,7 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("No Start Bill");
             return null;
         }
+
         endBill = startBill.getReferenceBill();
         nonClosedShiftStartFundBill = startBill;
         fillPaymentsFromShiftStartToEnd(startBill, endBill, startBill.getCreater());
