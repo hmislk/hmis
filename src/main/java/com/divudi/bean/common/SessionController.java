@@ -605,7 +605,7 @@ public class SessionController implements Serializable, HttpSessionListener {
 
     public Department getDepartment() {
         if (department == null) {
-            if (loggedUser == null) {
+            if (loggedUser != null) {
                 if (loggedUser.getDepartment() != null) {
                     department = loggedUser.getDepartment();
                 }
@@ -1187,9 +1187,11 @@ public class SessionController implements Serializable, HttpSessionListener {
     }
 
     public String selectDepartment() {
+        System.out.println("select department");
         if (loggedUser == null) {
             return "/login?faces-redirect=true";
         }
+        System.out.println("loggedUser.getWebUserPerson() = " + loggedUser.getWebUserPerson());
         if (loggedUser.getWebUserPerson() == null) {
             Person p = new Person();
             p.setName(loggedUser.getName());
@@ -1199,14 +1201,21 @@ public class SessionController implements Serializable, HttpSessionListener {
         }
 
         loggedUser.setDepartment(department);
+        System.out.println("department = " + department);
+        
         loggedUser.setInstitution(department.getInstitution());
+        
+        System.out.println("department.getInstitution() = " + department.getInstitution());
+        
         getFacede().edit(loggedUser);
 
         userIcons = userIconController.fillUserIcons(loggedUser, department);
         dashboards = webUserController.listWebUserDashboards(loggedUser);
 
         userPrivilages = fillUserPrivileges(loggedUser, department, false);
+        System.out.println("userPrivilages = " + userPrivilages);
         loggableSubDepartments = fillLoggableSubDepts(department);
+        System.out.println("loggableSubDepartments = " + loggableSubDepartments);
 //        if (userPrivilages == null || userPrivilages.isEmpty()) {
 //            userPrivilages = fillUserPrivileges(loggedUser, null, true);
 //            createUserPrivilegesForAllDepartments(loggedUser, department, loggableDepartments);
@@ -1728,7 +1737,10 @@ public class SessionController implements Serializable, HttpSessionListener {
         }
         m.put("ret", false);
         m.put("wu", twu);
+        System.out.println("m = " + m);
+        System.out.println("sql = " + sql);
         List<WebUserPrivilege> twups = getWebUserPrivilegeFacade().findByJpql(sql, m);
+        System.out.println("twups = " + twups);
         return twups;
     }
 
