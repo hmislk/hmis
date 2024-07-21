@@ -418,4 +418,14 @@ public class Payment implements Serializable {
     public String getCurrencyDenominationsJson() {
         return currencyDenominationsJson;
     }
+
+    public List<Denomination> getCurrencyDenominations() {
+        return currencyDenominations;
+    }
+
+    public void setCurrencyDenominations(List<Denomination> currencyDenominations) {
+        this.currencyDenominations = currencyDenominations;
+    }
+    
+    
 }
