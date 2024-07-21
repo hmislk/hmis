@@ -6,7 +6,7 @@
     <artifactId>ruhunu-dev</artifactId>
     <version>3.0.0</version>
     <packaging>war</packaging>
-    <name>ruhunu-dev</name>
+    <name>hmis</name>
   
     <properties>
         <endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
