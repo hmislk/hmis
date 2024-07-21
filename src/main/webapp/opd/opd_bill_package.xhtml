@@ -47,36 +47,31 @@
 
                                         <p:panel id='pIxAdd' header="Items Requests"  >  
                                             <f:facet name="header" >
-                                                <h:outputText styleClass="fa-solid fa-circle-plus" /> <!-- FontAwesome Icon -->
-                                                <h:outputText value="Add New Items" class="mx-4"></h:outputText>
+                                                <div class="d-flex justify-content-between">
+                                                    <div class="mt-2">
+                                                        <h:outputText styleClass="fa-solid fa-circle-plus" /> <!-- FontAwesome Icon -->
+                                                        <h:outputText value="Add New Items" class="mx-4"></h:outputText>
+                                                    </div>
+                                                    <p:commandButton 
+                                                        id="reFill" 
+                                                        value="Refill Package" 
+                                                        icon="fa fa-refresh"
+                                                        class="ui-button-warning"
+                                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Package bill – Reloading of Packages with Consideration of Gender')}"
+                                                        action="#{itemController.fillpackages(billPackageController.patient.person.sex)}" >
+                                                        <p:ajax process="reFill pIxAdd" update="pIxAdd advanced" />
+                                                        <f:setPropertyActionListener value="#{billPackageController.patient.person.sex}" target="#{itemController.patientGender}"/>
+                                                    </p:commandButton>
+                                                </div>
+
                                             </f:facet>
-
-                                            <!--                                            <p:autoComplete
-                                                                                            widgetVar="aIx" 
-                                                                                            id="acIx"
-                                                                                            forceSelection="true" 
-                                                                                            value="#{billPackageController.currentBillItem.item}"
-                                                                                            completeMethod="#{itemController.completePackage}" 
-                                                                                            var="ix" 
-                                                                                            itemLabel="#{ix.name}"
-                                                                                            itemValue="#{ix}"    
-                                                                                            required="true" requiredMessage="Please add item" size="50" class="mx-2 ">
-                                            
-                                                                                            <p:column>
-                                            #{ix.name}
-                                        </p:column>
-                                        <p:column>
-                                            #{ix.total}
-                                        </p:column>
-                                        <p:ajax event="itemSelect" process="acIx" ></p:ajax>
-                                    </p:autoComplete>-->
-
 
                                             <p:selectOneListbox 
                                                 id="advanced" 
                                                 value="#{billPackageController.currentBillItem.item}"
-                                                var="i" 
+                                                var="i"
                                                 filter="true" 
+                                                scrollHeight="250"
                                                 filterMatchMode="contains">
                                                 <f:selectItems 
                                                     value="#{itemController.packaes}" 
@@ -90,6 +85,14 @@
                                                     <h:outputText value="#{i.department}"/>
                                                 </p:column>
                                                 <p:column>
+                                                    <p:badge 
+                                                        size="large"
+                                                        value="#{i.forGender}" 
+                                                        severity="#{i.forGender eq 'Male'?'info': i.forGender eq 'Female'? 'warning':'success'}"
+                                                        >
+                                                    </p:badge>
+                                                </p:column>
+                                                <p:column>
                                                     <h:outputText value="#{i.total}"/>
                                                 </p:column>
                                             </p:selectOneListbox>
@@ -100,6 +103,7 @@
                                                 process="advanced btnAddIx"
                                                 update="tblBillItem pBillDetails pIxAdd msg"
                                                 icon="fa fa-plus"
+                                                style=""
                                                 class=" mx-1 ui-button-success my-2"
                                                 action="#{billPackageController.addToBill()}" >
                                             </p:commandButton>
@@ -108,118 +112,118 @@
 
                                 </h:panelGroup>
 
-                                <p:panel class="w-100">
-
-                                    <f:facet name="header" >
-                                        <h:outputText styleClass="fa fa-list" /> <!-- FontAwesome Icon -->
-                                        <h:outputText value="Added Items" class="mx-4"></h:outputText>
-                                    </f:facet>
-                                    <p:tabView id="tblBillItem" >
-                                        <p:tab id="pacName" title="Package Name" >
-                                            <div class="d-flex justify-content-between">
-                                                <h:outputLabel  style="font-weight: 500; font-size: 18px;" value="#{billPackageController.currentBillItem.item.name}"/>
-                                                <p:commandButton 
-                                                    id="btnRemove" 
-                                                    value="X" 
-                                                    title="Remove"
-                                                    class="ui-button-danger"
-                                                    rendered="#{billPackageController.currentBillItem.item ne null}" 
-                                                    action="#{billPackageController.removeBillItem}" 
-                                                    ajax="false" />                                                
-                                            </div>
-                                        </p:tab>
-                                        <p:tab id="tabBillItems" title="Bill Items" >
-                                            <p:dataTable 
-                                                id="tblRequests" 
-                                                rowIndexVar="rowIndex" 
-                                                value="#{billPackageController.lstBillEntries}" 
-                                                var="bi" class="w-100" 
-                                                >
-
-                                                <p:column  style="width: 30px;">
-                                                    <f:facet name="header">No</f:facet>
-                                                        #{rowIndex+1}
-                                                </p:column>
-                                                <p:column>
-                                                    <f:facet name="header">Item</f:facet>
-                                                        #{bi.billItem.item.name}
-                                                </p:column>
-                                                <p:column  style="width: 200px;">
-                                                    <f:facet name="header">Fee</f:facet>
-                                                    <h:outputLabel value="#{bi.billItem.netValue}">
-                                                        <f:convertNumber pattern="#,##0.00" />
-                                                    </h:outputLabel>
-                                                </p:column>
-                                                <p:column  style="width: 200px;">
-                                                    <f:facet name="header">Department</f:facet>
-                                                        #{bi.billItem.item.department.name}
-                                                </p:column>
-                                                <p:column  style="width: 50px;">
-                                                    <p:commandButton 
-                                                        id="btnRemove" 
-                                                        value="X" 
-                                                        title="Remove"
-                                                        disabled="#{!bi.billItem.item.canRemoveItemfromPackage}"
-                                                        class="ui-button-danger"
-                                                        rendered="#{billPackageController.currentBillItem.item ne null}" 
-                                                        action="#{billPackageController.removeBillItem(bi.billItem.item)}" 
-                                                        process="@this"
-                                                        update=":#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}" />  
-                                                </p:column>
-
-                                            </p:dataTable>
-                                        </p:tab>
-                                        <p:tab id="tabBillIx" title="Tests" >
-                                            <p:dataTable rowIndexVar="rowIndex" value="#{billPackageController.lstBillComponents}" var="bix" >
-                                                <p:column  style="width: 30px;">
-                                                    <f:facet name="header">No</f:facet>
-                                                        #{rowIndex+1}
-                                                </p:column>
-                                                <p:column>
-                                                    <f:facet name="header">Name</f:facet>
-                                                        #{bix.item.name}
-                                                </p:column>
-
-                                            </p:dataTable>
-                                        </p:tab>
-                                        <p:tab id="tabBillFee" title="Fees" >
-                                            <p:dataTable rowIndexVar="rowIndex" value="#{billPackageController.lstBillFees}" var="bif" >
-                                                <p:column style="width: 30px;">
-                                                    <f:facet name="header">No</f:facet>
-                                                        #{rowIndex+1}
-                                                </p:column>
-                                                
-                                                <p:column >
-                                                    <f:facet name="header">Item </f:facet>
-                                                    <h:outputLabel  value="#{bif.billItem.item.name}"/>
-                                                </p:column>
-                                                
-                                                <p:column style="width: 200px;">
-                                                    <f:facet name="header">Fee</f:facet>
-                                                    <p:inputText autocomplete="off" id="txtFeeVal" value="#{bif.feeValue}" disabled="#{!bif.billItem.item.userChangable}" >
-                                                        <f:convertNumber pattern="#,##0.00" />
-                                                        <f:ajax event="keyup" execute="txtFeeVal" render=" :#{p:resolveFirstComponentWithId('tblRequests',view).clientId}  :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}" listener="#{billPackageController.feeChanged}" />
-                                                    </p:inputText>
-                                                </p:column>
-                                                <p:column style="width: 200px;">
-                                                    <f:facet name="header">Payee</f:facet>
-                                                    <h:outputLabel value="#{bif.department.name}" rendered="#{bif.department!=null}" ></h:outputLabel>
-                                                    <h:outputLabel value="#{bif.staff.person.name}" rendered="#{bif.staff!=null and bif.fee.speciality==null}" ></h:outputLabel>
-
-                                                    <p:selectOneMenu value="#{bif.staff}" rendered="#{bif.fee.speciality!=null}" >
-                                                        <f:selectItem itemLabel="Select Staff" />
-                                                        <f:selectItems  value="#{staffController.getSpecialityStaff(bif.fee.speciality) }" var="bifs" itemLabel="#{bifs.person.name}" itemValue="#{bifs}" />
-                                                    </p:selectOneMenu>
-                                                </p:column>
-                                            </p:dataTable>
-                                        </p:tab>
-                                    </p:tabView>
-                                </p:panel>
-
                             </div>
 
                             <div class="col-md-6">
                                 <div>
+                                    <p:panel class="w-100">
+
+                                        <f:facet name="header" >
+                                            <h:outputText styleClass="fa fa-list" /> <!-- FontAwesome Icon -->
+                                            <h:outputText value="Added Items" class="mx-4"></h:outputText>
+                                        </f:facet>
+                                        <p:tabView id="tblBillItem" >
+                                            <p:tab id="pacName" title="Package Name" >
+                                                <div class="d-flex justify-content-between">
+                                                    <h:outputLabel  style="font-weight: 500; font-size: 18px;" value="#{billPackageController.currentBillItem.item.name}"/>
+                                                    <p:commandButton 
+                                                        id="btnRemove" 
+                                                        value="X" 
+                                                        title="Remove"
+                                                        class="ui-button-danger"
+                                                        rendered="#{billPackageController.currentBillItem.item ne null}" 
+                                                        action="#{billPackageController.removeBillItem}" 
+                                                        ajax="false" />                                                
+                                                </div>
+                                            </p:tab>
+                                            <p:tab id="tabBillItems" title="Bill Items" >
+                                                <p:dataTable 
+                                                    id="tblRequests" 
+                                                    rowIndexVar="rowIndex" 
+                                                    value="#{billPackageController.lstBillEntries}" 
+                                                    var="bi" class="w-100" 
+                                                    >
+
+                                                    <p:column  style="width: 30px;">
+                                                        <f:facet name="header">No</f:facet>
+                                                            #{rowIndex+1}
+                                                    </p:column>
+                                                    <p:column>
+                                                        <f:facet name="header">Item</f:facet>
+                                                            #{bi.billItem.item.name}
+                                                    </p:column>
+                                                    <p:column  style="width: 200px;">
+                                                        <f:facet name="header">Fee</f:facet>
+                                                        <h:outputLabel value="#{bi.billItem.netValue}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputLabel>
+                                                    </p:column>
+                                                    <p:column  style="width: 200px;">
+                                                        <f:facet name="header">Department</f:facet>
+                                                            #{bi.billItem.item.department.name}
+                                                    </p:column>
+                                                    <p:column  style="width: 50px;">
+                                                        <p:commandButton 
+                                                            id="btnRemove" 
+                                                            value="X" 
+                                                            title="Remove"
+                                                            disabled="#{!bi.billItem.item.canRemoveItemfromPackage}"
+                                                            class="ui-button-danger"
+                                                            rendered="#{billPackageController.currentBillItem.item ne null}" 
+                                                            action="#{billPackageController.removeBillItem(bi.billItem.item)}" 
+                                                            process="@this"
+                                                            update=":#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}" />  
+                                                    </p:column>
+
+                                                </p:dataTable>
+                                            </p:tab>
+                                            <p:tab id="tabBillIx" title="Tests" >
+                                                <p:dataTable rowIndexVar="rowIndex" value="#{billPackageController.lstBillComponents}" var="bix" >
+                                                    <p:column  style="width: 30px;">
+                                                        <f:facet name="header">No</f:facet>
+                                                            #{rowIndex+1}
+                                                    </p:column>
+                                                    <p:column>
+                                                        <f:facet name="header">Name</f:facet>
+                                                            #{bix.item.name}
+                                                    </p:column>
+
+                                                </p:dataTable>
+                                            </p:tab>
+                                            <p:tab id="tabBillFee" title="Fees" >
+                                                <p:dataTable rowIndexVar="rowIndex" value="#{billPackageController.lstBillFees}" var="bif" >
+                                                    <p:column style="width: 30px;">
+                                                        <f:facet name="header">No</f:facet>
+                                                            #{rowIndex+1}
+                                                    </p:column>
+
+                                                    <p:column >
+                                                        <f:facet name="header">Item </f:facet>
+                                                        <h:outputLabel  value="#{bif.billItem.item.name}"/>
+                                                    </p:column>
+
+                                                    <p:column style="width: 200px;">
+                                                        <f:facet name="header">Fee</f:facet>
+                                                        <p:inputText autocomplete="off" id="txtFeeVal" value="#{bif.feeValue}" disabled="#{!bif.billItem.item.userChangable}" >
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                            <f:ajax event="keyup" execute="txtFeeVal" render=" :#{p:resolveFirstComponentWithId('tblRequests',view).clientId}  :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}" listener="#{billPackageController.feeChanged}" />
+                                                        </p:inputText>
+                                                    </p:column>
+                                                    <p:column style="width: 200px;">
+                                                        <f:facet name="header">Payee</f:facet>
+                                                        <h:outputLabel value="#{bif.department.name}" rendered="#{bif.department!=null}" ></h:outputLabel>
+                                                        <h:outputLabel value="#{bif.staff.person.name}" rendered="#{bif.staff!=null and bif.fee.speciality==null}" ></h:outputLabel>
+
+                                                        <p:selectOneMenu value="#{bif.staff}" rendered="#{bif.fee.speciality!=null}" >
+                                                            <f:selectItem itemLabel="Select Staff" />
+                                                            <f:selectItems  value="#{staffController.getSpecialityStaff(bif.fee.speciality) }" var="bifs" itemLabel="#{bifs.person.name}" itemValue="#{bifs}" />
+                                                        </p:selectOneMenu>
+                                                    </p:column>
+                                                </p:dataTable>
+                                            </p:tab>
+                                        </p:tabView>
+                                    </p:panel>
+
                                     <div>
                                         <p:panel class="mt-1">
                                             <f:facet name="header" >

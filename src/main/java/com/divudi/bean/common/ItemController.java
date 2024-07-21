@@ -32,6 +32,7 @@ import com.divudi.facade.ItemFacade;
 import com.divudi.facade.ItemFeeFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.SessionNumberType;
+import com.divudi.data.Sex;
 import com.divudi.entity.UserPreference;
 import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.ItemMappingFacade;
@@ -138,6 +139,7 @@ public class ItemController implements Serializable {
     private InstitutionItemCount institutionItemCount;
     private List<Item> suggestItems;
     boolean masterItem;
+    private Sex patientGender;
 
     ReportKeyWord reportKeyWord;
 
@@ -1018,10 +1020,7 @@ public class ItemController implements Serializable {
         }
         JsfUtil.addSuccessMessage("All Unmarked as Fees Changable at Billing");
     }
-    
-    
-    
-    
+
     public void markSelectedItemsAsPrintSessionNumber() {
         if (selectedList == null || selectedList.isEmpty()) {
             JsfUtil.addErrorMessage("Nothing is selected");
@@ -1045,7 +1044,6 @@ public class ItemController implements Serializable {
         }
         JsfUtil.addSuccessMessage("All Marked as Not to Print Session Numbers");
     }
-    
 
     public void unmarkSelectedItemsAsDiscountableAtBilling() {
         if (selectedList == null || selectedList.isEmpty()) {
@@ -1082,7 +1080,7 @@ public class ItemController implements Serializable {
         }
         JsfUtil.addSuccessMessage("All Unmarked for Print Separate Fees");
     }
-    
+
     public void addSessionNumberType() {
         if (selectedList == null || selectedList.isEmpty()) {
             JsfUtil.addErrorMessage("Nothing is selected");
@@ -1720,15 +1718,63 @@ public class ItemController implements Serializable {
     }
 
     public List<Item> fillpackages() {
-        List<Item> suggestions;
         String sql;
         sql = "select c from Item c where c.retired=false"
                 + " and (c.inactive=false or c.inactive is null) "
                 + " and type(c)=Packege "
                 + " order by c.name";
-        //////// // System.out.println(sql);
         packaes = getFacade().findByJpql(sql);
-        //System.out.println("packaes = " + packaes);
+        System.out.println("fillpackages - packaes = " + packaes.size());
+        return packaes;
+    }
+
+    public List<Item> fillpackages(Sex gender) {
+
+        System.out.println("Load Fillpackages with Gender");
+        String sex = null;
+
+        if (gender == null) {
+            sex = "";
+        }
+
+        if (gender != null) {
+            switch (gender) {
+                case Female:
+                    sex = "Female";
+                    break;
+                case Male:
+                    sex = "Male";
+                    break;
+                default:
+                    sex = "Both";
+                    break;
+            }
+        }
+
+        System.out.println("sex = " + sex);
+
+        String jpql;
+
+        jpql = "select c from Item c where c.retired=false"
+                + " and (c.inactive=false or c.inactive is null) "
+                + " and type(c)=Packege ";
+
+        if ("Both".equals(sex)) {
+            jpql += " and c.forGender in ('Both','Male','Female') ";
+        }
+
+        if ("Male".equals(sex)) {
+            jpql += " and c.forGender in ('Both','Male') ";
+        }
+
+        if ("Female".equals(sex)) {
+            jpql += " and c.forGender in ('Both','Female') ";
+        }
+
+        jpql += " order by c.name";
+
+        packaes = getFacade().findByJpql(jpql);
+        System.out.println("Fillpackages with Gender packaes = " + packaes.size());
         return packaes;
     }
 
@@ -3052,14 +3098,23 @@ public class ItemController implements Serializable {
 
     public void setFilterDepartment(Department filterDepartment) {
         this.filterDepartment = filterDepartment;
-
     }
 
     public List<Item> getPackaes() {
-        if (packaes == null) {
-            packaes = fillpackages();
+        if (configOptionApplicationController.getBooleanValueByKey("Package bill – Reloading of Packages with Consideration of Gender")) {
+            System.out.println("Gender = " + patientGender);
+            if (packaes == null) {
+                packaes = new ArrayList<Item>();
+            } else {
+                packaes.clear();
+            }
+        } else {
+            if (packaes == null) {
+                packaes = fillpackages();
+            }
         }
-        // System.out.println("getPackaes = " + packaes);   
+
+        System.out.println("Packaes = " + packaes.size());
         return packaes;
     }
 
@@ -3073,6 +3128,14 @@ public class ItemController implements Serializable {
 
     public void setSuggestItems(List<Item> suggestItems) {
         this.suggestItems = suggestItems;
+    }
+
+    public Sex getPatientGender() {
+        return patientGender;
+    }
+
+    public void setPatientGender(Sex patientGender) {
+        this.patientGender = patientGender;
     }
 
     @FacesConverter("itemLightConverter")

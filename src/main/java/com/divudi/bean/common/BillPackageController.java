@@ -894,6 +894,12 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         setDiscount(0.0);
         setCashBalance(0.0);
         printPreview = false;
+        if (configOptionApplicationController.getBooleanValueByKey("Package bill – Reloading of Packages with Consideration of Gender")) {
+            itemController.getPackaes().clear();
+            System.out.println("Page Loading");
+        } else {
+            itemController.getPackaes();
+        }
     }
 
     public void prepareNewBill() {
