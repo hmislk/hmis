@@ -125,6 +125,11 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
 
+    private List<Item> malePackaes;
+    private List<Item> femalePackaes;
+    private List<Item> bothPackaes;
+    private List<Item> packaes;
+
     //</editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
     private static final long serialVersionUID = 1L;
@@ -894,12 +899,6 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         setDiscount(0.0);
         setCashBalance(0.0);
         printPreview = false;
-        if (configOptionApplicationController.getBooleanValueByKey("Package bill – Reloading of Packages with Consideration of Gender")) {
-            itemController.getPackaes().clear();
-            System.out.println("Page Loading");
-        } else {
-            itemController.getPackaes();
-        }
     }
 
     public void prepareNewBill() {
@@ -1453,5 +1452,102 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     public void setToStaff(Staff toStaff) {
         this.toStaff = toStaff;
     }
+
+    public List<Item> getMalePackaes() {
+        return malePackaes;
+    }
+
+    public void setMalePackaes(List<Item> malePackaes) {
+        this.malePackaes = malePackaes;
+    }
+
+    public List<Item> getFemalePackaes() {
+        return femalePackaes;
+    }
+
+    public void setFemalePackaes(List<Item> femalePackaes) {
+        this.femalePackaes = femalePackaes;
+    }
+
+    public List<Item> getBothPackaes() {
+        return bothPackaes;
+    }
+
+    public void setBothPackaes(List<Item> bothPackaes) {
+        this.bothPackaes = bothPackaes;
+    }
+    
+    
+
+    public List<Item> getGenderBasedPackaes() {
+        System.out.println("getPackages");
+        if (packaes == null) {
+            fillPackages();
+        }
+        if (configOptionApplicationController.getBooleanValueByKey("Package bill – Reloading of Packages with Consideration of Gender")) {
+            System.out.println("option ok");
+            if (getPatient() == null) {
+                System.out.println("pt is null");
+                return packaes;
+            } else if (getPatient().getPerson().getSex() == null) {
+                System.out.println("sex is null");
+                return bothPackaes;
+            } else if (getPatient().getPerson().getSex() == Sex.Male) {
+                System.out.println("males");
+                return malePackaes;
+            } else if (getPatient().getPerson().getSex() == Sex.Female) {
+                System.out.println("females");
+                return femalePackaes;
+            } else {
+                return bothPackaes;
+            }
+        }
+        return packaes;
+    }
+
+    public void setPackaes(List<Item> packaes) {
+        this.packaes = packaes;
+    }
+    
+    public List<Item> getPackaes() {
+        if(packaes==null){
+            packaes=itemController.getPackaes();
+            fillPackages();
+        }
+        return packaes;
+    }
+
+    private void fillPackages() {
+        System.out.println("fillPackages");
+        packaes = itemController.getPackaes();
+        System.out.println("packaes = " + packaes);
+        if (packaes == null) {
+            return;
+        }
+        malePackaes = new ArrayList<>();
+        femalePackaes = new ArrayList<>();
+        bothPackaes = new ArrayList<>();
+        for (Item i : packaes) {
+            System.out.println("i = " + i);
+            if (i.getForGender() == null) {
+                System.out.println("gender nill");
+                bothPackaes.add(i);
+            } else if (i.getForGender().equalsIgnoreCase("Male")) {
+                System.out.println("mp = " );
+                malePackaes.add(i);
+            } else if (i.getForGender().equalsIgnoreCase("Female")) {
+                System.out.println("fp = " );
+                femalePackaes.add(i);
+            } else if (i.getForGender().equalsIgnoreCase("Both")) {
+                bothPackaes.add(i);
+                malePackaes.add(i);
+                femalePackaes.add(i);
+            } else {
+                bothPackaes.add(i);
+            }
+        }
+    }
+
+    
 
 }

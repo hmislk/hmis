@@ -1723,60 +1723,15 @@ public class ItemController implements Serializable {
                 + " and (c.inactive=false or c.inactive is null) "
                 + " and type(c)=Packege "
                 + " order by c.name";
+        System.out.println("sql = " + sql);
         packaes = getFacade().findByJpql(sql);
-        System.out.println("fillpackages - packaes = " + packaes.size());
+        System.out.println("packaes = " + packaes);
+        if (packaes == null) {
+            return new ArrayList<>();
+        }
         return packaes;
     }
 
-    public List<Item> fillpackages(Sex gender) {
-
-        System.out.println("Load Fillpackages with Gender");
-        String sex = null;
-
-        if (gender == null) {
-            sex = "";
-        }
-
-        if (gender != null) {
-            switch (gender) {
-                case Female:
-                    sex = "Female";
-                    break;
-                case Male:
-                    sex = "Male";
-                    break;
-                default:
-                    sex = "Both";
-                    break;
-            }
-        }
-
-        System.out.println("sex = " + sex);
-
-        String jpql;
-
-        jpql = "select c from Item c where c.retired=false"
-                + " and (c.inactive=false or c.inactive is null) "
-                + " and type(c)=Packege ";
-
-        if ("Both".equals(sex)) {
-            jpql += " and c.forGender in ('Both','Male','Female') ";
-        }
-
-        if ("Male".equals(sex)) {
-            jpql += " and c.forGender in ('Both','Male') ";
-        }
-
-        if ("Female".equals(sex)) {
-            jpql += " and c.forGender in ('Both','Female') ";
-        }
-
-        jpql += " order by c.name";
-
-        packaes = getFacade().findByJpql(jpql);
-        System.out.println("Fillpackages with Gender packaes = " + packaes.size());
-        return packaes;
-    }
 
     public List<Item> completePackage(String query) {
         List<Item> suggestions;
@@ -3101,20 +3056,9 @@ public class ItemController implements Serializable {
     }
 
     public List<Item> getPackaes() {
-        if (configOptionApplicationController.getBooleanValueByKey("Package bill – Reloading of Packages with Consideration of Gender")) {
-            System.out.println("Gender = " + patientGender);
-            if (packaes == null) {
-                packaes = new ArrayList<Item>();
-            } else {
-                packaes.clear();
-            }
-        } else {
-            if (packaes == null) {
-                packaes = fillpackages();
-            }
+        if (packaes == null) {
+            packaes = fillpackages();
         }
-
-        System.out.println("Packaes = " + packaes.size());
         return packaes;
     }
 

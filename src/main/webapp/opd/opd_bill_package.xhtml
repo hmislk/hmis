@@ -9,7 +9,8 @@
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp"
                 xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
-                xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
+                xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
+                xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
     >
 
     <ui:define name="content">
@@ -39,7 +40,380 @@
 
                                     <h:panelGrid columns="1" class="w-100">
                                         <h:panelGroup id="panelIx" class="w-100">
-                                            <common:patient_details controller="#{billPackageController}" searchable="true" editable="true"/>
+                                            <p:panel id="ptImp">
+                                                
+                                                <f:facet name="header">
+                                                    <h:panelGroup layout="block" styleClass="d-flex justify-content-between align-items-center">
+                                                        <!-- Left aligned content -->
+                                                        <h:panelGroup id="headerFacet">
+                                                            <h:outputText value="Select a Patient" rendered="#{billPackageController.patient eq null}"></h:outputText>
+                                                            <h:outputText styleClass="fas fa-user" />
+                                                            <h:panelGroup 
+                                                                rendered="#{patientController.quickSearchPatientList eq null or empty patientController.quickSearchPatientList}">
+                                                                <h:outputText
+                                                                    rendered="#{billPackageController.patient.id eq null}"
+                                                                    value="Patient" 
+                                                                    class="mx-4"
+                                                                    >
+                                                                </h:outputText>
+                                                                <h:outputText
+                                                                    rendered="#{billPackageController.patient.id ne null}"
+                                                                    value="Searched Patient Details" 
+                                                                    class="mx-2"
+                                                                    ></h:outputText>
+                                                                <h:panelGroup rendered="true" id="edit" >
+                                                                    <p:selectBooleanButton 
+                                                                        value="#{billPackageController.patientDetailsEditable}" 
+                                                                        offIcon="pi pi-pencil" 
+                                                                        onIcon="pi pi-eye"                                 
+                                                                        class="mx-2"
+                                                                        >
+                                                                        <p:ajax 
+                                                                            process="@this" 
+                                                                            update="viewPatient editPatient btnDone edit" />
+                                                                    </p:selectBooleanButton>
+                                                                    <p:commandButton id="btnDone" alt="Save Patient Details" class="ui-button-success" icon="fas fa-check" action="#{patientController.saveSelected(billPackageController.patient)}" rendered="#{billPackageController.patientDetailsEditable}" update=":#{p:resolveFirstComponentWithId('ptImp',view).clientId} " />
+                                                                </h:panelGroup>
+
+                                                            </h:panelGroup>
+                                                        </h:panelGroup>
+
+                                                       
+
+
+                                                        <!-- Right aligned quick search -->
+                                                        <h:panelGroup id="quickSearch" >
+                                                            <h:panelGroup rendered="true" layout="block"  styleClass="form-inline">
+                                                                <p:focus  for="txtQuickSearchPhoneNumber" />
+                                                                <p:inputText 
+                                                                    autocomplete="off"
+                                                                    id="txtQuickSearchPhoneNumber"
+                                                                    value="#{patientController.quickSearchPhoneNumber}"
+                                                                    placeholder="Phone Number"
+                                                                    class="form-control-sm mx-1"
+                                                                    onfocus="this.select()" 
+                                                                    />
+                                                                <p:commandButton 
+                                                                    id="btnSearchbyPhoneNo"
+                                                                    icon="fa fa-search" 
+                                                                    title="Quick Search from Phone Number"
+                                                                    action="#{patientController.quickSearchPatientLongPhoneNumber(billPackageController)}" 
+                                                                    process="btnSearchbyPhoneNo txtQuickSearchPhoneNumber"
+                                                                    update="ptImp selectPatient editPatient viewPatient advanced"
+                                                                    styleClass="btn-sm mx-1">
+                                                                </p:commandButton>
+                                                                <p:defaultCommand target="btnSearchbyPhoneNo"> </p:defaultCommand>
+                                                                <p:commandButton 
+                                                                    id="btnAddNewPatient"
+                                                                    icon="fa fa-plus-circle" 
+                                                                    title="Add New Patient"
+                                                                    action="#{patientController.quickSearchNewPatient(billPackageController)}" 
+                                                                    process="btnAddNewPatient"
+                                                                    update="ptImp selectPatient editPatient viewPatient"
+                                                                    styleClass="btn-sm mx-1"/>
+                                                            </h:panelGroup>
+                                                        </h:panelGroup>
+                                                    </h:panelGroup>
+                                                </f:facet>
+
+                                                <h:panelGroup id="selectPatient" >
+                                                    <h:panelGroup rendered="#{patientController.quickSearchPatientList ne null and not empty patientController.quickSearchPatientList}">
+                                                        <p:dataTable id="tblPatients" value="#{patientController.quickSearchPatientList}" var="ps">
+                                                            <p:column headerText="Name">
+                                                                #{ps.person.name}
+                                                            </p:column>
+                                                            <p:column headerText="Phone Number">
+                                                                #{ps.person.phone}
+                                                            </p:column>
+                                                            <p:column headerText="Mobile Number">
+                                                                #{ps.person.mobile}
+                                                            </p:column>
+                                                            <p:column>
+                                                                <p:commandButton 
+                                                                    action="#{patientController.selectQuickOneFromQuickSearchPatient(billPackageController)}" 
+                                                                    id="btnSelectPt"
+                                                                    process="btnSelectPt tblPatients"
+                                                                    update=":#{p:resolveFirstComponentWithId('ptImp',view).clientId}"
+                                                                    value="select">
+                                                                    <f:setPropertyActionListener value="#{ps}" target="#{patientController.current}" />
+                                                                </p:commandButton>
+                                                            </p:column>
+                                                        </p:dataTable>
+                                                    </h:panelGroup>
+                                                </h:panelGroup>
+
+                                                <h:panelGroup id="editPatient" >
+
+                                                    <h:panelGroup rendered="#{billPackageController.patientDetailsEditable}" >
+                                                        <h:panelGroup rendered="#{patientController.quickSearchPatientList eq null or empty patientController.quickSearchPatientList}">
+                                                            <h:panelGroup class="mb-1 w-100" id="panelPatient" >
+                                                                <h:panelGroup id="gpPatient" >
+                                                                    <div class="row">
+                                                                        <div class="col-md-3 p-1">
+                                                                            <p:selectOneMenu 
+                                                                                id="cmbTitle"
+                                                                                class="form-control w-100"
+                                                                                requiredMessage="Please enter a title"
+                                                                                value="#{billPackageController.patient.person.title}">
+                                                                                <f:selectItem itemLabel="Select Title" />
+                                                                                <f:selectItems value="#{opdBillController.title}" var="i"
+                                                                                               itemLabel="#{i.label}" itemValue="#{i}"/>
+                                                                                <p:ajax event="change" process="cmbTitle" update="cmbSex" ></p:ajax>
+                                                                            </p:selectOneMenu>
+                                                                        </div>
+                                                                        <div class="col-md-9 p-1">
+                                                                            <p:inputText 
+
+                                                                                requiredMessage="Please enter a name for the patient"
+                                                                                autocomplete="off" 
+                                                                                id="txtNewPtName" 
+                                                                                placeholder="Enter the Name of the patient"
+                                                                                value="#{billPackageController.patient.person.name}"
+                                                                                validatorMessage="Please enter only letters and spaces."
+                                                                                class="form-control" >
+                                                                                <c:if test="#{not empty sessionController.applicationPreference.nameRegex}">
+                                                                                    <f:validateRegex pattern="#{sessionController.applicationPreference.nameRegex}"/>
+                                                                                </c:if>
+
+                                                                            </p:inputText>
+                                                                        </div>
+                                                                    </div>
+
+                                                                    <div class="row">
+                                                                        <div class="col-md-3 p-1">
+                                                                            <p:selectOneMenu 
+                                                                                id="cmbSex" 
+
+                                                                                requiredMessage="Please select a gender"
+                                                                                value="#{billPackageController.patient.person.sex}"
+                                                                                class="form-control w-100">
+                                                                                <f:selectItem itemLabel="Select Gender"/>
+                                                                                <f:selectItems value="#{opdBillController.sex}"/>
+                                                                                <p:ajax process="cmbSex" update="advanced" ></p:ajax>
+                                                                                <p:ajax event="blur" process="cmbSex" update="advanced" ></p:ajax>
+                                                                                <p:ajax event="change" process="cmbSex" update="advanced" ></p:ajax>
+                                                                            </p:selectOneMenu>
+                                                                        </div>
+                                                                        <div class="col-md-9 p-1">
+                                                                            <div class="row">
+                                                                                <div class="col-md-2">
+                                                                                    <p:inputText 
+                                                                                        autocomplete="off" 
+                                                                                        id="year" 
+                                                                                        placeholder="Years"
+                                                                                        onfocus="this.select();"
+                                                                                        value="#{billPackageController.patient.person.ageYearsComponent}"
+                                                                                        class="form-control">
+                                                                                        <f:ajax event="keyup" execute="@this" render="dpDob" />
+                                                                                    </p:inputText>
+                                                                                </div>
+                                                                                <div class="col-md-2">
+                                                                                    <p:inputText
+                                                                                        onfocus="this.select();"
+                                                                                        autocomplete="off" id="month" placeholder="Months"
+                                                                                        value="#{billPackageController.patient.person.ageMonthsComponent}"
+                                                                                        class="form-control">
+                                                                                        <f:ajax event="keyup" execute="@this"  render="dpDob"  />
+                                                                                    </p:inputText>
+                                                                                </div>
+                                                                                <div class="col-md-2">
+                                                                                    <p:inputText 
+                                                                                        onfocus="this.select();"
+                                                                                        autocomplete="off" id="day" placeholder="Days"
+                                                                                        value="#{billPackageController.patient.person.ageDaysComponent}"
+                                                                                        class="form-control">
+                                                                                        <f:ajax event="keyup" execute="@this"  render="dpDob" />
+                                                                                    </p:inputText>
+                                                                                </div>
+                                                                                <div class="col-md-6">
+                                                                                    <p:datePicker  
+                                                                                        value="#{billPackageController.patient.person.dob}"
+                                                                                        id="dpDob" 
+                                                                                        class="w-100"
+                                                                                        yearNavigator="true"
+                                                                                        monthNavigator="true"
+                                                                                        inputStyleClass="form-control"
+                                                                                        requiredMessage="Please select a date of birth"
+                                                                                        pattern="#{sessionController.applicationPreference.longDateFormat}"
+                                                                                        placeholder="Date of Birth (dd/mm/yyyy)"
+                                                                                        >
+                                                                                        <p:ajax event="dateSelect" process="@this" update="year month day" />
+                                                                                    </p:datePicker>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+
+                                                                    <div class="row">
+                                                                        <div class="col-md-3 p-1">
+                                                                            <p:inputText 
+                                                                                id="txtMobile" 
+                                                                                autocomplete="off" 
+                                                                                placeholder="Mobile Number"
+                                                                                value="#{billPackageController.patient.mobileNumberStringTransient}"
+                                                                                class="form-control" 
+                                                                                requiredMessage="Please enter a Mobile Number"
+                                                                                validatorMessage="Please enter valid Number">
+                                                                                <c:if test="#{not empty sessionController.applicationPreference.mobileRegex}">
+                                                                                    <f:validateRegex pattern="#{sessionController.applicationPreference.mobileRegex}"/>
+                                                                                </c:if>
+                                                                            </p:inputText>
+                                                                        </div>
+                                                                        <div class="col-md-3 p-1">
+                                                                            <p:inputText 
+                                                                                id="txtPhone" 
+                                                                                requiredMessage="Please enter a Phone Number"
+                                                                                autocomplete="off" 
+                                                                                placeholder="Phone Number"
+                                                                                value="#{billPackageController.patient.phoneNumberStringTransient}"
+                                                                                class="form-control" validatorMessage="Please enter valid Number">
+                                                                                <c:if test="#{not empty sessionController.applicationPreference.mobileRegex}">
+                                                                                    <f:validateRegex pattern="#{sessionController.applicationPreference.mobileRegex}"/>
+                                                                                </c:if>
+                                                                            </p:inputText>
+                                                                        </div>
+                                                                        <div class="col-md-3 p-1">
+                                                                            <p:inputText 
+                                                                                requiredMessage="Please enter a Email"
+                                                                                autocomplete="off" id="txtEmail" placeholder="Enter Email here"
+                                                                                value="#{billPackageController.patient.person.email}"
+                                                                                class="form-control"
+                                                                                >
+                                                                                <c:if test="#{not empty sessionController.applicationPreference.emailRegex}">
+                                                                                    <f:validateRegex pattern="#{sessionController.applicationPreference.emailRegex}"/>
+                                                                                </c:if>
+                                                                            </p:inputText>
+                                                                        </div>
+                                                                        <div class="col-md-3 p-1">
+                                                                            <p:inputText 
+                                                                                id="txtNic"
+                                                                                requiredMessage="Please enter a ID"
+                                                                                autocomplete="off"
+                                                                                placeholder="National ID Number"
+                                                                                value="#{billPackageController.patient.person.nic}"
+                                                                                class="form-control"/>
+                                                                        </div>
+                                                                    </div>
+
+                                                                    <div class="row">
+                                                                        <div class="col-md-7 p-1">
+                                                                            <p:inputText
+                                                                                id="txtAddress"
+                                                                                autocomplete="off"
+                                                                                requiredMessage="Please enter an Address"
+                                                                                placeholder="Address"
+                                                                                value="#{billPackageController.patient.person.address}"
+                                                                                class="form-control"/>
+                                                                        </div>
+
+                                                                        <h:panelGroup class="col-md-2 p-1" rendered="#{configOptionApplicationController.getBooleanValueByKey('Save the Patient with Patient Status')}">
+                                                                            <p:selectBooleanButton 
+                                                                                id="scbforigner"
+                                                                                value="#{billPackageController.patient.person.foreigner}"
+                                                                                offLabel="Patient is Local"
+                                                                                class="w-100"
+                                                                                onLabel="Patient is Forigner" >
+                                                                            </p:selectBooleanButton>
+                                                                        </h:panelGroup>
+
+                                                                        <div class="#{configOptionApplicationController.getBooleanValueByKey('Save the Patient with Patient Status')?'col-md-3 p-1':'col-md-5 p-1'}">
+                                                                            <p:autoComplete 
+                                                                                id="acNewPtArea" 
+                                                                                requiredMessage="Please select an Area"
+                                                                                placeholder="Search &amp; Select Area"
+                                                                                completeMethod="#{areaController.completeArea}"
+                                                                                var="pta" itemLabel="#{pta.name}"
+                                                                                itemValue="#{pta}" forceSelection="true"
+                                                                                value="#{billPackageController.patient.person.area}"
+                                                                                inputStyleClass="form-control"
+                                                                                class="w-100"/>
+                                                                        </div>
+                                                                    </div>
+
+                                                                    <p:tooltip for="txtNewPtName" value="Patient Name"  showDelay="0" hideDelay="0"></p:tooltip>
+                                                                    <p:tooltip for="txtNic" value="NIC No"  showDelay="0" hideDelay="0"></p:tooltip>
+                                                                    <p:tooltip for="dpDob" value="Date Of Birth"  showDelay="0" hideDelay="0"></p:tooltip>
+                                                                    <p:tooltip for="txtAddress" value="Address"  showDelay="0" hideDelay="0"></p:tooltip>
+                                                                    <p:tooltip for="txtMobile" value="Mobile Number"  showDelay="0" hideDelay="0"></p:tooltip>
+                                                                    <p:tooltip for="txtPhone" value="Home Phone Number"  showDelay="0" hideDelay="0"></p:tooltip>
+                                                                    <p:tooltip for="cmbSex" value="Sex"  showDelay="0" hideDelay="0"></p:tooltip>
+                                                                    <p:tooltip for="cmbTitle" value="Title"  showDelay="0" hideDelay="0"></p:tooltip>
+                                                                    <p:tooltip for="acNewPtArea" value="Area"  showDelay="0" hideDelay="0"></p:tooltip>
+                                                                    <p:tooltip for="txtEmail" value="Email"  showDelay="0" hideDelay="0"></p:tooltip>
+                                                                    <p:tooltip for="scbforigner" value="Mark Status"  showDelay="0" hideDelay="0"></p:tooltip>
+                                                                    <p:tooltip for="year" value="Age- Years Component"  showDelay="0" hideDelay="0"></p:tooltip>
+                                                                    <p:tooltip for="month" value="Age- Month Component"  showDelay="0" hideDelay="0"></p:tooltip>
+                                                                    <p:tooltip for="day" value="Age- Days Component"  showDelay="0" hideDelay="0"></p:tooltip>
+
+
+                                                                </h:panelGroup>
+                                                            </h:panelGroup>
+                                                        </h:panelGroup>
+                                                    </h:panelGroup>
+                                                </h:panelGroup>
+                                                <h:panelGroup id="viewPatient" >
+
+                                                    <h:panelGroup  rendered="#{not billPackageController.patientDetailsEditable}"  >
+                                                        <h:panelGroup  rendered="#{patientController.quickSearchPatientList eq null}" >
+                                                            <h:panelGrid columns="3" class="my-1" id="panelPatientDisplay" rendered="#{billPackageController.patient ne null}" >
+                                                                <h:outputLabel value="Name " class="mx-3"/>
+                                                                <h:outputLabel value=" : " class="mx-3"/>
+                                                                <h:outputText value="#{billPackageController.patient.person.nameWithTitle}" />
+
+                                                                <h:outputLabel value="Gender " class="mx-3"/>
+                                                                <h:outputLabel value=" : " class="mx-3"/>
+                                                                <h:outputText value="#{billPackageController.patient.person.sex}" />
+
+                                                                <h:outputLabel value="Date of Birth " class="mx-3"/>
+                                                                <h:outputLabel value=" : " class="mx-3"/>
+                                                                <h:outputText value="#{billPackageController.patient.person.dob}" >
+                                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
+                                                                </h:outputText>
+
+                                                                <h:outputLabel value="Age  " class="mx-3"/>
+                                                                <h:outputLabel value=" : " class="mx-3"/>
+                                                                <h:outputText value="#{billPackageController.patient.person.ageAsString}" />
+
+                                                                <h:outputLabel value="Mobile No. " class="mx-3"/>
+                                                                <h:outputLabel value=" : " class="mx-3"/>
+                                                                <h:outputText value="#{billPackageController.patient.person.mobile}" />
+
+                                                                <h:outputLabel value="Phone No. " class="mx-3"/>
+                                                                <h:outputLabel value=" : " class="mx-3"/>
+                                                                <h:outputText value="#{billPackageController.patient.person.phone}" />
+
+                                                                <h:outputLabel value="Email " class="mx-3"/>
+                                                                <h:outputLabel value=" : " class="mx-3"/>
+                                                                <h:outputText value="#{billPackageController.patient.person.email}" />
+
+                                                                <h:outputLabel value="National ID No. " class="mx-3"/>
+                                                                <h:outputLabel value=" : " class="mx-3"/>
+                                                                <h:outputText value="#{billPackageController.patient.person.nic}" />
+
+                                                                <h:outputLabel value="Address " class="mx-3"/>
+                                                                <h:outputLabel value=" : " class="mx-3"/>
+                                                                <h:outputText value="#{billPackageController.patient.person.address}" />
+
+
+                                                                <h:outputLabel value="Patient Status " class="mx-3" rendered="#{configOptionApplicationController.getBooleanValueByKey('Save the Patient with Patient Status')}"/>
+                                                                <h:outputLabel value=" : " class="mx-3" rendered="#{configOptionApplicationController.getBooleanValueByKey('Save the Patient with Patient Status')}"/>
+                                                                <p:badge 
+                                                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Save the Patient with Patient Status')}"
+                                                                    value="#{billPackageController.patient.person.foreigner?'Patient is Forigner':'Patient is Local'}" 
+                                                                    severity="#{billPackageController.patient.person.foreigner?'warning':'success'}" 
+                                                                    styleClass="mr-2">
+                                                                </p:badge>
+
+                                                                <h:outputLabel value="Area " class="mx-3"/>
+                                                                <h:outputLabel value=" : " class="mx-3"/>
+                                                                <h:outputText value="#{billPackageController.patient.person.area.name}" />
+                                                            </h:panelGrid>
+                                                        </h:panelGroup>
+                                                    </h:panelGroup>
+
+                                                </h:panelGroup>
+
+                                            </p:panel>
                                         </h:panelGroup>
                                     </h:panelGrid>
 
@@ -52,20 +426,9 @@
                                                         <h:outputText styleClass="fa-solid fa-circle-plus" /> <!-- FontAwesome Icon -->
                                                         <h:outputText value="Add New Items" class="mx-4"></h:outputText>
                                                     </div>
-                                                    <p:commandButton 
-                                                        id="reFill" 
-                                                        value="Refill Package" 
-                                                        icon="fa fa-refresh"
-                                                        class="ui-button-warning"
-                                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Package bill – Reloading of Packages with Consideration of Gender')}"
-                                                        action="#{itemController.fillpackages(billPackageController.patient.person.sex)}" >
-                                                        <p:ajax process="reFill pIxAdd" update="pIxAdd advanced" />
-                                                        <f:setPropertyActionListener value="#{billPackageController.patient.person.sex}" target="#{itemController.patientGender}"/>
-                                                    </p:commandButton>
                                                 </div>
-
                                             </f:facet>
-
+                                            
                                             <p:selectOneListbox 
                                                 id="advanced" 
                                                 value="#{billPackageController.currentBillItem.item}"
@@ -74,7 +437,7 @@
                                                 scrollHeight="250"
                                                 filterMatchMode="contains">
                                                 <f:selectItems 
-                                                    value="#{itemController.packaes}" 
+                                                    value="#{billPackageController.genderBasedPackaes}" 
                                                     var="item" 
                                                     itemLabel="#{item.name}" 
                                                     itemValue="#{item}"/>

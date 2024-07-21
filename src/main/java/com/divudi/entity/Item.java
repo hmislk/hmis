@@ -1398,6 +1398,9 @@ public class Item implements Serializable, Comparable<Item> {
     }
 
     public String getForGender() {
+        if(forGender==null||forGender.trim().equals("")){
+            forGender = "Both";
+        }
         return forGender;
     }
 
