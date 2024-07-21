@@ -13,7 +13,33 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <p:dataTable value="#{reportTemplateController.reportTemplateRowBundle.reportTemplateRows}" var="rtr" rowKey="#{rtr.id}">
+        <div class="">
+            <p:commandButton 
+                class="ui-button-success mx-2" 
+                icon="fas fa-file-excel" 
+                id="btnExcel" 
+                ajax="false" 
+                value="Excel" >
+                <p:dataExporter 
+                    fileName="Item Category Report" 
+                    type="xlsx" 
+                    target="tbl" >
+                </p:dataExporter>
+            </p:commandButton>
+
+            <p:commandButton 
+                class="ui-button-info " 
+                icon="fas fa-print" 
+                id="btnprint" 
+                ajax="false" 
+                value="Print" >
+                <p:printer 
+                    target="tbl" >
+                </p:printer>
+            </p:commandButton>
+        </div>
+        <p:dataTable id="tbl" value="#{reportTemplateController.reportTemplateRowBundle.reportTemplateRows}" var="rtr" rowKey="#{rtr.id}">
+
             <p:column headerText="Category Name">
                 <h:outputText value="#{rtr.categoryName}" />
             </p:column>

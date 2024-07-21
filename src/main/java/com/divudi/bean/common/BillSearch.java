@@ -2841,6 +2841,9 @@ public class BillSearch implements Serializable {
 
             case CHANNEL_REFUND:
                 return "";
+                
+            case CHANNEL_PAYMENT_FOR_BOOKING_BILL:
+                
 
         }
 

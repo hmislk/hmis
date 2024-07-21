@@ -10,9 +10,6 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="controller" type="com.divudi.bean.common.ControllerWithPatientViewScope"/>
-        <cc:attribute name="editable" type="java.lang.Boolean"  /> 
-        <!--Useless -->
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -23,24 +20,24 @@
                 <h:panelGroup layout="block" styleClass="d-flex justify-content-between align-items-center">
                     <!-- Left aligned content -->
                     <h:panelGroup id="headerFacet">
-                        <h:outputText value="Select a Patient" rendered="#{cc.attrs.controller.patient eq null}"></h:outputText>
+                        <h:outputText value="Select a Patient" rendered="#{bookingControllerViewScopeMonth.patient eq null}"></h:outputText>
                         <h:outputText styleClass="fas fa-user" />
                         <h:panelGroup 
-                            rendered="#{cc.attrs.controller.quickSearchPatientList eq null or empty cc.attrs.controller.quickSearchPatientList}">
+                            rendered="#{bookingControllerViewScopeMonth.quickSearchPatientList eq null or empty bookingControllerViewScopeMonth.quickSearchPatientList}">
                             <h:outputText
-                                rendered="#{cc.attrs.controller.patient.id eq null}"
+                                rendered="#{bookingControllerViewScopeMonth.patient.id eq null}"
                                 value="Patient" 
                                 class="mx-4"
                                 >
                             </h:outputText>
                             <h:outputText
-                                rendered="#{cc.attrs.controller.patient.id ne null}"
+                                rendered="#{bookingControllerViewScopeMonth.patient.id ne null}"
                                 value="Searched Patient Details" 
                                 class="mx-2"
                                 ></h:outputText>
                             <h:panelGroup id="edit" >
                                 <p:selectBooleanButton 
-                                    value="#{cc.attrs.controller.patientDetailsEditable}" 
+                                    value="#{bookingControllerViewScopeMonth.patientDetailsEditable}" 
                                     offIcon="pi pi-pencil" 
                                     onIcon="pi pi-eye"                                 
                                     class="mx-2"
@@ -49,7 +46,7 @@
                                         process="@this" 
                                         update="viewPatient editPatient btnDone edit" />
                                 </p:selectBooleanButton>
-                                <p:commandButton id="btnDone" alt="Save Patient Details" class="ui-button-success" icon="fas fa-check" action="#{cc.attrs.controller.saveSelected}" rendered="#{cc.attrs.controller.patientDetailsEditable}" />
+                                <p:commandButton id="btnDone" alt="Save Patient Details" class="ui-button-success" icon="fas fa-check" action="#{bookingControllerViewScopeMonth.saveSelected}" rendered="#{bookingControllerViewScopeMonth.patientDetailsEditable}" />
                             </h:panelGroup>
 
                         </h:panelGroup>
@@ -67,7 +64,7 @@
                             <p:inputText 
                                 autocomplete="off"
                                 id="txtQuickSearchPhoneNumber"
-                                value="#{cc.attrs.controller.quickSearchPhoneNumber}"
+                                value="#{bookingControllerViewScopeMonth.quickSearchPhoneNumber}"
                                 placeholder="Phone Number"
                                 class="form-control-sm mx-1"
                                 onfocus="this.select()" 
@@ -79,7 +76,7 @@
                                 immediate="true"
                                 icon="fa fa-search" 
                                 title="Quick Search from Phone Number"
-                                action="#{cc.attrs.controller.quickSearchPatientLongPhoneNumber()}" 
+                                action="#{bookingControllerViewScopeMonth.quickSearchPatientLongPhoneNumber()}" 
                                 process="btnSearchbyPhoneNo txtQuickSearchPhoneNumber"
                                 update="ptImp selectPatient editPatient viewPatient"
                                 ajax="false"
@@ -89,7 +86,7 @@
                                 id="btnAddNewPatient"
                                 icon="fa fa-plus-circle" 
                                 title="Add New Patient"
-                                action="#{cc.attrs.controller.quickSearchNewPatient()}" 
+                                action="#{bookingControllerViewScopeMonth.quickSearchNewPatient()}" 
                                 process="btnAddNewPatient"
                                 update="ptImp selectPatient editPatient viewPatient"
                                 styleClass="btn-sm mx-1"/>
@@ -99,8 +96,8 @@
             </f:facet>
 
             <h:panelGroup id="selectPatient" >
-                <h:panelGroup rendered="#{cc.attrs.controller.quickSearchPatientList ne null and not empty cc.attrs.controller.quickSearchPatientList}">
-                    <p:dataTable id="tblPatients" value="#{cc.attrs.controller.quickSearchPatientList}" var="ps">
+                <h:panelGroup rendered="#{bookingControllerViewScopeMonth.quickSearchPatientList ne null and not empty bookingControllerViewScopeMonth.quickSearchPatientList}">
+                    <p:dataTable id="tblPatients" value="#{bookingControllerViewScopeMonth.quickSearchPatientList}" var="ps">
                         <p:column headerText="Name">
                             #{ps.person.name}
                         </p:column>
@@ -112,12 +109,12 @@
                         </p:column>
                         <p:column>
                             <p:commandButton 
-                                action="#{cc.attrs.controller.selectQuickOneFromQuickSearchPatient}" 
+                                action="#{bookingControllerViewScopeMonth.selectQuickOneFromQuickSearchPatient}" 
                                 id="btnSelectPt"
                                 process="btnSelectPt tblPatients"
                                 update=":#{p:resolveFirstComponentWithId('ptImp',view).clientId}"
                                 value="select">
-                                <f:setPropertyActionListener value="#{ps}" target="#{cc.attrs.controller.patient}" />
+                                <f:setPropertyActionListener value="#{ps}" target="#{bookingControllerViewScopeMonth.patient}" />
                             </p:commandButton>
                         </p:column>
                     </p:dataTable>
@@ -126,7 +123,7 @@
 
             <h:panelGroup id="editPatient" >
 
-                <h:panelGroup rendered="#{cc.attrs.controller.patientDetailsEditable}" >
+                <h:panelGroup rendered="#{bookingControllerViewScopeMonth.patientDetailsEditable}" >
                     <h:panelGroup rendered="#{patientController.quickSearchPatientList eq null or empty patientController.quickSearchPatientList}">
                         <h:panelGroup class="mb-1 w-100" id="panelPatient" >
                             <h:panelGroup id="gpPatient" >
@@ -135,7 +132,7 @@
                                         <p:selectOneMenu 
                                             id="cmbTitle"
                                             class="form-control w-100"
-                                            value="#{cc.attrs.controller.patient.person.title}">
+                                            value="#{bookingControllerViewScopeMonth.patient.person.title}">
                                             <f:selectItem itemLabel="Select Title" />
                                             <f:selectItems value="#{opdBillController.title}" var="i"
                                                            itemLabel="#{i.label}" itemValue="#{i}"/>
@@ -147,7 +144,7 @@
                                             autocomplete="off" 
                                             id="txtNewPtName" 
                                             placeholder="Enter the Name of the patient"
-                                            value="#{cc.attrs.controller.patient.person.name}"
+                                            value="#{bookingControllerViewScopeMonth.patient.person.name}"
                                             validatorMessage="Please enter only letters and spaces."
                                             class="form-control" >
                                             <c:if test="#{not empty sessionController.applicationPreference.nameRegex}">
@@ -162,7 +159,7 @@
                                     <div class="col-md-3 p-1">
                                         <p:selectOneMenu 
                                             id="cmbSex" 
-                                            value="#{cc.attrs.controller.patient.person.sex}"
+                                            value="#{bookingControllerViewScopeMonth.patient.person.sex}"
                                             class="form-control w-100">
                                             <f:selectItem itemLabel="Select Gender"/>
                                             <f:selectItems value="#{opdBillController.sex}"/>
@@ -176,7 +173,7 @@
                                                     id="year" 
                                                     placeholder="Years"
 
-                                                    value="#{cc.attrs.controller.patient.person.ageYearsComponent}"
+                                                    value="#{bookingControllerViewScopeMonth.patient.person.ageYearsComponent}"
                                                     class="form-control">
                                                     <f:ajax event="keyup" execute="@this" render="dpDob" />
                                                 </p:inputText>
@@ -185,7 +182,7 @@
                                                 <p:inputText
 
                                                     autocomplete="off" id="month" placeholder="Months"
-                                                    value="#{cc.attrs.controller.patient.person.ageMonthsComponent}"
+                                                    value="#{bookingControllerViewScopeMonth.patient.person.ageMonthsComponent}"
                                                     class="form-control">
                                                     <f:ajax event="keyup" execute="@this"  render="dpDob"  />
                                                 </p:inputText>
@@ -194,14 +191,14 @@
                                                 <p:inputText 
 
                                                     autocomplete="off" id="day" placeholder="Days"
-                                                    value="#{cc.attrs.controller.patient.person.ageDaysComponent}"
+                                                    value="#{bookingControllerViewScopeMonth.patient.person.ageDaysComponent}"
                                                     class="form-control">
                                                     <f:ajax event="keyup" execute="@this"  render="dpDob" />
                                                 </p:inputText>
                                             </div>
                                             <div class="col-md-6">
                                                 <p:datePicker  
-                                                    value="#{cc.attrs.controller.patient.person.dob}"
+                                                    value="#{bookingControllerViewScopeMonth.patient.person.dob}"
                                                     id="dpDob" 
                                                     class="w-100"
                                                     yearNavigator="true"
@@ -223,7 +220,7 @@
                                             id="txtMobile" 
                                             autocomplete="off" 
                                             placeholder="Mobile Number"
-                                            value="#{cc.attrs.controller.patient.mobileNumberStringTransient}"
+                                            value="#{bookingControllerViewScopeMonth.patient.mobileNumberStringTransient}"
                                             class="form-control" 
                                             validatorMessage="Please enter valid Number">
                                             <c:if test="#{not empty sessionController.applicationPreference.mobileRegex}">
@@ -236,7 +233,7 @@
                                             id="txtPhone" 
                                             autocomplete="off" 
                                             placeholder="Phone Number"
-                                            value="#{cc.attrs.controller.patient.phoneNumberStringTransient}"
+                                            value="#{bookingControllerViewScopeMonth.patient.phoneNumberStringTransient}"
                                             class="form-control" validatorMessage="Please enter valid Number">
                                             <c:if test="#{not empty sessionController.applicationPreference.mobileRegex}">
                                                 <f:validateRegex pattern="#{sessionController.applicationPreference.mobileRegex}"/>
@@ -246,7 +243,7 @@
                                     <div class="col-md-3 p-1">
                                         <p:inputText 
                                             autocomplete="off" id="txtEmail" placeholder="Enter Email here"
-                                            value="#{cc.attrs.controller.patient.person.email}"
+                                            value="#{bookingControllerViewScopeMonth.patient.person.email}"
                                             class="form-control"
                                             >
                                             <c:if test="#{not empty sessionController.applicationPreference.emailRegex}">
@@ -259,7 +256,7 @@
                                             id="txtNic"
                                             autocomplete="off"
                                             placeholder="National ID Number"
-                                            value="#{cc.attrs.controller.patient.person.nic}"
+                                            value="#{bookingControllerViewScopeMonth.patient.person.nic}"
                                             class="form-control"/>
                                     </div>
                                 </div>
@@ -270,7 +267,7 @@
                                             id="txtAddress"
                                             autocomplete="off"
                                             placeholder="Address"
-                                            value="#{cc.attrs.controller.patient.person.address}"
+                                            value="#{bookingControllerViewScopeMonth.patient.person.address}"
                                             class="form-control"/>
                                     </div>
                                     <div class="col-md-4 p-1">
@@ -281,7 +278,7 @@
                                             var="pta" itemLabel="#{pta.name}"
                                             minQueryLength="4"
                                             itemValue="#{pta}" forceSelection="true"
-                                            value="#{cc.attrs.controller.patient.person.area}"
+                                            value="#{bookingControllerViewScopeMonth.patient.person.area}"
                                             inputStyleClass="form-control"
                                             class="w-100"/>
                                     </div>
@@ -310,50 +307,50 @@
             </h:panelGroup>
             <h:panelGroup id="viewPatient" >
 
-                <h:panelGroup  rendered="#{not cc.attrs.controller.patientDetailsEditable}"  >
-                    <h:panelGroup  rendered="#{cc.attrs.controller.quickSearchPatientList eq null}" >
-                        <h:panelGrid columns="3" class="my-1" id="panelPatientDisplay" rendered="#{cc.attrs.controller.patient ne null}" >
+                <h:panelGroup  rendered="#{not bookingControllerViewScopeMonth.patientDetailsEditable}"  >
+                    <h:panelGroup  rendered="#{bookingControllerViewScopeMonth.quickSearchPatientList eq null}" >
+                        <h:panelGrid columns="3" class="my-1" id="panelPatientDisplay" rendered="#{bookingControllerViewScopeMonth.patient ne null}" >
                             <h:outputLabel value="Name " class="mx-3"/>
                             <h:outputLabel value=" : " class="mx-3"/>
-                            <h:outputText value="#{cc.attrs.controller.patient.person.nameWithTitle}" />
+                            <h:outputText value="#{bookingControllerViewScopeMonth.patient.person.nameWithTitle}" />
 
                             <h:outputLabel value="Gender " class="mx-3"/>
                             <h:outputLabel value=" : " class="mx-3"/>
-                            <h:outputText value="#{cc.attrs.controller.patient.person.sex}" />
+                            <h:outputText value="#{bookingControllerViewScopeMonth.patient.person.sex}" />
 
                             <h:outputLabel value="Date of Birth " class="mx-3"/>
                             <h:outputLabel value=" : " class="mx-3"/>
-                            <h:outputText value="#{cc.attrs.controller.patient.person.dob}" >
+                            <h:outputText value="#{bookingControllerViewScopeMonth.patient.person.dob}" >
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
                             </h:outputText>
 
                             <h:outputLabel value="Age  " class="mx-3"/>
                             <h:outputLabel value=" : " class="mx-3"/>
-                            <h:outputText value="#{cc.attrs.controller.patient.person.ageAsString}" />
+                            <h:outputText value="#{bookingControllerViewScopeMonth.patient.person.ageAsString}" />
 
                             <h:outputLabel value="Mobile No. " class="mx-3"/>
                             <h:outputLabel value=" : " class="mx-3"/>
-                            <h:outputText value="#{cc.attrs.controller.patient.person.mobile}" />
+                            <h:outputText value="#{bookingControllerViewScopeMonth.patient.person.mobile}" />
 
                             <h:outputLabel value="Phone No. " class="mx-3"/>
                             <h:outputLabel value=" : " class="mx-3"/>
-                            <h:outputText value="#{cc.attrs.controller.patient.person.phone}" />
+                            <h:outputText value="#{bookingControllerViewScopeMonth.patient.person.phone}" />
 
                             <h:outputLabel value="Email " class="mx-3"/>
                             <h:outputLabel value=" : " class="mx-3"/>
-                            <h:outputText value="#{cc.attrs.controller.patient.person.email}" />
+                            <h:outputText value="#{bookingControllerViewScopeMonth.patient.person.email}" />
 
                             <h:outputLabel value="National ID No. " class="mx-3"/>
                             <h:outputLabel value=" : " class="mx-3"/>
-                            <h:outputText value="#{cc.attrs.controller.patient.person.nic}" />
+                            <h:outputText value="#{bookingControllerViewScopeMonth.patient.person.nic}" />
 
                             <h:outputLabel value="Address " class="mx-3"/>
                             <h:outputLabel value=" : " class="mx-3"/>
-                            <h:outputText value="#{cc.attrs.controller.patient.person.address}" />
+                            <h:outputText value="#{bookingControllerViewScopeMonth.patient.person.address}" />
 
                             <h:outputLabel value="Area " class="mx-3"/>
                             <h:outputLabel value=" : " class="mx-3"/>
-                            <h:outputText value="#{cc.attrs.controller.patient.person.area.name}" />
+                            <h:outputText value="#{bookingControllerViewScopeMonth.patient.person.area.name}" />
 
                         </h:panelGrid>
                     </h:panelGroup>
