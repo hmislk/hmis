@@ -890,12 +890,6 @@
                     </p:menuitem>
                     <p:menuitem 
                         ajax="false"  
-                        value="Channel Booking - By Month"  
-                        action="#{bookingControllerViewScope.navigateToChannelBookingFromMenuByDateNew()}" 
-                        rendered="#{webUserController.hasPrivilege('ChannellingChannelBooking')}" >
-                    </p:menuitem>
-                    <p:menuitem 
-                        ajax="false"  
                         value="Channel Queue"  
                         action="#{bookingController.navigateToChannelQueueFromMenu}" 
                         rendered="#{webUserController.hasPrivilege('ChannellingChannelBooking')}" >
