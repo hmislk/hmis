@@ -130,7 +130,7 @@
                                                                     action="#{patientController.selectQuickOneFromQuickSearchPatient(billPackageController)}" 
                                                                     id="btnSelectPt"
                                                                     process="btnSelectPt tblPatients"
-                                                                    update=":#{p:resolveFirstComponentWithId('ptImp',view).clientId}"
+                                                                    update=":#{p:resolveFirstComponentWithId('ptImp',view).clientId} :#{p:resolveFirstComponentWithId('advanced',view).clientId}"
                                                                     value="select">
                                                                     <f:setPropertyActionListener value="#{ps}" target="#{patientController.current}" />
                                                                 </p:commandButton>
