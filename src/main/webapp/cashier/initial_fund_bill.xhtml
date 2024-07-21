@@ -46,7 +46,7 @@
                                         <h:panelGroup
                                             class="d-flex"
                                             layout="block" 
-                                            id="cheque" 
+                                            id="cheque1" 
                                             rendered="#{financialTransactionController.currentPayment.paymentMethod eq 'Cheque'}" >
 
                                             <div class="d-flex">
@@ -239,7 +239,6 @@
                                         <h:outputText value="#{denomination}" />
                                         <br />
                                     </ui:repeat>
-                                    #{bp.currencyDenominationsJson}
                                 </p:column>
 
                                 <p:column headerText="Action" width="20%">
