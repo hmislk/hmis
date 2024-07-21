@@ -17,25 +17,25 @@
                 <p:panel  header="Channel Bill List">
                     <p:panelGrid columns="4" class="w-100" > 
                         <h:outputLabel value="From Date"/>
-                        <p:calendar id="frmDate" value="#{channelReportController.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"   ></p:calendar>
+                        <p:calendar id="frmDate" value="#{channelReportControllerOld.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"   ></p:calendar>
 
                         <h:outputLabel value="To Date"/>
-                        <p:calendar id="toDate" value="#{channelReportController.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
+                        <p:calendar id="toDate" value="#{channelReportControllerOld.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                         <h:outputLabel value="Specility"/>
-                        <au:completeSpeciality value="#{channelReportController.reportKeyWord.speciality}" />
+                        <au:completeSpeciality value="#{channelReportControllerOld.reportKeyWord.speciality}" />
                         <h:outputLabel value="Doctor"/>
-                        <au:completeConsultant value="#{channelReportController.reportKeyWord.staff}" />
+                        <au:completeConsultant value="#{channelReportControllerOld.reportKeyWord.staff}" />
                         <h:outputLabel value="Area"/>
-                        <au:completeArea value="#{channelReportController.reportKeyWord.area}" />
+                        <au:completeArea value="#{channelReportControllerOld.reportKeyWord.area}" />
                         <h:outputLabel value="By Created Date"/>
-                        <p:selectBooleanCheckbox value="#{channelReportController.sessoinDate}" />
+                        <p:selectBooleanCheckbox value="#{channelReportControllerOld.sessoinDate}" />
                         <h:outputLabel value="Paid Only"/>
-                        <p:selectBooleanCheckbox value="#{channelReportController.paid}" />
+                        <p:selectBooleanCheckbox value="#{channelReportControllerOld.paid}" />
                         <h:outputLabel value="Summary"/>
-                        <p:selectBooleanCheckbox value="#{channelReportController.summery}" />
+                        <p:selectBooleanCheckbox value="#{channelReportControllerOld.summery}" />
                     </p:panelGrid>
                     <h:panelGrid columns="3" class="my-2" > 
-                        <p:commandButton style="margin-right: 10px" ajax="false" id="btnRefresh2" value="Process" action="#{channelReportController.channelBillList}">
+                        <p:commandButton style="margin-right: 10px" ajax="false" id="btnRefresh2" value="Process" action="#{channelReportControllerOld.channelBillList}">
                         </p:commandButton>
                         <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right; margin-right: 10px" >
                             <p:printer target="reportPrint"  />
@@ -50,18 +50,18 @@
 
 
                     <p:panel id="reportPrint">
-                        <p:dataTable value="#{channelReportController.channelBills}" var="b" id="tbl" >
+                        <p:dataTable value="#{channelReportControllerOld.channelBills}" var="b" id="tbl" >
                             <f:facet name="header" >
                                 <p:outputLabel value="Bill Summary" />
                                 <h:outputLabel class="ml-5" value="From : " style=" white-space:pre-line;"/>
-                                <h:outputLabel class="ml-2" value="#{channelReportController.fromDate}" >
+                                <h:outputLabel class="ml-2" value="#{channelReportControllerOld.fromDate}" >
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>                          
                                 <h:outputLabel value="&emsp;&emsp;To :"/>
-                                <h:outputLabel class="ml-2" value="#{channelReportController.toDate}" >
+                                <h:outputLabel class="ml-2" value="#{channelReportControllerOld.toDate}" >
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
-                                <p:outputLabel value="#{channelReportController.reportKeyWord.staff.person.name}" style=" white-space:pre-line;"/>
+                                <p:outputLabel value="#{channelReportControllerOld.reportKeyWord.staff.person.name}" style=" white-space:pre-line;"/>
                             </f:facet>
                             <p:column style="text-align: left;" rendered="#{webUserController.hasPrivilege('Developers')}" >
                                 <f:facet name="header" >
@@ -99,7 +99,7 @@
                                 <p:outputLabel value="#{b.patient.person.phone}" >
                                 </p:outputLabel>
                             </p:column>
-                            <p:column style="text-align: right;" rendered="#{channelReportController.reportKeyWord.staff eq null}">
+                            <p:column style="text-align: right;" rendered="#{channelReportControllerOld.reportKeyWord.staff eq null}">
                                 <f:facet name="header" >
                                     <p:outputLabel value="Cunsultant Name" />
                                 </f:facet>
@@ -143,7 +143,7 @@
                                 <p:outputLabel value="(#{b.creditCompany.institutionCode})" rendered="#{b.paymentMethod=='Agent'}" >
                                 </p:outputLabel>
                             </p:column>
-                            <p:column style="text-align: right;" rendered="#{channelReportController.reportKeyWord.area eq null}">
+                            <p:column style="text-align: right;" rendered="#{channelReportControllerOld.reportKeyWord.area eq null}">
                                 <f:facet name="header" >
                                     <p:outputLabel value="Area" />
                                 </f:facet>
@@ -161,15 +161,15 @@
                                 <p:outputLabel value="Refunded" rendered="#{b.refunded==true}"/>                        
                             </p:column>  
                         </p:dataTable>
-                        <p:dataTable value="#{channelReportController.channelBillsCancelled}" var="b" id="tbl2" rendered="#{!channelReportController.summery}">
+                        <p:dataTable value="#{channelReportControllerOld.channelBillsCancelled}" var="b" id="tbl2" rendered="#{!channelReportControllerOld.summery}">
                             <f:facet name="header" >
                                 <p:outputLabel value="Bill Summary(Cancel)" />
                                 <h:outputLabel class="ml-5" value="From : " style=" white-space:pre-line;"/>
-                                <h:outputLabel class="ml-2" value="#{channelReportController.fromDate}" >
+                                <h:outputLabel class="ml-2" value="#{channelReportControllerOld.fromDate}" >
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>                          
                                 <h:outputLabel value="&emsp;&emsp;To :"/>
-                                <h:outputLabel class="ml-2" value="#{channelReportController.toDate}" >
+                                <h:outputLabel class="ml-2" value="#{channelReportControllerOld.toDate}" >
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                             </f:facet>
@@ -264,15 +264,15 @@
                                 <p:outputLabel value="Refunded" rendered="#{b.refunded==true}"/>                        
                             </p:column>
                         </p:dataTable>
-                        <p:dataTable value="#{channelReportController.channelBillsRefunded}" var="b" id="tbl3" rendered="#{!channelReportController.summery}">
+                        <p:dataTable value="#{channelReportControllerOld.channelBillsRefunded}" var="b" id="tbl3" rendered="#{!channelReportControllerOld.summery}">
                             <f:facet name="header" >
                                 <p:outputLabel value="Bill Summary(Refund)" />
                                 <h:outputLabel class="ml-5" value="From : " style=" white-space:pre-line;"/>
-                                <h:outputLabel class="ml-2" value="#{channelReportController.fromDate}" >
+                                <h:outputLabel class="ml-2" value="#{channelReportControllerOld.fromDate}" >
                                     <f:convertDateTime pattern="dd MMMM yyyy HH:mm;ss"/>
                                 </h:outputLabel>                          
                                 <h:outputLabel value="&emsp;&emsp;To :"/>
-                                <h:outputLabel class="ml-2" value="#{channelReportController.toDate}" >
+                                <h:outputLabel class="ml-2" value="#{channelReportControllerOld.toDate}" >
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                             </f:facet>

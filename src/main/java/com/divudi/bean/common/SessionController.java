@@ -1726,7 +1726,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         Map m = new HashMap();
         sql = "select w "
                 + " from WebUserPrivilege w "
-                + " where w.retired=:ret "
+                + " where w.retired<>:ret "
                 + " and w.webUser=:wu ";
         if (tdept != null) {
             sql += " and w.department=:dep ";
@@ -1735,7 +1735,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         if (deptIsNull) {
             sql += " and w.department is null ";
         }
-        m.put("ret", false);
+        m.put("ret", true);
         m.put("wu", twu);
         System.out.println("m = " + m);
         System.out.println("sql = " + sql);
