@@ -11,6 +11,7 @@ import com.divudi.entity.WebUser;
 import com.divudi.facade.ConfigOptionFacade;
 import javax.inject.Named;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
@@ -55,10 +56,16 @@ public class ConfigOptionApplicationController implements Serializable {
 
     private void initializeDenominations() {
         String denominationsStr = getLongTextValueByKey("Currency Denominations");
-        denominations = Arrays.stream(denominationsStr.split(","))
-                .map(Integer::parseInt)
-                .map(value -> new Denomination(value, 0))
-                .collect(Collectors.toList());
+        if (denominationsStr != null && !denominationsStr.trim().isEmpty()) {
+            denominations = Arrays.stream(denominationsStr.split(","))
+                    .map(String::trim) // Trim any extra spaces
+                    .filter(s -> !s.isEmpty()) // Filter out empty strings
+                    .map(Integer::parseInt)
+                    .map(value -> new Denomination(value, 0))
+                    .collect(Collectors.toList());
+        } else {
+            denominations = new ArrayList<>();  // Initialize to an empty list if the string is null or empty
+        }
     }
 
     public List<Integer> getCurrencyDenominations() {
