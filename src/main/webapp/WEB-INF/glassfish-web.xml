@@ -4,7 +4,6 @@
 
   <context-root>/sethma</context-root>
 
-
   <class-loader delegate="true"/>
   <jsp-config>
     <property name="keepgenerated" value="true">
