@@ -343,7 +343,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
                 + " and b.fee.feeType=:ftp"
                 + " and b.bill.refunded=false "
                 + " and b.bill.cancelled=false "
-                + " and b.bill.singleBillSession.absent=false"
+//                + " and b.bill.singleBillSession.absent=false"
                 + " and (b.feeValue - b.paidValue) > 0 "
                 + " and b.bill.billType in :bt "
                 + " and b.staff=:stf ";
@@ -363,8 +363,12 @@ public class ChannelStaffPaymentBillController implements Serializable {
             hm.put("ss", getSelectedServiceSession());
         }
 
-        sql += " and b.bill.singleBillSession.absent=false "
-                + " order by b.bill.singleBillSession.serviceSession.sessionDate,"
+//        sql += " and b.bill.singleBillSession.absent=false "
+//                + " order by b.bill.singleBillSession.serviceSession.sessionDate,"
+//                + " b.bill.singleBillSession.serviceSession.sessionTime,"
+//                + " b.bill.singleBillSession.serialNo ";
+        
+         sql +=  " order by b.bill.singleBillSession.serviceSession.sessionDate,"
                 + " b.bill.singleBillSession.serviceSession.sessionTime,"
                 + " b.bill.singleBillSession.serialNo ";
 
@@ -445,7 +449,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
                 + " and b.fee.feeType=:ftp"
                 + " and b.bill.refunded=false "
                 + " and b.bill.cancelled=false "
-                + " and b.bill.singleBillSession.absent=false"
+//                + " and b.bill.singleBillSession.absent=false"
                 + " and (b.feeValue - b.paidValue) > 0 "
                 + " and b.bill.billType in :bt "
                 + " and b.staff=:stf ";
@@ -465,8 +469,11 @@ public class ChannelStaffPaymentBillController implements Serializable {
             hm.put("ss", getSelectedServiceSession());
         }
 
-        sql += " and b.bill.singleBillSession.absent=false "
-                + " order by b.bill.singleBillSession.serviceSession.sessionDate,"
+//        sql += " and b.bill.singleBillSession.absent=false "
+//                + " order by b.bill.singleBillSession.serviceSession.sessionDate,"
+//                + " b.bill.singleBillSession.serviceSession.sessionTime,"
+//                + " b.bill.singleBillSession.serialNo ";
+        sql += " order by b.bill.singleBillSession.serviceSession.sessionDate,"
                 + " b.bill.singleBillSession.serviceSession.sessionTime,"
                 + " b.bill.singleBillSession.serialNo ";
 
@@ -537,7 +544,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
                 + " and b.fee.feeType=:ftp"
                 + " and b.bill.refunded=false "
                 + " and b.bill.cancelled=false "
-                + " and b.bill.singleBillSession.absent=false"
+//                + " and b.bill.singleBillSession.absent=false"
                 + " and (b.feeValue - b.paidValue) > 0 "
                 + " and b.bill.billType in :bt "
                 + " and b.bill.singleBillSession.sessionInstance=:si"

@@ -97,7 +97,7 @@
                                         <ez:bms5x5ChannelBill bill="#{bookingControllerViewScopeMonth.selectedBillSession.billItem.bill}"/>
                                     </h:panelGroup>
                                     <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'FiveFivePrintedPaper'}">
-                                        <ez:bms5x5WIthoutHeaderChannelBill bill="#{bookingControllerViewScopeMonth.selectedBillSession.billItem.bill}"/>
+                                        <ez:bms5x5WIthoutHeaderChannelBill controller="#{bookingControllerViewScopeMonth}" bill="#{bookingControllerViewScopeMonth.selectedBillSession.billItem.bill}"/>
                                     </h:panelGroup>
                                 </ui:repeat>
                             </h:panelGroup>
@@ -161,7 +161,7 @@
                    <!--                                <bg:fiveFiveCCBill_CC bill="#{bookingControllerViewScopeMonth.printingBill}"/>  -->
                                                     </h:panelGroup>
                                                     <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'FiveFivePrintedPaper'}" >
-                                                        <ez:bms5x5WIthoutHeaderChannelBill bill="#{bookingControllerViewScopeMonth.selectedBillSession.billItem.bill}"/>
+                                                        <ez:bms5x5WIthoutHeaderChannelBill controller="#{bookingControllerViewScopeMonth}" bill="#{bookingControllerViewScopeMonth.selectedBillSession.billItem.bill}"/>
                     <!--                                <bg:fiveFiveCCBill_CC bill="#{bookingControllerViewScopeMonth.printingBill}"/>  -->
                                                     </h:panelGroup>
                                                 </ui:repeat>
@@ -229,7 +229,7 @@
                     <!--                                <bg:fiveFiveCCBill_CC bill="#{bookingControllerViewScopeMonth.printingBill}"/>  -->
                                                     </h:panelGroup>
                                                     <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'FiveFivePrintedPaper'}" >
-                                                        <ez:bms5x5WIthoutHeaderChannelBill bill="#{bookingControllerViewScopeMonth.selectedBillSession.bill}" duplicate="true"/>
+                                                        <ez:bms5x5WIthoutHeaderChannelBill controller="#{bookingControllerViewScopeMonth}" bill="#{bookingControllerViewScopeMonth.selectedBillSession.bill}" duplicate="true"/>
                     <!--                                <bg:fiveFiveCCBill_CC bill="#{bookingControllerViewScopeMonth.printingBill}"/>  -->
                                                     </h:panelGroup>
                                                 </ui:repeat>
@@ -297,7 +297,7 @@
                     <!--                                <bg:fiveFiveCCBill_CC bill="#{bookingControllerViewScopeMonth.printingBill}"/>  -->
                                                     </h:panelGroup>
                                                     <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'FiveFivePrintedPaper'}" >
-                                                        <ez:bms5x5WIthoutHeaderChannelBill bill="#{bookingControllerViewScopeMonth.selectedBillSession.billItem.bill}"/>
+                                                        <ez:bms5x5WIthoutHeaderChannelBill controller="#{bookingControllerViewScopeMonth}" bill="#{bookingControllerViewScopeMonth.selectedBillSession.billItem.bill}"/>
                     <!--                                <bg:fiveFiveCCBill_CC bill="#{bookingControllerViewScopeMonth.printingBill}"/>  -->
                                                     </h:panelGroup>
                                                 </ui:repeat>
@@ -1231,7 +1231,7 @@
                                     <!--                                <bg:fiveFiveCCBill_CC bill="#{bookingControllerViewScopeMonth.printingBill}"/>  -->
                                                                     </h:panelGroup>
                                                                     <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'FiveFivePrintedPaper'}" >
-                                                                        <ez:bms5x5WIthoutHeaderChannelBill bill="#{bookingControllerViewScopeMonth.selectedBillSession.billItem.bill}"/>
+                                                                        <ez:bms5x5WIthoutHeaderChannelBill controller="#{bookingControllerViewScopeMonth}" bill="#{bookingControllerViewScopeMonth.selectedBillSession.billItem.bill}"/>
                                     <!--                                <bg:fiveFiveCCBill_CC bill="#{bookingControllerViewScopeMonth.printingBill}"/>  -->
                                                                     </h:panelGroup>
                                                                 </ui:repeat>
@@ -1311,7 +1311,7 @@
            <!--                                <bg:fiveFiveCCBill_CC bill="#{bookingControllerViewScopeMonth.printingBill}"/>  -->
                                             </h:panelGroup>
                                             <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'FiveFivePrintedPaper'}" >
-                                                <ez:bms5x5WIthoutHeaderChannelBill bill="#{bookingControllerViewScopeMonth.selectedBillSession.billItem.bill}"/>
+                                                <ez:bms5x5WIthoutHeaderChannelBill controller="#{bookingControllerViewScopeMonth}" bill="#{bookingControllerViewScopeMonth.selectedBillSession.billItem.bill}"/>
             <!--                                <bg:fiveFiveCCBill_CC bill="#{bookingControllerViewScopeMonth.printingBill}"/>  -->
                                             </h:panelGroup>
                                         </ui:repeat>

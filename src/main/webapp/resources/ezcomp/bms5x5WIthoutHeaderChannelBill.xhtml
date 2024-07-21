@@ -15,6 +15,7 @@
         <cc:attribute name="payments" ></cc:attribute>
         <cc:attribute name="ref" type="java.lang.Boolean" />
         <cc:attribute name="paymentMethodData"  type="com.divudi.data.dataStructure.PaymentMethodData"/>/>
+        <cc:attribute name="controller" />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -96,11 +97,11 @@
                     </td>
                     <td>
                         <b class="d-flex gap-2">
-                            <h:outputLabel value="#{bookingControllerViewScope.selectedSessionInstance.sessionDate}" >
+                            <h:outputLabel value="#{cc.attrs.controller.selectedSessionInstance.sessionDate}" >
                                 <f:convertDateTime pattern=" yyyy MMMM dd" ></f:convertDateTime>
                             </h:outputLabel>
                             <h:outputLabel value="-" />
-                            <h:outputLabel value="#{bookingControllerViewScope.selectedSessionInstance.startingTime}" >
+                            <h:outputLabel value="#{cc.attrs.controller.selectedSessionInstance.startingTime}" >
                                 <f:convertDateTime pattern="hh:mm a" ></f:convertDateTime>
                             </h:outputLabel>
                         </b>
@@ -122,7 +123,7 @@
                     </td>
                     <td>
 
-                        <h:outputLabel value="#{bookingControllerViewScope.selectedSessionInstance.roomNo}" style="font-weight: bold;">
+                        <h:outputLabel value="#{cc.attrs.controller.selectedSessionInstance.roomNo}" style="font-weight: bold;">
                         </h:outputLabel>
 
                     </td>

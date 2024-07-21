@@ -2884,6 +2884,21 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             JsfUtil.addErrorMessage("Please enter a name");
             return true;
         }
+        
+        if (p.getPerson().getPhone() == null) {
+            JsfUtil.addErrorMessage("Please enter a phone number");
+            return true;
+        }
+        
+        if (p.getPerson().getMobile()== null) {
+            JsfUtil.addErrorMessage("Please enter a mobile number");
+            return true;
+        }
+        
+        if (p.getPerson().getArea()== null) {
+            JsfUtil.addErrorMessage("Please enter a area");
+            return true;
+        }
 
         return false;
     }
