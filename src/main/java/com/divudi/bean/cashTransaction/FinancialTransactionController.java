@@ -1,10 +1,9 @@
 package com.divudi.bean.cashTransaction;
-// <editor-fold defaultstate="collapsed" desc="Imports">
 
 import java.util.HashMap;
-// </editor-fold>  
 import com.divudi.bean.common.BillController;
 import com.divudi.bean.common.BillSearch;
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SearchController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.data.BillClassType;
@@ -16,28 +15,31 @@ import com.divudi.facade.PaymentFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.AtomicBillTypeTotals;
 import com.divudi.data.BillFinanceType;
-import static com.divudi.data.BillType.CollectingCentreBill;
 import com.divudi.data.BillTypeAtomic;
+import com.divudi.data.Denomination;
 import com.divudi.data.FinancialReport;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.PaymentMethodValues;
+
 import com.divudi.data.ReportTemplateRow;
 import com.divudi.data.ReportTemplateRowBundle;
+import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.entity.WebUser;
 import com.divudi.java.CommonFunctions;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import javax.ejb.EJB;
+import javax.faces.event.AjaxBehaviorEvent;
 import javax.inject.Inject;
 import javax.persistence.TemporalType;
-import org.bouncycastle.mail.smime.handlers.pkcs7_mime;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 /**
  *
@@ -65,11 +67,14 @@ public class FinancialTransactionController implements Serializable {
     SearchController searchController;
     @Inject
     BillSearch billSearch;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
     // </editor-fold>  
 
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
     private Bill currentBill;
     private Payment currentPayment;
+    private PaymentMethodData paymentMethodData;
     private Payment removingPayment;
     private List<Payment> currentBillPayments;
     private List<Bill> currentBills;
@@ -79,6 +84,7 @@ public class FinancialTransactionController implements Serializable {
     private Bill selectedBill;
     private Bill nonClosedShiftStartFundBill;
     private List<Payment> paymentsFromShiftSratToNow;
+    private List<Payment> paymentsSelected;
     private List<Payment> recievedBIllPayments;
     private List<Bill> allBillsShiftStartToNow;
     @Deprecated
@@ -130,14 +136,6 @@ public class FinancialTransactionController implements Serializable {
     private Date fromDate;
     private Date toDate;
 
-    private Date fromDate;
-    private Date toDate;
-
-    private ReportTemplateRowBundle paymentSummaryBundle;
-
-    private Date fromDate;
-    private Date toDate;
-
     private ReportTemplateRowBundle paymentSummaryBundle;
 
     // </editor-fold>  
@@ -161,7 +159,6 @@ public class FinancialTransactionController implements Serializable {
 
     public String navigateToListShiftEndSummaries() {
         resetClassVariables();
-        shiaftStartBills = new ArrayList<>();
         return "/cashier/initial_fund_bill_list?faces-redirect=true;";
     }
 
@@ -206,6 +203,293 @@ public class FinancialTransactionController implements Serializable {
         return navigateToCashierSummaryBreakdownFromShiftClosing(pms);
     }
 
+    public String navigateToCashierSummaryBreakdownFromShiftClosingForCashAdmin() {
+        List<PaymentMethod> pms = new ArrayList<>();
+        pms.add(PaymentMethod.Cash);
+        return navigateToCashierSummaryBreakdownFromShiftClosing(pms, nonClosedShiftStartFundBill.getCreater(), nonClosedShiftStartFundBill.getId(), nonClosedShiftStartFundBill.getReferenceBill().getId());
+    }
+
+    public void selectCashierSummaryBreakdownFromShiftClosingForCashAdmin() {
+        List<PaymentMethod> paymentMethods = financialReportByPayments.getPaymentMethodsForCollectedCash();
+        List<BillTypeAtomic> billTypes = financialReportByPayments.getBillTypesForCollectedCash();
+        List<Payment> allPayments = paymentsFromShiftSratToNow;
+        List<Payment> selectedPayments = new ArrayList<>();
+        for (Payment payment : allPayments) {
+            if (paymentMethods.contains(payment.getPaymentMethod())
+                    && billTypes.contains(payment.getBill().getBillTypeAtomic())) {
+                selectedPayments.add(payment);
+            }
+        }
+        paymentsSelected = selectedPayments;
+    }
+
+    public void selectRefundedCashDetails() {
+        List<PaymentMethod> paymentMethods = financialReportByPayments.getPaymentMethodsForRefundedCash();
+        List<BillTypeAtomic> billTypes = financialReportByPayments.getBillTypesForRefundedCash();
+        List<Payment> allPayments = paymentsFromShiftSratToNow;
+        List<Payment> selectedPayments = new ArrayList<>();
+        for (Payment payment : allPayments) {
+            if (paymentMethods.contains(payment.getPaymentMethod())
+                    && billTypes.contains(payment.getBill().getBillTypeAtomic())) {
+                selectedPayments.add(payment);
+            }
+        }
+        paymentsSelected = selectedPayments;
+    }
+
+    public void selectNetCashTotalDetails() {
+        List<PaymentMethod> paymentMethods = financialReportByPayments.getPaymentMethodsForNetCashTotal();
+        List<BillTypeAtomic> billTypes = financialReportByPayments.getBillTypesForNetCashTotal();
+        List<Payment> allPayments = paymentsFromShiftSratToNow;
+        List<Payment> selectedPayments = new ArrayList<>();
+        for (Payment payment : allPayments) {
+            if (paymentMethods.contains(payment.getPaymentMethod())
+                    && billTypes.contains(payment.getBill().getBillTypeAtomic())) {
+                selectedPayments.add(payment);
+            }
+        }
+        paymentsSelected = selectedPayments;
+    }
+
+    public void selectCollectedCreditCardDetails() {
+        List<PaymentMethod> paymentMethods = financialReportByPayments.getPaymentMethodsForCollectedCreditCard();
+        List<BillTypeAtomic> billTypes = financialReportByPayments.getBillTypesForCollectedCreditCard();
+        List<Payment> allPayments = paymentsFromShiftSratToNow;
+        List<Payment> selectedPayments = new ArrayList<>();
+        for (Payment payment : allPayments) {
+            if (paymentMethods.contains(payment.getPaymentMethod())
+                    && billTypes.contains(payment.getBill().getBillTypeAtomic())) {
+                selectedPayments.add(payment);
+            }
+        }
+        paymentsSelected = selectedPayments;
+    }
+
+    public void selectRefundedCreditCardDetails() {
+        List<PaymentMethod> paymentMethods = financialReportByPayments.getPaymentMethodsForRefundedCreditCard();
+        List<BillTypeAtomic> billTypes = financialReportByPayments.getBillTypesForRefundedCreditCard();
+        List<Payment> allPayments = paymentsFromShiftSratToNow;
+        List<Payment> selectedPayments = new ArrayList<>();
+        for (Payment payment : allPayments) {
+            if (paymentMethods.contains(payment.getPaymentMethod())
+                    && billTypes.contains(payment.getBill().getBillTypeAtomic())) {
+                selectedPayments.add(payment);
+            }
+        }
+        paymentsSelected = selectedPayments;
+    }
+
+    public void selectNetCreditCardTotalDetails() {
+        List<PaymentMethod> paymentMethods = financialReportByPayments.getPaymentMethodsForNetCreditCardTotal();
+        List<BillTypeAtomic> billTypes = financialReportByPayments.getBillTypesForNetCreditCardTotal();
+        List<Payment> allPayments = paymentsFromShiftSratToNow;
+        List<Payment> selectedPayments = new ArrayList<>();
+        for (Payment payment : allPayments) {
+            if (paymentMethods.contains(payment.getPaymentMethod())
+                    && billTypes.contains(payment.getBill().getBillTypeAtomic())) {
+                selectedPayments.add(payment);
+            }
+        }
+        paymentsSelected = selectedPayments;
+    }
+
+    public void selectCollectedVoucherDetails() {
+        List<PaymentMethod> paymentMethods = financialReportByPayments.getPaymentMethodsForCollectedVoucher();
+        List<BillTypeAtomic> billTypes = financialReportByPayments.getBillTypesForCollectedVoucher();
+        List<Payment> allPayments = paymentsFromShiftSratToNow;
+        List<Payment> selectedPayments = new ArrayList<>();
+        for (Payment payment : allPayments) {
+            if (paymentMethods.contains(payment.getPaymentMethod())
+                    && billTypes.contains(payment.getBill().getBillTypeAtomic())) {
+                selectedPayments.add(payment);
+            }
+        }
+        paymentsSelected = selectedPayments;
+    }
+
+    public void selectRefundedVoucherDetails() {
+        List<PaymentMethod> paymentMethods = financialReportByPayments.getPaymentMethodsForRefundedVoucher();
+        List<BillTypeAtomic> billTypes = financialReportByPayments.getBillTypesForRefundedVoucher();
+        List<Payment> allPayments = paymentsFromShiftSratToNow;
+        List<Payment> selectedPayments = new ArrayList<>();
+        for (Payment payment : allPayments) {
+            if (paymentMethods.contains(payment.getPaymentMethod())
+                    && billTypes.contains(payment.getBill().getBillTypeAtomic())) {
+                selectedPayments.add(payment);
+            }
+        }
+        paymentsSelected = selectedPayments;
+    }
+
+    public void selectNetVoucherTotalDetails() {
+        List<PaymentMethod> paymentMethods = financialReportByPayments.getPaymentMethodsForNetVoucherTotal();
+        List<BillTypeAtomic> billTypes = financialReportByPayments.getBillTypesForNetVoucherTotal();
+        List<Payment> allPayments = paymentsFromShiftSratToNow;
+        List<Payment> selectedPayments = new ArrayList<>();
+        for (Payment payment : allPayments) {
+            if (paymentMethods.contains(payment.getPaymentMethod())
+                    && billTypes.contains(payment.getBill().getBillTypeAtomic())) {
+                selectedPayments.add(payment);
+            }
+        }
+        paymentsSelected = selectedPayments;
+    }
+
+    public void selectCollectedOtherNonCreditDetails() {
+        List<PaymentMethod> paymentMethods = financialReportByPayments.getPaymentMethodsForCollectedDebitCard();
+        List<BillTypeAtomic> billTypes = financialReportByPayments.getBillTypesForCollectedDebitCard();
+        List<Payment> allPayments = paymentsFromShiftSratToNow;
+        List<Payment> selectedPayments = new ArrayList<>();
+        for (Payment payment : allPayments) {
+            if (paymentMethods.contains(payment.getPaymentMethod())
+                    && billTypes.contains(payment.getBill().getBillTypeAtomic())) {
+                selectedPayments.add(payment);
+            }
+        }
+        paymentsSelected = selectedPayments;
+    }
+
+    public void selectRefundedOtherNonCreditDetails() {
+        List<PaymentMethod> paymentMethods = financialReportByPayments.getPaymentMethodsForRefundedDebitCard();
+        List<BillTypeAtomic> billTypes = financialReportByPayments.getBillTypesForRefundedDebitCard();
+        List<Payment> allPayments = paymentsFromShiftSratToNow;
+        List<Payment> selectedPayments = new ArrayList<>();
+        for (Payment payment : allPayments) {
+            if (paymentMethods.contains(payment.getPaymentMethod())
+                    && billTypes.contains(payment.getBill().getBillTypeAtomic())) {
+                selectedPayments.add(payment);
+            }
+        }
+        paymentsSelected = selectedPayments;
+    }
+
+    public void selectNetOtherNonCreditTotalDetails() {
+        List<PaymentMethod> paymentMethods = financialReportByPayments.getPaymentMethodsForBankDeposits();
+        List<BillTypeAtomic> billTypes = financialReportByPayments.getBillTypesForBankDeposits();
+        List<Payment> allPayments = paymentsFromShiftSratToNow;
+        List<Payment> selectedPayments = new ArrayList<>();
+        for (Payment payment : allPayments) {
+            if (paymentMethods.contains(payment.getPaymentMethod())
+                    && billTypes.contains(payment.getBill().getBillTypeAtomic())) {
+                selectedPayments.add(payment);
+            }
+        }
+        paymentsSelected = selectedPayments;
+    }
+
+    public void selectShiftStartFundsDetails() {
+        List<PaymentMethod> paymentMethods = financialReportByPayments.getPaymentMethodsForFloatMySafe();
+        List<BillTypeAtomic> billTypes = financialReportByPayments.getBillTypesForFloatMySafe();
+        List<Payment> allPayments = paymentsFromShiftSratToNow;
+        List<Payment> selectedPayments = new ArrayList<>();
+        for (Payment payment : allPayments) {
+            if (paymentMethods.contains(payment.getPaymentMethod())
+                    && billTypes.contains(payment.getBill().getBillTypeAtomic())) {
+                selectedPayments.add(payment);
+            }
+        }
+        paymentsSelected = selectedPayments;
+    }
+
+    public void selectFloatReceivedDetails() {
+        List<BillTypeAtomic> billTypes = financialReportByPayments.getBillTypesForFloatCollected();
+        List<Payment> allPayments = paymentsFromShiftSratToNow;
+        List<Payment> selectedPayments = new ArrayList<>();
+        for (Payment payment : allPayments) {
+            if (billTypes.contains(payment.getBill().getBillTypeAtomic())) {
+                selectedPayments.add(payment);
+            }
+        }
+        paymentsSelected = selectedPayments;
+    }
+
+    public void selectFloatHandoverDetails() {
+        List<BillTypeAtomic> billTypes = financialReportByPayments.getBillTypesForFloatHandover();
+        List<Payment> allPayments = paymentsFromShiftSratToNow;
+        List<Payment> selectedPayments = new ArrayList<>();
+        for (Payment payment : allPayments) {
+            if (billTypes.contains(payment.getBill().getBillTypeAtomic())) {
+                selectedPayments.add(payment);
+            }
+        }
+        paymentsSelected = selectedPayments;
+    }
+
+    public void selectNetFloatDetails() {
+
+        List<BillTypeAtomic> billTypes = financialReportByPayments.getBillTypesForFloatCollected();
+        billTypes.addAll(financialReportByPayments.getBillTypesForFloatHandover());
+        List<Payment> allPayments = paymentsFromShiftSratToNow;
+        List<Payment> selectedPayments = new ArrayList<>();
+        for (Payment payment : allPayments) {
+            if (billTypes.contains(payment.getBill().getBillTypeAtomic())) {
+                selectedPayments.add(payment);
+            }
+        }
+        paymentsSelected = selectedPayments;
+    }
+
+    public void selectBankWithdrawalsDetails() {
+        List<PaymentMethod> paymentMethods = financialReportByPayments.getPaymentMethodsForBankWithdrawals();
+        List<BillTypeAtomic> billTypes = financialReportByPayments.getBillTypesForBankWithdrawals();
+        List<Payment> allPayments = paymentsFromShiftSratToNow;
+        List<Payment> selectedPayments = new ArrayList<>();
+        for (Payment payment : allPayments) {
+            if (paymentMethods.contains(payment.getPaymentMethod())
+                    && billTypes.contains(payment.getBill().getBillTypeAtomic())) {
+                selectedPayments.add(payment);
+            }
+        }
+        paymentsSelected = selectedPayments;
+    }
+
+    public void selectBankDepositsDetails() {
+        List<PaymentMethod> paymentMethods = financialReportByPayments.getPaymentMethodsForBankDeposits();
+        List<BillTypeAtomic> billTypes = financialReportByPayments.getBillTypesForBankDeposits();
+        List<Payment> allPayments = paymentsFromShiftSratToNow;
+        List<Payment> selectedPayments = new ArrayList<>();
+        for (Payment payment : allPayments) {
+            if (paymentMethods.contains(payment.getPaymentMethod())
+                    && billTypes.contains(payment.getBill().getBillTypeAtomic())) {
+                selectedPayments.add(payment);
+            }
+        }
+        paymentsSelected = selectedPayments;
+    }
+
+    public void selectNetBankTransactionDetails() {
+        List<PaymentMethod> paymentMethods = financialReportByPayments.getPaymentMethodsForBankWithdrawals();
+        List<BillTypeAtomic> billTypes = financialReportByPayments.getBillTypesForBankWithdrawals();
+        List<Payment> allPayments = paymentsFromShiftSratToNow;
+        List<Payment> selectedPayments = new ArrayList<>();
+        for (Payment payment : allPayments) {
+            if (paymentMethods.contains(payment.getPaymentMethod())
+                    && billTypes.contains(payment.getBill().getBillTypeAtomic())) {
+                selectedPayments.add(payment);
+            }
+        }
+        paymentsSelected = selectedPayments;
+    }
+
+    public void selectTotalDetails() {
+        // Assuming this method should simply select all payments
+        paymentsSelected = new ArrayList<>(paymentsFromShiftSratToNow);
+    }
+
+    public void selectShortExcessDetails() {
+        List<PaymentMethod> paymentMethods = financialReportByPayments.getPaymentMethodsForShortExcess();
+        List<BillTypeAtomic> billTypes = financialReportByPayments.getBillTypesForShortExcess();
+        List<Payment> allPayments = paymentsFromShiftSratToNow;
+        List<Payment> selectedPayments = new ArrayList<>();
+        for (Payment payment : allPayments) {
+            if (paymentMethods.contains(payment.getPaymentMethod())
+                    && billTypes.contains(payment.getBill().getBillTypeAtomic())) {
+                selectedPayments.add(payment);
+            }
+        }
+        paymentsSelected = selectedPayments;
+    }
+
     public String navigateToCashierSummaryBreakdownFromShiftClosingForCard() {
         List<PaymentMethod> pms = new ArrayList<>();
         pms.add(PaymentMethod.Card);
@@ -227,12 +511,17 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public String navigateToCashierSummaryBreakdownFromShiftClosing(List<PaymentMethod> pms) {
-        searchController.setWebUser(sessionController.getLoggedUser());
-        searchController.setStartBillId(nonClosedShiftStartFundBill.getId());
-        searchController.setEndBillId(null);
+        navigateToCashierSummaryBreakdownFromShiftClosing(pms, sessionController.getLoggedUser(), nonClosedShiftStartFundBill.getId(), null);
+        return "/cashier/shift_end_summary_breakdown?faces-redirect=true";
+    }
+
+    public String navigateToCashierSummaryBreakdownFromShiftClosing(List<PaymentMethod> pms, WebUser user, Long startId, Long endId) {
+        searchController.setWebUser(user);
+        searchController.setStartBillId(startId);
+        searchController.setEndBillId(endId);
         searchController.setPaymentMethods(pms);
         searchController.processAllFinancialTransactionalSummarybySingleUserByIds();
-        return "/cashier/shift_end_summary_breakdown?faces-redirect=true";
+        return "/analytics/shift_end_summary_breakdown?faces-redirect=true";
     }
 
     public String navigateToReceiveNewFundTransferBill() {
@@ -355,6 +644,9 @@ public class FinancialTransactionController implements Serializable {
         getCurrentBillPayments().add(currentPayment);
         calculateInitialFundBillTotal();
         currentPayment = null;
+        getCurrentPayment();
+        getCurrentPayment().setCurrencyDenominations(null);
+        getCurrentPayment().setCurrencyDenominationsJson("");
     }
 
     public void addPaymentToFundTransferBill() {
@@ -492,8 +784,12 @@ public class FinancialTransactionController implements Serializable {
             p.setBill(currentBill);
             p.setDepartment(sessionController.getDepartment());
             p.setInstitution(sessionController.getInstitution());
+            // Serialize denominations before saving
+            p.serializeDenominations();
             paymentController.save(p);
         }
+        currentBill.setPayments(currentBillPayments);
+        billController.save(currentBill);
         return "/cashier/initial_fund_bill_print?faces-redirect=true";
     }
 
@@ -600,6 +896,7 @@ public class FinancialTransactionController implements Serializable {
         if (paymentsFromShiftSratToNow == null) {
             return;
         }
+
         paymentSummaryBundle = new ReportTemplateRowBundle();
         Map<String, Double> aggregatedPayments = new HashMap<>();
         Map<String, ReportTemplateRow> keyMap = new HashMap<>();
@@ -641,22 +938,18 @@ public class FinancialTransactionController implements Serializable {
                 keyMap.putIfAbsent(keyString, row);
                 aggregatedPayments.merge(keyString, p.getPaidValue(), Double::sum);
             }
-
         }
 
         List<ReportTemplateRow> rows = aggregatedPayments.entrySet().stream().map(entry -> {
             ReportTemplateRow row = keyMap.get(entry.getKey());
-          
+
             if (row != null) {
                 row.setRowValue(entry.getValue());
             }
 
             return row;
         }).collect(Collectors.toList());
-
-        if (paymentSummaryBundle != null) {
-            paymentSummaryBundle.getReportTemplateRows().addAll(rows);
-        }
+        getPaymentSummaryBundle().getReportTemplateRows().addAll(rows);
     }
 
     public String navigateToViewEndOfSelectedShiftStartSummaryBill(Bill startBill) {
@@ -735,6 +1028,22 @@ public class FinancialTransactionController implements Serializable {
 
     }
 
+    public void fillPaymentsForDateRange() {
+        System.out.println("fillPaymentsForDateRange");
+        paymentsFromShiftSratToNow = new ArrayList<>();
+        String jpql = "SELECT p "
+                + "FROM Payment p "
+                + "WHERE p.bill.retired <> :ret "
+                + "AND p.bill.createdAt between :fd and :td "
+                + "ORDER BY p.id DESC";
+        Map<String, Object> m = new HashMap<>();
+        m.put("fd", getFromDate());
+        m.put("td", getToDate());
+        m.put("ret", true);
+        System.out.println("m = " + m);
+        System.out.println("jpql = " + jpql);
+    }
+
     public void fillPaymentsFromShiftStartToNow(Bill startBill, WebUser user) {
         paymentsFromShiftSratToNow = new ArrayList<>();
         if (startBill == null) {
@@ -791,6 +1100,7 @@ public class FinancialTransactionController implements Serializable {
         m.put("ret", false);
         m.put("sid", shiftStartBillId);
         m.put("eid", shiftEndBillId);
+
         paymentsFromShiftSratToNow = paymentFacade.findByJpql(jpql, m);
         atomicBillTypeTotalsByPayments = new AtomicBillTypeTotals();
         for (Payment p : paymentsFromShiftSratToNow) {
@@ -1218,7 +1528,51 @@ public class FinancialTransactionController implements Serializable {
         if (currentPayment == null) {
             currentPayment = new Payment();
         }
+        if (currentPayment.getCurrencyDenominations() == null) {
+            currentPayment.setCurrencyDenominations(configOptionApplicationController.getDenominations());
+        }
         return currentPayment;
+    }
+
+    public PaymentMethodData getPaymentMethodData() {
+        if (paymentMethodData == null) {
+            paymentMethodData = new PaymentMethodData();
+        }
+        return paymentMethodData;
+    }
+
+    public void setPaymentMethodData(PaymentMethodData paymentMethodData) {
+        this.paymentMethodData = paymentMethodData;
+    }
+
+    public void updateCashDenominations(AjaxBehaviorEvent event) {
+        System.out.println("updateCashDenominations called");
+
+        if (currentPayment == null) {
+            System.out.println("currentPayment is null");
+            return;
+        }
+
+        double total = 0;
+        List<Denomination> denominations = currentPayment.getCurrencyDenominations();
+        for (Denomination denomination : denominations) {
+            int value = denomination.getCount();
+            System.out.println("Processing denomination: " + denomination.getValue() + " with count: " + value);
+            total += denomination.getValue() * value;
+        }
+        currentPayment.setPaidValue(total);
+        System.out.println("Total value calculated: " + total);
+
+        // Serialize updated denominations to JSON
+        JSONArray jsonArray = new JSONArray();
+        for (Denomination denomination : denominations) {
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("value", denomination.getValue());
+            jsonObject.put("count", denomination.getCount());
+            jsonArray.put(jsonObject);
+        }
+        currentPayment.setCurrencyDenominationsJson(jsonArray.toString());
+        System.out.println("Updated currencyDenominationsJson: " + currentPayment.getCurrencyDenominationsJson());
     }
 
     public void setCurrentPayment(Payment currentPayment) {
@@ -1615,12 +1969,21 @@ public class FinancialTransactionController implements Serializable {
     public void setPaymentSummaryBundle(ReportTemplateRowBundle paymentSummaryBundle) {
         this.paymentSummaryBundle = paymentSummaryBundle;
     }
+
     public List<Bill> getShiaftStartBills() {
         return shiaftStartBills;
     }
 
     public void setShiaftStartBills(List<Bill> shiaftStartBills) {
         this.shiaftStartBills = shiaftStartBills;
+    }
+
+    public List<Payment> getPaymentsSelected() {
+        return paymentsSelected;
+    }
+
+    public void setPaymentsSelected(List<Payment> paymentsSelected) {
+        this.paymentsSelected = paymentsSelected;
     }
 
 }

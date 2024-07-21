@@ -61,6 +61,18 @@
                                     id="ccPatientDetails"
                                     editable="true"
                                     controller="#{opdBillController}"/>
+                                <p:panel class="my-2">
+                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Allow Local Number For Opd Billing')}">
+                                        <div class="d-flex align-items-center justify-content-center">
+                                            <p:outputLabel value="Local NUmber :"/>
+                                            <p:inputText 
+                                                value="#{opdBillController.localNumber}" 
+                                                placeholder="Local Number" 
+                                                class="my-1" 
+                                                id="lcNumber"/>
+                                        </div>
+                                    </h:panelGroup>
+                                </p:panel>
 
                                 <p:panel 
                                     id='pIxAdd' 
@@ -834,13 +846,6 @@
                                                 placeholder="Comments"
                                                 class="w-100"         
                                                 id="comment"/>
-                                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Allow Local Number For Opd Billing')}">
-                                                <p:inputText 
-                                                    value="#{opdBillController.localNumber}" 
-                                                    placeholder="Local Number" 
-                                                    class="my-1" 
-                                                    id="lcNumber"/>
-                                            </h:panelGroup>
                                         </div>
 
                                         <div class="col-md-4" >

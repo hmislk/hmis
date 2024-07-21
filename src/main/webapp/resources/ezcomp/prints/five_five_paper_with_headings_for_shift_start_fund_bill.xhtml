@@ -12,7 +12,6 @@
     <cc:interface>
         <cc:attribute name="bill" type="com.divudi.entity.Bill" />
         <cc:attribute name="duplicate" type="java.lang.Boolean"/>
-        <cc:attribute name="payments"/>
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -122,14 +121,14 @@
             <div class="itemHeadingsFiveFive" >
 
                 <table width="100%" style="width: 100%;" >
-                    <ui:repeat value="#{cc.attrs.payments}" var="bip"   >
+                    <ui:repeat value="#{cc.attrs.bill.payments}" var="bip"   >
                         <tr>
                             <td  style="overflow: visible;">
                                 <h:outputLabel class="itemsBlockRightFiveFive" value="#{bip.paymentMethod}"  style="text-transform: capitalize!important;"  >
                                 </h:outputLabel>
                             </td>
                             <td>
-                                <h:outputLabel value="#{bip.getCurrencyDenominationsJson}"></h:outputLabel>
+                                <h:outputLabel value="#{bip}"></h:outputLabel>
                             </td>   
                             <td style="text-align: right;" >
                                 <h:outputLabel class="itemsBlockRightFiveFive"   value="#{bip.paidValue}"    >
