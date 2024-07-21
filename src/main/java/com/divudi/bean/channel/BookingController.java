@@ -205,6 +205,8 @@ public class BookingController implements Serializable, ControllerWithPatient {
     @Inject
     private CommonController commonController;
 
+//     * Properties
+//     */
     private Speciality speciality;
     private Staff staff;
     private Staff toStaff;
@@ -686,7 +688,9 @@ public class BookingController implements Serializable, ControllerWithPatient {
                 + url;
         return b;
     }
-//
+
+    // ALREADY DEFIENED in line 629
+    
 //    public void sendChannellingStatusUpdateNotificationSms(BillSession methodBillSession) {
 //        if (methodBillSession == null) {
 //            JsfUtil.addErrorMessage("Nothing to send");
