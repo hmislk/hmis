@@ -70,28 +70,36 @@
 
                                             </h:panelGrid>
                                             <div class="d-flex justify-content-end mt-2">
-                                                <div class="d-flex ">
+                                                <div class="d-flex">
                                                     <p:commandButton 
                                                         ajax="false"
                                                         value="List Pending Payment" 
-                                                        icon="fa-solid fa-arrows-rotate"
-                                                        class="ui-button-warning my-1"
+                                                        icon="fa fa-refresh"
+                                                        styleClass="ui-button-warning mx-2 my-1"
                                                         action="#{channelStaffPaymentBillController.calculateSessionDueFees()}"/>
                                                     <p:commandButton 
                                                         ajax="false"
-                                                        value="List All Payments" 
-                                                        icon="fa-solid fa-arrows-rotate"
-                                                        class="ui-button-warning my-1"
+                                                        value="List Done Payments" 
+                                                        icon="fa fa-list-alt"
+                                                        styleClass="ui-button-info mx-2 my-1"
+                                                        action="#{channelStaffPaymentBillController.calculateSessionDoneFees()}"/>
+                                                    <p:commandButton 
+                                                        ajax="false"
+                                                        value="List All" 
+                                                        icon="fa fa-list"
+                                                        styleClass="ui-button-primary mx-2 my-1"
                                                         action="#{channelStaffPaymentBillController.calculateSessionAllFees()}"/>
                                                     <p:commandButton 
                                                         ajax="false"
                                                         rendered="false"
                                                         value="Clear"
-                                                        icon="fa-solid fa-eraser"
-                                                        class="ui-button-danger mx-1 my-1"
+                                                        icon="fa fa-eraser"
+                                                        styleClass="ui-button-danger mx-2 my-1"
                                                         action="#{channelStaffPaymentBillController.makenull()}"/>
                                                 </div>
                                             </div>
+
+
                                         </p:panel>
                                     </div>
                                 </div>
@@ -106,7 +114,7 @@
                                     value="#{channelStaffPaymentBillController.dueBillFees}"
                                     selection="#{channelStaffPaymentBillController.payingBillFees}" 
                                     rowIndexVar="i" var="bf" rowKey="#{bf.id}"
-                                    paginator="true" paginatorPosition="bottom"
+                                    paginator="false" paginatorPosition="bottom"
                                     paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                     currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
                                     rowsPerPageTemplate="{ShowAll|'All'}"
@@ -124,87 +132,53 @@
                                     <f:ajax  event="rowSelect" execute="tblFee" listener="#{channelStaffPaymentBillController.performCalculations()}"   
                                              render=":#{p:resolveFirstComponentWithId('lblDue',view).clientId} :#{p:resolveFirstComponentWithId('lblPay',view).clientId}"  />
 
-                                    <p:column selectionMode="multiple" ></p:column>
+                                    <p:column selectionMode="multiple" width="10"></p:column>
 
-                                    <p:column headerText="No">
-                                        <h:outputLabel value="#{i+1}">
+                                    <p:column headerText="No" width="3em">
+                                        <h:outputLabel value="#{bf.bill.singleBillSession.serialNo}">
                                         </h:outputLabel>
                                     </p:column>
-                                    <p:column headerText="Bill ID">
+                                    <p:column headerText="Bill No" width="10em">
                                         <h:outputLabel value="#{bf.bill.insId}">
                                         </h:outputLabel>
                                     </p:column>
 
-                                    <p:column headerText="Appointment No">
-                                        <h:outputLabel value="#{bf.bill.singleBillSession.serialNo}">
-                                        </h:outputLabel>
-                                    </p:column>
-
-                                    <p:column headerText="Patient">
+                                    <p:column headerText="Patient" >
                                         <h:outputLabel value="#{bf.bill.patient.person.nameWithTitle}" rendered="#{bf.bill.patientEncounter eq null}"/>                                    
                                         <h:outputLabel value="#{bf.bill.patientEncounter.patient.person.nameWithTitle}"/>                                    
                                     </p:column>
 
-                                    <p:column headerText="Booked on" rendered="false">
+                                    <p:column headerText="Booked on" rendered="false" width="6em">
                                         <h:outputLabel value="#{bf.bill.createdAt}">
-                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                        </h:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Status" width="10em">
+                                        <p:tag class="m-1" severity="info" rendered="#{bf.bill.paidAmount ne 0.0}" value="PAID" />
+                                        <p:tag class="m-1"  severity="secondary" rendered="#{bf.bill.paidAmount eq 0.0}" value="NOT PAID" />
+                                        <p:tag class="m-1"  severity="success" rendered="#{bf.bill.singleBillSession.completed}" value="Completed" />
+                                        <p:tag class="m-1"  severity="danger" rendered="#{bf.bill.cancelled}" value="Cancelled"/>
+                                        <p:tag class="m-1"  severity="warning" rendered="#{bf.bill.refunded}" value="Refunded"/>
+                                    </p:column>
+                                    <p:column headerText="Fee" width="6em">
+                                        <h:outputLabel  value="#{bf.feeValue}" >
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Bill Value" width="6em">
+                                        <h:outputLabel  value="#{bf.bill.paidAmount}" >
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                         </h:outputLabel>
                                     </p:column>
 
-                                    <p:column headerText="Channel on" rendered="false">
-                                        <h:outputLabel value="#{bf.bill.singleBillSession.sessionDate}">
-                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                    <p:column headerText="Professional Fee Paid" width="6em">
+                                        <h:outputLabel  value="#{bf.paidValue}" >
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                         </h:outputLabel>
                                     </p:column>
 
-
-
-                                    <p:column headerText="Refundable" rendered="#{webUserController.hasPrivilege('Developers')}">
-                                        <h:outputLabel value="#{bf.bill.singleBillSession.serviceSession.originatingSession.refundable}">
-                                        </h:outputLabel>
-                                    </p:column>
-
-
-                                    <p:column headerText="Absent" rendered="#{webUserController.hasPrivilege('Developers')}">
-                                        <h:outputLabel value="#{bf.bill.singleBillSession.absent}">
-                                        </h:outputLabel>
-                                    </p:column>
-                                    <p:column headerText="Cancel" rendered="#{webUserController.hasPrivilege('Developers')}">
-                                        <h:outputLabel value="#{bf.bill.cancelled}">
-                                        </h:outputLabel>
-                                    </p:column>
-
-                                    <p:column headerText="Refund" rendered="#{webUserController.hasPrivilege('Developers')}">
-                                        <h:outputLabel value="#{bf.bill.refunded}">
-                                        </h:outputLabel>
-                                    </p:column>
-
-                                    <p:column headerText="Appoinment Date">
-                                        <h:outputLabel value="#{bf.bill.appointmentAt}">
-                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
-                                        </h:outputLabel>
-                                    </p:column>
-
-                                    <p:column headerText="Charge" >
-                                        <h:outputLabel  value="#{bf.feeValue}" />
-                                    </p:column>
-
-                                   
-
-                                    <p:column headerText="Bill Type" >
-                                        <h:outputLabel  value="#{bf.bill.billType}" />
-                                    </p:column>
-
-                                    <p:column headerText="Patient Paid Amount for the Bill" >
-                                        <h:outputLabel  value="#{bf.bill.paidAmount}" />
-                                    </p:column>
-                                    
-                                     <p:column headerText="Professional Fee Paid" >
-                                        <h:outputLabel  value="#{bf.paidValue}" />
-                                    </p:column>
-                                    
-                                     <p:column headerText="Paid Bill ID" >
-                                         <h:outputLabel  value="#{bf.id}" />
+                                    <p:column headerText="Paid Bill ID" width="6em">
+                                        <h:outputLabel  value="#{bf.referenceBillFee.id}" />
                                     </p:column>
 
                                 </p:dataTable>
