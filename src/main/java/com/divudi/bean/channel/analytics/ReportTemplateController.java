@@ -68,6 +68,7 @@ public class ReportTemplateController implements Serializable {
     private WebUser user;
     private Staff staff;
     
+
     private Institution creditCompany;
     private Institution fromInstitution;
     private Department fromDepartment;
@@ -519,7 +520,6 @@ public class ReportTemplateController implements Serializable {
     }
 
     private void handlePaymentTypeSummaryUsingBills() {
-        // Method implementation here
 
     }
 

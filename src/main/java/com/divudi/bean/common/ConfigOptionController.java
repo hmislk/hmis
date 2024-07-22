@@ -20,6 +20,7 @@ import java.util.Date;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import javax.ejb.EJB;
 import javax.inject.Inject;
@@ -50,6 +51,8 @@ public class ConfigOptionController implements Serializable {
     private Department department;
     private WebUser webUser;
     private List<ConfigOption> options;
+    private List<ConfigOption> filteredOptions;
+
 
     private String key;
     private String value;
@@ -390,6 +393,22 @@ public class ConfigOptionController implements Serializable {
         return getAllOptions(webUser);
     }
 
+    
+    public boolean filterByCustom(Object value, Object filter, Locale locale) {
+        if (filter == null || filter.toString().isEmpty()) {
+            return true;
+        }
+        String[] keywords = filter.toString().toLowerCase().split(" ");
+        String optionKey = value.toString().toLowerCase();
+
+        for (String keyword : keywords) {
+            if (!optionKey.contains(keyword)) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
     private <T> T convertOptionValue(ConfigOption option, Class<T> type) {
         String value = option.getOptionValue();
         OptionValueType valueType = option.getValueType();
@@ -540,6 +559,16 @@ public class ConfigOptionController implements Serializable {
     public void setOptionValueType(OptionValueType optionValueType) {
         this.optionValueType = optionValueType;
     }
+
+    public List<ConfigOption> getFilteredOptions() {
+        return filteredOptions;
+    }
+
+    public void setFilteredOptions(List<ConfigOption> filteredOptions) {
+        this.filteredOptions = filteredOptions;
+    }
+    
+    
 
     @FacesConverter(forClass = ConfigOption.class)
     public static class OptionConverter implements Converter {

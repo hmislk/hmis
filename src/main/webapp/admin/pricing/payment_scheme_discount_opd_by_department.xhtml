@@ -21,13 +21,15 @@
                                 <p:autoComplete forceSelection="true" 
                                                 value="#{opdMemberShipDiscountController.paymentScheme}" 
                                                 completeMethod="#{paymentSchemeController.completePaymentScheme}" 
-                                                var="mem" itemLabel="#{mem.name}" itemValue="#{mem}" >
+                                                var="mem" itemLabel="#{mem.name}" itemValue="#{mem}" class="w-100"
+                                                    inputStyleClass="w-100" >
                                 </p:autoComplete>
-                                <h:outputLabel value="Department :" />
+                                <h:outputLabel value="Department " />
                                 <p:autoComplete value="#{opdMemberShipDiscountController.department}" 
                                                 forceSelection="true"
                                                 completeMethod="#{departmentController.completeDept}" 
-                                                var="dep" itemLabel="#{dep.name}" itemValue="#{dep}" >
+                                                var="dep" itemLabel="#{dep.name}" itemValue="#{dep}" class="w-100"
+                                                    inputStyleClass="w-100">
                                     <p:column>
                                         <h:outputLabel value="#{dep.name}"/>
                                     </p:column>
@@ -36,24 +38,25 @@
                                     </p:column>
                                 </p:autoComplete>
                                 <h:outputLabel value="Payment Method"/>
-                                <p:selectOneMenu   value="#{opdMemberShipDiscountController.paymentMethod}"  >
+                                <p:selectOneMenu   value="#{opdMemberShipDiscountController.paymentMethod}" class="w-100"  >
                                     <f:selectItem itemLabel="Select" />                           
                                     <f:selectItems value="#{enumController.allPaymentMethods}" />                                    
                                 </p:selectOneMenu>
                                 <h:outputLabel value="Discount" ></h:outputLabel>
-                                <p:inputText autocomplete="off" value="#{opdMemberShipDiscountController.margin}" />
+                                <p:inputText autocomplete="off" value="#{opdMemberShipDiscountController.margin}" class="w-100"/>
                                 <h:outputLabel value="" />
-                                <p:commandButton id="btnAdd" value="Add" ajax="false" 
+                                <p:commandButton id="btnAdd" value="Add" ajax="false" icon="fa fa-plus"
+                                                class="mx-1 ui-button-success"
                                                 action="#{opdMemberShipDiscountController.saveSelectedDepartmentPaymentScheme}" />
 
-                                <p:defaultCommand target="btnAdd"/>
+                                
                             </p:panelGrid>
-                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
+                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;"  class="ui-button-success" icon="fas fa-file-excel">
                                 <p:dataExporter type="xlsx" target="inwd" fileName="Price_metrix_investigation"  />
                             </p:commandButton>
                             <p:commandButton ajax="false" value="Fill" 
-                                            action="#{opdMemberShipDiscountController.createItemsDepartmentsPaymentScheme}" />
-                            <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" >                                         
+                                            action="#{opdMemberShipDiscountController.createItemsDepartmentsPaymentScheme}" class="m-1"/>
+                            <p:commandButton ajax="false" value="Print" styleClass="noPrintButton"  class="ui-button-info mx-1" icon="fas fa-print">                                         
                                 <p:printer target="reportPrint"/>
                             </p:commandButton>
 
