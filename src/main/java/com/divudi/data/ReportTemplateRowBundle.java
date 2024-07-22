@@ -12,6 +12,7 @@ public class ReportTemplateRowBundle {
 
     private ReportTemplate reportTemplate;
     private List<ReportTemplateRow> reportTemplateRows;
+    private Double total;
 
     public ReportTemplate getReportTemplate() {
         return reportTemplate;
@@ -30,6 +31,14 @@ public class ReportTemplateRowBundle {
 
     public void setReportTemplateRows(List<ReportTemplateRow> reportTemplateRows) {
         this.reportTemplateRows = reportTemplateRows;
+    }
+
+    public Double getTotal() {
+        return total;
+    }
+
+    public void setTotal(Double total) {
+        this.total = total;
     }
 
    

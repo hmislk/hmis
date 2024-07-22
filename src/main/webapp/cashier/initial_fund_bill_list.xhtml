@@ -79,7 +79,7 @@
                                         ajax="false"
                                         class="ui-button-danger"
                                         value="View Summery - Not Closed" 
-                                        action="#{financialTransactionController.navigateToViewStartToEndOfSelectedShiftStartSummaryBill(ssb)}"  
+                                        action="#{financialTransactionController.navigateToViewShiftSratToNow(ssb)}"  
                                         ></p:commandButton>
                                 </h:panelGroup>
                                 <h:panelGroup rendered="#{ssb.referenceBill ne null}" >
@@ -87,7 +87,7 @@
                                         ajax="false"
                                         class="ui-button-success"
                                         value="View Closed Summery" 
-                                        action="#{financialTransactionController.navigateToViewEndOfSelectedShiftStartSummaryBill(ssb)}"  
+                                        action="#{financialTransactionController.navigateToViewShiftSrartToEnd(ssb)}"  
                                         ></p:commandButton>
                                 </h:panelGroup>
                             </p:column>

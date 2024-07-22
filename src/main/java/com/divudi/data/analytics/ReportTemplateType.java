@@ -6,6 +6,7 @@ package com.divudi.data.analytics;
  */
 public enum ReportTemplateType {
     BILL_LIST("Bill List"),
+    BILL_NET_TOTAL("Bill Net Total"),
     BILL_ITEM_LIST("Bill Item List"),
     BILL_FEE_LIST("Bill Fee List"),
     PATIENT_LIST("Patient List"),

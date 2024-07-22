@@ -35,7 +35,6 @@ public enum BillTypeAtomic {
     STORE_GRN_CANCELLED("Store GRN Cancelled", BillCategory.CANCELLATION, ServiceType.STORE, BillFinanceType.CASH_OUT),
     STORE_GRN_REFUND("Store GRN Refund", BillCategory.REFUND, ServiceType.STORE, BillFinanceType.CASH_OUT),
     STORE_GRN_RETURN("Store GRN Return", BillCategory.REFUND, ServiceType.STORE, BillFinanceType.CASH_IN),
-    
     // Pharmacy
     PHARMACY_RETAIL_SALE("Pharmacy Retail Sale", BillCategory.BILL, ServiceType.PHARMACY, BillFinanceType.CASH_IN),
     PHARMACY_RETAIL_SALE_PRE("Pharmacy Retail Sale Pre", BillCategory.BILL, ServiceType.PHARMACY, BillFinanceType.NO_FINANCE_TRANSACTIONS),
@@ -158,10 +157,10 @@ public enum BillTypeAtomic {
     FUND_WITHDRAWAL_BILL("Withdrawal Fund Bill", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.BANK_IN),
     FUND_WITHDRAWAL_BILL_CANCELLED("Withdrawal Fund Bill - Cancelled", BillCategory.CANCELLATION, ServiceType.OTHER, BillFinanceType.BANK_OUT),
     // Professional Payments
-    PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE("Inward Payment for Staff", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.CASH_IN),
-    PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE("Channelling Payment for Staff", BillCategory.PAYMENTS, ServiceType.OTHER, BillFinanceType.CASH_OUT),
-    PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_SESSION("Channelling session Payment for Staff", BillCategory.PAYMENTS, ServiceType.OTHER, BillFinanceType.CASH_OUT),
-    PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_FOR_AGENCIES("Channelling Payment for Staff for agencies", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.CASH_IN),
+    PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE("Inward Payment for Staff", BillCategory.PAYMENTS, ServiceType.INWARD, BillFinanceType.CASH_IN),
+    PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE("Channelling Payment for Staff", BillCategory.PAYMENTS, ServiceType.CHANNELLING, BillFinanceType.CASH_OUT),
+    PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_SESSION("Channelling session Payment for Staff", BillCategory.PAYMENTS, ServiceType.CHANNELLING, BillFinanceType.CASH_OUT),
+    PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_FOR_AGENCIES("Channelling Payment for Staff for agencies", BillCategory.PAYMENTS, ServiceType.OTHER, BillFinanceType.CASH_IN),
     PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES("OPD Professional Payment bill", BillCategory.PAYMENTS, ServiceType.OPD, BillFinanceType.CASH_OUT),
     PETTY_CASH_ISSUE("Petty Cash Issue", BillCategory.PAYMENTS, ServiceType.OTHER, BillFinanceType.CASH_OUT),
     PETTY_CASH_RETURN("Petty Cash Return", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.CASH_IN),
@@ -208,4 +207,25 @@ public enum BillTypeAtomic {
                 .filter(e -> e.getBillCategory() == category)
                 .collect(Collectors.toList());
     }
+
+    // Method to find BillTypeAtomic by ServiceType
+    public static List<BillTypeAtomic> findByServiceType(ServiceType serviceType) {
+        return Arrays.stream(BillTypeAtomic.values())
+                .filter(e -> e.getServiceType() == serviceType)
+                .collect(Collectors.toList());
+    }
+
+// Method to find BillTypeAtomic by ServiceType and BillFinanceType
+    public static List<BillTypeAtomic> findByServiceTypeAndFinanceType(ServiceType serviceType, BillFinanceType financeType) {
+        return Arrays.stream(BillTypeAtomic.values())
+                .filter(e -> e.getServiceType() == serviceType && e.getBillFinanceType() == financeType)
+                .collect(Collectors.toList());
+    }
+    
+    public static List<BillTypeAtomic> findBillTypeAtomic(ServiceType serviceType, BillCategory billCategory) {
+        return Arrays.stream(BillTypeAtomic.values())
+                .filter(e -> e.getServiceType() == serviceType && e.getBillCategory() == billCategory)
+                .collect(Collectors.toList());
+    }
+
 }
