@@ -36,6 +36,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.faces.event.AjaxBehaviorEvent;
+import javax.faces.event.ValueChangeEvent;
 import javax.inject.Inject;
 import javax.persistence.TemporalType;
 import org.json.JSONArray;
@@ -133,6 +134,11 @@ public class FinancialTransactionController implements Serializable {
     private double additions;
 
     private int fundTransferBillsToReceiveCount;
+    private Date fromDate;
+    private Date toDate;
+
+    private ReportTemplateRowBundle paymentSummaryBundle;
+
     private Date fromDate;
     private Date toDate;
 
@@ -788,8 +794,6 @@ public class FinancialTransactionController implements Serializable {
             p.serializeDenominations();
             paymentController.save(p);
         }
-        currentBill.setPayments(currentBillPayments);
-        billController.save(currentBill);
         return "/cashier/initial_fund_bill_print?faces-redirect=true";
     }
 
@@ -896,7 +900,6 @@ public class FinancialTransactionController implements Serializable {
         if (paymentsFromShiftSratToNow == null) {
             return;
         }
-
         paymentSummaryBundle = new ReportTemplateRowBundle();
         Map<String, Double> aggregatedPayments = new HashMap<>();
         Map<String, ReportTemplateRow> keyMap = new HashMap<>();
@@ -938,18 +941,21 @@ public class FinancialTransactionController implements Serializable {
                 keyMap.putIfAbsent(keyString, row);
                 aggregatedPayments.merge(keyString, p.getPaidValue(), Double::sum);
             }
+
         }
 
         List<ReportTemplateRow> rows = aggregatedPayments.entrySet().stream().map(entry -> {
             ReportTemplateRow row = keyMap.get(entry.getKey());
-
+          
             if (row != null) {
                 row.setRowValue(entry.getValue());
             }
 
             return row;
         }).collect(Collectors.toList());
+
         getPaymentSummaryBundle().getReportTemplateRows().addAll(rows);
+
     }
 
     public String navigateToViewEndOfSelectedShiftStartSummaryBill(Bill startBill) {
@@ -974,6 +980,7 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("No Start Bill");
             return null;
         }
+
         endBill = startBill.getReferenceBill();
         nonClosedShiftStartFundBill = startBill;
         fillPaymentsFromShiftStartToEnd(startBill, endBill, startBill.getCreater());
@@ -1976,6 +1983,7 @@ public class FinancialTransactionController implements Serializable {
 
     public void setShiaftStartBills(List<Bill> shiaftStartBills) {
         this.shiaftStartBills = shiaftStartBills;
+
     }
 
     public List<Payment> getPaymentsSelected() {
@@ -1984,6 +1992,7 @@ public class FinancialTransactionController implements Serializable {
 
     public void setPaymentsSelected(List<Payment> paymentsSelected) {
         this.paymentsSelected = paymentsSelected;
+
     }
 
 }
