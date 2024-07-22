@@ -22,7 +22,6 @@ import com.divudi.data.Denomination;
 import com.divudi.data.FinancialReport;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.PaymentMethodValues;
-
 import com.divudi.data.ReportTemplateRow;
 import com.divudi.data.ReportTemplateRowBundle;
 import com.divudi.data.ServiceType;
@@ -43,7 +42,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.faces.event.AjaxBehaviorEvent;
-import javax.faces.event.ValueChangeEvent;
 import javax.inject.Inject;
 import javax.persistence.TemporalType;
 import org.json.JSONArray;
@@ -1770,6 +1768,7 @@ public class FinancialTransactionController implements Serializable {
     }
 
     // </editor-fold>  
+    
     public List<Bill> getFundBillsForClosureBills() {
         return fundBillsForClosureBills;
     }
