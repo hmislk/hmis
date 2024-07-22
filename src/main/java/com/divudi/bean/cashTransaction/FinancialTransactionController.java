@@ -130,8 +130,6 @@ public class FinancialTransactionController implements Serializable {
     private Date fromDate;
     private Date toDate;
 
-    private Date fromDate;
-    private Date toDate;
 
     private ReportTemplateRowBundle paymentSummaryBundle;
 
@@ -587,6 +585,22 @@ public class FinancialTransactionController implements Serializable {
         createPaymentSummery();
 
     }
+    
+    public void fillPaymentsForDateRange() {
+        System.out.println("fillPaymentsForDateRange");
+        paymentsFromShiftSratToNow = new ArrayList<>();
+        String jpql = "SELECT p "
+                + "FROM Payment p "
+                + "WHERE p.bill.retired <> :ret "
+                + "AND p.bill.createdAt between :fd and :td "
+                + "ORDER BY p.id DESC";
+        Map<String, Object> m = new HashMap<>();
+        m.put("fd", getFromDate());
+        m.put("td", getToDate());
+        m.put("ret", true);
+        System.out.println("m = " + m);
+        System.out.println("jpql = " + jpql);
+    }
 
     private void createPaymentSummery() {
         System.out.println("createPaymentSummery");
@@ -648,16 +662,14 @@ public class FinancialTransactionController implements Serializable {
 
             return row;
         }).collect(Collectors.toList());
-
-        if (paymentSummaryBundle != null) {
-            paymentSummaryBundle.getReportTemplateRows().addAll(rows);
-        }
+        getPaymentSummaryBundle().getReportTemplateRows().addAll(rows);
+    }
 
     public String navigateToViewEndOfSelectedShiftStartSummaryBill(Bill startBill) {
         resetClassVariables();
         if (startBill == null) {
             JsfUtil.addErrorMessage("No Start Bill");
-            return null;
+            return "";
         }
         nonClosedShiftStartFundBill = startBill;
         fillPaymentsFromShiftStartToNow(startBill, startBill.getCreater());
@@ -1609,6 +1621,7 @@ public class FinancialTransactionController implements Serializable {
 
     public void setPaymentSummaryBundle(ReportTemplateRowBundle paymentSummaryBundle) {
         this.paymentSummaryBundle = paymentSummaryBundle;
+    }
 
     public List<Bill> getShiaftStartBills() {
         return shiaftStartBills;
@@ -1616,7 +1629,6 @@ public class FinancialTransactionController implements Serializable {
 
     public void setShiaftStartBills(List<Bill> shiaftStartBills) {
         this.shiaftStartBills = shiaftStartBills;
-
     }
 
 }
