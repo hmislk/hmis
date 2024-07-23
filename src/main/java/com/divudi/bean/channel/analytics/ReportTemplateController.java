@@ -445,9 +445,8 @@ public class ReportTemplateController implements Serializable {
                         paramStartId,
                         paramEndId);
                 break;
-            case ITEM_CATEGORY_SUMMARY_BY_BILL_ITEM:
-                bundle = handleItemCategorySummaryByBillItem(
-                        btas,
+            case ITEM_SUMMARY_BY_BILL:
+                bundle =handleItemSummaryByBill(btas,
                         paramDate,
                         paramFromDate,
                         paramToDate,
@@ -462,6 +461,7 @@ public class ReportTemplateController implements Serializable {
                         paramStartId,
                         paramEndId);
                 break;
+            case ITEM_CATEGORY_SUMMARY_BY_BILL_ITEM:
             case ITEM_CATEGORY_SUMMARY_BY_BILL:
                 bundle = handleItemCategorySummaryByBill(
                         btas,
@@ -513,6 +513,7 @@ public class ReportTemplateController implements Serializable {
                         paramStartId,
                         paramEndId);
                 break;
+                
             case TO_DEPARTMENT_SUMMARY_BY_BILL:
                 bundle = handleToDepartmentSummaryByBill(
                         btas,
@@ -1483,6 +1484,132 @@ public class ReportTemplateController implements Serializable {
         return bundle;
     }
 
+    
+    private ReportTemplateRowBundle handleItemSummaryByBill(
+            List<BillTypeAtomic> btas,
+            Date paramDate,
+            Date paramFromDate,
+            Date paramToDate,
+            Institution paramInstitution,
+            Department paramDepartment,
+            Institution paramFromInstitution,
+            Department paramFromDepartment,
+            Institution paramToInstitution,
+            Department paramToDepartment,
+            WebUser paramUser,
+            Institution paramCreditCompany,
+            Long paramStartId,
+            Long paramEndId) {
+
+        String jpql;
+        Map<String, Object> parameters = new HashMap<>();
+        ReportTemplateRowBundle bundle = new ReportTemplateRowBundle();
+
+        jpql = "select new com.divudi.data.ReportTemplateRow("
+                + " bi.item, count(bi), sum(bi.netValue)) "
+                + " from BillItem bi"
+                + " join bi.bill bill "
+                + " where bill.retired<>:br "
+                + " and bi.retired<>:br ";
+        parameters.put("br", true);
+
+        if (btas != null) {
+            jpql += " and bill.billTypeAtomic in :btas ";
+            parameters.put("btas", btas);
+        }
+
+        if (paramDate != null) {
+            jpql += " and bill.billDate=:bd ";
+            parameters.put("bd", paramDate);
+        }
+
+        if (paramToDate != null) {
+            jpql += " and bill.billDate < :td ";
+            parameters.put("td", paramToDate);
+        }
+
+        if (paramFromDate != null) {
+            jpql += " and bill.billDate > :fd ";
+            parameters.put("fd", paramFromDate);
+        }
+
+        if (paramStartId != null) {
+            jpql += " and bill.id > :sid ";
+            parameters.put("sid", paramStartId);
+        }
+
+        if (paramEndId != null) {
+            jpql += " and bill.id < :eid ";
+            parameters.put("eid", paramEndId);
+        }
+
+        if (paramInstitution != null) {
+            jpql += " and bill.institution=:ins ";
+            parameters.put("ins", paramInstitution);
+        }
+
+        if (paramDepartment != null) {
+            jpql += " and bill.department=:dep ";
+            parameters.put("dep", paramDepartment);
+        }
+
+        if (paramFromInstitution != null) {
+            jpql += " and bill.fromInstitution=:fins ";
+            parameters.put("fins", paramFromInstitution);
+        }
+
+        if (paramFromDepartment != null) {
+            jpql += " and bill.fromDepartment=:fdep ";
+            parameters.put("fdep", paramFromDepartment);
+        }
+
+        if (paramToInstitution != null) {
+            jpql += " and bill.toInstitution=:tins ";
+            parameters.put("tins", paramToInstitution);
+        }
+
+        if (paramToDepartment != null) {
+            jpql += " and bill.toDepartment=:tdep ";
+            parameters.put("tdep", paramToDepartment);
+        }
+
+        if (paramUser != null) {
+            jpql += " and bill.creater=:wu ";
+            parameters.put("wu", paramUser);
+        }
+
+        if (paramCreditCompany != null) {
+            jpql += " and bill.creditCompany=:creditCompany ";
+            parameters.put("creditCompany", paramCreditCompany);
+        }
+
+        jpql += " and bi.item is not null ";
+
+        jpql += " group by bi.item ";
+
+        System.out.println("jpql = " + jpql);
+        System.out.println("parameters = " + parameters);
+
+        List<ReportTemplateRow> rs = (List<ReportTemplateRow>) ejbFacade.findLightsByJpql(jpql, parameters, TemporalType.DATE);
+
+        if (rs == null || rs.isEmpty()) {
+            System.out.println("No results found.");
+        } else {
+            System.out.println("Results found: " + rs.size());
+        }
+
+        long idCounter = 1;
+        Double total = 0.0;
+        for (ReportTemplateRow row : rs) {
+            row.setId(idCounter++);
+            total = row.getRowValue();
+        }
+        bundle.setReportTemplateRows(rs);
+        return bundle;
+    }
+
+    
+    
     private ReportTemplateRowBundle handleToDepartmentSummaryByBillFee(
             List<BillTypeAtomic> btas,
             Date paramDate,

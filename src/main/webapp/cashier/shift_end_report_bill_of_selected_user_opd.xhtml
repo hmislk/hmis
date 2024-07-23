@@ -27,6 +27,10 @@
                                                      ajax="false" 
                                                      value="Process by Category" 
                                                      action="#{financialTransactionController.processShiftEndReportOpdCategory()}" ></p:commandButton>
+                                    <p:commandButton class="ui-button-info mx-2" 
+                                                     ajax="false" 
+                                                     value="Process by Item" 
+                                                     action="#{financialTransactionController.processShiftEndReportOpdItem()}" ></p:commandButton>
                                 </div>
                             </div>
 
@@ -98,33 +102,202 @@
                             </h:panelGroup>
                         </p:panelGrid>
 
-                        <h1>#{financialTransactionController.opdBilled.reportTemplateRows}</h1>
 
-                        <h:panelGroup >
 
-                            <p:dataTable value="#{financialTransactionController.opdBundle.reportTemplateRows}" var="r" rowKey="#{r.id}" >
-                                <p:column headerText="Category" >
-                                    <h:outputText value="#{r.category.name}" ></h:outputText>
+                        <h:panelGroup rendered="#{financialTransactionController.reportTemplateType eq 'ITEM_CATEGORY_SUMMARY_BY_BILL_ITEM'}">
+
+                            <p:dataTable value="#{financialTransactionController.opdBundle.reportTemplateRows}" var="r" rowKey="#{r.id}" paginator="true" rows="10">
+
+                                <p:columnGroup type="header">
+                                    <p:row>
+                                        <p:column headerText="Category" rowspan="2" sortBy="#{r.category.name}" filterBy="#{r.category.name}" filterMatchMode="contains" />
+                                        <p:column headerText="Counts" colspan="3" />
+                                        <p:column headerText="Values" colspan="3" />
+                                    </p:row>
+                                    <p:row>
+                                        <p:column headerText="Performed" sortBy="#{r.rowCountIn}" filterBy="#{r.rowCountIn}" filterMatchMode="equals" />
+                                        <p:column headerText="Refund" sortBy="#{r.rowCountOut}" filterBy="#{r.rowCountOut}" filterMatchMode="equals" />
+                                        <p:column headerText="Net" sortBy="#{r.rowCount}" filterBy="#{r.rowCount}" filterMatchMode="equals" />
+                                        <p:column headerText="Performed" sortBy="#{r.rowValueIn}" filterBy="#{r.rowValueIn}" filterMatchMode="equals" />
+                                        <p:column headerText="Refund" sortBy="#{r.rowValueOut}" filterBy="#{r.rowValueOut}" filterMatchMode="equals" />
+                                        <p:column headerText="Net" sortBy="#{r.rowValue}" filterBy="#{r.rowValue}" filterMatchMode="equals" />
+                                    </p:row>
+                                </p:columnGroup>
+
+                                <p:column>
+                                    <h:outputText value="#{r.category.name}" />
                                 </p:column>
-                                <p:column headerText="Peformed Count" >
-                                    <h:outputText value="#{r.rowCountIn}" ></h:outputText>
+
+                                <p:column>
+                                    <h:outputText value="#{r.rowCountIn}" />
                                 </p:column>
-                                 <p:column headerText="Refund Count" >
-                                     <h:outputText value="#{r.rowCountOut}" ></h:outputText>
+
+                                <p:column>
+                                    <h:outputText value="#{r.rowCountOut}" />
                                 </p:column>
-                                <p:column headerText="Net Count" >
-                                    <h:outputText value="#{r.rowCount}" ></h:outputText>
+
+                                <p:column>
+                                    <h:outputText value="#{r.rowCount}" />
                                 </p:column>
-                                <p:column headerText="Peformed Value" >
-                                    <h:outputText value="#{r.rowCountIn}" ></h:outputText>
+
+                                <p:column>
+                                    <h:outputText value="#{r.rowValueIn}" />
                                 </p:column>
-                                 <p:column headerText="Refund Value" >
-                                     <h:outputText value="#{r.rowCountOut}" ></h:outputText>
+
+                                <p:column>
+                                    <h:outputText value="#{r.rowValueOut}" />
                                 </p:column>
-                                <p:column headerText="Net Value" >
-                                    <h:outputText value="#{r.rowCount}" ></h:outputText>
+
+                                <p:column>
+                                    <h:outputText value="#{r.rowValue}" />
                                 </p:column>
+
+                                <p:columnGroup type="footer">
+                                    <p:row>
+                                        <p:column footerText="Totals" />
+                                        <p:column footerText="#{financialTransactionController.opdBundle.countIn}" />
+                                        <p:column footerText="#{financialTransactionController.opdBundle.countOut}" />
+                                        <p:column footerText="#{financialTransactionController.opdBundle.count}" />
+                                        <p:column footerText="#{financialTransactionController.opdBundle.totalIn}" />
+                                        <p:column footerText="#{financialTransactionController.opdBundle.totalOut}" />
+                                        <p:column footerText="#{financialTransactionController.opdBundle.total}" />
+                                    </p:row>
+                                </p:columnGroup>
+
                             </p:dataTable>
+
+
+                        </h:panelGroup>
+
+
+                        <h:panelGroup rendered="#{financialTransactionController.reportTemplateType eq 'ITEM_CATEGORY_SUMMARY_BY_BILL'}">
+
+                            <p:dataTable value="#{financialTransactionController.opdBundle.reportTemplateRows}" var="r" rowKey="#{r.id}" paginator="true" rows="10">
+
+                                <p:columnGroup type="header">
+                                    <p:row>
+                                        <p:column headerText="Category" rowspan="2" sortBy="#{r.category.name}" filterBy="#{r.category.name}" filterMatchMode="contains" />
+                                        <p:column headerText="Counts" colspan="3" />
+                                        <p:column headerText="Values" colspan="3" />
+                                    </p:row>
+                                    <p:row>
+                                        <p:column headerText="Performed" sortBy="#{r.rowCountIn}" filterBy="#{r.rowCountIn}" filterMatchMode="equals" />
+                                        <p:column headerText="Refund" sortBy="#{r.rowCountOut}" filterBy="#{r.rowCountOut}" filterMatchMode="equals" />
+                                        <p:column headerText="Net" sortBy="#{r.rowCount}" filterBy="#{r.rowCount}" filterMatchMode="equals" />
+                                        <p:column headerText="Performed" sortBy="#{r.rowValueIn}" filterBy="#{r.rowValueIn}" filterMatchMode="equals" />
+                                        <p:column headerText="Refund" sortBy="#{r.rowValueOut}" filterBy="#{r.rowValueOut}" filterMatchMode="equals" />
+                                        <p:column headerText="Net" sortBy="#{r.rowValue}" filterBy="#{r.rowValue}" filterMatchMode="equals" />
+                                    </p:row>
+                                </p:columnGroup>
+
+                                <p:column>
+                                    <h:outputText value="#{r.category.name}" />
+                                </p:column>
+
+                                <p:column>
+                                    <h:outputText value="#{r.rowCountIn}" />
+                                </p:column>
+
+                                <p:column>
+                                    <h:outputText value="#{r.rowCountOut}" />
+                                </p:column>
+
+                                <p:column>
+                                    <h:outputText value="#{r.rowCount}" />
+                                </p:column>
+
+                                <p:column>
+                                    <h:outputText value="#{r.rowValueIn}" />
+                                </p:column>
+
+                                <p:column>
+                                    <h:outputText value="#{r.rowValueOut}" />
+                                </p:column>
+
+                                <p:column>
+                                    <h:outputText value="#{r.rowValue}" />
+                                </p:column>
+
+                                <p:columnGroup type="footer">
+                                    <p:row>
+                                        <p:column footerText="Totals" />
+                                        <p:column footerText="#{financialTransactionController.opdBundle.countIn}" />
+                                        <p:column footerText="#{financialTransactionController.opdBundle.countOut}" />
+                                        <p:column footerText="#{financialTransactionController.opdBundle.count}" />
+                                        <p:column footerText="#{financialTransactionController.opdBundle.totalIn}" />
+                                        <p:column footerText="#{financialTransactionController.opdBundle.totalOut}" />
+                                        <p:column footerText="#{financialTransactionController.opdBundle.total}" />
+                                    </p:row>
+                                </p:columnGroup>
+
+                            </p:dataTable>
+
+
+                        </h:panelGroup>
+
+
+                        <h:panelGroup rendered="#{financialTransactionController.reportTemplateType eq 'ITEM_SUMMARY_BY_BILL'}">
+
+                            <p:dataTable value="#{financialTransactionController.opdBundle.reportTemplateRows}" var="r" rowKey="#{r.id}" paginator="true" rows="10">
+
+                                <p:columnGroup type="header">
+                                    <p:row>
+                                        <p:column headerText="Category" rowspan="2" sortBy="#{r.item.name}" filterBy="#{r.item.name}" filterMatchMode="contains" />
+                                        <p:column headerText="Counts" colspan="3" />
+                                        <p:column headerText="Values" colspan="3" />
+                                    </p:row>
+                                    <p:row>
+                                        <p:column headerText="Performed" sortBy="#{r.rowCountIn}" filterBy="#{r.rowCountIn}" filterMatchMode="equals" />
+                                        <p:column headerText="Refund" sortBy="#{r.rowCountOut}" filterBy="#{r.rowCountOut}" filterMatchMode="equals" />
+                                        <p:column headerText="Net" sortBy="#{r.rowCount}" filterBy="#{r.rowCount}" filterMatchMode="equals" />
+                                        <p:column headerText="Performed" sortBy="#{r.rowValueIn}" filterBy="#{r.rowValueIn}" filterMatchMode="equals" />
+                                        <p:column headerText="Refund" sortBy="#{r.rowValueOut}" filterBy="#{r.rowValueOut}" filterMatchMode="equals" />
+                                        <p:column headerText="Net" sortBy="#{r.rowValue}" filterBy="#{r.rowValue}" filterMatchMode="equals" />
+                                    </p:row>
+                                </p:columnGroup>
+
+                                <p:column>
+                                    <h:outputText value="#{r.item.name}" />
+                                </p:column>
+
+                                <p:column>
+                                    <h:outputText value="#{r.rowCountIn}" />
+                                </p:column>
+
+                                <p:column>
+                                    <h:outputText value="#{r.rowCountOut}" />
+                                </p:column>
+
+                                <p:column>
+                                    <h:outputText value="#{r.rowCount}" />
+                                </p:column>
+
+                                <p:column>
+                                    <h:outputText value="#{r.rowValueIn}" />
+                                </p:column>
+
+                                <p:column>
+                                    <h:outputText value="#{r.rowValueOut}" />
+                                </p:column>
+
+                                <p:column>
+                                    <h:outputText value="#{r.rowValue}" />
+                                </p:column>
+
+                                <p:columnGroup type="footer">
+                                    <p:row>
+                                        <p:column footerText="Totals" />
+                                        <p:column footerText="#{financialTransactionController.opdBundle.countIn}" />
+                                        <p:column footerText="#{financialTransactionController.opdBundle.countOut}" />
+                                        <p:column footerText="#{financialTransactionController.opdBundle.count}" />
+                                        <p:column footerText="#{financialTransactionController.opdBundle.totalIn}" />
+                                        <p:column footerText="#{financialTransactionController.opdBundle.totalOut}" />
+                                        <p:column footerText="#{financialTransactionController.opdBundle.total}" />
+                                    </p:row>
+                                </p:columnGroup>
+
+                            </p:dataTable>
+
 
                         </h:panelGroup>
 

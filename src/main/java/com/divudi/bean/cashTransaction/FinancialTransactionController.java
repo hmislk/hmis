@@ -83,6 +83,7 @@ public class FinancialTransactionController implements Serializable {
 
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
     private Bill currentBill;
+    private ReportTemplateType reportTemplateType;
     private ReportTemplateRowBundle reportTemplateRowBundle;
     private ReportTemplateRowBundle opdServiceBundle;
     private ReportTemplateRowBundle channellingBundle;
@@ -364,11 +365,12 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public void processShiftEndReportOpdCategory() {
+        reportTemplateType=ReportTemplateType.ITEM_CATEGORY_SUMMARY_BY_BILL_ITEM;
         List<BillTypeAtomic> bts = new ArrayList<>();
         bts.addAll(BillTypeAtomic.findByServiceTypeAndFinanceType(ServiceType.OPD, BillFinanceType.CASH_IN));
         bts.addAll(BillTypeAtomic.findByCountedServiceType(CountedServiceType.OPD));
         opdBilled = reportTemplateController.generateReport(
-                ReportTemplateType.ITEM_CATEGORY_SUMMARY_BY_BILL,
+                ReportTemplateType.ITEM_CATEGORY_SUMMARY_BY_BILL_ITEM,
                 BillTypeAtomic.findByCountedServiceType(CountedServiceType.OPD),
                 null,
                 null,
@@ -384,7 +386,47 @@ public class FinancialTransactionController implements Serializable {
                 nonClosedShiftStartFundBill.getId(),
                 nonClosedShiftStartFundBill.getReferenceBill().getId());
         opdReturns = reportTemplateController.generateReport(
-                ReportTemplateType.ITEM_CATEGORY_SUMMARY_BY_BILL,
+                ReportTemplateType.ITEM_CATEGORY_SUMMARY_BY_BILL_ITEM,
+                BillTypeAtomic.findByCountedServiceType(CountedServiceType.OPD_OUT),
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                nonClosedShiftStartFundBill.getCreater(),
+                null,
+                nonClosedShiftStartFundBill.getId(),
+                nonClosedShiftStartFundBill.getReferenceBill().getId());
+        opdBundle = combineBundlesByCategory(opdBilled, opdReturns);
+    }
+    
+     public void processShiftEndReportOpdItem() {
+        reportTemplateType=ReportTemplateType.ITEM_SUMMARY_BY_BILL;
+        List<BillTypeAtomic> bts = new ArrayList<>();
+        bts.addAll(BillTypeAtomic.findByServiceTypeAndFinanceType(ServiceType.OPD, BillFinanceType.CASH_IN));
+        bts.addAll(BillTypeAtomic.findByCountedServiceType(CountedServiceType.OPD));
+        opdBilled = reportTemplateController.generateReport(
+                ReportTemplateType.ITEM_SUMMARY_BY_BILL,
+                BillTypeAtomic.findByCountedServiceType(CountedServiceType.OPD),
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                nonClosedShiftStartFundBill.getCreater(),
+                null,
+                nonClosedShiftStartFundBill.getId(),
+                nonClosedShiftStartFundBill.getReferenceBill().getId());
+        opdReturns = reportTemplateController.generateReport(
+                ReportTemplateType.ITEM_SUMMARY_BY_BILL,
                 BillTypeAtomic.findByCountedServiceType(CountedServiceType.OPD_OUT),
                 null,
                 null,
@@ -439,10 +481,12 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public String navigateToCashierReport() {
+        processShiftEndReport();
         return "/cashier/shift_end_report_bill_of_selected_user?faces-redirect=true";
     }
 
     public String navigateToCashierReportOpd() {
+        resetBundles();
         return "/cashier/shift_end_report_bill_of_selected_user_opd?faces-redirect=true";
     }
 
@@ -2226,6 +2270,8 @@ public class FinancialTransactionController implements Serializable {
         }
         return paymentSummaryBundle;
     }
+    
+    
 
     public void setPaymentSummaryBundle(ReportTemplateRowBundle paymentSummaryBundle) {
         this.paymentSummaryBundle = paymentSummaryBundle;
@@ -2343,6 +2389,29 @@ public class FinancialTransactionController implements Serializable {
 
     public void setOpdBundle(ReportTemplateRowBundle opdBundle) {
         this.opdBundle = opdBundle;
+    }
+
+    private void resetBundles() {
+        reportTemplateRowBundle = new ReportTemplateRowBundle();
+        opdServiceBundle = new ReportTemplateRowBundle();
+        channellingBundle = new ReportTemplateRowBundle();
+        opdDocPayment = new ReportTemplateRowBundle();
+        channellingDocPayment = new ReportTemplateRowBundle();
+        opdBilled = new ReportTemplateRowBundle();
+        opdReturns = new ReportTemplateRowBundle();
+        opdBundle = new ReportTemplateRowBundle();
+        channellingBilled = new ReportTemplateRowBundle();
+        channellingReturns = new ReportTemplateRowBundle();
+        pharmacyBilld = new ReportTemplateRowBundle();
+        pharmacyReturned = new ReportTemplateRowBundle();
+    }
+
+    public ReportTemplateType getReportTemplateType() {
+        return reportTemplateType;
+    }
+
+    public void setReportTemplateType(ReportTemplateType reportTemplateType) {
+        this.reportTemplateType = reportTemplateType;
     }
 
 }

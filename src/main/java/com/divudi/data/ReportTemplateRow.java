@@ -3,6 +3,7 @@ package com.divudi.data;
 import com.divudi.entity.Category;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
+import com.divudi.entity.Item;
 
 /**
  *
@@ -24,6 +25,7 @@ public class ReportTemplateRow {
     private Long id;
 
     private Category category;
+    private Item item;
     private ServiceType serviceType;
     private BillTypeAtomic billTypeAtomic;
     private Institution creditCompany;
@@ -109,6 +111,12 @@ public class ReportTemplateRow {
         this.rowValue = rowValue;
         this.rowCount = rowCount;
     }
+     
+     public ReportTemplateRow(Item item, Long rowCount, Double rowValue) {
+        this.item = item;
+        this.rowValue = rowValue;
+        this.rowCount = rowCount;
+    }
     
     public ReportTemplateRow(String categoryName, Double rowValue) {
         this.categoryName = categoryName;
@@ -146,6 +154,8 @@ public class ReportTemplateRow {
     public Category getCategory() {
         return category;
     }
+    
+    
 
     public void setCategory(Category category) {
         this.category = category;
@@ -226,6 +236,14 @@ public class ReportTemplateRow {
 
     public void setRowCountOut(Long rowCountOut) {
         this.rowCountOut = rowCountOut;
+    }
+
+    public Item getItem() {
+        return item;
+    }
+
+    public void setItem(Item item) {
+        this.item = item;
     }
 
 }
