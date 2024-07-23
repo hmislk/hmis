@@ -34,9 +34,11 @@ public class ReportTemplateRow {
     public ReportTemplateRow(Category c) {
         this.category = c;
     }
-    
-    
-    
+
+    public ReportTemplateRow(Item item) {
+        this.item = item;
+
+    }
 
     public void setFeeName(String feeName) {
         this.feeName = feeName;
@@ -99,30 +101,30 @@ public class ReportTemplateRow {
         this.rowValue = rowValue;
         this.rowCount = rowCount;
     }
-    
+
     public ReportTemplateRow(String categoryName, Long rowCount, Double rowValue) {
         this.categoryName = categoryName;
         this.rowValue = rowValue;
         this.rowCount = rowCount;
     }
-    
-     public ReportTemplateRow(Category category, Long rowCount, Double rowValue) {
+
+    public ReportTemplateRow(Category category, Long rowCount, Double rowValue) {
         this.category = category;
         this.rowValue = rowValue;
         this.rowCount = rowCount;
     }
-     
-     public ReportTemplateRow(Item item, Long rowCount, Double rowValue) {
+
+    public ReportTemplateRow(Item item, Long rowCount, Double rowValue) {
         this.item = item;
         this.rowValue = rowValue;
         this.rowCount = rowCount;
     }
-    
+
     public ReportTemplateRow(String categoryName, Double rowValue) {
         this.categoryName = categoryName;
         this.rowValue = rowValue;
     }
-    
+
     public ReportTemplateRow(BillTypeAtomic billTypeAtomic, String categoryName, String toDepartmentName, Double rowValue) {
         this.billTypeAtomic = billTypeAtomic;
         this.categoryName = categoryName;
@@ -135,7 +137,6 @@ public class ReportTemplateRow {
         this.rowValue = rowValue;
     }
 
-    
     public ReportTemplateRow(Double rowValue) {
         this.rowValue = rowValue;
     }
@@ -154,8 +155,6 @@ public class ReportTemplateRow {
     public Category getCategory() {
         return category;
     }
-    
-    
 
     public void setCategory(Category category) {
         this.category = category;

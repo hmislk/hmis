@@ -29,6 +29,7 @@ import com.divudi.data.ServiceType;
 import com.divudi.data.analytics.ReportTemplateType;
 import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.entity.Category;
+import com.divudi.entity.Item;
 import com.divudi.entity.WebUser;
 import com.divudi.java.CommonFunctions;
 import javax.inject.Named;
@@ -302,6 +303,68 @@ public class FinancialTransactionController implements Serializable {
                 nonClosedShiftStartFundBill.getReferenceBill().getId());
     }
 
+    private ReportTemplateRowBundle combineBundlesByItem(ReportTemplateRowBundle inBundle, ReportTemplateRowBundle outBundle) {
+        ReportTemplateRowBundle temOutBundle = new ReportTemplateRowBundle();
+        Map<Item, ReportTemplateRow> combinedRows = new HashMap<>();
+
+        if (inBundle != null && inBundle.getReportTemplateRows() != null) {
+            for (ReportTemplateRow inRow : inBundle.getReportTemplateRows()) {
+                if (inRow != null) {
+                    Item item = inRow.getItem();
+                    if (item != null) {
+                        if (!combinedRows.containsKey(item)) {
+                            combinedRows.put(item, new ReportTemplateRow(item));
+                        }
+                        ReportTemplateRow combinedRow = combinedRows.get(item);
+                        combinedRow.setRowCountIn((combinedRow.getRowCountIn() != null ? combinedRow.getRowCountIn() : 0L) + (inRow.getRowCount() != null ? inRow.getRowCount() : 0L));
+                        combinedRow.setRowValueIn((combinedRow.getRowValueIn() != null ? combinedRow.getRowValueIn() : 0.0) + (inRow.getRowValue() != null ? inRow.getRowValue() : 0.0));
+                    }
+                }
+            }
+        }
+
+        if (outBundle != null && outBundle.getReportTemplateRows() != null) {
+            for (ReportTemplateRow outRow : outBundle.getReportTemplateRows()) {
+                if (outRow != null) {
+                    Item item = outRow.getItem();
+                    if (item != null) {
+                        if (!combinedRows.containsKey(item)) {
+                            combinedRows.put(item, new ReportTemplateRow(item));
+                        }
+                        ReportTemplateRow combinedRow = combinedRows.get(item);
+                        combinedRow.setRowCountOut((combinedRow.getRowCountOut() != null ? combinedRow.getRowCountOut() : 0L) + (outRow.getRowCount() != null ? outRow.getRowCount() : 0L));
+                        combinedRow.setRowValueOut((combinedRow.getRowValueOut() != null ? combinedRow.getRowValueOut() : 0.0) + (outRow.getRowValue() != null ? outRow.getRowValue() : 0.0));
+                    }
+                }
+            }
+        }
+
+        long totalInCount = 0;
+        long totalOutCount = 0;
+        double totalInValue = 0.0;
+        double totalOutValue = 0.0;
+
+        for (ReportTemplateRow row : combinedRows.values()) {
+            row.setRowCount((row.getRowCountIn() != null ? row.getRowCountIn() : 0L) + (row.getRowCountOut() != null ? row.getRowCountOut() : 0L));
+            row.setRowValue((row.getRowValueIn() != null ? row.getRowValueIn() : 0.0) + (row.getRowValueOut() != null ? row.getRowValueOut() : 0.0));
+            temOutBundle.getReportTemplateRows().add(row);
+
+            totalInCount += (row.getRowCountIn() != null ? row.getRowCountIn() : 0L);
+            totalOutCount += (row.getRowCountOut() != null ? row.getRowCountOut() : 0L);
+            totalInValue += (row.getRowValueIn() != null ? row.getRowValueIn() : 0.0);
+            totalOutValue += (row.getRowValueOut() != null ? row.getRowValueOut() : 0.0);
+        }
+
+        temOutBundle.setCountIn(totalInCount);
+        temOutBundle.setCountOut(totalOutCount);
+        temOutBundle.setCount(totalInCount + totalOutCount);
+        temOutBundle.setTotalIn(totalInValue);
+        temOutBundle.setTotalOut(totalOutValue);
+        temOutBundle.setTotal(totalInValue + totalOutValue);
+
+        return temOutBundle;
+    }
+
     private ReportTemplateRowBundle combineBundlesByCategory(ReportTemplateRowBundle inBundle, ReportTemplateRowBundle outBundle) {
         ReportTemplateRowBundle temOutBundle = new ReportTemplateRowBundle();
         Map<Category, ReportTemplateRow> combinedRows = new HashMap<>();
@@ -365,7 +428,7 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public void processShiftEndReportOpdCategory() {
-        reportTemplateType=ReportTemplateType.ITEM_CATEGORY_SUMMARY_BY_BILL_ITEM;
+        reportTemplateType = ReportTemplateType.ITEM_CATEGORY_SUMMARY_BY_BILL_ITEM;
         List<BillTypeAtomic> bts = new ArrayList<>();
         bts.addAll(BillTypeAtomic.findByServiceTypeAndFinanceType(ServiceType.OPD, BillFinanceType.CASH_IN));
         bts.addAll(BillTypeAtomic.findByCountedServiceType(CountedServiceType.OPD));
@@ -403,9 +466,9 @@ public class FinancialTransactionController implements Serializable {
                 nonClosedShiftStartFundBill.getReferenceBill().getId());
         opdBundle = combineBundlesByCategory(opdBilled, opdReturns);
     }
-    
-     public void processShiftEndReportOpdItem() {
-        reportTemplateType=ReportTemplateType.ITEM_SUMMARY_BY_BILL;
+
+    public void processShiftEndReportOpdItem() {
+        reportTemplateType = ReportTemplateType.ITEM_SUMMARY_BY_BILL;
         List<BillTypeAtomic> bts = new ArrayList<>();
         bts.addAll(BillTypeAtomic.findByServiceTypeAndFinanceType(ServiceType.OPD, BillFinanceType.CASH_IN));
         bts.addAll(BillTypeAtomic.findByCountedServiceType(CountedServiceType.OPD));
@@ -441,7 +504,7 @@ public class FinancialTransactionController implements Serializable {
                 null,
                 nonClosedShiftStartFundBill.getId(),
                 nonClosedShiftStartFundBill.getReferenceBill().getId());
-        opdBundle = combineBundlesByCategory(opdBilled, opdReturns);
+        opdBundle = combineBundlesByItem(opdBilled, opdReturns);
     }
 
     public String navigateToListShiftEndSummaries() {
@@ -2270,8 +2333,6 @@ public class FinancialTransactionController implements Serializable {
         }
         return paymentSummaryBundle;
     }
-    
-    
 
     public void setPaymentSummaryBundle(ReportTemplateRowBundle paymentSummaryBundle) {
         this.paymentSummaryBundle = paymentSummaryBundle;
