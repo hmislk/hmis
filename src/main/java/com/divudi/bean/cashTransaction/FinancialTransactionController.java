@@ -139,11 +139,6 @@ public class FinancialTransactionController implements Serializable {
 
     private ReportTemplateRowBundle paymentSummaryBundle;
 
-    private Date fromDate;
-    private Date toDate;
-
-    private ReportTemplateRowBundle paymentSummaryBundle;
-
     // </editor-fold>  
     // <editor-fold defaultstate="collapsed" desc="Constructors">
     public FinancialTransactionController() {
