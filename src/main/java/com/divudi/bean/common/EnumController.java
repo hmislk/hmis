@@ -70,7 +70,6 @@ public class EnumController implements Serializable {
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
     List<PaymentMethod> paymentMethodsForOpdBilling;
-    List<PaymentMethod> paymentMethodsForPatientDeposit;
     List<PaymentMethod> paymentMethodsForChanneling;
     List<PaymentMethod> paymentMethodsForPharmacyBilling;
     SessionNumberType[] sessionNumberTypes;
@@ -101,7 +100,6 @@ public class EnumController implements Serializable {
     public void resetPaymentMethods() {
         paymentMethodsForOpdBilling = null;
         paymentMethodsForChanneling = null;
-        paymentMethodsForPatientDeposit = null;
     }
 
     public void fillPaymentMethodsForOpdBilling() {
@@ -120,16 +118,6 @@ public class EnumController implements Serializable {
             boolean include = configOptionApplicationController.getBooleanValueByKey(pm.getLabel() + " is available for Package Billing", true);
             if (include) {
                 paymentMethodsForOpdBilling.add(pm);
-            }
-        }
-    }
-
-    public void fillPaymentMethodsForPatientDeposit() {
-        paymentMethodsForPatientDeposit = new ArrayList<>();
-        for (PaymentMethod pm : PaymentMethod.values()) {
-            boolean include = configOptionApplicationController.getBooleanValueByKey(pm.getLabel() + " is available for Patient Deposit", true);
-            if (include) {
-                paymentMethodsForPatientDeposit.add(pm);
             }
         }
     }
@@ -459,81 +447,7 @@ public class EnumController implements Serializable {
     }
 
     public InwardChargeType[] getInwardChargeTypesForSetting() {
-        InwardChargeType[] b = {
-            InwardChargeType.AdmissionFee,
-            InwardChargeType.Medicine,
-            InwardChargeType.BloodTransfusioncharges,
-            InwardChargeType.Immunization,
-            InwardChargeType.Equipment,
-            InwardChargeType.MealCharges,
-            InwardChargeType.OperationTheatreCharges,
-            InwardChargeType.OperationTheatreNursingCharges,
-            InwardChargeType.OperationTheatreMachineryCharges,
-            InwardChargeType.LarbourRoomCharges,
-            InwardChargeType.ETUCharges,
-            InwardChargeType.TreatmentCharges,
-            InwardChargeType.IntensiveCareManagement,
-            InwardChargeType.AmbulanceCharges,
-            InwardChargeType.HomeVisiting,
-            InwardChargeType.GeneralIssuing,
-            InwardChargeType.WardProcedures,
-            InwardChargeType.ReimbursementCharges,
-            InwardChargeType.DressingCharges,
-            InwardChargeType.OxygenCharges,
-            InwardChargeType.physiotherapy,
-            InwardChargeType.Laboratory,
-            InwardChargeType.X_Ray,
-            InwardChargeType.CT,
-            InwardChargeType.Scanning,
-            InwardChargeType.ECG_EEG,
-            InwardChargeType.MedicalServices,
-            InwardChargeType.AdministrationCharge,
-            InwardChargeType.LinenCharges,
-            InwardChargeType.MaintainCharges,
-            InwardChargeType.MedicalCareICU,
-            InwardChargeType.MOCharges,
-            InwardChargeType.NursingCharges,
-            InwardChargeType.RoomCharges,
-            InwardChargeType.CardiacMonitoring,
-            InwardChargeType.Nebulisation,
-            InwardChargeType.Echo,
-            InwardChargeType.SyringePump,
-            InwardChargeType.TheaterConsumbale,
-            InwardChargeType.ExerciseECG,
-            InwardChargeType.TheaterConsumbale,
-            InwardChargeType.VAT,
-            InwardChargeType.EyeLence,
-            InwardChargeType.AccessoryCharges,
-            InwardChargeType.HospitalSupportService,
-            InwardChargeType.ExtraMedicine,
-            InwardChargeType.DialysisTreatment,
-            InwardChargeType.OtherCharges,
-            InwardChargeType.Eye,
-            InwardChargeType.Dental,
-            InwardChargeType.Andrology,
-            InwardChargeType.AudiogramTest,
-            InwardChargeType.CathLabEOMachine,
-            InwardChargeType.Channel,
-            InwardChargeType.CSSDCharges,
-            InwardChargeType.Dialysis,
-            InwardChargeType.ECG,
-            InwardChargeType.EEG,
-            InwardChargeType.ExerciseECG,
-            InwardChargeType.Fertility,
-            InwardChargeType.HolterMoniteringCharges,
-            InwardChargeType.LaboratoryInvestigation,
-            InwardChargeType.MedicalService,
-            InwardChargeType.MedicalServiceOPD,
-            InwardChargeType.MRIUnit,
-            InwardChargeType.OPD,
-            InwardChargeType.Others,
-            InwardChargeType.Procedure,
-            InwardChargeType.Radiology,
-            InwardChargeType.ReportingCharges,
-            InwardChargeType.WardProcedure,
-            InwardChargeType.BabyCare,};
-
-        return b;
+         return InwardChargeType.values();
     }
 
     public PatientEncounterComponentType[] getPatientEncounterComponentTypes() {
@@ -874,17 +788,6 @@ public class EnumController implements Serializable {
 
     public void setPaymentScheme(PaymentScheme paymentScheme) {
         this.paymentScheme = paymentScheme;
-    }
-
-    public List<PaymentMethod> getPaymentMethodsForPatientDeposit() {
-        if (paymentMethodsForPatientDeposit == null) {
-            fillPaymentMethodsForPatientDeposit();
-        }
-        return paymentMethodsForPatientDeposit;
-    }
-
-    public void setPaymentMethodsForPatientDeposit(List<PaymentMethod> paymentMethodsForPatientDeposit) {
-        this.paymentMethodsForPatientDeposit = paymentMethodsForPatientDeposit;
     }
 
 }

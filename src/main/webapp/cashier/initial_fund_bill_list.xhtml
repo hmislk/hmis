@@ -1,0 +1,105 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:prints="http://xmlns.jcp.org/jsf/composite/ezcomp/prints"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+
+        <ui:composition template="/analytics/index.xhtml">
+
+            <ui:define name="report">
+
+                <h:form>
+
+                    <p:panel >
+                        <f:facet name="header">
+                            <i class="fa fa-money-bill-wave mt-2"/>
+                            <p:outputLabel value="Shift Starts" class="mx-2 mt-2"></p:outputLabel>
+
+
+                        </f:facet>
+                        <h:panelGrid columns="2" >
+                            <p:outputLabel value="From" ></p:outputLabel>
+                            <p:calendar 
+                                value="#{financialTransactionController.fromDate}"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                ></p:calendar>
+                            <p:outputLabel value="From" ></p:outputLabel>
+                            <p:calendar 
+                                value="#{financialTransactionController.toDate}"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                ></p:calendar>
+
+                            <p:commandButton 
+                                icon="fa-solid fa-check"
+                                class="ui-button-success"
+                                style="float: right;"
+                                value="Process" 
+                                ajax="false" 
+                                action="#{financialTransactionController.listShiftStartBills()}" >
+                            </p:commandButton>
+                        </h:panelGrid>
+
+                        <p:dataTable value="#{financialTransactionController.shiaftStartBills}" var="ssb" rowKey="#{ssb.id}">
+
+                            <p:column headerText="Date" width="10em" >
+                                <h:outputText value="#{ssb.billDate}" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
+                                </h:outputText>
+
+                            </p:column>
+                            <p:column headerText="Time"  width="10em" >
+                                <h:outputText value="#{ssb.createdAt}" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}" ></f:convertDateTime>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="User" >
+                                #{ssb.creater} - #{ssb.creater.role.name} - #{ssb.creater.staff.speciality.name}
+                            </p:column>
+
+                            <p:column headerText="Shift End" rendered="true" width="15em" >
+                                <h:panelGroup rendered="#{ssb.referenceBill eq null}" class="text-danger">
+                                    <h:outputText value="NOT Ended" ></h:outputText>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{ssb.referenceBill ne null}" class="text-success">
+                                    <h:outputText value="Ended at " ></h:outputText>
+                                    <h:outputText value="#{ssb.referenceBill.createdAt}" >
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
+                                    </h:outputText>
+                                </h:panelGroup>
+                            </p:column>
+
+                            <p:column headerText="Actions">
+                                <h:panelGroup rendered="#{ssb.referenceBill eq null}" >
+                                    <p:commandButton 
+                                        ajax="false"
+                                        class="ui-button-danger"
+                                        value="View Summery - Not Closed" 
+                                        action="#{financialTransactionController.navigateToViewStartToEndOfSelectedShiftStartSummaryBill(ssb)}"  
+                                        ></p:commandButton>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{ssb.referenceBill ne null}" >
+                                    <p:commandButton 
+                                        ajax="false"
+                                        class="ui-button-success"
+                                        value="View Closed Summery" 
+                                        action="#{financialTransactionController.navigateToViewEndOfSelectedShiftStartSummaryBill(ssb)}"  
+                                        ></p:commandButton>
+                                </h:panelGroup>
+                            </p:column>
+
+                        </p:dataTable>
+
+                    </p:panel>
+
+                </h:form>
+
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

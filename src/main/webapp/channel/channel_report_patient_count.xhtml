@@ -26,19 +26,19 @@
                         </f:facet>
                         <p:panelGrid  columns="2" styleClass="noPrintButton" >
                             <h:outputLabel value="From Date"/>
-                            <p:calendar id="frmDate" value="#{channelReportController.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                            <p:calendar id="frmDate" value="#{channelReportControllerOld.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                             </p:calendar>
                             <h:outputLabel value="To Date"/>
-                            <p:calendar id="toDate" value="#{channelReportController.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                            <p:calendar id="toDate" value="#{channelReportControllerOld.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                             </p:calendar>
                             <p:outputLabel value="Paid Only" />
-                            <p:selectBooleanCheckbox value="#{channelReportController.paid}" />
+                            <p:selectBooleanCheckbox value="#{channelReportControllerOld.paid}" />
                         </p:panelGrid>
 
                         <h:panelGrid columns="6" class="mt-2">
-                            <p:commandButton style="margin-right: 10px;" id="btnRefresh" ajax="false" value="By Created Date" styleClass="noPrintButton" action="#{channelReportController.createChannelPatientCountByCreatedDate}"/>
+                            <p:commandButton style="margin-right: 10px;" id="btnRefresh" ajax="false" value="By Created Date" styleClass="noPrintButton" action="#{channelReportControllerOld.createChannelPatientCountByCreatedDate}"/>
                             <p:defaultCommand target="btnRefresh"/>
-                            <p:commandButton style="margin-right: 10px;" id="btnRefresh1" ajax="false" value="By Session Date" styleClass="noPrintButton" action="#{channelReportController.createChannelPatientCountBySessionDate}"/>
+                            <p:commandButton style="margin-right: 10px;" id="btnRefresh1" ajax="false" value="By Session Date" styleClass="noPrintButton" action="#{channelReportControllerOld.createChannelPatientCountBySessionDate}"/>
                             <p:defaultCommand target="btnRefresh"/>
 
                             <p:commandButton style="margin-right: 10px;" ajax="false" value="Print" styleClass="noPrintButton"  >
@@ -51,16 +51,16 @@
 
                         <p:panel id="reportPrint" class="mt-2">
 
-                            <p:dataTable value="#{channelReportController.bookingCountSummryRows}" var="b" id="tbl" >
+                            <p:dataTable value="#{channelReportControllerOld.bookingCountSummryRows}" var="b" id="tbl" >
                                 <f:facet name="header" >
                                     <h:outputLabel value="#{sessionController.institution.name}"/> <br/>
                                     <h:outputLabel value="Channel Patient Count"/><br/>
                                     <h:outputLabel value=" From :"/>
-                                    <h:outputLabel class="ml-2"   value="#{channelReportController.fromDate}" >
+                                    <h:outputLabel class="ml-2"   value="#{channelReportControllerOld.fromDate}" >
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                     </h:outputLabel>                          
                                     <h:outputLabel class="ml-5"  value=" To :"/>
-                                    <h:outputLabel class="ml-2"  value="#{channelReportController.toDate}" >
+                                    <h:outputLabel class="ml-2"  value="#{channelReportControllerOld.toDate}" >
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                     </h:outputLabel>
                                 </f:facet>

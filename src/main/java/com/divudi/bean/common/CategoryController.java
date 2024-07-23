@@ -70,7 +70,7 @@ public class CategoryController implements Serializable {
     
     public String navigateToManageFeeListTypes(){
         fillFeeItemListTypes();
-        return "/admin/pricing/fee_list_types";
+        return "/admin/pricing/fee_list_types?faces-redirect=true";
     }
     
     private void fillFeeItemListTypes(){

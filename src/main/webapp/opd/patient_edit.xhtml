@@ -197,7 +197,7 @@
                                                 required="#{sessionController.departmentPreference.needAreaForPatientRegistration}"
                                                 requiredMessage="Need an Area"
                                                 >
-                                                
+
                                             </p:autoComplete> 
                                         </div>
                                     </div>
@@ -234,12 +234,21 @@
                                         </div>
                                     </div>
                                     <div class="row form-group ">
-                                        <div class="col-md-6">
+                                        <div class="col-md-3">
                                             <p:outputLabel value="Patient Account:"  class="form-label w-100" />
                                             <p:selectBooleanButton value="#{patientController.current.hasAnAccount}"
                                                                    offLabel="Patient has No Account"
                                                                    class="w-100"
                                                                    onLabel="Patient has An account" ></p:selectBooleanButton>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <p:outputLabel value="Mark as forigner :"  class="form-label w-100" />
+                                            <p:selectBooleanButton 
+                                                value="#{patientController.current.person.foreigner}"
+                                                offLabel="Patient is Local"
+                                                class="w-100"
+                                                onLabel="Patient is Forigner" >
+                                            </p:selectBooleanButton>
                                         </div>
                                         <div class="col-md-6" >
                                             <h:outputLabel class="form-label" value="Credit Limit:" rendered="#{webUserController.hasPrivilege('Admin')}" />
