@@ -424,7 +424,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         }
 
         newBillSession.copy(bs);
-        newBillSession.setBill(bs.getB hgill());
+        newBillSession.setBill(bs.getBill());
         newBillSession.setBillItem(bs.getBillItem());
         newBillSession.setReferenceBillSession(bs);
         newBillSession.setCreatedAt(new Date());
