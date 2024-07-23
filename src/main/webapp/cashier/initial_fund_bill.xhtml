@@ -4,12 +4,16 @@
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
+      xmlns:prints="http://xmlns.jcp.org/jsf/composite/ezcomp/prints"
       xmlns:ftm="http://xmlns.jcp.org/jsf/composite/ezcomp/ftm"
+      xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
     <h:body>
+
         <ui:composition template="./index.xhtml">
             <ui:define name="subcontent">
                 <h:form>
+
                     <p:panel >
                         <f:facet name="header">
                             <i class="fa fa-money-bill-wave mt-2"/>
@@ -24,6 +28,7 @@
                             </p:commandButton>
                         </f:facet>
                         <p:panel header="Add Funds" >
+
                             <div class="row">
                                 <div class="col-md-4">
                                     <p:outputLabel value="Payment Method" ></p:outputLabel>
@@ -38,9 +43,11 @@
                                     </p:selectOneMenu>
                                 </div>
                                 <div class="col-md-7" >
+
                                     <h:panelGroup id="paymentDetails" >
                                         <ftm:ftmPaymentDetailCapture/>
                                     </h:panelGroup>
+
                                 </div>
                                 <div class="col-md-1">
                                     <p:commandButton
@@ -55,13 +62,23 @@
                                     </p:commandButton>
                                 </div>
                             </div>
+
                         </p:panel>
+
+
                         <h:panelGroup id="paymentMethodsAddedTable" >
                             <ftm:ftmPaymentMethoDetailsAddedTable/>
                         </h:panelGroup>
+
+
+
+
                     </p:panel>
+
                 </h:form>
+
             </ui:define>
         </ui:composition>
+
     </h:body>
 </html>

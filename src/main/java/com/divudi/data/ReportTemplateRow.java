@@ -3,6 +3,7 @@ package com.divudi.data;
 import com.divudi.entity.Category;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
+import com.divudi.entity.Item;
 
 /**
  *
@@ -16,14 +17,26 @@ public class ReportTemplateRow {
     private String itemName;
     private String paymentName;
     private Double rowValue;
+    private Double rowValueIn;
+    private Double rowValueOut;
+    private Long rowCountIn;
+    private Long rowCountOut;
     private Long rowCount;
     private Long id;
 
     private Category category;
+    private Item item;
     private ServiceType serviceType;
     private BillTypeAtomic billTypeAtomic;
     private Institution creditCompany;
     private Department toDepartment;
+
+    public ReportTemplateRow(Category c) {
+        this.category = c;
+    }
+    
+    
+    
 
     public void setFeeName(String feeName) {
         this.feeName = feeName;
@@ -87,6 +100,24 @@ public class ReportTemplateRow {
         this.rowCount = rowCount;
     }
     
+    public ReportTemplateRow(String categoryName, Long rowCount, Double rowValue) {
+        this.categoryName = categoryName;
+        this.rowValue = rowValue;
+        this.rowCount = rowCount;
+    }
+    
+     public ReportTemplateRow(Category category, Long rowCount, Double rowValue) {
+        this.category = category;
+        this.rowValue = rowValue;
+        this.rowCount = rowCount;
+    }
+     
+     public ReportTemplateRow(Item item, Long rowCount, Double rowValue) {
+        this.item = item;
+        this.rowValue = rowValue;
+        this.rowCount = rowCount;
+    }
+    
     public ReportTemplateRow(String categoryName, Double rowValue) {
         this.categoryName = categoryName;
         this.rowValue = rowValue;
@@ -123,6 +154,8 @@ public class ReportTemplateRow {
     public Category getCategory() {
         return category;
     }
+    
+    
 
     public void setCategory(Category category) {
         this.category = category;
@@ -171,6 +204,46 @@ public class ReportTemplateRow {
 
     public String getFeeName() {
         return feeName;
+    }
+
+    public Double getRowValueIn() {
+        return rowValueIn;
+    }
+
+    public void setRowValueIn(Double rowValueIn) {
+        this.rowValueIn = rowValueIn;
+    }
+
+    public Double getRowValueOut() {
+        return rowValueOut;
+    }
+
+    public void setRowValueOut(Double rowValueOut) {
+        this.rowValueOut = rowValueOut;
+    }
+
+    public Long getRowCountIn() {
+        return rowCountIn;
+    }
+
+    public void setRowCountIn(Long rowCountIn) {
+        this.rowCountIn = rowCountIn;
+    }
+
+    public Long getRowCountOut() {
+        return rowCountOut;
+    }
+
+    public void setRowCountOut(Long rowCountOut) {
+        this.rowCountOut = rowCountOut;
+    }
+
+    public Item getItem() {
+        return item;
+    }
+
+    public void setItem(Item item) {
+        this.item = item;
     }
 
 }
