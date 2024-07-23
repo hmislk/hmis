@@ -16,6 +16,10 @@ public class ReportTemplateRow {
     private String itemName;
     private String paymentName;
     private Double rowValue;
+    private Double rowValueIn;
+    private Double rowValueOut;
+    private Long rowCountIn;
+    private Long rowCountOut;
     private Long rowCount;
     private Long id;
 
@@ -24,6 +28,13 @@ public class ReportTemplateRow {
     private BillTypeAtomic billTypeAtomic;
     private Institution creditCompany;
     private Department toDepartment;
+
+    public ReportTemplateRow(Category c) {
+        this.category = c;
+    }
+    
+    
+    
 
     public void setFeeName(String feeName) {
         this.feeName = feeName;
@@ -83,6 +94,18 @@ public class ReportTemplateRow {
         this.toDepartmentName = toDepartmentName;
         this.itemName = itemName;
         this.paymentName = paymentName;
+        this.rowValue = rowValue;
+        this.rowCount = rowCount;
+    }
+    
+    public ReportTemplateRow(String categoryName, Long rowCount, Double rowValue) {
+        this.categoryName = categoryName;
+        this.rowValue = rowValue;
+        this.rowCount = rowCount;
+    }
+    
+     public ReportTemplateRow(Category category, Long rowCount, Double rowValue) {
+        this.category = category;
         this.rowValue = rowValue;
         this.rowCount = rowCount;
     }
@@ -171,6 +194,38 @@ public class ReportTemplateRow {
 
     public String getFeeName() {
         return feeName;
+    }
+
+    public Double getRowValueIn() {
+        return rowValueIn;
+    }
+
+    public void setRowValueIn(Double rowValueIn) {
+        this.rowValueIn = rowValueIn;
+    }
+
+    public Double getRowValueOut() {
+        return rowValueOut;
+    }
+
+    public void setRowValueOut(Double rowValueOut) {
+        this.rowValueOut = rowValueOut;
+    }
+
+    public Long getRowCountIn() {
+        return rowCountIn;
+    }
+
+    public void setRowCountIn(Long rowCountIn) {
+        this.rowCountIn = rowCountIn;
+    }
+
+    public Long getRowCountOut() {
+        return rowCountOut;
+    }
+
+    public void setRowCountOut(Long rowCountOut) {
+        this.rowCountOut = rowCountOut;
     }
 
 }

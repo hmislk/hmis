@@ -988,8 +988,8 @@ public class ReportTemplateController implements Serializable {
             jpql += " and bill.creditCompany=:cc ";
             parameters.put("cc", paramCreditCompany);
         }
-        
-         if (paramUser != null) {
+
+        if (paramUser != null) {
             jpql += " and bill.creater=:wu ";
             parameters.put("wu", paramUser);
         }
@@ -997,10 +997,8 @@ public class ReportTemplateController implements Serializable {
         System.out.println("jpql = " + jpql);
         System.out.println("parameters = " + parameters);
 
-        
         Double sumResult = ejbFacade.findSingleResultByJpql(jpql, parameters, TemporalType.DATE);
 
-        
         if (sumResult != null) {
             totalNetAmount = sumResult;
         }
@@ -1376,7 +1374,113 @@ public class ReportTemplateController implements Serializable {
             Institution paramCreditCompany,
             Long paramStartId,
             Long paramEndId) {
-        return new ReportTemplateRowBundle();
+
+        String jpql;
+        Map<String, Object> parameters = new HashMap<>();
+        ReportTemplateRowBundle bundle = new ReportTemplateRowBundle();
+
+        jpql = "select new com.divudi.data.ReportTemplateRow("
+                + " bi.item.category, count(bi), sum(bi.netValue)) "
+                + " from BillItem bi"
+                + " join bi.bill bill "
+                + " where bill.retired<>:br "
+                + " and bi.retired<>:br ";
+        parameters.put("br", true);
+
+        if (btas != null) {
+            jpql += " and bill.billTypeAtomic in :btas ";
+            parameters.put("btas", btas);
+        }
+
+        if (paramDate != null) {
+            jpql += " and bill.billDate=:bd ";
+            parameters.put("bd", paramDate);
+        }
+
+        if (paramToDate != null) {
+            jpql += " and bill.billDate < :td ";
+            parameters.put("td", paramToDate);
+        }
+
+        if (paramFromDate != null) {
+            jpql += " and bill.billDate > :fd ";
+            parameters.put("fd", paramFromDate);
+        }
+
+        if (paramStartId != null) {
+            jpql += " and bill.id > :sid ";
+            parameters.put("sid", paramStartId);
+        }
+
+        if (paramEndId != null) {
+            jpql += " and bill.id < :eid ";
+            parameters.put("eid", paramEndId);
+        }
+
+        if (paramInstitution != null) {
+            jpql += " and bill.institution=:ins ";
+            parameters.put("ins", paramInstitution);
+        }
+
+        if (paramDepartment != null) {
+            jpql += " and bill.department=:dep ";
+            parameters.put("dep", paramDepartment);
+        }
+
+        if (paramFromInstitution != null) {
+            jpql += " and bill.fromInstitution=:fins ";
+            parameters.put("fins", paramFromInstitution);
+        }
+
+        if (paramFromDepartment != null) {
+            jpql += " and bill.fromDepartment=:fdep ";
+            parameters.put("fdep", paramFromDepartment);
+        }
+
+        if (paramToInstitution != null) {
+            jpql += " and bill.toInstitution=:tins ";
+            parameters.put("tins", paramToInstitution);
+        }
+
+        if (paramToDepartment != null) {
+            jpql += " and bill.toDepartment=:tdep ";
+            parameters.put("tdep", paramToDepartment);
+        }
+
+        if (paramUser != null) {
+            jpql += " and bill.creater=:wu ";
+            parameters.put("wu", paramUser);
+        }
+
+        if (paramCreditCompany != null) {
+            jpql += " and bill.creditCompany=:creditCompany ";
+            parameters.put("creditCompany", paramCreditCompany);
+        }
+
+        jpql += " and bi.item is not null "
+                + " and bi.item.category is not null ";
+
+        jpql += " group by bi.item.category ";
+
+        System.out.println("jpql = " + jpql);
+        System.out.println("parameters = " + parameters);
+
+        List<ReportTemplateRow> rs = (List<ReportTemplateRow>) ejbFacade.findLightsByJpql(jpql, parameters, TemporalType.DATE);
+
+        if (rs == null || rs.isEmpty()) {
+            System.out.println("No results found.");
+        } else {
+            System.out.println("Results found: " + rs.size());
+        }
+
+        long idCounter = 1;
+        Double total = 0.0;
+        for (ReportTemplateRow row : rs) {
+            row.setId(idCounter++);
+            total = row.getRowValue();
+        }
+        bundle.setReportTemplateRows(rs);
+        return bundle;
     }
 
     private ReportTemplateRowBundle handleToDepartmentSummaryByBillFee(

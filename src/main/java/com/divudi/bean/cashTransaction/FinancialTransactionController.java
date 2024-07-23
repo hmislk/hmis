@@ -18,6 +18,7 @@ import com.divudi.data.AtomicBillTypeTotals;
 import com.divudi.data.BillCategory;
 import com.divudi.data.BillFinanceType;
 import com.divudi.data.BillTypeAtomic;
+import com.divudi.data.CountedServiceType;
 import com.divudi.data.Denomination;
 import com.divudi.data.FinancialReport;
 import com.divudi.data.PaymentMethod;
@@ -27,6 +28,7 @@ import com.divudi.data.ReportTemplateRowBundle;
 import com.divudi.data.ServiceType;
 import com.divudi.data.analytics.ReportTemplateType;
 import com.divudi.data.dataStructure.PaymentMethodData;
+import com.divudi.entity.Category;
 import com.divudi.entity.WebUser;
 import com.divudi.java.CommonFunctions;
 import javax.inject.Named;
@@ -89,6 +91,7 @@ public class FinancialTransactionController implements Serializable {
 
     private ReportTemplateRowBundle opdBilled;
     private ReportTemplateRowBundle opdReturns;
+    private ReportTemplateRowBundle opdBundle;
     private ReportTemplateRowBundle channellingBilled;
     private ReportTemplateRowBundle channellingReturns;
     private ReportTemplateRowBundle pharmacyBilld;
@@ -298,6 +301,107 @@ public class FinancialTransactionController implements Serializable {
                 nonClosedShiftStartFundBill.getReferenceBill().getId());
     }
 
+    private ReportTemplateRowBundle combineBundlesByCategory(ReportTemplateRowBundle inBundle, ReportTemplateRowBundle outBundle) {
+        ReportTemplateRowBundle temOutBundle = new ReportTemplateRowBundle();
+        Map<Category, ReportTemplateRow> combinedRows = new HashMap<>();
+
+        if (inBundle != null && inBundle.getReportTemplateRows() != null) {
+            for (ReportTemplateRow inRow : inBundle.getReportTemplateRows()) {
+                if (inRow != null) {
+                    Category c = inRow.getCategory();
+                    if (c != null) {
+                        if (!combinedRows.containsKey(c)) {
+                            combinedRows.put(c, new ReportTemplateRow(c));
+                        }
+                        ReportTemplateRow combinedRow = combinedRows.get(c);
+                        combinedRow.setRowCountIn((combinedRow.getRowCountIn() != null ? combinedRow.getRowCountIn() : 0L) + (inRow.getRowCount() != null ? inRow.getRowCount() : 0L));
+                        combinedRow.setRowValueIn((combinedRow.getRowValueIn() != null ? combinedRow.getRowValueIn() : 0.0) + (inRow.getRowValue() != null ? inRow.getRowValue() : 0.0));
+                    }
+                }
+            }
+        }
+
+        if (outBundle != null && outBundle.getReportTemplateRows() != null) {
+            for (ReportTemplateRow outRow : outBundle.getReportTemplateRows()) {
+                if (outRow != null) {
+                    Category c = outRow.getCategory();
+                    if (c != null) {
+                        if (!combinedRows.containsKey(c)) {
+                            combinedRows.put(c, new ReportTemplateRow(c));
+                        }
+                        ReportTemplateRow combinedRow = combinedRows.get(c);
+                        combinedRow.setRowCountOut((combinedRow.getRowCountOut() != null ? combinedRow.getRowCountOut() : 0L) + (outRow.getRowCount() != null ? outRow.getRowCount() : 0L));
+                        combinedRow.setRowValueOut((combinedRow.getRowValueOut() != null ? combinedRow.getRowValueOut() : 0.0) + (outRow.getRowValue() != null ? outRow.getRowValue() : 0.0));
+                    }
+                }
+            }
+        }
+
+        long totalInCount = 0;
+        long totalOutCount = 0;
+        double totalInValue = 0.0;
+        double totalOutValue = 0.0;
+
+        for (ReportTemplateRow row : combinedRows.values()) {
+            row.setRowCount((row.getRowCountIn() != null ? row.getRowCountIn() : 0L) + (row.getRowCountOut() != null ? row.getRowCountOut() : 0L));
+            row.setRowValue((row.getRowValueIn() != null ? row.getRowValueIn() : 0.0) + (row.getRowValueOut() != null ? row.getRowValueOut() : 0.0));
+            temOutBundle.getReportTemplateRows().add(row);
+
+            totalInCount += (row.getRowCountIn() != null ? row.getRowCountIn() : 0L);
+            totalOutCount += (row.getRowCountOut() != null ? row.getRowCountOut() : 0L);
+            totalInValue += (row.getRowValueIn() != null ? row.getRowValueIn() : 0.0);
+            totalOutValue += (row.getRowValueOut() != null ? row.getRowValueOut() : 0.0);
+        }
+
+        temOutBundle.setCountIn(totalInCount);
+        temOutBundle.setCountOut(totalOutCount);
+        temOutBundle.setCount(totalInCount + totalOutCount);
+        temOutBundle.setTotalIn(totalInValue);
+        temOutBundle.setTotalOut(totalOutValue);
+        temOutBundle.setTotal(totalInValue + totalOutValue);
+
+        return temOutBundle;
+    }
+
+    public void processShiftEndReportOpdCategory() {
+        List<BillTypeAtomic> bts = new ArrayList<>();
+        bts.addAll(BillTypeAtomic.findByServiceTypeAndFinanceType(ServiceType.OPD, BillFinanceType.CASH_IN));
+        bts.addAll(BillTypeAtomic.findByCountedServiceType(CountedServiceType.OPD));
+        opdBilled = reportTemplateController.generateReport(
+                ReportTemplateType.ITEM_CATEGORY_SUMMARY_BY_BILL,
+                BillTypeAtomic.findByCountedServiceType(CountedServiceType.OPD),
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                nonClosedShiftStartFundBill.getCreater(),
+                null,
+                nonClosedShiftStartFundBill.getId(),
+                nonClosedShiftStartFundBill.getReferenceBill().getId());
+        opdReturns = reportTemplateController.generateReport(
+                ReportTemplateType.ITEM_CATEGORY_SUMMARY_BY_BILL,
+                BillTypeAtomic.findByCountedServiceType(CountedServiceType.OPD_OUT),
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                nonClosedShiftStartFundBill.getCreater(),
+                null,
+                nonClosedShiftStartFundBill.getId(),
+                nonClosedShiftStartFundBill.getReferenceBill().getId());
+        opdBundle = combineBundlesByCategory(opdBilled, opdReturns);
+    }
+
     public String navigateToListShiftEndSummaries() {
         resetClassVariables();
         return "/cashier/initial_fund_bill_list?faces-redirect=true;";
@@ -336,6 +440,10 @@ public class FinancialTransactionController implements Serializable {
 
     public String navigateToCashierReport() {
         return "/cashier/shift_end_report_bill_of_selected_user?faces-redirect=true";
+    }
+
+    public String navigateToCashierReportOpd() {
+        return "/cashier/shift_end_report_bill_of_selected_user_opd?faces-redirect=true";
     }
 
     public String navigateToCashierSummaryBreakdown() {
@@ -1768,7 +1876,6 @@ public class FinancialTransactionController implements Serializable {
     }
 
     // </editor-fold>  
-    
     public List<Bill> getFundBillsForClosureBills() {
         return fundBillsForClosureBills;
     }
@@ -2228,6 +2335,14 @@ public class FinancialTransactionController implements Serializable {
 
     public void setPharmacyReturned(ReportTemplateRowBundle pharmacyReturned) {
         this.pharmacyReturned = pharmacyReturned;
+    }
+
+    public ReportTemplateRowBundle getOpdBundle() {
+        return opdBundle;
+    }
+
+    public void setOpdBundle(ReportTemplateRowBundle opdBundle) {
+        this.opdBundle = opdBundle;
     }
 
 }

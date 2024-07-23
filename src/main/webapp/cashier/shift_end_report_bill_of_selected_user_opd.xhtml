@@ -20,13 +20,13 @@
                             <div class="d-flex align-items-center justify-content-between">
                                 <div>
                                     <i class="fa-solid fa-cash-register">&nbsp;&nbsp;</i>
-                                    <p:outputLabel value="Shift Report" />
+                                    <p:outputLabel value="Shift Report - OPD" />
                                 </div>
                                 <div>
                                     <p:commandButton class="ui-button-info mx-2" 
                                                      ajax="false" 
-                                                     value="Process" 
-                                                     action="#{financialTransactionController.processShiftEndReport()}" ></p:commandButton>
+                                                     value="Process by Category" 
+                                                     action="#{financialTransactionController.processShiftEndReportOpdCategory()}" ></p:commandButton>
                                 </div>
                             </div>
 
@@ -98,79 +98,34 @@
                             </h:panelGroup>
                         </p:panelGrid>
 
+                        <h1>#{financialTransactionController.opdBilled.reportTemplateRows}</h1>
 
                         <h:panelGroup >
-                            <table class="table table-primary">
-                                <tr>
-                                    <th>
-                                        Service
-                                    </th>
-                                    <th>
-                                        Collected
-                                    </th>
-                                    <th>
-                                        Refunds
-                                    </th>
-                                    <th>
-                                        Payments
-                                    </th>
-                                    <th>
-                                        Net
-                                    </th>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        Channelling
-                                    </td>
-                                    <td>
-                                        <h:outputLabel value="#{financialTransactionController.channellingBilled.total}" >
-                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                        </h:outputLabel>
-                                    </td>
-                                    <td>
-                                        <h:outputLabel value="#{financialTransactionController.channellingReturns.total}" >
-                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                        </h:outputLabel>
-                                    </td>
-                                    <td>
-                                        <h:outputLabel value="#{financialTransactionController.channellingDocPayment.total}" >
-                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                        </h:outputLabel>
-                                    </td>
-                                    <td>
-                                        <h:outputLabel value="#{financialTransactionController.channellingBilled.total + financialTransactionController.channellingDocPayment.total + financialTransactionController.channellingReturns.total}" >
-                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                        </h:outputLabel>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <p:commandLink ajax="false" action="#{financialTransactionController.navigateToCashierReportOpd()}" 
-                                                       value="OPD"></p:commandLink>
-                                        
-                                    </td>
-                                    <td>
-                                        <h:outputLabel value="#{financialTransactionController.opdBilled.total}" >
-                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                        </h:outputLabel>
-                                    </td>
-                                    <td>
-                                        <h:outputLabel value="#{financialTransactionController.opdReturns.total}" >
-                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                        </h:outputLabel>
-                                    </td>
-                                    <td>
-                                        <h:outputLabel value="#{financialTransactionController.opdDocPayment.total}" >
-                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                        </h:outputLabel>
-                                    </td>
-                                    <td>
-                                        <h:outputLabel value="#{financialTransactionController.opdBilled.total + financialTransactionController.opdDocPayment.total + financialTransactionController.opdReturns.total}" >
-                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                        </h:outputLabel>
-                                    </td>
-                                </tr>
-                            </table>
+
+                            <p:dataTable value="#{financialTransactionController.opdBundle.reportTemplateRows}" var="r" rowKey="#{r.id}" >
+                                <p:column headerText="Category" >
+                                    <h:outputText value="#{r.category.name}" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Peformed Count" >
+                                    <h:outputText value="#{r.rowCountIn}" ></h:outputText>
+                                </p:column>
+                                 <p:column headerText="Refund Count" >
+                                     <h:outputText value="#{r.rowCountOut}" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Net Count" >
+                                    <h:outputText value="#{r.rowCount}" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Peformed Value" >
+                                    <h:outputText value="#{r.rowCountIn}" ></h:outputText>
+                                </p:column>
+                                 <p:column headerText="Refund Value" >
+                                     <h:outputText value="#{r.rowCountOut}" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Net Value" >
+                                    <h:outputText value="#{r.rowCount}" ></h:outputText>
+                                </p:column>
+                            </p:dataTable>
+
                         </h:panelGroup>
 
 
