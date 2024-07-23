@@ -127,7 +127,7 @@
                                         <p:commandButton 
                                             ajax="false" 
                                             value="View Bill" 
-                                            action="#{collectingCentreBillController.navigateToCollectingCenterBillFromBillSearch(bill.id)}">
+                                            action="#{billSearch.navigateToRefundCollectingCentreBill()}">
                                         </p:commandButton>
                                         #{billController.findBillbyID(bill.id)}
                                     </p:column>
