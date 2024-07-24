@@ -7,7 +7,7 @@ package com.divudi.bean.store;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.SessionController;
-
+import com.divudi.bean.common.NotificationController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
@@ -28,7 +28,9 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -68,6 +70,11 @@ public class StorePurchaseOrderRequestController implements Serializable {
     @Inject
     StoreCalculation storeCalculation;
     private boolean printPreview;
+
+    @Inject
+    NotificationController notificationController;
+
+    private double totalBillItemsCount;
 
     public void removeSelected() {
         //  //System.err.println("1");
@@ -219,7 +226,6 @@ public class StorePurchaseOrderRequestController implements Serializable {
 
 //            PharmaceuticalBillItem tmpPh = b.getPharmaceuticalBillItem();
 //            b.setPharmaceuticalBillItem(null);
-
             if (b.getId() == null) {
                 getBillItemFacade().create(b);
             } else {
@@ -244,6 +250,114 @@ public class StorePurchaseOrderRequestController implements Serializable {
 
     }
 
+    public void finalizeBill() {
+        if (currentBill == null) {
+            JsfUtil.addErrorMessage("No Bill");
+            return;
+        }
+        if (currentBill.getId() == null) {
+            request();
+        }
+        getCurrentBill().setEditedAt(new Date());
+        getCurrentBill().setEditor(sessionController.getLoggedUser());
+        getCurrentBill().setCheckeAt(new Date());
+        getCurrentBill().setCheckedBy(sessionController.getLoggedUser());
+        getCurrentBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_ORDER);
+        getBillFacade().edit(getCurrentBill());
+        notificationController.createNotification(getCurrentBill());
+
+    }
+
+    public List<BillItem> generateBillItems(Bill bill) {
+        String jpql = "select bi "
+                + " from BillItem bi "
+                + " where bi.retired=:ret "
+                + " and bi.bill=:bill";
+        Map m = new HashMap();
+        m.put("ret", false);
+        m.put("bill", bill);
+        return billItemFacade.findByJpql(jpql, m);
+    }
+
+    public void resetBillValues() {
+        currentBill = null;
+        currentBillItem = null;
+        billItems = null;
+        printPreview = false;
+    }
+
+    public String navigateToUpdatePurchaseOrder() {
+        if (currentBill == null) {
+            JsfUtil.addErrorMessage("No Bill");
+            return "";
+        }
+        Bill tmpBill = currentBill;
+        resetBillValues();
+        setCurrentBill(tmpBill);
+        setBillItems(generateBillItems(currentBill));
+//        for(BillItem bi: getBillItems()){
+//            System.out.println("bi = " + bi.getPharmaceuticalBillItem());
+//            if(bi.getPharmaceuticalBillItem()==null){
+//                bi.setPharmaceuticalBillItem(generatePharmaceuticalBillItem(bi));
+//            }
+//        }
+        calTotal();
+        return "/store/store_purhcase_order_request.xhtml?faces-redirect=true";
+    }
+
+    public void finalizeBillComponent() {
+        getBillItems().removeIf(BillItem::isRetired);
+        for (BillItem b : getBillItems()) {
+            b.setRate(b.getPharmaceuticalBillItem().getPurchaseRateInUnit());
+            b.setNetValue(b.getPharmaceuticalBillItem().getQtyInUnit() * b.getPharmaceuticalBillItem().getPurchaseRateInUnit());
+            b.setBill(getCurrentBill());
+            b.setCreatedAt(new Date());
+            b.setCreater(getSessionController().getLoggedUser());
+
+            double qty = 0.0;
+            qty = b.getQty() + b.getPharmaceuticalBillItem().getFreeQty();
+            if (qty <= 0.0) {
+                b.setRetired(true);
+                b.setRetirer(sessionController.getLoggedUser());
+                b.setRetiredAt(new Date());
+                b.setRetireComments("Retired at Finalising PO");
+
+            }
+            totalBillItemsCount = totalBillItemsCount + qty;
+//            PharmaceuticalBillItem tmpPh = b.getPharmaceuticalBillItem();
+//            b.setPharmaceuticalBillItem(null);
+            if (b.getId() == null) {
+                getBillItemFacade().create(b);
+            } else {
+                getBillItemFacade().edit(b);
+            }
+
+            if (b.getPharmaceuticalBillItem().getId() == null) {
+                getPharmaceuticalBillItemFacade().create(b.getPharmaceuticalBillItem());
+            } else {
+                getPharmaceuticalBillItemFacade().edit(b.getPharmaceuticalBillItem());
+            }
+        }
+    }
+
+    public void save() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
+        if (getCurrentBill().getPaymentMethod() == null) {
+            JsfUtil.addErrorMessage("Please Select Paymntmethod");
+            return;
+        }
+        if (getBillItems() == null || getBillItems().isEmpty()) {
+            JsfUtil.addErrorMessage("Please add bill items");
+            return;
+        }
+        saveBill();
+        saveBillComponent();
+        JsfUtil.addSuccessMessage("Request Saved");
+    }
+
     public void request() {
         Date startTime = new Date();
         Date fromDate = null;
@@ -253,33 +367,20 @@ public class StorePurchaseOrderRequestController implements Serializable {
             JsfUtil.addErrorMessage("Please Select Paymntmethod");
             return;
         }
-
-        if (getCurrentBill().getToInstitution() == null) {
-            JsfUtil.addErrorMessage("Distributor ?");
-            return;
-        }
-        
-        if (getBillItems().isEmpty()) {
-            JsfUtil.addErrorMessage("Please Select Item or Items");
+        if (getBillItems() == null || getBillItems().isEmpty()) {
+            JsfUtil.addErrorMessage("Please add bill items");
             return;
         }
 
-//
-//        if (checkItemPrice()) {
-//            JsfUtil.addErrorMessage("Please enter purchase price for all");
-//            return;
-//        }
-        calTotal();
-
-        saveBill();
-        saveBillComponent();
-
-        JsfUtil.addSuccessMessage("Request Succesfully Created");
-
+        finalizeBill();
+        totalBillItemsCount = 0;
+        finalizeBillComponent();
+        if (totalBillItemsCount == 0) {
+            JsfUtil.addErrorMessage("Please add item quantities for the bill");
+            return;
+        }
+        JsfUtil.addSuccessMessage("Request Succesfully Finalized");
         printPreview = true;
-        
-        
-
     }
 
     public void calTotal() {
