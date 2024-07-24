@@ -23,6 +23,7 @@ public enum ReportTemplateType {
     PAYMENT_TYPE_SUMMARY_PAYMENTS("Payment Method Summary by using Payments"),
     ITEM_CATEGORY_SUMMARY_BY_BILL_FEE("Item Category Summary by Bill Fee"),
     ITEM_CATEGORY_SUMMARY_BY_BILL_ITEM("Item Category Summary by Bill Item"),
+    ITEM_DEPARTMENT_SUMMARY_BY_BILL_ITEM("Item Department Summary by Bill Item"),
     ITEM_CATEGORY_SUMMARY_BY_BILL("Item Category Summary by Bill"),
     ITEM_SUMMARY_BY_BILL("Item Summary by Bill"),
     TO_DEPARTMENT_SUMMARY_BY_BILL_FEE("To Department Summary by Bill Fee"),

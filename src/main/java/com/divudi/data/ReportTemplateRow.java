@@ -30,6 +30,7 @@ public class ReportTemplateRow {
     private BillTypeAtomic billTypeAtomic;
     private Institution creditCompany;
     private Department toDepartment;
+     private Department itemDepartment;
 
     public ReportTemplateRow(Category c) {
         this.category = c;
@@ -110,6 +111,12 @@ public class ReportTemplateRow {
 
     public ReportTemplateRow(Category category, Long rowCount, Double rowValue) {
         this.category = category;
+        this.rowValue = rowValue;
+        this.rowCount = rowCount;
+    }
+    
+    public ReportTemplateRow(Department itemDept, Long rowCount, Double rowValue) {
+        this.itemDepartment = itemDept;
         this.rowValue = rowValue;
         this.rowCount = rowCount;
     }
@@ -244,5 +251,15 @@ public class ReportTemplateRow {
     public void setItem(Item item) {
         this.item = item;
     }
+
+    public Department getItemDepartment() {
+        return itemDepartment;
+    }
+
+    public void setItemDepartment(Department itemDepartment) {
+        this.itemDepartment = itemDepartment;
+    }
+    
+    
 
 }

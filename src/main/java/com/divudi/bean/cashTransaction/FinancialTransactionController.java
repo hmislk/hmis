@@ -29,6 +29,7 @@ import com.divudi.data.ServiceType;
 import com.divudi.data.analytics.ReportTemplateType;
 import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.entity.Category;
+import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.WebUser;
 import com.divudi.java.CommonFunctions;
@@ -98,6 +99,11 @@ public class FinancialTransactionController implements Serializable {
     private ReportTemplateRowBundle channellingReturns;
     private ReportTemplateRowBundle pharmacyBilld;
     private ReportTemplateRowBundle pharmacyReturned;
+
+    private ReportTemplateRowBundle channellingOnsite;
+    private ReportTemplateRowBundle channellingAgent;
+    private ReportTemplateRowBundle channellingOnline;
+    private ReportTemplateRowBundle opdByDepartment;
 
     private Payment currentPayment;
     private PaymentMethodData paymentMethodData;
@@ -205,9 +211,64 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public void processShiftEndReport() {
+        List<BillTypeAtomic> channellingOnlineBooking = new ArrayList<>();
+        channellingOnlineBooking.add(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT_ONLINE);
+        channellingOnline = reportTemplateController.generateReport(
+                ReportTemplateType.BILL_NET_TOTAL,
+                channellingOnlineBooking,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                nonClosedShiftStartFundBill.getCreater(),
+                null,
+                nonClosedShiftStartFundBill.getId(),
+                nonClosedShiftStartFundBill.getReferenceBill().getId());
+
+        Institution agent = new Institution();
+        channellingAgent = reportTemplateController.generateReport(
+                ReportTemplateType.BILL_NET_TOTAL,
+                BillTypeAtomic.findByServiceTypeAndFinanceType(ServiceType.CHANNELLING, BillFinanceType.CASH_IN),
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                nonClosedShiftStartFundBill.getCreater(),
+                agent,
+                nonClosedShiftStartFundBill.getId(),
+                nonClosedShiftStartFundBill.getReferenceBill().getId());
+
+        agent.setId(1l);
         channellingBilled = reportTemplateController.generateReport(
                 ReportTemplateType.BILL_NET_TOTAL,
                 BillTypeAtomic.findByServiceTypeAndFinanceType(ServiceType.CHANNELLING, BillFinanceType.CASH_IN),
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                nonClosedShiftStartFundBill.getCreater(),
+                agent,
+                nonClosedShiftStartFundBill.getId(),
+                nonClosedShiftStartFundBill.getReferenceBill().getId());
+
+        opdByDepartment = reportTemplateController.generateReport(
+                ReportTemplateType.ITEM_DEPARTMENT_SUMMARY_BY_BILL_ITEM,
+                BillTypeAtomic.findByServiceTypeAndFinanceType(ServiceType.OPD, BillFinanceType.CASH_IN),
                 null,
                 null,
                 null,
@@ -301,6 +362,164 @@ public class FinancialTransactionController implements Serializable {
                 null,
                 nonClosedShiftStartFundBill.getId(),
                 nonClosedShiftStartFundBill.getReferenceBill().getId());
+    }
+
+    public String navigateToDayEndReport() {
+        return "/cashier/day_end_report?faces-redirect=true;";
+    }
+
+    public void processDayEndReport() {
+        List<BillTypeAtomic> channellingOnlineBooking = new ArrayList<>();
+        channellingOnlineBooking.add(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT_ONLINE);
+        channellingOnline = reportTemplateController.generateReport(
+                ReportTemplateType.BILL_NET_TOTAL,
+                channellingOnlineBooking,
+                null,
+                fromDate,
+                toDate,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null);
+
+        Institution agent = new Institution();
+        channellingAgent = reportTemplateController.generateReport(
+                ReportTemplateType.BILL_NET_TOTAL,
+                BillTypeAtomic.findByServiceTypeAndFinanceType(ServiceType.CHANNELLING, BillFinanceType.CASH_IN),
+                null,
+                fromDate,
+                toDate,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null);
+
+        agent.setId(1l);
+        channellingBilled = reportTemplateController.generateReport(
+                ReportTemplateType.BILL_NET_TOTAL,
+                BillTypeAtomic.findByServiceTypeAndFinanceType(ServiceType.CHANNELLING, BillFinanceType.CASH_IN),
+                null,
+                fromDate,
+                toDate,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null);
+
+        opdByDepartment = reportTemplateController.generateReport(
+                ReportTemplateType.ITEM_DEPARTMENT_SUMMARY_BY_BILL_ITEM,
+                BillTypeAtomic.findByServiceTypeAndFinanceType(ServiceType.OPD, BillFinanceType.CASH_IN),
+                null,
+                fromDate,
+                toDate,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null);
+        channellingReturns = reportTemplateController.generateReport(
+                ReportTemplateType.BILL_NET_TOTAL,
+                BillTypeAtomic.findByServiceTypeAndFinanceType(ServiceType.CHANNELLING, BillFinanceType.CASH_OUT),
+                null,
+                fromDate,
+                toDate,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null);
+        opdBilled = reportTemplateController.generateReport(
+                ReportTemplateType.BILL_NET_TOTAL,
+                BillTypeAtomic.findByServiceTypeAndFinanceType(ServiceType.OPD, BillFinanceType.CASH_IN),
+                null,
+                fromDate,
+                toDate,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null);
+        opdReturns = reportTemplateController.generateReport(
+                ReportTemplateType.BILL_NET_TOTAL,
+                BillTypeAtomic.findByServiceTypeAndFinanceType(ServiceType.OPD, BillFinanceType.CASH_OUT),
+                null,
+                fromDate,
+                toDate,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null);
+        channellingDocPayment = reportTemplateController.generateReport(
+                ReportTemplateType.BILL_NET_TOTAL,
+                BillTypeAtomic.findBillTypeAtomic(ServiceType.CHANNELLING, BillCategory.PAYMENTS),
+                null,
+                fromDate,
+                toDate,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null);
+        opdDocPayment = reportTemplateController.generateReport(
+                ReportTemplateType.BILL_NET_TOTAL,
+                BillTypeAtomic.findBillTypeAtomic(ServiceType.OPD, BillCategory.PAYMENTS),
+                null,
+                fromDate,
+                toDate,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null);
     }
 
     private ReportTemplateRowBundle combineBundlesByItem(ReportTemplateRowBundle inBundle, ReportTemplateRowBundle outBundle) {
@@ -2473,6 +2692,38 @@ public class FinancialTransactionController implements Serializable {
 
     public void setReportTemplateType(ReportTemplateType reportTemplateType) {
         this.reportTemplateType = reportTemplateType;
+    }
+
+    public ReportTemplateRowBundle getChannellingOnsite() {
+        return channellingOnsite;
+    }
+
+    public void setChannellingOnsite(ReportTemplateRowBundle channellingOnsite) {
+        this.channellingOnsite = channellingOnsite;
+    }
+
+    public ReportTemplateRowBundle getChannellingAgent() {
+        return channellingAgent;
+    }
+
+    public void setChannellingAgent(ReportTemplateRowBundle channellingAgent) {
+        this.channellingAgent = channellingAgent;
+    }
+
+    public ReportTemplateRowBundle getChannellingOnline() {
+        return channellingOnline;
+    }
+
+    public void setChannellingOnline(ReportTemplateRowBundle channellingOnline) {
+        this.channellingOnline = channellingOnline;
+    }
+
+    public ReportTemplateRowBundle getOpdByDepartment() {
+        return opdByDepartment;
+    }
+
+    public void setOpdByDepartment(ReportTemplateRowBundle opdByDepartment) {
+        this.opdByDepartment = opdByDepartment;
     }
 
 }
