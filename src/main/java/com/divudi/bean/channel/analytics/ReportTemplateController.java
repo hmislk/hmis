@@ -1526,6 +1526,7 @@ public class ReportTemplateController implements Serializable {
         long idCounter = 1;
         Double total = 0.0;
         for (ReportTemplateRow row : rs) {
+            
             row.setId(idCounter++);
             total = row.getRowValue();
         }
@@ -1633,8 +1634,8 @@ public class ReportTemplateController implements Serializable {
             parameters.put("creditCompany", paramCreditCompany);
         }
 
-        jpql += " and bi.item is not null "
-                + " and bi.item.department is not null ";
+//        jpql += " and bi.item is not null "
+//                + " and bi.item.department is not null ";
 
         jpql += " group by bi.item.department ";
 
@@ -1654,10 +1655,13 @@ public class ReportTemplateController implements Serializable {
         long idCounter = 1;
         Double total = 0.0;
         for (ReportTemplateRow row : rs) {
+            System.out.println("row = " + row.getItemDepartment());
+            System.out.println("row = " + row.getRowCount());
             row.setId(idCounter++);
             total = row.getRowValue();
         }
         bundle.setReportTemplateRows(rs);
+        bundle.setTotal(total);
         return bundle;
     }
 
