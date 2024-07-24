@@ -402,7 +402,7 @@
                                     currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
                                     rowsPerPageTemplate="5,10,20,50,100">
 
-                                    <p:column headerText="Payment ID" rendered="false" filterBy="#{bp.id}" sortBy="#{bp.id}">
+                                    <p:column headerText="Payment ID" filterBy="#{bp.id}" sortBy="#{bp.id}">
                                         <p:inputText value="#{bp.id}" ></p:inputText>
                                     </p:column>
 
@@ -423,7 +423,7 @@
                                         <h:outputText value="#{bp.bill.toStaff.person.name}" ></h:outputText>
                                     </p:column>
 
-                                    <p:column headerText="Bill ID" rendered="false" filterBy="#{bp.bill.id}" sortBy="#{bp.bill.id}">
+                                    <p:column headerText="Bill ID" filterBy="#{bp.bill.id}" sortBy="#{bp.bill.id}">
                                         <p:inputText value="#{bp.bill.id}" ></p:inputText>
                                     </p:column>
 
@@ -441,6 +441,10 @@
 
                                     <p:column headerText="Bill Type Atomic Cash Type" rendered="false" filterBy="#{bp.bill.billTypeAtomic.billFinanceType}" sortBy="#{bp.bill.billTypeAtomic.billFinanceType}">
                                         <h:outputText value="#{bp.bill.billTypeAtomic.billFinanceType}" ></h:outputText>
+                                    </p:column>
+                                    
+                                    <p:column headerText="Doctor Name" rendered="#{bp.bill.staff ne null}" filterBy="#{bp.bill.staff.person.nameWithTitle}" sortBy="#{bp.bill.staff.person.nameWithTitle}">
+                                        <p:inputText value="#{bp.bill.staff.person.nameWithTitle}" ></p:inputText>
                                     </p:column>
 
                                     <p:column headerText="Payment Method" rendered="false" filterBy="#{bp.bill.paymentMethod.label}" filterMatchMode="contains" sortBy="#{bp.bill.paymentMethod.label}">
