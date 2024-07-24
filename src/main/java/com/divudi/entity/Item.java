@@ -72,15 +72,17 @@ public class Item implements Serializable, Comparable<Item> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-
     Long id;
     int orderNo;
+    
+    private boolean canSechduleForOtherDays;
 
     private Long itemId;
 
     private boolean isMasterItem;
     private boolean hasReportFormat;
     private int numberOfDaysToMarkAsShortExpiary;
+    
 
     @ManyToOne
     Category category;
@@ -165,6 +167,7 @@ public class Item implements Serializable, Comparable<Item> {
     boolean chargesVisibleForInward;
     boolean requestForQuentity;
     boolean marginNotAllowed;
+    private boolean printSessionNumber;
     @Column
     boolean inactive = false;
     @ManyToOne
@@ -249,10 +252,15 @@ public class Item implements Serializable, Comparable<Item> {
 
     @Transient
     private String transCodeFromName;
+    
+    @Lob
+    private String forGender;
 
     @Column(name = "DTYPE", insertable = false, updatable = false)
     private String clazz;
-
+    
+     private boolean canRemoveItemfromPackage;
+ 
     public double getVatPercentage() {
         return 0;
     }
@@ -814,6 +822,9 @@ public class Item implements Serializable, Comparable<Item> {
     }
 
     public SessionNumberType getSessionNumberType() {
+        if(sessionNumberType==null){
+            sessionNumberType=SessionNumberType.ByBill;
+        }
         return sessionNumberType;
     }
 
@@ -1360,6 +1371,41 @@ public class Item implements Serializable, Comparable<Item> {
 
     public void setLastBarcode(Long lastBarcode) {
         this.lastBarcode = lastBarcode;
+    }
+
+    public boolean isPrintSessionNumber() {
+        return printSessionNumber;
+    }
+
+    public void setPrintSessionNumber(boolean printSessionNumber) {
+        this.printSessionNumber = printSessionNumber;
+    }
+
+    public boolean isCanSechduleForOtherDays() {
+        return canSechduleForOtherDays;
+    }
+
+    public void setCanSechduleForOtherDays(boolean canSechduleForOtherDays) {
+        this.canSechduleForOtherDays = canSechduleForOtherDays;
+    }
+
+    public boolean isCanRemoveItemfromPackage() {
+        return canRemoveItemfromPackage;
+    }
+
+    public void setCanRemoveItemfromPackage(boolean canRemoveItemfromPackage) {
+        this.canRemoveItemfromPackage = canRemoveItemfromPackage;
+    }
+
+    public String getForGender() {
+        if(forGender==null||forGender.trim().equals("")){
+            forGender = "Both";
+        }
+        return forGender;
+    }
+
+    public void setForGender(String forGender) {
+        this.forGender = forGender;
     }
 
     static class ReportItemComparator implements Comparator<ReportItem> {

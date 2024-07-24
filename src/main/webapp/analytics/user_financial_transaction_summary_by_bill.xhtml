@@ -1,0 +1,501 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/analytics/index.xhtml">
+            <ui:define name="report">
+                <h:form >
+                    <p:panel>
+                        <f:facet name="header" >
+                            <h:outputLabel value="User Financial Transaction Summary"/>                          
+                        </f:facet>
+                        <h:panelGrid columns="2" class="w-100">
+                            <h:panelGrid columns="2" class="my-2" >
+                                <h:outputLabel value="From Date"/>
+                                <p:datePicker 
+                                    class="w-100 mx-4" 
+                                    inputStyleClass="w-100"
+                                    id="fromDate" 
+                                    value="#{searchController.fromDate}" 
+                                    showTime="true"
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >      
+                                </p:datePicker>
+                                <h:outputLabel value="To Date"/>
+                                <p:datePicker 
+                                    class="w-100 mx-4" 
+                                    inputStyleClass="w-100" 
+                                    id="toDate" 
+                                    value="#{searchController.toDate}" 
+                                    showTime="true"
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >                                                                              
+                                </p:datePicker>
+                                <h:outputText value="User" />
+                                <p:autoComplete 
+                                    forceSelection="true"
+                                    value="#{searchController.webUser}"
+                                    placeholder="Select User"
+                                    completeMethod="#{webUserController.completeUser}" 
+                                    id="user"
+                                    var="u" 
+                                    itemLabel="#{u.webUserPerson.name}" 
+                                    itemValue="#{u}"
+                                    class="w-100 mx-4"
+                                    inputStyleClass="w-100"
+                                    >
+                                </p:autoComplete>
+
+
+                            </h:panelGrid>
+                            <h:panelGrid columns="1" class="w-100 my-2" >
+                                <p:commandButton 
+                                    class="ui-button-primary w-100" 
+                                    icon="fas fa-money-check-alt" 
+                                    id="btnSearchByPaymentMethod" 
+                                    ajax="false" 
+                                    value="Generate Summary by Payment Method" 
+                                    action="#{searchController.processUserFinancialTransactionalSummaryByPaymentMethod()}"/>
+
+                                <p:commandButton 
+                                    class="ui-button-warning w-100" 
+                                    icon="fas fa-file-invoice-dollar" 
+                                    id="btnSearchByBillType" 
+                                    ajax="false" 
+                                    value="Generate Summary by Bill Type" 
+                                    action="#{searchController.processUserFinancialTransactionalSummaryByBillForBillTypeAtomic()}"/>
+
+                                <p:commandButton 
+                                    class="ui-button-warning w-100" 
+                                    icon="fas fa-file-invoice-dollar" 
+                                    id="btnSearchByBillTypeAndPaymentMethod" 
+                                    ajax="false" 
+                                    value="Generate Summary by Bill Type and Payment Method" 
+                                    action="#{searchController.processUserFinancialTransactionalSummarybyBillForPaymentMethodAndBillTypeAtomic()}"/>
+
+
+
+                                <h:panelGrid columns="2" >
+
+
+
+
+                                </h:panelGrid>
+
+                            </h:panelGrid>
+
+                        </h:panelGrid>
+
+                        <h:panelGroup rendered="#{searchController.reportTemplateType eq 'BILL_TYPE_ATOMIC_SUMMARY_USING_BILLS'}" >
+                            <p:commandButton 
+                                class="ui-button-success mx-2" 
+                                icon="fas fa-file-excel" 
+                                id="btnExcel" 
+                                ajax="false" 
+                                value="Excel" >
+                                <p:dataExporter fileName="All Financial Transactions" type="xlsx" target="tbl" ></p:dataExporter>
+                            </p:commandButton>
+
+                            <p:commandButton 
+                                class="ui-button-info " 
+                                icon="fas fa-print" 
+                                id="btnprint" 
+                                ajax="false" 
+                                value="Print" >
+                                <p:printer 
+                                    target="tbl" >
+                                </p:printer>
+                            </p:commandButton>
+
+                            <p:dataTable 
+                                rowIndexVar="i" 
+                                id="tbl" 
+                                value="#{searchController.billSummaryRows}" 
+                                reflow="true"
+                                var="bill"  
+                                style="min-width: 100%;"  
+                                paginator="true"
+                                paginatorPosition="bottom"
+                                rows="10"
+                                paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                rowsPerPageTemplate="5,10,15">
+                                <f:facet name="header">
+                                    <div class="d-flex gap-2 justify-content-center" style="font-size: 24px; font-weight: 700;">
+                                        <h:outputLabel value="All Financial Transaction Summary"/>
+                                    </div>
+                                    <h:panelGroup rendered="#{searchController.institution ne null}">
+                                        <div class="d-flex gap-2 justify-content-center" style="font-size: 20px; font-weight: 600;">
+                                            <h:outputLabel value="#{searchController.institution.name}"/>
+                                            <h:panelGroup rendered="#{searchController.department ne null}">
+                                                <h:outputLabel value="-"/>
+                                                <h:outputLabel value="#{searchController.department.name}"/>
+                                            </h:panelGroup>
+                                        </div>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{searchController.institution eq null}">
+                                        <div class="d-flex gap-2 justify-content-center" style="font-size: 20px; font-weight: 600;">
+                                            <h:outputLabel value="#{sessionController.institution.name}"/>
+                                        </div>
+                                    </h:panelGroup>
+                                    <div class="d-flex gap-2 justify-content-center" style="font-size: 16px; font-weight: 400;">
+                                        <h:outputLabel value="#{searchController.fromDate}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}  HH:mm:ss a" ></f:convertDateTime>
+                                        </h:outputLabel>
+                                        <h:outputLabel value="to"/>
+                                        <h:outputLabel value="#{searchController.toDate}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}  HH:mm:ss a" ></f:convertDateTime>
+                                        </h:outputLabel>
+                                    </div>
+                                </f:facet>
+
+                                <p:column headerText="Bill Type" styleClass="alignTop">
+                                    <h:outputLabel value="#{bill.billTypeAtomic.label}"/>
+                                    <f:facet name="footer">
+                                        Total
+                                    </f:facet>
+                                </p:column>
+
+                                <p:column headerText="Count" width="4em">
+                                    <h:outputLabel value="#{bill.billCount}"/>
+                                    <f:facet name="footer">
+
+                                    </f:facet>
+                                </p:column>
+
+                                <p:column headerText="Gross Total" width="8em">
+                                    <h:outputLabel value="#{bill.grossTotal}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputText value="#{searchController.grossTotal}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </f:facet>
+                                </p:column>
+
+                                <p:column headerText="Discount" width="8em">
+                                    <h:outputLabel value="#{bill.discount}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputText value="#{searchController.discount}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </f:facet>
+                                </p:column>
+
+                                <p:column headerText="Net Value" width="8em">
+                                    <h:outputLabel value="#{bill.netTotal}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputText value="#{searchController.netTotal}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </f:facet>
+                                </p:column>                         
+                            </p:dataTable>
+
+                        </h:panelGroup>
+
+
+
+
+
+
+                        <h:panelGroup rendered="#{searchController.reportTemplateType eq 'BILLT_TYPE_AND_PAYMENT_METHOD_SUMMARY_PAYMENTS'}" >
+                            <p:commandButton 
+                                class="ui-button-success mx-2" 
+                                icon="fas fa-file-excel" 
+                                id="btnExcel1" 
+                                ajax="false" 
+                                value="Excel" >
+                                <p:dataExporter fileName="All Financial Transactions" type="xlsx" target="tbl1" ></p:dataExporter>
+                            </p:commandButton>
+
+                            <p:commandButton 
+                                class="ui-button-info " 
+                                icon="fas fa-print" 
+                                id="btnprint1" 
+                                ajax="false" 
+                                value="Print" >
+                                <p:printer 
+                                    target="tbl1" >
+                                </p:printer>
+                            </p:commandButton>
+
+
+                            <p:dataTable rowIndexVar="i" id="tbl1" 
+                                         value="#{searchController.billSummaryRows}" 
+                                         reflow="true"
+                                         var="bill"  
+                                         style="min-width: 100%;"  
+                                         paginator="true"
+                                         paginatorPosition="bottom"
+                                         rows="10"
+                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                         rowsPerPageTemplate="5,10,15">
+                                <f:facet name="header">
+                                    <div class="d-flex justify-content-center" style="font-size: 30px; font-weight: 600;"> 
+                                        <h:outputText value="#{sessionController.institution.name}" />
+                                        <h:outputText value="-" class="mx-2"/>
+                                        <h:outputText value="#{sessionController.department.name}" />
+                                    </div>
+                                    <div class="d-flex gap-2 justify-content-center" style="font-size: 20px; font-weight: 400;">
+                                        <h:outputLabel value="#{searchController.fromDate}" >
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                        </h:outputLabel>
+                                        <h:outputLabel value="to " />
+                                        <h:outputLabel value="#{searchController.toDate}" >
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                        </h:outputLabel>
+                                    </div>
+                                </f:facet>
+
+                                <p:column headerText="Bill Type" styleClass="alignTop"  filterBy="#{bill.billTypeAtomic}" filterMatchMode="contains" sortBy="#{bill.billTypeAtomic}" style="padding: 4px;">
+                                    <h:outputLabel value="#{bill.billTypeAtomic.label}"/>
+                                    <f:facet name="footer">
+                                        <h:panelGroup>
+                                            <h:panelGroup rendered="#{searchController.cashTotal ne 0.0}">
+                                                <h:outputText value="Cash Total" />
+                                                <br/>
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{searchController.cardTotal ne 0.0}">
+                                                <h:outputText value="Card Total"/>
+                                                <br/>
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{searchController.slipTotal ne 0.0}">
+                                                <h:outputText value="Slip Total" />
+                                                <br/>
+                                            </h:panelGroup>
+                                            <h:panelGroup  rendered="#{searchController.chequeTotal ne 0.0}">
+                                                <h:outputText value="Cheque Total "/>
+                                                <br/>
+                                            </h:panelGroup >
+                                            <h:panelGroup rendered="#{searchController.totalOfOtherPayments ne 0.0}">
+                                                <h:outputText value="Other" />
+                                                <br />
+                                            </h:panelGroup>
+                                            <h:panelGroup >
+                                                <h:outputText value="Total" />
+                                                <br />
+                                            </h:panelGroup>
+                                        </h:panelGroup>
+                                    </f:facet>
+                                </p:column>
+
+                                <p:column headerText="Payment Method" colspan="3" styleClass="alignTop" width="10em" style="padding: 6px;">
+                                    <h:outputLabel value="#{bill.paymentMethod}"/>
+
+                                </p:column>
+
+                                <p:column headerText="Payment Count" width="7em" style="padding: 6px;">
+                                    <p:commandLink 
+                                        value="#{bill.billCount}" 
+                                        action="#{searchController.fillAllBills(searchController.fromDate, searchController.toDate, searchController.institution, searchController.department,bill.paymentMethod,bill.billTypeAtomic)}" 
+                                        ajax="false">
+                                    </p:commandLink>
+                                </p:column>
+
+                                <p:column headerText="Paid Value" width="7em" style="text-align: right; padding: 6px;">
+                                    <h:outputLabel value="#{bill.paidValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:panelGroup rendered="#{searchController.cashTotal ne 0.0}">
+                                            <h:outputText value="#{searchController.cashTotal}" >
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                            <br />
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{searchController.cardTotal ne 0.0}">
+                                            <h:outputText value="#{searchController.cardTotal}" >
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                            <br />
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{searchController.slipTotal ne 0.0}">
+                                            <h:outputText value="#{searchController.slipTotal}" >
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                            <br />
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{searchController.chequeTotal ne 0.0}">
+                                            <h:outputText value="#{searchController.chequeTotal}" >
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                            <br />
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{searchController.totalOfOtherPayments ne 0.0}">
+                                            <h:outputText value="#{searchController.totalOfOtherPayments}" >
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                            <br />
+                                        </h:panelGroup>
+                                        <h:panelGroup>
+                                            <h:outputText value="#{searchController.totalPaying}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </h:panelGroup>
+                                    </f:facet>
+
+                                </p:column>
+
+                            </p:dataTable>
+
+
+                        </h:panelGroup>
+
+
+
+
+                        <h:panelGroup rendered="#{searchController.reportTemplateType eq 'PAYMENT_METHOD_SUMMARY_USING_BILLS'}">
+                            <p:commandButton 
+                                class="ui-button-success mx-2" 
+                                icon="fas fa-file-excel" 
+                                id="btnExcel3" 
+                                ajax="false" 
+                                value="Excel">
+                                <p:dataExporter fileName="Financial Transactions by Payment Method" type="xlsx" target="tbl3"></p:dataExporter>
+                            </p:commandButton>
+
+                            <p:commandButton 
+                                class="ui-button-info" 
+                                icon="fas fa-print" 
+                                id="btnPrint3" 
+                                ajax="false" 
+                                value="Print">
+                                <p:printer target="tbl3"></p:printer>
+                            </p:commandButton>
+
+                            <p:dataTable rowIndexVar="i" id="tbl3" 
+                                         value="#{searchController.billSummaryRows}" 
+                                         reflow="true"
+                                         var="bill"  
+                                         style="min-width: 100%;"  
+                                         paginator="true"
+                                         paginatorPosition="bottom"
+                                         rows="10"
+                                         paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                         rowsPerPageTemplate="5,10,15">
+                                <f:facet name="header">
+                                    <div class="d-flex justify-content-center" style="font-size: 30px; font-weight: 600;"> 
+                                        <h:outputText value="#{sessionController.institution.name}" />
+                                        <h:outputText value="-" class="mx-2"/>
+                                        <h:outputText value="#{sessionController.department.name}" />
+                                    </div>
+                                    <div class="d-flex gap-2 justify-content-center" style="font-size: 20px; font-weight: 400;">
+                                        <h:outputLabel value="#{searchController.fromDate}">
+                                            <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                        </h:outputLabel>
+                                        <h:outputLabel value="to " />
+                                        <h:outputLabel value="#{searchController.toDate}">
+                                            <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                        </h:outputLabel>
+                                    </div>
+                                </f:facet>
+
+                                <p:column headerText="Payment Method" styleClass="alignTop" filterBy="#{bill.paymentMethod}" filterMatchMode="contains" sortBy="#{bill.paymentMethod}" style="padding: 4px;">
+                                    <h:outputLabel value="#{bill.paymentMethod}" />
+                                    <f:facet name="footer">
+                                        <h:panelGroup>
+                                            <h:panelGroup rendered="#{searchController.cashTotal ne 0.0}">
+                                                <h:outputText value="Cash Total" />
+                                                <br/>
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{searchController.cardTotal ne 0.0}">
+                                                <h:outputText value="Card Total" />
+                                                <br/>
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{searchController.slipTotal ne 0.0}">
+                                                <h:outputText value="Slip Total" />
+                                                <br/>
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{searchController.chequeTotal ne 0.0}">
+                                                <h:outputText value="Cheque Total" />
+                                                <br/>
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{searchController.totalOfOtherPayments ne 0.0}">
+                                                <h:outputText value="Other" />
+                                                <br />
+                                            </h:panelGroup>
+                                            <h:panelGroup>
+                                                <h:outputText value="Total" />
+                                                <br />
+                                            </h:panelGroup>
+                                        </h:panelGroup>
+                                    </f:facet>
+                                </p:column>
+
+                                <p:column headerText="Payment Count" width="7em" style="padding: 6px;">
+                                    <p:commandLink 
+                                        value="#{bill.billCount}" 
+                                        action="#{searchController.fillAllBills(searchController.fromDate, searchController.toDate, searchController.institution, searchController.department, bill.paymentMethod, null)}" 
+                                        ajax="false">
+                                    </p:commandLink>
+                                </p:column>
+
+                                <p:column headerText="Paid Value" width="7em" style="text-align: right; padding: 6px;">
+                                    <h:outputLabel value="#{bill.paidValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:panelGroup rendered="#{searchController.cashTotal ne 0.0}">
+                                            <h:outputText value="#{searchController.cashTotal}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                            <br />
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{searchController.cardTotal ne 0.0}">
+                                            <h:outputText value="#{searchController.cardTotal}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                            <br />
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{searchController.slipTotal ne 0.0}">
+                                            <h:outputText value="#{searchController.slipTotal}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                            <br />
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{searchController.chequeTotal ne 0.0}">
+                                            <h:outputText value="#{searchController.chequeTotal}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                            <br />
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{searchController.totalOfOtherPayments ne 0.0}">
+                                            <h:outputText value="#{searchController.totalOfOtherPayments}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                            <br />
+                                        </h:panelGroup>
+                                        <h:panelGroup>
+                                            <h:outputText value="#{searchController.totalPaying}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </h:panelGroup>
+                                    </f:facet>
+                                </p:column>
+
+                            </p:dataTable>
+                        </h:panelGroup>
+
+
+
+
+
+
+
+
+                    </p:panel>
+
+                </h:form>
+
+            </ui:define>
+
+        </ui:composition>
+    </h:body>
+</html>

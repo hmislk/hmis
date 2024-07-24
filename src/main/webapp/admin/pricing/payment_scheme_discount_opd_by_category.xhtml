@@ -15,19 +15,19 @@
                 <h:form>
                     <p:panel header="OPD Payment Discount Matrix" id="reportPrint">
 
-                        <p:panel header="Add new Matrix" >
+                        <p:panel header="Add New Matrix" >
                             <p:panelGrid columns="2" >
                                 <h:outputLabel value="Discount Scheme"/>
                                 <p:autoComplete forceSelection="true" 
                                                 value="#{opdMemberShipDiscountController.paymentScheme}" 
                                                 completeMethod="#{paymentSchemeController.completePaymentScheme}" 
-                                                var="mem" itemLabel="#{mem.name}" itemValue="#{mem}" >
+                                                var="mem" itemLabel="#{mem.name}" itemValue="#{mem}" class="w-100" inputStyleClass="w-100">
                                 </p:autoComplete>
                                 <h:outputLabel value="Category/Subcategory" ></h:outputLabel>
                                 <p:autoComplete value="#{opdMemberShipDiscountController.category}" 
                                                 forceSelection="true"
                                                 completeMethod="#{categoryController.completeCategoryServiceInvestigation}"
-                                              
+                                                class="w-100" inputStyleClass="w-100"
                                                 var="cat" itemLabel="#{cat.name} #{cat.parentCategory}" itemValue="#{cat}" >
                                     <p:column headerText="Category">
                                         <h:outputLabel value="#{cat.name}"/>
@@ -51,20 +51,20 @@
                                     <f:selectItems value="#{enumController.allPaymentMethods}" />                                    
                                 </p:selectOneMenu>
                                 <h:outputLabel value="Discount" ></h:outputLabel>
-                                <p:inputText autocomplete="off" value="#{opdMemberShipDiscountController.margin}" />
+                                <p:inputText autocomplete="off" value="#{opdMemberShipDiscountController.margin}" class="w-100" />
                                 <h:outputLabel value="" ></h:outputLabel>
-                                <p:commandButton id="btnAdd" value="Add" ajax="false"
+                                <p:commandButton id="btnAdd" value="Add" ajax="false" class="ui-button-success" icon="fa fa-plus"
                                                 action="#{opdMemberShipDiscountController.saveOpdCategoryPaymentScheme()}" >
                                 </p:commandButton>
 
-                                <p:defaultCommand target="btnAdd"/>
+                                
                             </p:panelGrid>
-                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
+                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" class="ui-button-success" icon="fas fa-file-excel" >
                                 <p:dataExporter type="xlsx" target="inwd" fileName="Price_metrix_investigation"  />
                             </p:commandButton>
                             <p:commandButton ajax="false" value="Fill"
                                             action="#{opdMemberShipDiscountController.createItemsCategoryOpdPaymentScheme()}" />
-                            <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" >                                         
+                            <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" class="m-1 ui-button-info" icon="fas fa-print">                                         
                                 <p:printer target="reportPrint"/>
                             </p:commandButton>
 

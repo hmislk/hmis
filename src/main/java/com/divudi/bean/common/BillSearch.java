@@ -2124,18 +2124,16 @@ public class BillSearch implements Serializable {
 
         CancelledBill cancellationBill = createOpdCancelBill(bill);
         billController.save(cancellationBill);
-
+        System.out.println("cancellationBill.getDepartment().getName() = " + cancellationBill.getDepartment().getName());
         Payment p = getOpdPreSettleController().createPaymentForCancellationsforOPDBill(cancellationBill, paymentMethod);
         List<BillItem> list = cancelBillItems(getBill(), cancellationBill, p);
         cancellationBill.setBillItems(list);
         billFacade.edit(cancellationBill);
-        System.out.println("getBill() 1= " + getBill().getIdStr());
+
         getBill().setCancelled(true);
         getBill().setCancelledBill(cancellationBill);
-        System.out.println("getBill() 2= " + getBill().getIdStr());
+
         billController.save(getBill());
-        System.out.println("getBill() 3= " + getBill().isCancelled());
-        System.out.println("getBill() 4= " + getBill().getIdStr());
         JsfUtil.addSuccessMessage("Cancelled");
 
         if (getBill().getPaymentMethod() == PaymentMethod.Credit) {
@@ -2843,6 +2841,9 @@ public class BillSearch implements Serializable {
 
             case CHANNEL_REFUND:
                 return "";
+                
+            case CHANNEL_PAYMENT_FOR_BOOKING_BILL:
+                
 
         }
 

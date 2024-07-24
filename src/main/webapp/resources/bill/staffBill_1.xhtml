@@ -103,7 +103,7 @@
                         </td>
                         <td>
                             <h:outputLabel value="#{cc.attrs.bill.singleBillSession.staff.person.nameWithTitle}" style="text-transform: capitalize; "  />
-
+                            <h:outputLabel value="#{cc.attrs.bill.staff.person.nameWithTitle}" style="text-transform: capitalize; "  />
                         </td>
                     </tr>
                     <tr>
@@ -116,6 +116,14 @@
                                         <h:outputLabel value="No" ></h:outputLabel>
                                     </f:facet>
                                     <h:outputLabel value="#{bip.referanceBillItem.bill.insId}" 
+                                                   />
+                                </h:column>
+                                
+                                <h:column  >
+                                    <f:facet name="header" >
+                                        <h:outputLabel value="Bill Date" ></h:outputLabel>
+                                    </f:facet>
+                                    <h:outputLabel value="#{bip.referanceBillItem.bill.createdAt}" 
                                                    />
                                 </h:column>
                                 <h:column   >

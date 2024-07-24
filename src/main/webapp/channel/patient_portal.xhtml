@@ -206,6 +206,9 @@
 
                         </div>
                     </nav>
+                  
+                    <p:staticMessage severity="error" summary="ERROR" detail="This function is currently unavailable due to maintenance. Please refrain from using it until further notice." style="width: 100%; font-size: 2em;"/>
+
                 </div>
                 <div>
                     <h:panelGroup rendered="#{patientPortalController.patient.id ne null}" class="h-100 container"  >
@@ -377,6 +380,7 @@
 
                 <h:panelGroup rendered="#{patientPortalController.otpVerify eq false}" >
                     <div class="d-flex justify-content-center align-items-center h-100 w-100">
+                         
                         <div class=" mt-4" style="min-width: 25rem">
                             <div class="card-body">
                                 <div class="d-flex justify-content-center align-items-center">

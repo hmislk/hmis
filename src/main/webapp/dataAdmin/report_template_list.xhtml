@@ -10,7 +10,28 @@
     <h:body>
         <ui:composition template="/dataAdmin/admin_data_administration.xhtml">
             <ui:define name="subcontent">
-                <ez:midding_data_fields/>
+                <h:form >
+
+                    <p:dataTable value="#{reportTemplateController.items}" var="t" rowKey="#{t.id}" >
+                        <p:column headerText="Name" >
+                            <h:outputText value="#{t.name}" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="Name" >
+                            <h:outputText value="#{t.code}" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="Action" >
+                            <p:commandButton value="Edit" action="#{reportTemplateController.navigateToEditReportTemplate()}" ajax="false" >
+                                <f:setPropertyActionListener value="#{t}" target="#{reportTemplateController.current}" ></f:setPropertyActionListener>
+                            </p:commandButton>
+                            <p:commandButton value="To Run" action="#{reportTemplateController.navigateToGenerateReport()}" ajax="false" >
+                                <f:setPropertyActionListener value="#{t}" target="#{reportTemplateController.current}" ></f:setPropertyActionListener>
+                            </p:commandButton>
+                        </p:column>
+                    </p:dataTable>
+
+                </h:form>
+
+
             </ui:define>
         </ui:composition>
     </h:body>

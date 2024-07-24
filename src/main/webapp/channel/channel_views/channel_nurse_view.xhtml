@@ -104,7 +104,7 @@
                             </p:column>
                             <p:column headerText="Booked At" style="font-size: 12px; width: 33%!important; padding: 1px" >
                                 <p:outputLabel value="#{bs.createdAt}" style="font-size: 12px;" >
-                                    <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>
+                                    <f:convertDateTime pattern="dd MMM yyyy hh:mm a"/>
                                 </p:outputLabel>
 
                             </p:column>
@@ -112,8 +112,8 @@
                                 <p:outputLabel value="#{bs.bill.patient.person.phone}" style="font-size: 12px;" />
                             </p:column>
                             <p:column headerText="Remarks" style="font-size: 12px; width: 20%!important; padding: 1px" >
-                                <p:outputLabel rendered="#{bs.bill.balance ne 0.0}" value="Not Paid" style="color: red;font-size: 12px;font-weight: bold" />
-                                <p:outputLabel rendered="#{bs.bill.balance eq 0.0}" value="Paid" style="color: green;font-size: 12px;font-weight: bold"/>
+                                <p:outputLabel rendered="#{bs.bill.balance ne 0.0 or bs.bill.paymentMethod eq 'OnCall'}" value="Not Paid" style="color: red;font-size: 12px;font-weight: bold" />
+                                <p:outputLabel rendered="#{bs.bill.balance eq 0.0 and bs.bill.paymentMethod ne 'OnCall' }" value="Paid" style="color: green;font-size: 12px;font-weight: bold"/>
                             </p:column>
 <!--                            <p:column headerText="Billed By" style="font-size: 12px;width: 15%!important;" >
                                 <p:outputLabel value="#{bs.bill.creater.name}" style="font-size: 11px;font-weight: bold" />

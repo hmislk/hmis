@@ -133,7 +133,7 @@
                                                     value="#{serviceController.current.inwardChargeType}" 
                                                     class="form-control mx-2">
                                                     <f:selectItem itemLabel="Please select Charge"/>
-                                                    <f:selectItems value="#{enumController.inwardChargeTypesForSetting}" var="i" itemLabel="#{i.label}" itemValue="#{i}"/>
+                                                    <f:selectItems value="#{enumController.inwardChargeTypes}" var="i" itemLabel="#{i.label}" itemValue="#{i}"/>
                                                 </p:selectOneMenu>
 
                                                 <p:outputLabel value="Item Code"/>
@@ -164,6 +164,9 @@
 
                                                 <h:outputText value="" ></h:outputText>
                                                 <p:selectBooleanCheckbox value="#{serviceController.current.requestForQuentity}" itemLabel="Request for Quentity"/>
+
+                                                <h:outputText value="" ></h:outputText>
+                                                <p:selectBooleanCheckbox value="#{serviceController.current.printSessionNumber}" itemLabel="Print Session Number"/>
 
 
                                                 <h:outputText value="" ></h:outputText>

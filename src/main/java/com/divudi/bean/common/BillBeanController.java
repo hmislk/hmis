@@ -8,6 +8,7 @@ package com.divudi.bean.common;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.collectingCentre.CollectingCentreBillController;
 import com.divudi.bean.inward.InwardBeanController;
+import com.divudi.data.BillFeeBundleEntry;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
 import com.divudi.data.OpdBillingStrategy;
@@ -2199,6 +2200,38 @@ public class BillBeanController implements Serializable {
         return fetchBill(longBillId);
     }
 
+    public Bill fetchBillWithItemsAndFees(Long billId) {
+        System.out.println("fetchBillWithItemsAndFees called with billId: " + billId);
+        if (billId == null) {
+            System.out.println("billId is null, returning null.");
+            return null;
+        }
+        Bill fb = fetchBill(billId);
+        System.out.println("Fetched bill: " + fb);
+        if (fb == null) {
+            System.out.println("Fetched bill is null, returning null.");
+            return null;
+        }
+        List<BillItem> billItems = fillBillItems(fb);
+        System.out.println("Fetched bill items: " + billItems);
+        if (billItems == null) {
+            System.out.println("Bill items are null, returning fetched bill without items.");
+            return fb;
+        }
+        for (BillItem fbi : billItems) {
+            System.out.println("Processing bill item: " + fbi);
+            List<BillFee> fbfs = billFeefromBillItem(fbi);
+            System.out.println("Fetched bill fees for item: " + fbfs);
+            if (fbfs != null) {
+                fbi.setBillFees(fbfs);
+                fb.getBillFees().addAll(fbfs);
+                System.out.println("Added bill fees to bill item and bill: " + fbfs);
+            }
+        }
+        System.out.println("Returning final bill: " + fb);
+        return fb;
+    }
+
     public Bill fetchBill(Long billId) {
         String sql = "SELECT b FROM Bill b WHERE b.id = :billId";
         HashMap<String, Object> hm = new HashMap<>();
@@ -3506,6 +3539,31 @@ public class BillBeanController implements Serializable {
 
         }
         return t;
+    }
+
+    public List<BillFeeBundleEntry> bundleFeesByName(List<BillFee> fs) {
+        Map<String, BillFeeBundleEntry> map = new HashMap<>();
+        for (BillFee f : fs) {
+            String name = f.getFee().getName().toLowerCase();
+            if (!map.containsKey(name)) {
+                BillFeeBundleEntry entry = new BillFeeBundleEntry();
+                entry.setSelectedBillFee(f);
+                entry.setAvailableBillFees(new ArrayList<>());
+                map.put(name, entry);
+            }
+            map.get(name).getAvailableBillFees().add(f);
+        }
+        return new ArrayList<>(map.values());
+    }
+
+    public List<BillFee> billFeesSelected(List<BillFeeBundleEntry> bundledBillFees) {
+        List<BillFee> selectedFees = new ArrayList<>();
+        for (BillFeeBundleEntry entry : bundledBillFees) {
+            if (entry.getSelectedBillFee() != null) {
+                selectedFees.add(entry.getSelectedBillFee());
+            }
+        }
+        return selectedFees;
     }
 
     public List<BillFee> billFeefromBillItem(BillItem billItem) {

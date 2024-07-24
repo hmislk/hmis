@@ -884,6 +884,12 @@
                     </p:menuitem>
                     <p:menuitem 
                         ajax="false"  
+                        value="Channel Booking - By Month"  
+                        action="#{bookingControllerViewScopeMonth.navigateToChannelBookingFromMenuByMonth()}" 
+                        rendered="#{webUserController.hasPrivilege('ChannellingChannelBooking')}" >
+                    </p:menuitem>
+                    <p:menuitem 
+                        ajax="false"  
                         value="Channel Queue"  
                         action="#{bookingController.navigateToChannelQueueFromMenu}" 
                         rendered="#{webUserController.hasPrivilege('ChannellingChannelBooking')}" >
@@ -931,6 +937,7 @@
                     <p:menuitem ajax="false" action="/analytics/opd/index?faces-redirect=true" value="Channel Analytics" rendered="#{webUserController.hasPrivilege('ChannelSummery')}" ></p:menuitem>
                     <p:menuitem ajax="false" action="/channel/management_index?faces-redirect=true" value="Management" rendered="#{webUserController.hasPrivilege('ChannelManagement')}" ></p:menuitem>
                     <p:menuitem ajax="false" action="/channel/patient_portal?faces-redirect=true" value="Patient Portal" ></p:menuitem>
+                    <p:menuitem ajax="false" action="/channel/doctor_card?faces-redirect=true" value="Doctor Card" ></p:menuitem>
                     <p:menuitem 
                         ajax="false"
                         styleClass="#{financialTransactionController.nonClosedShiftStartFundBill eq null ? 'bg-warning text-white font-weight-bold' : ''}"
@@ -1272,6 +1279,13 @@
 
                 <f:facet name="options">
                     <div class="d-flex align-items-center">
+                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Display Cashiers Cash Total on Menu')}">
+                            <h:outputLabel class="mx-2" style="font-size: 1.2em; color: green; font-weight: 600" value="Cash in Hand : #{(financialTransactionController.financialReportByPayments.netCashTotal+(financialTransactionController.financialReportByPayments.floatReceived - financialTransactionController.financialReportByPayments.floatHandover)+ financialTransactionController.financialReportByPayments.shiftStartFunds)}" />
+                            <p:commandButton class="ui-button-info"
+                                            icon="fas fa-refresh"
+                                            ajax="false"
+                                            action="#{financialTransactionController.refreshCashNetTotalForMenu()}" />
+                        </h:panelGroup>
                         <div class="mx-4">
                             <h:panelGroup>
                                 <p:poll

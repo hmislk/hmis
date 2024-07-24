@@ -99,6 +99,9 @@
                                 </h:panelGroup>
                                 <h:panelGroup id="patientDeposit"  rendered="#{pm.paymentMethod eq 'PatientDeposit'}"  layout="block" class="row" >
                                     <pa:patient_deposit valueRequired="true" paymentMethodData="#{pm.paymentMethodData}"/>
+                                </h:panelGroup>                               
+                                <h:panelGroup id="Staff_Welfare" rendered="#{pm.paymentMethod eq 'Staff_Welfare'}" layout="block" class="row">
+                                    <pa:staff_welfare valueRequired="true" paymentMethodData="#{pm.paymentMethodData}"/>
                                 </h:panelGroup>
 
 

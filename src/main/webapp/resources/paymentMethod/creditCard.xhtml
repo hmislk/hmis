@@ -14,7 +14,7 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <div class="d-flex" >
+        <div class="d-flex gap-2" >
             <p:inputText autocomplete="off"   value="#{cc.attrs.paymentMethodData.creditCard.totalValue}"  id="txtVal">
                 <p:ajax process="@this"></p:ajax>
             </p:inputText>
@@ -23,14 +23,15 @@
 
             <p:inputText 
                 autocomplete="off"   
-                value="#{cc.attrs.paymentMethodData.creditCard.no}" class="mx-2 w-100" id="refno">
+                value="#{cc.attrs.paymentMethodData.creditCard.no}"  id="refno">
                 <p:ajax process="@this" ></p:ajax>
             </p:inputText>                          
-            <p:selectOneMenu value="#{cc.attrs.paymentMethodData.creditCard.institution}"  class="mx-2 w-100"  >
+            <p:selectOneMenu value="#{cc.attrs.paymentMethodData.creditCard.institution}" filter="true" filterMatchMode="contains"  >
                 <f:selectItem itemLabel="Select Bank"/>
                 <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
                 <p:ajax process="@this" ></p:ajax>
             </p:selectOneMenu>
+            <p:inputText value="#{cc.attrs.paymentMethodData.creditCard.comment}" placeholder="Enter Credit Card Comments" ></p:inputText>
             <p:watermark value="Card Ref. No." for="refno" />
         </div>
 

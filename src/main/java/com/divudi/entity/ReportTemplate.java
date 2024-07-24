@@ -1,8 +1,15 @@
 package com.divudi.entity;
 
+import com.divudi.data.BillTypeAtomic;
+import com.divudi.data.analytics.ReportTemplateColumn;
+import com.divudi.data.analytics.ReportTemplateFilter;
 import com.divudi.data.analytics.ReportTemplateType;
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 import javax.persistence.Entity;
 import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
@@ -11,6 +18,7 @@ import javax.persistence.Id;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.Temporal;
+import javax.persistence.Transient;
 
 /**
  *
@@ -38,6 +46,8 @@ public class ReportTemplate implements Serializable {
     @Lob
     private String filters;
     @Lob
+    private String billTypes;
+    @Lob
     private String columns;
     @Lob
     private String totals;
@@ -55,6 +65,15 @@ public class ReportTemplate implements Serializable {
     private Date retiredAt;
     private String retireComments;
 
+    @Transient
+    private List<BillTypeAtomic> billTypeAtomics;
+
+    @Transient
+    private List<ReportTemplateColumn> reportColumns;
+
+    @Transient
+    private List<ReportTemplateFilter> reportFilters;
+
     public Long getId() {
         return id;
     }
@@ -62,8 +81,6 @@ public class ReportTemplate implements Serializable {
     public void setId(Long id) {
         this.id = id;
     }
-    
-    
 
     @Override
     public int hashCode() {
@@ -151,6 +168,7 @@ public class ReportTemplate implements Serializable {
     }
 
     public void setFilters(String filters) {
+        this.reportFilters = null;
         this.filters = filters;
     }
 
@@ -159,6 +177,7 @@ public class ReportTemplate implements Serializable {
     }
 
     public void setColumns(String columns) {
+        this.reportColumns = null;
         this.columns = columns;
     }
 
@@ -216,6 +235,103 @@ public class ReportTemplate implements Serializable {
 
     public void setRetired(boolean retired) {
         this.retired = retired;
+    }
+
+    public String getBillTypes() {
+        return billTypes;
+    }
+
+    public void setBillTypes(String billTypes) {
+        this.billTypeAtomics = null;
+        this.billTypes = billTypes;
+    }
+
+
+    @Transient
+    public boolean matchesBillTypeAtomic(String input) {
+        List<BillTypeAtomic> bts = getBillTypeAtomics();
+        return bts.stream()
+                .anyMatch(e -> e.name().equalsIgnoreCase(input.trim()));
+    }
+
+    @Transient
+    public boolean matchesReportTemplateColumn(String input) {
+        List<ReportTemplateColumn> columns = getReportColumns();
+        return columns.stream()
+                .anyMatch(e -> e.name().equalsIgnoreCase(input.trim()));
+    }
+
+    @Transient
+    public boolean matchesReportTemplateFilter(String input) {
+        List<ReportTemplateFilter> filters = getReportFilters();
+        return filters.stream()
+                .anyMatch(e -> e.name().equalsIgnoreCase(input.trim()));
+    }
+
+    @Transient
+    public List<BillTypeAtomic> getBillTypeAtomics() {
+        if (billTypeAtomics == null) {
+            billTypeAtomics = convertToBillTypeAtomicList(this.billTypes);
+        }
+        return billTypeAtomics;
+    }
+
+    @Transient
+    public List<ReportTemplateColumn> getReportColumns() {
+        if (reportColumns == null) {
+            reportColumns = convertToReportTemplateColumnList(this.columns);
+        }
+        return reportColumns;
+    }
+
+    @Transient
+    public List<BillTypeAtomic> convertToBillTypeAtomicList(String input) {
+        return Arrays.stream(input.split("\n"))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .map(s -> {
+                    try {
+                        return BillTypeAtomic.valueOf(s);
+                    } catch (IllegalArgumentException e) {
+                        return null;
+                    }
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+    }
+
+    @Transient
+    public List<ReportTemplateColumn> convertToReportTemplateColumnList(String input) {
+        return Arrays.stream(input.split("\n"))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .map(s -> Arrays.stream(ReportTemplateColumn.values())
+                .filter(e -> e.getLabel().equalsIgnoreCase(s))
+                .findFirst()
+                .orElse(null))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+    }
+
+    @Transient
+    public List<ReportTemplateFilter> convertToReportTemplateFilterList(String input) {
+        return Arrays.stream(input.split("\n"))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .map(s -> Arrays.stream(ReportTemplateFilter.values())
+                .filter(e -> e.getLabel().equalsIgnoreCase(s))
+                .findFirst()
+                .orElse(null))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+    }
+
+    @Transient
+    public List<ReportTemplateFilter> getReportFilters() {
+        if (reportFilters == null) {
+            reportFilters = convertToReportTemplateFilterList(this.filters);
+        }
+        return reportFilters;
     }
 
 }

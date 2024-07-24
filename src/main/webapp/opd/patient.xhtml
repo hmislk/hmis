@@ -10,6 +10,12 @@
       xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill"
       xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
       xmlns:pat="http://xmlns.jcp.org/jsf/composite/patient">
+
+    <h:head>
+        <!-- Include the font link in the <head> section of your JSF page -->
+        <h:outputStylesheet name="https://fonts.googleapis.com/css2?family=Libre+Barcode+128+Text&amp;display=swap" />
+    </h:head>
+
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
@@ -87,7 +93,13 @@
                                         <p:outputLabel value="Blood Group:" rendered="#{not empty patientController.current.person.bloodGroup.name}" />
                                         <p:outputLabel value="#{patientController.current.person.bloodGroup.name}" rendered="#{not empty patientController.current.person.bloodGroup.name}" />
 
-
+                                        <p:outputLabel value="Patient Status :" rendered="#{configOptionApplicationController.getBooleanValueByKey('Save the Patient with Patient Status')}"/>
+                                        <p:badge 
+                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Save the Patient with Patient Status')}"
+                                            value="#{patientController.current.person.foreigner?'Patient is Forigner':'Patient is Local'}" 
+                                            severity="#{patientController.current.person.foreigner?'warning':'success'}" 
+                                            styleClass="mr-2">
+                                        </p:badge>
                                         <p:outputLabel value="Has an Account:"  />
                                         <p:outputLabel value="#{patientController.current.hasAnAccount?'Has an account':'No Account'}" />
 
@@ -99,16 +111,31 @@
                                         <p:outputLabel value="#{patientController.current.creditLimit}" rendered="#{patientController.current.hasAnAccount}" />
 
 
-
                                     </p:panelGrid>
 
-
-                                    <!-- Barcode -->
-                                    <h:panelGroup id="groupPatientCard" style="text-align: center; width: 100%;" layout="block">
-                                        <h:outputText value="#{sessionController.loggedUser.institution.name}" style="font-size: 12px;"/><br/>
-                                        <h:outputText value="#{patientController.current.person.nameWithTitle}" style="font-size: 12px;"/><br/>
-                                        <p:barcode value="#{patientController.current.idStr}" type="code39" cache="false" style="width:20%;" />
+                                    <h:panelGroup id="groupPatientCard" style="text-align: center; width: 5cm; border: 1px solid red;" layout="block">
+                                        <div class="mt-1" style="height: 1.5cm; overflow-y: hidden;">
+                                            <p:barcode format="svg" hrp="none" width="185" value="#{patientController.current.idStr}" type="code128" cache="false" rendered="true" />
+                                        </div>
+                                        <div class="w-100">
+                                            <h:outputText value="#{patientController.current.person.nameWithTitle}" style="font-size: 12px; font-family: 'Libre Barcode 128 Text', sans-serif;" />
+                                            <p:outputLabel value="&#160;&#124;&#160;" style="font-size: 12px;" />
+                                            <h:outputText value="#{patientController.current.person.sex eq 'Male' ? 'M' : 'F'}" style="font-size: 12px; font-family: 'Libre Barcode 128 Text', sans-serif;" class="w-100"/>
+                                        </div>
+                                        <div class="w-100">
+                                            <h:outputText value="#{patientController.current.person.dob}" class="mx-2" style="font-size: 12px; font-family: 'Libre Barcode 128 Text', sans-serif;">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                            </h:outputText>
+                                            <p:outputLabel value="&#160;&#124;&#160;" style="font-size: 12px;" />
+                                            <h:outputText value="#{patientController.current.person.phone}" style="font-size: 12px; font-family: 'Libre Barcode 128 Text', sans-serif;" />
+                                        </div>
                                     </h:panelGroup>
+
+
+
+
+
+
 
 
                                 </div>
@@ -181,7 +208,7 @@
                                         ajax="false"
                                         styleClass="mx-2">
                                     </p:commandButton>
-                                    
+
                                     <p:messages ></p:messages>
                                 </div>
                             </div>  
