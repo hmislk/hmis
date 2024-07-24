@@ -100,6 +100,62 @@
 
 
                         <h:panelGroup >
+
+                            <table class="w-100 table table-primary">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Count</th>
+                                        <th>Total</th>
+                                        <th>Report Template Rows</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <ui:repeat value="#{financialTransactionController.shiftEndBundles}" var="sebs">
+                                        <tr>
+                                            <td>
+                                                <h:outputText value="#{sebs.name}" />
+                                            </td>
+                                            <td>
+                                                <h:outputText value="#{sebs.count}" />
+                                            </td>
+                                            <td>
+                                                <h:outputText value="#{sebs.total}" />
+                                            </td>
+                                            <td>
+                                                <table class="w-100 table table-striped">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Category / Department</th>
+                                                            <th>Value</th>
+                                                            <th>Count</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <ui:repeat value="#{sebs.reportTemplateRows}" var="r">
+                                                            <tr>
+                                                                <td>
+                                                                    #{r.category.name}
+                                                                    #{r.department.name}
+                                                                
+                                                                </td>
+                                                                <td>#{r.rowValue}</td>
+                                                                <td>#{r.rowCount}</td>
+                                                            </tr>
+                                                        </ui:repeat>
+                                                    </tbody>
+                                                </table>
+                                            </td>
+                                        </tr>
+                                    </ui:repeat>
+                                </tbody>
+                            </table>
+
+
+
+
+
+
                             <table class="table table-primary">
                                 <tr>
                                     <th>

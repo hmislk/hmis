@@ -18,6 +18,8 @@ public class ReportTemplateRowBundle {
     private Long countIn;
     private Long countOut;
     private Long count;
+    private String name;
+    private String description;
 
     
     
@@ -88,6 +90,22 @@ public class ReportTemplateRowBundle {
 
     public void setCount(Long count) {
         this.count = count;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
    
