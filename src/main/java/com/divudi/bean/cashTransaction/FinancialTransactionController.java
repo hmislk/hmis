@@ -250,7 +250,7 @@ public class FinancialTransactionController implements Serializable {
                 paramCreditCompany,
                 paramStartId,
                 paramEndId);
-        
+
         System.out.println("ins = " + ins.getReportTemplateRows().size());
 
         ReportTemplateRowBundle outs = reportTemplateController.generateReport(
@@ -269,11 +269,77 @@ public class FinancialTransactionController implements Serializable {
                 paramCreditCompany,
                 paramStartId,
                 paramEndId);
-        
+
         System.out.println("outes = " + outs.getReportTemplateRows().size());
 
         bundle = combineBundlesByCategory(ins, outs);
-        
+
+        System.out.println("bundle = " + bundle.getReportTemplateRows().size());
+
+        return bundle;
+    }
+
+    public ReportTemplateRowBundle addOpdByDepartments(
+            ReportTemplateType type,
+            List<BillTypeAtomic> btas,
+            Date paramDate,
+            Date paramFromDate,
+            Date paramToDate,
+            Institution paramInstitution,
+            Department paramDepartment,
+            Institution paramFromInstitution,
+            Department paramFromDepartment,
+            Institution paramToInstitution,
+            Department paramToDepartment,
+            WebUser paramUser,
+            Institution paramCreditCompany,
+            Long paramStartId,
+            Long paramEndId) {
+
+        ReportTemplateRowBundle bundle;
+        List<BillTypeAtomic> inBts = BillTypeAtomic.findByServiceTypeAndFinanceType(ServiceType.OPD, BillFinanceType.CASH_IN);
+        List<BillTypeAtomic> outBts = BillTypeAtomic.findByServiceTypeAndFinanceType(ServiceType.OPD, BillFinanceType.CASH_OUT);
+
+        ReportTemplateRowBundle ins = reportTemplateController.generateReport(
+                type,
+                inBts,
+                paramDate,
+                paramFromDate,
+                paramToDate,
+                paramInstitution,
+                paramDepartment,
+                paramFromInstitution,
+                paramFromDepartment,
+                paramToInstitution,
+                paramToDepartment,
+                paramUser,
+                paramCreditCompany,
+                paramStartId,
+                paramEndId);
+
+        System.out.println("ins = " + ins.getReportTemplateRows().size());
+
+        ReportTemplateRowBundle outs = reportTemplateController.generateReport(
+                type,
+                outBts,
+                paramDate,
+                paramFromDate,
+                paramToDate,
+                paramInstitution,
+                paramDepartment,
+                paramFromInstitution,
+                paramFromDepartment,
+                paramToInstitution,
+                paramToDepartment,
+                paramUser,
+                paramCreditCompany,
+                paramStartId,
+                paramEndId);
+
+        System.out.println("outes = " + outs.getReportTemplateRows().size());
+
+        bundle = combineBundlesByDepartment(ins, outs);
+
         System.out.println("bundle = " + bundle.getReportTemplateRows().size());
 
         return bundle;
@@ -281,24 +347,25 @@ public class FinancialTransactionController implements Serializable {
 
     public void processShiftEndReport() {
         shiftEndBundles = new ArrayList<>();
-        ReportTemplateType type = ReportTemplateType.ITEM_CATEGORY_SUMMARY_BY_BILL;
-        List<BillTypeAtomic> btas = BillTypeAtomic.findByServiceTypeAndFinanceType(ServiceType.CHANNELLING, BillFinanceType.CASH_IN); 
+        ReportTemplateType channelingType = ReportTemplateType.ITEM_CATEGORY_SUMMARY_BY_BILL;
+        ReportTemplateType opdType = ReportTemplateType.ITEM_DEPARTMENT_SUMMARY_BY_BILL_ITEM;
+        List<BillTypeAtomic> btas = null;
         Date paramDate = null;
         Date paramFromDate = null;
-        Date paramToDate = null; 
+        Date paramToDate = null;
         Institution paramInstitution = null;
-        Department paramDepartment = null; 
+        Department paramDepartment = null;
         Institution paramFromInstitution = null;
-        Department paramFromDepartment = null; 
+        Department paramFromDepartment = null;
         Institution paramToInstitution = null;
-        Department paramToDepartment = null; 
+        Department paramToDepartment = null;
         WebUser paramUser = nonClosedShiftStartFundBill.getCreater();
         Institution paramCreditCompany = null;
-        Long paramStartId = nonClosedShiftStartFundBill.getId(); 
-        Long paramEndId = nonClosedShiftStartFundBill.getReferenceBill().getId(); 
+        Long paramStartId = nonClosedShiftStartFundBill.getId();
+        Long paramEndId = nonClosedShiftStartFundBill.getReferenceBill().getId();
 
         ReportTemplateRowBundle channelingBundle = addChannellingByCategories(
-                type,
+                channelingType,
                 btas,
                 paramDate,
                 paramFromDate,
@@ -314,11 +381,30 @@ public class FinancialTransactionController implements Serializable {
                 paramStartId,
                 paramEndId
         );
-        
-        channelingBundle.setName("Channelling");
-        shiftEndBundles.add(channelingBundle);
 
-        
+        ReportTemplateRowBundle opdBundle = addOpdByDepartments(
+                opdType,
+                btas,
+                paramDate,
+                paramFromDate,
+                paramToDate,
+                paramInstitution,
+                paramDepartment,
+                paramFromInstitution,
+                paramFromDepartment,
+                paramToInstitution,
+                paramToDepartment,
+                paramUser,
+                paramCreditCompany,
+                paramStartId,
+                paramEndId
+        );
+
+        channelingBundle.setName("Channelling");
+        opdBundle.setName("OPD Bundle");
+        shiftEndBundles.add(channelingBundle);
+        shiftEndBundles.add(opdBundle);
+
     }
 
     public String navigateToDayEndReport() {
