@@ -92,7 +92,7 @@
         </style>
 
 
-        <h:panelGroup rendered="true" class="d-flex justify-content-center align-items-center vh-100">
+        <h:panelGroup rendered="false" class="d-flex justify-content-center align-items-center vh-100">
             <div class="card text-center w-50">
                 <div class="card-header bg-primary text-white">
                     Important Notification
@@ -109,7 +109,7 @@
         </h:panelGroup>
 
 
-        <h:panelGroup rendered="false" >
+        <h:panelGroup rendered="true" >
             <h:panelGroup rendered="#{!sessionController.firstLogin}" class="w-100">
                 <h:panelGroup rendered ="#{not sessionController.logged}"  >
                     <h:panelGroup rendered="#{!applicationController.hasAwebsiteAsFrontEnd}" >
