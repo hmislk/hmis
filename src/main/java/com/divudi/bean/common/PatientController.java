@@ -786,7 +786,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         patientEncounterController.fillPatientInvestigations(current);
         return "/pharmacy/pharmacy_bill_retail_sale?faces-redirect=true;";
     }
-    
+
     public String navigateToOpticianBilling() {
         if (current == null) {
             JsfUtil.addErrorMessage("No patient selected");
@@ -816,6 +816,16 @@ public class PatientController implements Serializable, ControllerWithPatient {
     }
 
     public String navigateToAdmitFromPatientProfile() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No patient selected");
+            return "";
+        }
+        admissionController.prepereToAdmitNewPatient();
+        admissionController.getCurrent().setPatient(current);
+        return "/inward/inward_admission?faces-redirect=true;";
+    }
+
+    public String navigateToAddToQueueFromPatientProfile() {
         if (current == null) {
             JsfUtil.addErrorMessage("No patient selected");
             return "";
@@ -911,8 +921,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
         printPreview = false;
         return "/payments/patient/receive?faces-redirect=true;";
     }
-    
-    public void clearDataForPatientDeposite(){
+
+    public void clearDataForPatientDeposite() {
         current = null;
         paymentMethodData = new PaymentMethodData();
         bill = new Bill();
@@ -1050,7 +1060,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
             JsfUtil.addErrorMessage("Please select a Payment Method");
             return;
         }
-        if (!current.getHasAnAccount()){
+        if (!current.getHasAnAccount()) {
             JsfUtil.addErrorMessage("Please Create Patient Account");
             return;
         }
@@ -1071,7 +1081,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
     }
 
     public void settleBill(BillType billType, HistoryType historyType, BillNumberSuffix billNumberSuffix, Patient patient) {
-        
+
         saveBill(billType, billNumberSuffix, patient);
         billBeanController.setPaymentMethodData(getBill(), getBill().getPaymentMethod(), getPaymentMethodData());
         addToBill();
@@ -2358,7 +2368,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
             return "";
         }
         saveSelected(current);
-        return "/opd/patient";
+        return "/opd/patient?faces-redirect=true;";
     }
 
     public void saveSelected(Patient p) {
@@ -2374,21 +2384,21 @@ public class PatientController implements Serializable, ControllerWithPatient {
             JsfUtil.addErrorMessage("Please enter a name");
             return;
         }
-        if (p.getHasAnAccount() && p.getCreditLimit()==null){
+        if (p.getHasAnAccount() && p.getCreditLimit() == null) {
             p.setCreditLimit(0.0);
         }
-        if(configOptionApplicationController.getBooleanValueByKey("Need Patient Title And Gender to Save Patient", false)){
+        if (configOptionApplicationController.getBooleanValueByKey("Need Patient Title And Gender to Save Patient", false)) {
             if (p.getPerson().getTitle() == null) {
                 JsfUtil.addErrorMessage("Please select title");
                 return;
             }
-            if (p.getPerson().getSex()== null) {
+            if (p.getPerson().getSex() == null) {
                 JsfUtil.addErrorMessage("Please select gender");
                 return;
             }
         }
-        if(configOptionApplicationController.getBooleanValueByKey("Need Patient Age to Save Patient", false)){
-            if (p.getPerson().getDob()== null) {
+        if (configOptionApplicationController.getBooleanValueByKey("Need Patient Age to Save Patient", false)) {
+            if (p.getPerson().getDob() == null) {
                 JsfUtil.addErrorMessage("Please select patient date of birth");
                 return;
             }
