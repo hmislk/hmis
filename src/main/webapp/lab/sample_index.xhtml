@@ -7,7 +7,7 @@
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
-                <p:panel header="Sample Management">
+                <p:panel header="Sample Management at Phlebotomy Room">
                     <div class="row"> 
                         <div class="col-3" id="first-column"> 
                             <h:form>
@@ -15,7 +15,8 @@
                                     <p:commandButton 
                                         class="w-100" 
                                         ajax="false"
-                                        value="To Collect Samples" 
+                                        value="Generate Barcode for Phlebotomy Room" 
+                                        icon="fa fa-barcode"
                                         action="#{patientInvestigationController.navigateToToCollelct()}" 
                                         >
                                     </p:commandButton>
@@ -23,46 +24,44 @@
                                         class="w-100" 
                                         ajax="false" 
                                         value="Collected Samples" 
-                                        action="#{patientInvestigationController.navigateToCollelcted()}" />
+                                        icon="fa fa-vials"
+                                        action="#{patientInvestigationController.navigateToCollelcted()}">
+                                    </p:commandButton>
                                     <p:commandButton
-                                        style="float: right;"
-                                        class="ui-button-warning"
-                                        icon="fa fa-barcode"
-                                        value="To Barcode Printing" 
+                                        class="w-100" 
                                         ajax="false" 
-                                        action="#{patientInvestigationController.navigateToPrintBarcodeFromMenu}" >
+                                        value="Sent to Lab" 
+                                        icon="fa fa-flask"
+                                        action="#{patientInvestigationController.navigateToSentToLab()}">
                                     </p:commandButton>
-                                    <p:commandButton 
-                                        class="w-100 my-1" 
-                                        id="btnToListSamples" 
-                                        ajax="false" 
-                                        immediate="true"
-                                        action="#{patientSampleController.navigateToListPatientSamples()}" 
-                                        value="To List Samples"   >
-                                    </p:commandButton>
+
+                                    <!--                                    <p:commandButton
+                                                                            style="float: right;"
+                                                                            class="ui-button-warning w-100"
+                                                                            value="To Barcode Printing" 
+                                                                            ajax="false" 
+                                                                            action="#{patientInvestigationController.navigateToPrintBarcodeFromMenu}" >
+                                                                        </p:commandButton>
+                                                                        <p:commandButton 
+                                                                            class="w-100 my-1" 
+                                                                            id="btnToListSamples" 
+                                                                            ajax="false" 
+                                                                            immediate="true"
+                                                                            action="#{patientSampleController.navigateToListPatientSamples()}" 
+                                                                            value="To List Samples"   >
+                                                                        </p:commandButton>-->
                                 </div>
-
-
                             </h:form>
                         </div>
-
-
 
                         <div id="second-column" class="col-9"> 
                             <ui:insert name="subcontent" >
 
                             </ui:insert>
                         </div>
-
                     </div>
                 </p:panel>
-
-
-
             </ui:define>
-
-
         </ui:composition>
-
     </h:body>
 </html>

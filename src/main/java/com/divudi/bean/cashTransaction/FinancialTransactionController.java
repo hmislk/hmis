@@ -399,7 +399,7 @@ public class FinancialTransactionController implements Serializable {
                 );
 
         tmpChannellingBundle.setName("Channelling");
-        tmpOpdBundle.setName("OPD Bundle");
+        tmpOpdBundle.setName("OPD");
         shiftEndBundles.add(tmpChannellingBundle);
         shiftEndBundles.add(tmpOpdBundle);
 
