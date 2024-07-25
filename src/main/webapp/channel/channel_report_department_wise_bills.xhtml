@@ -21,26 +21,26 @@
                     </f:facet>
                     <p:panelGrid columns="2" >
                         <h:outputLabel value="From Date"/>
-                        <p:calendar  id="fromDate" value="#{channelReportController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >      
+                        <p:calendar  id="fromDate" value="#{channelReportControllerOld.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >      
                         </p:calendar>
                         <h:outputLabel value="To Date"/>
-                        <p:calendar id="toDate" value="#{channelReportController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >                                                                              
+                        <p:calendar id="toDate" value="#{channelReportControllerOld.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >                                                                              
                         </p:calendar>
                     </p:panelGrid>
                     <h:panelGrid class="my-2">
-                        <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{channelReportController.createDepartmentBills()}"/>
+                        <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{channelReportControllerOld.createDepartmentBills()}"/>
                     </h:panelGrid>
 
 
-                    <p:dataTable value="#{channelReportController.depBills}" var="db" >
+                    <p:dataTable value="#{channelReportControllerOld.depBills}" var="db" >
                         <f:facet name="header">
                             <h:outputLabel value="All Department Bill Summary"/>
                             <h:outputLabel class="ml-5" value="From : " style=" white-space:pre-line;"/>
-                            <h:outputLabel class="ml-2" value="#{channelReportController.fromDate}" >
+                            <h:outputLabel class="ml-2" value="#{channelReportControllerOld.fromDate}" >
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                             </h:outputLabel>                          
                             <h:outputLabel value="&emsp;&emsp;To :"/>
-                            <h:outputLabel class="ml-2" value="#{channelReportController.toDate}" >
+                            <h:outputLabel class="ml-2" value="#{channelReportControllerOld.toDate}" >
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                             </h:outputLabel>
                         </f:facet>

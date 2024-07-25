@@ -973,6 +973,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
             sendSmsAfterDocPayment();
         }
         printPreview = true;
+        currentStaff=null;
         JsfUtil.addSuccessMessage("Successfully Paid");
         //////// // System.out.println("Paid");
     }
@@ -997,6 +998,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
             sendSmsAfterSessionPayment();
         }
         printPreview = true;
+        currentStaff=null;
         JsfUtil.addSuccessMessage("Successfully Paid");
     }
 

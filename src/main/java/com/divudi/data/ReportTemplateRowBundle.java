@@ -1,6 +1,7 @@
 package com.divudi.data;
 
 import com.divudi.entity.ReportTemplate;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -10,7 +11,7 @@ import java.util.List;
 public class ReportTemplateRowBundle {
 
     private ReportTemplate reportTemplate;
-    private List<ReportTemplateRowBundle> reportTemplateRowBundles;
+    private List<ReportTemplateRow> reportTemplateRows;
 
     public ReportTemplate getReportTemplate() {
         return reportTemplate;
@@ -20,13 +21,18 @@ public class ReportTemplateRowBundle {
         this.reportTemplate = reportTemplate;
     }
 
-    public List<ReportTemplateRowBundle> getReportTemplateRowBundles() {
-        return reportTemplateRowBundles;
+    public List<ReportTemplateRow> getReportTemplateRows() {
+        if(reportTemplateRows==null){
+            reportTemplateRows = new ArrayList<>();
+        }
+        return reportTemplateRows;
     }
 
-    public void setReportTemplateRowBundles(List<ReportTemplateRowBundle> reportTemplateRowBundles) {
-        this.reportTemplateRowBundles = reportTemplateRowBundles;
+    public void setReportTemplateRows(List<ReportTemplateRow> reportTemplateRows) {
+        this.reportTemplateRows = reportTemplateRows;
     }
+
+   
     
     
     
