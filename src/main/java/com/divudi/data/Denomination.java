@@ -5,7 +5,7 @@ package com.divudi.data;
  * @author buddhika
  */
 public class Denomination {
-    private int value;
+    private double value;
     private int count;
 
     public Denomination() {}
@@ -15,11 +15,11 @@ public class Denomination {
         this.count = count;
     }
 
-    public int getValue() {
+    public double getValue() {
         return value;
     }
 
-    public void setValue(int value) {
+    public void setValue(double value) {
         this.value = value;
     }
 

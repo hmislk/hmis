@@ -3,10 +3,10 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.divudi</groupId>
 
-    <artifactId>sethma</artifactId>
+    <artifactId>sethmademo</artifactId>
     <version>3.0.0</version>
     <packaging>war</packaging>
-    <name>sethma</name>
+    <name>sethmademo</name>
 
     <properties>
         <endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
