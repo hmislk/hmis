@@ -62,7 +62,7 @@
                                            paginator="true" paginatorPosition="bottom"
                                            paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                            currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
-                                           rowsPerPageTemplate="5,10,{ShowAll|'All'}"
+                                           rowsPerPageTemplate="{ShowAll|'All'}"
                                            var="bf" rowKey="#{bf.id}" >
 
                                 <f:ajax  event="rowSelectCheckbox" execute="tblFee" listener="#{staffPaymentBillController.performCalculations()}"   

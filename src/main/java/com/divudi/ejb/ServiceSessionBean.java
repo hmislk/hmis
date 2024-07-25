@@ -215,7 +215,9 @@ public class ServiceSessionBean {
             BillType.ChannelOnCall,
             BillType.ChannelStaff,
             BillType.ClinicalOpdBooking,
-            BillType.ChannelCredit
+            BillType.ChannelCredit,
+            BillType.ChannelResheduleWithOutPayment,
+            BillType.ChannelResheduleWithPayment
         };
 
         List<BillType> bts = Arrays.asList(billTypes);
@@ -257,7 +259,9 @@ public class ServiceSessionBean {
             BillType.ChannelCash,
             BillType.ChannelOnCall,
             BillType.ChannelStaff,
-            BillType.ChannelCredit};
+            BillType.ChannelCredit,
+            BillType.ChannelResheduleWithOutPayment,
+            BillType.ChannelResheduleWithPayment};
 
         List<BillType> bts = Arrays.asList(billTypes);
         String sql = "Select bs From BillSession bs where "
@@ -321,7 +325,9 @@ public class ServiceSessionBean {
             BillType.ChannelCash,
             BillType.ChannelOnCall,
             BillType.ChannelStaff,
-            BillType.ChannelCredit
+            BillType.ChannelCredit,
+            BillType.ChannelResheduleWithOutPayment,
+            BillType.ChannelResheduleWithPayment
         };
 
         List<BillType> bts = Arrays.asList(billTypes);
@@ -360,7 +366,9 @@ public class ServiceSessionBean {
             BillType.ChannelCash,
             BillType.ChannelOnCall,
             BillType.ChannelStaff,
-            BillType.ChannelCredit
+            BillType.ChannelCredit,
+            BillType.ChannelResheduleWithOutPayment,
+            BillType.ChannelResheduleWithPayment
         };
 
         List<BillType> bts = Arrays.asList(billTypes);
