@@ -1134,7 +1134,30 @@ public class PatientInvestigationController implements Serializable {
         listPatientInvestigationsWhereSamplingCompleting();
         return "/lab/patient_investigations_collected?faces-redirect=true";
     }
-
+    public String navigateToSentToLab(){
+        return "/lab/sent_to_lab?faces-redirect=true";
+    }
+    
+//  Navigation Lab sampling at lab for barcode generate page
+    public String navigateToGenerateBarcodesForLab(){
+        return "/lab/generate_barcodes_for_lab?faces-redirect=true";
+    }
+    
+    public String navigateToCollectSamples(){
+        return "/lab/collect_samples?faces-redirect=true";
+    }
+    public String navigateToAcceptSamples(){
+        return "/lab/accept_samples?faces-redirect=true";
+    }
+    public String navigateToRejectSamples(){
+        return "/lab/reject_samples?faces-redirect=true";
+    }
+    public String navigateToRevertSamples(){
+        return "/lab/revert_samples?faces-redirect=true";
+    }
+    public String navigateToDivideSamples(){
+        return "/lab/divide_samples?faces-redirect=true";
+    }
     public void prepareToSample() {
         String temSql;
         Map temMap = new HashMap();
