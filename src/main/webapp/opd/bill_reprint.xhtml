@@ -277,6 +277,10 @@
                                             <h:outputLabel value="#{bip.billItem.item.name}"/>
                                         </p:column>
                                         <p:column>
+                                            <f:facet name="header">Department</f:facet>
+                                            <h:outputLabel value="#{bip.billItem.item.department.name}"/>
+                                        </p:column>
+                                        <p:column>
                                             <f:facet name="header">Gross Fee Value</f:facet>
                                             <h:outputLabel value="#{bip.feeGrossValue}"/>
                                         </p:column>
