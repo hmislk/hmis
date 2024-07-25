@@ -645,48 +645,7 @@
 
                                     <div>
                                         <h:panelGroup id="paymentDetails"  >
-                                            <h:panelGroup
-                                                class="row"
-                                                layout="block"  
-                                                rendered="#{opdBillController.paymentMethod eq 'Credit'}" >
-                                                <div class="my-1" id="credit">
-                                                    <div class="row">
-                                                        <div class="col-12 d-flex ">
-                                                            <p:autoComplete 
-                                                                id="creditCompany" 
-                                                                class="w-100 -mx-2"
-                                                                inputStyleClass="form-control"
-                                                                forceSelection="true"
-                                                                value="#{opdBillController.creditCompany}"  
-                                                                completeMethod="#{creditCompanyController.completeCredit}" 
-                                                                var="ix"
-                                                                minQueryLength="4"
-                                                                placeholder="Company (Type at least 4 letters to search)"
-                                                                itemLabel="#{ix.name}" 
-                                                                itemValue="#{ix}" 
-                                                                size="10"  >
-
-                                                                <f:ajax  
-                                                                    event="itemSelect" 
-                                                                    listener="#{opdBillController.calTotals()}"
-                                                                    execute="@this" 
-                                                                    render=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}  :#{p:resolveFirstComponentWithId('tblRequests',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId}" />
-                                                            </p:autoComplete>
-
-                                                            <p:inputText  ></p:inputText>
-
-                                                            <p:commandLink 
-                                                                id="btnAddNewCreditCom" 
-                                                                value="(+)"
-                                                                class="mx-3 mt-1"
-                                                                title="Add New Credit Company"
-                                                                ajax="false" 
-                                                                action="#{navigationController.navigateToCreditCompany()}"
-                                                                actionListener="#{creditCompanyController.prepareAdd()}" />  
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </h:panelGroup>
+                                            
                                             <h:panelGroup
                                                 class="row"
                                                 layout="block"  
@@ -782,6 +741,12 @@
                                                 layout="block"  
                                                 id="creditCard" rendered="#{opdBillController.paymentMethod eq 'Card'}" >
                                                 <pa:creditCard paymentMethodData="#{opdBillController.paymentMethodData}"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup
+                                                class="row my-1"
+                                                layout="block"  
+                                                id="credit" rendered="#{opdBillController.paymentMethod eq 'Credit'}" >
+                                                <pa:credit paymentMethodData="#{opdBillController.paymentMethodData}"/>
                                             </h:panelGroup>
                                             <h:panelGroup 
                                                 class="row my-1"
