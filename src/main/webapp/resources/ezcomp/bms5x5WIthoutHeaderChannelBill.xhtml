@@ -101,7 +101,9 @@
                                 <f:convertDateTime pattern=" yyyy MMMM dd" ></f:convertDateTime>
                             </h:outputLabel>
                             <h:outputLabel value="-" />
-                            <h:outputLabel value="#{cc.attrs.controller.selectedSessionInstance.startingTime}" >
+                          
+                            <h:outputLabel value="#{cc.attrs.bill.singleBillSession.sessionInstance.startingTime}" >
+
                                 <f:convertDateTime pattern="hh:mm a" ></f:convertDateTime>
                             </h:outputLabel>
                         </b>
