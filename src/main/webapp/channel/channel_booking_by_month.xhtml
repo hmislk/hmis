@@ -1310,7 +1310,7 @@
                                                 <ez:bms5x5ChannelBill bill="#{bookingControllerViewScopeMonth.printingBill}" payments="#{bookingControllerViewScopeMonth.payments}"/> 
                                             </h:panelGroup>
                                             <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'FiveFivePrintedPaper'}" >
-                                                <ez:bms5x5WIthoutHeaderChannelBill bill="#{bookingControllerViewScopeMonth.printingBill}" paymentMethodData="#{bookingControllerViewScopeMonth.paymentMethodData}" payments="#{bookingControllerViewScopeMonth.payments}"/>
+                                                <ez:bms5x5WIthoutHeaderChannelBill controller="#{bookingControllerViewScopeMonth}" bill="#{bookingControllerViewScopeMonth.printingBill}" paymentMethodData="#{bookingControllerViewScopeMonth.paymentMethodData}" payments="#{bookingControllerViewScopeMonth.payments}"/>
                                             </h:panelGroup>
                                         </ui:repeat>
                                     </h:panelGroup>
