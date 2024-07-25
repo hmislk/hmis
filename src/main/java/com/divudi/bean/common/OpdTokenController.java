@@ -10,6 +10,7 @@ import com.divudi.bean.pharmacy.PharmacyBillSearch;
 import com.divudi.bean.pharmacy.PharmacyPreSettleController;
 import com.divudi.bean.pharmacy.PharmacySaleController;
 import com.divudi.data.PaymentMethod;
+import com.divudi.data.TokenCount;
 import com.divudi.data.TokenType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.entity.Bill;
@@ -88,6 +89,7 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
     private Staff staff;
     private Bill bill;
     private boolean patientDetailsEditable;
+    private List<TokenCount> tokenCounts;
 
     private boolean printPreview;
 
@@ -351,18 +353,78 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
         return "/opd/token/opd_tokens_called?faces-redirect=true"; // Adjust the navigation string as per your page structure
     }
 
+    public String navigateToManageOpdTokensWaiting() {
+        fillOpdTokensWaiting();
+        fillOpdWaitingTokensCounts();
+        return "/opd/token/opd_tokens_waiting?faces-redirect=true"; // Adjust the navigation string as per your page structure
+    }
+
     public void fillOpdTokensCalled() {
         Map<String, Object> m = new HashMap<>();
         String j = "Select t "
                 + " from Token t"
                 + " where t.department=:dep"
+                + " and t.tokenDate=:date "
                 + " and t.called=:cal "
                 + " and t.tokenType=:ty"
                 + " and t.inProgress=:prog "
                 + " and t.completed=:com"; // Add conditions to filter out tokens that are in progress or completed
         m.put("dep", sessionController.getDepartment());
+        m.put("date", new Date());
         m.put("cal", true); // Tokens that are called
-        m.put("prog", true); // Tokens that are not in progress
+        m.put("prog", false); // Tokens that are not in progress
+        m.put("ty", TokenType.OPD_TOKEN); // Chack Token Type that are called
+        m.put("com", false); // Tokens that are not completed
+        j += " order by t.id";
+        currentTokens = tokenFacade.findByJpql(j, m, TemporalType.DATE);
+        //System.out.println("currentTokens = " + currentTokens);
+    }
+    
+    public void fillOpdWaitingTokensCounts() {
+        Map<String, Object> m = new HashMap<>();
+        String j = "Select new com.divudi.data.TokenCount(t.counter, t.staff, count(t)) "
+                + " from Token t"
+                + " where t.department=:dep"
+                + " and t.tokenDate=:date "
+                + " and t.called=:cal "
+                + " and t.tokenType=:ty"
+                + " and t.inProgress=:prog "
+                + " and t.completed=:com"; // Add conditions to filter out tokens that are in progress or completed
+        
+        boolean testing = false;
+        if(testing){
+            Token t=new Token();
+            t.getCounter();
+            t.getStaff();
+            
+        }
+        
+        m.put("dep", sessionController.getDepartment());
+        m.put("date", new Date());
+        m.put("cal", false); // Tokens that are called
+        m.put("prog", false); // Tokens that are not in progress
+        m.put("ty", TokenType.OPD_TOKEN); // Chack Token Type that are called
+        m.put("com", false); // Tokens that are not completed
+        j += " group by t.counter, t.staff";
+        currentTokens = tokenFacade.findByJpql(j, m, TemporalType.DATE);
+        tokenCounts = (List<TokenCount>) tokenFacade.findLightsByJpql(j, m);
+        //System.out.println("currentTokens = " + currentTokens);
+    }
+
+    public void fillOpdTokensWaiting() {
+        Map<String, Object> m = new HashMap<>();
+        String j = "Select t "
+                + " from Token t"
+                + " where t.department=:dep"
+                + " and t.tokenDate=:date "
+                + " and t.called=:cal "
+                + " and t.tokenType=:ty"
+                + " and t.inProgress=:prog "
+                + " and t.completed=:com"; // Add conditions to filter out tokens that are in progress or completed
+        m.put("dep", sessionController.getDepartment());
+        m.put("date", new Date());
+        m.put("cal", false); // Tokens that are called
+        m.put("prog", false); // Tokens that are not in progress
         m.put("ty", TokenType.OPD_TOKEN); // Chack Token Type that are called
         m.put("com", false); // Tokens that are not completed
         j += " order by t.id";
@@ -446,10 +508,10 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
             JsfUtil.addErrorMessage("Please select valid Token");
             return;
         }
-        
+
         if (currentToken.isCalled()) {
             currentToken.setCalled(false);
-        }else{
+        } else {
             currentToken.setCalled(true);
         }
         tokenFacade.edit(currentToken);
@@ -458,13 +520,12 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
 //    public void restartTokenService() {
 //        
 //    }
-
     public void reverseCompleteTokenService() {
-        if (currentToken==null) {
+        if (currentToken == null) {
             JsfUtil.addErrorMessage("Token Is Not Valid !");
             return;
         }
-       currentToken.setRestartTokenServices(true);
+        currentToken.setRestartTokenServices(true);
         currentToken.setCompleted(false);
         tokenFacade.edit(currentToken);
     }
@@ -580,6 +641,8 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
         return doctor;
     }
 
+    
+    
     public void setDoctor(Doctor doctor) {
         this.doctor = doctor;
     }
@@ -606,6 +669,14 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
 
     public void setBill(Bill bill) {
         this.bill = bill;
+    }
+
+    public List<TokenCount> getTokenCounts() {
+        return tokenCounts;
+    }
+
+    public void setTokenCounts(List<TokenCount> tokenCounts) {
+        this.tokenCounts = tokenCounts;
     }
 
 }

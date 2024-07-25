@@ -5,10 +5,8 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
-      xmlns:bil="http://xmlns.jcp.org/jsf/composite/bill"
-      xmlns:phi="http://xmlns.jcp.org/jsf/composite/pharmacy"
+      xmlns:phi="http://xmlns.jcp.org/jsf/composite/optician"
       xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
-      xmlns:pat="http://xmlns.jcp.org/jsf/composite/patient"
       xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
@@ -49,18 +47,17 @@
                                             <h:outputText value="Add New Items" class="mx-4"></h:outputText>
                                         </f:facet>
                                         <div class="row w-100 m-0">
-                                            <div class="col-md-5">
-                                                <p:focus id="focusForAcIx" for="acStock" ></p:focus>
+                                            <div class="col-md-4 p-1">
                                                 <p:outputLabel 
-                                                    class="w-100" 
-                                                    for="acStock">Medicines/Devices</p:outputLabel>
+                                                    class="w-100 m-1" 
+                                                    for="acStock">Item</p:outputLabel>
                                                 <p:autoComplete 
                                                     accesskey="i" 
                                                     id="acStock" 
                                                     inputStyleClass="w-100"
                                                     minQueryLength="3" 
                                                     maxResults="20" 
-                                                    class="w-100"
+                                                    class="w-100 m-1"
                                                     forceSelection="true"
                                                     value="#{opticianSaleController.stock}" 
                                                     completeMethod="#{stockController.completeAvailableStocks}" 
@@ -92,79 +89,86 @@
                                                             <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
                                                         </h:outputLabel>
                                                     </p:column>
-                                                    <p:ajax event="focus" process="acStock :#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('cmbPs2',view).clientId}"  ></p:ajax>
-                                                    <p:ajax event="itemSelect" listener="#{opticianSaleController.handleSelect}" update="txtQty txtRate focusQty :#{p:resolveFirstComponentWithId('lstReplaceableBatch',view).clientId}" ></p:ajax>
-                                                    <p:ajax event="query" update=":#{p:resolveFirstComponentWithId('tabI',view).clientId}" process="acStock"></p:ajax>
+                                                    <p:ajax event="itemSelect" 
+                                                            process="@this"
+                                                            listener="#{opticianSaleController.handleSelect}" 
+                                                            update="txtVal txtRate" ></p:ajax>
                                                 </p:autoComplete>
 
                                             </div>
-                                            <div class="col-md-2">
+                                            <div class="col-md-2 p-1">
                                                 <p:outputLabel 
-                                                    class="w-100"
+                                                    class="w-100 m-1"
+                                                    for="txtComments">Comments</p:outputLabel>
+                                                <p:inputText 
+                                                    id="txtComments" 
+                                                    accesskey="q" 
+                                                    autocomplete="off" 
+                                                    class="w-100 m-1"
+                                                    style="text-align: right;"
+                                                    value="#{opticianSaleController.strComment}">
+                                                    <p:ajax event="blur" process="@this" ></p:ajax>
+                                                </p:inputText>
+                                            </div>
+                                            <div class="col-md-1 p-1">
+                                                <p:outputLabel 
+                                                    class="w-100 m-1"
                                                     for="txtQty">Quantity</p:outputLabel>
                                                 <p:inputText 
                                                     id="txtQty" 
                                                     accesskey="q" 
                                                     autocomplete="off" 
-                                                    class="w-100"
+                                                    class="w-100 m-1"
+                                                    onfocus="this.select();"
                                                     style="text-align: right;"
                                                     value="#{opticianSaleController.intQty}">
-                                                    <p:ajax event="keyup" listener="#{opticianSaleController.calculateBillItemListner}" process="acStock txtQty :#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('cmbPs2',view).clientId}" update="txtRate txtVal"></p:ajax>
-                                                    <p:ajax event="blur" listener="#{opticianSaleController.calculateBillItemListner}" process="acStock txtQty :#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('cmbPs2',view).clientId}" update="txtRate txtVal"></p:ajax>
+                                                    <p:ajax event="keyup" listener="#{opticianSaleController.calculateBillItemListner}" process="@this" update="txtVal"></p:ajax>
                                                 </p:inputText>
-
                                             </div>
-                                            <div class="col-md-5">
-                                                <div class="row" >
-                                                    <div class="col-md-4">
-                                                        <p:outputLabel value="&nbsp;" class="w-100" ></p:outputLabel>
-                                                        <p:commandButton 
-                                                            id="btnAdd" 
-                                                            accesskey="a" 
-                                                            icon="fa fa-plus" 
-                                                            value="Add" 
-                                                            styleClass="ui-button-success" 
-                                                            action="#{opticianSaleController.addBillItem()}" 
-                                                            process="@this acStock txtQty :#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('cmbPs2',view).clientId} focusForAcIx" 
-                                                            update=":#{p:resolveFirstComponentWithId('netTotal',view).clientId} :#{p:resolveFirstComponentWithId('dis',view).clientId} :#{p:resolveFirstComponentWithId('total',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} txtRate txtQty acStock focusItem :#{p:resolveFirstComponentWithId('tabI',view).clientId} :#{p:resolveFirstComponentWithId('panelError',view).clientId}" >
-                                                        </p:commandButton>
-
-                                                    </div>
-                                                    <div class="col-md-4">
-                                                        <p:outputLabel class="w-100" for="txtRate">Rate</p:outputLabel>
-                                                        <p:inputText 
-                                                            id="txtRate" 
-                                                            style="text-align: right;"
-                                                            class="w-100" 
-                                                            readonly="true"
-                                                            value="#{opticianSaleController.billItem.netRate}">
-                                                            <f:convertNumber pattern="#,##0.00" />
-                                                        </p:inputText>
-                                                    </div>
-                                                    <div class="col-md-4">
-                                                        <p:outputLabel 
-                                                            class="w-100"
-                                                            value="Value"
-                                                            for="txtVal">
-                                                        </p:outputLabel>
-                                                        <p:inputText 
-                                                            readonly="true"
-                                                            id="txtVal" 
-                                                            class="w-100"
-                                                            style="text-align: right;"
-                                                            value="#{opticianSaleController.billItem.netValue}">
-                                                            <f:convertNumber pattern="#,##0.00" />
-                                                        </p:inputText>
-                                                    </div>
-                                                </div>
+                                            <div class="col-md-1 p-1">
+                                                <p:outputLabel class="w-100 m-1" for="txtRate">Rate</p:outputLabel>
+                                                <p:inputText 
+                                                    id="txtRate" 
+                                                    style="text-align: right;"
+                                                    class="w-100 m-1" 
+                                                    onfocus="this.select();"
+                                                    value="#{opticianSaleController.billItem.rate}">
+                                                    <f:convertNumber pattern="###0.00" />
+                                                    <p:ajax event="keyup" listener="#{opticianSaleController.calculateBillItemListner}" process="@this" update="txtVal"></p:ajax>
+                                                </p:inputText>
+                                                
+                                            </div>
+                                            <div class="col-md-1 p-1">
+                                                <p:outputLabel value="&nbsp;&nbsp;&nbsp;" class="w-100 m-1" ></p:outputLabel>
+                                                <p:commandButton 
+                                                    id="btnAdd" 
+                                                    accesskey="a" 
+                                                    icon="fa fa-plus" 
+                                                    value="Add" 
+                                                    class="m-1"
+                                                    styleClass="ui-button-success" 
+                                                    action="#{opticianSaleController.addBillItem()}" 
+                                                    process="@this" 
+                                                    update=":#{p:resolveFirstComponentWithId('netTotal',view).clientId} :#{p:resolveFirstComponentWithId('dis',view).clientId} :#{p:resolveFirstComponentWithId('total',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} txtRate txtQty acStock txtComments :#{p:resolveFirstComponentWithId('tabI',view).clientId} :#{p:resolveFirstComponentWithId('panelError',view).clientId}" >
+                                                </p:commandButton>
+                                            </div>
+                                            <div class="col-md-1 p-1">
+                                                <p:outputLabel 
+                                                    class="w-100 m-1"
+                                                    value="Value"
+                                                    for="txtVal">
+                                                </p:outputLabel>
+                                                <p:inputText 
+                                                    readonly="true"
+                                                    id="txtVal" 
+                                                    class="w-100 m-1"
+                                                    style="text-align: right;"
+                                                    value="#{opticianSaleController.billItem.netValue}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </p:inputText>
                                             </div>
                                         </div>
-                                        <p:focus id="focusQty" for="txtQty"></p:focus>
-                                        <p:focus id="focusItem" for="acStock"></p:focus>
                                     </p:panel>
-
-
-
                                     <p:panel id="pBis">
                                         <f:facet name="header" >
                                             <h:outputText styleClass="fas fa-money-bill" />
@@ -229,7 +233,10 @@
 
                                                 </p:dialog>
                                             </p:column>
-
+                                            <p:column headerText="Comments" style="width: 15%">
+                                                <h:outputLabel value="#{bi.descreption}" >
+                                                </h:outputLabel>
+                                            </p:column>
                                             <p:column headerText="Rate" style="width: 10%">
                                                 <h:outputLabel id="rate" value="#{bi.rate}" >
                                                     <f:convertNumber pattern="#,##0.00" />
@@ -240,12 +247,7 @@
                                                     <f:convertNumber pattern="#,##0.00" />
                                                 </h:outputLabel>
                                             </p:column>
-                                            <p:column headerText="Expiry" style="width: 15%">
-                                                <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.dateOfExpire}" >
-                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}"  ></f:convertDateTime>
-                                                </h:outputLabel>
 
-                                            </p:column>
                                             <p:column headerText="Qty" style="width: 8%">
                                                 <p:cellEditor>  
                                                     <f:facet name="output">  
@@ -333,7 +335,6 @@
                                     <h:panelGrid id="sale" columns="1" class="alignTop w-100"  >
                                         <common:patient_details  
                                             editable="true"
-                                            focus="false"
                                             controller="#{opticianSaleController}"/>
                                         <div class="row">
                                             <div class="col">
@@ -664,7 +665,6 @@
                                 <br/>
                                 <div style="page-break-inside: avoid;">
                                     <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}" style="page-break-after: always!important;"> 
-
                                         <phi:saleBill bill="#{opticianSaleController.printBill}"></phi:saleBill>
                                     </h:panelGroup>
                                 </div>
@@ -696,15 +696,6 @@
                             </h:panelGroup>  
 
                         </h:panelGroup>                     
-
-
-                        <!--                        <div class="mt-5">
-                                                    <h:panelGroup   id="gpBillPreview"> 
-                                                        <phi:saleBill bill="#{opticianSaleController.printBill}"></phi:saleBill>
-                                                    </h:panelGroup>
-                        
-                        
-                                                </div>-->
 
                     </p:panel>
 
