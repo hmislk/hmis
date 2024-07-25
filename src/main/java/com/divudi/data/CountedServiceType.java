@@ -5,7 +5,7 @@ package com.divudi.data;
  */
 public enum CountedServiceType {
 
-    OPD("Outpatient Department"),
+    OPD_IN("Outpatient Department - Collection"),
     OPD_OUT("Outpatient Department - Cancellation or Refunds"),
     OPD_PROFESSIONAL_PAYMENT("Outpatient Department - Professional Payment"),
     NONE("NONE"),
