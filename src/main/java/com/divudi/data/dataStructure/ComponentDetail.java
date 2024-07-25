@@ -34,6 +34,9 @@ public class ComponentDetail {
     private PaymentMethodData paymentMethodData;
     private int creditDuration;
     private Staff toStaff;
+    private String referralNo;
+    
+    
 
     public List<ComponentDetail> getMultiplePaymentMethodComponentDetails() {
         if (multiplePaymentMethodComponentDetails == null) {
@@ -44,13 +47,13 @@ public class ComponentDetail {
         }
         return multiplePaymentMethodComponentDetails;
     }
-    
-    public void addAnotherPaymentDetail(){
+
+    public void addAnotherPaymentDetail() {
         ComponentDetail cd = new ComponentDetail();
         getMultiplePaymentMethodComponentDetails().add(cd);
     }
-    
-    public void removePaymentDetail(ComponentDetail cd){
+
+    public void removePaymentDetail(ComponentDetail cd) {
         getMultiplePaymentMethodComponentDetails().remove(cd);
     }
 
@@ -115,7 +118,7 @@ public class ComponentDetail {
     }
 
     public PaymentMethodData getPaymentMethodData() {
-        if(paymentMethodData==null){
+        if (paymentMethodData == null) {
             paymentMethodData = new PaymentMethodData();
         }
         return paymentMethodData;
@@ -140,8 +143,13 @@ public class ComponentDetail {
     public void setToStaff(Staff toStaff) {
         this.toStaff = toStaff;
     }
-    
-    
-    
+
+    public String getReferralNo() {
+        return referralNo;
+    }
+
+    public void setReferralNo(String referralNo) {
+        this.referralNo = referralNo;
+    }
 
 }
