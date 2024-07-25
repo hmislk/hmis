@@ -1,0 +1,259 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:head>
+        <title>OPD Token Board</title>
+        <link rel="stylesheet" 
+              href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.0/css/all.min.css"/>
+        <link 
+            rel="stylesheet" 
+            href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.2/font/bootstrap-icons.css"/>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous"></link>
+        <style>
+            .token-board {
+                font-size: 2em; /* Larger font size for better visibility on TV */
+            }
+            .token-circle {
+                width: 100px;
+                height: 100px;
+                background-color: #007bff;
+                border-radius: 50%;
+                color: white;
+                text-align: center;
+                margin: 10px auto;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                font-size: 45pt;
+            }
+            .counter-name {
+                font-size: 1.5em;
+                font-weight: bold;
+                color: #333;
+            }
+            /*            .patient-name {
+                            font-size: 1em;
+                            color: #555;
+                        }*/
+            .token-item {
+                margin-bottom: 20px;
+                padding: 10px;
+                border: 1px solid #ddd;
+                border-radius: 8px;
+                background-color: #f9f9f9;
+            }
+
+            /*            .drDetails{
+                            font-size: 18pt;
+                            font-weight: bolder;
+                        }*/
+
+            @keyframes gradientChange {
+                0% {
+                    background: linear-gradient(to right, red, orange);
+                }
+                25% {
+                    background: linear-gradient(to right, orange, yellow);
+                }
+                50% {
+                    background: linear-gradient(to right, yellow, green);
+                }
+                75% {
+                    background: linear-gradient(to right, green, blue);
+                }
+                100% {
+                    background: linear-gradient(to right, blue, violet);
+                }
+            }
+
+            f{
+
+                animation: gradientChange 10s ease-in-out infinite;
+            }
+
+            .navBar{
+                position: fixed;
+                top: 0;
+                left: 0;
+                z-index: 1000; /* Adjust as needed */
+                text-align: center;
+                color: white;
+                background-color:#012e4b;
+                width: 100%;
+                height: 150px;
+                margin-bottom: 10px;
+                justify-content: space-between;
+                display: flex;
+                align-items: center;
+                padding-right:20px;
+                padding-left:20px;
+
+            }
+
+            @keyframes scaleAnimation {
+                50% {
+                    transform: scale(1); /* Initial scale */
+                }
+                80% {
+                    transform: scale(1.1); /* Scale to 1.5 times the original size */
+                }
+
+            }
+
+            .element {
+                width: 100px; /* Initial width */
+                height: 100px; /* Initial height */
+                background-color: #007bff;
+                animation: scaleAnimation 5s ease-in-out infinite alternate; /* Animation properties */
+            }
+
+            @keyframes backgroundAnimation {
+                0% {
+                    background-position: 0% 50%;
+                }
+                50% {
+                    background-position: 100% 50%;
+                }
+                100% {
+                    background-position: 0% 50%;
+                }
+            }
+
+            /*            body {
+                            background: linear-gradient(to right, rgba(78, 115, 223, 0.8), rgba(34, 74, 190, 0.6), rgba(44, 129, 222, 0.7), rgba(83, 131, 232, 0.9));
+                            background-size: 200% 100%;
+                            animation: backgroundAnimation 10s ease infinite;
+                        }*/
+
+            .department-a {
+                background-color: #1abc9c; /* Light red */
+            }
+            .department-b {
+                background-color: #ff6b6b; /* Light green */
+            }
+            .department-c {
+                background-color: #9b59b6; /* Light blue */
+            }
+            .department-d {
+                background-color: #f39c12; /* Light blue */
+            }
+            .section2{
+                background-color: white;
+            }
+            .section3{
+                background-color: white;
+            }
+
+
+
+        </style>
+    </h:head>
+    <h:body class="bg-dark">
+
+        <h:form>
+
+            <div class="navBar p-2">
+                <div>
+                    <div>
+                        <h3 onclick="toggleFullScreen(); return false;">OPD Queue Management &amp; Token System</h3> 
+                        <div style="font-size: 15pt; font-weight: bold;position: fixed;z-index: 0000">
+                            <span id="date"></span>
+                            <span id="time"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-2">
+                    <h5>#{sessionController.institution.name}</h5>
+                    <h6>#{sessionController.institution.address}</h6>
+                    <div class="d-flex align-items-center justify-content-center">
+                        <h6 class="mx-2">#{sessionController.institution.email} / </h6>
+                        <h6>#{sessionController.institution.phone}</h6>
+                    </div>
+                    <h6>#{sessionController.institution.web}</h6>
+                </div>
+            </div>
+            <div class="container-fluid" style="margin-top: 160px">
+                
+                
+                <h1 class="text-white">dfsdfsd</h1>
+                
+                <ui:repeat var="tokenCounts" value="#{opdTokenController.tokenCounts}" >
+                    <h:outputLabel value="#{tokenCounts.department.name}" class="text-white"></h:outputLabel>
+                    <h:outputLabel value="#{tokenCounts.staff.person.nameWithTitle}" class="text-white"></h:outputLabel>
+                    <h:outputLabel value="#{tokenCounts.tokenCount}" class="text-white"></h:outputLabel>
+                    
+                    
+                    
+                </ui:repeat>
+
+           
+            </div>
+
+
+
+
+            <!-- Automatic Process Every 5 Seconds -->
+            <p:poll interval="5" listener="#{opdTokenController.fillOpdTokensCalled()}" update="@form" />
+        </h:form>
+
+        <script>
+            function updateTime() {
+                const now = new Date();
+                const dateElement = document.getElementById('date');
+                const timeElement = document.getElementById('time');
+
+                const options = {weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'};
+                dateElement.textContent = now.toLocaleDateString('en-US', options);
+
+                const timeString = now.toLocaleTimeString('en-US');
+                timeElement.textContent = timeString;
+
+                dateElement.style.display = 'inline'; // Show date
+                timeElement.style.display = 'inline'; // Show time
+            }
+
+            // Update time every second
+            setInterval(updateTime, 1000);
+
+            // Hide date and time initially
+            document.addEventListener('DOMContentLoaded', function () {
+                document.getElementById('date').style.display = 'none';
+                document.getElementById('time').style.display = 'none';
+            });
+        </script>
+        <script type="text/javascript">
+            //<![CDATA[
+            function toggleFullScreen() {
+                var elem = document.documentElement;
+                if (!document.fullscreenElement && !document.mozFullScreenElement &&
+                        !document.webkitFullscreenElement && !document.msFullscreenElement) {
+                    if (elem.requestFullscreen) {
+                        elem.requestFullscreen();
+                    } else if (elem.msRequestFullscreen) {
+                        elem.msRequestFullscreen();
+                    } else if (elem.mozRequestFullScreen) {
+                        elem.mozRequestFullScreen();
+                    } else if (elem.webkitRequestFullscreen) {
+                        elem.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
+                    }
+                } else {
+                    if (document.exitFullscreen) {
+                        document.exitFullscreen();
+                    } else if (document.msExitFullscreen) {
+                        document.msExitFullscreen();
+                    } else if (document.mozCancelFullScreen) {
+                        document.mozCancelFullScreen();
+                    } else if (document.webkitExitFullscreen) {
+                        document.webkitExitFullscreen();
+                    }
+                }
+            }
+            //]]>
+        </script>
+
+    </h:body>
+</html>

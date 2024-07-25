@@ -8,11 +8,11 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <h:body>
-        <h:form>
+       
             <ui:composition template="/cashier/index.xhtml">
 
                 <ui:define name="subcontent">
-
+ <h:form>
                     <p:panel >
                         <f:facet name="header">
                             <i class="fas fa-piggy-bank mt-2"/>
@@ -227,8 +227,8 @@
 
                         </p:panel>
                     </p:panel>
+             </h:form>
                 </ui:define>
             </ui:composition>
-        </h:form>
     </h:body>
 </html>

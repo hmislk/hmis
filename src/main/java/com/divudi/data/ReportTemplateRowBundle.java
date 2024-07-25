@@ -12,7 +12,17 @@ public class ReportTemplateRowBundle {
 
     private ReportTemplate reportTemplate;
     private List<ReportTemplateRow> reportTemplateRows;
+    private Double total;
+    private Double totalIn;
+    private Double totalOut;
+    private Long countIn;
+    private Long countOut;
+    private Long count;
 
+    
+    
+    
+    
     public ReportTemplate getReportTemplate() {
         return reportTemplate;
     }
@@ -30,6 +40,54 @@ public class ReportTemplateRowBundle {
 
     public void setReportTemplateRows(List<ReportTemplateRow> reportTemplateRows) {
         this.reportTemplateRows = reportTemplateRows;
+    }
+
+    public Double getTotal() {
+        return total;
+    }
+
+    public void setTotal(Double total) {
+        this.total = total;
+    }
+
+    public Double getTotalIn() {
+        return totalIn;
+    }
+
+    public void setTotalIn(Double totalIn) {
+        this.totalIn = totalIn;
+    }
+
+    public Double getTotalOut() {
+        return totalOut;
+    }
+
+    public void setTotalOut(Double totalOut) {
+        this.totalOut = totalOut;
+    }
+
+    public Long getCountIn() {
+        return countIn;
+    }
+
+    public void setCountIn(Long countIn) {
+        this.countIn = countIn;
+    }
+
+    public Long getCountOut() {
+        return countOut;
+    }
+
+    public void setCountOut(Long countOut) {
+        this.countOut = countOut;
+    }
+
+    public Long getCount() {
+        return count;
+    }
+
+    public void setCount(Long count) {
+        this.count = count;
     }
 
    
