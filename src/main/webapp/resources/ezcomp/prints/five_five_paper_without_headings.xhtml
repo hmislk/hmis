@@ -431,8 +431,11 @@
                 <h:outputLabel value="Original Bill : #{cc.attrs.bill.deptId}" rendered="#{cc.attrs.bill.cancelled and configOptionApplicationController.getBooleanValueByKey('Package Billing - Display the Original Bill Number in Canceled Bill',false)}"/>
             
             </div>
+            
+            
 
-            <ui:repeat value="#{cc.attrs.payments}" var="ps">
+            <ui:repeat value="#{cc.attrs.bill.payments}" var="ps">
+                
                 <h:panelGroup rendered="#{ps.paymentMethod eq 'Card' }" >
                     <h:outputText 
                         style="font-size: 8pt"  
