@@ -277,8 +277,6 @@ public class FinancialTransactionController implements Serializable {
         return bundle;
     }
 
-    
-    
     public ReportTemplateRowBundle addProfessionalPayments(
             ReportTemplateType type,
             List<BillTypeAtomic> btas,
@@ -298,8 +296,10 @@ public class FinancialTransactionController implements Serializable {
         System.out.println("addOpdByDepartments");
 
         ReportTemplateRowBundle bundle;
-        List<BillTypeAtomic> inBts = BillTypeAtomic.findByCountedServiceType(CountedServiceType.OPD_IN);
-        List<BillTypeAtomic> outBts = BillTypeAtomic.findByCountedServiceType(CountedServiceType.OPD_OUT);
+        List<BillTypeAtomic> inBts = BillTypeAtomic.findByCountedServiceType(CountedServiceType.CHANNELLING_PROFESSIONAL_PAYMENT);
+        inBts.addAll(BillTypeAtomic.findByCountedServiceType(CountedServiceType.OPD_PROFESSIONAL_PAYMENT));
+        List<BillTypeAtomic> outBts = BillTypeAtomic.findByCountedServiceType(CountedServiceType.CHANNELLING_PROFESSIONAL_PAYMENT_RETURN);
+        outBts.addAll(BillTypeAtomic.findByCountedServiceType(CountedServiceType.OPD_PROFESSIONAL_PAYMENT_RETURN));
 
         ReportTemplateRowBundle ins = reportTemplateController.generateReport(
                 type,
@@ -339,14 +339,11 @@ public class FinancialTransactionController implements Serializable {
 
         System.out.println("outes = " + outs.getReportTemplateRows().size());
 
-        bundle = combineBundlesByItemDepartment(ins, outs);
+        bundle = combineBundlesByBillTypeAtomic(ins, outs);
 
         return bundle;
     }
 
-    
-    
-    
     public ReportTemplateRowBundle addOpdByDepartments(
             ReportTemplateType type,
             List<BillTypeAtomic> btas,
@@ -417,7 +414,7 @@ public class FinancialTransactionController implements Serializable {
         ReportTemplateType channelingType = ReportTemplateType.ITEM_CATEGORY_SUMMARY_BY_BILL;
         ReportTemplateType opdType = ReportTemplateType.ITEM_DEPARTMENT_SUMMARY_BY_BILL_ITEM;
         ReportTemplateType paymentsType = ReportTemplateType.BILL_TYPE_ATOMIC_SUMMARY_USING_BILLS;
-        
+
         List<BillTypeAtomic> btas = null;
         Date paramDate = null;
         Date paramFromDate = null;
@@ -469,7 +466,7 @@ public class FinancialTransactionController implements Serializable {
                         paramStartId,
                         paramEndId
                 );
-        
+
         ReportTemplateRowBundle tmpPaymentBundle
                 = addProfessionalPayments(
                         paymentsType,
@@ -780,8 +777,6 @@ public class FinancialTransactionController implements Serializable {
         return temOutBundle;
     }
 
-    
-    
     private ReportTemplateRowBundle combineBundlesByItemDepartment(ReportTemplateRowBundle inBundle, ReportTemplateRowBundle outBundle) {
         System.out.println("Starting combineBundlesByDepartment method");
 
@@ -875,8 +870,99 @@ public class FinancialTransactionController implements Serializable {
         return temOutBundle;
     }
 
-    
-    
+    private ReportTemplateRowBundle combineBundlesByBillTypeAtomic(ReportTemplateRowBundle inBundle, ReportTemplateRowBundle outBundle) {
+        System.out.println("Starting combineBundlesByDepartment method");
+
+        ReportTemplateRowBundle temOutBundle = new ReportTemplateRowBundle();
+        temOutBundle.setReportTemplateRows(new ArrayList<>());  // Ensure the list is initialized
+        Map<Object, ReportTemplateRow> combinedRows = new HashMap<>();
+
+        final Object NULL_DEPARTMENT_KEY = new Object();  // Placeholder for null departments
+
+        if (inBundle != null && inBundle.getReportTemplateRows() != null) {
+            System.out.println("Processing inBundle");
+            for (ReportTemplateRow inRow : inBundle.getReportTemplateRows()) {
+                if (inRow != null) {
+                    BillTypeAtomic d = inRow.getBillTypeAtomic();
+                    Object key = (d != null) ? d : NULL_DEPARTMENT_KEY;
+                    if (d == null) {
+                        System.out.println("Department is null in inRow");
+                    } else {
+                        System.out.println("Processing inRow for Department: " + d.getLabel());
+                    }
+                    if (!combinedRows.containsKey(key)) {
+                        combinedRows.put(key, new ReportTemplateRow(d));
+                    }
+                    ReportTemplateRow combinedRow = combinedRows.get(key);
+                    combinedRow.setRowCountIn((combinedRow.getRowCountIn() != null ? combinedRow.getRowCountIn() : 0L) + (inRow.getRowCount() != null ? inRow.getRowCount() : 0L));
+                    combinedRow.setRowValueIn((combinedRow.getRowValueIn() != null ? combinedRow.getRowValueIn() : 0.0) + (inRow.getRowValue() != null ? inRow.getRowValue() : 0.0));
+                } else {
+                    System.out.println("inRow is null");
+                }
+            }
+        } else {
+            System.out.println("inBundle or inBundle.getReportTemplateRows() is null");
+        }
+
+        if (outBundle != null && outBundle.getReportTemplateRows() != null) {
+            System.out.println("Processing outBundle");
+            for (ReportTemplateRow outRow : outBundle.getReportTemplateRows()) {
+                if (outRow != null) {
+                    BillTypeAtomic d = outRow.getBillTypeAtomic();
+                    Object key = (d != null) ? d : NULL_DEPARTMENT_KEY;
+                    if (d == null) {
+                        System.out.println("Department is null in outRow");
+                    } else {
+                        System.out.println("Processing outRow for Department: " + d.getLabel());
+                    }
+                    if (!combinedRows.containsKey(key)) {
+                        combinedRows.put(key, new ReportTemplateRow(d));
+                    }
+                    ReportTemplateRow combinedRow = combinedRows.get(key);
+                    combinedRow.setRowCountOut((combinedRow.getRowCountOut() != null ? combinedRow.getRowCountOut() : 0L) + (outRow.getRowCount() != null ? outRow.getRowCount() : 0L));
+                    combinedRow.setRowValueOut((combinedRow.getRowValueOut() != null ? combinedRow.getRowValueOut() : 0.0) + (outRow.getRowValue() != null ? outRow.getRowValue() : 0.0));
+                } else {
+                    System.out.println("outRow is null");
+                }
+            }
+        } else {
+            System.out.println("outBundle or outBundle.getReportTemplateRows() is null");
+        }
+
+        long totalInCount = 0;
+        long totalOutCount = 0;
+        double totalInValue = 0.0;
+        double totalOutValue = 0.0;
+
+        for (ReportTemplateRow row : combinedRows.values()) {
+            String deptName = (row.getItemDepartment() != null) ? row.getItemDepartment().getName() : "NULL_DEPARTMENT";
+            System.out.println("Combining row for Department: " + deptName);
+            row.setRowCount((row.getRowCountIn() != null ? row.getRowCountIn() : 0L) + (row.getRowCountOut() != null ? row.getRowCountOut() : 0L));
+            row.setRowValue((row.getRowValueIn() != null ? row.getRowValueIn() : 0.0) + (row.getRowValueOut() != null ? row.getRowValueOut() : 0.0));
+            temOutBundle.getReportTemplateRows().add(row);
+
+            totalInCount += (row.getRowCountIn() != null ? row.getRowCountIn() : 0L);
+            totalOutCount += (row.getRowCountOut() != null ? row.getRowCountOut() : 0L);
+            totalInValue += (row.getRowValueIn() != null ? row.getRowValueIn() : 0.0);
+            totalOutValue += (row.getRowValueOut() != null ? row.getRowValueOut() : 0.0);
+        }
+
+        temOutBundle.setCountIn(totalInCount);
+        temOutBundle.setCountOut(totalOutCount);
+        temOutBundle.setCount(totalInCount + totalOutCount);
+        temOutBundle.setTotalIn(totalInValue);
+        temOutBundle.setTotalOut(totalOutValue);
+        temOutBundle.setTotal(totalInValue + totalOutValue);
+
+        System.out.println("Total In Count: " + totalInCount);
+        System.out.println("Total Out Count: " + totalOutCount);
+        System.out.println("Total In Value: " + totalInValue);
+        System.out.println("Total Out Value: " + totalOutValue);
+
+        System.out.println("Finished combineBundlesByDepartment method");
+        return temOutBundle;
+    }
+
     public void processShiftEndReportOpdCategory() {
         reportTemplateType = ReportTemplateType.ITEM_CATEGORY_SUMMARY_BY_BILL_ITEM;
         List<BillTypeAtomic> bts = new ArrayList<>();
@@ -1915,7 +2001,11 @@ public class FinancialTransactionController implements Serializable {
         m.put("sid", shiftStartBillId);
         m.put("eid", shiftEndBillId);
 
+        System.out.println("m = " + m);
+        System.out.println("jpql = " + jpql);
+
         paymentsFromShiftSratToNow = paymentFacade.findByJpql(jpql, m);
+        System.out.println("paymentsFromShiftSratToNow = " + paymentsFromShiftSratToNow);
         atomicBillTypeTotalsByPayments = new AtomicBillTypeTotals();
         for (Payment p : paymentsFromShiftSratToNow) {
             if (p.getBill().getBillTypeAtomic() == null) {
