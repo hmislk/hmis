@@ -27,7 +27,7 @@
                                 icon="fa-solid fa-plus" 
                                 class="ui-button-success w-25"  
                                 process="btnAdd"
-                                update="gpDetail" >
+                                update="gpDetail lstSelect" >
 
                             </p:commandButton>
                             <p:commandButton
@@ -62,7 +62,7 @@
                                 <h:panelGrid id="gpDetail" columns="1" class="w-100">
                                     <h:panelGrid id="gpDetailText" columns="2" class="w-100">
                                         <h:outputText id="lblName" value="Speciality Name" ></h:outputText>
-                                        <p:inputText class="w-100" autocomplete="off" id="txtName" value="#{doctorSpecialityController.current.name}" ></p:inputText>
+                                        <p:inputText class="w-100" autocomplete="off" id="txtName" value="#{doctorSpecialityController.current.name}" required="true" requiredMessage="Please enter a name" ></p:inputText>
                                         <h:outputText id="lblDescription" value="Income Name" ></h:outputText>
                                         <p:inputTextarea id="txtDescription" value="#{doctorSpecialityController.current.description}" class="w-100" styleClass="w-100"/>
                                         

@@ -121,15 +121,15 @@ public class DoctorSpecialityController implements Serializable {
 
     public void saveSelected() {
         
-        if(getCurrent().getName() == null ){
+        if(getCurrent().getName() == null || getCurrent().getName().isEmpty()){
             JsfUtil.addErrorMessage("Name is required");
             return;
         }
         
-        if(getCurrent().getDescription()== null){
-            JsfUtil.addErrorMessage("Description is required");
-            return;  
-        }
+//        if(getCurrent().getDescription()== null || getCurrent().getDescription().isEmpty() ){
+//            JsfUtil.addErrorMessage("Description is required");
+//            return;  
+//        }
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
