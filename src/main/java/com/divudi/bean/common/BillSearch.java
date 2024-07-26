@@ -181,7 +181,6 @@ public class BillSearch implements Serializable {
     private BillLight billLight;
     private Bill printingBill;
     private PaymentMethod paymentMethod;
-    private PaymentMethod refundMethod;
     private RefundBill billForRefund;
     @Temporal(TemporalType.TIME)
     private Date fromDate;
@@ -1399,18 +1398,11 @@ public class BillSearch implements Serializable {
     public void setSessionController(SessionController sessionController) {
         this.sessionController = sessionController;
     }
-    
+
     public PaymentMethod getPaymentMethod() {
-        if (paymentMethod != null) {
-            if (configOptionApplicationController.getBooleanValueByKey("Set the Original Bill PaymentMethod to Cancelation Bill")) {
-                paymentMethod = getBill().getPaymentMethod();
-            } else {
-                paymentMethod = PaymentMethod.Cash;
-            }
-        }
         return paymentMethod;
     }
-    
+
     public void setPaymentMethod(PaymentMethod paymentMethod) {
         this.paymentMethod = paymentMethod;
     }
@@ -2737,8 +2729,14 @@ public class BillSearch implements Serializable {
             JsfUtil.addErrorMessage("Nothing to cancel");
             return "";
         }
-        System.out.println("bill = " + bill.getIdStr());
-        paymentMethod = bill.getPaymentMethod();
+        //System.out.println("bill = " + bill.getIdStr());
+        
+        if (configOptionApplicationController.getBooleanValueByKey("Set the Original Bill PaymentMethod to Cancelation Bill")) {
+            paymentMethod = bill.getPaymentMethod();
+        } else {
+            paymentMethod = PaymentMethod.Cash;
+        }
+        //System.out.println("Cencel = " + paymentMethod);
         createBillItemsAndBillFees();
         boolean flag = billController.checkBillValues(bill);
         bill.setTransError(flag);
@@ -2895,7 +2893,13 @@ public class BillSearch implements Serializable {
             JsfUtil.addErrorMessage("Nothing to cancel");
             return "";
         }
-        paymentMethod = getBill().getPaymentMethod();
+        
+        if(configOptionApplicationController.getBooleanValueByKey("Set the Original Bill PaymentMethod to Refunded Bill")){
+            paymentMethod = getBill().getPaymentMethod();
+        }else{
+            paymentMethod = PaymentMethod.Cash;
+        }
+        //System.out.println("Refund"+ paymentMethod);
         try {
             createBillItemsAndBillFeesForOpdRefund();
         } catch (IllegalAccessException ex) {
@@ -3960,19 +3964,6 @@ public class BillSearch implements Serializable {
 
     public void setReferredBy(Doctor referredBy) {
         this.referredBy = referredBy;
-    }
-
-    public PaymentMethod getRefundMethod() {
-        if(configOptionApplicationController.getBooleanValueByKey("Set the Original Bill PaymentMethod to Refunded Bill")){
-                refundMethod = getBill().getPaymentMethod();
-            }else{
-                refundMethod = PaymentMethod.Cash;
-            }
-        return refundMethod;
-    }
-
-    public void setRefundMethod(PaymentMethod refundMethod) {
-        this.refundMethod = refundMethod;
     }
 
     public class PaymentSummary {
