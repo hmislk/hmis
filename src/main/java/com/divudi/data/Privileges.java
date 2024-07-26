@@ -486,7 +486,24 @@ public enum Privileges {
     OpticianEmr,
     OpticianStockManagement,
     OpticianProductCatalog,
-    OpticianRepairManagement,;
+    OpticianRepairManagement,
+    
+    
+    @Deprecated
+    Ophthalmology,
+    @Deprecated
+    OphthalmologyPatientManagement,
+    @Deprecated
+    OphthalmologyAppointmentManagement,
+    @Deprecated
+    OphthalmologyEmr,
+    @Deprecated
+    OphthalmologyStockManagement,
+    @Deprecated
+    OphthalmologyProductCatalog,
+    @Deprecated
+    OphthalmologyRepairManagement,
+    ;
 
     public String getLabel() {
         switch (this) {
