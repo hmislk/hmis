@@ -166,6 +166,9 @@ public class BillSearch implements Serializable {
     CommonFunctionsController commonFunctionsController;
     @Inject
     PharmacyBillSearch pharmacyBillSearch;
+        
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
     /**
      * Class Variables
      */
@@ -237,6 +240,14 @@ public class BillSearch implements Serializable {
 
     public String navigateToBillPaymentOpdBill() {
         return "bill_payment_opd?faces-redirect=true";
+    }
+    
+    public void fillBillFees(){
+        for(BillItem bi : getRefundingBill().getBillItems()){
+            for(BillFee bfee : bi.getBillFees()){
+                bfee.setFeeValue(bfee.getReferenceBillFee().getFeeValue());
+            }
+        }
     }
 
     public void editBillDetails() {
@@ -2895,8 +2906,9 @@ public class BillSearch implements Serializable {
             JsfUtil.addErrorMessage(ex.getMessage());
             return "";
         }
-//        boolean flag = billController.checkBillValues(bill);
-//        bill.setTransError(flag);
+        if(configOptionApplicationController.getBooleanValueByKey("To Refunded the Full Value of the Bill")){
+            fillBillFees();
+        }
         printPreview = false;
         return "/opd/bill_refund?faces-redirect=true;";
     }
