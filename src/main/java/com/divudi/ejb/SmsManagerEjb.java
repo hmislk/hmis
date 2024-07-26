@@ -73,7 +73,7 @@ public class SmsManagerEjb {
     @Schedule(second = "0", minute = "*/30", hour = "*", persistent = false)
     public void sendSmsToDoctorsBeforeSessionTimer() {
         if(configOptionApplicationController.getBooleanValueByKey("Send SMS for Doctor Reminder")){
-            sendSmsToDoctorsBeforeSession();
+            //sendSmsToDoctorsBeforeSession();
         }     
     }
 
