@@ -19,7 +19,7 @@
                     <f:facet name="header">
                         <div class="d-flex align-items-center justify-content-between">
                             <div>
-                                <h:outputText value="Receive Deposits"/>
+                                <h:outputText value="Staff Credit Settlee"/>
                             </div>
                             <div>
                                 <p:commandButton class="ui-button-success"
@@ -51,7 +51,7 @@
                                 </f:facet>
 
                                 <div class="d-flex flex-wrap w-100">
-                                    <p:selectOneMenu   id="cmbPs" value="#{patientController.bill.paymentMethod}">                                                                     
+                                    <p:selectOneMenu   id="cmbPs" value="#{patientController.bill.paymentMethod}"> 
                                         <f:selectItems value="#{enumController.paymentMethodsForPatientDeposit}"/>
                                         <p:ajax process="cmbPs" update="creditCard cheque slip" event="change" />
                                     </p:selectOneMenu>

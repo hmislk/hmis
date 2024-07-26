@@ -90,6 +90,13 @@ public class EnumController implements Serializable {
         }
         return paymentMethodsForOpdBilling;
     }
+    
+    public List<PaymentMethod> getPaymentMethodsForPatientDeposit() {
+        if (paymentMethodsForPatientDeposit == null) {
+              fillPaymentMethodsForPatientDeposit();
+        }
+        return paymentMethodsForPatientDeposit;
+    }
 
     public List<PaymentMethod> getPaymentMethodsForPackageBilling() {
         if (paymentMethodsForOpdBilling == null) {
@@ -103,6 +110,16 @@ public class EnumController implements Serializable {
         paymentMethodsForChanneling = null;
     }
 
+    public void fillPaymentMethodsForPatientDeposit(){
+        paymentMethodsForPatientDeposit = new ArrayList<>();
+        for(PaymentMethod pm : PaymentMethod.values()){
+           boolean include = configOptionApplicationController.getBooleanValueByKey(pm.getLabel() + " is available for Patient Deposit", true); 
+           if(include){
+               paymentMethodsForPatientDeposit.add(pm);
+           }
+        }
+    }
+    
     public void fillPaymentMethodsForOpdBilling() {
         paymentMethodsForOpdBilling = new ArrayList<>();
         for (PaymentMethod pm : PaymentMethod.values()) {
