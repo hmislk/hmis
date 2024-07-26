@@ -3,6 +3,7 @@ package com.divudi.data;
 import com.divudi.entity.Category;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
+import com.divudi.entity.Item;
 
 /**
  *
@@ -16,14 +17,37 @@ public class ReportTemplateRow {
     private String itemName;
     private String paymentName;
     private Double rowValue;
+    private Double rowValueIn;
+    private Double rowValueOut;
+    private Long rowCountIn;
+    private Long rowCountOut;
     private Long rowCount;
     private Long id;
 
     private Category category;
+
+    private Item item;
     private ServiceType serviceType;
     private BillTypeAtomic billTypeAtomic;
     private Institution creditCompany;
     private Department toDepartment;
+    private Department itemDepartment;
+
+    private Department department;
+    private Institution institution;
+
+    public ReportTemplateRow(Category c) {
+        this.category = c;
+    }
+
+    public ReportTemplateRow(Item item) {
+        this.item = item;
+
+    }
+
+    public ReportTemplateRow(Department d) {
+        this.department=d;
+    }
 
     public void setFeeName(String feeName) {
         this.feeName = feeName;
@@ -77,6 +101,8 @@ public class ReportTemplateRow {
         this.rowCount = rowCount;
     }
 
+    
+    
     public ReportTemplateRow(String feeName, String categoryName, String toDepartmentName, String itemName, String paymentName, Double rowValue, Long rowCount) {
         this.feeName = feeName;
         this.categoryName = categoryName;
@@ -86,12 +112,36 @@ public class ReportTemplateRow {
         this.rowValue = rowValue;
         this.rowCount = rowCount;
     }
-    
+
+    public ReportTemplateRow(String categoryName, Long rowCount, Double rowValue) {
+        this.categoryName = categoryName;
+        this.rowValue = rowValue;
+        this.rowCount = rowCount;
+    }
+
+    public ReportTemplateRow(Category category, Long rowCount, Double rowValue) {
+        this.category = category;
+        this.rowValue = rowValue;
+        this.rowCount = rowCount;
+    }
+
+    public ReportTemplateRow(Department itemDept, Long rowCount, Double rowValue) {
+        this.itemDepartment = itemDept;
+        this.rowValue = rowValue;
+        this.rowCount = rowCount;
+    }
+
+    public ReportTemplateRow(Item item, Long rowCount, Double rowValue) {
+        this.item = item;
+        this.rowValue = rowValue;
+        this.rowCount = rowCount;
+    }
+
     public ReportTemplateRow(String categoryName, Double rowValue) {
         this.categoryName = categoryName;
         this.rowValue = rowValue;
     }
-    
+
     public ReportTemplateRow(BillTypeAtomic billTypeAtomic, String categoryName, String toDepartmentName, Double rowValue) {
         this.billTypeAtomic = billTypeAtomic;
         this.categoryName = categoryName;
@@ -104,7 +154,6 @@ public class ReportTemplateRow {
         this.rowValue = rowValue;
     }
 
-    
     public ReportTemplateRow(Double rowValue) {
         this.rowValue = rowValue;
     }
@@ -171,6 +220,70 @@ public class ReportTemplateRow {
 
     public String getFeeName() {
         return feeName;
+    }
+
+    public Double getRowValueIn() {
+        return rowValueIn;
+    }
+
+    public void setRowValueIn(Double rowValueIn) {
+        this.rowValueIn = rowValueIn;
+    }
+
+    public Double getRowValueOut() {
+        return rowValueOut;
+    }
+
+    public void setRowValueOut(Double rowValueOut) {
+        this.rowValueOut = rowValueOut;
+    }
+
+    public Long getRowCountIn() {
+        return rowCountIn;
+    }
+
+    public void setRowCountIn(Long rowCountIn) {
+        this.rowCountIn = rowCountIn;
+    }
+
+    public Long getRowCountOut() {
+        return rowCountOut;
+    }
+
+    public void setRowCountOut(Long rowCountOut) {
+        this.rowCountOut = rowCountOut;
+    }
+
+    public Item getItem() {
+        return item;
+    }
+
+    public void setItem(Item item) {
+        this.item = item;
+    }
+
+    public Department getItemDepartment() {
+        return itemDepartment;
+    }
+
+    public void setItemDepartment(Department itemDepartment) {
+        this.itemDepartment = itemDepartment;
+    }
+
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
+    }
+
+    public Institution getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
     }
 
 }

@@ -6,6 +6,7 @@ package com.divudi.data.analytics;
  */
 public enum ReportTemplateType {
     BILL_LIST("Bill List"),
+    BILL_NET_TOTAL("Bill Net Total"),
     BILL_ITEM_LIST("Bill Item List"),
     BILL_FEE_LIST("Bill Fee List"),
     PATIENT_LIST("Patient List"),
@@ -22,7 +23,9 @@ public enum ReportTemplateType {
     PAYMENT_TYPE_SUMMARY_PAYMENTS("Payment Method Summary by using Payments"),
     ITEM_CATEGORY_SUMMARY_BY_BILL_FEE("Item Category Summary by Bill Fee"),
     ITEM_CATEGORY_SUMMARY_BY_BILL_ITEM("Item Category Summary by Bill Item"),
+    ITEM_DEPARTMENT_SUMMARY_BY_BILL_ITEM("Item Department Summary by Bill Item"),
     ITEM_CATEGORY_SUMMARY_BY_BILL("Item Category Summary by Bill"),
+    ITEM_SUMMARY_BY_BILL("Item Summary by Bill"),
     TO_DEPARTMENT_SUMMARY_BY_BILL_FEE("To Department Summary by Bill Fee"),
     TO_DEPARTMENT_SUMMARY_BY_BILL_ITEM("To Department Summary by Bill Item"),
     TO_DEPARTMENT_SUMMARY_BY_BILL("To Department Summary by Bill");

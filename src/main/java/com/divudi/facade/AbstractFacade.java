@@ -369,9 +369,7 @@ public abstract class AbstractFacade<T> {
 
         return resultList;
     }
-    
-    
-    
+
     public List<?> findLightsByJpql(String jpql, Map<String, Object> parameters, TemporalType tt, int maxRecords) {
         Query qry = getEntityManager().createQuery(jpql);
         Set<Map.Entry<String, Object>> entries = parameters.entrySet();
@@ -1036,6 +1034,28 @@ public abstract class AbstractFacade<T> {
         }
     }
 
+    public Double findSingleResultByJpql(String jpql, Map<String, Object> parameters, TemporalType tt) {
+        TypedQuery<Double> qry = getEntityManager().createQuery(jpql, Double.class);
+        Set<Map.Entry<String, Object>> entries = parameters.entrySet();
+
+        for (Map.Entry<String, Object> entry : entries) {
+            String paramName = entry.getKey();
+            Object paramValue = entry.getValue();
+
+            if (paramValue instanceof Date) {
+                qry.setParameter(paramName, (Date) paramValue, tt);
+            } else {
+                qry.setParameter(paramName, paramValue);
+            }
+        }
+
+        try {
+            return qry.getSingleResult();
+        } catch (NoResultException e) {
+            return null;
+        }
+    }
+
     public List<Object[]> findAggregates(String jpql, Map<String, Object> parameters, TemporalType tt) {
         TypedQuery<Object[]> qry = getEntityManager().createQuery(jpql, Object[].class);
         Set s = parameters.entrySet();
@@ -1125,6 +1145,28 @@ public abstract class AbstractFacade<T> {
     public Object[] findSingleAggregate(String jpql, Map<String, Object> parameters) {
 //        //////// // System.out.println("find aggregates 2" );
         return findSingleAggregate(jpql, parameters, TemporalType.DATE);
+    }
+
+    public Double findSingleResultByJpql(String jpql, Map<String, Object> parameters) {
+        TypedQuery<Double> qry = getEntityManager().createQuery(jpql, Double.class);
+        Set<Map.Entry<String, Object>> entries = parameters.entrySet();
+
+        for (Map.Entry<String, Object> entry : entries) {
+            String paramName = entry.getKey();
+            Object paramValue = entry.getValue();
+
+            if (paramValue instanceof Date) {
+                qry.setParameter(paramName, (Date) paramValue, TemporalType.DATE);
+            } else {
+                qry.setParameter(paramName, paramValue);
+            }
+        }
+
+        try {
+            return qry.getSingleResult();
+        } catch (NoResultException e) {
+            return null;
+        }
     }
 
     public Object[] findSingleAggregate(String jpql, Map<String, Object> parameters, TemporalType tt) {
