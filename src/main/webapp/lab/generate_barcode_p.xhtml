@@ -57,7 +57,7 @@
                                     class="w-100 m-2" 
                                     id="btnListGenerated" 
                                     ajax="false" 
-                                    actionListener="#{patientInvestigationController.listPatientInvestigationAwaitingSamplling()}" 
+                                    actionListener="#{patientInvestigationController.listBillsWithGeneratedBarcodes()}" 
                                     value="List Generated"
                                     icon="fa fa-check-square"> <!-- Example FontAwesome icon for generated lists -->
                                 </p:commandButton>
@@ -83,6 +83,7 @@
                             paginator="true"
                             rowKey="#{smpIx.bill.id}"
                             paginatorPosition="bottom"
+                            selectionMode="multiple"
                             selection="#{patientInvestigationController.billBarcodes}"
                             rows="10"
                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"

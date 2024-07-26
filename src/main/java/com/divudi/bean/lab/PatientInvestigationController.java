@@ -1176,6 +1176,8 @@ public class PatientInvestigationController implements Serializable {
     }
 
     public void generateBarcodesForSelectedBills() {
+        System.out.println("generateBarcodesForSelectedBills");
+        System.out.println("selectedBillBarcodes = " + selectedBillBarcodes);
         if (selectedBillBarcodes == null) {
             JsfUtil.addErrorMessage("No Bills Seelcted");
             return;
@@ -1194,6 +1196,12 @@ public class PatientInvestigationController implements Serializable {
                     PatientSampleWrapper ptsw = new PatientSampleWrapper(ps);
                     psws.add(ptsw);
                 }
+            }
+            for(PatientInvestigationWrapper piw:bb.getPatientInvestigationWrappers()){
+                piw.getPatientInvestigation().setBarcodeGenerated(true);
+                piw.getPatientInvestigation().setBarcodeGeneratedAt(new Date());
+                piw.getPatientInvestigation().setBarcodeGeneratedBy(sessionController.getLoggedUser());
+                ejbFacade.edit(piw.getPatientInvestigation());
             }
             bb.setPatientSampleWrappers(psws);
         }
@@ -1222,6 +1230,24 @@ public class PatientInvestigationController implements Serializable {
         temMap.put("toDate", getToDate());
         temMap.put("ret", false);
         temMap.put("bg", false);
+        billBarcodes = new ArrayList<>();
+        List<PatientInvestigation> pis = getFacade().findByJpql(temSql, temMap, TemporalType.TIMESTAMP);
+        billBarcodes = createBilBarcodeObjects(pis);
+    }
+    
+    public void listBillsWithGeneratedBarcodes() {
+        String temSql;
+        Map temMap = new HashMap();
+        temSql = "SELECT i "
+                + " FROM PatientInvestigation i "
+                + " where i.retired=:ret  "
+                + " and i.barcodeGenerated=:bg "
+                + " and i.billItem.bill.billDate between :fromDate and :toDate "
+                + " order by i.id desc";
+        temMap.put("fromDate", getFromDate());
+        temMap.put("toDate", getToDate());
+        temMap.put("ret", false);
+        temMap.put("bg", true);
         billBarcodes = new ArrayList<>();
         List<PatientInvestigation> pis = getFacade().findByJpql(temSql, temMap, TemporalType.TIMESTAMP);
         billBarcodes = createBilBarcodeObjects(pis);
