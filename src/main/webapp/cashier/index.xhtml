@@ -10,10 +10,10 @@
         <ui:composition template="/resources/template/template.xhtml">
 
             <ui:define name="content">
-                <h:form>
-                    <div class="row" >
-                        <div class="col-2">
 
+                <div class="row" >
+                    <div class="col-2">
+                        <h:form>
                             <p:panel header="Financial Transaction Manager" rendered="true">
                                 <div class="d-grid gap-2">
                                     <p:commandButton 
@@ -90,14 +90,14 @@
 
                                 </div>
                             </p:panel>
-
-                        </div>
-                        <div class="col-10" >
-                            <ui:insert name="subcontent" >
-                            </ui:insert>
-                        </div>
+                        </h:form>
                     </div>
-                </h:form>
+                    <div class="col-10" >
+                        <ui:insert name="subcontent" >
+                        </ui:insert>
+                    </div>
+                </div>
+
             </ui:define>
 
         </ui:composition>

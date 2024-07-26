@@ -128,8 +128,9 @@
                                             ajax="false" 
                                             value="View Bill" 
                                             action="#{billSearch.navigateToRefundCollectingCentreBill()}">
+                                            <f:setPropertyActionListener target="#{billSearch.bill}" value="#{billController.findBillbyID(bill.id)}"/>
                                         </p:commandButton>
-                                        #{billController.findBillbyID(bill.id)}
+                                        
                                     </p:column>
 
                                 </p:dataTable>
