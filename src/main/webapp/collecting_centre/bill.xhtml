@@ -436,7 +436,7 @@
                                     <div class="col-md-3">
                                         <h:panelGroup>
                                             <p:outputLabel value="Referring Doctor"></p:outputLabel>
-                                            <p:commandLink id="btnAddNewDoc" 
+                                            <p:commandLink rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable Users to Add Referring Doctors to the System in Collecting Centre Billing')}" id="btnAddNewDoc" 
                                                            type="button"  
                                                            value="&nbsp;(+)" 
                                                            oncomplete="PF('dlg').show();" 
