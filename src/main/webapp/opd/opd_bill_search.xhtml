@@ -209,7 +209,7 @@
                                         width="15">
                                         <h:outputLabel value="#{bill.id}"/>
                                     </p:column>
-                                    <p:column headerText="Bill No" sortBy="#{bill.deptId}" filterBy="#{bill.deptId}" >                                
+                                    <p:column headerText="Bill No*" sortBy="#{bill.deptId}" filterBy="#{bill.deptId}" filterMatchMode="contains">                                
                                         <p:commandLink 
                                             id="billNo" 
                                             ajax="false" 
@@ -218,7 +218,9 @@
                                             <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
                                         </p:commandLink>
                                     </p:column>
-                                    <p:column headerText="Batch Bill" sortBy="#{bill.backwardReferenceBill.insId}" filterBy="#{bill.backwardReferenceBill.insId}">
+                                    <p:column headerText="Batch Bill" sortBy="#{bill.backwardReferenceBill.insId}" 
+                                              filterMatchMode="contains"
+                                              filterBy="#{bill.backwardReferenceBill.insId}">
                                         <h:commandLink action="#{opdBillController.navigateToViewOpdBatchBill}" value="#{bill.backwardReferenceBill.insId}">
                                             <f:setPropertyActionListener value="#{bill}" target="#{opdBillController.bill}"/>
                                         </h:commandLink>  
@@ -266,7 +268,10 @@
                                         <h:outputLabel id="insDep" value="#{bill.toDepartment.name}" />
                                     </p:column>
 
-                                    <p:column headerText="Billed by"  sortBy="#{bill.creater.name}" filterBy="#{bill.creater.name}">
+                                    <p:column headerText="Billed by" 
+                                              sortBy="#{bill.creater.name}" 
+                                              filterMatchMode="contains"
+                                              filterBy="#{bill.creater.name}">
                                         <h:outputLabel value="#{bill.creater.webUserPerson.name}" ></h:outputLabel>
                                         <h:panelGroup rendered="#{bill.cancelled or bill.refunded}" style="display: grid">
                                             <h:outputLabel value="#{bill.cancelledBill.creater.webUserPerson.name}" style="color: red" rendered="#{bill.cancelled}"></h:outputLabel>
@@ -274,8 +279,11 @@
                                         </h:panelGroup>
                                     </p:column>   
 
-                                    <p:column headerText="Client"  sortBy="#{bill.patient.person.name}" 
-                                              filterBy="#{bill.patient.person.name}" >                               
+                                    <p:column 
+                                        headerText="Client"
+                                         filterMatchMode="contains"
+                                        sortBy="#{bill.patient.person.name}" 
+                                        filterBy="#{bill.patient.person.name}" >                               
                                         <h:panelGroup id="pt">
                                             <h:commandLink  value="#{bill.patient.person.name}" action="#{patientController.navigateToOpdPatientEditFromId()}" rendered="#{webUserController.hasPrivilege('OpdBillSearchEdit')}">
                                                 <f:setPropertyActionListener value="#{bill.patient}" target="#{patientController.current}"/>
@@ -318,7 +326,6 @@
                                                 </h:panelGroup>
                                             </h:panelGrid>
                                         </p:tooltip>
-
                                     </p:column>
 
                                     <p:column headerText="Gross Value" sortBy="#{bill.total}" 

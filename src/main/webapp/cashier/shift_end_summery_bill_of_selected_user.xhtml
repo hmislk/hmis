@@ -443,8 +443,8 @@
                                         <h:outputText value="#{bp.bill.billTypeAtomic.billFinanceType}" ></h:outputText>
                                     </p:column>
                                     
-                                    <p:column headerText="Doctor Name" rendered="#{bp.bill.staff ne null}" filterBy="#{bp.bill.staff.person.nameWithTitle}" sortBy="#{bp.bill.staff.person.nameWithTitle}">
-                                        <p:inputText value="#{bp.bill.staff.person.nameWithTitle}" ></p:inputText>
+                                    <p:column headerText="Doctor Name"  filterBy="#{bp.bill.staff.person.nameWithTitle}" sortBy="#{bp.bill.staff.person.nameWithTitle}">
+                                        <p:outputLabel value="#{bp.bill.staff.person.nameWithTitle}" ></p:outputLabel>
                                     </p:column>
 
                                     <p:column headerText="Payment Method" rendered="false" filterBy="#{bp.bill.paymentMethod.label}" filterMatchMode="contains" sortBy="#{bp.bill.paymentMethod.label}">
