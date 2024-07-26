@@ -61,22 +61,21 @@
                                     id="ccPatientDetails"
                                     editable="true"
                                     controller="#{opdBillController}"/>
-                                <p:panel class="my-2">
-                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Allow Local Number For Opd Billing')}">
-                                        <div class="d-flex align-items-center justify-content-center">
-                                            <p:outputLabel value="Local NUmber :"/>
-                                            <p:inputText 
-                                                value="#{opdBillController.localNumber}" 
-                                                placeholder="Local Number" 
-                                                class="my-1" 
-                                                id="lcNumber"/>
-                                        </div>
-                                    </h:panelGroup>
+                                
+                                <p:panel class="mt-2" rendered="#{configOptionApplicationController.getBooleanValueByKey('Allow Local Number For Opd Billing')}">
+                                    <div class="d-flex">
+                                        <p:outputLabel style="width: 150px;" class="mt-2" value="Local Number :"/>
+                                        <p:inputText 
+                                            value="#{opdBillController.localNumber}" 
+                                            placeholder="Local Number" 
+                                            class="my-1 w-100" 
+                                            id="lcNumber"/>
+                                    </div>
                                 </p:panel>
-
+                                
                                 <p:panel 
                                     id='pIxAdd' 
-                                    class="w-100 form">
+                                    class="w-100 mt-2 form">
                                     <f:facet name="header" >
                                         <h:outputText styleClass="fa-solid fa-circle-plus" /> <!-- FontAwesome Icon -->
                                         <h:outputText value="Add New Item" class="mx-4"></h:outputText>
@@ -581,7 +580,7 @@
                             </div>
                             <div class="col-md-6" >
 
-                                <p:panel class="m-1">
+                                <p:panel class="mb-2">
                                     <f:facet name="header" >
                                         <h:outputText styleClass="fa fa-money-bill-wave" /> <!-- FontAwesome Icon -->
                                         <h:outputText value="Payment Details" class="mx-4"></h:outputText>
@@ -646,48 +645,7 @@
 
                                     <div>
                                         <h:panelGroup id="paymentDetails"  >
-                                            <h:panelGroup
-                                                class="row"
-                                                layout="block"  
-                                                rendered="#{opdBillController.paymentMethod eq 'Credit'}" >
-                                                <div class="my-1" id="credit">
-                                                    <div class="row">
-                                                        <div class="col-12 d-flex ">
-                                                            <p:autoComplete 
-                                                                id="creditCompany" 
-                                                                class="w-100 -mx-2"
-                                                                inputStyleClass="form-control"
-                                                                forceSelection="true"
-                                                                value="#{opdBillController.creditCompany}"  
-                                                                completeMethod="#{creditCompanyController.completeCredit}" 
-                                                                var="ix"
-                                                                minQueryLength="4"
-                                                                placeholder="Company (Type at least 4 letters to search)"
-                                                                itemLabel="#{ix.name}" 
-                                                                itemValue="#{ix}" 
-                                                                size="10"  >
-
-                                                                <f:ajax  
-                                                                    event="itemSelect" 
-                                                                    listener="#{opdBillController.calTotals()}"
-                                                                    execute="@this" 
-                                                                    render=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}  :#{p:resolveFirstComponentWithId('tblRequests',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId}" />
-                                                            </p:autoComplete>
-
-                                                            <p:inputText  ></p:inputText>
-
-                                                            <p:commandLink 
-                                                                id="btnAddNewCreditCom" 
-                                                                value="(+)"
-                                                                class="mx-3 mt-1"
-                                                                title="Add New Credit Company"
-                                                                ajax="false" 
-                                                                action="#{navigationController.navigateToCreditCompany()}"
-                                                                actionListener="#{creditCompanyController.prepareAdd()}" />  
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </h:panelGroup>
+                                            
                                             <h:panelGroup
                                                 class="row"
                                                 layout="block"  
@@ -783,6 +741,12 @@
                                                 layout="block"  
                                                 id="creditCard" rendered="#{opdBillController.paymentMethod eq 'Card'}" >
                                                 <pa:creditCard paymentMethodData="#{opdBillController.paymentMethodData}"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup
+                                                class="row my-1"
+                                                layout="block"  
+                                                id="credit" rendered="#{opdBillController.paymentMethod eq 'Credit'}" >
+                                                <pa:credit paymentMethodData="#{opdBillController.paymentMethodData}"/>
                                             </h:panelGroup>
                                             <h:panelGroup 
                                                 class="row my-1"
@@ -953,7 +917,7 @@
                                     </h:panelGrid>
                                 </p:panel>
 
-                                <p:panel id="panelWorkingStaff" class="m-1">
+                                <p:panel id="panelWorkingStaff" class="m-1" rendered="#{configOptionApplicationController.getBooleanValueByKey('OPD Bill - Show the Doctor Details')}">
                                     <f:facet name="header" >
                                         <h:outputText styleClass="fa fa-money-bill-wave" /> <!-- FontAwesome Icon -->
                                         <h:outputText value="Doctor Details" class="mx-4"></h:outputText>
@@ -968,7 +932,7 @@
                                 </p:panel>
 
 
-                                <p:panel id="panelBillReferrals" >
+                                <p:panel id="panelBillReferrals" class="mt-2">
                                     <f:facet name="header" >
                                         <h:outputText styleClass="fa fa-stethoscope" /> <!-- FontAwesome Icon -->
                                         <h:outputText value="Referral Details" class="mx-4"></h:outputText>
