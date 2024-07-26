@@ -56,7 +56,7 @@
                                         <p:ajax process="cmbPs" update="panelGroup creditCard cheque slip" event="change" />
                                     </p:selectOneMenu>
 
-                                    <h:panelGroup id="panelGroup" style="display: #{patientController.bill.paymentMethod eq 'Card' ? 'none' : 'block'};">
+                                    <h:panelGroup id="panelGroup" style="display: #{patientController.bill.paymentMethod eq 'Card' or patientController.bill.paymentMethod eq 'Cheque' or patientController.bill.paymentMethod eq 'Slip' ? 'none' : 'block'};">
                                         <p:inputText class="mx-1" value="#{patientController.bill.netTotal}" id="txtNetTotal"/>
                                         <p:watermark value="Total" for="txtNetTotal"/>
 

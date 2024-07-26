@@ -51,27 +51,28 @@
                                 </f:facet>
 
                                 <div class="d-flex flex-wrap w-100">
-                                    <p:selectOneMenu   id="cmbPs" value="#{patientController.bill.paymentMethod}"> 
+                                    <p:selectOneMenu id="cmbPs" value="#{patientController.bill.paymentMethod}"> 
                                         <f:selectItems value="#{enumController.paymentMethodsForPatientDeposit}"/>
-                                        <p:ajax process="cmbPs" update="creditCard cheque slip" event="change" />
+                                        <p:ajax process="cmbPs" update="panelGroup creditCard cheque slip" event="change" />
                                     </p:selectOneMenu>
 
+                                    <h:panelGroup id="panelGroup" style="display: #{patientController.bill.paymentMethod eq 'Card' or patientController.bill.paymentMethod eq 'Cheque' or patientController.bill.paymentMethod eq 'Slip' ? 'none' : 'block'};">
+                                        <p:inputText class="mx-1" value="#{patientController.bill.netTotal}" id="txtNetTotal"/>
+                                        <p:watermark value="Total" for="txtNetTotal"/>
 
-                                    <p:inputText class="mx-1" value="#{patientController.bill.netTotal}" id="txtNetTotal"/>
-                                    <p:watermark value="Total" for="txtNetTotal"/>
+                                        <p:inputText value="#{patientController.bill.comments}" id="comment"/>
+                                        <p:watermark value="Comment" for="comment"/>
+                                    </h:panelGroup>
 
-                                    <p:inputText value="#{patientController.bill.comments}" id="comment"/>
-                                    <p:watermark value="Comment" for="comment"/>
-
-                                    <h:panelGroup id="creditCard" style="display: #{patientController.bill.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
+                                    <h:panelGroup id="creditCard" class="m-1" style="display: #{patientController.bill.paymentMethod eq 'Card' ? 'block' : 'none'};">
                                         <pa:creditCard paymentMethodData="#{patientController.paymentMethodData}"/>
                                     </h:panelGroup>
 
-                                    <h:panelGroup id="cheque" style="display: #{patientController.bill.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >
+                                    <h:panelGroup id="cheque" style="display: #{patientController.bill.paymentMethod eq 'Cheque' ? 'block' : 'none'};">
                                         <pa:cheque paymentMethodData="#{patientController.paymentMethodData}"/>
                                     </h:panelGroup>
 
-                                    <h:panelGroup id="slip" style="display: #{patientController.bill.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
+                                    <h:panelGroup id="slip" style="display: #{patientController.bill.paymentMethod eq 'Slip' ? 'block' : 'none'};">
                                         <pa:slip paymentMethodData="#{patientController.paymentMethodData}"/>
                                     </h:panelGroup>
                                 </div>
