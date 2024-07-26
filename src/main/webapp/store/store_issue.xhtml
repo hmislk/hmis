@@ -37,6 +37,80 @@
                             </p:commandButton>
                         </f:facet>
                         <div class="row">
+                            <div class="col-4">
+                                <p:panel>
+                                    <f:facet name="header">
+                                        <h:outputText styleClass="fas fa-share-square" />
+                                        <h:outputText class="mx-4" value="Issue Details" />
+                                    </f:facet>
+                                    <h:panelGrid columns="2" class="w-100">
+                                        <h:outputLabel value="Issuing Department"/>
+                                        <p:autoComplete 
+                                            class="w-100"
+                                            inputStyleClass="w-100"
+                                            completeMethod="#{departmentController.completeDept}" 
+                                            forceSelection="true"
+                                            var="w" 
+                                            itemLabel="#{w.name}" 
+                                            itemValue="#{w}"
+                                            value="#{storeIssueController.toDepartment}" 
+                                            id="acDept">
+                                            <p:column headerText="Department Name">
+                                                #{w.name}
+                                            </p:column>
+                                            <p:column headerText="Institution Name">
+                                                #{w.institution.name}
+                                            </p:column>
+                                            <p:ajax process="acDept" update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} #{p:resolveFirstComponentWithId('tblBillItem',view).clientId} " 
+                                                    event="itemSelect"  listener="#{storeIssueController.calculateAllRates}" />
+                                        </p:autoComplete>
+
+                                        <h:outputLabel value="Request Number"/>
+                                        <p:inputText class="w-100" value="#{storeIssueController.preBill.invoiceNumber}" id="req"/>
+
+                                        <h:outputLabel value="Comment"/>
+                                        <p:inputTextarea class="w-100" value="#{storeIssueController.preBill.comments}" id="comment"/>
+
+                                        <p:watermark value="Request Number" for="req"/>
+                                        <p:watermark value="Issuing Department" for="acDept"/>
+                                        <p:watermark value="Comment" for="comment"/>
+                                    </h:panelGrid>
+
+
+                                    <p:commandButton  
+                                        accesskey="s" 
+                                        value="Issue" 
+                                        ajax="false"
+                                        icon="fas fa-check"
+                                        action="#{storeIssueController.settleBill()}" 
+                                        class="w-25 ui-button-warning"
+                                        actionListener="#{storeIssueController.calculateAllRates}">
+
+                                    </p:commandButton>
+                                </p:panel>
+                                <p:panel header="Bill Details" id="pBillDetails" class="my-1" >
+                                    <f:facet name="header">
+                                        <h:outputText styleClass="fas fa-file-invoice"/>
+                                        <h:outputText class="mx-4" value="Bill Details" />
+                                    </f:facet>
+                                    <h:panelGrid columns="2" columnClasses="numberCol, textCol" id="total" >
+                                        <h:outputLabel value="Total" ></h:outputLabel>
+                                        <h:outputLabel value="#{storeIssueController.preBill.total}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+
+                                        <h:outputLabel value="Margin" ></h:outputLabel>
+                                        <h:outputLabel value="#{storeIssueController.preBill.margin}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+
+                                        <h:outputLabel value="Net Total" ></h:outputLabel>
+                                        <h:outputLabel value="#{storeIssueController.preBill.netTotal}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </h:panelGrid>
+                                </p:panel>
+                            </div>
                             <div class="col-8">
                                 <p:panel>
                                     <f:facet name="header">
@@ -142,7 +216,7 @@
                                         <p:column headerText="Item">
                                             <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.item.name}" ></h:outputLabel>
                                         </p:column>
-                                          
+
                                         <p:column headerText="Rate">
                                             <h:outputLabel value="#{bi.rate}" >
                                                 <f:convertNumber pattern="#,##0.00" />
@@ -203,80 +277,6 @@
                                     </p:dataTable>
                                 </p:panel>
 
-                            </div>
-                            <div class="col-4">
-                                <p:panel>
-                                    <f:facet name="header">
-                                        <h:outputText styleClass="fas fa-share-square" />
-                                        <h:outputText class="mx-4" value="Issue Details" />
-                                    </f:facet>
-                                    <h:panelGrid columns="2" class="w-100">
-                                        <h:outputLabel value="Issuing Department"/>
-                                        <p:autoComplete 
-                                            class="w-100"
-                                            inputStyleClass="w-100"
-                                            completeMethod="#{departmentController.completeDept}" 
-                                            forceSelection="true"
-                                            var="w" 
-                                            itemLabel="#{w.name}" 
-                                            itemValue="#{w}"
-                                            value="#{storeIssueController.toDepartment}" 
-                                            id="acDept">
-                                            <p:column headerText="Department Name">
-                                                #{w.name}
-                                            </p:column>
-                                            <p:column headerText="Institution Name">
-                                                #{w.institution.name}
-                                            </p:column>
-                                            <p:ajax process="acDept" update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} #{p:resolveFirstComponentWithId('tblBillItem',view).clientId} " 
-                                                    event="itemSelect"  listener="#{storeIssueController.calculateAllRates}" />
-                                        </p:autoComplete>
-
-                                        <h:outputLabel value="Request Number"/>
-                                        <p:inputText class="w-100" value="#{storeIssueController.preBill.invoiceNumber}" id="req"/>
-
-                                        <h:outputLabel value="Comment"/>
-                                        <p:inputTextarea class="w-100" value="#{storeIssueController.preBill.comments}" id="comment"/>
-
-                                        <p:watermark value="Request Number" for="req"/>
-                                        <p:watermark value="Issuing Department" for="acDept"/>
-                                        <p:watermark value="Comment" for="comment"/>
-                                    </h:panelGrid>
-
-
-                                    <p:commandButton  
-                                        accesskey="s" 
-                                        value="Issue" 
-                                        ajax="false"
-                                        icon="fas fa-check"
-                                        action="#{storeIssueController.settleBill()}" 
-                                        class="w-25 ui-button-warning"
-                                        actionListener="#{storeIssueController.calculateAllRates}">
-
-                                    </p:commandButton>
-                                </p:panel>
-                                <p:panel header="Bill Details" id="pBillDetails" class="my-1" >
-                                    <f:facet name="header">
-                                        <h:outputText styleClass="fas fa-file-invoice"/>
-                                        <h:outputText class="mx-4" value="Bill Details" />
-                                    </f:facet>
-                                    <h:panelGrid columns="2" columnClasses="numberCol, textCol" id="total" >
-                                        <h:outputLabel value="Total" ></h:outputLabel>
-                                        <h:outputLabel value="#{storeIssueController.preBill.total}" >
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>
-
-                                        <h:outputLabel value="Margin" ></h:outputLabel>
-                                        <h:outputLabel value="#{storeIssueController.preBill.margin}" >
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>
-
-                                        <h:outputLabel value="Net Total" ></h:outputLabel>
-                                        <h:outputLabel value="#{storeIssueController.preBill.netTotal}" >
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>
-                                    </h:panelGrid>
-                                </p:panel>
                             </div>
                         </div>
                     </p:panel>
