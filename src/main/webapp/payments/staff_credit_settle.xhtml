@@ -53,10 +53,10 @@
                                 <div class="d-flex flex-wrap w-100">
                                     <p:selectOneMenu id="cmbPs" value="#{patientController.bill.paymentMethod}"> 
                                         <f:selectItems value="#{enumController.paymentMethodsForPatientDeposit}"/>
-                                        <p:ajax process="cmbPs" update="panelGroup creditCard cheque slip" event="change" />
+                                        <p:ajax process="cmbPs" update="panelGroup creditCard cheque slip eWallet" event="change" />
                                     </p:selectOneMenu>
 
-                                    <h:panelGroup id="panelGroup" style="display: #{patientController.bill.paymentMethod eq 'Card' or patientController.bill.paymentMethod eq 'Cheque' or patientController.bill.paymentMethod eq 'Slip' ? 'none' : 'block'};">
+                                    <h:panelGroup id="panelGroup" style="display: #{patientController.bill.paymentMethod eq 'Card' or patientController.bill.paymentMethod eq 'Cheque' or patientController.bill.paymentMethod eq 'Slip' or patientController.bill.paymentMethod eq 'ewallet' ? 'none' : 'block'};">
                                         <p:inputText class="mx-1" value="#{patientController.bill.netTotal}" id="txtNetTotal"/>
                                         <p:watermark value="Total" for="txtNetTotal"/>
 
@@ -74,6 +74,10 @@
 
                                     <h:panelGroup id="slip" style="display: #{patientController.bill.paymentMethod eq 'Slip' ? 'block' : 'none'};">
                                         <pa:slip paymentMethodData="#{patientController.paymentMethodData}"/>
+                                    </h:panelGroup>
+                                    
+                                    <h:panelGroup id="eWallet" style="display: #{patientController.bill.paymentMethod ne 'ewallet' ? 'none' : 'block'} ;">
+                                        <pa:ewallet  class="m-2" paymentMethodData="#{patientController.paymentMethodData}"/>
                                     </h:panelGroup>
                                 </div>
                             </p:panel>
