@@ -61,22 +61,21 @@
                                     id="ccPatientDetails"
                                     editable="true"
                                     controller="#{opdBillController}"/>
-                                <p:panel class="my-2">
-                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Allow Local Number For Opd Billing')}">
-                                        <div class="d-flex align-items-center justify-content-center">
-                                            <p:outputLabel value="Local NUmber :"/>
-                                            <p:inputText 
-                                                value="#{opdBillController.localNumber}" 
-                                                placeholder="Local Number" 
-                                                class="my-1" 
-                                                id="lcNumber"/>
-                                        </div>
-                                    </h:panelGroup>
+                                
+                                <p:panel class="mt-2" rendered="#{configOptionApplicationController.getBooleanValueByKey('Allow Local Number For Opd Billing')}">
+                                    <div class="d-flex">
+                                        <p:outputLabel style="width: 150px;" class="mt-2" value="Local Number :"/>
+                                        <p:inputText 
+                                            value="#{opdBillController.localNumber}" 
+                                            placeholder="Local Number" 
+                                            class="my-1 w-100" 
+                                            id="lcNumber"/>
+                                    </div>
                                 </p:panel>
-
+                                
                                 <p:panel 
                                     id='pIxAdd' 
-                                    class="w-100 form">
+                                    class="w-100 mt-2 form">
                                     <f:facet name="header" >
                                         <h:outputText styleClass="fa-solid fa-circle-plus" /> <!-- FontAwesome Icon -->
                                         <h:outputText value="Add New Item" class="mx-4"></h:outputText>
@@ -581,7 +580,7 @@
                             </div>
                             <div class="col-md-6" >
 
-                                <p:panel class="m-1">
+                                <p:panel class="mb-2">
                                     <f:facet name="header" >
                                         <h:outputText styleClass="fa fa-money-bill-wave" /> <!-- FontAwesome Icon -->
                                         <h:outputText value="Payment Details" class="mx-4"></h:outputText>
@@ -952,8 +951,8 @@
 
                                     </h:panelGrid>
                                 </p:panel>
-
-                                <p:panel id="panelWorkingStaff" class="m-1" >
+                              
+                                <p:panel id="panelWorkingStaff" class="m-1" rendered="#{configOptionApplicationController.getBooleanValueByKey('OPD Bill - Show the Doctor Details')}">
                                     <f:facet name="header" >
                                         <h:outputText styleClass="fa fa-money-bill-wave" /> <!-- FontAwesome Icon -->
                                         <h:outputText value="Doctor Details" class="mx-4"></h:outputText>
@@ -968,7 +967,7 @@
                                 </p:panel>
 
 
-                                <p:panel id="panelBillReferrals" >
+                                <p:panel id="panelBillReferrals" class="mt-2">
                                     <f:facet name="header" >
                                         <h:outputText styleClass="fa fa-stethoscope" /> <!-- FontAwesome Icon -->
                                         <h:outputText value="Referral Details" class="mx-4"></h:outputText>
