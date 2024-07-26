@@ -277,6 +277,76 @@ public class FinancialTransactionController implements Serializable {
         return bundle;
     }
 
+    
+    
+    public ReportTemplateRowBundle addProfessionalPayments(
+            ReportTemplateType type,
+            List<BillTypeAtomic> btas,
+            Date paramDate,
+            Date paramFromDate,
+            Date paramToDate,
+            Institution paramInstitution,
+            Department paramDepartment,
+            Institution paramFromInstitution,
+            Department paramFromDepartment,
+            Institution paramToInstitution,
+            Department paramToDepartment,
+            WebUser paramUser,
+            Institution paramCreditCompany,
+            Long paramStartId,
+            Long paramEndId) {
+        System.out.println("addOpdByDepartments");
+
+        ReportTemplateRowBundle bundle;
+        List<BillTypeAtomic> inBts = BillTypeAtomic.findByCountedServiceType(CountedServiceType.OPD_IN);
+        List<BillTypeAtomic> outBts = BillTypeAtomic.findByCountedServiceType(CountedServiceType.OPD_OUT);
+
+        ReportTemplateRowBundle ins = reportTemplateController.generateReport(
+                type,
+                inBts,
+                paramDate,
+                paramFromDate,
+                paramToDate,
+                paramInstitution,
+                paramDepartment,
+                paramFromInstitution,
+                paramFromDepartment,
+                paramToInstitution,
+                paramToDepartment,
+                paramUser,
+                paramCreditCompany,
+                paramStartId,
+                paramEndId);
+
+        System.out.println("ins = " + ins.getReportTemplateRows().size());
+
+        ReportTemplateRowBundle outs = reportTemplateController.generateReport(
+                type,
+                outBts,
+                paramDate,
+                paramFromDate,
+                paramToDate,
+                paramInstitution,
+                paramDepartment,
+                paramFromInstitution,
+                paramFromDepartment,
+                paramToInstitution,
+                paramToDepartment,
+                paramUser,
+                paramCreditCompany,
+                paramStartId,
+                paramEndId);
+
+        System.out.println("outes = " + outs.getReportTemplateRows().size());
+
+        bundle = combineBundlesByItemDepartment(ins, outs);
+
+        return bundle;
+    }
+
+    
+    
+    
     public ReportTemplateRowBundle addOpdByDepartments(
             ReportTemplateType type,
             List<BillTypeAtomic> btas,
@@ -346,6 +416,8 @@ public class FinancialTransactionController implements Serializable {
         shiftEndBundles = new ArrayList<>();
         ReportTemplateType channelingType = ReportTemplateType.ITEM_CATEGORY_SUMMARY_BY_BILL;
         ReportTemplateType opdType = ReportTemplateType.ITEM_DEPARTMENT_SUMMARY_BY_BILL_ITEM;
+        ReportTemplateType paymentsType = ReportTemplateType.BILL_TYPE_ATOMIC_SUMMARY_USING_BILLS;
+        
         List<BillTypeAtomic> btas = null;
         Date paramDate = null;
         Date paramFromDate = null;
@@ -397,11 +469,32 @@ public class FinancialTransactionController implements Serializable {
                         paramStartId,
                         paramEndId
                 );
+        
+        ReportTemplateRowBundle tmpPaymentBundle
+                = addProfessionalPayments(
+                        paymentsType,
+                        btas,
+                        paramDate,
+                        paramFromDate,
+                        paramToDate,
+                        paramInstitution,
+                        paramDepartment,
+                        paramFromInstitution,
+                        paramFromDepartment,
+                        paramToInstitution,
+                        paramToDepartment,
+                        paramUser,
+                        paramCreditCompany,
+                        paramStartId,
+                        paramEndId
+                );
 
         tmpChannellingBundle.setName("Channelling");
-        tmpOpdBundle.setName("OPD Bundle");
+        tmpOpdBundle.setName("OPD");
+        tmpPaymentBundle.setName("Payments");
         shiftEndBundles.add(tmpChannellingBundle);
         shiftEndBundles.add(tmpOpdBundle);
+        shiftEndBundles.add(tmpPaymentBundle);
 
     }
 

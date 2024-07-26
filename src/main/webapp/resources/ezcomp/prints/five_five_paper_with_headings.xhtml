@@ -416,6 +416,13 @@
                     </h:outputLabel>
                 </div>
             </h:panelGroup>
+            
+            <h:panelGroup rendered="#{cc.attrs.bill.cancelled}">
+                <div class="d-flex gap-2" style="font-size: 12px;">
+                    <h:outputLabel value="Remark :"/>
+                    <h:outputLabel value="#{cc.attrs.bill.cancelledBill.comments}"/>
+                </div>
+            </h:panelGroup>
 
             <div class="footer" style="text-align: center;">
                 <br/>
