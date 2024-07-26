@@ -277,8 +277,6 @@ public class FinancialTransactionController implements Serializable {
         return bundle;
     }
 
-    
-    
     public ReportTemplateRowBundle addProfessionalPayments(
             ReportTemplateType type,
             List<BillTypeAtomic> btas,
@@ -346,9 +344,6 @@ public class FinancialTransactionController implements Serializable {
         return bundle;
     }
 
-    
-    
-    
     public ReportTemplateRowBundle addOpdByDepartments(
             ReportTemplateType type,
             List<BillTypeAtomic> btas,
@@ -419,7 +414,7 @@ public class FinancialTransactionController implements Serializable {
         ReportTemplateType channelingType = ReportTemplateType.ITEM_CATEGORY_SUMMARY_BY_BILL;
         ReportTemplateType opdType = ReportTemplateType.ITEM_DEPARTMENT_SUMMARY_BY_BILL_ITEM;
         ReportTemplateType paymentsType = ReportTemplateType.BILL_TYPE_ATOMIC_SUMMARY_USING_BILLS;
-        
+
         List<BillTypeAtomic> btas = null;
         Date paramDate = null;
         Date paramFromDate = null;
@@ -471,7 +466,7 @@ public class FinancialTransactionController implements Serializable {
                         paramStartId,
                         paramEndId
                 );
-        
+
         ReportTemplateRowBundle tmpPaymentBundle
                 = addProfessionalPayments(
                         paymentsType,
@@ -782,8 +777,6 @@ public class FinancialTransactionController implements Serializable {
         return temOutBundle;
     }
 
-    
-    
     private ReportTemplateRowBundle combineBundlesByItemDepartment(ReportTemplateRowBundle inBundle, ReportTemplateRowBundle outBundle) {
         System.out.println("Starting combineBundlesByDepartment method");
 
@@ -970,8 +963,6 @@ public class FinancialTransactionController implements Serializable {
         return temOutBundle;
     }
 
-    
-    
     public void processShiftEndReportOpdCategory() {
         reportTemplateType = ReportTemplateType.ITEM_CATEGORY_SUMMARY_BY_BILL_ITEM;
         List<BillTypeAtomic> bts = new ArrayList<>();
@@ -2010,7 +2001,11 @@ public class FinancialTransactionController implements Serializable {
         m.put("sid", shiftStartBillId);
         m.put("eid", shiftEndBillId);
 
+        System.out.println("m = " + m);
+        System.out.println("jpql = " + jpql);
+
         paymentsFromShiftSratToNow = paymentFacade.findByJpql(jpql, m);
+        System.out.println("paymentsFromShiftSratToNow = " + paymentsFromShiftSratToNow);
         atomicBillTypeTotalsByPayments = new AtomicBillTypeTotals();
         for (Payment p : paymentsFromShiftSratToNow) {
             if (p.getBill().getBillTypeAtomic() == null) {
