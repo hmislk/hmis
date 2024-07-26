@@ -15,147 +15,32 @@
                 <h:form>
 
 
-                    <p:panelGrid columns="1" rendered="#{financialTransactionController.nonClosedShiftStartFundBill ne null}" class="w-100">
+                    <p:panelGrid columns="1" class="w-100">
                         <f:facet name="header">
-                            <div class="d-flex align-items-center justify-content-between">
-                                <div>
-                                    <i class="fa-solid fa-cash-register">&nbsp;&nbsp;</i>
-                                    <p:outputLabel value="Shift Report" />
-                                </div>
-                                <div>
-                                    <p:commandButton class="ui-button-info mx-2" 
-                                                     ajax="false" 
-                                                     value="Process" 
-                                                     action="#{financialTransactionController.processShiftEndReport()}" ></p:commandButton>
-                                </div>
-                            </div>
-
+                            <p:outputLabel value="Day End Report" />
                         </f:facet>
 
-                        <p:panelGrid columns="3">
-                            <h:panelGroup>
-                                <div class="card">
-                                    <div class="card-header">
-                                        <i class="fas fa-user-md"></i> Staff Details
-                                    </div>
-                                    <div class="card-body">
-                                        <p><strong>Staff:</strong> #{financialTransactionController.nonClosedShiftStartFundBill.staff.person.nameWithTitle}</p>
-                                        <p><strong>Total Value:</strong> 
-                                            <h:outputText value="#{financialTransactionController.nonClosedShiftStartFundBill.referenceBill.total}">
-                                                <f:convertNumber pattern="#,##0.00" />
-                                            </h:outputText>
-                                        </p>
-                                        <p><strong>Duration:</strong> 
-                                            #{financialTransactionController.calculateDuration(
-                                              financialTransactionController.nonClosedShiftStartFundBill.createdAt, 
-                                              financialTransactionController.nonClosedShiftStartFundBill.referenceBill.createdAt)}
-                                        </p>
-                                    </div>
-                                </div>
-                            </h:panelGroup>
+                        <p:panelGrid columns="1">
 
-                            <h:panelGroup>
-                                <div class="card">
-                                    <div class="card-header">
-                                        <i class="fas fa-sign-in-alt"></i> Shift Start
-                                    </div>
-                                    <div class="card-body">
-                                        <p><strong>Start Bill ID:</strong> #{financialTransactionController.nonClosedShiftStartFundBill.id}</p>
-                                        <p><strong>Start:</strong> 
-                                            <h:outputText value="#{financialTransactionController.nonClosedShiftStartFundBill.createdAt}">
-                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                            </h:outputText>
-                                        </p>
-                                    </div>
-                                </div>
-                            </h:panelGroup>
+                            <p:outputLabel value="From" ></p:outputLabel>
+                            <p:calendar value="#{financialTransactionController.fromDate}"
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}">
+                            </p:calendar>
 
-                            <h:panelGroup rendered="#{not empty financialTransactionController.nonClosedShiftStartFundBill.referenceBill}">
-                                <div class="card">
-                                    <div class="card-header">
-                                        <i class="fas fa-sign-out-alt"></i> Shift End
-                                    </div>
-                                    <div class="card-body">
-                                        <p><strong>End Bill ID:</strong> #{financialTransactionController.nonClosedShiftStartFundBill.referenceBill.id}</p>
-                                        <p><strong>End:</strong> 
-                                            <h:outputText value="#{financialTransactionController.nonClosedShiftStartFundBill.referenceBill.createdAt}">
-                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                            </h:outputText>
-                                        </p>
-                                    </div>
-                                </div>
-                            </h:panelGroup>
+                            <p:outputLabel value="To" ></p:outputLabel>
+                            <p:calendar value="#{financialTransactionController.toDate}"
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}">
+                            </p:calendar>
 
-                            <h:panelGroup rendered="#{empty financialTransactionController.nonClosedShiftStartFundBill.referenceBill}">
-                                <div class="card">
-                                    <div class="card-header">
-                                        <i class="fas fa-exclamation-circle"></i> Shift Status
-                                    </div>
-                                    <div class="card-body">
-                                        <p>Shift is not yet ended.</p>
-                                    </div>
-                                </div>
-                            </h:panelGroup>
+                            <p:commandButton class="ui-button-info mx-2" 
+                                             ajax="false" 
+                                             value="Process Day End" 
+                                             action="#{financialTransactionController.processDayEndReport()}" ></p:commandButton>
+
                         </p:panelGrid>
 
 
                         <h:panelGroup >
-
-                            <table class="w-100 table table-primary">
-                                <thead>
-                                    <tr>
-                                        <th>Name</th>
-                                        <th>Count</th>
-                                        <th>Total</th>
-                                        <th>Report Template Rows</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <ui:repeat value="#{financialTransactionController.shiftEndBundles}" var="sebs">
-                                        <tr>
-                                            <td>
-                                                <h:outputText value="#{sebs.name}" />
-                                            </td>
-                                            <td>
-                                                <h:outputText value="#{sebs.count}" />
-                                            </td>
-                                            <td>
-                                                <h:outputText value="#{sebs.total}" />
-                                            </td>
-                                            <td>
-                                                <table class="w-100 table table-striped">
-                                                    <thead>
-                                                        <tr>
-                                                            <th>Category / Department</th>
-                                                            <th>Value</th>
-                                                            <th>Count</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        <ui:repeat value="#{sebs.reportTemplateRows}" var="r">
-                                                            <tr>
-                                                                <td>
-                                                                    #{r.category.name}
-                                                                    #{r.department.name}
-                                                                
-                                                                </td>
-                                                                <td>#{r.rowValue}</td>
-                                                                <td>#{r.rowCount}</td>
-                                                            </tr>
-                                                        </ui:repeat>
-                                                    </tbody>
-                                                </table>
-                                            </td>
-                                        </tr>
-                                    </ui:repeat>
-                                </tbody>
-                            </table>
-
-
-
-
-
-
                             <table class="table table-primary">
                                 <tr>
                                     <th>
