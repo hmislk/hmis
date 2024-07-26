@@ -10,6 +10,15 @@ public class PatientSampleWrapper {
     private PatientSample patientSample;
     private boolean selected;
 
+    public PatientSampleWrapper() {
+    }
+
+    public PatientSampleWrapper(PatientSample patientSample) {
+        this.patientSample = patientSample;
+    }
+
+    
+    
     public PatientSample getPatientSample() {
         return patientSample;
     }
