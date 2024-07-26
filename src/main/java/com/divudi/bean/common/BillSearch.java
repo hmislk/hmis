@@ -166,7 +166,7 @@ public class BillSearch implements Serializable {
     CommonFunctionsController commonFunctionsController;
     @Inject
     PharmacyBillSearch pharmacyBillSearch;
-        
+
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
     /**
@@ -241,10 +241,10 @@ public class BillSearch implements Serializable {
     public String navigateToBillPaymentOpdBill() {
         return "bill_payment_opd?faces-redirect=true";
     }
-    
-    public void fillBillFees(){
-        for(BillItem bi : getRefundingBill().getBillItems()){
-            for(BillFee bfee : bi.getBillFees()){
+
+    public void fillBillFees() {
+        for (BillItem bi : getRefundingBill().getBillItems()) {
+            for (BillFee bfee : bi.getBillFees()) {
                 bfee.setFeeValue(bfee.getReferenceBillFee().getFeeValue());
             }
         }
@@ -1400,9 +1400,6 @@ public class BillSearch implements Serializable {
     }
 
     public PaymentMethod getPaymentMethod() {
-        if (paymentMethod != null) {
-            paymentMethod = PaymentMethod.Cash;
-        }
         return paymentMethod;
     }
 
@@ -2732,8 +2729,14 @@ public class BillSearch implements Serializable {
             JsfUtil.addErrorMessage("Nothing to cancel");
             return "";
         }
-        System.out.println("bill = " + bill.getIdStr());
-        paymentMethod = bill.getPaymentMethod();
+        //System.out.println("bill = " + bill.getIdStr());
+        
+        if (configOptionApplicationController.getBooleanValueByKey("Set the Original Bill PaymentMethod to Cancelation Bill")) {
+            paymentMethod = bill.getPaymentMethod();
+        } else {
+            paymentMethod = PaymentMethod.Cash;
+        }
+        //System.out.println("Cencel = " + paymentMethod);
         createBillItemsAndBillFees();
         boolean flag = billController.checkBillValues(bill);
         bill.setTransError(flag);
@@ -2852,9 +2855,8 @@ public class BillSearch implements Serializable {
 
             case CHANNEL_REFUND:
                 return "";
-                
+
             case CHANNEL_PAYMENT_FOR_BOOKING_BILL:
-                
 
         }
 
@@ -2891,7 +2893,13 @@ public class BillSearch implements Serializable {
             JsfUtil.addErrorMessage("Nothing to cancel");
             return "";
         }
-        paymentMethod = bill.getPaymentMethod();
+        
+        if(configOptionApplicationController.getBooleanValueByKey("Set the Original Bill PaymentMethod to Refunded Bill")){
+            paymentMethod = getBill().getPaymentMethod();
+        }else{
+            paymentMethod = PaymentMethod.Cash;
+        }
+        //System.out.println("Refund"+ paymentMethod);
         try {
             createBillItemsAndBillFeesForOpdRefund();
         } catch (IllegalAccessException ex) {
@@ -2906,7 +2914,7 @@ public class BillSearch implements Serializable {
             JsfUtil.addErrorMessage(ex.getMessage());
             return "";
         }
-        if(configOptionApplicationController.getBooleanValueByKey("To Refunded the Full Value of the Bill")){
+        if (configOptionApplicationController.getBooleanValueByKey("To Refunded the Full Value of the Bill")) {
             fillBillFees();
         }
         printPreview = false;

@@ -105,6 +105,8 @@ public class Payment implements Serializable {
     @Transient
     private List<String> humanReadableDenominations;
 
+    private String referenceNo;
+
     public Long getId() {
         return id;
     }
@@ -427,5 +429,16 @@ public class Payment implements Serializable {
     public void setCurrencyDenominations(List<Denomination> currencyDenominations) {
         this.currencyDenominations = currencyDenominations;
     }
+
+    public String getReferenceNo() {
+        
+        return referenceNo;
+    }
+
+    public void setReferenceNo(String referenceNo) {
+        this.referenceNo = referenceNo;
+    }
+
+   
 
 }

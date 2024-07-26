@@ -974,12 +974,20 @@
                         value="Cash To Pay" 
                         rendered="#{webUserController.hasPrivilege('PaymentBilling')}" >
                     </p:menuitem>
-                    <p:menuitem  
-                        ajax="false"  
-                        action="/payments/recieve_index?faces-redirect=true"
-                        value="Cash For Receive" 
-                        rendered="#{webUserController.hasPrivilege('Payment')}" >
-                    </p:menuitem>
+                    <p:submenu label="Cash">
+
+                        <p:menuitem  
+                            ajax="false"  
+                            action="/payments/recieve_index?faces-redirect=true"
+                            value="Cash For Receive" 
+                            rendered="#{webUserController.hasPrivilege('Payment')}" >
+                        </p:menuitem>
+                        <p:menuitem
+                            ajax="false"  
+                            action="/payments/staff_credit_settle?faces-redirect=true"
+                            value="Staff Credit Settle" >
+                        </p:menuitem>
+                    </p:submenu>
                     <!--                    <p:submenu label="Pay"
                                                    rendered="#{webUserController.hasPrivilege('Payment')}">
                                             <p:submenu label="OPD">
