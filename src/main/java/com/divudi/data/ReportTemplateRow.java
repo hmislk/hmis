@@ -25,11 +25,16 @@ public class ReportTemplateRow {
     private Long id;
 
     private Category category;
+
     private Item item;
     private ServiceType serviceType;
     private BillTypeAtomic billTypeAtomic;
     private Institution creditCompany;
     private Department toDepartment;
+    private Department itemDepartment;
+
+    private Department department;
+    private Institution institution;
 
     public ReportTemplateRow(Category c) {
         this.category = c;
@@ -38,6 +43,10 @@ public class ReportTemplateRow {
     public ReportTemplateRow(Item item) {
         this.item = item;
 
+    }
+
+    public ReportTemplateRow(Department d) {
+        this.department=d;
     }
 
     public void setFeeName(String feeName) {
@@ -92,6 +101,8 @@ public class ReportTemplateRow {
         this.rowCount = rowCount;
     }
 
+    
+    
     public ReportTemplateRow(String feeName, String categoryName, String toDepartmentName, String itemName, String paymentName, Double rowValue, Long rowCount) {
         this.feeName = feeName;
         this.categoryName = categoryName;
@@ -110,6 +121,12 @@ public class ReportTemplateRow {
 
     public ReportTemplateRow(Category category, Long rowCount, Double rowValue) {
         this.category = category;
+        this.rowValue = rowValue;
+        this.rowCount = rowCount;
+    }
+
+    public ReportTemplateRow(Department itemDept, Long rowCount, Double rowValue) {
+        this.itemDepartment = itemDept;
         this.rowValue = rowValue;
         this.rowCount = rowCount;
     }
@@ -243,6 +260,30 @@ public class ReportTemplateRow {
 
     public void setItem(Item item) {
         this.item = item;
+    }
+
+    public Department getItemDepartment() {
+        return itemDepartment;
+    }
+
+    public void setItemDepartment(Department itemDepartment) {
+        this.itemDepartment = itemDepartment;
+    }
+
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
+    }
+
+    public Institution getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
     }
 
 }
