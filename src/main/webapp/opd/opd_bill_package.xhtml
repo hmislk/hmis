@@ -41,7 +41,7 @@
                                     <h:panelGrid columns="1" class="w-100">
                                         <h:panelGroup id="panelIx" class="w-100">
                                             <p:panel id="ptImp">
-                                                
+
                                                 <f:facet name="header">
                                                     <h:panelGroup layout="block" styleClass="d-flex justify-content-between align-items-center">
                                                         <!-- Left aligned content -->
@@ -421,7 +421,7 @@
                                                 <h:outputText styleClass="fa-solid fa-circle-plus" />
                                                 <h:outputText value="Add New Items" class="mx-4"></h:outputText>
                                             </f:facet>
-                                            
+
                                             <p:selectOneListbox 
                                                 id="advanced" 
                                                 value="#{billPackageController.currentBillItem.item}"
@@ -441,7 +441,7 @@
                                                     <h:outputText value="#{i.department}"/>
                                                 </p:column>
                                                 <p:column rendered="#{configOptionApplicationController.getBooleanValueByKey('Package bill – Reloading of Packages with Consideration of Gender')}">
-                                                    
+
                                                     <p:badge 
                                                         size="large"
                                                         value="#{i.forGender}" 
@@ -497,6 +497,8 @@
                                                 <p:dataTable 
                                                     id="tblRequests" 
                                                     rowIndexVar="rowIndex" 
+                                                    scrollHeight="370"
+                                                    scrollable="true"
                                                     value="#{billPackageController.lstBillEntries}" 
                                                     var="bi" class="w-100" 
                                                     >
@@ -638,7 +640,7 @@
                                                         rendered="#{billPackageController.paymentMethod eq 'Credit'}" >
                                                         <div class="my-1" id="credit">
                                                             <div class="row">
-                                                                <div class="col-12 d-flex ">
+                                                                <div class="col-12 d-flex gap-2">
                                                                     <p:autoComplete 
                                                                         id="creditCompany" 
                                                                         class="w-100 -mx-2"
@@ -652,13 +654,21 @@
                                                                         itemLabel="#{ix.name}" 
                                                                         itemValue="#{ix}" 
                                                                         size="10"  >
-
+ 
                                                                         <f:ajax  
                                                                             event="itemSelect" 
                                                                             listener="#{billPackageController.calTotals()}"
                                                                             execute="@this" 
                                                                             render=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}  :#{p:resolveFirstComponentWithId('tblRequests',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId}" />
                                                                     </p:autoComplete> 
+
+                                                                    <p:inputText 
+                                                                        id="polNo" 
+                                                                        style="width: 250px;"
+                                                                        value="#{billPackageController.paymentMethodData.credit.referralNo}" 
+                                                                        placeholder="Policy NO" >
+                                                                    </p:inputText>
+
                                                                     <p:commandLink 
                                                                         id="btnAddNewCreditCom" 
                                                                         value="(+)"
