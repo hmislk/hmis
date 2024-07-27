@@ -1,0 +1,47 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html">
+
+    <body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+                <p:panel header="Dynamic Reports">
+                   <div class="row" >
+                        <div class="col-md-3" >
+                            <h:form>
+                                <p:accordionPanel activeIndex="#{searchController.manageListIndex}">
+                                    <p:ajax process="@this"></p:ajax>
+
+                                    <p:tab title="Lists">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                value="Dynamic Report Summary" 
+                                                actionListener="#{searchController.makeNull()}"
+                                                action="#{reportController.navigateToDynamicReportSummary()}"
+                                                class="w-100">
+                                            </p:commandButton>
+                                        </div>
+                                    </p:tab>
+                                </p:accordionPanel>
+                            </h:form>
+                        </div>
+                        <div class="col-md-9" >
+                            <ui:insert name="subcontent">
+                            </ui:insert>
+                        </div>
+                    </div> 
+                    
+                </p:panel>
+                
+            </ui:define>
+
+        </ui:composition>
+
+    </body>
+</html>
