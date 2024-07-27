@@ -25,6 +25,7 @@ public enum Privileges {
     Store,
     Search,
     CashTransaction,
+    ChangeCreditLimitInCC,
     //Submenu Privileges
     OpdBilling,
     OpdCollectingCentreBillingMenu,
