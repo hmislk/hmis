@@ -114,74 +114,46 @@
                                 </ui:repeat>
                             </p:column>
 
-                            <p:column headerText="Samples" >
-                                <ui:repeat value="#{smpIx.patientSampleWrappers}" var="psw" >
-                                    <h:outputLabel value="#{psw.patientSample}"/>
-                                    <table >
-                                        <tr>
-                                            <td>
-                                                <h:outputLabel value="Patient" ></h:outputLabel>
-                                            </td>
-                                            <td>
-                                                <h:outputLabel value="#{psw.patient.person.shortenedName}" >
-                                                </h:outputLabel>
-                                            </td>
-                                            <td>
-                                                <h:outputLabel value="Age" ></h:outputLabel>
-                                            </td>
-                                            <td>
-                                                <h:outputLabel value="#{psw.patient.age}" >
-                                                </h:outputLabel>
-                                            </td>
-                                            <td>
-                                                <h:outputLabel value="Sex" ></h:outputLabel>
-                                            </td>
-                                            <td>
-                                                <h:outputLabel value="#{psw.patient.person.sex.shortLabel}" >
-                                                </h:outputLabel>
-                                            </td>
-                                            <td>
-                                                <h:outputLabel value="ID" ></h:outputLabel>
-                                            </td>
-                                            <td>
-                                                <h:outputLabel value="#{psw.patient.id}" >
-                                                </h:outputLabel>
-                                            </td>
-                                            <td>
-                                                <h:outputLabel value="PHN" ></h:outputLabel>
-                                            </td>
-                                            <td>
-                                                <h:outputLabel value="#{psw.patient.phn}" >
-                                                </h:outputLabel>
-                                            </td>
-                                            <td>
-                                                <table >
-                                                    <ui:repeat value="#{patientInvestigationController.getPatientSampleComponentsByPatientSample(psw.patientSample)}" var="psc">
-                                                        <tr>
-                                                            <td>
-                                                                <h:outputLabel value="Ix" ></h:outputLabel>
-                                                            </td>
-                                                            <td>
-                                                                <h:outputLabel value="#{psc.patientInvestigation.investigation}" ></h:outputLabel>
-                                                            </td>
-                                                            <td>
-                                                                <h:outputLabel value="Component" ></h:outputLabel>
-                                                            </td>
-                                                            <td>
-                                                                <h:outputLabel value="#{psc.investigationComponant.name}" ></h:outputLabel>
-                                                            </td>
-                                                        </tr>
-                                                    </ui:repeat>
-                                                </table>
+                            <p:column headerText="Samples">
+                                <ui:repeat value="#{smpIx.patientSampleWrappers}" var="psw">
+                                    <p:panel id="samplePanel_#{psw.patientSample.id}" header="#{psw.patientSample.id}" toggleable="true" collapsed="true">
+                                        <h:panelGrid columns="2" class="table table-striped">
+                                            <h:outputLabel value="Patient" style="font-weight: bold;"/>
+                                            <h:outputLabel value="#{psw.patientSample.patient.person.shortenedName}"/>
 
-                                            </td>
+                                            <h:outputLabel value="Age" style="font-weight: bold;"/>
+                                            <h:outputLabel value="#{psw.patientSample.patient.person.ageAsShortString}"/>
 
+                                            <h:outputLabel value="Sex" style="font-weight: bold;"/>
+                                            <h:outputLabel value="#{psw.patientSample.patient.person.sex.shortLabel}"/>
 
-                                        </tr>
-                                    </table>
+                                            <h:outputLabel value="ID" style="font-weight: bold;"/>
+                                            <h:outputLabel value="#{psw.patientSample.patient.id}"/>
 
+                                            <h:outputLabel value="PHN" style="font-weight: bold;"/>
+                                            <h:outputLabel value="#{psw.patientSample.patient.phn}"/>
 
+                                        </h:panelGrid>
 
+                                        <table >
+                                            <ui:repeat value="#{patientInvestigationController.getPatientSampleComponentsByPatientSample(psw.patientSample)}" var="psc">
+                                                <tr>
+                                                    <td>
+                                                        <h:outputLabel value="Ix" style="font-weight: bold;"/>
+                                                    </td>
+                                                    <td>
+                                                        <h:outputLabel value="#{psc.patientInvestigation.investigation.name}"/>
+                                                    </td>
+                                                    <td>
+                                                        <h:outputLabel value="Component" style="font-weight: bold;"/>
+                                                    </td>
+                                                    <td>
+                                                        <h:outputLabel value="#{psc.investigationComponant.name}"/>
+                                                    </td>
+                                                </tr>
+                                            </ui:repeat>
+                                        </table>
+                                    </p:panel>
                                 </ui:repeat>
                             </p:column>
 
