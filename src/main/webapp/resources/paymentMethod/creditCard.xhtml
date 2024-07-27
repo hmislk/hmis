@@ -15,14 +15,15 @@
     <!-- IMPLEMENTATION -->
     <cc:implementation>
         <div class="d-flex gap-2" >
-            <p:inputText autocomplete="off"   value="#{cc.attrs.paymentMethodData.creditCard.totalValue}"  id="txtVal">
+            <p:inputText autocomplete="off" style="width: 100px" value="#{cc.attrs.paymentMethodData.creditCard.totalValue}"  id="txtVal">
                 <p:ajax process="@this"></p:ajax>
             </p:inputText>
 
             <p:watermark value="Value" for="txtVal" />
 
             <p:inputText 
-                autocomplete="off"   
+                autocomplete="off"
+                style="width: 100px"
                 value="#{cc.attrs.paymentMethodData.creditCard.no}"  id="refno">
                 <p:ajax process="@this" ></p:ajax>
             </p:inputText>                          
