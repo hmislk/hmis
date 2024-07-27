@@ -24,6 +24,8 @@ import com.divudi.entity.Institution;
 import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
 import com.divudi.facade.ReportTemplateFacade;
+import com.divudi.java.CommonFunctions;
+import com.graphbuilder.math.func.CombinFunction;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -582,6 +584,7 @@ public class ReportTemplateController implements Serializable {
             return "";
         }
         reportTemplateRowBundle = generateReport(current.getReportTemplateType(), current.getBillTypeAtomics(), date, fromDate, toDate, institution, department, fromInstitution, fromDepartment, toInstitution, toDepartment, user, creditCompany, startId, endId);
+        reportTemplateRowBundle.setReportTemplate(current);
         return "";
     }
 
@@ -2469,6 +2472,9 @@ public class ReportTemplateController implements Serializable {
     }
 
     public Date getDate() {
+        if(date==null){
+            date=CommonFunctions.getStartOfDay();
+        }
         return date;
     }
 
@@ -2477,6 +2483,9 @@ public class ReportTemplateController implements Serializable {
     }
 
     public Date getFromDate() {
+        if(fromDate==null){
+            fromDate = CommonFunctions.getStartOfDay();
+        }
         return fromDate;
     }
 
@@ -2485,6 +2494,9 @@ public class ReportTemplateController implements Serializable {
     }
 
     public Date getToDate() {
+        if(toDate==null){
+            toDate = CommonFunctions.getEndOfDay();
+        }
         return toDate;
     }
 
