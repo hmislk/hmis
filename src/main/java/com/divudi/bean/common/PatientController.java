@@ -914,6 +914,16 @@ public class PatientController implements Serializable, ControllerWithPatient {
             JsfUtil.addErrorMessage("No patient selected");
             return "";
         }
+
+        if(current.getHasAnAccount() == null){
+            JsfUtil.addErrorMessage("Patient has No Account");
+            return "";
+        }
+        if(!current.getHasAnAccount()){
+            JsfUtil.addErrorMessage("Patient has No Account");
+            return "";
+        }
+        
         paymentMethodData = new PaymentMethodData();
         bill = new Bill();
         billItem = new BillItem();
