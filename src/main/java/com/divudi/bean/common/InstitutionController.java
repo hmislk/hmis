@@ -352,6 +352,7 @@ public class InstitutionController implements Serializable {
                 + " where i.name=:name"
                 + " and i.retired=:ret";
         Institution i = getFacade().findFirstByJpql(sql, m);
+        System.out.println("i = " + i);
         if (i == null) {
             i = new Institution();
             i.setName(name);
