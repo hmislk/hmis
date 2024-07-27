@@ -4,6 +4,9 @@ import com.divudi.entity.Category;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
+import com.divudi.entity.WebUser;
+import java.util.Date;
+import java.util.List;
 
 /**
  *
@@ -36,6 +39,20 @@ public class ReportTemplateRow {
     private Department department;
     private Institution institution;
 
+    private Date date;
+    private Date fromDate;
+    private Date toDate;
+    private Institution fromInstitution;
+    private Department fromDepartment;
+    private Institution toInstitution;
+    private WebUser user;
+    private Long startId;
+    private Long endId;
+    
+    private List<BillTypeAtomic> btas;
+    
+    
+
     public ReportTemplateRow(Category c) {
         this.category = c;
     }
@@ -46,7 +63,7 @@ public class ReportTemplateRow {
     }
 
     public ReportTemplateRow(Department d) {
-        this.department=d;
+        this.department = d;
     }
 
     public void setFeeName(String feeName) {
@@ -61,6 +78,8 @@ public class ReportTemplateRow {
         this.categoryName = categoryName;
     }
 
+    
+    
     public String getToDepartmentName() {
         return toDepartmentName;
     }
@@ -101,8 +120,6 @@ public class ReportTemplateRow {
         this.rowCount = rowCount;
     }
 
-    
-    
     public ReportTemplateRow(String feeName, String categoryName, String toDepartmentName, String itemName, String paymentName, Double rowValue, Long rowCount) {
         this.feeName = feeName;
         this.categoryName = categoryName;
@@ -154,6 +171,14 @@ public class ReportTemplateRow {
         this.rowValue = rowValue;
     }
 
+    public ReportTemplateRow(BillTypeAtomic billTypeAtomic, Long rowCount, Double rowValue) {
+        this.rowValue = rowValue;
+        this.rowCount = rowCount;
+        this.billTypeAtomic = billTypeAtomic;
+    }
+    
+    
+
     public ReportTemplateRow(Double rowValue) {
         this.rowValue = rowValue;
     }
@@ -161,6 +186,12 @@ public class ReportTemplateRow {
     public ReportTemplateRow() {
     }
 
+    public ReportTemplateRow(BillTypeAtomic billTypeAtomic) {
+        this.billTypeAtomic = billTypeAtomic;
+    }
+
+    
+    
     public Long getId() {
         return id;
     }
@@ -284,6 +315,86 @@ public class ReportTemplateRow {
 
     public void setInstitution(Institution institution) {
         this.institution = institution;
+    }
+
+    public Date getDate() {
+        return date;
+    }
+
+    public void setDate(Date date) {
+        this.date = date;
+    }
+
+    public Date getFromDate() {
+        return fromDate;
+    }
+
+    public void setFromDate(Date fromDate) {
+        this.fromDate = fromDate;
+    }
+
+    public Date getToDate() {
+        return toDate;
+    }
+
+    public void setToDate(Date toDate) {
+        this.toDate = toDate;
+    }
+
+    public Institution getFromInstitution() {
+        return fromInstitution;
+    }
+
+    public void setFromInstitution(Institution fromInstitution) {
+        this.fromInstitution = fromInstitution;
+    }
+
+    public Department getFromDepartment() {
+        return fromDepartment;
+    }
+
+    public void setFromDepartment(Department fromDepartment) {
+        this.fromDepartment = fromDepartment;
+    }
+
+    public Institution getToInstitution() {
+        return toInstitution;
+    }
+
+    public void setToInstitution(Institution toInstitution) {
+        this.toInstitution = toInstitution;
+    }
+
+    public WebUser getUser() {
+        return user;
+    }
+
+    public void setUser(WebUser user) {
+        this.user = user;
+    }
+
+    public Long getStartId() {
+        return startId;
+    }
+
+    public void setStartId(Long startId) {
+        this.startId = startId;
+    }
+
+    public Long getEndId() {
+        return endId;
+    }
+
+    public void setEndId(Long endId) {
+        this.endId = endId;
+    }
+
+    public List<BillTypeAtomic> getBtas() {
+        return btas;
+    }
+
+    public void setBtas(List<BillTypeAtomic> btas) {
+        this.btas = btas;
     }
 
 }

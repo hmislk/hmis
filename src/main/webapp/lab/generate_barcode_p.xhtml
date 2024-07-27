@@ -1,0 +1,136 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:opd="http://xmlns.jcp.org/jsf/composite/ezcomp/opd">
+    <ui:composition 
+        template="/lab/sample_index.xhtml">
+
+        <ui:define name="subcontent">
+
+            <h:panelGroup rendered="#{!webUserController.hasPrivilege('LabSampleCollecting')}" >
+                You are NOT authorized
+            </h:panelGroup>
+
+            <h:panelGroup rendered="#{webUserController.hasPrivilege('LabSampleCollecting')}" >
+                <h:form>        
+                    <p:panel >
+                        <f:facet name="header">
+                            <h:outputLabel class="mt-2" value="To Collect"/>
+                        </f:facet>
+
+                        <h:panelGrid columns="2" class="w-100">
+                            <p:panelGrid columns="2" class="w-100">
+                                <h:outputLabel class="w-100 m-2" value="From Date"/>
+                                <p:calendar 
+                                    id="fromDate" 
+                                    value="#{patientInvestigationController.fromDate}" 
+                                    navigator="true" 
+                                    class="w-100 m-2"
+                                    inputStyleClass="form-control"
+                                    pattern="dd MMMM yy - hh:mm a">
+                                </p:calendar>
+                                <h:outputLabel class="w-100 m-2" value="To Date"/>
+                                <p:calendar 
+                                    class="w-100 m-2"
+                                    id="toDate" 
+                                    value="#{patientInvestigationController.toDate}" 
+                                    navigator="true" 
+                                    inputStyleClass="form-control"
+                                    pattern="dd MMMM yy - hh:mm a">
+                                </p:calendar>
+                            </p:panelGrid>
+
+                            <p:panelGrid columns="3" class="w-100">
+                                <p:commandButton 
+                                    class="w-100 m-2" 
+                                    id="btnListToGenera" 
+                                    ajax="false" 
+                                    actionListener="#{patientInvestigationController.listBillsToGenerateBarcodes()}" 
+                                    value="List to Generate"
+                                    icon="fa fa-list-alt"> <!-- Example FontAwesome icon for listing -->
+                                </p:commandButton>
+                                <p:commandButton 
+                                    class="w-100 m-2" 
+                                    id="btnListGenerated" 
+                                    ajax="false" 
+                                    actionListener="#{patientInvestigationController.listPatientInvestigationAwaitingSamplling()}" 
+                                    value="List Generated"
+                                    icon="fa fa-check-square"> <!-- Example FontAwesome icon for generated lists -->
+                                </p:commandButton>
+                                <p:commandButton 
+                                    class="w-100 m-2" 
+                                    id="btnGeneraBarcodes" 
+                                    ajax="false" 
+                                    actionListener="#{patientInvestigationController.generateBarcodesForSelectedBills()}" 
+                                    value="Generate Barcodes"
+                                    icon="fa fa-barcode"> <!-- Example FontAwesome icon for barcode generation -->
+                                </p:commandButton>
+                            </p:panelGrid>
+
+
+                        </h:panelGrid>
+
+
+                        <p:dataTable  
+                            id="sample" 
+                            class="w-100"
+                            value="#{patientInvestigationController.billBarcodes}" 
+                            var="smpIx" 
+                            paginator="true"
+                            rowKey="#{smpIx.bill.id}"
+                            paginatorPosition="bottom"
+                            selection="#{patientInvestigationController.billBarcodes}"
+                            rows="10"
+                            paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                            rowsPerPageTemplate="10,25,50"
+                            >
+                            
+                            <p:column selectionMode="multiple">
+                                
+                            </p:column>
+
+                            <p:column headerText="Bill Dept ID" width="100">
+                                <p:commandLink 
+                                    ajax="false" 
+                                    class="m-2"
+                                    value="#{smpIx.bill.deptId}" 
+                                    action="#{billSearch.navigateToViewOpdBill()}">
+                                    <f:setPropertyActionListener value="#{smpIx.bill}" target="#{billSearch.bill}"/>
+                                </p:commandLink>
+                            </p:column>
+
+                            <p:column headerText="Patient" >
+                                <h:outputLabel value="#{smpIx.bill.patient.person.nameWithTitle}" 
+                                               class="#{smpIx.bill.cancelled or smpIx.bill.refunded ? 'text-danger':''}"/>
+                            </p:column>
+
+                            <p:column headerText="Investigations" >
+                                <ui:repeat value="#{smpIx.patientInvestigationWrappers}" var="piw" >
+                                    <h:outputLabel value="#{piw.patientInvestigation.billItem.item.name}"/>
+                                </ui:repeat>
+                            </p:column>
+
+                            <p:column headerText="Samples" >
+                                <ui:repeat value="#{smpIx.patientSampleWrappers}" var="psw" >
+                                    <h:outputLabel value="#{pst}"/>
+                                </ui:repeat>
+                            </p:column>
+
+
+
+
+                        </p:dataTable>
+
+
+
+
+                    </p:panel>
+                </h:form>
+            </h:panelGroup>
+        </ui:define>
+    </ui:composition>
+</html>

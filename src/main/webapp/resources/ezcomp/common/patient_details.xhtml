@@ -383,6 +383,12 @@
                                 severity="#{cc.attrs.controller.patient.person.foreigner?'warning':'success'}" 
                                 styleClass="mr-2">
                             </p:badge>
+                            
+                            <h:outputLabel value="Account Balance " class="mx-3" rendered="#{cc.attrs.controller.patient.hasAnAccount}"/>
+                            <h:outputLabel value=" : " class="mx-3" rendered="#{cc.attrs.controller.patient.hasAnAccount}"/>
+                            <h:outputText value="#{cc.attrs.controller.patient.runningBalance}" rendered="#{cc.attrs.controller.patient.hasAnAccount}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
 
                             <h:outputLabel value="Area " class="mx-3"/>
                             <h:outputLabel value=" : " class="mx-3"/>
