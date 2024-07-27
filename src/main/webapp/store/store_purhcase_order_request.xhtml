@@ -112,6 +112,13 @@
                                 </h:panelGrid>
 
                                 <p:spacer height="5" />
+                                <p:commandButton 
+                                    id="btnSave"
+                                    ajax="false" 
+                                    value="Save" 
+                                    action="#{storePurchaseOrderRequestController.save}"
+                                    icon="pi pi-save" 
+                                    class="ui-button-success m-1"/>
                                 <p:commandButton ajax="false" value="Request" 
                                                  icon="pi pi-check" 
                                                  class="ui-button-success m-1"

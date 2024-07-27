@@ -407,7 +407,7 @@
                                                     id="comment"/>
                                             </div>
 
-                                            <h:panelGroup id="gpLocalForeign" layout="block"  class="col-md-4" >
+                                            <h:panelGroup id="gpLocalForeign" layout="block"  class="col-md-4" rendered="#{!configOptionApplicationController.getBooleanValueByKey('Save the Patient with Patient Status')}">
                                                 <p:commandButton value="Mark Foreigner" 
                                                                  class="mx-1"
                                                                  action="#{opdPreBillController.markAsForeigner}" 

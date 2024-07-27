@@ -13,51 +13,51 @@
                     <p:panel style="height: 100vh">
                         <f:facet name="header" >
                             <h:outputText styleClass="fas fa-list" />
-                            <h:outputLabel class="mx-4" value="Search Pharmacy Issue Items"/>                                                          
+                            <h:outputLabel class="mx-4" value="Search Pharmacy Issue Bill Items"/>                                                          
                         </f:facet>
 
                         <div class="row">
                             <div class="col-2">
-                                
-                                    <h:outputLabel value="From Date"/>
-                                    <p:calendar 
-                                        styleClass="dateTimePicker" 
-                                        id="fromDate" 
-                                        class="w-100" 
-                                        inputStyleClass="form-control"
-                                        value="#{searchController.fromDate}" 
-                                        navigator="false" 
-                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
-                                    </p:calendar>
-                                    <h:outputLabel value="To Date"/>
-                                    <p:calendar 
-                                        id="toDate"
-                                        class="w-100"
-                                        inputStyleClass="form-control"
-                                        value="#{searchController.toDate}" 
-                                        navigator="false" 
-                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
-                                    </p:calendar>
-                                
-                                    <h:outputLabel value="Bill No" class="mt-3"/>
-                                    <p:inputText autocomplete="off" class="w-100" value="#{searchController.searchKeyword.billNo}" />
-                                    <h:outputLabel value="Item Name"/>  
-                                    <p:inputText autocomplete="off" class="w-100" value="#{searchController.searchKeyword.itemName}" />
-                                    <h:outputLabel value="Item Value"/>  
-                                    <p:inputText autocomplete="off" class="w-100"  value="#{searchController.searchKeyword.total}" />
-                                    <h:outputLabel value="Department"/>      
-                                    <p:inputText autocomplete="off" class="w-100"  value="#{searchController.searchKeyword.patientName}" />
-                                    <h:outputLabel  value="Item Code"/>
-                                    <p:inputText autocomplete="off" class="w-100"  value="#{searchController.searchKeyword.code}"/>
-                                    
-                                    <p:commandButton 
-                                        class="w-100 ui-button-warning mt-3" 
-                                        id="btnSearch"
-                                        icon="fas fa-search"
-                                        ajax="false"
-                                        value="Search"
-                                        action="#{searchController.createPharmacyIssueBillItemTable()}"/>
-                                
+
+                                <h:outputLabel value="From Date"/>
+                                <p:calendar 
+                                    styleClass="dateTimePicker" 
+                                    id="fromDate" 
+                                    class="w-100" 
+                                    inputStyleClass="form-control"
+                                    value="#{searchController.fromDate}" 
+                                    navigator="false" 
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
+                                </p:calendar>
+                                <h:outputLabel value="To Date"/>
+                                <p:calendar 
+                                    id="toDate"
+                                    class="w-100"
+                                    inputStyleClass="form-control"
+                                    value="#{searchController.toDate}" 
+                                    navigator="false" 
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
+                                </p:calendar>
+
+                                <h:outputLabel value="Bill No" class="mt-3"/>
+                                <p:inputText autocomplete="off" class="w-100" value="#{searchController.searchKeyword.billNo}" />
+                                <h:outputLabel value="Item Name"/>  
+                                <p:inputText autocomplete="off" class="w-100" value="#{searchController.searchKeyword.itemName}" />
+                                <h:outputLabel value="Item Value"/>  
+                                <p:inputText autocomplete="off" class="w-100"  value="#{searchController.searchKeyword.total}" />
+                                <h:outputLabel value="Department"/>      
+                                <p:inputText autocomplete="off" class="w-100"  value="#{searchController.searchKeyword.patientName}" />
+                                <h:outputLabel  value="Item Code"/>
+                                <p:inputText autocomplete="off" class="w-100"  value="#{searchController.searchKeyword.code}"/>
+
+                                <p:commandButton 
+                                    class="w-100 ui-button-warning mt-3" 
+                                    id="btnSearch"
+                                    icon="fas fa-search"
+                                    ajax="false"
+                                    value="Search"
+                                    action="#{searchController.createPharmacyIssueBillItemTable()}"/>
+
                             </div>
                             <div class="col-10">
                                 <p:dataTable 
@@ -75,15 +75,18 @@
                                         <h:outputLabel value="#{i+1}"/>
                                     </p:column>
                                     <p:column headerText="Bill No" styleClass="alignTop"  >
-                                        <h:outputLabel value="#{pi.bill.deptId}"/>
+                                        <p:commandLink 
+                                            ajax="false" 
+                                            value="#{pi.bill.deptId}"
+                                            action="/pharmacy/pharmacy_reprint_bill_unit_issue">
+                                            <f:setPropertyActionListener value="#{pi.bill}" target="#{pharmacyBillSearch.bill}"/>
+                                        </p:commandLink>
                                     </p:column>
                                     <p:column headerText="Item Name"  styleClass="alignTop" width="40%">
-                                        <h:outputLabel value="#{pi.item.name}" />    
+                                        <h:outputLabel value="#{pi.item.code}" ></h:outputLabel>
                                         &nbsp;-&nbsp;
-                                        <f:facet name="header">
-                                            <h:outputLabel value="Code"/>
-                                        </f:facet>
-                                        <h:outputLabel value="#{pi.item.code}" style="width: 100px!important;" ></h:outputLabel>
+                                         <h:outputLabel value="#{pi.item.name}" />   
+                                        
                                     </p:column>
 
                                     <p:column headerText="Billed At"   width="10%">
@@ -121,15 +124,8 @@
                                     </p:column>
 
                                     <p:column headerText="Department"  styleClass="alignTop" >
-                                        <h:outputLabel value="#{pi.bill.toDepartment.name}" >
+                                        <h:outputLabel value="#{pi.bill.toDepartment.name}" style="text-align: left;">
                                         </h:outputLabel>                             
-                                    </p:column>
-                                    
-                                    <p:column headerText="View">
-                                        <p:commandButton ajax="false" value="View Bill"
-                                                         action="/pharmacy/pharmacy_reprint_bill_unit_issue">
-                                            <f:setPropertyActionListener value="#{pi.bill}" target="#{pharmacyBillSearch.bill}"/>                                     
-                                        </p:commandButton>
                                     </p:column>
 
                                 </p:dataTable>

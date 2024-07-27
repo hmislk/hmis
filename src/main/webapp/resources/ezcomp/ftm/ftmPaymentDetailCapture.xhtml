@@ -1,0 +1,162 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <h:panelGroup
+            class="d-flex"
+            layout="block" 
+            id="cheque1" 
+            rendered="#{financialTransactionController.currentPayment.paymentMethod eq 'Cheque'}" >
+
+            <div class="d-flex">
+                <p:inputText 
+                    autocomplete="off"
+                    onfocus="this.focus()"
+                    value="#{financialTransactionController.currentPayment.paidValue}"  id="txtVal">
+                    <p:ajax process="@this" ></p:ajax>
+                </p:inputText>
+                <p:watermark value="Value" for="txtVal" />
+
+                <p:inputText class="mx-2" autocomplete="off" onfocus="this.focus()" value="#{financialTransactionController.currentPayment.chequeRefNo}" id="chequNo">
+                    <p:ajax process="@this" ></p:ajax>
+                </p:inputText>
+
+                <p:selectOneMenu  value="#{financialTransactionController.currentPayment.bank}" style="width: 10em;">
+                    <f:selectItem itemLabel="Select Bank"/>
+                    <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
+                    <p:ajax process="@this" ></p:ajax>
+                </p:selectOneMenu>
+
+                <p:calendar class="mx-2" value="#{financialTransactionController.currentPayment.chequeDate}" pattern="#{sessionController.applicationPreference.longDateFormat}" id="ChequeDate">                            
+                    <p:ajax process="@this" ></p:ajax>
+                </p:calendar>
+
+                <p:watermark value="Cheque No" for="chequNo"/>
+                <p:watermark value="Cheque Date" for="ChequeDate"/>
+            </div>
+
+        </h:panelGroup>
+        <h:panelGroup class="container" layout="block" id="cash" rendered="#{financialTransactionController.currentPayment.paymentMethod eq 'Cash'}">
+            <h:panelGroup layout="block" class="w-100">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label>Total Value</label>
+                            </div>
+                            <div class="col-md-6">
+                                <p:inputText id="txtCashPaidValue" value="#{financialTransactionController.currentPayment.paidValue}" class="form-control" />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <label>Denominations</label>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <ui:repeat value="#{financialTransactionController.currentPayment.currencyDenominations}" var="denomination">
+                                <div class="col-3 p-1 d-flex justify-content-between align-items-center">
+                                    <p:outputLabel value="#{denomination.value}:" class="m-2 ml-4" style="width: 7em;"/>
+                                    <p:inputText 
+                                        class="m-2 form-control  mr-4" 
+                                        value="#{denomination.count}"
+                                        style="width: 5em;"
+                                        onfocus="this.focus();"
+                                        title="Please enter the amount for #{denomination.value}">
+                                        <p:ajax 
+                                            event="keyup" 
+                                            process="@this" 
+                                            update=":#{p:resolveFirstComponentWithId('txtCashPaidValue', view).clientId}" 
+                                            listener="#{financialTransactionController.updateCashDenominations}" />
+                                    </p:inputText>
+                                </div>
+
+
+                            </ui:repeat>
+                        </div>
+                    </div>
+                </div>
+            </h:panelGroup>
+        </h:panelGroup>
+        <h:panelGroup 
+            class="row my-1"
+            layout="block" 
+            id="eWallet"  rendered="#{financialTransactionController.currentPayment.paymentMethod eq 'ewallet'}" >
+
+            <div class="d-flex gap-2">
+                <p:inputText autocomplete="off" onfocus="this.focus()" placeholder="Value"  value="#{financialTransactionController.currentPayment.paidValue}"  />
+                <p:inputText autocomplete="off" onfocus="this.focus()" placeholder="Ref No" value="#{financialTransactionController.currentPayment.chequeRefNo}" />                                
+                <p:selectOneMenu value="#{financialTransactionController.currentPayment.institution}" >
+                    <f:selectItem itemLabel="Select Bank"/>
+                    <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
+                </p:selectOneMenu>
+                <p:inputText autocomplete="off" onfocus="this.focus()" placeholder="Comments"  value="#{financialTransactionController.currentPayment.comments}" id="memo" />
+            </div>
+
+
+
+        </h:panelGroup>
+        <h:panelGroup 
+            class="row my-1"
+            layout="block" 
+            id="slip"  rendered="#{financialTransactionController.currentPayment.paymentMethod eq 'Slip'}" >
+            <div class="d-flex gap-2">
+                <p:inputText autocomplete="off" onfocus="this.focus()"  value="#{financialTransactionController.currentPayment.paidValue}" >
+                    <p:ajax process="@this" ></p:ajax>
+                </p:inputText>
+                <p:selectOneMenu value="#{financialTransactionController.currentPayment.bank}" style="width: 10em;" >
+                    <f:selectItem itemLabel="Select Bank"/>
+                    <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
+                    <p:ajax process="@this" ></p:ajax>
+                </p:selectOneMenu>
+                <p:calendar value="#{financialTransactionController.currentPayment.chequeDate}" pattern="#{sessionController.applicationPreference.longDateFormat}" id="date" >                            
+                    <p:ajax process="@this" ></p:ajax>
+                </p:calendar>
+                <p:inputText value="#{financialTransactionController.currentPayment.comments}" placeholder="Enter Slip Comments" onfocus="this.focus()" ></p:inputText>
+                <p:watermark value="Date" for="date"/>
+            </div>
+        </h:panelGroup>
+        <h:panelGroup
+            class="d-flex"
+            layout="block" 
+            id="card"  
+            rendered="#{financialTransactionController.currentPayment.paymentMethod eq 'Card'}" >
+            <p:outputLabel value="Value" class="mt-2"></p:outputLabel>
+            <p:inputText 
+                class="mx-3"
+                id="txtCardValue" 
+                title="Value"
+                placeholder="Value"
+                value="#{financialTransactionController.currentPayment.paidValue}" 
+                onfocus="this.focus()">
+            </p:inputText>
+            <p:inputText 
+                title="Reference No"
+                autocomplete="off"   
+                placeholder="Reference No"
+                value="#{financialTransactionController.currentPayment.creditCardRefNo}"  id="refno"
+                onfocus="this.focus()">
+                <p:ajax process="@this" ></p:ajax>
+            </p:inputText>                          
+            <p:selectOneMenu value="#{financialTransactionController.currentPayment.institution}" filter="true" filterMatchMode="contains"  >
+                <f:selectItem itemLabel="Select Bank"/>
+                <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
+                <p:ajax process="@this" ></p:ajax>
+            </p:selectOneMenu>
+            <p:inputText value="#{financialTransactionController.currentPayment.comments}" placeholder="Enter Credit Card Comments" onfocus="this.focus()" ></p:inputText>
+            <p:watermark value="Card Ref. No." for="refno" />
+        </h:panelGroup>
+
+    </cc:implementation>
+</html>

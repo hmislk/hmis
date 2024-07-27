@@ -174,6 +174,7 @@ public class OpticianSaleController implements Serializable, ControllerWithPatie
     BillItem editingBillItem;
     Double qty;
     Integer intQty;
+    private String strComment;
     Stock stock;
     Stock replacableStock;
 
@@ -790,9 +791,9 @@ public class OpticianSaleController implements Serializable, ControllerWithPatie
 
         getBillItem().getPharmaceuticalBillItem().setStock(stock);
         calculateRates(billItem);
-        if (stock != null && stock.getItemBatch() != null) {
-            fillReplaceableStocksForAmp((Amp) stock.getItemBatch().getItem());
-        }
+//        if (stock != null && stock.getItemBatch() != null) {
+//            fillReplaceableStocksForAmp((Amp) stock.getItemBatch().getItem());
+//        }
     }
 
     public List<Item> completeRetailSaleItemsWithoutStocks(String qry) {
@@ -932,6 +933,7 @@ public class OpticianSaleController implements Serializable, ControllerWithPatie
 //        billItem.setInwardChargeType(InwardChargeType.Medicine);
         billItem.setItem(getStock().getItemBatch().getItem());
         billItem.setQty(qty);
+        billItem.setDescreption(strComment);
 
         //pharmaceutical Bill Item
         billItem.getPharmaceuticalBillItem().setDoe(getStock().getItemBatch().getDateOfExpire());
@@ -971,23 +973,42 @@ public class OpticianSaleController implements Serializable, ControllerWithPatie
     }
 
     public void calculateRates(BillItem bi) {
+        System.out.println("Entering calculateRates with BillItem: " + bi);
         PharmaceuticalBillItem pharmBillItem = bi.getPharmaceuticalBillItem();
         if (pharmBillItem != null && pharmBillItem.getStock() != null) {
             ItemBatch itemBatch = pharmBillItem.getStock().getItemBatch();
             if (itemBatch != null) {
-                bi.setRate(itemBatch.getRetailsaleRate());
+                System.out.println("ItemBatch found: " + itemBatch);
+                if (bi.getRate() == 0.0) {
+                    bi.setRate(itemBatch.getRetailsaleRate());
+                    System.out.println("Rate set from ItemBatch: " + bi.getRate());
+                } else {
+                    System.out.println("Existing Rate: " + bi.getRate());
+                }
+            } else {
+                System.out.println("ItemBatch is null");
             }
-            bi.setDiscountRate(calculateBillItemDiscountRate(bi));
+
+            // TODO - Configure Discounts
+            // bi.setDiscountRate(calculateBillItemDiscountRate(bi));
             bi.setNetRate(bi.getRate() - bi.getDiscountRate());
+            System.out.println("NetRate calculated: " + bi.getNetRate());
 
             bi.setGrossValue(bi.getRate() * bi.getQty());
-            bi.setDiscount(bi.getDiscountRate() * bi.getQty());
-            bi.setNetValue(bi.getGrossValue() - bi.getDiscount());
+            System.out.println("GrossValue calculated: " + bi.getGrossValue());
 
+            bi.setDiscount(bi.getDiscountRate() * bi.getQty());
+            System.out.println("Discount calculated: " + bi.getDiscount());
+
+            bi.setNetValue(bi.getGrossValue() - bi.getDiscount());
+            System.out.println("NetValue calculated: " + bi.getNetValue());
+        } else {
+            System.out.println("PharmaceuticalBillItem or Stock is null");
         }
     }
 
     public void calculateTotals() {
+        System.out.println("Entering calculateTotals");
         getPreBill().setTotal(0);
         double netTotal = 0.0, grossTotal = 0.0, discountTotal = 0.0;
         int index = 0;
@@ -998,15 +1019,25 @@ public class OpticianSaleController implements Serializable, ControllerWithPatie
                 netTotal += b.getNetValue();
                 grossTotal += b.getGrossValue();
                 discountTotal += b.getDiscount();
-//                getPreBill().setTotal(getPreBill().getTotal() + b.getNetValue());
+                System.out.println("Processing BillItem: " + b);
+                System.out.println("Current NetValue: " + b.getNetValue());
             }
         }
 
         getPreBill().setNetTotal(netTotal);
+        System.out.println("NetTotal set: " + netTotal);
+
         getPreBill().setTotal(grossTotal);
+        System.out.println("Total set: " + grossTotal);
+
         getPreBill().setGrantTotal(grossTotal);
+        System.out.println("GrantTotal set: " + grossTotal);
+
         getPreBill().setDiscount(discountTotal);
+        System.out.println("DiscountTotal set: " + discountTotal);
+
         setNetTotal(getPreBill().getNetTotal());
+        System.out.println("NetTotal updated: " + getNetTotal());
     }
 
     public double addBillItemSingleItem() {
@@ -1068,6 +1099,7 @@ public class OpticianSaleController implements Serializable, ControllerWithPatie
         billItem.setInwardChargeType(InwardChargeType.Medicine);
 
         billItem.setItem(getStock().getItemBatch().getItem());
+        billItem.setDescreption(strComment);
         billItem.setBill(getPreBill());
 
         billItem.setSearialNo(getPreBill().getBillItems().size() + 1);
@@ -2269,7 +2301,10 @@ public class OpticianSaleController implements Serializable, ControllerWithPatie
             return;
         }
 //        getBillItem();
-        billItem.setRate(billItem.getPharmaceuticalBillItem().getStock().getItemBatch().getRetailsaleRate());
+        if (billItem.getRate() == 0.0) {
+            billItem.setRate(billItem.getPharmaceuticalBillItem().getStock().getItemBatch().getRetailsaleRate());
+        }
+
         billItem.setInwardChargeType(InwardChargeType.Medicine);
         billItem.setItem(getStock().getItemBatch().getItem());
         //pharmaceutical Bill Item
@@ -2340,7 +2375,6 @@ public class OpticianSaleController implements Serializable, ControllerWithPatie
         boolean discountAllowed = bi.getItem().isDiscountAllowed();
 
 //        MembershipScheme membershipScheme = membershipSchemeController.fetchPatientMembershipScheme(getPatient(), getSessionController().getApplicationPreference().isMembershipExpires());
-
         //MEMBERSHIPSCHEME DISCOUNT
 //        if (membershipScheme != null && discountAllowed) {
 //            PaymentMethod tpm = getPaymentMethod();
@@ -2486,6 +2520,7 @@ public class OpticianSaleController implements Serializable, ControllerWithPatie
         billItem = null;
         editingBillItem = null;
         qty = null;
+        strComment = null;
         stock = null;
         editingQty = null;
         errorMessage = "";
@@ -2901,6 +2936,14 @@ public class OpticianSaleController implements Serializable, ControllerWithPatie
 
     public void setSelectedBillItems(List<BillItem> selectedBillItems) {
         this.selectedBillItems = selectedBillItems;
+    }
+
+    public String getStrComment() {
+        return strComment;
+    }
+
+    public void setStrComment(String strComment) {
+        this.strComment = strComment;
     }
 
 }

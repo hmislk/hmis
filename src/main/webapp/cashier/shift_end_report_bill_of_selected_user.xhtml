@@ -1,0 +1,223 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp">
+
+    <h:head >
+
+    </h:head>
+    <h:body>
+
+        <ui:composition template="/analytics/index.xhtml">
+
+            <ui:define name="report">
+                <h:form>
+
+
+                    <p:panelGrid columns="1" rendered="#{financialTransactionController.nonClosedShiftStartFundBill ne null}" class="w-100">
+                        <f:facet name="header">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div>
+                                    <i class="fa-solid fa-cash-register">&nbsp;&nbsp;</i>
+                                    <p:outputLabel value="Shift Report" />
+                                </div>
+                                <div>
+                                    <p:commandButton class="ui-button-info mx-2" 
+                                                     ajax="false" 
+                                                     value="Back" 
+                                                     action="shift_end_summery_bill_of_selected_user.xhtml?faces-redirect=true;" ></p:commandButton>
+                                    <p:commandButton class="ui-button-info mx-2" 
+                                                     ajax="false" 
+                                                     value="Process" 
+                                                     action="#{financialTransactionController.processShiftEndReport()}" ></p:commandButton>
+                                </div>
+                            </div>
+
+                        </f:facet>
+
+                        <p:panelGrid columns="3">
+                            <h:panelGroup>
+                                <div class="card">
+                                    <div class="card-header">
+                                        <i class="fas fa-user-md"></i> Staff Details
+                                    </div>
+                                    <div class="card-body">
+                                        <p><strong>Staff:</strong> #{financialTransactionController.nonClosedShiftStartFundBill.staff.person.nameWithTitle}</p>
+                                        <p><strong>Total Value:</strong> 
+                                            <h:outputText value="#{financialTransactionController.nonClosedShiftStartFundBill.referenceBill.total}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </p>
+                                        <p><strong>Duration:</strong> 
+                                            #{financialTransactionController.calculateDuration(
+                                              financialTransactionController.nonClosedShiftStartFundBill.createdAt, 
+                                              financialTransactionController.nonClosedShiftStartFundBill.referenceBill.createdAt)}
+                                        </p>
+                                    </div>
+                                </div>
+                            </h:panelGroup>
+
+
+
+                            <h:panelGroup >
+                                <div class="card">
+                                    <div class="card-header">
+                                        <i class="fas fa-sign-in-alt"></i> Shift Start
+                                    </div>
+                                    <div class="card-body">
+                                        <p><strong>Start Bill ID:</strong> #{financialTransactionController.nonClosedShiftStartFundBill.id}</p>
+                                        <p><strong>Start:</strong> 
+                                            <h:outputText value="#{financialTransactionController.nonClosedShiftStartFundBill.createdAt}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                            </h:outputText>
+                                        </p>
+                                    </div>
+                                </div>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{not empty financialTransactionController.nonClosedShiftStartFundBill.referenceBill}">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <i class="fas fa-sign-out-alt"></i> Shift End
+                                    </div>
+                                    <div class="card-body">
+                                        <p><strong>End Bill ID:</strong> #{financialTransactionController.nonClosedShiftStartFundBill.referenceBill.id}</p>
+                                        <p><strong>End:</strong> 
+                                            <h:outputText value="#{financialTransactionController.nonClosedShiftStartFundBill.referenceBill.createdAt}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                            </h:outputText>
+                                        </p>
+                                    </div>
+                                </div>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{empty financialTransactionController.nonClosedShiftStartFundBill.referenceBill}">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <i class="fas fa-exclamation-circle"></i> Shift Status
+                                    </div>
+                                    <div class="card-body">
+                                        <p>Shift is not yet ended.</p>
+                                    </div>
+                                </div>
+                            </h:panelGroup>
+                        </p:panelGrid>
+
+
+                        <h:panelGroup >
+
+                            <p:commandButton value="Print" ajax="false" >
+                                <p:printer target="tbl" ></p:printer>
+                            </p:commandButton>
+
+                            <h:panelGroup id="tbl" >
+                                <table id="exportableTable" class="w-100 table table-primary">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Net Total</th>
+                                            <th>Report Template Rows</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <ui:repeat value="#{financialTransactionController.shiftEndBundles}" var="sebs">
+                                            <tr>
+                                                <td>
+                                                    <h:outputText value="#{sebs.name}" />
+                                                </td>
+                                                <td class="text-right pr-3">
+                                                    <h:outputText value="#{sebs.total}">
+                                                        <f:convertNumber type="currency" currencySymbol="" groupingUsed="true" minFractionDigits="2" />
+                                                    </h:outputText>
+                                                </td>
+                                                <td>
+                                                    <table class="w-100 table table-striped">
+                                                        <thead>
+                                                            <tr>
+                                                                <th rowspan="2">Category / Department / Type</th>
+                                                                <th colspan="2">In</th>
+                                                                <th colspan="2">Out</th>
+                                                                <th colspan="2">Net</th>
+                                                            </tr>
+                                                            <tr>
+                                                                <th >Value</th>
+                                                                <th >Count</th>
+                                                                <th >Value</th>
+                                                                <th >Count</th>
+                                                                <th >Value</th>
+                                                                <th >Count</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <ui:repeat value="#{sebs.reportTemplateRows}" var="r">
+                                                                <tr>
+                                                                    <td>
+                                                                        <h:outputText value="#{r.category.name} #{r.department.name} #{r.billTypeAtomic.label}" />
+                                                                    </td>
+                                                                    <td class="text-right pr-3">
+                                                                        <h:outputText value="#{r.rowCountIn}">
+                                                                        </h:outputText>
+                                                                    </td>
+                                                                    <td class="text-right pr-3">
+                                                                        <h:outputText value="#{r.rowValueIn}">
+                                                                            <f:convertNumber pattern="#,##0.00" />
+                                                                        </h:outputText>
+
+                                                                    </td>
+                                                                    <td class="text-right pr-3">
+                                                                        <h:outputText value="#{r.rowCountOut}">
+                                                                        </h:outputText>
+                                                                    </td>
+                                                                    <td class="text-right pr-3">
+                                                                        <h:outputText value="#{r.rowValueOut}">
+                                                                            <f:convertNumber pattern="#,##0.00" />
+                                                                        </h:outputText>
+
+                                                                    </td>
+                                                                    <td class="text-right pr-3">
+                                                                        <h:outputText value="#{r.rowCount}">
+                                                                        </h:outputText>
+
+                                                                    </td>
+                                                                    <td class="text-right pr-3">
+                                                                        <h:outputText value="#{r.rowValue}">
+                                                                            <f:convertNumber pattern="#,##0.00" />
+                                                                        </h:outputText>
+
+                                                                    </td>
+
+
+                                                                </tr>
+                                                            </ui:repeat>
+                                                        </tbody>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                        </ui:repeat>
+                                    </tbody>
+                                </table>
+                            </h:panelGroup>
+
+
+
+
+
+
+                        </h:panelGroup>
+
+
+
+                    </p:panelGrid>
+
+
+
+                </h:form>
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

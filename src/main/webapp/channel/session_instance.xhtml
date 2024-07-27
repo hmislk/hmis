@@ -16,73 +16,73 @@
                     <div class="d-flex justify-content-between align-items-center bg-light">
                         <div class="my-2 mx-1" style="font-weight: bolder">
                             <div class="d-flex align-items-center">
-                                <h:outputLabel class="mx-1" value="#{bookingControllerViewScope.selectedSessionInstance.staff.person.nameWithTitle}" ></h:outputLabel>
-                                (<h:outputLabel value="#{bookingControllerViewScope.selectedSessionInstance.staff.speciality.name}" ></h:outputLabel>)
+                                <h:outputLabel class="mx-1" value="#{bookingControllerViewScopeMonth.selectedSessionInstance.staff.person.nameWithTitle}" ></h:outputLabel>
+                                (<h:outputLabel value="#{bookingControllerViewScopeMonth.selectedSessionInstance.staff.speciality.name}" ></h:outputLabel>)
                             </div>
-                            <h:outputLabel class="mx-1" value="#{bookingControllerViewScope.selectedSessionInstance.originatingSession.name}" ></h:outputLabel>
+                            <h:outputLabel class="mx-1" value="#{bookingControllerViewScopeMonth.selectedSessionInstance.originatingSession.name}" ></h:outputLabel>
                         </div>
                         <div class="d-flex align-items-center">
                             <!-- Cancel Session Button with BS colors, FA icon, and JavaScript confirmation -->
                             <p:commandButton value="Pay Session"
-                                             action="#{bookingControllerViewScope.paySelectedSessionByDates()}"
+                                             action="#{bookingControllerViewScopeMonth.paySelectedSessionByDates()}"
                                              ajax="false"
                                              icon="pi pi-credit-card"
                                              class="ui-button-danger mx-1"
-                                             rendered="#{bookingControllerViewScope.selectedSessionInstance.completed}">
+                                             rendered="#{bookingControllerViewScopeMonth.selectedSessionInstance.completed}">
                             </p:commandButton>
                             <p:commandButton 
-                                rendered="#{!bookingControllerViewScope.selectedSessionInstance.arrived}"
+                                rendered="#{!bookingControllerViewScopeMonth.selectedSessionInstance.arrived}"
                                 id="btnArrival"
                                 ajax="false"
                                 value="Mark Arrival " 
                                 class="ui-button-info mx-1"
-                                action="#{bookingControllerViewScope.markAsArrived()}"
+                                action="#{bookingControllerViewScopeMonth.markAsArrived()}"
                                 icon="fa-solid fa-check" />
                              
-                            <p:commandButton action="#{bookingControllerViewScope.navigateToNurseView()}" 
+                            <p:commandButton action="#{bookingControllerViewScopeMonth.navigateToNurseView()}" 
                                              value="Veiws"
                                              ajax="false"
                                              class="ui-info-Danger mx-1" 
                                              icon="fa fa-eye" 
                                              />
 
-                            <p:commandButton action="#{bookingControllerViewScope.cancelSession}" 
+                            <p:commandButton action="#{bookingControllerViewScopeMonth.cancelSession}" 
                                              value="Cancel Session"
                                              ajax="false"
                                              class="ui-button-danger mx-1"
                                              icon="fa fa-times" 
-                                             disabled="#{bookingControllerViewScope.selectedSessionInstance.cancelled}"
+                                             disabled="#{bookingControllerViewScopeMonth.selectedSessionInstance.cancelled}"
                                              onclick="return confirm('Are you sure you want to cancel?');" />
 
                             <!-- Reopen Session Button -->
-                            <p:commandButton action="#{bookingControllerViewScope.reopenSessionInstance()}"
+                            <p:commandButton action="#{bookingControllerViewScopeMonth.reopenSessionInstance()}"
                                              value="Reopen Session"
-                                             disabled="#{bookingControllerViewScope.selectedSessionInstance.completed ne true}"
+                                             disabled="#{bookingControllerViewScopeMonth.selectedSessionInstance.completed ne true}"
                                              ajax="false"
                                              styleClass="ui-button-warning mx-1"
                                              icon="fa fa-check" 
                                              onclick="return confirm('Are you sure you want to reopen?');" />
 
                             <!-- Complete Session Button -->
-                            <p:commandButton action="#{bookingControllerViewScope.markSessionInstanceAsCompleted()}"
+                            <p:commandButton action="#{bookingControllerViewScopeMonth.markSessionInstanceAsCompleted()}"
                                              value="Complete Session"
-                                             rendered="#{bookingControllerViewScope.selectedSessionInstance.started eq true and bookingControllerViewScope.selectedSessionInstance.completed ne true}"
+                                             rendered="#{bookingControllerViewScopeMonth.selectedSessionInstance.started eq true and bookingControllerViewScopeMonth.selectedSessionInstance.completed ne true}"
                                              ajax="false"
                                              styleClass="ui-button-success mx-1" 
                                              icon="fa fa-check" 
                                              onclick="return confirm('Are you sure you want to complete this session?');" />
 
-                            <p:commandButton action="#{bookingControllerViewScope.markSessionInstanceAsStarted()}"
+                            <p:commandButton action="#{bookingControllerViewScopeMonth.markSessionInstanceAsStarted()}"
                                              value="Start Session"
-                                             disabled="#{bookingControllerViewScope.selectedSessionInstance.completed}"
-                                             rendered="#{bookingControllerViewScope.selectedSessionInstance.started ne true}"
+                                             disabled="#{bookingControllerViewScopeMonth.selectedSessionInstance.completed}"
+                                             rendered="#{bookingControllerViewScopeMonth.selectedSessionInstance.started ne true}"
                                              ajax="false"
                                              styleClass="ui-button-success mx-1"
                                              icon="fa fa-check"
                                              onclick="return confirm('Are you sure you want to complete this session?');" />
 
 
-                            <p:commandButton action="#{bookingControllerViewScope.navigateBackToBookingsFromSessionInstance()}" 
+                            <p:commandButton action="#{bookingControllerViewScopeMonth.navigateBackToBookingsFromSessionInstance()}" 
                                              value="Back to Booking"
                                              ajax="false"
                                              class="ui-button-secondary mx-1"
@@ -95,12 +95,12 @@
                         <div class="col-7">
                             <p:panel class="my-2">
                                 <p:watermark for="acBookings" value="Select Bookings" ></p:watermark>
-                                <h:outputText id="test" value="#{bookingControllerViewScope.selectedBillSession}" rendered="false"></h:outputText>
+                                <h:outputText id="test" value="#{bookingControllerViewScopeMonth.selectedBillSession}" rendered="false"></h:outputText>
                                 <p:dataTable id="acBookings" 
                                              rowKey="#{bs.id}"
-                                             value="#{bookingControllerViewScope.billSessions}" 
+                                             value="#{bookingControllerViewScopeMonth.billSessions}" 
                                              var="bs" 
-                                             selection="#{bookingControllerViewScope.selectedBillSession}" 
+                                             selection="#{bookingControllerViewScopeMonth.selectedBillSession}" 
                                              selectionMode="single"
                                              styleClass="w-100 fullHeightListbox">
 
@@ -110,7 +110,7 @@
 
                                     <p:column headerText="Name" >
                                         <h:outputText value="#{bs.bill.patient.person.nameWithTitle}" /> <br/>
-                                        <h:outputText style="font-size: 0.9em" value="(#{bs.bill.patient.person.phone})" />
+                                        <h:outputText style="font-size: 0.9em" value="(#{bs.bill.patient.person.smsNumber})" />
                                     </p:column>
 
                                     <p:column rendered="true" headerText="Status">
@@ -151,7 +151,7 @@
                                                 icon="pi pi-user-plus" 
                                                 title="OPD" 
                                                 ajax="false" 
-                                                action="#{bookingControllerViewScope.navigateToOpdBilling(bs)}"
+                                                action="#{bookingControllerViewScopeMonth.navigateToOpdBilling(bs)}"
                                                 disabled="#{(bs.bill.paidAmount eq 0 and bs.bill.paymentMethod eq 'OnCall')}"
                                                 class="ui-button-secondary mx-1">
                                             </p:commandButton>
@@ -159,7 +159,7 @@
                                                 icon="pi pi-cog" 
                                                 title="Manage Booking" 
                                                 ajax="false" 
-                                                action="#{bookingControllerViewScope.navigateToManageBooking(bs)}" 
+                                                action="#{bookingControllerViewScopeMonth.navigateToManageBooking(bs)}" 
                                                 class="ui-button-secondary ">
                                             </p:commandButton>
 
@@ -190,7 +190,7 @@
                                             ajax="false" 
                                             id="btnSave" 
                                             value="Save"  
-                                            action="#{bookingControllerViewScope.saveSessionInstanceDetails()}"
+                                            action="#{bookingControllerViewScopeMonth.saveSessionInstanceDetails()}"
                                             class="ui-button ui-button-warning" 
                                             icon="pi pi-save">
                                         </p:commandButton>
@@ -199,7 +199,7 @@
                                             ajax="false" 
                                             id="btnEditSession" 
                                             value="To Edit"  
-                                            action="#{bookingControllerViewScope.navigateToEditSessionInstance()}"
+                                            action="#{bookingControllerViewScopeMonth.navigateToEditSessionInstance()}"
                                             class="ui-button ui-button-info" 
                                             icon="pi pi-pencil">
                                         </p:commandButton>
@@ -208,7 +208,7 @@
                                             ajax="false" 
                                             id="btnEditOriginSession" 
                                             value="To Edit Originating Session"  
-                                            action="#{bookingControllerViewScope.navigateToEditOriginatingSession()}"
+                                            action="#{bookingControllerViewScopeMonth.navigateToEditOriginatingSession()}"
                                             class="ui-button ui-button-secondary" 
                                             icon="pi pi-external-link">
                                         </p:commandButton>
@@ -220,31 +220,31 @@
 
 
                                                 <p:outputLabel value="Session Name"/>
-                                                <p:inputText class="w-100" autocomplete="off" value="#{bookingControllerViewScope.selectedSessionInstance.name}" disabled="#{bookingControllerViewScope.selectedSessionInstance.id ne null and !webUserController.hasPrivilege('ChannellingChannelShedulName')}"/>
+                                                <p:inputText class="w-100" autocomplete="off" value="#{bookingControllerViewScopeMonth.selectedSessionInstance.name}" disabled="#{bookingControllerViewScopeMonth.selectedSessionInstance.id ne null and !webUserController.hasPrivilege('ChannellingChannelShedulName')}"/>
 
 
-                                                <h:panelGroup rendered="#{bookingControllerViewScope.selectedSessionInstance.id ne null}" >
-                                                    <h:panelGroup rendered="#{bookingControllerViewScope.selectedSessionInstance.sessionDate eq null}" >
+                                                <h:panelGroup rendered="#{bookingControllerViewScopeMonth.selectedSessionInstance.id ne null}" >
+                                                    <h:panelGroup rendered="#{bookingControllerViewScopeMonth.selectedSessionInstance.sessionDate eq null}" >
                                                         <p:outputLabel value="Weekday"></p:outputLabel>
                                                     </h:panelGroup>
                                                     <h:panelGroup 
-                                                        rendered="#{bookingControllerViewScope.selectedSessionInstance.sessionDate ne null}" >
+                                                        rendered="#{bookingControllerViewScopeMonth.selectedSessionInstance.sessionDate ne null}" >
                                                         <p:outputLabel value="Session Date"></p:outputLabel>
                                                     </h:panelGroup>
                                                 </h:panelGroup>
 
-                                                <h:panelGroup rendered="#{bookingControllerViewScope.selectedSessionInstance.id ne null}" >
-                                                    <h:panelGroup rendered="#{bookingControllerViewScope.selectedSessionInstance.sessionDate eq null}" >
-                                                        <p:inputText class="w-100" disabled="true" value="Sunday" rendered="#{bookingControllerViewScope.selectedSessionInstance.sessionWeekday eq 1 and bookingControllerViewScope.selectedSessionInstance.sessionWeekday ne null}"/>
-                                                        <p:inputText class="w-100" disabled="true"  value="Monday" rendered="#{bookingControllerViewScope.selectedSessionInstance.sessionWeekday eq 2 and bookingControllerViewScope.selectedSessionInstance.sessionWeekday ne null}"/>
-                                                        <p:inputText class="w-100" disabled="true"  value="Tuesday" rendered="#{bookingControllerViewScope.selectedSessionInstance.sessionWeekday eq 3 and bookingControllerViewScope.selectedSessionInstance.sessionWeekday ne null}"/>
-                                                        <p:inputText class="w-100" disabled="true"  value="Wednesday" rendered="#{bookingControllerViewScope.selectedSessionInstance.sessionWeekday eq 4 and bookingControllerViewScope.selectedSessionInstance.sessionWeekday ne null}"/>
-                                                        <p:inputText class="w-100" disabled="true"  value="Thursday" rendered="#{bookingControllerViewScope.selectedSessionInstance.sessionWeekday eq 5 and bookingControllerViewScope.selectedSessionInstance.sessionWeekday ne null}"/>
-                                                        <p:inputText class="w-100" disabled="true"  value="Friday" rendered="#{bookingControllerViewScope.selectedSessionInstance.sessionWeekday eq 6 and bookingControllerViewScope.selectedSessionInstance.sessionWeekday ne null}"/>
-                                                        <p:inputText class="w-100" disabled="true"  value="Saturday" rendered="#{bookingControllerViewScope.selectedSessionInstance.sessionWeekday eq 7 and bookingControllerViewScope.selectedSessionInstance.sessionWeekday ne null}"/>
+                                                <h:panelGroup rendered="#{bookingControllerViewScopeMonth.selectedSessionInstance.id ne null}" >
+                                                    <h:panelGroup rendered="#{bookingControllerViewScopeMonth.selectedSessionInstance.sessionDate eq null}" >
+                                                        <p:inputText class="w-100" disabled="true" value="Sunday" rendered="#{bookingControllerViewScopeMonth.selectedSessionInstance.sessionWeekday eq 1 and bookingControllerViewScopeMonth.selectedSessionInstance.sessionWeekday ne null}"/>
+                                                        <p:inputText class="w-100" disabled="true"  value="Monday" rendered="#{bookingControllerViewScopeMonth.selectedSessionInstance.sessionWeekday eq 2 and bookingControllerViewScopeMonth.selectedSessionInstance.sessionWeekday ne null}"/>
+                                                        <p:inputText class="w-100" disabled="true"  value="Tuesday" rendered="#{bookingControllerViewScopeMonth.selectedSessionInstance.sessionWeekday eq 3 and bookingControllerViewScopeMonth.selectedSessionInstance.sessionWeekday ne null}"/>
+                                                        <p:inputText class="w-100" disabled="true"  value="Wednesday" rendered="#{bookingControllerViewScopeMonth.selectedSessionInstance.sessionWeekday eq 4 and bookingControllerViewScopeMonth.selectedSessionInstance.sessionWeekday ne null}"/>
+                                                        <p:inputText class="w-100" disabled="true"  value="Thursday" rendered="#{bookingControllerViewScopeMonth.selectedSessionInstance.sessionWeekday eq 5 and bookingControllerViewScopeMonth.selectedSessionInstance.sessionWeekday ne null}"/>
+                                                        <p:inputText class="w-100" disabled="true"  value="Friday" rendered="#{bookingControllerViewScopeMonth.selectedSessionInstance.sessionWeekday eq 6 and bookingControllerViewScopeMonth.selectedSessionInstance.sessionWeekday ne null}"/>
+                                                        <p:inputText class="w-100" disabled="true"  value="Saturday" rendered="#{bookingControllerViewScopeMonth.selectedSessionInstance.sessionWeekday eq 7 and bookingControllerViewScopeMonth.selectedSessionInstance.sessionWeekday ne null}"/>
                                                     </h:panelGroup>
-                                                    <h:panelGroup rendered="#{bookingControllerViewScope.selectedSessionInstance.sessionDate ne null}" >
-                                                        <p:datePicker value="#{bookingControllerViewScope.selectedSessionInstance.sessionDate}"/>
+                                                    <h:panelGroup rendered="#{bookingControllerViewScopeMonth.selectedSessionInstance.sessionDate ne null}" >
+                                                        <p:datePicker value="#{bookingControllerViewScopeMonth.selectedSessionInstance.sessionDate}"/>
 
                                                     </h:panelGroup>
 
@@ -252,43 +252,43 @@
 
 
                                                 <p:outputLabel value="Start Time"/>                        
-                                                <p:datePicker class="w-100" inputStyleClass="w-100"  value="#{bookingControllerViewScope.selectedSessionInstance.startingTime}" 
+                                                <p:datePicker class="w-100" inputStyleClass="w-100"  value="#{bookingControllerViewScopeMonth.selectedSessionInstance.startingTime}" 
                                                               pattern="#{sessionController.applicationPreference.shortTimeFormat}" timeOnly="true"
                                                               timeZone="Asia/Colombo">                            
                                                 </p:datePicker>
 
 
                                                 <p:outputLabel value="End Time"/>                        
-                                                <p:datePicker class="w-100" inputStyleClass="w-100"  value="#{bookingControllerViewScope.selectedSessionInstance.endingTime}"
+                                                <p:datePicker class="w-100" inputStyleClass="w-100"  value="#{bookingControllerViewScopeMonth.selectedSessionInstance.endingTime}"
                                                               pattern="#{sessionController.applicationPreference.shortTimeFormat}" 
                                                               timeOnly="true"
                                                               timeZone="Asia/Colombo">                            
                                                 </p:datePicker>
 
                                                 <p:outputLabel value="Max Number"/>
-                                                <p:inputText class="w-100" autocomplete="off" value="#{bookingControllerViewScope.selectedSessionInstance.maxNo}"/>
+                                                <p:inputText class="w-100" autocomplete="off" value="#{bookingControllerViewScopeMonth.selectedSessionInstance.maxNo}"/>
 
                                                 <p:outputLabel value="Duration in Minutes"/>
-                                                <p:inputText class="w-100" autocomplete="off" value="#{bookingControllerViewScope.selectedSessionInstance.duration}"/>
+                                                <p:inputText class="w-100" autocomplete="off" value="#{bookingControllerViewScopeMonth.selectedSessionInstance.duration}"/>
 
                                                 <p:outputLabel value="Room Number"/>
-                                                <p:inputText class="w-100" autocomplete="off" value="#{bookingControllerViewScope.selectedSessionInstance.roomNo}" disabled="#{bookingControllerViewScope.selectedSessionInstance.id ne null and !webUserController.hasPrivilege('ChannellingChannelShedulRoomNo')}"/>
+                                                <p:inputText class="w-100" autocomplete="off" value="#{bookingControllerViewScopeMonth.selectedSessionInstance.roomNo}" disabled="#{bookingControllerViewScopeMonth.selectedSessionInstance.id ne null and !webUserController.hasPrivilege('ChannellingChannelShedulRoomNo')}"/>
 
 
                                                 <p:outputLabel value="After Session" rendered="false"/>
-                                                <p:autoComplete class="w-100" inputStyleClass="w-100"   rendered="false" forceSelection="true" value="#{bookingControllerViewScope.selectedSessionInstance.afterSession}" 
+                                                <p:autoComplete class="w-100" inputStyleClass="w-100"   rendered="false" forceSelection="true" value="#{bookingControllerViewScopeMonth.selectedSessionInstance.afterSession}" 
                                                                 completeMethod="#{channelScheduleController.completeSession}" var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
                                                                 converter="sscon">   
                                                 </p:autoComplete>
 
                                                 <p:outputLabel value="Refundable"/>
-                                                <p:selectBooleanCheckbox value="#{bookingControllerViewScope.selectedSessionInstance.refundable}"/>
+                                                <p:selectBooleanCheckbox value="#{bookingControllerViewScopeMonth.selectedSessionInstance.refundable}"/>
 
                                                 <p:outputLabel value="Paid Appointment Only"/>
-                                                <p:selectBooleanCheckbox value="#{bookingControllerViewScope.selectedSessionInstance.originatingSession.paidAppointmentsOnly}"/>
+                                                <p:selectBooleanCheckbox value="#{bookingControllerViewScopeMonth.selectedSessionInstance.originatingSession.paidAppointmentsOnly}"/>
                                                 
                                                 <p:outputLabel value="Exclude From Patient Portal"/>
-                                                <p:selectBooleanCheckbox value="#{bookingControllerViewScope.selectedSessionInstance.originatingSession.excludeFromPatientPortal}"/>
+                                                <p:selectBooleanCheckbox value="#{bookingControllerViewScopeMonth.selectedSessionInstance.originatingSession.excludeFromPatientPortal}"/>
 
 
                                             </h:panelGrid>
@@ -305,8 +305,8 @@
                                                             <p:selectOneMenu 
                                                                 class="w-100" 
                                                                 id="wdate" 
-                                                                value="#{bookingControllerViewScope.selectedSessionInstance.sessionWeekday}" 
-                                                                disabled="#{bookingControllerViewScope.selectedSessionInstance.id ne null}">
+                                                                value="#{bookingControllerViewScopeMonth.selectedSessionInstance.sessionWeekday}" 
+                                                                disabled="#{bookingControllerViewScopeMonth.selectedSessionInstance.id ne null}">
                                                                 <f:selectItem itemLabel="Select Week Day"/>
                                                                 <f:selectItem itemValue="1" itemLabel="Sunday"/>
                                                                 <f:selectItem itemValue="2" itemLabel="Monday"/>
@@ -323,7 +323,7 @@
                                                             <h:outputLabel value="You are NOT Authorized to manage Special Channel Scheduling" />
                                                         </h:panelGroup>
                                                         <h:panelGroup rendered="#{webUserController.hasPrivilege('ChannellingSpecialChannelSheduling')}">
-                                                            <p:calendar class="w-100" inputStyleClass="w-100"  id="odate" value="#{bookingControllerViewScope.selectedSessionInstance.sessionDate}" pattern="#{sessionController.applicationPreference.longDateFormat}" disabled="#{bookingControllerViewScope.selectedSessionInstance.id ne null}" />                              
+                                                            <p:calendar class="w-100" inputStyleClass="w-100"  id="odate" value="#{bookingControllerViewScopeMonth.selectedSessionInstance.sessionDate}" pattern="#{sessionController.applicationPreference.longDateFormat}" disabled="#{bookingControllerViewScopeMonth.selectedSessionInstance.id ne null}" />                              
                                                         </h:panelGroup>
                                                     </p:tab>
                                                 </p:tabView>
@@ -335,28 +335,28 @@
                                         <p:tab title="Number Details">
                                             <h:panelGrid columns="2" class="w-100">
                                                 <p:outputLabel value="Reserved Numbers (Ex. 5,10,15,20)"/>
-                                                <p:inputText class="w-100 mx-2" autocomplete="off" value="#{bookingControllerViewScope.selectedSessionInstance.reserveNumbers}"/>
+                                                <p:inputText class="w-100 mx-2" autocomplete="off" value="#{bookingControllerViewScopeMonth.selectedSessionInstance.reserveNumbers}"/>
 
                                                 <p:outputLabel value="Displaying Count"/>
-                                                <p:inputText class="w-100 mx-2" autocomplete="off" value="#{bookingControllerViewScope.selectedSessionInstance.displayCount}"/>
+                                                <p:inputText class="w-100 mx-2" autocomplete="off" value="#{bookingControllerViewScopeMonth.selectedSessionInstance.displayCount}"/>
                                                 <p:outputLabel value="Displaying Percent"/>
-                                                <p:inputText class="w-100 mx-2" autocomplete="off" value="#{bookingControllerViewScope.selectedSessionInstance.displayPercent}"/>
+                                                <p:inputText class="w-100 mx-2" autocomplete="off" value="#{bookingControllerViewScopeMonth.selectedSessionInstance.displayPercent}"/>
                                                 <p:outputLabel value="Session Number"></p:outputLabel>
 
-                                                <p:autoComplete class="w-100 mx-2" inputStyleClass="w-100"  forceSelection="true" value="#{bookingControllerViewScope.selectedSessionInstance.sessionNumberGenerator}" 
+                                                <p:autoComplete class="w-100 mx-2" inputStyleClass="w-100"  forceSelection="true" value="#{bookingControllerViewScopeMonth.selectedSessionInstance.sessionNumberGenerator}" 
                                                                 completeMethod="#{sessionNumberGenerateController.completeSessionNumberGenerator}" 
                                                                 var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
                                                                 >                            
                                                 </p:autoComplete>
 
                                                 <p:outputLabel value="Credit Numbers"/>
-                                                <p:inputText class="w-100 mx-2" autocomplete="off" value="#{bookingControllerViewScope.selectedSessionInstance.creditNumbers}"/>
+                                                <p:inputText class="w-100 mx-2" autocomplete="off" value="#{bookingControllerViewScopeMonth.selectedSessionInstance.creditNumbers}"/>
                                                 <p:outputLabel value="Cash Numbers"/>
-                                                <p:inputText class="w-100 mx-2" autocomplete="off" value="#{bookingControllerViewScope.selectedSessionInstance.cashNumbers}"/>
+                                                <p:inputText class="w-100 mx-2" autocomplete="off" value="#{bookingControllerViewScopeMonth.selectedSessionInstance.cashNumbers}"/>
                                                 <p:outputLabel value="Agent Numbers"/>
-                                                <p:inputText class="w-100 mx-2" autocomplete="off" value="#{bookingControllerViewScope.selectedSessionInstance.agencyNumbers}"/>
+                                                <p:inputText class="w-100 mx-2" autocomplete="off" value="#{bookingControllerViewScopeMonth.selectedSessionInstance.agencyNumbers}"/>
                                                 <p:outputLabel value="Reserved Name"/>
-                                                <p:inputText class="w-100 mx-2" autocomplete="off" value="#{bookingControllerViewScope.selectedSessionInstance.reserveName}"/>
+                                                <p:inputText class="w-100 mx-2" autocomplete="off" value="#{bookingControllerViewScopeMonth.selectedSessionInstance.reserveName}"/>
                                             </h:panelGrid>
 
                                         </p:tab>
@@ -367,10 +367,10 @@
                                                     <h:outputLabel value="Base Fee" ></h:outputLabel>
                                                 </f:facet>
                                                 <p:outputLabel value="Session Value - "/>
-                                                <p:outputLabel value="#{bookingControllerViewScope.selectedSessionInstance.originatingSession.total}"/>
+                                                <p:outputLabel value="#{bookingControllerViewScopeMonth.selectedSessionInstance.originatingSession.total}"/>
 
                                                 <p:outputLabel value="Session Value for Foreigners - "/>
-                                                <p:outputLabel value="#{bookingControllerViewScope.selectedSessionInstance.originatingSession.totalForForeigner}"/>
+                                                <p:outputLabel value="#{bookingControllerViewScopeMonth.selectedSessionInstance.originatingSession.totalForForeigner}"/>
 
                                             </p:panelGrid>
 
@@ -378,7 +378,7 @@
 
 
                                             <h:panelGrid columns="1">
-                                                <p:dataTable value="#{bookingControllerViewScope.selectedItemFees}" var="i" >
+                                                <p:dataTable value="#{bookingControllerViewScopeMonth.selectedItemFees}" var="i" >
                                                     <p:column headerText="Name">
                                                         <h:outputLabel value="#{i.name}"/> 
                                                     </p:column>
@@ -408,7 +408,7 @@
                                             </h:panelGrid>
 
                                             <p:outputLabel value="Total Professional Fee - "/>
-                                            <p:outputLabel value="#{bookingControllerViewScope.selectedSessionInstance.professionalFee}"/>
+                                            <p:outputLabel value="#{bookingControllerViewScopeMonth.selectedSessionInstance.professionalFee}"/>
 
                                         </p:tab>
 
@@ -498,42 +498,42 @@
 
                                         <p:tab title="Log">
                                             <h:panelGrid columns="2">
-                                                <p:outputLabel value="Id" rendered="#{bookingControllerViewScope.selectedSessionInstance ne null}"/>
-                                                <p:outputLabel value="#{bookingControllerViewScope.selectedSessionInstance.id}" rendered="#{channelScheduleController.current ne null}"/>
+                                                <p:outputLabel value="Id" rendered="#{bookingControllerViewScopeMonth.selectedSessionInstance ne null}"/>
+                                                <p:outputLabel value="#{bookingControllerViewScopeMonth.selectedSessionInstance.id}" rendered="#{channelScheduleController.current ne null}"/>
 
 
                                                 <p:outputLabel value="Created by"></p:outputLabel>
-                                                <p:outputLabel value="#{bookingControllerViewScope.selectedSessionInstance.originatingSession.creater.webUserPerson.name}"></p:outputLabel>
+                                                <p:outputLabel value="#{bookingControllerViewScopeMonth.selectedSessionInstance.originatingSession.creater.webUserPerson.name}"></p:outputLabel>
                                                 <p:outputLabel value="created At"></p:outputLabel>
-                                                <p:outputLabel value="#{bookingControllerViewScope.selectedSessionInstance.originatingSession.createdAt}">
+                                                <p:outputLabel value="#{bookingControllerViewScopeMonth.selectedSessionInstance.originatingSession.createdAt}">
                                                     <f:convertDateTime pattern="yyyy-MM-dd hh:mm:ss a" />
                                                 </p:outputLabel>
                                                 <p:outputLabel value="Last Editor"></p:outputLabel>
-                                                <p:outputLabel value="#{bookingControllerViewScope.selectedSessionInstance.editer.webUserPerson.name}"></p:outputLabel>
+                                                <p:outputLabel value="#{bookingControllerViewScopeMonth.selectedSessionInstance.editer.webUserPerson.name}"></p:outputLabel>
                                                 <p:outputLabel value="Last Edited At"></p:outputLabel>
-                                                <p:outputLabel value="#{bookingControllerViewScope.selectedSessionInstance.editedAt}">
+                                                <p:outputLabel value="#{bookingControllerViewScopeMonth.selectedSessionInstance.editedAt}">
                                                     <f:convertDateTime pattern="yyyy-MM-dd hh:mm:ss a" />
                                                 </p:outputLabel>
                                                 
                                                 <p:outputLabel value="Canceled By"></p:outputLabel>
-                                                <p:outputLabel value="#{bookingControllerViewScope.selectedSessionInstance.cancelledBy.webUserPerson.name}"></p:outputLabel>
+                                                <p:outputLabel value="#{bookingControllerViewScopeMonth.selectedSessionInstance.cancelledBy.webUserPerson.name}"></p:outputLabel>
                                                 <p:outputLabel value="Last Edited At"></p:outputLabel>
-                                                <p:outputLabel value="#{bookingControllerViewScope.selectedSessionInstance.cancelledAt}">
+                                                <p:outputLabel value="#{bookingControllerViewScopeMonth.selectedSessionInstance.cancelledAt}">
                                                     <f:convertDateTime pattern="yyyy-MM-dd hh:mm:ss a" />
                                                 </p:outputLabel>
                                            
                                             
                                             <p:outputLabel value="Started By"></p:outputLabel>
-                                            <p:outputLabel value="#{bookingControllerViewScope.selectedSessionInstance.startedBy.webUserPerson.name}"></p:outputLabel>
+                                            <p:outputLabel value="#{bookingControllerViewScopeMonth.selectedSessionInstance.startedBy.webUserPerson.name}"></p:outputLabel>
                                                 <p:outputLabel value="Last Edited At"></p:outputLabel>
-                                                <p:outputLabel value="#{bookingControllerViewScope.selectedSessionInstance.startedAt}">
+                                                <p:outputLabel value="#{bookingControllerViewScopeMonth.selectedSessionInstance.startedAt}">
                                                     <f:convertDateTime pattern="yyyy-MM-dd hh:mm:ss a" />
                                                 </p:outputLabel>
                                                 
                                                 <p:outputLabel value="Completed By"></p:outputLabel>
-                                                <p:outputLabel value="#{bookingControllerViewScope.selectedSessionInstance.completedBy.webUserPerson.name}"></p:outputLabel>
+                                                <p:outputLabel value="#{bookingControllerViewScopeMonth.selectedSessionInstance.completedBy.webUserPerson.name}"></p:outputLabel>
                                                 <p:outputLabel value="Last Edited At"></p:outputLabel>
-                                                <p:outputLabel value="#{bookingControllerViewScope.selectedSessionInstance.completedAt}">
+                                                <p:outputLabel value="#{bookingControllerViewScopeMonth.selectedSessionInstance.completedAt}">
                                                     <f:convertDateTime pattern="yyyy-MM-dd hh:mm:ss a" />
                                                 </p:outputLabel>
                                                  </h:panelGrid>

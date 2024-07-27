@@ -10,48 +10,44 @@
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form>
-                    <p:panel header="Reprint" >
+                    <p:panel >
+                        
                         <f:facet name="header" >
                             <h:outputLabel value="Reprint" ></h:outputLabel>
-                            <hr/>
-                            
-                            <p:commandButton ajax="false" value="Cancel" action="agent_bill_cancel" disabled="#{agentPaymentReceiveSearchController.bill.cancelled}" >                           
-                            </p:commandButton>
-                            
                         </f:facet>
-
-                        <p:panel>
-                            <p:panelGrid columns="2" style="width: 100%;">
-                                <p:panel header="Person Detail">
-                                    <p:panelGrid columns="2">
-                                        <h:outputLabel value="From Institution Name:" ></h:outputLabel>
-                                        <h:outputLabel value="#{agentPaymentReceiveSearchController.bill.fromInstitution.name}" rendered="#{agentPaymentReceiveSearchController.bill.fromInstitution ne null}" ></h:outputLabel>                                        
-                                    </p:panelGrid>
-                                </p:panel>
-                                <p:panel header="Bill Detail">
-                                    <p:panelGrid columns="2">
-                                        <h:outputLabel value="Bill No :" ></h:outputLabel>
-                                        <h:outputLabel value="#{agentPaymentReceiveSearchController.bill.insId}" ></h:outputLabel>
-                                        <h:outputLabel value="Payment Type : " ></h:outputLabel>
-                                        <h:outputLabel value="#{agentPaymentReceiveSearchController.bill.paymentMethod}" ></h:outputLabel>                                        
-                                        <h:outputLabel value="Paid Total :" ></h:outputLabel>
-                                        <h:outputLabel value="#{agentPaymentReceiveSearchController.bill.netTotal}" ></h:outputLabel>
-                                    </p:panelGrid>
-                                </p:panel>
-                            </p:panelGrid>
+                        
+                        <div class="row">
+                            <div class="col-md-4">
+                                <p:panelGrid columns="1" style="width: 100%;">
+                                    <p:panel header="Person Detail">
+                                        <p:panelGrid columns="2">
+                                            <h:outputLabel value="From Institution Name:" ></h:outputLabel>
+                                            <h:outputLabel value="#{agentPaymentReceiveSearchController.bill.fromInstitution.name}" rendered="#{agentPaymentReceiveSearchController.bill.fromInstitution ne null}" ></h:outputLabel>                                        
+                                        </p:panelGrid>
+                                    </p:panel>
+                                    <p:panel header="Bill Detail">
+                                        <p:panelGrid columns="2">
+                                            <h:outputLabel value="Bill No :" ></h:outputLabel>
+                                            <h:outputLabel value="#{agentPaymentReceiveSearchController.bill.insId}" ></h:outputLabel>
+                                            <h:outputLabel value="Payment Type : " ></h:outputLabel>
+                                            <h:outputLabel value="#{agentPaymentReceiveSearchController.bill.paymentMethod}" ></h:outputLabel>                                        
+                                            <h:outputLabel value="Paid Total :" ></h:outputLabel>
+                                            <h:outputLabel value="#{agentPaymentReceiveSearchController.bill.netTotal}" ></h:outputLabel>
+                                        </p:panelGrid>
+                                    </p:panel>
+                                </p:panelGrid>
+                                <p:commandButton class="my-1" ajax="false" value="Cancel" action="agent_bill_cancel" disabled="#{agentPaymentReceiveSearchController.bill.cancelled}" >                           
+                                </p:commandButton>
+                            </div>
                             
-                        </p:panel>
+                            <div class="col-md-8">
+                                <bi:agent billController ="#{agentPaymentReceiveSearchController}"  bill="#{agentPaymentReceiveSearchController.bill}" dup="true"/>  
+                            </div>
+                            
+                        </div>
                     </p:panel>
-
-
-                   <bi:agent billController ="#{agentPaymentReceiveSearchController}"  bill="#{agentPaymentReceiveSearchController.bill}" dup="true"/>  
-
                 </h:form>
             </ui:define>
-
-
-
         </ui:composition>
-
     </h:body>
 </html>

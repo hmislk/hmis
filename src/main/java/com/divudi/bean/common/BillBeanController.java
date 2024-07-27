@@ -10,6 +10,7 @@ import com.divudi.bean.collectingCentre.CollectingCentreBillController;
 import com.divudi.bean.inward.InwardBeanController;
 import com.divudi.data.BillFeeBundleEntry;
 import com.divudi.data.BillType;
+import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.FeeType;
 import com.divudi.data.OpdBillingStrategy;
 import com.divudi.data.OpdTokenNumberGenerationStrategy;
@@ -2481,6 +2482,51 @@ public class BillBeanController implements Serializable {
         Double[] dbl = Arrays.copyOf(obj, obj.length, Double[].class);
 
         return dbl;
+    }
+
+    public List<Bill> validBillsOfBatchBill(Bill batchBill) {
+        String j = "Select b "
+                + " from Bill b "
+                + " where b.backwardReferenceBill=:bb "
+                + " and b.cancelled=false";
+        Map m = new HashMap();
+        m.put("bb", batchBill);
+        List<Bill> tbs = billFacade.findByJpql(j, m);
+        return tbs;
+    }
+
+    public List<Bill> findValidBillsForSampleCollection(Long bill) {
+        Bill b = billFacade.find(bill);
+
+        if (b == null) {
+            return null;
+        }
+        return findValidBillsForSampleCollection(b);
+    }
+
+    public List<Bill> findValidBillsForSampleCollection(Bill b) {
+
+        if (b == null) {
+            return null;
+        }
+        List<Bill> bs = new ArrayList<>();
+        if (b.getBillTypeAtomic() != null) {
+            if (b.getBillTypeAtomic() == BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT
+                    || b.getBillTypeAtomic() == BillTypeAtomic.OPD_BATCH_BILL_TO_COLLECT_PAYMENT_AT_CASHIER) {
+                bs.addAll(validBillsOfBatchBill(b));
+                return bs;
+            } else {
+                bs.add(b);
+                return bs;
+            }
+        }
+        if (b.getBillType() == BillType.OpdBathcBill) {
+            bs.addAll(validBillsOfBatchBill(b));
+            return bs;
+        } else {
+            bs.add(b);
+            return bs;
+        }
     }
 
     public Double[] fetchBillFeeValues(Bill b) {

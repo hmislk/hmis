@@ -105,7 +105,7 @@
 
                 <div class=" m-2">
                     <div class="shadow-lg">
-                        <p:inputText id="txtFilter" class="w-100" style="padding-left:20px;height: 55px" value="#{bookingController.sessionInstanceFilter}" placeholder="Search">
+                        <p:inputText id="txtFilter" class="w-100" style="padding-left:20;height: 55px" value="#{bookingController.sessionInstanceFilter}" placeholder="Search">
                             <p:ajax event="keyup" process="@this" update="tblSi" listener="#{bookingController.filterSessionInstances}">
                             </p:ajax>
                         </p:inputText>

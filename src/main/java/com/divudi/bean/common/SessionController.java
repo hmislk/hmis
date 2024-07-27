@@ -605,7 +605,7 @@ public class SessionController implements Serializable, HttpSessionListener {
 
     public Department getDepartment() {
         if (department == null) {
-            if (loggedUser != null) {
+            if (loggedUser == null) {
                 if (loggedUser.getDepartment() != null) {
                     department = loggedUser.getDepartment();
                 }
@@ -1084,9 +1084,12 @@ public class SessionController implements Serializable, HttpSessionListener {
         m.put("un", userName.toLowerCase());
         List<WebUser> allUsers = getFacede().findByJpql(jpql, m);
         for (WebUser u : allUsers) {
+            System.out.println("u = " + u.getName());
+            System.out.println("u = " + u.getId());
             if ((u.getName()).equalsIgnoreCase(userName)) {
                 boolean passwordIsOk = SecurityController.matchPassword(password, u.getWebUserPassword());
                 if (passwordIsOk) {
+                    System.out.println("password ok");
 
                     departments = listLoggableDepts(u);
 
@@ -1187,35 +1190,31 @@ public class SessionController implements Serializable, HttpSessionListener {
     }
 
     public String selectDepartment() {
-        System.out.println("select department");
+        System.out.println("loggedUser = " + loggedUser);
         if (loggedUser == null) {
+            JsfUtil.addErrorMessage("No User logged");
             return "/login?faces-redirect=true";
         }
-        System.out.println("loggedUser.getWebUserPerson() = " + loggedUser.getWebUserPerson());
+        System.out.println("loggedUser.getId() = " + loggedUser.getId());
         if (loggedUser.getWebUserPerson() == null) {
-            Person p = new Person();
-            p.setName(loggedUser.getName());
-            personFacade.create(p);
-            loggedUser.setWebUserPerson(p);
-            webUserFacade.edit(loggedUser);
+            JsfUtil.addErrorMessage("No person");
+            return "";
+//            Person p = new Person();
+//            p.setName(loggedUser.getName());
+//            personFacade.create(p);
+//            loggedUser.setWebUserPerson(p);
+//            webUserFacade.edit(loggedUser);
         }
 
         loggedUser.setDepartment(department);
-        System.out.println("department = " + department);
-        
         loggedUser.setInstitution(department.getInstitution());
-        
-        System.out.println("department.getInstitution() = " + department.getInstitution());
-        
         getFacede().edit(loggedUser);
 
         userIcons = userIconController.fillUserIcons(loggedUser, department);
         dashboards = webUserController.listWebUserDashboards(loggedUser);
 
         userPrivilages = fillUserPrivileges(loggedUser, department, false);
-        System.out.println("userPrivilages = " + userPrivilages);
         loggableSubDepartments = fillLoggableSubDepts(department);
-        System.out.println("loggableSubDepartments = " + loggableSubDepartments);
 //        if (userPrivilages == null || userPrivilages.isEmpty()) {
 //            userPrivilages = fillUserPrivileges(loggedUser, null, true);
 //            createUserPrivilegesForAllDepartments(loggedUser, department, loggableDepartments);
@@ -1708,6 +1707,7 @@ public class SessionController implements Serializable, HttpSessionListener {
      * @param loggedUser
      */
     public void setLoggedUser(WebUser loggedUser) {
+        System.out.println("loggedUser = " + loggedUser);
         this.loggedUser = loggedUser;
     }
 

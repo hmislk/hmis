@@ -10,108 +10,123 @@
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form>
-                    <p:panel header="COLLECTING CENTRE PAYMENT BILL SEARCH" >
-                        <f:facet name="header" >
-                            <h:panelGroup>                               
-                                <h:panelGrid columns="5" >
+                    <p:panel >
+                        <f:facet name="header">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h:outputText styleClass="fas fa-search" />
+                                    <h:outputLabel value="Collecting Center Bill Search" class="mx-2"/>
+                                </div>
+                            </div>
+                        </f:facet>
+                        <div class="row">
+                            <div class="col-md-2">
+                                <h:panelGroup class="d-flex flex-column">                               
                                     <h:outputLabel value="From Date"/>
-                                    <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}"
-                                                navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
+                                    <p:calendar styleClass="dateTimePicker" 
+                                                id="fromDate" 
+                                                value="#{searchController.fromDate}" 
+                                                class="w-100"
+                                                inputStyleClass="form-control"
+                                                navigator="false" 
+                                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
                                     </p:calendar>
+
                                     <h:outputLabel value="To Date"/>
-                                    <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
+                                    <p:calendar id="toDate" 
+                                                value="#{searchController.toDate}" 
+                                                navigator="false"
+                                                class="w-100"
+                                                inputStyleClass="form-control"
+                                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
                                     </p:calendar>
-                                    <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createCollectingCentrePaymentTable}" />
+
+                                    <p:commandButton id="btnSearch" 
+                                                     ajax="false" 
+                                                     value="Search" 
+                                                     icon="fa fa-search"
+                                                     class="ui-button-success mt-2"
+                                                     action="#{searchController.createCollectingCentrePaymentTable}" />
                                     <p:spacer height="30"/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/>
 
-                                    <h:outputLabel value="Bill No"/>
-                                    <h:outputLabel value="Agent"/>
-                                    <h:outputLabel value="Agent Code"/>
-                                    <h:outputLabel value="Value"/> 
+                                    <p:inputText autocomplete="off" placeholder="Bill No" value="#{searchController.searchKeyword.billNo}" class="my-1"/>
+                                    <p:inputText autocomplete="off" placeholder="Agent" value="#{searchController.searchKeyword.fromInstitution}" class="my-1"/>
+                                    <p:inputText autocomplete="off" placeholder="Agent Code" value="#{searchController.searchKeyword.number}" class="my-1"/>
+                                    <p:inputText autocomplete="off" placeholder="Value" value="#{searchController.searchKeyword.netTotal}" class="my-1"/>
                                     <h:outputLabel/>
-                                    <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />
-                                    <p:inputText autocomplete="off" value="#{searchController.searchKeyword.fromInstitution}" />
-                                    <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.number}" />
-                                    <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.netTotal}" />
-                                    <h:outputLabel/>
-                                </h:panelGrid>
-                            </h:panelGroup>
-                        </f:facet>
-
-                        <p:dataTable id="tblBills" value="#{searchController.bills}" var="bill"  >
-                            <p:column headerText="Bill No" >
-                                <h:commandLink action="/agent_bill_reprint" value="#{bill.insId}">
-                                    <h:outputLabel  ></h:outputLabel>
-                                    <f:setPropertyActionListener value="#{bill}" target="#{agentPaymentReceiveSearchController.bill}"/>
-                                </h:commandLink>
-                            </p:column>                                            
-                            <p:column headerText="Billed at"  >
-                                <h:commandLink action="/agent_bill_reprint" >
-                                    <h:outputLabel value="#{bill.createdAt}" >
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                    </h:outputLabel>
-                                    <f:setPropertyActionListener value="#{bill}" target="#{agentPaymentReceiveSearchController.bill}"/>
-                                </h:commandLink>
-                                <br/>
-                                <h:panelGroup rendered="#{bill.cancelled}" >
-                                    <h:outputLabel style="color: red;" value="Cancelled at " />
-                                    <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.createdAt}" >
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                    </h:outputLabel>
                                 </h:panelGroup>
-                            
-                            </p:column>  
-                            <p:column headerText="Billed by" >
-                                <h:commandLink action="/agent_bill_reprint" >
-                                    <h:outputLabel value="#{bill.creater.webUserPerson.name}" >                                      
-                                    </h:outputLabel>
-                                    <f:setPropertyActionListener value="#{bill}" target="#{agentPaymentReceiveSearchController.bill}"/>
-                                </h:commandLink>
-                                <br/>
-                                <h:panelGroup rendered="#{bill.cancelled}" >
-                                    <h:outputLabel style="color: red;" value="Cancelled at " />
-                                    <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.creater.webUserPerson.name}" >                                       
-                                    </h:outputLabel>
-                                </h:panelGroup>                               
-                            </p:column>    
-                            <p:column headerText="Collecting Centre Code" >
-                                <h:commandLink action="/agent_bill_reprint" >
-                                    <h:outputLabel value="#{bill.fromInstitution.institutionCode}" ></h:outputLabel>
-                                    <f:setPropertyActionListener value="#{bill}" target="#{agentPaymentReceiveSearchController.bill}"/>
-                                </h:commandLink>
-                            </p:column>  
+                            </div>
+                            <div class="col-md-10">
+                                <p:dataTable id="tblBills" value="#{searchController.bills}" var="bill"  >
+                                    <p:column headerText="Bill No" >
+                                        <h:commandLink action="/agent_bill_reprint" value="#{bill.insId}">
+                                            <h:outputLabel  ></h:outputLabel>
+                                            <f:setPropertyActionListener value="#{bill}" target="#{agentPaymentReceiveSearchController.bill}"/>
+                                        </h:commandLink>
+                                    </p:column>                                            
+                                    <p:column headerText="Billed at"  >
+                                        <h:commandLink action="/agent_bill_reprint" >
+                                            <h:outputLabel value="#{bill.createdAt}" >
+                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                            </h:outputLabel>
+                                            <f:setPropertyActionListener value="#{bill}" target="#{agentPaymentReceiveSearchController.bill}"/>
+                                        </h:commandLink>
+                                        <br/>
+                                        <h:panelGroup rendered="#{bill.cancelled}" >
+                                            <h:outputLabel style="color: red;" value="Cancelled at " />
+                                            <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.createdAt}" >
+                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                            </h:outputLabel>
+                                        </h:panelGroup>
 
-                            <p:column headerText="Collecting Centre Name" >
-                                <h:commandLink action="/agent_bill_reprint" >
-                                    <h:outputLabel value="#{bill.fromInstitution.name}" ></h:outputLabel>
-                                    <f:setPropertyActionListener value="#{bill}" target="#{agentPaymentReceiveSearchController.bill}"/>
-                                </h:commandLink>
-                            </p:column>  
+                                    </p:column>  
+                                    <p:column headerText="Billed by" >
+                                        <h:commandLink action="/agent_bill_reprint" >
+                                            <h:outputLabel value="#{bill.creater.webUserPerson.name}" >                                      
+                                            </h:outputLabel>
+                                            <f:setPropertyActionListener value="#{bill}" target="#{agentPaymentReceiveSearchController.bill}"/>
+                                        </h:commandLink>
+                                        <br/>
+                                        <h:panelGroup rendered="#{bill.cancelled}" >
+                                            <h:outputLabel style="color: red;" value="Cancelled at " />
+                                            <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.creater.webUserPerson.name}" >                                       
+                                            </h:outputLabel>
+                                        </h:panelGroup>                               
+                                    </p:column>    
+                                    <p:column headerText="Collecting Centre Code" >
+                                        <h:commandLink action="/agent_bill_reprint" >
+                                            <h:outputLabel value="#{bill.fromInstitution.institutionCode}" ></h:outputLabel>
+                                            <f:setPropertyActionListener value="#{bill}" target="#{agentPaymentReceiveSearchController.bill}"/>
+                                        </h:commandLink>
+                                    </p:column>  
 
-                            <p:column headerText="Net Value" styleClass="averageNumericColumn">
-                                <h:commandLink action="/agent_bill_reprint" >
-                                    <h:outputLabel value="#{bill.netTotal}" >
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </h:outputLabel>
-                                    <f:setPropertyActionListener value="#{bill}" target="#{agentPaymentReceiveSearchController.bill}"/>
-                                </h:commandLink>
-                            </p:column>                          
-                            <p:column headerText="Comments" >
-                                <h:outputLabel rendered="#{bill.refundedBill ne null}" value="#{bill.refundedBill.comments}" >
-                                </h:outputLabel>
-                                <h:outputLabel  rendered="#{bill.cancelledBill ne null}" value="#{bill.cancelledBill.comments}" >
-                                </h:outputLabel>
-                            </p:column>
-                        </p:dataTable>
+                                    <p:column headerText="Collecting Centre Name" >
+                                        <h:commandLink action="/agent_bill_reprint" >
+                                            <h:outputLabel value="#{bill.fromInstitution.name}" ></h:outputLabel>
+                                            <f:setPropertyActionListener value="#{bill}" target="#{agentPaymentReceiveSearchController.bill}"/>
+                                        </h:commandLink>
+                                    </p:column>  
 
-
+                                    <p:column headerText="Net Value" styleClass="averageNumericColumn">
+                                        <h:commandLink action="/agent_bill_reprint" >
+                                            <h:outputLabel value="#{bill.netTotal}" >
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputLabel>
+                                            <f:setPropertyActionListener value="#{bill}" target="#{agentPaymentReceiveSearchController.bill}"/>
+                                        </h:commandLink>
+                                    </p:column>                          
+                                    <p:column headerText="Comments" >
+                                        <h:outputLabel rendered="#{bill.refundedBill ne null}" value="#{bill.refundedBill.comments}" >
+                                        </h:outputLabel>
+                                        <h:outputLabel  rendered="#{bill.cancelledBill ne null}" value="#{bill.cancelledBill.comments}" >
+                                        </h:outputLabel>
+                                    </p:column>
+                                </p:dataTable>
+                            </div>
+                        </div>
                     </p:panel>
-
                 </h:form>
             </ui:define>
-
-
         </ui:composition>
-
     </h:body>
 </html>
