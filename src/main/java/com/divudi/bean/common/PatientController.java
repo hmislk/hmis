@@ -453,7 +453,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         response.setContentType("application/vnd.ms-excel");
         response.setHeader("Content-Disposition", "attachment; filename=Patients.xlsx");
 
-        try ( ServletOutputStream outputStream = response.getOutputStream()) {
+        try (ServletOutputStream outputStream = response.getOutputStream()) {
             workbook.write(outputStream);
         } catch (IOException e) {
             e.printStackTrace();
@@ -571,7 +571,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         response.setContentType("application/vnd.ms-excel");
         response.setHeader("Content-Disposition", "attachment; filename=PatientPhoneNumbers.xlsx");
 
-        try ( ServletOutputStream outputStream = response.getOutputStream()) {
+        try (ServletOutputStream outputStream = response.getOutputStream()) {
             workbook.write(outputStream);
         } catch (IOException e) {
             e.printStackTrace();
@@ -1047,7 +1047,6 @@ public class PatientController implements Serializable, ControllerWithPatient {
         temMap.put("ins", getSessionController().getInstitution());
         sql += " order by pi.approveAt desc  ";
 
-        //System.err.println("Sql " + sql);
 //        patientInvestigations = getPatientInvestigationFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
         // patientInvestigations=
     }
@@ -1563,6 +1562,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         Long searchedPhoneNumber = CommonFunctions.removeSpecialCharsInPhonenumber(quickSearchPhoneNumber);
         m.put("pp", searchedPhoneNumber);
         quickSearchPatientList = getFacade().findByJpql(j, m);
+        opdBillController.setPaymentMethod(null);
         if (quickSearchPatientList == null) {
             JsfUtil.addErrorMessage("No Patient found !");
             controller.setPatient(null);
@@ -1581,6 +1581,14 @@ public class PatientController implements Serializable, ControllerWithPatient {
             patientSearched = quickSearchPatientList.get(0);
             controller.setPatient(patientSearched);
             controller.setPatientDetailsEditable(false);
+            opdBillController.setPaymentMethod(null);
+            if (controller.getPatient().getHasAnAccount() != null) {
+                if (patientSearched.getHasAnAccount() && configOptionApplicationController.getBooleanValueByKey("Automatically set the PatientDeposit payment Method if a Deposit is Available", false)) {
+                    opdBillController.setPaymentMethod(PaymentMethod.PatientDeposit);
+                    opdBillController.listnerForPaymentMethodChange();
+                }
+            }
+
             quickSearchPatientList = null;
         } else {
             controller.setPatient(null);
@@ -1608,6 +1616,14 @@ public class PatientController implements Serializable, ControllerWithPatient {
         controller.setPatient(current);
         admissionController.fillCurrentPatientAllergies(current);
         controller.setPatientDetailsEditable(false);
+        opdBillController.setPaymentMethod(null);
+        if (controller.getPatient().getHasAnAccount() != null) {
+            if (controller.getPatient().getHasAnAccount() && configOptionApplicationController.getBooleanValueByKey("Automatically set the PatientDeposit payment Method if a Deposit is Available", false)) {
+                opdBillController.setPaymentMethod(PaymentMethod.PatientDeposit);
+                opdBillController.listnerForPaymentMethodChange();
+            }
+        }
+
         quickSearchPatientList = null;
     }
 
@@ -2042,22 +2058,18 @@ public class PatientController implements Serializable, ControllerWithPatient {
 //                return str;
 
             } catch (Exception ex) {
-                //   ////System.out.println("ex = " + ex.getMessage());
             }
         } else {
-            //   ////System.out.println("else = ");
             try {
                 Barcode bc = BarcodeFactory.createCode128A("0000");
                 bc.setBarHeight(5);
                 bc.setBarWidth(3);
                 bc.setDrawingText(true);
                 BarcodeImageHandler.saveJPEG(bc, barcodeFile);
-                //   ////System.out.println("12");
                 InputStream targetStream = new FileInputStream(barcodeFile);
                 StreamedContent str = DefaultStreamedContent.builder().contentType("image/jpeg").name(barcodeFile.getName()).stream(() -> targetStream).build();
                 barcode = str;
             } catch (Exception ex) {
-                //   ////System.out.println("ex = " + ex.getMessage());
             }
         }
     }
@@ -2155,7 +2167,6 @@ public class PatientController implements Serializable, ControllerWithPatient {
     }
 
     public StreamedContent getPhoto(Patient p) {
-        //////System.out.println("p is " + p);
         FacesContext context = FacesContext.getCurrentInstance();
         if (context.getRenderResponse()) {
             return new DefaultStreamedContent();
@@ -2163,7 +2174,6 @@ public class PatientController implements Serializable, ControllerWithPatient {
             return new DefaultStreamedContent();
         } else {
             if (p.getId() != null && p.getBaImage() != null) {
-                //////System.out.println("giving image");
                 InputStream targetStream = new ByteArrayInputStream(p.getBaImage());
                 StreamedContent str = DefaultStreamedContent.builder().contentType(p.getFileType()).name(p.getFileName()).stream(() -> targetStream).build();
                 return str;
@@ -2306,7 +2316,6 @@ public class PatientController implements Serializable, ControllerWithPatient {
                     + " or (p.person.mobile) like :q "
                     + "  order by p.person.name";
             hm.put("q", "%" + query.toUpperCase() + "%");
-            //////System.out.println(sql);
             suggestions = getFacade().findByJpql(sql, hm, 20);
         }
         return suggestions;
@@ -2782,11 +2791,6 @@ public class PatientController implements Serializable, ControllerWithPatient {
         String st = "";
         if (p != null) {
             String str = p.getCode();
-//        //System.out.println("str.substring(0,1) = " + str.substring(0, 1));
-//        //System.out.println("str.substring(0,2) = " + str.substring(0, 2));
-//        //System.out.println("str.substring(2) = " + str.substring(2));
-//        //System.out.println("str.substring(3) = " + str.substring(3));
-//        //System.out.println("str.substring(3,7) = " + str.substring(3, 7));
             long l = Long.parseLong(str.substring(2));
             l++;
             st += s;
@@ -3691,13 +3695,11 @@ public class PatientController implements Serializable, ControllerWithPatient {
             }
             PatientController controller = (PatientController) facesContext.getApplication().getELResolver().
                     getValue(facesContext.getELContext(), null, "patientController");
-            //////System.out.println("value at converter getAsObject is " + value);
             return controller.getEjbFacade().find(getKey(value));
         }
 
         java.lang.Long getKey(String value) {
             java.lang.Long key;
-            //////System.out.println(value);
             if (value == null || value.equals("null") || value.trim().equals("")) {
                 key = 0l;
             } else {
