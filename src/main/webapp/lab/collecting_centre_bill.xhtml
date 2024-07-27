@@ -55,11 +55,16 @@
                                 itemLabel="#{ix.name}" 
                                 itemValue="#{ix}" 
                                 size="30" 
-                                maxResults="20"
+                                maxResults="20"                                
                                 >
                                 <f:ajax  event="itemSelect" execute="creditCom"  />
-                                <p:column headerText="Code" style="padding: 5px;">#{ix.institutionCode}</p:column>
+                                <p:column headerText="Code" style="padding: 5px; width: 150px;">#{ix.institutionCode}</p:column>
                                 <p:column headerText="Collecting Centre Name" style="padding: 5px;">#{ix.name}</p:column>
+                                <p:column headerText="Balance" style="padding: 5px; width: 150px; text-align: right;">
+                                    <p:outputLabel value="#{ix.ballance}" >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </p:outputLabel>
+                                </p:column>
                             </p:autoComplete>
                         </div>
                     </div>
@@ -69,31 +74,33 @@
                             <p:outputLabel value="Payment" />
                         </div>
                         <div class="col-md-2">
-                            <p:selectOneMenu 
+                            <p:selectOneMenu  
                                 id="cmbPs" 
                                 class="w-100"
-                                value="#{agentPaymentRecieveBillController.current.paymentMethod}">                                                                     
+                                value="#{agentPaymentRecieveBillController.current.paymentMethod}"> 
+                                <f:selectItem itemLabel="Select Payment Method"></f:selectItem>
                                 <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"/>
-                                <p:ajax process="cmbPs" update="creditCard cheque slip cash" event="change" />
+                                <p:ajax process="@this" update="paymentDetails" event="change" />
                             </p:selectOneMenu>
                         </div>
                         <div class="col-md-5">
-                            <h:panelGroup id="creditCard" style="display: #{agentPaymentRecieveBillController.current.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
-                                <pa:creditCard paymentMethodData="#{agentPaymentRecieveBillController.paymentMethodData}"/>
-                            </h:panelGroup>
+                            <h:panelGroup id="paymentDetails">
+                                <h:panelGroup id="creditCard"  rendered="#{agentPaymentRecieveBillController.current.paymentMethod eq 'Card'}">
+                                    <pa:creditCard paymentMethodData="#{agentPaymentRecieveBillController.paymentMethodData}"/>
+                                </h:panelGroup>
 
-                            <h:panelGroup id="cheque" style="display: #{agentPaymentRecieveBillController.current.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >
-                                <pa:cheque paymentMethodData="#{agentPaymentRecieveBillController.paymentMethodData}"/>
-                            </h:panelGroup>
+                                <h:panelGroup id="cheque"  rendered="#{agentPaymentRecieveBillController.current.paymentMethod eq 'Cheque'}">
+                                    <pa:cheque paymentMethodData="#{agentPaymentRecieveBillController.paymentMethodData}"/>
+                                </h:panelGroup>
 
-                            <h:panelGroup id="slip" style="display: #{agentPaymentRecieveBillController.current.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
-                                <pa:slip paymentMethodData="#{agentPaymentRecieveBillController.paymentMethodData}"/>
+                                <h:panelGroup id="slip" rendered="#{agentPaymentRecieveBillController.current.paymentMethod eq 'Slip'}">
+                                    <pa:slip paymentMethodData="#{agentPaymentRecieveBillController.paymentMethodData}"/>
+                                </h:panelGroup>
+
+                                <h:panelGroup id="cash"  rendered="#{agentPaymentRecieveBillController.current.paymentMethod eq 'Cash'}">
+                                    <p:inputText autocomplete="off" value="#{agentPaymentRecieveBillController.current.netTotal}"/> 
+                                </h:panelGroup>
                             </h:panelGroup>
-                            
-                            <h:panelGroup id="cash" style="display: #{agentPaymentRecieveBillController.current.paymentMethod ne 'Cash' ? 'none' : 'block'} ;">
-                                <p:inputText autocomplete="off" value="#{agentPaymentRecieveBillController.current.netTotal}"/> 
-                            </h:panelGroup>
-                            
                         </div>
                     </div>
 
@@ -116,18 +123,41 @@
                             <p:inputText 
                                 class="w-100"
                                 value="#{agentPaymentRecieveBillController.comment}" 
-                                         id="comment"/>
+                                id="comment"/>
                         </div>
                     </div>
                 </p:panel>
             </h:panelGroup>
 
 
-            <h:panelGroup rendered="#{agentPaymentRecieveBillController.printPreview}" >     
-                <p:commandButton value="New Bill" ajax="false" action="#{agentPaymentRecieveBillController.prepareNewBill()}"  >
-                </p:commandButton>
-                <bi:agent billController="#{agentPaymentRecieveBillController}"  bill="#{agentPaymentRecieveBillController.current}" dup="false"/>     
-            </h:panelGroup>        
+            <p:panel rendered="#{agentPaymentRecieveBillController.printPreview}" >     
+                <f:facet name="header">
+                    <div class="d-flex justify-content-between">
+                        <h:outputText value="Collecting Center Payment Bill"/> 
+                        <div class="d-flex gap-2">
+                            <p:commandButton 
+                                value="Print" 
+                                ajax="false"
+                                icon="fa fa-print"
+                                action="#" >
+                                <p:printer target="gpBillPreview" ></p:printer>
+                            </p:commandButton>
+                            <p:commandButton 
+                                value="New Bill" 
+                                ajax="false" 
+                                icon="fa fa-plus"
+                                class="ui-button-warning"
+                                action="#{agentPaymentRecieveBillController.prepareNewBill()}"  >
+                            </p:commandButton>
+                        </div>
+                    </div>
+
+                </f:facet>
+                <h:panelGroup id="gpBillPreview">
+                    <bi:agent billController="#{agentPaymentRecieveBillController}"  bill="#{agentPaymentRecieveBillController.current}" dup="false"/>     
+                </h:panelGroup>
+                
+            </p:panel>        
 
         </h:form>
     </ui:define>
