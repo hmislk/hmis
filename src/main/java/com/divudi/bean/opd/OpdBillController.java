@@ -1687,6 +1687,13 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                 JsfUtil.addErrorMessage("Please Enter a Slip Comment..");
                 error = true;
             }
+        } else if (getPaymentMethod() == PaymentMethod.Credit) {
+            System.out.println("Credit");
+            if (getPaymentMethodData().getCredit().getComment().trim().equals("") && configOptionApplicationController.getBooleanValueByKey("OPD Billing - Credit Comment is Mandatory", false)) {
+                System.out.println("Error");
+                JsfUtil.addErrorMessage("Please Enter a Credit Comment..");
+                error = true;
+            }
         }
         return error;
     }
@@ -3171,7 +3178,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                     case Agent:
                     case Credit:
                         p.setReferenceNo(cd.getPaymentMethodData().getCredit().getReferralNo());
-                        
+                        p.setComments(cd.getPaymentMethodData().getCredit().getComment());
                     case PatientDeposit:
                         if (getPatient().getRunningBalance() != null) {
                             getPatient().setRunningBalance(getPatient().getRunningBalance() - cd.getPaymentMethodData().getPatient_deposit().getTotalValue());
@@ -3226,6 +3233,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                 case Agent:
                 case Credit:
                     p.setReferenceNo(paymentMethodData.getCredit().getReferralNo());
+                    p.setComments(paymentMethodData.getCredit().getComment());
                 case PatientDeposit:
                 case Slip:
                     p.setBank(paymentMethodData.getSlip().getInstitution());
