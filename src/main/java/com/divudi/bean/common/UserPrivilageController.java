@@ -121,6 +121,7 @@ public class UserPrivilageController implements Serializable {
         TreeNode OpdLabReportSearchNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.OpdLabReportSearch, "Lab Report Search"), opdNode);
         TreeNode opdBillSearchEditNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.OpdBillSearchEdit, "OPD Bill Search Edit (Patient Details)"), opdNode);
         TreeNode OpdReprintOriginalBillNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.OpdReprintOriginalBill, "Reprint the Original Bill"), opdNode);
+        TreeNode addCreditLimit = new DefaultTreeNode(new PrivilegeHolder(Privileges.AddCreditLimitInRegistration, "Add Credit Limit During Patient Registration"), opdNode);
 
         TreeNode inwardNode = new DefaultTreeNode(new PrivilegeHolder(null, "Inward"), allNode);
         TreeNode inwardMenuNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.Inward, "Inward Menu"), inwardNode);
