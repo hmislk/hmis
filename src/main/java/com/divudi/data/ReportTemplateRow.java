@@ -5,6 +5,7 @@ import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.WebUser;
+import com.divudi.entity.channel.SessionInstance;
 import java.util.Date;
 import java.util.List;
 
@@ -48,8 +49,13 @@ public class ReportTemplateRow {
     private WebUser user;
     private Long startId;
     private Long endId;
+    private SessionInstance sessionInstance;
     
     private List<BillTypeAtomic> btas;
+
+    public ReportTemplateRow(SessionInstance sessionInstance) {
+        this.sessionInstance = sessionInstance;
+    }
     
     
 
@@ -395,6 +401,14 @@ public class ReportTemplateRow {
 
     public void setBtas(List<BillTypeAtomic> btas) {
         this.btas = btas;
+    }
+
+    public SessionInstance getSessionInstance() {
+        return sessionInstance;
+    }
+
+    public void setSessionInstance(SessionInstance sessionInstance) {
+        this.sessionInstance = sessionInstance;
     }
 
 }
