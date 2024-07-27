@@ -1,6 +1,7 @@
 package com.divudi.data;
 
 import com.divudi.entity.ReportTemplate;
+import com.divudi.entity.channel.SessionInstance;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,7 +21,7 @@ public class ReportTemplateRowBundle {
     private Long count;
     private String name;
     private String description;
-
+    private SessionInstance sessionInstance;
     
     
     
@@ -106,6 +107,14 @@ public class ReportTemplateRowBundle {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public SessionInstance getSessionInstance() {
+        return sessionInstance;
+    }
+
+    public void setSessionInstance(SessionInstance sessionInstance) {
+        this.sessionInstance = sessionInstance;
     }
 
    
