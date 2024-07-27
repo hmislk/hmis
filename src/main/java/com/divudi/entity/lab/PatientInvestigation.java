@@ -61,6 +61,11 @@ public class PatientInvestigation implements Serializable {
     @ManyToOne
     private PatientEncounter encounter;
     //Sample Collection
+    private Boolean barcodeGenerated=false;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date barcodeGeneratedAt;
+    @ManyToOne
+    private WebUser barcodeGeneratedBy;
     private Boolean collected = false;
     @ManyToOne
     private WebUser sampleCollecter;
@@ -176,6 +181,7 @@ public class PatientInvestigation implements Serializable {
     public void setPatientReports(List<PatientReport> patientReports) {
         this.patientReports = patientReports;
     }
+    
     
     
     
@@ -766,6 +772,30 @@ public class PatientInvestigation implements Serializable {
 
     public void setPackege(Packege packege) {
         this.packege = packege;
+    }
+
+    public Boolean getBarcodeGenerated() {
+        return barcodeGenerated;
+    }
+
+    public void setBarcodeGenerated(Boolean barcodeGenerated) {
+        this.barcodeGenerated = barcodeGenerated;
+    }
+
+    public Date getBarcodeGeneratedAt() {
+        return barcodeGeneratedAt;
+    }
+
+    public void setBarcodeGeneratedAt(Date barcodeGeneratedAt) {
+        this.barcodeGeneratedAt = barcodeGeneratedAt;
+    }
+
+    public WebUser getBarcodeGeneratedBy() {
+        return barcodeGeneratedBy;
+    }
+
+    public void setBarcodeGeneratedBy(WebUser barcodeGeneratedBy) {
+        this.barcodeGeneratedBy = barcodeGeneratedBy;
     }
 
 }
