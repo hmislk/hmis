@@ -741,57 +741,79 @@ public class StaffPaymentBillController implements Serializable {
         return dueBillFeeReport;
     }
 
-    private void paymentMethodDataErrorCheck() {
+    private boolean paymentMethodDataErrorCheck() {
         if (getCurrent().getPaymentMethod() == PaymentMethod.Card) {
             if (getStaffPaymentMethodData().getCreditCard().getNo().trim().equalsIgnoreCase("")) {
                 JsfUtil.addErrorMessage("Add CreditCard No");
+                return true;
             } else if (getStaffPaymentMethodData().getCreditCard().getInstitution() == null) {
                 JsfUtil.addErrorMessage("Select Card Bank");
+                return true;
             } else if (getStaffPaymentMethodData().getCreditCard().getComment().trim().equalsIgnoreCase("") && configOptionApplicationController.getBooleanValueByKey("Staff Credit Settle - CreditCard Comment is Mandatory", false)) {
                 JsfUtil.addErrorMessage("Add Comment");
+                return true;
             }
+            return false;
         } else if (getCurrent().getPaymentMethod() == PaymentMethod.Cheque) {
             if (getStaffPaymentMethodData().getCheque().getNo().trim().equalsIgnoreCase("")) {
                 JsfUtil.addErrorMessage("Add Cheque No");
+                return true;
             } else if (getStaffPaymentMethodData().getCheque().getInstitution() == null) {
                 JsfUtil.addErrorMessage("Select Cheque Bank");
+                return true;
+            } else if (getStaffPaymentMethodData().getCheque().getDate() == null ) {
+                JsfUtil.addErrorMessage("Add Cheque Date");
+                return true;
             } else if (getStaffPaymentMethodData().getCheque().getComment().trim().equalsIgnoreCase("") && configOptionApplicationController.getBooleanValueByKey("Staff Credit Settle - Cheque Comment is Mandatory", false)) {
                 JsfUtil.addErrorMessage("Add Comment");
+                return true;
             }
+            return false;
         } else if (getCurrent().getPaymentMethod() == PaymentMethod.Slip) {
-            if (getStaffPaymentMethodData().getSlip().getNo().trim().equalsIgnoreCase("")) {
-                JsfUtil.addErrorMessage("Add Cheque No");
-            } else if (getStaffPaymentMethodData().getSlip().getInstitution() == null) {
+            if (getStaffPaymentMethodData().getSlip().getInstitution() == null) {
                 JsfUtil.addErrorMessage("Select Slip Bank");
+                return true;
+            } else if (getStaffPaymentMethodData().getSlip().getDate()== null) {
+                JsfUtil.addErrorMessage("Add Slip Date");
+                return true;
             } else if (getStaffPaymentMethodData().getSlip().getComment().trim().equalsIgnoreCase("") && configOptionApplicationController.getBooleanValueByKey("Staff Credit Settle - Slip Comment is Mandatory", false)) {
                 JsfUtil.addErrorMessage("Add Comment");
+                return true;
             }
+            return false;
         }
+        return false;
     }
 
-    private void errorCheckForCreditSettle() {
-        if (getCurrent().getPaymentMethod() == null) {
-            JsfUtil.addErrorMessage("Select Payment Method");
-            return;
-        }
-
+    private boolean errorCheckForCreditSettle() {
         if (getCurrentStaff() == null) {
             JsfUtil.addErrorMessage("Select Staff");
-            return;
+            return true;
+        }
+        
+        if (getCurrent().getPaymentMethod() == null) {
+            JsfUtil.addErrorMessage("Select Payment Method");
+            return true;
         }
 
         if (getCurrent().getNetTotal() < 1) {
             JsfUtil.addErrorMessage("Type Amount");
-            return;
+            return true;
         }
-        //paymentMethodDataErrorCheck();
-
+        
+        return false;
     }
 
     public void settleStaffCredit() {
         System.out.println("settleStaffCredit");
 
-        errorCheckForCreditSettle();
+        if(errorCheckForCreditSettle()){
+            return ;
+        }
+        
+        if(paymentMethodDataErrorCheck()){
+            return ;
+        }
 
         getCurrent().setTotal(getCurrent().getNetTotal());
         DecimalFormat df = new DecimalFormat("00000");

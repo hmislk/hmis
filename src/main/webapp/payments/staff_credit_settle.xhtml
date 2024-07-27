@@ -18,7 +18,7 @@
                     <f:facet name="header">
                         <div class="d-flex align-items-center justify-content-between">
                             <div>
-                                <h:outputText value="Staff Credit Settlee"/>
+                                <h:outputText value="Staff Credit Settle"/>
                             </div>
                             <div class="d-flex gap-2">
                                 <p:commandButton 
@@ -79,9 +79,10 @@
                             </p:panel>
                         </div>
                         <div class="col-6" >
-                            <p:panel>
+                            <p:panel header="Payment Details">
                                 <div class="d-flex gap-2">
-                                    <p:selectOneMenu   id="cmbPs" value="#{staffPaymentBillController.current.paymentMethod}">                                                                     
+                                    <p:selectOneMenu style="width: 250px;" id="cmbPs" value="#{staffPaymentBillController.current.paymentMethod}">                                                                     
+                                        <f:selectItem itemLabel="Select Payment Method"  />
                                         <f:selectItems value="#{enumController.paymentMethodsForStaffCreditSettle}"  />
                                         <p:ajax process="cmbPs" update="creditCard cheque slip" event="change" />
                                     </p:selectOneMenu>
@@ -179,7 +180,7 @@
                                             <hr/>
                                             <p>
                                                 <strong>
-                                                    <h:outputText value="Name:" style="font-size: var(font-size-bill) /2 ;"></h:outputText>
+                                                    <h:outputText value="Staff Name:" style="font-size: var(font-size-bill) /2 ;"></h:outputText>
                                                 </strong>
                                                 <h:outputText value="#{staffPaymentBillController.current.staff.person.nameWithTitle}" style="font-size: var(font-size-bill) /2 ;"></h:outputText>
                                             </p>
@@ -204,7 +205,6 @@
                                             <hr/>
                                             <p:barcode type="code39" value="#{staffPaymentBillController.current.idStr}" style="width: 100%; height: 6rem;"></p:barcode>
                                             <hr/>
-                                            <h4>Payment Details</h4>
                                             <p>
                                                 <strong>
                                                     <h:outputText value="Total:" style="font-size: var(--font-size-bill) /2 ;"></h:outputText>
