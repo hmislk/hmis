@@ -15,10 +15,24 @@
     <cc:implementation>
 
         <p:toolbar style="margin-bottom: 20px;">
-            <p:toolbarGroup align="left">
-                <p:commandButton value="Excel" icon="pi pi-file-excel" actionListener="#{reportTemplateController.exportToExcel}" ajax="false" styleClass="ui-button-success"/>
-                <p:commandButton value="Print" icon="pi pi-print" onclick="PF('tbl').print();" styleClass="ui-button-info"/>
-                <p:commandButton value="PDF" icon="pi pi-file-pdf" actionListener="#{reportTemplateController.exportToPDF}" ajax="false" styleClass="ui-button-danger"/>
+            <p:toolbarGroup align="left" >
+                <p:commandButton 
+                    value="Excel" 
+                    icon="pi pi-file-excel" 
+                    ajax="false" 
+                    styleClass="ui-button-success">
+                    <p:dataExporter 
+                        target="tbl" 
+                        type="xlsx" 
+                        fileName="#{reportTemplateController.reportTemplateRowBundle.reportTemplate.name}" ></p:dataExporter>
+                </p:commandButton>
+                <p:commandButton 
+                    value="Print" 
+                    icon="pi pi-print" 
+                    ajax="false"
+                    styleClass="ui-button-info">
+                    <p:printer target="tbl" ></p:printer>
+                </p:commandButton>
             </p:toolbarGroup>
         </p:toolbar>
 
@@ -47,8 +61,8 @@
             <p:column headerText="Category" sortBy="#{rtr.sessionInstance.originatingSession.category.name}" >
                 <h:outputText value="#{rtr.sessionInstance.originatingSession.category.name}" />
             </p:column>
-            
-             <p:column headerText="Session" sortBy="#{rtr.sessionInstance.originatingSession.name}" >
+
+            <p:column headerText="Session" sortBy="#{rtr.sessionInstance.originatingSession.name}" >
                 <h:outputText value="#{rtr.sessionInstance.originatingSession.name}" />
             </p:column>
 

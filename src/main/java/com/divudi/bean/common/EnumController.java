@@ -72,9 +72,7 @@ public class EnumController implements Serializable {
     List<PaymentMethod> paymentMethodsForOpdBilling;
     List<PaymentMethod> paymentMethodsForChanneling;
     List<PaymentMethod> paymentMethodsForPharmacyBilling;
-
-    List<PaymentMethod> paymentMethodsForPatientDeposit;
-
+    private List<PaymentMethod> paymentMethodsForPatientDeposit;
     SessionNumberType[] sessionNumberTypes;
 
     @PostConstruct

@@ -1,0 +1,218 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <body>
+
+        <ui:composition template="/reports/dynamic_reports/dynamic_reports.xhtml">
+
+            <ui:define name="subcontent">
+                <h:form>
+                    <p:panel>
+                        <f:facet name="header" >
+                            <h:outputLabel value="All Financial Transaction Summary"/>                          
+                        </f:facet>
+                        <h:panelGrid columns="2" class="my-2" >
+                            <h:outputLabel value="From Date"/>
+                            <p:datePicker 
+                                class="w-100 mx-4" 
+                                inputStyleClass="w-100"
+                                id="fromDate" 
+                                value="#{searchController.fromDate}" 
+                                showTime="true"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >      
+                            </p:datePicker>
+                            <h:outputLabel value="To Date"/>
+                            <p:datePicker 
+                                class="w-100 mx-4" 
+                                inputStyleClass="w-100" 
+                                id="toDate" 
+                                value="#{searchController.toDate}" 
+                                showTime="true"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >                                                                              
+                            </p:datePicker>
+                            <h:outputText value="Institution" />
+                            <p:autoComplete 
+                                forceSelection="true"
+                                value="#{searchController.institution}"
+                                placeholder="Select Institution"
+                                completeMethod="#{institutionController.completeIns}" 
+                                id="ins2"
+                                var="ix" 
+                                itemLabel="#{ix.name}" 
+                                itemValue="#{ix}"
+                                class="w-100 mx-4"
+                                inputStyleClass="w-100"
+                                >
+                                <p:ajax event="blur" listener="#{searchController.fillInstitutionInDepartment(searchController.institution)}" process="ins2" update="depts" />
+                            </p:autoComplete>
+
+                            <h:outputText value="Department" />
+                            <p:selectOneMenu 
+                                id="depts" 
+                                filter="true"
+                                value="#{searchController.department}" 
+                                class="w-100 mx-4" 
+                                >
+                                <f:selectItem  itemLabel="Please select a Department"/>
+                                <f:selectItems 
+                                    value="#{searchController.departments}" 
+                                    var="d" 
+                                    itemLabel="#{d.name}" itemValue="#{d}" 
+                                    />
+                            </p:selectOneMenu>
+
+                            <h:outputText value="User" />
+                            <p:autoComplete 
+                                forceSelection="true"
+                                value="#{searchController.webUser}"
+                                placeholder="Select User"
+                                completeMethod="#{webUserController.completeUser}" 
+                                id="user"
+                                var="u" 
+                                itemLabel="#{u.webUserPerson.name}" 
+                                itemValue="#{u}"
+                                class="w-100 mx-4"
+                                inputStyleClass="w-100"
+                                >
+                            </p:autoComplete>
+
+
+
+                        </h:panelGrid>
+                        <h:panelGrid columns="6" class="my-2" >
+                            <p:commandButton 
+                                class="ui-button-warning" 
+                                icon="fas fa-magnifying-glass" 
+                                id="btnSearch" 
+                                ajax="false" 
+                                value="Process" 
+                                action="#{searchController.processAllFinancialTransactionalSummary}"/>
+                            <p:commandButton 
+                                class="ui-button-success mx-2" 
+                                icon="fas fa-file-excel" 
+                                id="btnExcel" 
+                                ajax="false" 
+                                value="Excel" >
+                                <p:dataExporter fileName="All Financial Transactions" type="xlsx" target="tbl" ></p:dataExporter>
+                            </p:commandButton>
+
+                            <p:commandButton 
+                                class="ui-button-info " 
+                                icon="fas fa-print" 
+                                id="btnprint" 
+                                ajax="false" 
+                                value="Print" >
+                                <p:printer 
+                                    target="tbl" >
+                                </p:printer>
+                            </p:commandButton>
+
+                        </h:panelGrid>
+
+                        <p:dataTable 
+                            rowIndexVar="i" 
+                            id="tbl" 
+                            value="#{searchController.billSummaryRows}" 
+                            reflow="true"
+                            var="bill"  
+                            style="min-width: 100%;"  
+                            paginator="true"
+                            paginatorPosition="bottom"
+                            rows="10"
+                            paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                            rowsPerPageTemplate="5,10,15">
+                            <f:facet name="header">
+                                <div class="d-flex gap-2 justify-content-center" style="font-size: 24px; font-weight: 700;">
+                                    <h:outputLabel value="All Financial Transaction Summary"/>
+                                </div>
+                                <h:panelGroup rendered="#{searchController.institution ne null}">
+                                    <div class="d-flex gap-2 justify-content-center" style="font-size: 20px; font-weight: 600;">
+                                        <h:outputLabel value="#{searchController.institution.name}"/>
+                                        <h:panelGroup rendered="#{searchController.department ne null}">
+                                            <h:outputLabel value="-"/>
+                                            <h:outputLabel value="#{searchController.department.name}"/>
+                                        </h:panelGroup>
+                                    </div>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{searchController.institution eq null}">
+                                    <div class="d-flex gap-2 justify-content-center" style="font-size: 20px; font-weight: 600;">
+                                        <h:outputLabel value="#{sessionController.institution.name}"/>
+                                    </div>
+                                </h:panelGroup>
+                                <div class="d-flex gap-2 justify-content-center" style="font-size: 16px; font-weight: 400;">
+                                    <h:outputLabel value="#{searchController.fromDate}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}  HH:mm:ss a" ></f:convertDateTime>
+                                    </h:outputLabel>
+                                    <h:outputLabel value="to"/>
+                                    <h:outputLabel value="#{searchController.toDate}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}  HH:mm:ss a" ></f:convertDateTime>
+                                    </h:outputLabel>
+                                </div>
+                            </f:facet>
+
+                            <p:column headerText="Bill Type" styleClass="alignTop">
+                                <h:outputLabel value="#{bill.billTypeAtomic.label}"/>
+                                <f:facet name="footer">
+                                    Total
+                                </f:facet>
+                            </p:column>
+
+                            <p:column headerText="Count" width="4em">
+                                <h:outputLabel value="#{bill.billCount}"/>
+                                <f:facet name="footer">
+
+                                </f:facet>
+                            </p:column>
+
+                            <p:column headerText="Gross Total" width="8em">
+                                <h:outputLabel value="#{bill.grossTotal}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{searchController.grossTotal}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column headerText="Discount" width="8em">
+                                <h:outputLabel value="#{bill.discount}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{searchController.discount}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column headerText="Net Value" width="8em">
+                                <h:outputLabel value="#{bill.netTotal}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{searchController.netTotal}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>                         
+                        </p:dataTable>
+
+
+
+
+                    </p:panel>
+
+                </h:form>
+
+            </ui:define>
+
+        </ui:composition>
+
+    </body>
+</html>
