@@ -81,17 +81,16 @@
                             value="#{patientInvestigationController.billBarcodes}" 
                             var="smpIx" 
                             paginator="true"
-                            rowKey="#{smpIx.bill.id}"
+                            rowKey="#{smpIx.uuid}"
                             paginatorPosition="bottom"
-                            selectionMode="multiple"
-                            selection="#{patientInvestigationController.billBarcodes}"
+                            selection="#{patientInvestigationController.selectedBillBarcodes}"
                             rows="10"
                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                             rowsPerPageTemplate="10,25,50"
                             >
-                            
+
                             <p:column selectionMode="multiple">
-                                
+
                             </p:column>
 
                             <p:column headerText="Bill Dept ID" width="100">
@@ -117,7 +116,72 @@
 
                             <p:column headerText="Samples" >
                                 <ui:repeat value="#{smpIx.patientSampleWrappers}" var="psw" >
-                                    <h:outputLabel value="#{pst}"/>
+                                    <h:outputLabel value="#{psw.patientSample}"/>
+                                    <table >
+                                        <tr>
+                                            <td>
+                                                <h:outputLabel value="Patient" ></h:outputLabel>
+                                            </td>
+                                            <td>
+                                                <h:outputLabel value="#{psw.patient.person.shortenedName}" >
+                                                </h:outputLabel>
+                                            </td>
+                                            <td>
+                                                <h:outputLabel value="Age" ></h:outputLabel>
+                                            </td>
+                                            <td>
+                                                <h:outputLabel value="#{psw.patient.age}" >
+                                                </h:outputLabel>
+                                            </td>
+                                            <td>
+                                                <h:outputLabel value="Sex" ></h:outputLabel>
+                                            </td>
+                                            <td>
+                                                <h:outputLabel value="#{psw.patient.person.sex.shortLabel}" >
+                                                </h:outputLabel>
+                                            </td>
+                                            <td>
+                                                <h:outputLabel value="ID" ></h:outputLabel>
+                                            </td>
+                                            <td>
+                                                <h:outputLabel value="#{psw.patient.id}" >
+                                                </h:outputLabel>
+                                            </td>
+                                            <td>
+                                                <h:outputLabel value="PHN" ></h:outputLabel>
+                                            </td>
+                                            <td>
+                                                <h:outputLabel value="#{psw.patient.phn}" >
+                                                </h:outputLabel>
+                                            </td>
+                                            <td>
+                                                <table >
+                                                    <ui:repeat value="#{patientInvestigationController.getPatientSampleComponentsByPatientSample(psw.patientSample)}" var="psc">
+                                                        <tr>
+                                                            <td>
+                                                                <h:outputLabel value="Ix" ></h:outputLabel>
+                                                            </td>
+                                                            <td>
+                                                                <h:outputLabel value="#{psc.patientInvestigation.investigation}" ></h:outputLabel>
+                                                            </td>
+                                                            <td>
+                                                                <h:outputLabel value="Component" ></h:outputLabel>
+                                                            </td>
+                                                            <td>
+                                                                <h:outputLabel value="#{psc.investigationComponant.name}" ></h:outputLabel>
+                                                            </td>
+                                                        </tr>
+                                                    </ui:repeat>
+                                                </table>
+
+                                            </td>
+
+
+                                        </tr>
+                                    </table>
+
+
+
                                 </ui:repeat>
                             </p:column>
 

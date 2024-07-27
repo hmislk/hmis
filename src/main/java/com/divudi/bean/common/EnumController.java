@@ -91,12 +91,6 @@ public class EnumController implements Serializable {
         return paymentMethodsForOpdBilling;
     }
     
-    public List<PaymentMethod> getPaymentMethodsForPatientDeposit() {
-        if (paymentMethodsForPatientDeposit == null) {
-              fillPaymentMethodsForPatientDeposit();
-        }
-        return paymentMethodsForPatientDeposit;
-    }
 
     public List<PaymentMethod> getPaymentMethodsForPackageBilling() {
         if (paymentMethodsForOpdBilling == null) {
