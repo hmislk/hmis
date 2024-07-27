@@ -872,7 +872,6 @@ public class StaffPaymentBillController implements Serializable {
         tmp.setBill(getCurrent());
         tmp.setNetValue(0 - getCurrent().getNetTotal());
         getBillItemFacade().create(tmp);
-
     }
 
     public void createNewSettleBill() {
