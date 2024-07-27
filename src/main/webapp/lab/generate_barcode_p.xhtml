@@ -22,148 +22,167 @@
                             <h:outputLabel class="mt-2" value="To Collect"/>
                         </f:facet>
 
-                        <h:panelGrid columns="7" class="w-100">
-                            <h:outputLabel class="w-100 m-2" value="From Date"/>
-                            <p:calendar 
-                                id="fromDate" 
-                                value="#{patientInvestigationController.fromDate}" 
-                                navigator="true" 
-                                class="w-100 m-2"
-                                inputStyleClass="form-control"
-                                pattern="dd MMMM yy - hh:mm a" >
-                            </p:calendar>
-                            <p:spacer width="10"></p:spacer>
-                            <h:outputLabel class="w-100 m-2" value="To Date"/>
-                            <p:calendar 
-                                class="w-100 m-2"
-                                id="toDate" 
-                                value="#{patientInvestigationController.toDate}" 
-                                navigator="true" 
-                                inputStyleClass="form-control"
-                                pattern="dd MMMM yy - hh:mm a" >
-                            </p:calendar>
-                            <p:spacer width="10"></p:spacer>
-                            <p:commandButton 
-                                class="w-100 m-2" 
-                                id="btnRefresh" 
-                                ajax="false" 
-                                actionListener="#{patientInvestigationController.listPatientInvestigationAwaitingSamplling()}" 
-                                value="List to Collect"   >
-                            </p:commandButton>
+                        <h:panelGrid columns="2" class="w-100">
+                            <p:panelGrid columns="2" class="w-100">
+                                <h:outputLabel class="w-100 m-2" value="From Date"/>
+                                <p:calendar 
+                                    id="fromDate" 
+                                    value="#{patientInvestigationController.fromDate}" 
+                                    navigator="true" 
+                                    class="w-100 m-2"
+                                    inputStyleClass="form-control"
+                                    pattern="dd MMMM yy - hh:mm a">
+                                </p:calendar>
+                                <h:outputLabel class="w-100 m-2" value="To Date"/>
+                                <p:calendar 
+                                    class="w-100 m-2"
+                                    id="toDate" 
+                                    value="#{patientInvestigationController.toDate}" 
+                                    navigator="true" 
+                                    inputStyleClass="form-control"
+                                    pattern="dd MMMM yy - hh:mm a">
+                                </p:calendar>
+                            </p:panelGrid>
+
+                            <p:panelGrid columns="3" class="w-100">
+                                <p:commandButton 
+                                    class="w-100 m-2" 
+                                    id="btnListToGenera" 
+                                    ajax="false" 
+                                    actionListener="#{patientInvestigationController.listBillsToGenerateBarcodes()}" 
+                                    value="List to Generate"
+                                    icon="fa fa-list-alt"> <!-- Example FontAwesome icon for listing -->
+                                </p:commandButton>
+                                <p:commandButton 
+                                    class="w-100 m-2" 
+                                    id="btnListGenerated" 
+                                    ajax="false" 
+                                    actionListener="#{patientInvestigationController.listBillsWithGeneratedBarcodes()}" 
+                                    value="List Generated"
+                                    icon="fa fa-check-square"> <!-- Example FontAwesome icon for generated lists -->
+                                </p:commandButton>
+                                <p:commandButton 
+                                    class="w-100 m-2" 
+                                    id="btnGeneraBarcodes" 
+                                    ajax="false" 
+                                    actionListener="#{patientInvestigationController.generateBarcodesForSelectedBills()}" 
+                                    value="Generate Barcodes"
+                                    icon="fa fa-barcode"> <!-- Example FontAwesome icon for barcode generation -->
+                                </p:commandButton>
+                            </p:panelGrid>
+
+
                         </h:panelGrid>
+
 
                         <p:dataTable  
                             id="sample" 
                             class="w-100"
-                            value="#{patientInvestigationController.lstForSampleManagement}" 
+                            value="#{patientInvestigationController.billBarcodes}" 
                             var="smpIx" 
                             paginator="true"
-                            rowKey="#{smpIx.id}"
+                            rowKey="#{smpIx.uuid}"
                             paginatorPosition="bottom"
+                            selection="#{patientInvestigationController.selectedBillBarcodes}"
                             rows="10"
                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                             rowsPerPageTemplate="10,25,50"
                             >
 
+                            <p:column selectionMode="multiple">
+
+                            </p:column>
+
                             <p:column headerText="Bill Dept ID" width="100">
                                 <p:commandLink 
-                                    id="billNo"
-                                    target="_blank"
                                     ajax="false" 
-                                    value="#{smpIx.billItem.bill.deptId}" 
-                                    action="#{billSearch.navigateToViewOpdBillNewWindow()}">
-                                    <f:setPropertyActionListener value="#{smpIx.billItem.bill}" target="#{billSearch.bill}"/>
+                                    class="m-2"
+                                    value="#{smpIx.bill.deptId}" 
+                                    action="#{billSearch.navigateToViewOpdBill()}">
+                                    <f:setPropertyActionListener value="#{smpIx.bill}" target="#{billSearch.bill}"/>
                                 </p:commandLink>
-
                             </p:column>
 
                             <p:column headerText="Patient" >
-                                <h:outputLabel value="#{smpIx.billItem.bill.patient.person.nameWithTitle}" styleClass="#{smpIx.billItem.bill.cancelled or smpIx.billItem.transRefund ? 'redtext':''}"/>
-                            </p:column>
-                            <p:column headerText="Investigation" >
-                                <h:outputLabel value="#{smpIx.investigation.name}" styleClass="#{smpIx.billItem.bill.cancelled or smpIx.billItem.transRefund ? 'redtext':''}"/>
-                            </p:column>
-                            <p:column headerText="Sample Details">
-                                <p:selectBooleanCheckbox 
-                                    disabled="#{smpIx.collected}" 
-                                    id="chkSampledOutside" 
-                                    value="#{smpIx.sampleOutside}"  
-                                    itemLabel="Collected Outside" >
-                                    <f:ajax render="calSampledDate institution" event="change" execute="chkSampledOutside"/>
-                                </p:selectBooleanCheckbox>
-
-                                <p:calendar 
-                                    rendered="#{!smpIx.collected}" 
-                                    disabled="#{!smpIx.sampleOutside}"  
-                                    id="calSampledDate" 
-                                    class="w-100 mt-2"
-                                    inputStyleClass="form-control"
-                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  
-                                    value="#{patientInvestigationController.sampledOutsideDate}" >
-                                </p:calendar>
-                                <h:outputText 
-                                    rendered="#{smpIx.collected}"  
-                                    id="lblSampledDate" 
-                                    class="w-100 mt-1"
-                                    value="#{smpIx.sampledAt}" >
-                                    <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"  />
-                                </h:outputText>
-
-                                <p:autoComplete  
-                                    forceSelection="true" 
-                                    value="#{smpIx.sampleInstitution}" 
-                                    placeholder="Collected Institution"
-                                    completeMethod="#{institutionController.completeIns}" 
-                                    id="institution"
-                                    rendered="#{!smpIx.collected}" 
-                                    disabled="#{!smpIx.sampleOutside}"  
-                                    var="ix" 
-                                    itemLabel="#{ix.name}" 
-                                    itemValue="#{ix}" 
-                                    class="w-100 mt-1"
-                                    inputStyleClass="form-control"
-                                    size="20" >
-                                </p:autoComplete>
+                                <h:outputLabel value="#{smpIx.bill.patient.person.nameWithTitle}" 
+                                               class="#{smpIx.bill.cancelled or smpIx.bill.refunded ? 'text-danger':''}"/>
                             </p:column>
 
-                            <p:column headerText="Actions" styleClass="text-center">
-                                <!-- Collect Button with Tooltip and PrimeFaces & Bootstrap Classes -->
-                                <p:commandButton  
-                                    disabled="#{smpIx.collected or smpIx.billItem.bill.cancelled eq true or smpIx.billItem.transRefund eq true}"   
-                                    id="btnSample" 
-                                    action="#{patientInvestigationController.markAsSampled()}" 
-                                    process="chkSampledOutside calSampledDate btnSample" 
-                                    update="@all"
-                                    icon="fa fa-check-circle" 
-                                    styleClass="ui-button-success m-2"  
-                                    title="Collect"
-                                    >
-                                    <f:setPropertyActionListener value="#{smpIx}" target="#{patientInvestigationController.current}"></f:setPropertyActionListener>
-                                </p:commandButton>
+                            <p:column headerText="Investigations" >
+                                <ui:repeat value="#{smpIx.patientInvestigationWrappers}" var="piw" >
+                                    <h:outputLabel value="#{piw.patientInvestigation.billItem.item.name}"/>
+                                </ui:repeat>
+                            </p:column>
 
-                                <!-- Revert Button with Tooltip and PrimeFaces & Bootstrap Classes -->
-                                <p:commandButton  
-                                    disabled="#{!smpIx.collected or smpIx.billItem.transRefund}"   
-                                    id="btnSampleRevert" 
-                                    action="#{patientInvestigationController.revertMarkedSample()}" 
-                                    process="chkSampledOutside calSampledDate btnSampleRevert" 
-                                    update="@all"
-                                    icon="fa fa-undo" 
-                                    styleClass="ui-button-warning m-2"
-                                    title="Revert"
-                                    >
-                                    <f:setPropertyActionListener value="#{smpIx}" target="#{patientInvestigationController.current}"></f:setPropertyActionListener>
-                                </p:commandButton>
+                            <p:column headerText="Samples" >
+                                <ui:repeat value="#{smpIx.patientSampleWrappers}" var="psw" >
+                                    <h:outputLabel value="#{psw.patientSample}"/>
+                                    <table >
+                                        <tr>
+                                            <td>
+                                                <h:outputLabel value="Patient" ></h:outputLabel>
+                                            </td>
+                                            <td>
+                                                <h:outputLabel value="#{psw.patient.person.shortenedName}" >
+                                                </h:outputLabel>
+                                            </td>
+                                            <td>
+                                                <h:outputLabel value="Age" ></h:outputLabel>
+                                            </td>
+                                            <td>
+                                                <h:outputLabel value="#{psw.patient.age}" >
+                                                </h:outputLabel>
+                                            </td>
+                                            <td>
+                                                <h:outputLabel value="Sex" ></h:outputLabel>
+                                            </td>
+                                            <td>
+                                                <h:outputLabel value="#{psw.patient.person.sex.shortLabel}" >
+                                                </h:outputLabel>
+                                            </td>
+                                            <td>
+                                                <h:outputLabel value="ID" ></h:outputLabel>
+                                            </td>
+                                            <td>
+                                                <h:outputLabel value="#{psw.patient.id}" >
+                                                </h:outputLabel>
+                                            </td>
+                                            <td>
+                                                <h:outputLabel value="PHN" ></h:outputLabel>
+                                            </td>
+                                            <td>
+                                                <h:outputLabel value="#{psw.patient.phn}" >
+                                                </h:outputLabel>
+                                            </td>
+                                            <td>
+                                                <table >
+                                                    <ui:repeat value="#{patientInvestigationController.getPatientSampleComponentsByPatientSample(psw.patientSample)}" var="psc">
+                                                        <tr>
+                                                            <td>
+                                                                <h:outputLabel value="Ix" ></h:outputLabel>
+                                                            </td>
+                                                            <td>
+                                                                <h:outputLabel value="#{psc.patientInvestigation.investigation}" ></h:outputLabel>
+                                                            </td>
+                                                            <td>
+                                                                <h:outputLabel value="Component" ></h:outputLabel>
+                                                            </td>
+                                                            <td>
+                                                                <h:outputLabel value="#{psc.investigationComponant.name}" ></h:outputLabel>
+                                                            </td>
+                                                        </tr>
+                                                    </ui:repeat>
+                                                </table>
 
-                                <!-- Print BarCode Button with Tooltip and PrimeFaces & Bootstrap Classes -->
-                                <p:commandButton 
-                                    ajax="false"
-                                    action="#{patientInvestigationController.navigateToPrintBarcodesFromSampellingPage(smpIx)}"
-                                    icon="fa fa-print" 
-                                    styleClass="ui-button-info m-2" 
-                                    title="Print BarCode"
-                                    >
-                                </p:commandButton>
+                                            </td>
+
+
+                                        </tr>
+                                    </table>
+
+
+
+                                </ui:repeat>
                             </p:column>
 
 

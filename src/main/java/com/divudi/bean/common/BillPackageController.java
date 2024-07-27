@@ -434,6 +434,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
 
                     case Agent:
                     case Credit:
+                        p.setReferenceNo(cd.getPaymentMethodData().getCredit().getReferralNo());
                     case PatientDeposit:
                         if (getPatient().getRunningBalance() != null) {
                             getPatient().setRunningBalance(getPatient().getRunningBalance() - cd.getPaymentMethodData().getPatient_deposit().getTotalValue());
@@ -487,6 +488,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
 
                 case Agent:
                 case Credit:
+                    p.setReferenceNo(paymentMethodData.getCredit().getReferralNo());
                 case PatientDeposit:
                 case Slip:
                     p.setBank(paymentMethodData.getSlip().getInstitution());
@@ -669,6 +671,14 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         if (paymentMethod == PaymentMethod.Credit) {
             if (creditCompany == null && collectingCentre == null) {
                 JsfUtil.addErrorMessage("Please select Staff Member under welfare or credit company or Collecting centre.");
+                return true;
+            }
+        }
+        
+        if (configOptionApplicationController.getBooleanValueByKey("Package Bill – Credit Company Policy Number required", false)) {
+            System.out.println("Chack Policy No");
+            if (paymentMethod == PaymentMethod.Credit && paymentMethodData.getCredit().getReferralNo().trim().equalsIgnoreCase("")) {
+                JsfUtil.addErrorMessage("Plase Add the Policy No");
                 return true;
             }
         }
@@ -1467,8 +1477,6 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     public void setBothPackaes(List<Item> bothPackaes) {
         this.bothPackaes = bothPackaes;
     }
-    
-    
 
     public List<Item> getGenderBasedPackaes() {
         //System.out.println("getPackages");
@@ -1499,10 +1507,10 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     public void setPackaes(List<Item> packaes) {
         this.packaes = packaes;
     }
-    
+
     public List<Item> getPackaes() {
-        if(packaes==null){
-            packaes=itemController.getPackaes();
+        if (packaes == null) {
+            packaes = itemController.getPackaes();
             fillPackages();
         }
         return packaes;
@@ -1538,7 +1546,5 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             }
         }
     }
-
-    
 
 }

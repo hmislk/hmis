@@ -1084,9 +1084,12 @@ public class SessionController implements Serializable, HttpSessionListener {
         m.put("un", userName.toLowerCase());
         List<WebUser> allUsers = getFacede().findByJpql(jpql, m);
         for (WebUser u : allUsers) {
+            System.out.println("u = " + u.getName());
+            System.out.println("u = " + u.getId());
             if ((u.getName()).equalsIgnoreCase(userName)) {
                 boolean passwordIsOk = SecurityController.matchPassword(password, u.getWebUserPassword());
                 if (passwordIsOk) {
+                    System.out.println("password ok");
 
                     departments = listLoggableDepts(u);
 
@@ -1187,15 +1190,20 @@ public class SessionController implements Serializable, HttpSessionListener {
     }
 
     public String selectDepartment() {
+        System.out.println("loggedUser = " + loggedUser);
         if (loggedUser == null) {
+            JsfUtil.addErrorMessage("No User logged");
             return "/login?faces-redirect=true";
         }
+        System.out.println("loggedUser.getId() = " + loggedUser.getId());
         if (loggedUser.getWebUserPerson() == null) {
-            Person p = new Person();
-            p.setName(loggedUser.getName());
-            personFacade.create(p);
-            loggedUser.setWebUserPerson(p);
-            webUserFacade.edit(loggedUser);
+            JsfUtil.addErrorMessage("No person");
+            return "";
+//            Person p = new Person();
+//            p.setName(loggedUser.getName());
+//            personFacade.create(p);
+//            loggedUser.setWebUserPerson(p);
+//            webUserFacade.edit(loggedUser);
         }
 
         loggedUser.setDepartment(department);
@@ -1699,6 +1707,7 @@ public class SessionController implements Serializable, HttpSessionListener {
      * @param loggedUser
      */
     public void setLoggedUser(WebUser loggedUser) {
+        System.out.println("loggedUser = " + loggedUser);
         this.loggedUser = loggedUser;
     }
 
@@ -1728,7 +1737,10 @@ public class SessionController implements Serializable, HttpSessionListener {
         }
         m.put("ret", true);
         m.put("wu", twu);
+        System.out.println("m = " + m);
+        System.out.println("sql = " + sql);
         List<WebUserPrivilege> twups = getWebUserPrivilegeFacade().findByJpql(sql, m);
+        System.out.println("twups = " + twups);
         return twups;
     }
 
