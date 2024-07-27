@@ -5,8 +5,8 @@
     <artifactId>vfs</artifactId>
     <version>3.0.0</version>
     <packaging>war</packaging>
-    <name>vfs</name>
-
+    <name>ruhunu-demo</name>
+    
     <properties>
         <endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
