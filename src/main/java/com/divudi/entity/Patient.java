@@ -351,6 +351,8 @@ public class Patient implements Serializable {
         this.person = person;
     }
 
+    
+    
     public Integer getPinNo() {
         return pinNo;
     }

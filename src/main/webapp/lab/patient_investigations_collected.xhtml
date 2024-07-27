@@ -154,6 +154,20 @@
                                     >
                                     <f:setPropertyActionListener value="#{smpIx}" target="#{patientInvestigationController.current}"></f:setPropertyActionListener>
                                 </p:commandButton>
+                                
+                                <!-- Revert Button with Tooltip and PrimeFaces & Bootstrap Classes -->
+                                <p:commandButton  
+                                    disabled="#{!smpIx.collected or smpIx.billItem.transRefund}"   
+                                    id="btnSampleSentToLab" 
+                                    action="#{patientInvestigationController.revertMarkedSample()}" 
+                                    process="chkSampledOutside calSampledDate btnSampleRevert" 
+                                    update="@all"
+                                    icon="fa fa-undo" 
+                                    styleClass="ui-button-danger m-2"
+                                    title="Sent to Lab"
+                                    >
+                                    <f:setPropertyActionListener value="#{smpIx}" target="#{patientInvestigationController.current}"></f:setPropertyActionListener>
+                                </p:commandButton>
 
                                 <!-- Print BarCode Button with Tooltip and PrimeFaces & Bootstrap Classes -->
                                 <p:commandButton 

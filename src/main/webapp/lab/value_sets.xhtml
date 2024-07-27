@@ -57,18 +57,20 @@
                             </p:panelGrid>
 
                             <p:dataTable id="lstIi" value="#{investigationItemController.current.investigationItemValues}" var="iivt" >
-                                <p:column  headerText="Code">
+                                <p:column  headerText="Code" width="5em">
 
                                     <p:inputText autocomplete="off" value="#{iivt.code}" style="width: 70px;">
                                         <p:ajax event="blur" process="lstIi" listener="#{investigationItemController.saveSelected()}" />
                                     </p:inputText>
                                 </p:column>
                                 <p:column headerText="Value" >
-                                    <p:inputText autocomplete="off" value="#{iivt.name}" style="width: 300px;">
+                                    <p:inputText 
+                                        class="w-100"
+                                        autocomplete="off" value="#{iivt.name}" style="width: 300px;">
                                         <p:ajax event="blur" process="lstIi" listener="#{investigationItemController.saveSelected()}" />
                                     </p:inputText>
                                 </p:column>
-                                <p:column >
+                                <p:column width="8em" >
                                     <p:commandButton ajax="false" value="Remove" action="#{investigationItemController.removeInvestigationItemValue }"   >
                                         <f:setPropertyActionListener value="#{iivt}" target="#{investigationItemController.removingItem}" />
                                     </p:commandButton>
