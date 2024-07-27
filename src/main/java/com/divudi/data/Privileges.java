@@ -40,6 +40,9 @@ public enum Privileges {
     OpdBillSearchEdit,
     OpdLabReportSearch,
     OpdReprintOriginalBill,
+    
+    AddCreditLimitInRegistration,
+    
     InwardAdmissions,
     InwardAdmissionsAdmission,
     InwardAdmissionsEditAdmission,

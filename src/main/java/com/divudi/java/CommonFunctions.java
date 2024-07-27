@@ -30,10 +30,11 @@ import java.util.Random;
 import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.apache.commons.lang3.StringUtils;
 import org.joda.time.LocalDate;
 import org.joda.time.Period;
 import org.joda.time.PeriodType;
+import java.util.UUID;
+
 
 /**
  *
@@ -58,6 +59,10 @@ public class CommonFunctions {
         } catch (Exception e) {
             return null;
         }
+    }
+
+    public static String generateUuid() {
+        return UUID.randomUUID().toString();
     }
 
     public static List<Integer> convertStringToIntegerList(String text) {
