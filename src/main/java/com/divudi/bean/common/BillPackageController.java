@@ -312,11 +312,48 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             }
         }
     }
+    
+    public boolean validatePaymentMethodDeta() {
+        boolean error = false;
+
+        if (getPaymentMethod() == PaymentMethod.Card) {
+            if (getPaymentMethodData().getCreditCard().getComment().trim().equals("") && configOptionApplicationController.getBooleanValueByKey("Package Billing - CreditCard Comment is Mandatory", false)) {
+                JsfUtil.addErrorMessage("Please Enter a Credit Card Comment..");
+                error = true;
+            }
+        } else if (getPaymentMethod() == PaymentMethod.Cheque) {
+            if (getPaymentMethodData().getCheque().getComment().trim().equals("") && configOptionApplicationController.getBooleanValueByKey("Package Billing - Cheque Comment is Mandatory", false)) {
+                JsfUtil.addErrorMessage("Please Enter a Cheque Comment..");
+                error = true;
+            }
+        } else if (getPaymentMethod() == PaymentMethod.ewallet) {
+            if (getPaymentMethodData().getEwallet().getComment().trim().equals("") && configOptionApplicationController.getBooleanValueByKey("Package Billing - E-Wallet Comment is Mandatory", false)) {
+                JsfUtil.addErrorMessage("Please Enter a E-Wallet Comment..");
+                error = true;
+            }
+        } else if (getPaymentMethod() == PaymentMethod.Slip) {
+            if (getPaymentMethodData().getSlip().getComment().trim().equals("") && configOptionApplicationController.getBooleanValueByKey("Package Billing - Slip Comment is Mandatory", false)) {
+                JsfUtil.addErrorMessage("Please Enter a Slip Comment..");
+                error = true;
+            }
+        } else if (getPaymentMethod() == PaymentMethod.Credit) {
+            if (getPaymentMethodData().getCredit().getComment().trim().equals("") && configOptionApplicationController.getBooleanValueByKey("Package Billing - Credit Comment is Mandatory", false)) {
+                JsfUtil.addErrorMessage("Please Enter a Credit Comment..");
+                error = true;
+            }
+        }
+        return error;
+    }
 
     public void settleBill() {
         if (errorCheck()) {
             return;
         }
+        
+        if (validatePaymentMethodDeta()) {
+            return;
+        }
+        
         savePatient();
         if (getBillBean().calculateNumberOfBillsPerOrder(getLstBillEntries()) == 1) {
             BilledBill temp = new BilledBill();
@@ -435,6 +472,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
                     case Agent:
                     case Credit:
                         p.setReferenceNo(cd.getPaymentMethodData().getCredit().getReferralNo());
+                        p.setComments(cd.getPaymentMethodData().getCredit().getComment());
                     case PatientDeposit:
                         if (getPatient().getRunningBalance() != null) {
                             getPatient().setRunningBalance(getPatient().getRunningBalance() - cd.getPaymentMethodData().getPatient_deposit().getTotalValue());
@@ -489,6 +527,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
                 case Agent:
                 case Credit:
                     p.setReferenceNo(paymentMethodData.getCredit().getReferralNo());
+                    p.setComments(paymentMethodData.getCredit().getComment());
                 case PatientDeposit:
                 case Slip:
                     p.setBank(paymentMethodData.getSlip().getInstitution());
