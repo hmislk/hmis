@@ -69,18 +69,11 @@ public class ReportTemplateController implements Serializable {
     private Staff staff;
     
 
-    private Date date;
-    private Date fromDate;
-    private Date toDate;
-    private Institution institution;
     private Institution creditCompany;
-    private Department department;
     private Institution fromInstitution;
     private Department fromDepartment;
     private Institution toInstitution;
     private Department toDepartment;
-    private WebUser user;
-    private Staff staff;
 
     private List<ReportTemplateRow> ReportTemplateRows;
     private ReportTemplateRowBundle reportTemplateRowBundle;
@@ -528,8 +521,6 @@ public class ReportTemplateController implements Serializable {
 
     private void handlePaymentTypeSummaryUsingBills() {
         // Method implementation here
-
-    public void processReport() {
 
 
     }
