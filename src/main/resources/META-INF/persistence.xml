@@ -3,6 +3,7 @@
     <persistence-unit name="hmisPU" transaction-type="JTA">
 
         <jta-data-source>jdbc/arogya</jta-data-source>
+
         <exclude-unlisted-classes>false</exclude-unlisted-classes>
         <properties>
             <property name="eclipselink.logging.level.sql" value="SEVERE"/>
@@ -11,8 +12,11 @@
         </properties>
     </persistence-unit>
     <persistence-unit name="hmisAuditPU" transaction-type="JTA">
+
         <jta-data-source>jdbc/arogyaAudit</jta-data-source>
+
         <exclude-unlisted-classes>false</exclude-unlisted-classes>
+
         <properties>
             <property name="eclipselink.logging.level.sql" value="SEVERE"/>
             <property name="eclipselink.logging.parameters" value="false"/>
