@@ -16,7 +16,7 @@
     <cc:implementation>
         <div class="d-flex gap-2">
             <h:panelGroup rendered="#{cc.attrs.valueRequired}" class="" layout="block"  >
-                <p:inputText autocomplete="off"   value="#{cc.attrs.paymentMethodData.cheque.totalValue}" style="width: 10em;" id="txtVal" >
+                <p:inputText autocomplete="off"   value="#{cc.attrs.paymentMethodData.cheque.totalValue}" style="width: 10em;" class="w-100" id="txtVal" >
                     <p:ajax process="@this" ></p:ajax>
                 </p:inputText>
                 <p:watermark value="Value" for="txtVal" />
