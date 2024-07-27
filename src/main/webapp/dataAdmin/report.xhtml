@@ -74,6 +74,11 @@
                         <ez:report_bill_fee_grouped_by_atomic_bill_type
                             bundle="#{reportTemplateController.reportTemplateRowBundle}"/>
                     </h:panelGroup>
+                    <h:panelGroup rendered="#{reportTemplateController.current.reportTemplateType eq 'SESSION_INSTANCE_LIST'}">
+                        <ez:session_instace_list
+                            bundle="#{reportTemplateController.reportTemplateRowBundle}"/>
+                    </h:panelGroup>
+                    
                     <h:panelGroup rendered="#{reportTemplateController.current.reportTemplateType eq 'BILL_TYPE_ATOMIC_SUMMARY_USING_BILLS'}">
                         <ez:report_bill_fee_grouped_by_atomic_bill_type
                             bundle="#{reportTemplateController.reportTemplateRowBundle}"/>

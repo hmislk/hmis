@@ -1,0 +1,80 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="bundle" type="com.divudi.data.ReportTemplateRowBundle" />
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+
+        <p:toolbar style="margin-bottom: 20px;">
+            <p:toolbarGroup align="left">
+                <p:commandButton value="Excel" icon="pi pi-file-excel" actionListener="#{reportTemplateController.exportToExcel}" ajax="false" styleClass="ui-button-success"/>
+                <p:commandButton value="Print" icon="pi pi-print" onclick="PF('tbl').print();" styleClass="ui-button-info"/>
+                <p:commandButton value="PDF" icon="pi pi-file-pdf" actionListener="#{reportTemplateController.exportToPDF}" ajax="false" styleClass="ui-button-danger"/>
+            </p:toolbarGroup>
+        </p:toolbar>
+
+
+        <p:dataTable 
+            id="tbl"
+            value="#{reportTemplateController.reportTemplateRowBundle.reportTemplateRows}" var="rtr" rowKey="#{rtr.id}"
+            paginator="true" rows="10" paginatorPosition="bottom"
+            paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+            rowsPerPageTemplate="5,10,15" >
+
+            <p:column headerText="Date" sortBy="#{rtr.sessionInstance.sessionDate}" filterBy="#{rtr.sessionInstance.sessionDate}" filterMatchMode="contains">
+                <h:outputText value="#{rtr.sessionInstance.sessionDate}">
+                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                </h:outputText>
+            </p:column>
+
+            <p:column headerText="Consultant" sortBy="#{rtr.sessionInstance.originatingSession.staff.person.nameWithTitle}" filterBy="#{rtr.sessionInstance.originatingSession.staff.person.nameWithTitle}" filterMatchMode="contains">
+                <h:outputText value="#{rtr.sessionInstance.originatingSession.staff.person.nameWithTitle}" />
+            </p:column>
+
+            <p:column headerText="Speciality" sortBy="#{rtr.sessionInstance.originatingSession.staff.speciality.name}" filterBy="#{rtr.sessionInstance.originatingSession.staff.speciality.name}" filterMatchMode="contains">
+                <h:outputText value="#{rtr.sessionInstance.originatingSession.staff.speciality.name}" />
+            </p:column>
+
+            <p:column headerText="Category" sortBy="#{rtr.sessionInstance.originatingSession.category.name}" >
+                <h:outputText value="#{rtr.sessionInstance.originatingSession.category.name}" />
+            </p:column>
+            
+             <p:column headerText="Session" sortBy="#{rtr.sessionInstance.originatingSession.name}" >
+                <h:outputText value="#{rtr.sessionInstance.originatingSession.name}" />
+            </p:column>
+
+            <p:column headerText="Booked" sortBy="#{rtr.sessionInstance.bookedPatientCount}">
+                <h:outputText value="#{rtr.sessionInstance.bookedPatientCount}" />
+            </p:column>
+            <p:column headerText="Paid" sortBy="#{rtr.sessionInstance.paidPatientCount}">
+                <h:outputText value="#{rtr.sessionInstance.paidPatientCount}" />
+            </p:column>
+            <p:column headerText="Cancelled" sortBy="#{rtr.sessionInstance.cancelPatientCount}">
+                <h:outputText value="#{rtr.sessionInstance.cancelPatientCount}" />
+            </p:column>
+            <p:column headerText="Refunded" sortBy="#{rtr.sessionInstance.refundedPatientCount}">
+                <h:outputText value="#{rtr.sessionInstance.refundedPatientCount}" />
+            </p:column>
+            <p:column headerText="On Call" sortBy="#{rtr.sessionInstance.onCallPatientCount}">
+                <h:outputText value="#{rtr.sessionInstance.onCallPatientCount}" />
+            </p:column>
+            <p:column headerText="Completed" sortBy="#{rtr.sessionInstance.completedPatientCount}">
+                <h:outputText value="#{rtr.sessionInstance.completedPatientCount}" />
+            </p:column>
+            <p:column headerText="Remaining" sortBy="#{rtr.sessionInstance.remainingPatientCount}">
+                <h:outputText value="#{rtr.sessionInstance.remainingPatientCount}" />
+            </p:column>
+
+        </p:dataTable>
+
+    </cc:implementation>
+</html>

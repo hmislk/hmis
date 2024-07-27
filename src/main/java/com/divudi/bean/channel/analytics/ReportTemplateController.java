@@ -2129,24 +2129,23 @@ public class ReportTemplateController implements Serializable {
         Map<String, Object> parameters = new HashMap<>();
         ReportTemplateRowBundle bundle = new ReportTemplateRowBundle();
 
-        jpql = "select new com.divudi.data.ReportTemplateRow("
-                + " ss "
+        jpql = "select new com.divudi.data.ReportTemplateRow(ss) "
                 + " from SessionInstance ss "
                 + " where ss.retired<>:br ";
         parameters.put("br", true);
 
         if (paramDate != null) {
-            jpql += " and ss.startedAt=:bd";
+            jpql += " and ss.sessionDate=:bd";
             parameters.put("bd", paramDate);
         }
 
         if (paramToDate != null) {
-            jpql += " and ss.startedAt < :td";
+            jpql += " and ss.sessionDate < :td";
             parameters.put("td", paramToDate);
         }
 
         if (paramFromDate != null) {
-            jpql += " and ss.startedAt > :fd";
+            jpql += " and ss.sessionDate > :fd";
             parameters.put("fd", paramFromDate);
         }
 
