@@ -44,6 +44,8 @@ public class ApplicationConfig extends Application {
         resources.add(com.divudi.ws.finance.Qb.class);
         resources.add(com.divudi.ws.finance.clinical.Fhir.class);
         resources.add(com.divudi.ws.inward.ApiInward.class);
+        resources.add(com.divudi.ws.lims.Lims.class);
+        resources.add(com.divudi.ws.lims.LimsMiddlewareController.class);
     }
     
 }
