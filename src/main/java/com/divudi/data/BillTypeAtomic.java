@@ -5,8 +5,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Enumerates types of bills for atomic billing purposes.
- * Includes categorization by service type and finance type.
+ * Enumerates types of bills for atomic billing purposes. Includes
+ * categorization by service type and finance type.
  */
 public enum BillTypeAtomic {
 
@@ -109,31 +109,32 @@ public enum BillTypeAtomic {
     CHANNEL_REFUND_WITH_PAYMENT_FOR_CREDIT_SETTLED_BOOKINGS("Channel Refund with Payment for Bills where Credit Payment was Settled", BillCategory.REFUND, ServiceType.CHANNELLING, BillFinanceType.CASH_OUT, CountedServiceType.CHANNELLING),
     CHANNEL_CANCELLATION_WITHOUT_PAYMENT("Channel Cancellation without Payment", BillCategory.CANCELLATION, ServiceType.CHANNELLING, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.CHANNELLING),
     CHANNEL_REFUND("Channel Refund", BillCategory.REFUND, ServiceType.CHANNELLING, BillFinanceType.CASH_OUT, CountedServiceType.CHANNELLING),
-    // OPD
+    // OPD_IN
     OPD_BATCH_BILL_TO_COLLECT_PAYMENT_AT_CASHIER("Opd Batch Bill to Collect Payment at Cashier", BillCategory.BILL, ServiceType.OPD, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.NONE),
     OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER("Opd Batch Bill Payment Collection at Cashier", BillCategory.BILL, ServiceType.OPD, BillFinanceType.CASH_IN, CountedServiceType.NONE),
     OPD_BATCH_BILL_WITH_PAYMENT("Opd Batch Bill with Payment Collection", BillCategory.BILL, ServiceType.OPD, BillFinanceType.CASH_IN, CountedServiceType.NONE),
     OPD_BATCH_BILL_CANCELLATION("Opd Batch Bill Cancellation", BillCategory.CANCELLATION, ServiceType.OPD, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.NONE),
     OPD_BILL_TO_COLLECT_PAYMENT_AT_CASHIER("Opd Bill to Collect Payment at Cashier", BillCategory.BILL, ServiceType.OPD, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.NONE),
-    OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER("OPD Bill Payment Collection at Cashier", BillCategory.BILL, ServiceType.OPD, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.OPD),
-    OPD_BILL_WITH_PAYMENT("OPD Bill Payment with Payment", BillCategory.BILL, ServiceType.OPD, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.OPD),
+    OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER("OPD Bill Payment Collection at Cashier", BillCategory.BILL, ServiceType.OPD, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.OPD_IN),
+    OPD_BILL_WITH_PAYMENT("OPD Bill Payment with Payment", BillCategory.BILL, ServiceType.OPD, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.OPD_IN),
     OPD_BILL_CANCELLATION("Opd Bill Cancellation", BillCategory.CANCELLATION, ServiceType.OPD, BillFinanceType.CASH_OUT, CountedServiceType.OPD_OUT),
     OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION("Opd Bill Cancellation with Batch Bill", BillCategory.CANCELLATION, ServiceType.OPD, BillFinanceType.CASH_OUT, CountedServiceType.OPD_OUT),
     OPD_BILL_REFUND("Opd Bill Refund", BillCategory.REFUND, ServiceType.OPD, BillFinanceType.CASH_OUT, CountedServiceType.OPD_OUT),
-    OPD_PROFESSIONAL_PAYMENT_BILL("OPD Professional Payment bill", BillCategory.BILL, ServiceType.OPD, BillFinanceType.CASH_OUT, CountedServiceType.OPD_PROFESSIONAL_PAYMENT),
+    OPD_PROFESSIONAL_PAYMENT_BILL("OPD Professional Payment bill", BillCategory.PAYMENTS, ServiceType.OPD, BillFinanceType.CASH_OUT, CountedServiceType.OPD_PROFESSIONAL_PAYMENT),
+    OPD_PROFESSIONAL_PAYMENT_BILL_RETURN("OPD Professional Payment bill", BillCategory.PAYMENTS, ServiceType.OPD, BillFinanceType.CASH_IN, CountedServiceType.OPD_PROFESSIONAL_PAYMENT_RETURN),
     @Deprecated
-    OPD_BILL_WITH_PAYMENT_UNDER_BATCH_BILL("OPD Bill with payment under batch bill", BillCategory.BILL, ServiceType.OPD, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.OPD),
+    OPD_BILL_WITH_PAYMENT_UNDER_BATCH_BILL("OPD Bill with payment under batch bill", BillCategory.BILL, ServiceType.OPD, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.OPD_IN),
     // PACKAGES
-    PACKAGE_OPD_BATCH_BILL_TO_COLLECT_PAYMENT_AT_CASHIER("Package Opd Batch Bill to Collect Payment at Cashier", BillCategory.BILL, ServiceType.OPD, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.OPD),
-    PACKAGE_OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER("Package Opd Batch Bill Payment Collection at Cashier", BillCategory.BILL, ServiceType.OPD, BillFinanceType.CASH_IN, CountedServiceType.OPD),
-    PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT("Package Opd Batch Bill with Payment Collection", BillCategory.BILL, ServiceType.OPD, BillFinanceType.CASH_IN, CountedServiceType.OPD),
-    PACKAGE_OPD_BATCH_BILL_CANCELLATION("Package Opd Batch Bill Cancellation", BillCategory.CANCELLATION, ServiceType.OPD, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.OPD),
-    PACKAGE_OPD_BILL_TO_COLLECT_PAYMENT_AT_CASHIER("Package Opd Bill to Collect Payment at Cashier", BillCategory.BILL, ServiceType.OPD, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.OPD),
-    PACKAGE_OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER("Package OPD Bill Payment Collection at Cashier", BillCategory.BILL, ServiceType.OPD, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.OPD),
-    PACKAGE_OPD_BILL_WITH_PAYMENT("Package OPD Bill Payment with Payment", BillCategory.BILL, ServiceType.OPD, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.OPD),
-    PACKAGE_OPD_BILL_CANCELLATION("Package Opd Bill Cancellation", BillCategory.CANCELLATION, ServiceType.OPD, BillFinanceType.CASH_OUT, CountedServiceType.OPD),
-    PACKAGE_OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION("Package Opd Bill Cancellation with Batch Bill", BillCategory.CANCELLATION, ServiceType.OPD, BillFinanceType.CASH_OUT, CountedServiceType.OPD),
-    PACKAGE_OPD_BILL_REFUND("Package Opd Bill Refund", BillCategory.REFUND, ServiceType.OPD, BillFinanceType.CASH_OUT, CountedServiceType.OPD),
+    PACKAGE_OPD_BATCH_BILL_TO_COLLECT_PAYMENT_AT_CASHIER("Package Opd Batch Bill to Collect Payment at Cashier", BillCategory.BILL, ServiceType.OPD, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.OPD_IN),
+    PACKAGE_OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER("Package Opd Batch Bill Payment Collection at Cashier", BillCategory.BILL, ServiceType.OPD, BillFinanceType.CASH_IN, CountedServiceType.OPD_IN),
+    PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT("Package Opd Batch Bill with Payment Collection", BillCategory.BILL, ServiceType.OPD, BillFinanceType.CASH_IN, CountedServiceType.OPD_IN),
+    PACKAGE_OPD_BATCH_BILL_CANCELLATION("Package Opd Batch Bill Cancellation", BillCategory.CANCELLATION, ServiceType.OPD, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.OPD_IN),
+    PACKAGE_OPD_BILL_TO_COLLECT_PAYMENT_AT_CASHIER("Package Opd Bill to Collect Payment at Cashier", BillCategory.BILL, ServiceType.OPD, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.OPD_IN),
+    PACKAGE_OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER("Package OPD Bill Payment Collection at Cashier", BillCategory.BILL, ServiceType.OPD, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.OPD_IN),
+    PACKAGE_OPD_BILL_WITH_PAYMENT("Package OPD Bill Payment with Payment", BillCategory.BILL, ServiceType.OPD, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.OPD_IN),
+    PACKAGE_OPD_BILL_CANCELLATION("Package Opd Bill Cancellation", BillCategory.CANCELLATION, ServiceType.OPD, BillFinanceType.CASH_OUT, CountedServiceType.OPD_IN),
+    PACKAGE_OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION("Package Opd Bill Cancellation with Batch Bill", BillCategory.CANCELLATION, ServiceType.OPD, BillFinanceType.CASH_OUT, CountedServiceType.OPD_IN),
+    PACKAGE_OPD_BILL_REFUND("Package Opd Bill Refund", BillCategory.REFUND, ServiceType.OPD, BillFinanceType.CASH_OUT, CountedServiceType.OPD_IN),
     // COLLECTING CENTRE
     CC_BATCH_BILL("Collecting Centre Batch Bill", BillCategory.BILL, ServiceType.COLLECTING_CENTRE, BillFinanceType.CASH_IN, CountedServiceType.COLLECTING_CENTRE),
     CC_BATCH_BILL_CANCELLATION("Collecting Centre Batch Bill Cancellation", BillCategory.CANCELLATION, ServiceType.COLLECTING_CENTRE, BillFinanceType.CASH_OUT, CountedServiceType.COLLECTING_CENTRE),
@@ -154,11 +155,15 @@ public enum BillTypeAtomic {
     FUND_WITHDRAWAL_BILL("Withdrawal Fund Bill", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.BANK_IN, CountedServiceType.OTHER),
     FUND_WITHDRAWAL_BILL_CANCELLED("Withdrawal Fund Bill - Cancelled", BillCategory.CANCELLATION, ServiceType.OTHER, BillFinanceType.BANK_OUT, CountedServiceType.OTHER),
     // PROFESSIONAL PAYMENTS
-    PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE("Inward Payment for Staff", BillCategory.PAYMENTS, ServiceType.INWARD, BillFinanceType.CASH_IN, CountedServiceType.INWARD),
-    PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE("Channelling Payment for Staff", BillCategory.PAYMENTS, ServiceType.CHANNELLING, BillFinanceType.CASH_OUT, CountedServiceType.CHANNELLING),
-    PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_SESSION("Channelling session Payment for Staff", BillCategory.PAYMENTS, ServiceType.CHANNELLING, BillFinanceType.CASH_OUT, CountedServiceType.CHANNELLING),
-    PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_FOR_AGENCIES("Channelling Payment for Staff for agencies", BillCategory.PAYMENTS, ServiceType.OTHER, BillFinanceType.CASH_IN, CountedServiceType.OTHER),
-    PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES("OPD Professional Payment bill", BillCategory.PAYMENTS, ServiceType.OPD, BillFinanceType.CASH_OUT, CountedServiceType.OPD),
+    PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE("Inward Payment for Staff", BillCategory.PAYMENTS, ServiceType.INWARD, BillFinanceType.CASH_IN, CountedServiceType.INWARD_PROFESSIONAL_PAYMENT),
+    PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE("Channelling Payment for Staff", BillCategory.PAYMENTS, ServiceType.CHANNELLING, BillFinanceType.CASH_OUT, CountedServiceType.CHANNELLING_PROFESSIONAL_PAYMENT),
+    PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_SESSION("Channelling session Payment for Staff", BillCategory.PAYMENTS, ServiceType.CHANNELLING, BillFinanceType.CASH_OUT, CountedServiceType.CHANNELLING_PROFESSIONAL_PAYMENT),
+    PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_FOR_AGENCIES("Channelling Payment for Staff for agencies", BillCategory.PAYMENTS, ServiceType.OTHER, BillFinanceType.CASH_IN, CountedServiceType.OTHER_PROFESSIONAL_PAYMENT),
+    PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES("OPD Professional Payment bill", BillCategory.PAYMENTS, ServiceType.OPD, BillFinanceType.CASH_OUT, CountedServiceType.OPD_PROFESSIONAL_PAYMENT),
+    PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE_RETURN("Inward Payment for Staff - Return and Cancellation", BillCategory.PAYMENTS, ServiceType.INWARD, BillFinanceType.CASH_OUT, CountedServiceType.INWARD_PROFESSIONAL_PAYMENT_RETURN),
+    PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_RETURN("Channelling Payment for Staff - Return and Cancellation", BillCategory.PAYMENTS, ServiceType.CHANNELLING, BillFinanceType.CASH_IN, CountedServiceType.CHANNELLING_PROFESSIONAL_PAYMENT_RETURN),
+    PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_FOR_AGENCIES_RETURN("Channelling Payment for Staff for agencies - Return and Cancellation", BillCategory.PAYMENTS, ServiceType.OTHER, BillFinanceType.CASH_OUT, CountedServiceType.OTHER),
+    PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES_RETURN("OPD Professional Payment bill - Return and Cancellation", BillCategory.PAYMENTS, ServiceType.OPD, BillFinanceType.CASH_IN, CountedServiceType.OPD_PROFESSIONAL_PAYMENT_RETURN),
     PETTY_CASH_ISSUE("Petty Cash Issue", BillCategory.PAYMENTS, ServiceType.OTHER, BillFinanceType.CASH_OUT, CountedServiceType.OTHER),
     PETTY_CASH_RETURN("Petty Cash Return", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.CASH_IN, CountedServiceType.OTHER),
     IOU_CASH_ISSUE("Iou Cash Issue", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.CASH_OUT, CountedServiceType.OTHER),
@@ -218,7 +223,7 @@ public enum BillTypeAtomic {
                 .filter(e -> e.getServiceType() == serviceType)
                 .collect(Collectors.toList());
     }
-    
+
     // Method to find BillTypeAtomic by ServiceType
     public static List<BillTypeAtomic> findByCountedServiceType(CountedServiceType counterServiceType) {
         return Arrays.stream(BillTypeAtomic.values())
@@ -232,7 +237,7 @@ public enum BillTypeAtomic {
                 .filter(e -> e.getServiceType() == serviceType && e.getBillFinanceType() == financeType)
                 .collect(Collectors.toList());
     }
-    
+
     // Method to find BillTypeAtomic by ServiceType and BillCategory
     public static List<BillTypeAtomic> findBillTypeAtomic(ServiceType serviceType, BillCategory billCategory) {
         return Arrays.stream(BillTypeAtomic.values())

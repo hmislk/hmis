@@ -6,6 +6,7 @@ package com.divudi.data;
 public enum ServiceType {
 
     OPD("Outpatient Department"),
+    PROFESSIONAL_PAYMENT("Professional Payment"),
     PHARMACY("Pharmacy"),
     STORE("Store"),
     CHANNELLING("Channelling"),

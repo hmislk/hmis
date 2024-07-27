@@ -446,7 +446,24 @@ public class ReportTemplateController implements Serializable {
                         paramEndId);
                 break;
             case ITEM_SUMMARY_BY_BILL:
-                bundle =handleItemSummaryByBill(btas,
+                bundle = handleItemSummaryByBill(btas,
+                        paramDate,
+                        paramFromDate,
+                        paramToDate,
+                        paramInstitution,
+                        paramDepartment,
+                        paramFromInstitution,
+                        paramFromDepartment,
+                        paramToInstitution,
+                        paramToDepartment,
+                        paramUser,
+                        paramCreditCompany,
+                        paramStartId,
+                        paramEndId);
+                break;
+            case ITEM_DEPARTMENT_SUMMARY_BY_BILL_ITEM:
+                bundle = handleItemDepartmentummaryByBill(
+                        btas,
                         paramDate,
                         paramFromDate,
                         paramToDate,
@@ -513,7 +530,7 @@ public class ReportTemplateController implements Serializable {
                         paramStartId,
                         paramEndId);
                 break;
-                
+
             case TO_DEPARTMENT_SUMMARY_BY_BILL:
                 bundle = handleToDepartmentSummaryByBill(
                         btas,
@@ -642,9 +659,17 @@ public class ReportTemplateController implements Serializable {
             parameters.put("tdep", paramToDepartment);
         }
 
-        if (paramCreditCompany != null) {
-            jpql += " and bill.creditCompany=:cc ";
-            parameters.put("cc", paramCreditCompany);
+        if (paramCreditCompany == null) {
+
+        } else {
+            if (paramCreditCompany.getId() == null) {
+                jpql += " and bill.creditCompany is not null ";
+            } else if (paramCreditCompany.getId() == 1l) {
+                jpql += " and bill.creditCompany is null ";
+            } else {
+                jpql += " and bill.creditCompany=:cc ";
+                parameters.put("cc", paramCreditCompany);
+            }
         }
 
         jpql += " group by bill.billTypeAtomic";
@@ -663,7 +688,50 @@ public class ReportTemplateController implements Serializable {
         long idCounter = 1;
         for (ReportTemplateRow row : rs) {
             row.setId(idCounter++);
+            if (row.getBtas() == null) {
+                row.setBtas(btas);
+            }
+            if (row.getDate() == null) {
+                row.setDate(paramDate);
+            }
+            if (row.getFromDate() == null) {
+                row.setFromDate(paramFromDate);
+            }
+            if (row.getToDate() == null) {
+                row.setToDate(paramToDate);
+            }
+            if (row.getInstitution() == null) {
+                row.setInstitution(paramInstitution);
+            }
+            if (row.getDepartment() == null) {
+                row.setDepartment(paramDepartment);
+            }
+            if (row.getFromInstitution() == null) {
+                row.setFromInstitution(paramFromInstitution);
+            }
+            if (row.getFromDepartment() == null) {
+                row.setFromDepartment(paramFromDepartment);
+            }
+            if (row.getToInstitution() == null) {
+                row.setToInstitution(paramToInstitution);
+            }
+            if (row.getToDepartment() == null) {
+                row.setToDepartment(paramToDepartment);
+            }
+            if (row.getUser() == null) {
+                row.setUser(paramUser);
+            }
+            if (row.getCreditCompany() == null) {
+                row.setCreditCompany(paramCreditCompany);
+            }
+            if (row.getStartId() == null) {
+                row.setStartId(paramStartId);
+            }
+            if (row.getEndId() == null) {
+                row.setEndId(paramEndId);
+            }
         }
+
         bundle.setReportTemplateRows(rs);
         return bundle;
     }
@@ -707,6 +775,11 @@ public class ReportTemplateController implements Serializable {
         if (paramDate != null) {
             jpql += " and bill.billDate=:bd ";
             parameters.put("bd", paramDate);
+        }
+
+        if (paramUser != null) {
+            jpql += " and bill.creater=:wu ";
+            parameters.put("wu", paramUser);
         }
 
         if (paramToDate != null) {
@@ -759,9 +832,17 @@ public class ReportTemplateController implements Serializable {
             parameters.put("tdep", paramToDepartment);
         }
 
-        if (paramCreditCompany != null) {
-            jpql += " and bill.creditCompany=:cc ";
-            parameters.put("cc", paramCreditCompany);
+        if (paramCreditCompany == null) {
+
+        } else {
+            if (paramCreditCompany.getId() == null) {
+                jpql += " and bill.creditCompany is not null ";
+            } else if (paramCreditCompany.getId() == 1l) {
+                jpql += " and bill.creditCompany is null ";
+            } else {
+                jpql += " and bill.creditCompany=:cc ";
+                parameters.put("cc", paramCreditCompany);
+            }
         }
 
         jpql += " group by bill.billTypeAtomic";
@@ -780,7 +861,50 @@ public class ReportTemplateController implements Serializable {
         long idCounter = 1;
         for (ReportTemplateRow row : rs) {
             row.setId(idCounter++);
+            if (row.getBtas() == null) {
+                row.setBtas(btas);
+            }
+            if (row.getDate() == null) {
+                row.setDate(paramDate);
+            }
+            if (row.getFromDate() == null) {
+                row.setFromDate(paramFromDate);
+            }
+            if (row.getToDate() == null) {
+                row.setToDate(paramToDate);
+            }
+            if (row.getInstitution() == null) {
+                row.setInstitution(paramInstitution);
+            }
+            if (row.getDepartment() == null) {
+                row.setDepartment(paramDepartment);
+            }
+            if (row.getFromInstitution() == null) {
+                row.setFromInstitution(paramFromInstitution);
+            }
+            if (row.getFromDepartment() == null) {
+                row.setFromDepartment(paramFromDepartment);
+            }
+            if (row.getToInstitution() == null) {
+                row.setToInstitution(paramToInstitution);
+            }
+            if (row.getToDepartment() == null) {
+                row.setToDepartment(paramToDepartment);
+            }
+            if (row.getUser() == null) {
+                row.setUser(paramUser);
+            }
+            if (row.getCreditCompany() == null) {
+                row.setCreditCompany(paramCreditCompany);
+            }
+            if (row.getStartId() == null) {
+                row.setStartId(paramStartId);
+            }
+            if (row.getEndId() == null) {
+                row.setEndId(paramEndId);
+            }
         }
+
         bundle.setReportTemplateRows(rs);
         return bundle;
     }
@@ -806,7 +930,7 @@ public class ReportTemplateController implements Serializable {
         Map<String, Object> parameters = new HashMap<>();
 
         jpql = "select new com.divudi.data.ReportTemplateRow("
-                + " bill.billTypeAtomic, sum(bill.netTotal)) "
+                + " bill.billTypeAtomic, count(bill), sum(bill.netTotal)) "
                 + " from Bill bill "
                 + " where bill.retired<>:br ";
         parameters.put("br", true);
@@ -861,6 +985,11 @@ public class ReportTemplateController implements Serializable {
             parameters.put("fdep", paramFromDepartment);
         }
 
+        if (paramUser != null) {
+            jpql += " and bill.creater=:wu ";
+            parameters.put("wu", paramUser);
+        }
+
         if (paramToInstitution != null) {
             jpql += " and bill.toInstitution=:tins ";
             parameters.put("tins", paramToInstitution);
@@ -871,9 +1000,17 @@ public class ReportTemplateController implements Serializable {
             parameters.put("tdep", paramToDepartment);
         }
 
-        if (paramCreditCompany != null) {
-            jpql += " and bill.creditCompany=:cc ";
-            parameters.put("cc", paramCreditCompany);
+        if (paramCreditCompany == null) {
+
+        } else {
+            if (paramCreditCompany.getId() == null) {
+                jpql += " and bill.creditCompany is not null ";
+            } else if (paramCreditCompany.getId() == 1l) {
+                jpql += " and bill.creditCompany is null ";
+            } else {
+                jpql += " and bill.creditCompany=:cc ";
+                parameters.put("cc", paramCreditCompany);
+            }
         }
 
         jpql += " group by bill.billTypeAtomic";
@@ -892,7 +1029,50 @@ public class ReportTemplateController implements Serializable {
         long idCounter = 1;
         for (ReportTemplateRow row : rs) {
             row.setId(idCounter++);
+            if (row.getBtas() == null) {
+                row.setBtas(btas);
+            }
+            if (row.getDate() == null) {
+                row.setDate(paramDate);
+            }
+            if (row.getFromDate() == null) {
+                row.setFromDate(paramFromDate);
+            }
+            if (row.getToDate() == null) {
+                row.setToDate(paramToDate);
+            }
+            if (row.getInstitution() == null) {
+                row.setInstitution(paramInstitution);
+            }
+            if (row.getDepartment() == null) {
+                row.setDepartment(paramDepartment);
+            }
+            if (row.getFromInstitution() == null) {
+                row.setFromInstitution(paramFromInstitution);
+            }
+            if (row.getFromDepartment() == null) {
+                row.setFromDepartment(paramFromDepartment);
+            }
+            if (row.getToInstitution() == null) {
+                row.setToInstitution(paramToInstitution);
+            }
+            if (row.getToDepartment() == null) {
+                row.setToDepartment(paramToDepartment);
+            }
+            if (row.getUser() == null) {
+                row.setUser(paramUser);
+            }
+            if (row.getCreditCompany() == null) {
+                row.setCreditCompany(paramCreditCompany);
+            }
+            if (row.getStartId() == null) {
+                row.setStartId(paramStartId);
+            }
+            if (row.getEndId() == null) {
+                row.setEndId(paramEndId);
+            }
         }
+
         bundle.setReportTemplateRows(rs);
         return bundle;
     }
@@ -985,9 +1165,17 @@ public class ReportTemplateController implements Serializable {
             parameters.put("tdep", paramToDepartment);
         }
 
-        if (paramCreditCompany != null) {
-            jpql += " and bill.creditCompany=:cc ";
-            parameters.put("cc", paramCreditCompany);
+        if (paramCreditCompany == null) {
+
+        } else {
+            if (paramCreditCompany.getId() == null) {
+                jpql += " and bill.creditCompany is not null ";
+            } else if (paramCreditCompany.getId() == 1l) {
+                jpql += " and bill.creditCompany is null ";
+            } else {
+                jpql += " and bill.creditCompany=:cc ";
+                parameters.put("cc", paramCreditCompany);
+            }
         }
 
         if (paramUser != null) {
@@ -1355,7 +1543,50 @@ public class ReportTemplateController implements Serializable {
         long idCounter = 1;
         for (ReportTemplateRow row : rs) {
             row.setId(idCounter++);
+            if (row.getBtas() == null) {
+                row.setBtas(btas);
+            }
+            if (row.getDate() == null) {
+                row.setDate(paramDate);
+            }
+            if (row.getFromDate() == null) {
+                row.setFromDate(paramFromDate);
+            }
+            if (row.getToDate() == null) {
+                row.setToDate(paramToDate);
+            }
+            if (row.getInstitution() == null) {
+                row.setInstitution(paramInstitution);
+            }
+            if (row.getDepartment() == null) {
+                row.setDepartment(paramDepartment);
+            }
+            if (row.getFromInstitution() == null) {
+                row.setFromInstitution(paramFromInstitution);
+            }
+            if (row.getFromDepartment() == null) {
+                row.setFromDepartment(paramFromDepartment);
+            }
+            if (row.getToInstitution() == null) {
+                row.setToInstitution(paramToInstitution);
+            }
+            if (row.getToDepartment() == null) {
+                row.setToDepartment(paramToDepartment);
+            }
+            if (row.getUser() == null) {
+                row.setUser(paramUser);
+            }
+            if (row.getCreditCompany() == null) {
+                row.setCreditCompany(paramCreditCompany);
+            }
+            if (row.getStartId() == null) {
+                row.setStartId(paramStartId);
+            }
+            if (row.getEndId() == null) {
+                row.setEndId(paramEndId);
+            }
         }
+
         bundle.setReportTemplateRows(rs);
         return bundle;
     }
@@ -1478,13 +1709,224 @@ public class ReportTemplateController implements Serializable {
         Double total = 0.0;
         for (ReportTemplateRow row : rs) {
             row.setId(idCounter++);
-            total = row.getRowValue();
+            if (row.getBtas() == null) {
+                row.setBtas(btas);
+            }
+            if (row.getDate() == null) {
+                row.setDate(paramDate);
+            }
+            if (row.getFromDate() == null) {
+                row.setFromDate(paramFromDate);
+            }
+            if (row.getToDate() == null) {
+                row.setToDate(paramToDate);
+            }
+            if (row.getInstitution() == null) {
+                row.setInstitution(paramInstitution);
+            }
+            if (row.getDepartment() == null) {
+                row.setDepartment(paramDepartment);
+            }
+            if (row.getFromInstitution() == null) {
+                row.setFromInstitution(paramFromInstitution);
+            }
+            if (row.getFromDepartment() == null) {
+                row.setFromDepartment(paramFromDepartment);
+            }
+            if (row.getToInstitution() == null) {
+                row.setToInstitution(paramToInstitution);
+            }
+            if (row.getToDepartment() == null) {
+                row.setToDepartment(paramToDepartment);
+            }
+            if (row.getUser() == null) {
+                row.setUser(paramUser);
+            }
+            if (row.getCreditCompany() == null) {
+                row.setCreditCompany(paramCreditCompany);
+            }
+            if (row.getStartId() == null) {
+                row.setStartId(paramStartId);
+            }
+            if (row.getEndId() == null) {
+                row.setEndId(paramEndId);
+            }
         }
+
         bundle.setReportTemplateRows(rs);
         return bundle;
     }
 
-    
+    private ReportTemplateRowBundle handleItemDepartmentummaryByBill(
+            List<BillTypeAtomic> btas,
+            Date paramDate,
+            Date paramFromDate,
+            Date paramToDate,
+            Institution paramInstitution,
+            Department paramDepartment,
+            Institution paramFromInstitution,
+            Department paramFromDepartment,
+            Institution paramToInstitution,
+            Department paramToDepartment,
+            WebUser paramUser,
+            Institution paramCreditCompany,
+            Long paramStartId,
+            Long paramEndId) {
+
+        System.out.println("handleItemDepartmentummaryByBill");
+
+        String jpql;
+        Map<String, Object> parameters = new HashMap<>();
+        ReportTemplateRowBundle bundle = new ReportTemplateRowBundle();
+
+        jpql = "select new com.divudi.data.ReportTemplateRow("
+                + " bi.item.department, count(bi), sum(bi.netValue)) "
+                + " from BillItem bi"
+                + " join bi.bill bill "
+                + " where bill.retired<>:br "
+                + " and bi.retired<>:br ";
+        parameters.put("br", true);
+
+        if (btas != null) {
+            jpql += " and bill.billTypeAtomic in :btas ";
+            parameters.put("btas", btas);
+        }
+
+        if (paramDate != null) {
+            jpql += " and bill.billDate=:bd ";
+            parameters.put("bd", paramDate);
+        }
+
+        if (paramToDate != null) {
+            jpql += " and bill.billDate < :td ";
+            parameters.put("td", paramToDate);
+        }
+
+        if (paramFromDate != null) {
+            jpql += " and bill.billDate > :fd ";
+            parameters.put("fd", paramFromDate);
+        }
+
+        if (paramStartId != null) {
+            jpql += " and bill.id > :sid ";
+            parameters.put("sid", paramStartId);
+        }
+
+        if (paramEndId != null) {
+            jpql += " and bill.id < :eid ";
+            parameters.put("eid", paramEndId);
+        }
+
+        if (paramInstitution != null) {
+            jpql += " and bill.institution=:ins ";
+            parameters.put("ins", paramInstitution);
+        }
+
+        if (paramDepartment != null) {
+            jpql += " and bill.department=:dep ";
+            parameters.put("dep", paramDepartment);
+        }
+
+        if (paramFromInstitution != null) {
+            jpql += " and bill.fromInstitution=:fins ";
+            parameters.put("fins", paramFromInstitution);
+        }
+
+        if (paramFromDepartment != null) {
+            jpql += " and bill.fromDepartment=:fdep ";
+            parameters.put("fdep", paramFromDepartment);
+        }
+
+        if (paramToInstitution != null) {
+            jpql += " and bill.toInstitution=:tins ";
+            parameters.put("tins", paramToInstitution);
+        }
+
+        if (paramToDepartment != null) {
+            jpql += " and bill.toDepartment=:tdep ";
+            parameters.put("tdep", paramToDepartment);
+        }
+
+        if (paramUser != null) {
+            jpql += " and bill.creater=:wu ";
+            parameters.put("wu", paramUser);
+        }
+
+        if (paramCreditCompany != null) {
+            jpql += " and bill.creditCompany=:creditCompany ";
+            parameters.put("creditCompany", paramCreditCompany);
+        }
+
+//        jpql += " and bi.item is not null "
+//                + " and bi.item.department is not null ";
+        jpql += " group by bi.item.department ";
+
+        System.out.println("jpql = " + jpql);
+        System.out.println("parameters = " + parameters);
+
+        List<ReportTemplateRow> rs = (List<ReportTemplateRow>) ejbFacade.findLightsByJpql(jpql, parameters, TemporalType.DATE);
+
+        System.out.println("rs = " + rs);
+
+        if (rs == null || rs.isEmpty()) {
+            System.out.println("No results found.");
+        } else {
+            System.out.println("Results found: " + rs.size());
+        }
+
+        long idCounter = 1;
+        Double total = 0.0;
+        for (ReportTemplateRow row : rs) {
+            row.setId(idCounter++);
+            if (row.getBtas() == null) {
+                row.setBtas(btas);
+            }
+            if (row.getDate() == null) {
+                row.setDate(paramDate);
+            }
+            if (row.getFromDate() == null) {
+                row.setFromDate(paramFromDate);
+            }
+            if (row.getToDate() == null) {
+                row.setToDate(paramToDate);
+            }
+            if (row.getInstitution() == null) {
+                row.setInstitution(paramInstitution);
+            }
+            if (row.getDepartment() == null) {
+                row.setDepartment(paramDepartment);
+            }
+            if (row.getFromInstitution() == null) {
+                row.setFromInstitution(paramFromInstitution);
+            }
+            if (row.getFromDepartment() == null) {
+                row.setFromDepartment(paramFromDepartment);
+            }
+            if (row.getToInstitution() == null) {
+                row.setToInstitution(paramToInstitution);
+            }
+            if (row.getToDepartment() == null) {
+                row.setToDepartment(paramToDepartment);
+            }
+            if (row.getUser() == null) {
+                row.setUser(paramUser);
+            }
+            if (row.getCreditCompany() == null) {
+                row.setCreditCompany(paramCreditCompany);
+            }
+            if (row.getStartId() == null) {
+                row.setStartId(paramStartId);
+            }
+            if (row.getEndId() == null) {
+                row.setEndId(paramEndId);
+            }
+        }
+
+        bundle.setReportTemplateRows(rs);
+        bundle.setTotal(total);
+        return bundle;
+    }
+
     private ReportTemplateRowBundle handleItemSummaryByBill(
             List<BillTypeAtomic> btas,
             Date paramDate,
@@ -1602,14 +2044,54 @@ public class ReportTemplateController implements Serializable {
         Double total = 0.0;
         for (ReportTemplateRow row : rs) {
             row.setId(idCounter++);
-            total = row.getRowValue();
+            if (row.getBtas() == null) {
+                row.setBtas(btas);
+            }
+            if (row.getDate() == null) {
+                row.setDate(paramDate);
+            }
+            if (row.getFromDate() == null) {
+                row.setFromDate(paramFromDate);
+            }
+            if (row.getToDate() == null) {
+                row.setToDate(paramToDate);
+            }
+            if (row.getInstitution() == null) {
+                row.setInstitution(paramInstitution);
+            }
+            if (row.getDepartment() == null) {
+                row.setDepartment(paramDepartment);
+            }
+            if (row.getFromInstitution() == null) {
+                row.setFromInstitution(paramFromInstitution);
+            }
+            if (row.getFromDepartment() == null) {
+                row.setFromDepartment(paramFromDepartment);
+            }
+            if (row.getToInstitution() == null) {
+                row.setToInstitution(paramToInstitution);
+            }
+            if (row.getToDepartment() == null) {
+                row.setToDepartment(paramToDepartment);
+            }
+            if (row.getUser() == null) {
+                row.setUser(paramUser);
+            }
+            if (row.getCreditCompany() == null) {
+                row.setCreditCompany(paramCreditCompany);
+            }
+            if (row.getStartId() == null) {
+                row.setStartId(paramStartId);
+            }
+            if (row.getEndId() == null) {
+                row.setEndId(paramEndId);
+            }
         }
+
         bundle.setReportTemplateRows(rs);
         return bundle;
     }
 
-    
-    
     private ReportTemplateRowBundle handleToDepartmentSummaryByBillFee(
             List<BillTypeAtomic> btas,
             Date paramDate,
