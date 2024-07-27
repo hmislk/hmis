@@ -527,7 +527,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
                 case Agent:
                 case Credit:
                     p.setReferenceNo(paymentMethodData.getCredit().getReferralNo());
-                    p.setComments(paymentMethodData.getCredit().getComment());
+                    p.setComments(paymentMethodData.getCredit().getComment()); 
                 case PatientDeposit:
                 case Slip:
                     p.setBank(paymentMethodData.getSlip().getInstitution());
