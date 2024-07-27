@@ -2,13 +2,11 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.divudi</groupId>
-
-  
     <artifactId>vfs</artifactId>
     <version>3.0.0</version>
     <packaging>war</packaging>
-    <name>vfs</name>
-
+    <name>ruhunu-demo</name>
+    
     <properties>
         <endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

@@ -7,6 +7,9 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp">
 
+    <h:head >
+
+    </h:head>
     <h:body>
 
         <ui:composition template="/analytics/index.xhtml">
@@ -23,6 +26,10 @@
                                     <p:outputLabel value="Shift Report" />
                                 </div>
                                 <div>
+                                    <p:commandButton class="ui-button-info mx-2" 
+                                                     ajax="false" 
+                                                     value="Back" 
+                                                     action="shift_end_summery_bill_of_selected_user.xhtml?faces-redirect=true;" ></p:commandButton>
                                     <p:commandButton class="ui-button-info mx-2" 
                                                      ajax="false" 
                                                      value="Process" 
@@ -54,7 +61,9 @@
                                 </div>
                             </h:panelGroup>
 
-                            <h:panelGroup>
+
+
+                            <h:panelGroup >
                                 <div class="card">
                                     <div class="card-header">
                                         <i class="fas fa-sign-in-alt"></i> Shift Start
@@ -101,61 +110,106 @@
 
                         <h:panelGroup >
 
-                            <table class="w-100 table table-primary">
-                                <thead>
-                                    <tr>
-                                        <th>Name</th>
-                                        <th>Count</th>
-                                        <th>Total</th>
-                                        <th>Report Template Rows</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <ui:repeat value="#{financialTransactionController.shiftEndBundles}" var="sebs">
+                            <p:commandButton value="Print" ajax="false" >
+                                <p:printer target="tbl" ></p:printer>
+                            </p:commandButton>
+
+                            <h:panelGroup id="tbl" >
+                                <table id="exportableTable" class="w-100 table table-primary">
+                                    <thead>
                                         <tr>
-                                            <td>
-                                                <h:outputText value="#{sebs.name}" />
-                                            </td>
-                                            <td>
-                                                <h:outputText value="#{sebs.count}" />
-                                            </td>
-                                            <td>
-                                                <h:outputText value="#{sebs.total}" />
-                                            </td>
-                                            <td>
-                                                <table class="w-100 table table-striped">
-                                                    <thead>
-                                                        <tr>
-                                                            <th>Category / Department</th>
-                                                            <th>Value</th>
-                                                            <th>Count</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        <ui:repeat value="#{sebs.reportTemplateRows}" var="r">
-                                                            <tr>
-                                                                <td>
-                                                                    #{r.category.name}
-                                                                    #{r.department.name}
-                                                                
-                                                                </td>
-                                                                <td>#{r.rowValue}</td>
-                                                                <td>#{r.rowCount}</td>
-                                                            </tr>
-                                                        </ui:repeat>
-                                                    </tbody>
-                                                </table>
-                                            </td>
+                                            <th>Name</th>
+                                            <th>Net Total</th>
+                                            <th>Report Template Rows</th>
                                         </tr>
-                                    </ui:repeat>
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody>
+                                        <ui:repeat value="#{financialTransactionController.shiftEndBundles}" var="sebs">
+                                            <tr>
+                                                <td>
+                                                    <h:outputText value="#{sebs.name}" />
+                                                </td>
+                                                <td class="text-right pr-3">
+                                                    <h:outputText value="#{sebs.total}">
+                                                        <f:convertNumber type="currency" currencySymbol="" groupingUsed="true" minFractionDigits="2" />
+                                                    </h:outputText>
+                                                </td>
+                                                <td>
+                                                    <table class="w-100 table table-striped">
+                                                        <thead>
+                                                            <tr>
+                                                                <th rowspan="2">Category / Department / Type</th>
+                                                                <th colspan="2">In</th>
+                                                                <th colspan="2">Out</th>
+                                                                <th colspan="2">Net</th>
+                                                            </tr>
+                                                            <tr>
+                                                                <th >Value</th>
+                                                                <th >Count</th>
+                                                                <th >Value</th>
+                                                                <th >Count</th>
+                                                                <th >Value</th>
+                                                                <th >Count</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <ui:repeat value="#{sebs.reportTemplateRows}" var="r">
+                                                                <tr>
+                                                                    <td>
+                                                                        <h:outputText value="#{r.category.name} #{r.department.name} #{r.billTypeAtomic.label}" />
+                                                                    </td>
+                                                                    <td class="text-right pr-3">
+                                                                        <h:outputText value="#{r.rowCountIn}">
+                                                                        </h:outputText>
+                                                                    </td>
+                                                                    <td class="text-right pr-3">
+                                                                        <h:outputText value="#{r.rowValueIn}">
+                                                                            <f:convertNumber pattern="#,##0.00" />
+                                                                        </h:outputText>
+
+                                                                    </td>
+                                                                    <td class="text-right pr-3">
+                                                                        <h:outputText value="#{r.rowCountOut}">
+                                                                        </h:outputText>
+                                                                    </td>
+                                                                    <td class="text-right pr-3">
+                                                                        <h:outputText value="#{r.rowValueOut}">
+                                                                            <f:convertNumber pattern="#,##0.00" />
+                                                                        </h:outputText>
+
+                                                                    </td>
+                                                                    <td class="text-right pr-3">
+                                                                        <h:outputText value="#{r.rowCount}">
+                                                                        </h:outputText>
+
+                                                                    </td>
+                                                                    <td class="text-right pr-3">
+                                                                        <h:outputText value="#{r.rowValue}">
+                                                                            <f:convertNumber pattern="#,##0.00" />
+                                                                        </h:outputText>
+
+                                                                    </td>
 
 
-                            
+                                                                </tr>
+                                                            </ui:repeat>
+                                                        </tbody>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                        </ui:repeat>
+                                    </tbody>
+                                </table>
+                            </h:panelGroup>
+
+
+
+
+
+
                         </h:panelGroup>
 
-                      
+
 
                     </p:panelGrid>
 
