@@ -11,6 +11,7 @@ package com.divudi.bean.clinical;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.SymanticType;
+import com.divudi.entity.Department;
 import com.divudi.entity.clinical.ClinicalEntity;
 import com.divudi.facade.ClinicalEntityFacade;
 import java.io.Serializable;
@@ -51,9 +52,33 @@ public class ClinicalEntityController implements Serializable {
     private ClinicalEntity current;
     private List<ClinicalEntity> items = null;
     String selectText = "";
+    Department department;
 
     public String navigateToManageClinicalEntities() {
         return "/emr/admin/clinical_entities";
+    }
+    
+    public String navigateToMangeSurgeries() {
+        return "/emr/admin/clinical_entities";
+    }
+    
+    public ClinicalEntity findItemByName(String name,Department dept) {
+        try {
+            String jpql;
+            Map m = new HashMap();
+            jpql = "select i "
+                    + " from ClinicalEntity i "
+                    + " where i.retired=:ret "
+                    + " and i.department=:dept "
+                    + " and i.name=:name ";
+            m.put("ret", false);
+            m.put("name", name);
+            m.put("dept", dept);
+            ClinicalEntity item = getFacade().findFirstByJpql(jpql, m);
+            return item;
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     public List<ClinicalEntity> listClinicalEntity(SymanticType type) {
