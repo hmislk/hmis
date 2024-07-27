@@ -661,12 +661,19 @@
                                                                             execute="@this" 
                                                                             render=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}  :#{p:resolveFirstComponentWithId('tblRequests',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId}" />
                                                                     </p:autoComplete> 
-
+ 
                                                                     <p:inputText 
                                                                         id="polNo" 
-                                                                        style="width: 250px;"
+                                                                        style="width: 200px;"
                                                                         value="#{billPackageController.paymentMethodData.credit.referralNo}" 
                                                                         placeholder="Policy NO" >
+                                                                    </p:inputText>
+                                                                    
+                                                                    <p:inputText 
+                                                                        id="memo" 
+                                                                        style="width: 300px;"
+                                                                        value="#{billPackageController.paymentMethodData.credit.comment}" 
+                                                                        placeholder="Comment" >
                                                                     </p:inputText>
 
                                                                     <p:commandLink 
