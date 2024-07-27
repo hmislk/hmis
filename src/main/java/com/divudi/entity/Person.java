@@ -399,6 +399,42 @@ public class Person implements Serializable {
         this.retirer = retirer;
     }
 
+    @Transient
+    public String getShortenedName() {
+        if (name == null || name.isEmpty()) {
+            return "";
+        }
+        String[] words = name.split("\\s+");
+        StringBuilder shortened = new StringBuilder();
+
+        for (String word : words) {
+            if (shortened.length() > 0) {
+                shortened.append("");
+            }
+            if (word.length() > 5) {
+                shortened.append(word.substring(0, 5));
+            } else {
+                shortened.append(word);
+            }
+        }
+
+        if (shortened.length() > 15) {
+            shortened.setLength(15);
+        }
+
+        // Capitalize first letter of each word
+        String[] parts = shortened.toString().split(" ");
+        StringBuilder result = new StringBuilder();
+        for (String part : parts) {
+            if (part.length() > 0) {
+                result.append(Character.toUpperCase(part.charAt(0)))
+                        .append(part.substring(1).toLowerCase());
+            }
+        }
+
+        return result.toString();
+    }
+
     @Override
     public int hashCode() {
         int hash = 0;

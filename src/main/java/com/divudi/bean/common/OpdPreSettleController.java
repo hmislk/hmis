@@ -229,7 +229,6 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
 
                 bff.setFeeVatPlusValue(bff.getFeeValue() + bff.getFeeVat());
                 entryGross += bff.getFeeGrossValue();
-                System.out.println("entryGross = " + entryGross);
                 entryNet += bff.getFeeValue();
                 entryDis += bff.getFeeDiscount();
 
@@ -534,6 +533,8 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
         getSaleBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
         getSaleBill().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
 
+        
+        
         getBillBean().setPaymentMethodData(getSaleBill(), getSaleBill().getPaymentMethod(), paymentMethodData);
         getBillBean().setBills(billsOfBatchBillPre);
 
@@ -558,6 +559,7 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
         } else {
             getBillFacade().edit(getSaleBill());
         }
+        
         updateSettledBatchBill();
     }
 
@@ -744,7 +746,6 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
 
     private void saveIndividualBilledBillsOfPreBatchBill() {
         billsOfBatchBilledBill = new ArrayList<>();
-        System.out.println("getBillBean().getBills() = " + getBillBean().getBills().size());
         for (Bill individualBillsOfPreBatchBill : billController.billsOfBatchBill(preBill)) {
             
             Bill newlyCreatedIndividualBilledBillOfBilledBatchBill = createNewBilledBillfromPreBill(individualBillsOfPreBatchBill);
@@ -767,7 +768,15 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
                 newBillItem.setBillFees(newBillBillItemFees);
                 newlyCreatedIndividualBilledBillOfBilledBatchBill.getBillItems().add(newBillItem);
                 newlyCreatedIndividualBilledBillOfBilledBatchBill.getBillFees().addAll(newBillBillItemFees);
+                
             }
+            
+            
+            newlyCreatedIndividualBilledBillOfBilledBatchBill.setPaymentMethod(getSaleBill().getPaymentMethod());
+            
+            getBillBean().setPaymentMethodData(newlyCreatedIndividualBilledBillOfBilledBatchBill, getPreBill().getPaymentMethod(), paymentMethodData);
+            
+            
             getBillFacade().edit(newlyCreatedIndividualBilledBillOfBilledBatchBill);
             getBillFacade().edit(preBill);
             billsOfBatchBilledBill.add(newlyCreatedIndividualBilledBillOfBilledBatchBill);
@@ -900,7 +909,6 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
         if (token == null) {
             return;
         }
-        System.out.println("foundToken = " + token);
         token.setCompleted(true);
         token.setCompletedAt(new Date());
         tokenFacade.edit(token);
@@ -947,7 +955,6 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
         if (getPreBill().getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
             int arrSize = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().size();
             ComponentDetail pm = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().get(arrSize - 1);
-            System.out.println("pm = " + pm.getPaymentMethod().getLabel());
             if (pm.getPaymentMethod() == PaymentMethod.Cash) {
                 pm.getPaymentMethodData().getCash().setTotalValue(remainAmount);
             } else if (pm.getPaymentMethod() == PaymentMethod.Card) {
@@ -1126,7 +1133,6 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
             return "";
         }
         setPreBill(preBatchBill);
-        System.out.println("preBatchBill Total= " + preBatchBill.getTotal());
         billsOfBatchBillPre = billController.billsOfBatchBill(preBatchBill);
         for (Bill billOfBatchBillPre : billsOfBatchBillPre) {
             if (billOfBatchBillPre.getBillItems() == null) {
@@ -1442,12 +1448,9 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
         p.setCreatedAt(new Date());
         p.setCreater(getSessionController().getLoggedUser());
         p.setPaymentMethod(pm);
-        System.out.println("paid value opd bill refund = " + p.getPaidValue());
         if (p.getBill().getBillType() == BillType.PaymentBill) {
-            System.out.println("p.getBill().getNetTotal()" + p.getBill().getNetTotal());
             p.setPaidValue(p.getBill().getNetTotal());
         } else {
-            System.out.println("p.getBill().getCashPaid() = " + p.getBill().getCashPaid());
             p.setPaidValue(p.getBill().getCashPaid());
         }
 
@@ -1542,7 +1545,6 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
         Payment p = new Payment();
         p.setBill(bill);
         double valueToSet = 0 - Math.abs(bill.getNetTotal());
-        System.out.println("valueToSet = " + valueToSet);
         p.setPaidValue(valueToSet);
 
         p.setInstitution(getSessionController().getInstitution());
@@ -1550,7 +1552,6 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
         p.setCreatedAt(new Date());
         p.setCreater(getSessionController().getLoggedUser());
         p.setPaymentMethod(pm);
-        System.out.println("paid value opd bill cancellation = " + p.getPaidValue());
 
         if (p.getId() == null) {
             getPaymentFacade().create(p);
@@ -1564,7 +1565,6 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
         Payment p = new Payment();
         p.setBill(bill);
         double valueToSet = 0 - Math.abs(bill.getNetTotal());
-        System.out.println("valueToSet = " + valueToSet);
         p.setPaidValue(valueToSet);
         setPaymentMethodData(p, pm);
         return p;
@@ -1805,12 +1805,10 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
     }
 
     public Staff getToStaff() {
-        System.out.println("toStaff = " + toStaff);
         return toStaff;
     }
 
     public void setToStaff(Staff toStaff) {
-        System.out.println("toStaff = " + toStaff);
         this.toStaff = toStaff;
     }
 

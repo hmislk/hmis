@@ -251,12 +251,12 @@
                                             </p:selectBooleanButton>
                                         </div>
                                         <div class="col-md-6" >
-                                            <h:outputLabel class="form-label" value="Credit Limit:" rendered="#{webUserController.hasPrivilege('Admin')}" />
+                                            <h:outputLabel class="form-label" value="Credit Limit:" rendered="#{webUserController.hasPrivilege('AddCreditLimitInRegistration')}" />
                                             <h:panelGroup>
                                                 <p:inputText autocomplete="off" id="txtCreditLimit"
                                                              value="#{patientController.current.creditLimit}"
                                                              class="form-control"
-                                                             rendered="#{webUserController.hasPrivilege('Admin')}"/>
+                                                             rendered="#{webUserController.hasPrivilege('AddCreditLimitInRegistration')}"/>
                                             </h:panelGroup>
                                         </div>
                                     </div>
