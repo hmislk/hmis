@@ -46,7 +46,7 @@
                                 class="ui-button-warning mt-2 mb-2" 
                                 icon="fas fa-cogs" 
                                 value="Process" 
-                                action="#{channelReportTemplateController.fillDailySessionCounts()}" ajax="false" ></p:commandButton>
+                                action="#{channelReportTemplateController.fillDailyDoctorCounts()}" ajax="false" ></p:commandButton>
                         </h:panelGrid>
 
 
@@ -80,87 +80,73 @@
                                 </f:facet>
                                 <p:outputLabel value="#{i+1}" />
                             </p:column>
-
-                            <p:column>
-                                <f:facet name="header">
-                                    <p:outputLabel value="Date" />
-                                </f:facet>
-                                <p:outputLabel value="#{a.sessionInstance.sessionDate}" >
-                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
-                                </p:outputLabel>
-                            </p:column>
                             <p:column>
                                 <f:facet name="header">
                                     <p:outputLabel value="Consultant" />
                                 </f:facet>
-                                <p:outputLabel value="#{a.sessionInstance.originatingSession.staff.person.nameWithTitle}" />
+                                <p:outputLabel value="#{a.staff.person.nameWithTitle}" />
                             </p:column>
                             <p:column>
                                 <f:facet name="header">
                                     <p:outputLabel value="Speciality" />
                                 </f:facet>
-                                <p:outputLabel value="#{a.sessionInstance.originatingSession.staff.speciality.name}" />
-                            </p:column>
-                            <p:column>
-                                <f:facet name="header">
-                                    <p:outputLabel value="Session" />
-                                </f:facet>
-                                <p:outputLabel value="#{a.sessionInstance.originatingSession.name}" />
+                                <p:outputLabel value="#{a.staff.speciality.name}" />
                             </p:column>
                             <p:column>
                                 <f:facet name="header">
                                     <p:outputLabel value="Booked" />
                                 </f:facet>
-                                <p:outputLabel value="#{a.sessionInstance.bookedPatientCount}" />
-                                <f:facet name="footer" >
-                                    <h:outputText value="#{channelReportTemplateController.bundle.long1}"></h:outputText>
+                                <p:outputLabel value="#{a.long1}" />
+                                <f:facet name="footer">
+                                    <h:outputText value="#{channelReportTemplateController.bundle.long1}" />
                                 </f:facet>
                             </p:column>
                             <p:column>
                                 <f:facet name="header">
                                     <p:outputLabel value="Paid" />
                                 </f:facet>
-                                <p:outputLabel value="#{a.sessionInstance.paidPatientCount}" />
-                                <f:facet name="footer" >
-                                    <h:outputText value="#{channelReportTemplateController.bundle.long2}"></h:outputText>
+                                <p:outputLabel value="#{a.long2}" />
+                                <f:facet name="footer">
+                                    <h:outputText value="#{channelReportTemplateController.bundle.long2}" />
                                 </f:facet>
                             </p:column>
                             <p:column>
                                 <f:facet name="header">
-                                    <p:outputLabel value="Paid" />
+                                    <p:outputLabel value="Completed" />
                                 </f:facet>
-                                <p:outputLabel value="#{a.sessionInstance.completedPatientCount}" />
-                                <f:facet name="footer" >
-                                    <h:outputText value="#{channelReportTemplateController.bundle.long3}" ></h:outputText>
+                                <p:outputLabel value="#{a.long3}" />
+                                <f:facet name="footer">
+                                    <h:outputText value="#{channelReportTemplateController.bundle.long3}" />
                                 </f:facet>
                             </p:column>
                             <p:column>
                                 <f:facet name="header">
                                     <p:outputLabel value="Cancelled" />
                                 </f:facet>
-                                <p:outputLabel value="#{a.sessionInstance.cancelPatientCount}" />
-                                <f:facet name="footer" >
-                                    <h:outputText value="#{channelReportTemplateController.bundle.long4}" ></h:outputText>
+                                <p:outputLabel value="#{a.long4}" />
+                                <f:facet name="footer">
+                                    <h:outputText value="#{channelReportTemplateController.bundle.long4}" />
                                 </f:facet>
                             </p:column>
                             <p:column>
                                 <f:facet name="header">
                                     <p:outputLabel value="Refunded" />
                                 </f:facet>
-                                <p:outputLabel value="#{a.sessionInstance.refundedPatientCount}" />
-                                <f:facet name="footer" >
-                                    <h:outputText value="#{channelReportTemplateController.bundle.long5}"></h:outputText>
+                                <p:outputLabel value="#{a.long5}" />
+                                <f:facet name="footer">
+                                    <h:outputText value="#{channelReportTemplateController.bundle.long5}" />
                                 </f:facet>
                             </p:column>
                             <p:column>
                                 <f:facet name="header">
                                     <p:outputLabel value="Remaining" />
                                 </f:facet>
-                                <p:outputLabel value="#{a.sessionInstance.remainingPatientCount}" />
-                                <f:facet name="footer" >
-                                    <h:outputText value="#{channelReportTemplateController.bundle.long6}"></h:outputText>
+                                <p:outputLabel value="#{a.long6}" />
+                                <f:facet name="footer">
+                                    <h:outputText value="#{channelReportTemplateController.bundle.long6}" />
                                 </f:facet>
                             </p:column>
+
                         </p:dataTable>
 
 
