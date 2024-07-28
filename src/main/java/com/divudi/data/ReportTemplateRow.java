@@ -1,5 +1,6 @@
 package com.divudi.data;
 
+import com.divudi.entity.BillSession;
 import com.divudi.entity.Category;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
@@ -9,6 +10,7 @@ import com.divudi.entity.WebUser;
 import com.divudi.entity.channel.SessionInstance;
 import java.util.Date;
 import java.util.List;
+
 
 /**
  *
@@ -48,7 +50,7 @@ public class ReportTemplateRow {
     private Institution creditCompany;
     private Department toDepartment;
     private Department itemDepartment;
-
+    private BillSession billSession;
     private Department department;
     private Institution institution;
 
@@ -134,6 +136,19 @@ public class ReportTemplateRow {
     public void setRowCount(Long rowCount) {
         this.rowCount = rowCount;
     }
+
+    public BillSession getBillSession() {
+        return billSession;
+    }
+
+    public ReportTemplateRow(BillSession billSession) {
+        this.billSession = billSession;
+    }
+
+    public void setBillSession(BillSession billSession) {
+        this.billSession = billSession;
+    }
+    
 
     public ReportTemplateRow(String feeName, String categoryName, String toDepartmentName, String itemName, String paymentName, Double rowValue, Long rowCount) {
         this.feeName = feeName;
