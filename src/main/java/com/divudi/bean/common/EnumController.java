@@ -73,6 +73,7 @@ public class EnumController implements Serializable {
     List<PaymentMethod> paymentMethodsForChanneling;
     List<PaymentMethod> paymentMethodsForPharmacyBilling;
     private List<PaymentMethod> paymentMethodsForPatientDeposit;
+    private List<PaymentMethod> paymentMethodsForStaffCreditSettle;
     SessionNumberType[] sessionNumberTypes;
 
     @PostConstruct
@@ -815,6 +816,21 @@ public class EnumController implements Serializable {
 
     public void setPaymentMethodsForPatientDeposit(List<PaymentMethod> paymentMethodsForPatientDeposit) {
         this.paymentMethodsForPatientDeposit = paymentMethodsForPatientDeposit;
+    }
+
+    public List<PaymentMethod> getPaymentMethodsForStaffCreditSettle() {
+        paymentMethodsForStaffCreditSettle = new ArrayList<>();
+        for (PaymentMethod pm : PaymentMethod.values()) {
+            boolean include = configOptionApplicationController.getBooleanValueByKey(pm.getLabel() + " is available for Staff Credit Settle", true);
+            if (include) {
+                paymentMethodsForStaffCreditSettle.add(pm);
+            }
+        }
+        return paymentMethodsForStaffCreditSettle;
+    }
+
+    public void setPaymentMethodsForStaffCreditSettle(List<PaymentMethod> paymentMethodsForStaffCreditSettle) {
+        this.paymentMethodsForStaffCreditSettle = paymentMethodsForStaffCreditSettle;
     }
 
 }

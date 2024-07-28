@@ -5,100 +5,93 @@
                 xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:na="http://xmlns.jcp.org/jsf/composite/template"
                 xmlns:p="http://primefaces.org/ui">
 
 
     <ui:define name="content">
+        <h:form  >
+            <h:panelGroup rendered="#{not webUserController.hasPrivilege('ChangeCreditLimitInCC')}">
+                <na:not_authorize />
+            </h:panelGroup>
 
-        <h:panelGroup >
-            <h:form  >
-
-                <p:focus id="selectFocus" context="gpSelect" />
-                <p:focus id="detailFocus" context="gpDetail" />
-
-
-
+            <h:panelGroup rendered="#{webUserController.hasPrivilege('Payment') and webUserController.hasPrivilege('ChangeCreditLimitInCC')}" >
                 <p:panel header="Manage Collecting Centre Credit Limits" >
+                    <div class="d-flex gap-4">
+                        <div class="col-5">
+                            <p:selectOneListbox  
+                                id="lstSelect" 
+                                filter="true"
+                                filterMatchMode="contains"
+                                scrollHeight="450"
+                                value="#{institutionController.current}">
+                                <f:selectItems  value="#{institutionController.collectingCentre}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
+                                <p:ajax event="change"   update="gpDetail" process="lstSelect" >
+                                </p:ajax>
+                            </p:selectOneListbox>
+                        </div>
+                        <div class="col-7">
+                            <p:panel header="Edit Collecting Centre Linit " id="gpDetail">
+                                <h:panelGrid id="gpDetailText" columns="2">
 
-                    <div id="Temp" style="position: relative;left: 0%;">
-                        <h:panelGrid id ="gpVeda" columns="2" >
+                                    <h:outputText id="lblId" value="ID" ></h:outputText>
+                                    <h:outputLabel id="txtId" value="#{institutionController.current.id}" />
 
-                            <h:panelGrid id="gpSelect" columns="1"  >
+                                    <h:outputText id="lblName" value="Name" ></h:outputText>
+                                    <h:outputText id="txtName" value="#{institutionController.current.name}"  />
 
-                                <p:panel >
-                                    <h:panelGrid id="gpSelectText" >
-                                        
-                                        <h:inputText autocomplete="off" id="txtSearch" value="#{institutionController.selectText}" >
-                                            <f:ajax execute="txtSearch" render="lstSelect" event="keyup" listener="#{institutionController.fetchSelectedCollectingCentre}" />
-                                        </h:inputText>
+                                    <h:outputText id="lblChqPrnName" value="Cheque Printing Name" ></h:outputText>
+                                    <h:outputText id="txtChqPrnName" value="#{institutionController.current.chequePrintingName}" />
 
-                                        <p:selectOneListbox  id="lstSelect"   value="#{institutionController.current}" style="min-width: 223px; height: 300px;">
-                                            <f:selectItems  value="#{institutionController.collectingCentre}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
-                                            <p:ajax event="change"   update="gpDetail" process="lstSelect" >
-                                            </p:ajax>
-                                        </p:selectOneListbox>
+                                    <h:outputText value="Code" >                                        
+                                    </h:outputText>
+                                    <h:outputText value="#{institutionController.current.institutionCode}" />
 
-                                    </h:panelGrid>
-                                </p:panel>
-                            </h:panelGrid  >
+                                    <h:outputText value="Standerd Credit Limit" >                                        
+                                    </h:outputText>
+                                    <p:inputText autocomplete="off" value="#{institutionController.current.standardCreditLimit}"  >
+                                        <f:convertNumber  pattern="#,##0.00"/>
+                                    </p:inputText>
 
-                            <p:panel>
+                                    <h:outputText value="Allowed Credit Limit" >                                        
+                                    </h:outputText>
+                                    <p:inputText autocomplete="off" value="#{institutionController.current.allowedCredit}"  >
+                                        <f:convertNumber  pattern="#,##0.00"/>
+                                    </p:inputText>
 
-                                <h:panelGrid id="gpDetail" columns="1">
-                                    <h:panelGrid id="gpDetailText" columns="2">
-                                        
-                                        <h:outputText id="lblId" value="Id" ></h:outputText>
-                                        <h:outputLabel id="txtId" value="#{institutionController.current.id}" />
-                                        
-                                        <h:outputText id="lblName" value="Name" ></h:outputText>
-                                        <h:outputText id="txtName" value="#{institutionController.current.name}"  />
-                                        
-                                        <h:outputText id="lblChqPrnName" value="Cheque Printing Name" ></h:outputText>
-                                        <h:outputText id="txtChqPrnName" value="#{institutionController.current.chequePrintingName}" />
-                                        
-                                        <h:outputText value="Code" >                                        
-                                        </h:outputText>
-                                        <h:outputText value="#{institutionController.current.institutionCode}" />
-                                        
-                                        <h:outputText value="Standerd Credit Limit" >                                        
-                                        </h:outputText>
-                                        <h:inputText autocomplete="off" value="#{institutionController.current.standardCreditLimit}"  >
-                                        </h:inputText>
-                                        
-                                        <h:outputText value="Allowed Credit Limit" >                                        
-                                        </h:outputText>
-                                        <h:inputText autocomplete="off" value="#{institutionController.current.allowedCredit}"  >
-                                        </h:inputText>
-                                        
-                                        <h:outputText value="Allowed Maximum Credit Limit" >                                        
-                                        </h:outputText>
-                                        <h:inputText autocomplete="off" value="#{institutionController.current.maxCreditLimit}"  >
-                                        </h:inputText>
-                                        
-                                         <h:outputText value="Balance" >                                        
-                                        </h:outputText>
-                                        <h:inputText autocomplete="off" disabled="true" value="#{institutionController.current.ballance}" >
-                                        </h:inputText>
+                                    <h:outputText value="Allowed Maximum Credit Limit" >                                        
+                                    </h:outputText>
+                                    <p:inputText autocomplete="off" value="#{institutionController.current.maxCreditLimit}"  >
+                                        <f:convertNumber  pattern="#,##0.00"/>
+                                    </p:inputText>
 
-                                    </h:panelGrid>
-                                    <h:panelGrid id="gpDetailButtons" columns="2">
-                                        <h:commandButton id="btnSave" value="Update Credit" action="#{institutionController.updateCollectingCentreCreditLimit}" styleClass="buttons">
-                                        </h:commandButton>
-                                        <p:defaultCommand target="btnSave"/>
-                                    </h:panelGrid>
+                                    <h:outputText value="Balance" >                                        
+                                    </h:outputText>
+                                    <p:inputText autocomplete="off" disabled="true" value="#{institutionController.current.ballance}" >
+                                        <f:convertNumber  pattern="#,##0.00"/>
+                                    </p:inputText>
+
                                 </h:panelGrid>
+                                <h:panelGrid id="gpDetailButtons" columns="2">
+                                    <p:commandButton 
+                                        id="btnSave" 
+                                        value="Update Credit" 
+                                        icon="fa fa-check"
+                                        action="#{institutionController.updateCollectingCentreCreditLimit}" 
+                                        class="ui-button-warning">
+                                    </p:commandButton>
 
+                                </h:panelGrid>
                             </p:panel>
-
-
-                        </h:panelGrid>
-
+                        </div>
                     </div>
                 </p:panel>
-            </h:form>
+            </h:panelGroup>
 
-        </h:panelGroup>
+            <p:focus id="detailFocus" context="gpDetail" />
 
+
+        </h:form>
     </ui:define>
 
 </ui:composition>
