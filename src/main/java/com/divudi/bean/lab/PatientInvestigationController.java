@@ -1151,7 +1151,7 @@ public class PatientInvestigationController implements Serializable {
     public String navigateToCollelcted() {
 //        prepareToSample();
         listPatientInvestigationsWhereSamplingCompleting();
-        return "/lab/patient_investigations_collected?faces-redirect=true";
+        return "/lab/samples_collected?faces-redirect=true";
     }
 
     public String navigateToSentToLab() {
@@ -1250,12 +1250,12 @@ public class PatientInvestigationController implements Serializable {
                 + " and i.billItem.bill.billDate between :fromDate and :toDate ";
 
         if(orderedInstitution!=null){
-            jpql = " and i.billItem.bill.institution=:ins ";
+            jpql += " and i.billItem.bill.institution=:ins ";
             params.put("ins", getOrderedInstitution());
         }
         
         if(orderedInstitution!=null){
-            jpql = " and i.billItem.bill.department=:dep ";
+            jpql += " and i.billItem.bill.department=:dep ";
             params.put("dep", getOrderedDepartment());
         }
         
@@ -1672,6 +1672,19 @@ public class PatientInvestigationController implements Serializable {
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
         lstForSampleManagement = getFacade().findByJpql(temSql, temMap, TemporalType.TIMESTAMP);
+    }
+    
+    public void listComplletedSamples() {
+        String jpql;
+        Map params = new HashMap();
+        jpql = "SELECT i "
+                + "FROM PatientSample i "
+                + " where i.retired=false "
+                + " and i.collected = true "
+                + " and i.billItem.bill.billDate between :fromDate and :toDate";
+        params.put("toDate", getToDate());
+        params.put("fromDate", getFromDate());
+        lstForSampleManagement = getFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
     public void checkRefundBillItems(List<PatientInvestigation> pis) {
