@@ -24,18 +24,23 @@
                                             forceSelection="true" 
                                             class="w-100"
                                             inputStyleClass="form-control"
-                                                    value="#{packageItemFeeController.currentPackege}" 
-                                                    completeMethod="#{packageNameController.completePack}" 
-                                                    var="ix" 
-                                                    itemLabel="#{ix.name}" 
-                                                    itemValue="#{ix}" size="30">
-                                        <p:ajax event="itemSelect" process="@this" update="cur gpVeda dtbFee" ></p:ajax>
-                                    </p:autoComplete>
+                                            value="#{packageItemFeeController.currentPackege}" 
+                                            completeMethod="#{packageNameController.completePack}" 
+                                            var="ix" 
+                                            itemLabel="#{ix.name}" 
+                                            itemValue="#{ix}" size="30">
+                                            <p:ajax event="itemSelect" process="@this" update="cur gpVeda dtbFee" ></p:ajax>
+                                        </p:autoComplete>
                                     </div>
 
                                 </div>
                                 <div class="mt-2">
-                                    <p:selectOneListbox id="cur" value="#{packageItemFeeController.currentIx}" class="w-100">
+                                    <p:selectOneListbox 
+                                        id="cur" 
+                                        filter="true"
+                                        filterMatchMode="contains"
+                                        value="#{packageItemFeeController.currentIx}" 
+                                        class="w-100">
                                         <f:selectItems value="#{packageItemFeeController.items}" var="pk" itemLabel="#{pk.item.name}" itemValue="#{pk.item}"/>
                                         <f:ajax execute="@this" render="gpVeda dtbFee"/>
                                     </p:selectOneListbox>
@@ -121,7 +126,7 @@
                                     <div class="col-2"><h:outputText value="Department"/></div>
                                     <div class="col-5">
                                         <p:selectOneMenu id="cmbDepartment" value="#{packageItemFeeController.currentFee.department}" class="w-100">
-                                            <f:selectItem itemLabel="Please select an Institution"/>
+                                            <f:selectItem itemLabel="Please select an Department"/>
                                             <f:selectItems value="#{packageItemFeeController.institutionDepatrments}" var="dep" itemLabel="#{dep.name}" itemValue="#{dep}" />
                                         </p:selectOneMenu>
                                     </div>

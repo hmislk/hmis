@@ -37,15 +37,25 @@
                             <p:column headerText="Value">
                                 <h:outputText value="#{option.optionValue}" />
                             </p:column>
-                            <p:column headerText="Actions" width="5em">
+                            <p:column headerText="Actions" width="7em">
                                 <p:commandButton 
                                     icon="pi pi-pencil" 
+                                    styleClass="ui-button-success m-1" 
                                     oncomplete="PF('optionEditDialog').show()" 
                                     update=":editForm"
-                                    >
+                                    title="Edit Option">
                                     <f:setPropertyActionListener value="#{option}" target="#{configOptionController.option}" ></f:setPropertyActionListener>
                                 </p:commandButton>
+                                <p:commandButton 
+                                    icon="pi pi-trash" 
+                                    styleClass="ui-button-danger m-1" 
+                                    ajax="false"
+                                    action="#{configOptionController.deleteOption(option)}" 
+                                    update=":optionTable"
+                                    title="Delete Option">
+                                </p:commandButton>
                             </p:column>
+
                         </p:dataTable>
 
                     </p:panel>
