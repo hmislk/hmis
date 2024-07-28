@@ -47,6 +47,32 @@
                                     inputStyleClass="form-control"
                                     pattern="dd MMMM yy - hh:mm a">
                                 </p:calendar>
+                                <h:outputLabel class="w-100 m-2" value="Ordered Institution"/>
+                                <p:autoComplete 
+                                    class="w-100 m-2"
+                                    id="acIns" 
+                                    value="#{patientInvestigationController.orderedInstitution}" 
+                                    inputStyleClass="form-control"
+                                    completeMethod="#{institutionController.completeIns}"
+                                    var="i"
+                                    itemLabel="#{i.name}"
+                                    itemValue="#{i}"
+                                    >
+                                    <p:ajax event="itemSelect" process="acIns" update="cmdOd" ></p:ajax>
+                                </p:autoComplete>
+                                <h:outputLabel class="w-100 m-2" value="Ordered Institution"/>
+                                <p:selectOneMenu
+                                    id="cmdOd"
+                                    filter="true"
+                                    filterMatchMode="contains"
+                                    value="#{patientInvestigationController.orderedDepartment}" >
+                                    <f:selectItems 
+                                        value="#{departmentController.getInstitutionDepatrments(patientInvestigationController.orderedInstitution)}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}"></f:selectItems>
+                                </p:selectOneMenu>
+                                
                             </p:panelGrid>
 
                             <p:panelGrid columns="3" class="w-100">
