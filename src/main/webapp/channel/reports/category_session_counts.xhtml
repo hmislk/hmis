@@ -12,7 +12,7 @@
 
             <ui:define name="subContent">
                 <h:form>
-                    <p:panel header="Session Counts" >
+                    <p:panel header="Category Session Counts" >
                         <h:panelGrid columns="3" class="my-2" >
                             <h:outputLabel value="From " />
                             <h:outputLabel value=":" />
@@ -40,13 +40,28 @@
                                              completeMethod="#{institutionController.completeIns}" 
                                              var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" forceSelection="true" rendered="true" requiredMessage="You must select a department" >
                             </p:autoComplete>
+
+                            <h:outputLabel  value="Category"  ></h:outputLabel>
+                            <h:outputLabel value=":" />
+                            <p:autoComplete 
+                                inputStyleClass="w-100"
+                                class="mx-4 w-100" 
+                                autocomplete="off" 
+                                value="#{channelReportTemplateController.category}"
+                                completeMethod="#{categoryController.completeServiceCategory}"
+                                var="cat"
+                                itemLabel="#{cat.name}"
+                                itemValue="#{cat}"
+                                required="true"
+                                requiredMessage="Please select a category"
+                                ></p:autoComplete>
                         </h:panelGrid>
                         <h:panelGrid columns="6" class="my-2">
                             <p:commandButton 
                                 class="ui-button-warning mt-2 mb-2" 
                                 icon="fas fa-cogs" 
                                 value="Process" 
-                                action="#{channelReportTemplateController.fillDailySessionCounts()}" ajax="false" ></p:commandButton>
+                                action="#{channelReportTemplateController.fillCategorySessionCounts()}" ajax="false" ></p:commandButton>
                         </h:panelGrid>
 
 
@@ -74,14 +89,14 @@
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"  />
                                 </p:outputLabel>
                             </f:facet>
-                            <p:column width="2em">
+                            <p:column>
                                 <f:facet name="header">
                                     <p:outputLabel value="No" />
                                 </f:facet>
                                 <p:outputLabel value="#{i+1}" />
                             </p:column>
 
-                            <p:column width="8em">
+                            <p:column>
                                 <f:facet name="header">
                                     <p:outputLabel value="Date" />
                                 </f:facet>
@@ -95,19 +110,19 @@
                                 </f:facet>
                                 <p:outputLabel value="#{a.sessionInstance.originatingSession.staff.person.nameWithTitle}" />
                             </p:column>
-                            <p:column width="8em">
+                            <p:column>
                                 <f:facet name="header">
                                     <p:outputLabel value="Speciality" />
                                 </f:facet>
                                 <p:outputLabel value="#{a.sessionInstance.originatingSession.staff.speciality.name}" />
                             </p:column>
-                            <p:column width="8em">
+                            <p:column>
                                 <f:facet name="header">
                                     <p:outputLabel value="Session" />
                                 </f:facet>
                                 <p:outputLabel value="#{a.sessionInstance.originatingSession.name}" />
                             </p:column>
-                            <p:column width="4em">
+                            <p:column>
                                 <f:facet name="header">
                                     <p:outputLabel value="Booked" />
                                 </f:facet>
@@ -116,7 +131,7 @@
                                     <h:outputText value="#{channelReportTemplateController.bundle.long1}"></h:outputText>
                                 </f:facet>
                             </p:column>
-                            <p:column width="4em">
+                            <p:column>
                                 <f:facet name="header">
                                     <p:outputLabel value="Paid" />
                                 </f:facet>
@@ -125,7 +140,7 @@
                                     <h:outputText value="#{channelReportTemplateController.bundle.long3}" ></h:outputText>
                                 </f:facet>
                             </p:column>
-                            <p:column width="4em">
+                            <p:column>
                                 <f:facet name="header">
                                     <p:outputLabel value="Cancelled" />
                                 </f:facet>
@@ -134,7 +149,7 @@
                                     <h:outputText value="#{channelReportTemplateController.bundle.long4}" ></h:outputText>
                                 </f:facet>
                             </p:column>
-                            <p:column width="4em">
+                            <p:column>
                                 <f:facet name="header">
                                     <p:outputLabel value="Refunded" />
                                 </f:facet>
@@ -143,7 +158,7 @@
                                     <h:outputText value="#{channelReportTemplateController.bundle.long5}"></h:outputText>
                                 </f:facet>
                             </p:column>
-                            <p:column width="4em">
+                            <p:column>
                                 <f:facet name="header">
                                     <p:outputLabel value="Remaining" />
                                 </f:facet>
