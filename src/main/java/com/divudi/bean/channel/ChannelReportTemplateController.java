@@ -581,6 +581,70 @@ public class ChannelReportTemplateController implements Serializable {
 
     }
 
+    public void fillDailyDoctorCounts() {
+        bundle = new ReportTemplateRowBundle();
+        String j;
+        Map m = new HashMap();
+        rows = new ArrayList<>();
+
+        j = "select new com.divudi.data.ReportTemplateRow(si.originatingSession.staff, "
+                + "sum(si.bookedPatientCount), "
+                + "sum(si.paidPatientCount),"
+                + "sum(si.completedPatientCount),"
+                + "sum(si.cancelPatientCount),"
+                + "sum(si.refundedPatientCount),"
+                + "sum(si.remainingPatientCount)"
+                + ") "
+                + " from SessionInstance si "
+                + " where si.retired=false "
+                + " and si.sessionDate between :fd and :td ";
+
+        if (institution != null) {
+            m.put("ins", institution);
+            j += " and si.institution=:ins ";
+        }
+
+        j += "group by si.originatingSession.staff ";
+        j += "order by si.originatingSession.staff.person.name ";
+        boolean test = false;
+        if (test) {
+            SessionInstance si = new SessionInstance();
+            si.getSessionDate();
+            si.getInstitution();
+        }
+
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+
+        List<ReportTemplateRow> rs = (List<ReportTemplateRow>) billFacade.findLightsByJpql(j, m, TemporalType.DATE);
+
+        bundle.setReportTemplateRows(rs);
+        bundle.setLong1(0l);
+        bundle.setLong2(0l);
+        bundle.setLong3(0l);
+        bundle.setLong4(0l);
+        bundle.setLong5(0l);
+        bundle.setLong6(0l);
+
+        long idCounter = 1;
+
+        for (ReportTemplateRow row : rs) {
+            if (row != null) {
+                row.setId(idCounter++);
+                SessionInstance sessionInstance = row.getSessionInstance();
+                if (sessionInstance != null) {
+                    bundle.setLong1(bundle.getLong1() + (row.getLong1() != null ? row.getLong1() : 0));
+                    bundle.setLong2(bundle.getLong2() + (sessionInstance.getPaidPatientCount() != null ? sessionInstance.getPaidPatientCount() : 0));
+                    bundle.setLong3(bundle.getLong3() + (sessionInstance.getCompletedPatientCount() != null ? sessionInstance.getCompletedPatientCount() : 0));
+                    bundle.setLong4(bundle.getLong4() + (sessionInstance.getCancelPatientCount() != null ? sessionInstance.getCancelPatientCount() : 0));
+                    bundle.setLong5(bundle.getLong5() + (sessionInstance.getRefundedPatientCount() != null ? sessionInstance.getRefundedPatientCount() : 0));
+                    bundle.setLong6(bundle.getLong6() + (sessionInstance.getRemainingPatientCount() != null ? sessionInstance.getRemainingPatientCount() : 0));
+                }
+            }
+        }
+
+    }
+
     public List<BillSession> createBillSessionQuery(Bill bill, PaymentEnum paymentEnum, DateEnum dateEnum, ReportKeyWord reportKeyWord) {
         BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
         List<BillType> bts = Arrays.asList(billTypes);

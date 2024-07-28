@@ -22,9 +22,23 @@
                                                 class="w-100"
                                                 value="Session Counts" 
                                                 action="/channel/reports/daily_session_counts" ajax="false"/>
-                                            <p:commandButton class="w-100" ajax="false" value="Income By FeeType By Sessoin Date" action="/channel/channel_report_by_fee_1"/>
-                                            <p:commandButton class="w-100" value="Channel Patient Counts(34)" action="/channel/channel_report_patient_count" ajax="false" actionListener="#{channelReportTemplateController.clearAll}"/>
-                                            <p:commandButton class="w-100" value="Channel Hospital Income" action="/channel/channel_report_patient_count_income" ajax="false" actionListener="#{channelReportTemplateController.clearAll}"/>
+                                            <p:commandButton 
+                                                class="w-100" 
+                                                ajax="false" 
+                                                value="Doctor Counts" 
+                                                action="/channel/reports/daily_doctor_counts"/>
+                                            <p:commandButton 
+                                                class="w-100" 
+                                                value="Category Counts"
+                                                action="/channel/channel_report_patient_count_income" ajax="false" actionListener="#{channelReportTemplateController.clearAll}"/>
+                                            <p:commandButton 
+                                                class="w-100" 
+                                                             value="Online Bookings"
+                                                             action="/channel/channel_report_patient_count" ajax="false" actionListener="#{channelReportTemplateController.clearAll}"/>
+                                            <p:commandButton 
+                                                class="w-100" 
+                                                value="Category Counts"
+                                                action="/channel/channel_report_patient_count_income" ajax="false" actionListener="#{channelReportTemplateController.clearAll}"/>
                                             <p:commandButton class="w-100" value="Channel Hospital Income With Doc Fee" action="/channel/channel_report_patient_count_income_with_doc?faces-redirect=true" ajax="false" actionListener="#{channelReportTemplateController.clearAll}"/>
                                         </div>
                                     </p:tab>
