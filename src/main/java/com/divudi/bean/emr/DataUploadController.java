@@ -1,5 +1,6 @@
 package com.divudi.bean.emr;
 
+import com.divudi.bean.clinical.ClinicalEntityController;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddressList;
 import org.apache.poi.xssf.usermodel.XSSFDataValidation;
@@ -177,6 +178,8 @@ public class DataUploadController implements Serializable {
     CreditCompanyController creditCompanyController;
     @Inject
     DoctorController doctorController;
+    @Inject 
+    ClinicalEntityController clinicalEntityController;
 
     @EJB
     PatientFacade patientFacade;
@@ -229,6 +232,11 @@ public class DataUploadController implements Serializable {
 
     private boolean pollActive;
     private boolean uploadComplete;
+
+    private List<ClinicalEntity> surgeries;
+    private List<ClinicalEntity> surgeriesToSave;
+    private List<ClinicalEntity> surgeriesToSkiped;
+    
 
     public String navigateToCollectingCenterUpload() {
         uploadComplete = false;
@@ -311,13 +319,11 @@ public class DataUploadController implements Serializable {
         return "/admin/items/item_and_fee_upload_for_outsource_Investigation?faces-redirect=true";
     }
 
-    
     public String navigateToUploadOpdItemsAndHospitalFees() {
         pollActive = false;
         return "/admin/items/opd_items_and_hospital_fee_upload?faces-redirect=true";
     }
 
-    
     public String navigateToCollectingCentreSpecialFeeUpload() {
         pollActive = false;
         return "/admin/items/collecting_centre_special_fee_upload?faces-redirect=true";
@@ -449,6 +455,18 @@ public class DataUploadController implements Serializable {
         if (file != null) {
             try ( InputStream inputStream = file.getInputStream()) {
                 items = readOpdItemsAndFeesFromExcel(inputStream);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public void uploadSurgeries() {
+        surgeries = new ArrayList<>();
+        if (file != null) {
+            try ( InputStream inputStream = file.getInputStream()) {
+                surgeries = readSurgeriesFromExcel(inputStream);
+                System.out.println("surgeries = " + surgeries.size());
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -1297,9 +1315,154 @@ public class DataUploadController implements Serializable {
 
         return itemsToSave;
     }
-    
 
-    private List<ItemFee> addProfessionalFeesFromExcel(InputStream inputStream) throws IOException {
+    private List<ClinicalEntity> readSurgeriesFromExcel(InputStream inputStream) throws IOException {
+    Workbook workbook = new XSSFWorkbook(inputStream);
+    Sheet sheet = workbook.getSheetAt(0);
+    Iterator<Row> rowIterator = sheet.rowIterator();
+
+    surgeriesToSave = new ArrayList<>();
+    surgeriesToSkiped = new ArrayList<>();
+    departmentsSaved = new ArrayList<>();
+    itemsSkipped = new ArrayList<>();
+    institutionsSaved= new ArrayList<>();
+    itemsToSave= new ArrayList<>();
+    ClinicalEntity item;
+    // New running financial category
+
+    // Assuming the first row contains headers, skip it
+    if (rowIterator.hasNext()) {
+        rowIterator.next();
+    }
+
+    while (rowIterator.hasNext()) {
+        Institution runningIns = null;
+        Department runningDept = null;
+        Row row = rowIterator.next();
+
+        Institution institution;
+        Department department;
+
+        String name = null;
+        String description = "";
+        String printingName = null;
+        String fullName = null;
+        String code = null;
+        String categoryName = null;
+        String financialCategoryName = null;
+        String institutionName = null;
+        String departmentName = null;
+        String inwardName = null;
+
+        Cell insCell = row.getCell(6);
+        if (insCell != null && insCell.getCellType() == CellType.STRING) {
+            institutionName = insCell.getStringCellValue();
+        }
+        if (institutionName == null || institutionName.trim().equals("")) {
+            institutionName = sessionController.getInstitution().getName();
+        }
+
+        if (runningIns == null) {
+            institution = institutionController.findAndSaveInstitutionByName(institutionName);
+            institutionsSaved.add(institution);
+            runningIns = institution;
+        } else if (runningIns.getName().equals(institutionName)) {
+            institution = runningIns;
+        } else {
+            institution = institutionController.findAndSaveInstitutionByName(institutionName);
+            institutionsSaved.add(institution);
+            runningIns = institution;
+        }
+
+        Cell deptCell = row.getCell(3);
+        if (deptCell != null && deptCell.getCellType() == CellType.STRING) {
+            departmentName = deptCell.getStringCellValue();
+        }
+        if (departmentName == null || departmentName.trim().equals("")) {
+            departmentName = sessionController.getDepartment().getName();
+        }
+        if (runningDept == null) {
+            department = departmentController.findAndSaveDepartmentByName(departmentName, institution);
+            runningDept = department;
+            departmentsSaved.add(department);
+        } else if (runningDept.getName().equals(departmentName)) {
+            department = runningDept;
+        } else {
+            department = departmentController.getDefaultDepatrment(institution);
+            runningDept = department;
+            departmentsSaved.add(department);
+        }
+
+        Cell nameCell = row.getCell(0);
+        if (nameCell != null && nameCell.getCellType() == CellType.STRING) {
+            name = nameCell.getStringCellValue();
+            if (name == null || name.trim().equals("")) {
+                continue;
+            }
+        }
+
+        Cell printingNameCell = row.getCell(2);
+        if (printingNameCell != null && printingNameCell.getCellType() == CellType.STRING) {
+            printingName = printingNameCell.getStringCellValue();
+        }
+        if (printingName == null || printingName.trim().equals("")) {
+            printingName = name;
+        }
+
+        Cell fullNameCell = row.getCell(1);
+        if (fullNameCell != null && fullNameCell.getCellType() == CellType.STRING) {
+            fullName = fullNameCell.getStringCellValue();
+        }
+        if (fullName == null || fullName.trim().equals("")) {
+            fullName = name;
+        }
+
+        name = CommonFunctions.sanitizeStringForDatabase(name);
+        item = clinicalEntityController.findItemByName(name, department);
+        if (item != null) {
+            itemsSkipped.add(item);
+            continue;
+        }
+
+        Cell codeCell = row.getCell(3);
+        if (codeCell != null && codeCell.getCellType() == CellType.STRING) {
+            code = codeCell.getStringCellValue();
+        } else if (codeCell != null && codeCell.getCellType() == CellType.NUMERIC) {
+            code = codeCell.getNumericCellValue() + "";
+        }
+        if (code == null || code.trim().equals("")) {
+            code = serviceController.generateShortCode(name);
+        }
+        
+        Cell descriptionCell = row.getCell(1);
+        if (descriptionCell != null && descriptionCell.getCellType() == CellType.STRING) {
+            description = descriptionCell.getStringCellValue();
+        }
+        if (description == null || description.trim().equals("")) {
+            description = name;
+        }
+
+        ClinicalEntity cli = new ClinicalEntity();
+        cli.setName(name);
+        cli.setPrintName(printingName);
+        cli.setFullName(fullName);
+        cli.setCode(code);
+        cli.setInstitution(institution);
+        cli.setDepartment(department);
+        cli.setSymanticType(SymanticType.Therapeutic_Procedure);
+        cli.setCreater(sessionController.getLoggedUser());
+        cli.setCreatedAt(new Date());
+        item = cli;
+        itemController.saveSelected(item);
+        if (item != null) {
+            itemsToSave.add(item);
+        }
+    }
+    return surgeriesToSave;
+}
+
+
+private List<ItemFee> addProfessionalFeesFromExcel(InputStream inputStream) throws IOException {
         Workbook workbook = new XSSFWorkbook(inputStream);
         Sheet sheet = workbook.getSheetAt(0);
         Iterator<Row> rowIterator = sheet.rowIterator();
@@ -2844,9 +3007,10 @@ public class DataUploadController implements Serializable {
                 InputStream inputStream = file.getInputStream();
                 readDiagnosesFromExcel(inputStream);
 
-            } catch (IOException ex) {
-                Logger.getLogger(DataUploadController.class
-                        .getName()).log(Level.SEVERE, null, ex);
+} catch (IOException ex) {
+                Logger.getLogger(DataUploadController.class  
+
+.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }
@@ -4698,6 +4862,30 @@ public class DataUploadController implements Serializable {
 
     public void setDepartments(List<Department> departments) {
         this.departments = departments;
+    }
+
+    public List<ClinicalEntity> getSurgeries() {
+        return surgeries;
+    }
+
+    public void setSurgeries(List<ClinicalEntity> surgeries) {
+        this.surgeries = surgeries;
+    }
+
+    public List<ClinicalEntity> getSurgeriesToSave() {
+        return surgeriesToSave;
+    }
+
+    public void setSurgeriesToSave(List<ClinicalEntity> surgeriesToSave) {
+        this.surgeriesToSave = surgeriesToSave;
+    }
+
+    public List<ClinicalEntity> getSurgeriesToSkiped() {
+        return surgeriesToSkiped;
+    }
+
+    public void setSurgeriesToSkiped(List<ClinicalEntity> surgeriesToSkiped) {
+        this.surgeriesToSkiped = surgeriesToSkiped;
     }
 
 }
