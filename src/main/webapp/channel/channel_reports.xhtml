@@ -21,21 +21,24 @@
                                             <p:commandButton 
                                                 class="w-100"
                                                 value="Session Counts" 
-                                                action="/channel/reports/daily_session_counts" ajax="false"/>
+
+                                                action="#{channelReportTemplateController.navigateToChannlingSessionCount}" 
+                                                ajax="false"/>
 
                                             <p:commandButton 
                                                 class="w-100" 
                                                 ajax="false" 
                                                 value="Doctor Counts" 
-                                                action="/channel/reports/daily_doctor_counts"/>
+                                                action="#{channelReportTemplateController.navigateToChannlingDoctorCount}"/>
                                             <p:commandButton 
                                                 class="w-100" 
                                                 value="Category Counts"
-                                                action="/channel/channel_report_patient_count_income" ajax="false" actionListener="#{channelReportTemplateController.clearAll}"/>
+                                                action="#{channelReportTemplateController.navigateToCategorySessionCount}"
+                                                ajax="false" />
                                             <p:commandButton 
                                                 class="w-100" 
-                                                             value="Online Bookings"
-                                                             action="/channel/channel_report_patient_count" ajax="false" actionListener="#{channelReportTemplateController.clearAll}"/>
+                                                value="Online Bookings"
+                                                action="/channel/channel_report_patient_count" ajax="false"/>
                                             <p:commandButton 
                                                 class="w-100" 
                                                 value="Category Counts"
