@@ -1303,7 +1303,6 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
         toStaff = null;
         //fillPaymentMethodDetails();
         netTotal = getPreBill().getNetTotal();
-
         //calculateDiscount();
         return "/opd/opd_bill_pre_settle?faces-redirect=true";
 
