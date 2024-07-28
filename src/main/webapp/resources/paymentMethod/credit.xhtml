@@ -38,9 +38,16 @@
 
             <p:inputText 
                 id="polNo" 
-                style="width: 250px;"
+                style="width: 200px;"
                 value="#{cc.attrs.paymentMethodData.credit.referralNo}" 
                 placeholder="Policy NO" >
+            </p:inputText>
+            
+            <p:inputText 
+                id="memo" 
+                style="width: 300px;"
+                value="#{cc.attrs.paymentMethodData.credit.comment}" 
+                placeholder="Memo" >
             </p:inputText>
 
             <p:commandLink 

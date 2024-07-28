@@ -159,10 +159,10 @@ public class ReportController implements Serializable {
         collectionCenters = institutionFacade.findByJpql(jpql, m);
     }
 
-    public String navigatetoOPDLabReportByMenu(){
+    public String navigatetoOPDLabReportByMenu() {
         return "/lab/report_for_opd_print?faces-redirect=true";
     }
-    
+
     public String navigateToPrescriptionSummaryReport() {
         return "/pharmacy/prescription_summary_report?faces-redirect=true";
     }
@@ -312,19 +312,19 @@ public class ReportController implements Serializable {
         // Convert the map values to a list to be used in the JSF page
         reportList = new ArrayList<>(categoryReports.values());
     }
-    
-    public void filterOpdServiceCountBySelectedService(Long selectedItemId){
+
+    public void filterOpdServiceCountBySelectedService(Long selectedItemId) {
         if (selectedItemId != null) {
-            item=itemController.findItem(selectedItemId);
-            doctor=null;
+            item = itemController.findItem(selectedItemId);
+            doctor = null;
         }
         processOpdServiceCountDoctorWise();
     }
-    
-    public void filterOpdServiceCountBySelectedDoctor(Long selectedDoctorId){
+
+    public void filterOpdServiceCountBySelectedDoctor(Long selectedDoctorId) {
         if (selectedDoctorId != null) {
-            doctor=doctorController.findDoctor(selectedDoctorId);
-            item=null;
+            doctor = doctorController.findDoctor(selectedDoctorId);
+            item = null;
         }
         processOpdServiceCountDoctorWise();
     }
@@ -332,7 +332,7 @@ public class ReportController implements Serializable {
     public void processOpdServiceCountDoctorWise() {
         List<BillTypeAtomic> billtypes = new ArrayList<>();
         billtypes.add(BillTypeAtomic.OPD_BILL_TO_COLLECT_PAYMENT_AT_CASHIER);
-        
+
         String jpql = "select new com.divudi.data.ItemCount(bi.bill.fromStaff.person.name, bi.bill.fromStaff.id, bi.item.name, bi.item.id, count(bi)) "
                 + " from BillItem bi "
                 + " where bi.bill.cancelled=:can "
@@ -352,18 +352,16 @@ public class ReportController implements Serializable {
             jpql += " and bi.bill.fromStaff =:fs";
             m.put("fs", doctor);
         }
-        if(item != null){
+        if (item != null) {
             jpql += " and bi.item =:it";
             m.put("it", item);
         }
-        
+
         jpql += " group by bi.item, bi.bill.fromStaff ";
         jpql += " order by bi.bill.fromStaff.person.name, bi.item.name";
         reportOpdServiceCount = (List<ItemCount>) billItemFacade.findLightsByJpql(jpql, m);
     }
 
-    
-    
     public void processCollectingCentreReportsToPrint() {
         String jpql = "select bi "
                 + " from BillItem bi "
@@ -425,9 +423,6 @@ public class ReportController implements Serializable {
         billItems = billItemFacade.findByJpql(jpql, m);
     }
 
-    
-    
-    
     public void processCollectingCentreStatementReport() {
         String jpql = "select bi "
                 + " from BillItem bi "
@@ -817,7 +812,7 @@ public class ReportController implements Serializable {
         response.setContentType("application/vnd.ms-excel");
         response.setHeader("Content-Disposition", "attachment; filename=test_counts.xlsx");
 
-        try ( ServletOutputStream outputStream = response.getOutputStream()) {
+        try (ServletOutputStream outputStream = response.getOutputStream()) {
             workbook.write(outputStream);
             fc.responseComplete();
         } catch (IOException e) {
@@ -833,7 +828,7 @@ public class ReportController implements Serializable {
         response.setContentType("application/vnd.ms-excel");
         response.setHeader("Content-Disposition", "attachment; filename=Sale_Item_Count.xlsx");
 
-        try ( ServletOutputStream outputStream = response.getOutputStream()) {
+        try (ServletOutputStream outputStream = response.getOutputStream()) {
             workbook.write(outputStream);
             fc.responseComplete();
         } catch (IOException e) {
@@ -849,7 +844,7 @@ public class ReportController implements Serializable {
         response.setContentType("application/vnd.ms-excel");
         response.setHeader("Content-Disposition", "attachment; filename=service_count.xlsx");
 
-        try ( ServletOutputStream outputStream = response.getOutputStream()) {
+        try (ServletOutputStream outputStream = response.getOutputStream()) {
             workbook.write(outputStream);
             fc.responseComplete();
         } catch (IOException e) {
@@ -1787,6 +1782,10 @@ public class ReportController implements Serializable {
 
     public void setReportOpdServiceCount(List<ItemCount> reportOpdServiceCount) {
         this.reportOpdServiceCount = reportOpdServiceCount;
+    }
+
+    public String navigateToDynamicReportSummary() {
+        return "/reports/dynamic_reports/dynamic_report_summary?faces-redirect=true";
     }
 
 }
