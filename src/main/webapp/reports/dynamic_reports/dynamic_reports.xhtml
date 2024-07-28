@@ -3,7 +3,8 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://xmlns.jcp.org/jsf/html">
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <body>
 
@@ -11,34 +12,41 @@
 
             <ui:define name="content">
                 <p:panel header="Dynamic Reports">
-                   <div class="row" >
-                        <div class="col-md-3" >
-                            <h:form>
-                                <p:accordionPanel activeIndex="#{searchController.manageListIndex}">
-                                    <p:ajax process="@this"></p:ajax>
 
-                                    <p:tab title="Lists">
-                                        <div class="d-grid gap-2">
-                                            <p:commandButton 
-                                                ajax="false" 
-                                                value="Dynamic Report Summary" 
-                                                actionListener="#{searchController.makeNull()}"
-                                                action="#{reportController.navigateToDynamicReportSummary()}"
-                                                class="w-100">
-                                            </p:commandButton>
-                                        </div>
-                                    </p:tab>
-                                </p:accordionPanel>
-                            </h:form>
-                        </div>
-                        <div class="col-md-9"  >
-                            <ui:insert name="subcontent">
-                            </ui:insert>
-                        </div>
-                    </div> 
-                    
+                    <h:form>
+                        <p:dataTable 
+                            class="w-100"
+                            value="#{reportTemplateController.items}" 
+                            var="t" 
+                            rowKey="#{t.id}"
+                            paginator="true" 
+                            rows="10" 
+                            paginatorPosition="both"
+                            rowsPerPageTemplate="5,10,15,20,50,100,250,500,1000">
+
+                            <p:column headerText="Name" filterBy="#{t.name}" filterMatchMode="contains">
+                                <h:outputText value="#{t.name}" />
+                            </p:column>
+
+                            <p:column headerText="Code" filterBy="#{t.code}" filterMatchMode="contains">
+                                <h:outputText value="#{t.code}" />
+                            </p:column>
+
+                            <p:column headerText="Description" filterBy="#{t.description}" filterMatchMode="contains">
+                                <h:outputText value="#{t.description}" />
+                            </p:column>
+
+                            <p:column headerText="Action">
+                                <p:commandButton value="To Run" action="#{reportTemplateController.navigateToGenerateReport()}" ajax="false">
+                                    <f:setPropertyActionListener value="#{t}" target="#{reportTemplateController.current}" />
+                                </p:commandButton>
+                            </p:column>
+                        </p:dataTable>
+
+                    </h:form>
+
                 </p:panel>
-                
+
             </ui:define>
 
         </ui:composition>

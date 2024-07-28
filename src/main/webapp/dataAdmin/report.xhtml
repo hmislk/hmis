@@ -8,28 +8,29 @@
 
     <h:body>
         <ui:composition template="/dataAdmin/admin_data_administration.xhtml">
-            <ui:define name="subcontent">
+            <ui:define name="content">
 
                 <h:form id="reportForm">
                     <p:messages id="messages" showDetail="true" closable="true" />
 
-                    <p:panelGrid columns="2" >
+                    <p:panelGrid columns="2">
                         <p:outputLabel value="Report : " />
                         <p:outputLabel value="#{reportTemplateController.current.name}" />
-                        <p:outputLabel value="Report Type:"  />
-                        <p:selectOneMenu  value="#{reportTemplateController.current.reportTemplateType}"
-                                          filter="true"
-                                          filterMatchMode="contains"
-                                          class="w-100">
-                            <f:selectItems value="#{reportTemplateController.reportTemplateTypes}" var="type"
-                                           itemLabel="#{type}" itemValue="#{type}" />
-                        </p:selectOneMenu>
+
+                        <p:outputLabel value="Report Type:" />
+                        <p:outputLabel value="#{reportTemplateController.current.reportTemplateType}" />
+
+                        <p:commandButton class="m-1" value="Process" ajax="false" action="#{reportTemplateController.processReport()}" icon="fa fa-cogs" />
+
+                        <p:commandButton 
+                            immediate="true"
+                            class="m-1" value="Back" ajax="false" action="/reports/dynamic_reports/dynamic_reports?faces-redirect=true" icon="fa fa-arrow-left" />
                     </p:panelGrid>
+
 
                     <p:panelGrid columns="1" class="w-100 m-2 p-2">
                         <f:facet name="header">
                             <p:outputLabel value="Report" />
-                            <p:commandButton class="mx-5" value="Process" ajax="false" action="#{reportTemplateController.processReport()}" />
                         </f:facet>
                         <h:panelGroup rendered="#{reportTemplateController.current.matchesReportTemplateFilter('DATE')}" >
                             <p:outputLabel value="Date"  />
@@ -74,6 +75,11 @@
                         <ez:report_bill_fee_grouped_by_atomic_bill_type
                             bundle="#{reportTemplateController.reportTemplateRowBundle}"/>
                     </h:panelGroup>
+                    <h:panelGroup rendered="#{reportTemplateController.current.reportTemplateType eq 'SESSION_INSTANCE_LIST'}">
+                        <ez:session_instace_list
+                            bundle="#{reportTemplateController.reportTemplateRowBundle}"/>
+                    </h:panelGroup>
+
                     <h:panelGroup rendered="#{reportTemplateController.current.reportTemplateType eq 'BILL_TYPE_ATOMIC_SUMMARY_USING_BILLS'}">
                         <ez:report_bill_fee_grouped_by_atomic_bill_type
                             bundle="#{reportTemplateController.reportTemplateRowBundle}"/>
