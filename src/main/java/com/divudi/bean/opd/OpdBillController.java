@@ -1688,9 +1688,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                 error = true;
             }
         } else if (getPaymentMethod() == PaymentMethod.Credit) {
-            System.out.println("Credit");
             if (getPaymentMethodData().getCredit().getComment().trim().equals("") && configOptionApplicationController.getBooleanValueByKey("OPD Billing - Credit Comment is Mandatory", false)) {
-                System.out.println("Error");
                 JsfUtil.addErrorMessage("Please Enter a Credit Comment..");
                 error = true;
             }
