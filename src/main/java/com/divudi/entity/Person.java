@@ -131,6 +131,8 @@ public class Person implements Serializable {
     @Transient
     String ageAsString;
     @Transient
+    private String ageAsShortString;
+    @Transient
     long ageInDays;
     @Transient
     int serealNumber;
@@ -206,6 +208,39 @@ public class Person implements Serializable {
             ageAsString = years + " years and " + months + " months";
         } else {
             ageAsString = months + " months and " + days + " days";
+        }
+
+        period = new Period(ldDob, currentDate, PeriodType.days());
+        ageInDays = (long) period.getDays();
+        ageDaysComponent = days;
+        ageMonthsComponent = months;
+        ageYearsComponent = years;
+    }
+
+    public void calShortAgeFromDob() {
+        ageAsShortString = "";
+        ageInDays = 0L;
+        if (getDob() == null) {
+            return;
+        }
+
+        LocalDate ldDob = new LocalDate(getDob());
+        LocalDate currentDate = LocalDate.now();
+
+        Period period = new Period(ldDob, currentDate, PeriodType.yearMonthDay());
+
+        int years = period.getYears();
+        int months = period.getMonths();
+        int days = period.getDays();
+
+        if (years > 5) {
+            ageAsString = years + "Y";
+        } else if (years > 0) {
+            ageAsString = years + "Y" + months + "M";
+        } else if (months > 0) {
+            ageAsString = months + "M" + days + "d";
+        } else {
+            ageAsString = days + "d";
         }
 
         period = new Period(ldDob, currentDate, PeriodType.days());
@@ -650,6 +685,14 @@ public class Person implements Serializable {
 
     public void setSmsNumber(String smsNumber) {
         this.smsNumber = smsNumber;
+    }
+
+    public String getAgeAsShortString() {
+        calShortAgeFromDob();
+        if (ageAsShortString == null || ageAsShortString.trim().equals("")) {
+            ageAsShortString = "";
+        }
+        return ageAsShortString;
     }
 
 }
