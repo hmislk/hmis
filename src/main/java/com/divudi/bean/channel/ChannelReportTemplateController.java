@@ -12,6 +12,7 @@ import com.divudi.bean.hr.StaffController;
 import com.divudi.data.ApplicationInstitution;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillType;
+import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.DoctorDayChannelCount;
 import com.divudi.data.FeeType;
 import com.divudi.data.HistoryType;
@@ -37,6 +38,7 @@ import com.divudi.entity.BillItem;
 import com.divudi.entity.BillSession;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
+import com.divudi.entity.Category;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.RefundBill;
@@ -75,6 +77,7 @@ import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
+import org.hl7.fhir.r5.model.Bundle;
 
 @Named
 @SessionScoped
@@ -125,6 +128,7 @@ public class ChannelReportTemplateController implements Serializable {
     Date toDate;
     Date date;
     Institution institution;
+    private Category category;
     WebUser webUser;
     Staff staff;
     ChannelBillTotals billTotals;
@@ -207,6 +211,27 @@ public class ChannelReportTemplateController implements Serializable {
         date = null;
         bookingCountSummryRows = new ArrayList<>();
         bookingCountSummryRowsScan = new ArrayList<>();
+    }
+
+    public String navigateToChannlingSessionCount() {
+        bundle = new ReportTemplateRowBundle();
+        return "/channel/reports/daily_session_counts?faces-redirect=true;";
+    }
+
+    public String navigateToChannlingDoctorCount() {
+        bundle = new ReportTemplateRowBundle();
+        return "/channel/reports/daily_doctor_counts?faces-redirect=true;";
+    }
+
+    public String navigateToCategorySessionCount() {
+        bundle = new ReportTemplateRowBundle();
+        return "/channel/reports/category_session_counts?faces-redirect=true;";
+    }
+
+    //ToDo : Pubudu
+    public String navigateToOnlineBookings() {
+        bundle = new ReportTemplateRowBundle();
+        return "/channel/reports/category_session_counts?faces-redirect=true;";
     }
 
     public void clearWithDefultValue() {
@@ -570,6 +595,188 @@ public class ChannelReportTemplateController implements Serializable {
                 SessionInstance sessionInstance = row.getSessionInstance();
                 if (sessionInstance != null) {
                     bundle.setLong1(bundle.getLong1() + (sessionInstance.getBookedPatientCount() != null ? sessionInstance.getBookedPatientCount() : 0));
+                    bundle.setLong2(bundle.getLong2() + (sessionInstance.getPaidPatientCount() != null ? sessionInstance.getPaidPatientCount() : 0));
+                    bundle.setLong3(bundle.getLong3() + (sessionInstance.getCompletedPatientCount() != null ? sessionInstance.getCompletedPatientCount() : 0));
+                    bundle.setLong4(bundle.getLong4() + (sessionInstance.getCancelPatientCount() != null ? sessionInstance.getCancelPatientCount() : 0));
+                    bundle.setLong5(bundle.getLong5() + (sessionInstance.getRefundedPatientCount() != null ? sessionInstance.getRefundedPatientCount() : 0));
+                    bundle.setLong6(bundle.getLong6() + (sessionInstance.getRemainingPatientCount() != null ? sessionInstance.getRemainingPatientCount() : 0));
+                }
+            }
+        }
+
+    }
+
+    public void fillCategorySessionCounts() {
+        bundle = new ReportTemplateRowBundle();
+        String j;
+        Map m = new HashMap();
+        rows = new ArrayList<>();
+
+        j = "select new com.divudi.data.ReportTemplateRow(pubudu) "
+                + " from SessionInstance pubudu "
+                + " where pubudu.retired=false "
+                + " and pubudu.sessionDate between :fd and :td ";
+
+        if (institution != null) {
+            m.put("ins", institution);
+            j += " and pubudu.institution=:ins ";
+        }
+
+        if (category != null) {
+            m.put("cat", category);
+            j += " and pubudu.originatingSession.category=:cat ";
+        }
+
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+
+        List<ReportTemplateRow> rs = (List<ReportTemplateRow>) billFacade.findLightsByJpql(j, m, TemporalType.DATE);
+
+        bundle.setReportTemplateRows(rs);
+
+        bundle.setLong1(0l);
+        bundle.setLong2(0l);
+        bundle.setLong3(0l);
+        bundle.setLong4(0l);
+        bundle.setLong5(0l);
+        bundle.setLong6(0l);
+
+        long idCounter = 1;
+
+        for (ReportTemplateRow row : rs) {
+            if (row != null) {
+                row.setId(idCounter++);
+                SessionInstance sessionInstance = row.getSessionInstance();
+                if (sessionInstance != null) {
+                    bundle.setLong1(bundle.getLong1() + (sessionInstance.getBookedPatientCount() != null ? sessionInstance.getBookedPatientCount() : 0));
+                    bundle.setLong2(bundle.getLong2() + (sessionInstance.getPaidPatientCount() != null ? sessionInstance.getPaidPatientCount() : 0));
+                    bundle.setLong3(bundle.getLong3() + (sessionInstance.getCompletedPatientCount() != null ? sessionInstance.getCompletedPatientCount() : 0));
+                    bundle.setLong4(bundle.getLong4() + (sessionInstance.getCancelPatientCount() != null ? sessionInstance.getCancelPatientCount() : 0));
+                    bundle.setLong5(bundle.getLong5() + (sessionInstance.getRefundedPatientCount() != null ? sessionInstance.getRefundedPatientCount() : 0));
+                    bundle.setLong6(bundle.getLong6() + (sessionInstance.getRemainingPatientCount() != null ? sessionInstance.getRemainingPatientCount() : 0));
+                }
+            }
+        }
+
+    }
+
+    //To Do - Pubudu
+    public void fillOnlineBookings() {
+        bundle = new ReportTemplateRowBundle();
+        String j;
+        Map m = new HashMap();
+        rows = new ArrayList<>();
+        //BillSession
+        boolean test = false;
+        if(test){
+            BillSession bs = new BillSession();
+            bs.getSessionInstance().getSessionDate();
+            if(bs.getBill().getBillTypeAtomic()==BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT_ONLINE ){
+                
+            }
+        }
+      
+        j = "select new com.divudi.data.ReportTemplateRow(pubudu) "
+                + " from SessionInstance pubudu "
+                + " where pubudu.retired=false "
+                + " and pubudu.sessionDate between :fd and :td ";
+
+        if (institution != null) {
+            m.put("ins", institution);
+            j += " and pubudu.institution=:ins ";
+        }
+
+        if (category != null) {
+            m.put("cat", category);
+            j += " and pubudu.originatingSession.category=:cat ";
+        }
+
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+
+        List<ReportTemplateRow> rs = (List<ReportTemplateRow>) billFacade.findLightsByJpql(j, m, TemporalType.DATE);
+
+        bundle.setReportTemplateRows(rs);
+
+        bundle.setLong1(0l);
+        bundle.setLong2(0l);
+        bundle.setLong3(0l);
+        bundle.setLong4(0l);
+        bundle.setLong5(0l);
+        bundle.setLong6(0l);
+
+        long idCounter = 1;
+
+        for (ReportTemplateRow row : rs) {
+            if (row != null) {
+                row.setId(idCounter++);
+                SessionInstance sessionInstance = row.getSessionInstance();
+                if (sessionInstance != null) {
+                    bundle.setLong1(bundle.getLong1() + (sessionInstance.getBookedPatientCount() != null ? sessionInstance.getBookedPatientCount() : 0));
+                    bundle.setLong2(bundle.getLong2() + (sessionInstance.getPaidPatientCount() != null ? sessionInstance.getPaidPatientCount() : 0));
+                    bundle.setLong3(bundle.getLong3() + (sessionInstance.getCompletedPatientCount() != null ? sessionInstance.getCompletedPatientCount() : 0));
+                    bundle.setLong4(bundle.getLong4() + (sessionInstance.getCancelPatientCount() != null ? sessionInstance.getCancelPatientCount() : 0));
+                    bundle.setLong5(bundle.getLong5() + (sessionInstance.getRefundedPatientCount() != null ? sessionInstance.getRefundedPatientCount() : 0));
+                    bundle.setLong6(bundle.getLong6() + (sessionInstance.getRemainingPatientCount() != null ? sessionInstance.getRemainingPatientCount() : 0));
+                }
+            }
+        }
+
+    }
+
+    public void fillDailyDoctorCounts() {
+        bundle = new ReportTemplateRowBundle();
+        String j;
+        Map m = new HashMap();
+        rows = new ArrayList<>();
+
+        j = "select new com.divudi.data.ReportTemplateRow(si.originatingSession.staff, "
+                + "sum(si.bookedPatientCount), "
+                + "sum(si.paidPatientCount),"
+                + "sum(si.completedPatientCount),"
+                + "sum(si.cancelPatientCount),"
+                + "sum(si.refundedPatientCount),"
+                + "sum(si.remainingPatientCount)"
+                + ") "
+                + " from SessionInstance si "
+                + " where si.retired=false "
+                + " and si.sessionDate between :fd and :td ";
+
+        if (institution != null) {
+            m.put("ins", institution);
+            j += " and si.institution=:ins ";
+        }
+
+        j += "group by si.originatingSession.staff ";
+        j += "order by si.originatingSession.staff.person.name ";
+        boolean test = false;
+        if (test) {
+            SessionInstance si = new SessionInstance();
+            si.getSessionDate();
+            si.getInstitution();
+        }
+
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+
+        List<ReportTemplateRow> rs = (List<ReportTemplateRow>) billFacade.findLightsByJpql(j, m, TemporalType.DATE);
+
+        bundle.setReportTemplateRows(rs);
+        bundle.setLong1(0l);
+        bundle.setLong2(0l);
+        bundle.setLong3(0l);
+        bundle.setLong4(0l);
+        bundle.setLong5(0l);
+        bundle.setLong6(0l);
+
+        long idCounter = 1;
+
+        for (ReportTemplateRow row : rs) {
+            if (row != null) {
+                row.setId(idCounter++);
+                SessionInstance sessionInstance = row.getSessionInstance();
+                if (sessionInstance != null) {
+                    bundle.setLong1(bundle.getLong1() + (row.getLong1() != null ? row.getLong1() : 0));
                     bundle.setLong2(bundle.getLong2() + (sessionInstance.getPaidPatientCount() != null ? sessionInstance.getPaidPatientCount() : 0));
                     bundle.setLong3(bundle.getLong3() + (sessionInstance.getCompletedPatientCount() != null ? sessionInstance.getCompletedPatientCount() : 0));
                     bundle.setLong4(bundle.getLong4() + (sessionInstance.getCancelPatientCount() != null ? sessionInstance.getCancelPatientCount() : 0));
@@ -5784,6 +5991,14 @@ public class ChannelReportTemplateController implements Serializable {
 
     public void setBundle(ReportTemplateRowBundle bundle) {
         this.bundle = bundle;
+    }
+
+    public Category getCategory() {
+        return category;
+    }
+
+    public void setCategory(Category category) {
+        this.category = category;
     }
 
     public class DocPage {
