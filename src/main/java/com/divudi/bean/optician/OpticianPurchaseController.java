@@ -481,19 +481,25 @@ public class OpticianPurchaseController implements Serializable {
             Stock stock = getPharmacyBean().addToStock(tmpPh, Math.abs(addingQty), getSessionController().getDepartment());
 
             tmpPh.setStock(stock);
-
+            System.out.println("i.getItem().getItemBarcodeGenerationStrategy() = " + i.getItem().getItemBarcodeGenerationStrategy());
             switch (i.getItem().getItemBarcodeGenerationStrategy()) {
                 case BY_INDIVIDUAL_UNIT: {
+                    System.out.println("by unit");
                     String initialPartOfBarcode = i.getItem().getBarcode();
+                    System.out.println("initialPartOfBarcode = " + initialPartOfBarcode);
                     Long startLongSecondPart = i.getItem().getLastBarcode() + 1;
+                    System.out.println("startLongSecondPart = " + startLongSecondPart);
                     Double qty = 0.0;
                     if (i.getPharmaceuticalBillItem() != null) {
                         qty += i.getPharmaceuticalBillItem().getQtyInUnit();
                         qty += i.getPharmaceuticalBillItem().getFreeQtyInUnit();
                     }
                     Long endLongSecondPart = i.getItem().getLastBarcode() + Math.round(qty);
+                    System.out.println("endLongSecondPart = " + endLongSecondPart);
                     Long startFullBarcode = createBarcode(initialPartOfBarcode, startLongSecondPart);
+                    System.out.println("startFullBarcode = " + startFullBarcode);
                     Long endFullBarcode = createBarcode(initialPartOfBarcode, endLongSecondPart);
+                    System.out.println("endLongSecondPart = " + endFullBarcode);
                     stock.setStartBarcode(startFullBarcode);
                     stock.setEndBarcode(endFullBarcode);
                     i.getItem().setLastBarcode(endLongSecondPart);
