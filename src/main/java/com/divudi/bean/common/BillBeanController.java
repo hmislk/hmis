@@ -2558,16 +2558,19 @@ public class BillBeanController implements Serializable {
             b.setBank(paymentMethodData.getCheque().getInstitution());
             b.setChequeRefNo(paymentMethodData.getCheque().getNo());
             b.setChequeDate(paymentMethodData.getCheque().getDate());
+            b.setComments(paymentMethodData.getCheque().getComment());
         }
+        
         if (paymentMethod.equals(PaymentMethod.Slip)) {
             b.setBank(paymentMethodData.getSlip().getInstitution());
             b.setChequeDate(paymentMethodData.getSlip().getDate());
-            //   b.setComments(paymentMethodData.getSlip().getComment());
+            b.setComments(paymentMethodData.getSlip().getComment());
         }
 
         if (paymentMethod.equals(PaymentMethod.Card)) {
             b.setCreditCardRefNo(paymentMethodData.getCreditCard().getNo());
             b.setBank(paymentMethodData.getCreditCard().getInstitution());
+            b.setComments(paymentMethodData.getSlip().getComment());
         }
 
         if (paymentMethod.equals(PaymentMethod.OnlineSettlement)) {
