@@ -1,0 +1,43 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:head>
+        <title>Facelet Title</title>
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous"/>
+    </h:head>
+    <h:body>
+        <h:form >
+            <f:event type="preRenderView" listener="#{sessionController.logout}" />
+            <div class="d-flex justify-content-center align-items-center text-center mt-5">
+                <div class="card w-75 h-50 shadow">
+                    <div class="card-body">
+                        <div class="my-5">
+                            <img src="https://st2.depositphotos.com/41237426/42830/v/450/depositphotos_428309110-stock-illustration-clock-simple-vector-icon-design.jpg" width="200px" alt="alt"/>
+                        </div>
+                        <h2 class="mb-4 text-danger">We're sorry, but your session has timed out</h2>
+                        <h5 class="m-2">
+                            For security reasons, your session was automatically terminated due to inactivity. 
+                            To ensure the safety of your account and data, it is necessary to log in again.
+                        </h5>
+
+
+                        <div class="d-flex justify-content-center align-items-center m-4">
+                            <p:commandButton
+                                id="login"
+                                value="Login" 
+                                action="/index" 
+                                class="btn btn-primary"
+                                ajax="false"></p:commandButton>
+                            <p:defaultCommand target="login"> </p:defaultCommand>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </h:form>
+    </h:body>
+</html>
+

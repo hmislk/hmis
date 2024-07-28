@@ -719,9 +719,9 @@ public class SessionController implements Serializable, HttpSessionListener {
         }
     }
     
-    public String getTimeoutPageUrl() {
+    public String getLogoutPageUrl() {
         String contextPath = FacesContext.getCurrentInstance().getExternalContext().getRequestContextPath();
-        return contextPath + "/faces/timeout.xhtml"; // Adjust the path as needed
+        return contextPath + "/faces/logout.xhtml"; // Adjust the path as needed
     }
 
     

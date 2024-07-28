@@ -41,7 +41,7 @@
         <script type="text/javascript">
             var timeoutInMinutes = #{configOptionApplicationController.getShortTextValueByKey('Application Timeout in Minutes', '15')};
             var timeoutDuration = timeoutInMinutes * 60000; // Convert minutes to milliseconds
-            var timeoutPageUrl = '#{sessionController.timeoutPageUrl}'; // Get the dynamic URL from the bean
+            var timeoutPageUrl = '#{sessionController.logoutPageUrl}'; // Get the dynamic URL from the bean
 
             setTimeout(function () {
                 alert('Session has expired. You will now be redirected to the session timeout page.');
