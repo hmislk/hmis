@@ -16,36 +16,47 @@
                             <p:panel header="Channel Reports">
                                 <p:accordionPanel activeIndex="#{channelReportController.channelReportMenuIndex}">
                                     <p:ajax process="@this"></p:ajax>
-
+                                    <p:tab title="Summary Reports">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton 
+                                                class="w-100"
+                                                value="Session Counts" 
+                                                action="/channel/reports/daily_session_counts" ajax="false"/>
+                                            <p:commandButton class="w-100" ajax="false" value="Income By FeeType By Sessoin Date" action="/channel/channel_report_by_fee_1"/>
+                                            <p:commandButton class="w-100" value="Channel Patient Counts(34)" action="/channel/channel_report_patient_count" ajax="false" actionListener="#{channelReportTemplateController.clearAll}"/>
+                                            <p:commandButton class="w-100" value="Channel Hospital Income" action="/channel/channel_report_patient_count_income" ajax="false" actionListener="#{channelReportTemplateController.clearAll}"/>
+                                            <p:commandButton class="w-100" value="Channel Hospital Income With Doc Fee" action="/channel/channel_report_patient_count_income_with_doc?faces-redirect=true" ajax="false" actionListener="#{channelReportTemplateController.clearAll}"/>
+                                        </div>
+                                    </p:tab>
 
                                     <p:tab title="Income Reports">
                                         <div class="d-grid gap-2">
                                             <p:commandButton class="w-100" value="Income With Agent Bookings" action="/channel/income_with_agent_bookings" ajax="false"/>
                                             <p:commandButton class="w-100" ajax="false" value="Income By FeeType By Sessoin Date" action="/channel/channel_report_by_fee_1"/>
-                                            <p:commandButton class="w-100" value="Channel Patient Counts(34)" action="/channel/channel_report_patient_count" ajax="false" actionListener="#{channelReportControllerOld.clearAll}"/>
-                                            <p:commandButton class="w-100" value="Channel Hospital Income" action="/channel/channel_report_patient_count_income" ajax="false" actionListener="#{channelReportControllerOld.clearAll}"/>
-                                            <p:commandButton class="w-100" value="Channel Hospital Income With Doc Fee" action="/channel/channel_report_patient_count_income_with_doc?faces-redirect=true" ajax="false" actionListener="#{channelReportControllerOld.clearAll}"/>
+                                            <p:commandButton class="w-100" value="Channel Patient Counts(34)" action="/channel/channel_report_patient_count" ajax="false" actionListener="#{channelReportTemplateController.clearAll}"/>
+                                            <p:commandButton class="w-100" value="Channel Hospital Income" action="/channel/channel_report_patient_count_income" ajax="false" actionListener="#{channelReportTemplateController.clearAll}"/>
+                                            <p:commandButton class="w-100" value="Channel Hospital Income With Doc Fee" action="/channel/channel_report_patient_count_income_with_doc?faces-redirect=true" ajax="false" actionListener="#{channelReportTemplateController.clearAll}"/>
                                         </div>
                                     </p:tab>
                                     <p:tab title="Bill Reports">
                                         <div class="d-grid gap-2">
-                                            <!--<p:commandButton class="w-100" ajax="false" value="All Channel Bill List" action="/channel/channel_report_by_bill_class_all" actionListener="#{channelReportControllerOld.clearAll}"/>-->
+                                            <!--<p:commandButton class="w-100" ajax="false" value="All Channel Bill List" action="/channel/channel_report_by_bill_class_all" actionListener="#{channelReportTemplateController.clearAll}"/>-->
                                             <p:commandButton class="w-100" ajax="false" value="Bill Session" action="/channel/channel_report_bill_session_1"/>
                                             <p:commandButton class="w-100" ajax="false" value="Bill Fees" action="/channel/channel_report_by_fee"/>
                                             <p:commandButton class="w-100" ajax="false" value="Bill Fees with Fee Types" action="/channel/report_cashier_summery_with_fee-type"/>
-                                            <p:commandButton class="w-100" ajax="false" value="Bill Summary()" action="/channel/channel_report_all_booking" actionListener="#{channelReportControllerOld.clearAll}"/>
-                                            <p:commandButton class="w-100" ajax="false" value="Bill Summary(Special)" action="/channel/channel_report_all_booking_special" actionListener="#{channelReportControllerOld.clearAll}" />
+                                            <p:commandButton class="w-100" ajax="false" value="Bill Summary()" action="/channel/channel_report_all_booking" actionListener="#{channelReportTemplateController.clearAll}"/>
+                                            <p:commandButton class="w-100" ajax="false" value="Bill Summary(Special)" action="/channel/channel_report_all_booking_special" actionListener="#{channelReportTemplateController.clearAll}" />
                                             <p:commandButton class="w-100" ajax="false" value="Bill Detail Summary()" action="/channel/channel_report_by_bill_class"/>
                                             <p:commandButton class="w-100" ajax="false" value="All Department Bill Summary" action="/channel/channel_report_department_wise_bills"/>
                                             <p:commandButton class="w-100" ajax="false" value="All Channel Bills" action="/channel/channel_report_all_bills"/>
                                             <p:commandButton class="w-100" ajax="false" value="All Channel Bill With Vat" action="/channel/channel_report_all_bills_for_vat_1"/>
                                             <p:commandButton class="w-100" ajax="false" value="Area Wise Count Report" action="/channel/channel_report_area_with_count" />
-                                            <p:commandButton class="w-100" ajax="false" value="Card Summary Report" action="/channel/channel_card_summery_report" actionListener="#{channelReportControllerOld.clearAll}"/>
+                                            <p:commandButton class="w-100" ajax="false" value="Card Summary Report" action="/channel/channel_card_summery_report" actionListener="#{channelReportTemplateController.clearAll}"/>
 
                                         </div>
 
                                     </p:tab>
-                                    
+
                                     <p:tab title="Agent Reports"> 
                                         <div class="d-grid gap-2">
                                             <p:commandButton class="w-100" ajax="false" value="Agent History" action="/channel/channel_report_agent_history"/>
@@ -77,7 +88,7 @@
                                             <p:commandButton class="w-100" ajax="false" value="Channel &amp; Scan Count(41)" action="/channel/channel_report_scan_channel_count"/>
                                             <p:commandButton class="w-100" ajax="false" value="Doctor Wise Patient Count()" action="/channel/channel_report_staff_wise_patient_count"/>
                                             <p:commandButton class="w-100" ajax="false" value="BTT" action="/channel/channel_doctor_view_today_all"/>
-                                            <p:commandButton class="w-100" ajax="false" value="BTT By Percentage" action="/channel/channel_doctor_view_today_all_1" actionListener="#{channelReportControllerOld.clearWithDefultValue}"/>
+                                            <p:commandButton class="w-100" ajax="false" value="BTT By Percentage" action="/channel/channel_doctor_view_today_all_1" actionListener="#{channelReportTemplateController.clearWithDefultValue}"/>
                                             <p:commandButton class="w-100" ajax="false" value="Specility Wise Channel Appoinment count" action="/channel/channel_report_speciality_wise" />
 
                                         </div>
@@ -108,12 +119,12 @@
                                     <p:tab title="New Channel Reports">
                                         <div class="d-grid gap-2">
 
-                                            <p:commandButton class="w-100" ajax="false" value="All My Booking Detail List" action="/channel/channel_report_by_bill_class_by_user" actionListener="#{channelReportControllerOld.clearAll}"/>
-                                            <p:commandButton class="w-100" ajax="false" value="All Agent Booking Detail List" action="/channel/channel_report_agent_channels" actionListener="#{channelReportControllerOld.clearAll}"/>
+                                            <p:commandButton class="w-100" ajax="false" value="All My Booking Detail List" action="/channel/channel_report_by_bill_class_by_user" actionListener="#{channelReportTemplateController.clearAll}"/>
+                                            <p:commandButton class="w-100" ajax="false" value="All Agent Booking Detail List" action="/channel/channel_report_agent_channels" actionListener="#{channelReportTemplateController.clearAll}"/>
                                             <p:commandButton class="w-100" ajax="false" value="Today All My Booking Summary" action="/channel/channel_report_cashier_summery_date"/>
                                             <p:commandButton class="w-100" ajax="false" value="Today All My Booking Summary(Created Date)" action="/channel/channel_report_cashier_summery_date_created"/>
                                             <p:commandButton class="w-100" ajax="false" value="Today All Cashier Summary(Created Date)" action="/channel/channel_report_cashier_summery_date_created_summery"/>
-                                            <p:commandButton class="w-100" ajax="false" value="All Bill Detail By Payment Methord" action="/channel/channel_report_by_bill_class_by_user_by_payment_methord" actionListener="#{channelReportControllerOld.clearAll}"/>
+                                            <p:commandButton class="w-100" ajax="false" value="All Bill Detail By Payment Methord" action="/channel/channel_report_by_bill_class_by_user_by_payment_methord" actionListener="#{channelReportTemplateController.clearAll}"/>
                                             <p:commandButton class="w-100" ajax="false" value="Channel Count By Users" action="/channel/report_cashier_vise_count" />
                                             <p:commandButton class="w-100" ajax="false" value="Channel Count By Users(By Appoinment Date)" action="/channel/report_cashier_vise_count_1" />
                                             <p:commandButton class="w-100" ajax="false" value="Monthly All Vat report" action="/channel/channel_report_monthly_all_vat" />
@@ -124,8 +135,8 @@
                                     </p:tab>
                                     <p:tab title="Channel Reports (Staff)">
                                         <div class="d-grid gap-2">
-                                            <p:commandButton class="w-100" ajax="false" value="Chanel Staff Booking Detail Report" action="/channel/channel_report_staff_booking_detail" actionListener="#{channelReportControllerOld.makeNull()}"/>
-                                            <p:commandButton class="w-100" ajax="false" value="Chanel Staff Booking Summary Report" action="/channel/channel_report_staff_booking_summery" actionListener="#{channelReportControllerOld.makeNull}"/>
+                                            <p:commandButton class="w-100" ajax="false" value="Chanel Staff Booking Detail Report" action="/channel/channel_report_staff_booking_detail" actionListener="#{channelReportTemplateController.makeNull()}"/>
+                                            <p:commandButton class="w-100" ajax="false" value="Chanel Staff Booking Summary Report" action="/channel/channel_report_staff_booking_summery" actionListener="#{channelReportTemplateController.makeNull}"/>
                                         </div>
                                     </p:tab>
 
