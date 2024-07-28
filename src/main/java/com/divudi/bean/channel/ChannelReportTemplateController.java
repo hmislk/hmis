@@ -581,6 +581,7 @@ public class ChannelReportTemplateController implements Serializable {
 
     }
 
+
     public void fillDailyDoctorCounts() {
         bundle = new ReportTemplateRowBundle();
         String j;
@@ -644,6 +645,7 @@ public class ChannelReportTemplateController implements Serializable {
         }
 
     }
+
 
     public List<BillSession> createBillSessionQuery(Bill bill, PaymentEnum paymentEnum, DateEnum dateEnum, ReportKeyWord reportKeyWord) {
         BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
