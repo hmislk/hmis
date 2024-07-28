@@ -712,24 +712,19 @@ public class SessionController implements Serializable, HttpSessionListener {
         institution = null;
         boolean l = checkUsersWithoutDepartment();
         if (l) {
-            setTheTimeout();
             return "/index1.xhtml?faces-redirect=true";
         } else {
             JsfUtil.addErrorMessage("Invalid User! Login Failure. Please try again");
             return "";
         }
     }
-
-    private void setTheTimeout() {
-        ExternalContext ec = FacesContext.getCurrentInstance().getExternalContext();
-        Long currentTimeOut = configOptionApplicationController.getLongValueByKey("Application Timeout in Minutes", 15l);
-        if (currentTimeOut == null || currentTimeOut < 5) {
-            currentTimeOut = 15l;
-        }
-        Long currentTimeOutInSeconds = currentTimeOut * 60;
-        String currentTimeOutInSecondsString = currentTimeOutInSeconds.toString();
-        ec.getSessionMap().put("com.sun.faces.timeout", currentTimeOutInSecondsString);
+    
+    public String getTimeoutPageUrl() {
+        String contextPath = FacesContext.getCurrentInstance().getExternalContext().getRequestContextPath();
+        return contextPath + "/faces/timeout.xhtml"; // Adjust the path as needed
     }
+
+    
 
     public String loginForChannelingTabView() {
         department = null;
