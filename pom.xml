@@ -2,10 +2,10 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.divudi</groupId>
-    <artifactId>vfs</artifactId>
+    <artifactId>sethmademo1</artifactId>
     <version>3.0.0</version>
     <packaging>war</packaging>
-    <name>sethmademo</name>
+    <name>sethmademo1</name>
 
     <properties>
         <endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
@@ -325,7 +325,7 @@
                 <version>3.8.1</version>
                 <configuration>
                     <release>8</release> <!-- Compile with Java 8 compatibility -->
-                    <debug>true</debug>
+                    <debug>false</debug>
                 </configuration>
             </plugin>
 
