@@ -251,7 +251,7 @@
 
                             <h:panelGroup id="printPreview">
                                 <h:panelGroup rendered="#{sessionController.loggedPreference.opdBillPaperType eq 'PosPaper'}">
-                                    <bi:opdPOSReturnBill bill="#{billSearch.bill}"/>
+                                    <bi:opdPOSReturnBill bill="#{billSearch.currentRefundBill}"/>
                                 </h:panelGroup>
 
 

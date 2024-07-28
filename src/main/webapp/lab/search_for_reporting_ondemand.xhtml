@@ -47,6 +47,15 @@
                                         forceSelection="true" 
                                         value="#{searchController.reportKeyWord.department}" 
                                         />
+                                    
+                                    <h:commandLink 
+                                        id="btnSearch0" 
+                                        action="#{searchController.fillToSelectedDepartmentPatientInvestigations()}" 
+                                        styleClass="mt-2 btn btn-success">
+                                        <h:outputText value="Selected Department Only" />
+                                        <i class="fa fa-search" style="margin-left: 5px;"></i>
+                                    </h:commandLink>
+                                    
                                     <h:commandLink 
                                         id="btnSearch4" 
                                         action="#{searchController.fillToMyDepartmentPatientInvestigations()}" 

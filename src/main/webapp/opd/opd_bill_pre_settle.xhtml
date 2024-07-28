@@ -31,7 +31,7 @@
                         </f:facet>
 
                         <div class="row mt-2">
-                            <div class="col-6">
+                            <div class="col-4">
                                 <p:panel>
                                     <f:facet name="header">
                                         <h:outputText styleClass="fas fa-id-card-alt"></h:outputText>
@@ -41,11 +41,10 @@
                                 </p:panel>
                             </div>
 
-                            <div class="col-6">
+                            <div class="col-8">
                                 <p:panel>
                                     <f:facet name="header" >
-
-                                        <h:outputLabel value="Payment Details" ></h:outputLabel>  
+                                        <h:outputLabel value="Payment Details"  class="mt-2"></h:outputLabel>  
                                         <p:commandButton 
                                             ajax= "false"  
                                             value="Accept Payment &amp; Settle"
@@ -56,179 +55,194 @@
                                             action="#{opdPreSettleController.settleOpdBatchBill}" />
                                     </f:facet>
 
-                                    <h:panelGrid columns="4" class="w-100">
+                                    <div class="d-flex">
+                                        <div style="width: 150px;">
+                                            <h:outputLabel value="Payment Method" class="mt-2"/>
+                                        </div>
+                                        <div class="col-9">
+                                            <p:selectOneMenu
+                                                id="cmbPs"
+                                                value="#{opdPreSettleController.preBill.paymentMethod}"  
+                                                disabled="#{not sessionController.departmentPreference.allowtoChangePaymentMethodDuringPayment}">                                                                     
+                                                <f:selectItems value="#{enumController.paymentMethodsForOpdBilling}" />
+                                                <p:ajax process="@this cmbPs" 
+                                                        listener="#{opdPreSettleController.listnerForPaymentMethodChange()}"
+                                                        update=":#{p:resolveFirstComponentWithId('payDetails',view).clientId} pBillDetails" event="change" />
+                                            </p:selectOneMenu>
+                                        </div>
+                                    </div>
 
-                                        <h:outputLabel value="Payment Method" class="mt-2"/>
-                                        <p:selectOneMenu   
-                                            class="w-100"
-                                            id="cmbPs"
-                                            value="#{opdPreSettleController.preBill.paymentMethod}"  
-                                            disabled="#{not sessionController.departmentPreference.allowtoChangePaymentMethodDuringPayment}">                                                                     
-                                            <f:selectItems value="#{enumController.paymentMethodsForOpdBilling}" />
-                                            <p:ajax process="@this cmbPs" 
-                                                    listener="#{opdPreSettleController.listnerForPaymentMethodChange()}"
-                                                    update=":#{p:resolveFirstComponentWithId('payDetails',view).clientId} pBillDetails" event="change" />
-                                        </p:selectOneMenu>
-                                        <h:outputLabel />
-                                        <h:outputLabel />
-                                    </h:panelGrid>
-                                    <h:panelGroup id="payDetails" class="w-100 mt-2">
-                                        <h:panelGroup id="creditCard" class="mt-2" style="display:#{opdPreSettleController.preBill.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
-                                            <pa:creditCard paymentMethodData="#{opdPreSettleController.paymentMethodData}"/>
-                                        </h:panelGroup>
+                                    <div class="d-flex ">
+                                        <div style="width: 150px;"></div>
+                                        <div class="col-9">
+                                            <h:panelGroup id="payDetails" class="mt-2">
+                                                <h:panelGroup id="creditCard" class="mt-2" style="display:#{opdPreSettleController.preBill.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
+                                                    <pa:creditCard paymentMethodData="#{opdPreSettleController.paymentMethodData}"/>
+                                                </h:panelGroup>
 
-                                        <h:panelGroup 
-                                            class="row my-1"
-                                            layout="block" 
-                                            id="patientDeposit"  rendered="#{opdPreSettleController.paymentMethod eq 'PatientDeposit'}" >
-                                            <pa:patient_deposit paymentMethodData="#{opdPreSettleController.paymentMethodData}"/>
-                                        </h:panelGroup>
+                                                <h:panelGroup 
+                                                    class="row my-1"
+                                                    layout="block" 
+                                                    id="patientDeposit"  rendered="#{opdPreSettleController.paymentMethod eq 'PatientDeposit'}" >
+                                                    <pa:patient_deposit paymentMethodData="#{opdPreSettleController.paymentMethodData}"/>
+                                                </h:panelGroup>
 
-                                        <h:panelGroup id="cheque" class="mt-2" style="display:#{opdPreSettleController.preBill.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >
-                                            <pa:cheque paymentMethodData="#{opdPreSettleController.paymentMethodData}"/>
-                                        </h:panelGroup>
+                                                <h:panelGroup id="cheque" class="mt-2" style="display:#{opdPreSettleController.preBill.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >
+                                                    <pa:cheque paymentMethodData="#{opdPreSettleController.paymentMethodData}"/>
+                                                </h:panelGroup>
 
-                                        <h:panelGroup id="slip" class="mt-2" style="display:#{opdPreSettleController.preBill.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
-                                            <pa:slip paymentMethodData="#{opdPreSettleController.paymentMethodData}"/>
-                                        </h:panelGroup>
+                                                <h:panelGroup id="slip" class="mt-2" style="display:#{opdPreSettleController.preBill.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
+                                                    <pa:slip paymentMethodData="#{opdPreSettleController.paymentMethodData}"/>
+                                                </h:panelGroup>
 
-                                        <h:panelGroup id="eWallet" class="mt-2" style="display:#{opdPreSettleController.preBill.paymentMethod ne 'ewallet' ? 'none' : 'block'} ;">
-                                            <pa:ewallet paymentMethodData="#{opdPreSettleController.paymentMethodData}"/>
-                                        </h:panelGroup>
+                                                <h:panelGroup id="eWallet" class="mt-2" style="display:#{opdPreSettleController.preBill.paymentMethod ne 'ewallet' ? 'none' : 'block'} ;">
+                                                    <pa:ewallet paymentMethodData="#{opdPreSettleController.paymentMethodData}"/>
+                                                </h:panelGroup>
 
-                                        <h:panelGroup
-                                            class="row mt-2"
-                                            layout="block"  
-                                            id="creditStaff"
-                                            style="display:#{opdPreSettleController.preBill.paymentMethod ne 'Staff' ? 'none' : 'block'} ; " >
-                                            <div class="my-1" >
-                                                <div class="row">
-                                                    <div class="col-12">
-                                                        <p:autoComplete  
-                                                            minQueryLength="4"
-                                                            forceSelection="true" 
-                                                            value="#{opdPreSettleController.toStaff}" 
-                                                            completeMethod="#{staffController.completeStaff}" 
-                                                            var="mys" 
-                                                            class="w-100"
-                                                            placeholder="Staff (Type at least 4 letters to search)"
-                                                            inputStyleClass="w-100"
-                                                            itemLabel="#{mys.person.name}" 
-                                                            itemValue="#{mys}"
-                                                            >
-                                                            <p:column headerText="Name" style="padding: 2px;">
-                                                                <h:outputText value="#{mys.person.nameWithTitle}" ></h:outputText>
-                                                            </p:column>
-                                                            <p:column headerText="EPF" style="padding: 2px;">
-                                                                <h:outputText value="#{mys.epfNo}" ></h:outputText>
-                                                            </p:column>
-                                                            <p:column headerText="Credit Entitlement" style="padding: 2px;">
-                                                                <h:outputText value="#{mys.creditLimitQualified}" >
-                                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                                </h:outputText>
-                                                            </p:column>
-                                                            <p:column  headerText="Credit Utilized" style="padding: 2px;">
-                                                                <h:outputText value="#{mys.currentCreditValue}" >
-                                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                                </h:outputText>
-                                                            </p:column>
+                                                <h:panelGroup
+                                                    class="row mt-2"
+                                                    layout="block"  
+                                                    id="creditStaff"
+                                                    style="display:#{opdPreSettleController.preBill.paymentMethod ne 'Staff' ? 'none' : 'block'} ; " >
+                                                    <div class="my-1" >
+                                                        <div class="row">
+                                                            <div class="col-12">
+                                                                <p:autoComplete  
+                                                                    minQueryLength="4"
+                                                                    forceSelection="true" 
+                                                                    value="#{opdPreSettleController.toStaff}" 
+                                                                    completeMethod="#{staffController.completeStaff}" 
+                                                                    var="mys" 
+                                                                    class="w-100"
+                                                                    placeholder="Staff (Type at least 4 letters to search)"
+                                                                    inputStyleClass="w-100"
+                                                                    itemLabel="#{mys.person.name}" 
+                                                                    itemValue="#{mys}"
+                                                                    >
+                                                                    <p:column headerText="Name" style="padding: 2px;">
+                                                                        <h:outputText value="#{mys.person.nameWithTitle}" ></h:outputText>
+                                                                    </p:column>
+                                                                    <p:column headerText="EPF" style="padding: 2px;">
+                                                                        <h:outputText value="#{mys.epfNo}" ></h:outputText>
+                                                                    </p:column>
+                                                                    <p:column headerText="Credit Entitlement" style="padding: 2px;">
+                                                                        <h:outputText value="#{mys.creditLimitQualified}" >
+                                                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                                        </h:outputText>
+                                                                    </p:column>
+                                                                    <p:column  headerText="Credit Utilized" style="padding: 2px;">
+                                                                        <h:outputText value="#{mys.currentCreditValue}" >
+                                                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                                        </h:outputText>
+                                                                    </p:column>
 
-                                                        </p:autoComplete>
+                                                                </p:autoComplete>
+                                                            </div>
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            </div>
-                                        </h:panelGroup>
+                                                </h:panelGroup>
 
-                                        <h:panelGroup
-                                            class="row mt-2"
-                                            layout="block"  
-                                            id="welfareStaff"
-                                            style="display:#{opdPreSettleController.preBill.paymentMethod ne 'Staff_Welfare' ? 'none' : 'block'} ; " >
-                                            <div class="my-1">
-                                                <div class="row">
-                                                    <div class="col-12">
-                                                        <p:autoComplete  
-                                                            minQueryLength="3"
-                                                            forceSelection="true" 
-                                                            value="#{opdPreSettleController.toStaff}" 
-                                                            completeMethod="#{staffController.completeStaff}" 
-                                                            var="mys" 
-                                                            class="w-100"
-                                                            placeholder="Staff (Type at least 4 letters to search)"
-                                                            inputStyleClass="form-control w-100"
-                                                            itemLabel="#{mys.person.name}" 
-                                                            itemValue="#{mys}"
-                                                            size="10">
-                                                            <p:column headerText="Name" style="padding: 2px;">
-                                                                <h:outputText value="#{mys.person.nameWithTitle}" ></h:outputText>
-                                                            </p:column>
-                                                            <p:column headerText="EPF" style="padding: 2px;">
-                                                                <h:outputText value="#{mys.epfNo}" ></h:outputText>
-                                                            </p:column>
-                                                            <p:column headerText="Welfare Entitlement" style="padding: 2px;">
-                                                                <h:outputText value="#{mys.annualWelfareQualified}" >
-                                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                                </h:outputText>
-                                                            </p:column>
-                                                            <p:column  headerText="Welfare Utilized" style="padding: 2px;">
-                                                                <h:outputText value="#{mys.annualWelfareUtilized}" >
-                                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                                </h:outputText>
-                                                            </p:column>
+                                                <h:panelGroup
+                                                    class="row mt-2"
+                                                    layout="block"  
+                                                    id="welfareStaff"
+                                                    style="display:#{opdPreSettleController.preBill.paymentMethod ne 'Staff_Welfare' ? 'none' : 'block'} ; " >
+                                                    <div class="my-1">
+                                                        <div class="row">
+                                                            <div class="col-12">
+                                                                <p:autoComplete  
+                                                                    minQueryLength="3"
+                                                                    forceSelection="true" 
+                                                                    value="#{opdPreSettleController.toStaff}" 
+                                                                    completeMethod="#{staffController.completeStaff}" 
+                                                                    var="mys" 
+                                                                    class="w-100"
+                                                                    placeholder="Staff (Type at least 4 letters to search)"
+                                                                    inputStyleClass="form-control w-100"
+                                                                    itemLabel="#{mys.person.name}" 
+                                                                    itemValue="#{mys}"
+                                                                    size="10">
+                                                                    <p:column headerText="Name" style="padding: 2px;">
+                                                                        <h:outputText value="#{mys.person.nameWithTitle}" ></h:outputText>
+                                                                    </p:column>
+                                                                    <p:column headerText="EPF" style="padding: 2px;">
+                                                                        <h:outputText value="#{mys.epfNo}" ></h:outputText>
+                                                                    </p:column>
+                                                                    <p:column headerText="Welfare Entitlement" style="padding: 2px;">
+                                                                        <h:outputText value="#{mys.annualWelfareQualified}" >
+                                                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                                        </h:outputText>
+                                                                    </p:column>
+                                                                    <p:column  headerText="Welfare Utilized" style="padding: 2px;">
+                                                                        <h:outputText value="#{mys.annualWelfareUtilized}" >
+                                                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                                        </h:outputText>
+                                                                    </p:column>
 
-                                                        </p:autoComplete>
+                                                                </p:autoComplete>
+                                                            </div>
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            </div>
-                                        </h:panelGroup>
+                                                </h:panelGroup>
 
-                                        <h:panelGroup
-                                            class="row mx-2"
-                                            layout="block"
-                                            id="credit"
-                                            style="display:#{opdPreSettleController.preBill.paymentMethod ne 'Credit' ? 'none' : 'block'} ; "
-                                            >
-                                            <div class="my-1">
-                                                <div class="row">
-                                                    <div class="col-12 d-flex ">
-                                                        <p:autoComplete 
-                                                            id="creditCompany" 
-                                                            class="w-100 -mx-2"
-                                                            inputStyleClass="w-100"
-                                                            forceSelection="true"
-                                                            value="#{opdPreSettleController.creditCompany}"  
-                                                            completeMethod="#{creditCompanyController.completeCredit}" 
-                                                            var="ix"
-                                                            minQueryLength="4"
-                                                            placeholder="Company (Type at least 4 letters to search)"
-                                                            itemLabel="#{ix.name}" 
-                                                            itemValue="#{ix}" 
-                                                            >
+                                                <h:panelGroup
+                                                    class="row"
+                                                    layout="block"
+                                                    id="credit"
+                                                    style="display:#{opdPreSettleController.preBill.paymentMethod ne 'Credit' ? 'none' : 'block'} ; "
+                                                    >
+                                                    <div class="my-1">
+                                                        <div class="row">
+                                                            <div class="col-12 d-flex gap-2">
+                                                                <p:autoComplete 
+                                                                    id="creditCompany" 
+                                                                    class="w-100"
+                                                                    inputStyleClass="w-100"
+                                                                    forceSelection="true"
+                                                                    value="#{opdPreSettleController.creditCompany}"  
+                                                                    completeMethod="#{creditCompanyController.completeCredit}" 
+                                                                    var="ix"
+                                                                    minQueryLength="4"
+                                                                    placeholder="Company (Type at least 4 letters to search)"
+                                                                    itemLabel="#{ix.name}" 
+                                                                    itemValue="#{ix}" 
+                                                                    >
+                                                                </p:autoComplete> 
 
-                                                        </p:autoComplete> 
-                                                        <p:commandLink 
-                                                            id="btnAddNewCreditCom" 
-                                                            value="(+)"
-                                                            class="mx-3 mt-1"
-                                                            title="Add New Credit Company"
-                                                            ajax="false" 
-                                                            action="#{navigationController.navigateToCreditCompany()}"
-                                                            actionListener="#{creditCompanyController.prepareAdd()}" />  
+                                                                <p:inputText 
+                                                                    id="polNo" 
+                                                                    style="width: 200px;"
+                                                                    value="#{opdPreSettleController.paymentMethodData.credit.referralNo}" 
+                                                                    placeholder="Policy NO" >
+                                                                </p:inputText>
+
+                                                                <p:commandLink 
+                                                                    id="btnAddNewCreditCom" 
+                                                                    value="(+)"
+                                                                    class="mt-1"
+                                                                    title="Add New Credit Company"
+                                                                    ajax="false" 
+                                                                    action="#{navigationController.navigateToCreditCompany()}"
+                                                                    actionListener="#{creditCompanyController.prepareAdd()}" />  
+                                                            </div>
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            </div>
-                                        </h:panelGroup>
+                                                </h:panelGroup>
 
-                                        <h:panelGroup class="w-100 mt-2" id="MultiplePaymentMethods" style="display:#{opdPreSettleController.preBill.paymentMethod ne 'MultiplePaymentMethods' ? 'none' : 'block'} ;">
-                                            <pa:multiple_payment_methods controller="#{opdPreSettleController}" paymentMethods="#{enumController.paymentMethodsForOpdBilling}" class="w-100"/>
-                                        </h:panelGroup>
-                                    </h:panelGroup>
+                                                <h:panelGroup class="w-100 mt-2" id="MultiplePaymentMethods" style="display:#{opdPreSettleController.preBill.paymentMethod ne 'MultiplePaymentMethods' ? 'none' : 'block'} ;">
+                                                    <pa:multiple_payment_methods controller="#{opdPreSettleController}" paymentMethods="#{enumController.paymentMethodsForOpdBilling}" class="w-100"/>
+                                                </h:panelGroup>
+                                            </h:panelGroup>
+                                        </div>
+                                    </div>
 
-                                    <div class="row my-3" >
-                                        <h:panelGrid columns="6">
-                                            <h:outputLabel class="mx-2" value="Discount Schema "/>
-                                            <h:panelGroup>
-                                                <p:selectOneMenu   
+                                    
+                                    <div class="d-flex mt-2">
+                                        <div style="width: 150px;">
+                                            <h:outputLabel class="mt-2" value="Discount Schema "/>
+                                        </div>
+                                        <div class="col-9">
+                                            <p:selectOneMenu   
                                                     id="dsc" 
                                                     value="#{opdPreSettleController.paymentScheme}"
                                                     >     
@@ -242,11 +256,10 @@
                                                             event="change" 
                                                             listener="#{opdPreSettleController.calculateDiscount}"/>
                                                 </p:selectOneMenu>
-                                            </h:panelGroup>
-                                        </h:panelGrid>
+                                        </div>
                                     </div>
                                 </p:panel>
-                                <p:panel id="pBillDetails">
+                                <p:panel id="pBillDetails" class="mt-2">
                                     <f:facet name="header">
                                         <h:outputText styleClass="fa-solid fa-file-invoice"></h:outputText>
                                         <h:outputLabel value="Bill Details" class="mx-2"></h:outputLabel>
@@ -256,7 +269,7 @@
                                             <h:outputText value="Total" class="h5"></h:outputText >
                                         </div>
                                         <div class="col-5">
-                                           <h:outputLabel id="total" value="#{opdPreSettleController.preBill.total}" class="h5">
+                                            <h:outputLabel id="total" value="#{opdPreSettleController.preBill.total}" class="h5">
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
                                         </div>
@@ -282,16 +295,7 @@
                                             </h:outputLabel>
                                         </div>
                                     </div>
-<!--                                    <div class="row">
-                                        <div class="col-6">
-                                            <h:outputText value="VAT" class="h5"></h:outputText>
-                                        </div>
-                                        <div class="col-5">
-                                            <h:outputText id="netTotalVat" value="#{opdPreSettleController.preBill.vat}" class="h5">
-                                                <f:convertNumber pattern="#,##0.00" />
-                                            </h:outputText>
-                                        </div>
-                                    </div>-->
+          
                                     <h:panelGroup rendered="#{opdPreSettleController.preBill.paymentMethod eq 'Cash'}">
                                         <div class="row">
                                             <div class="col-6">
@@ -299,10 +303,10 @@
                                             </div>
                                             <div class="col-5">
                                                 <p:inputText
-                                                onfocus="this.select()"
-                                                autocomplete="off"  id="paid" value="#{opdPreSettleController.cashPaid}" class="h5">
-                                                <p:ajax process="total dis netTotal paid" update="balance netTotal" event="keyup"/>
-                                            </p:inputText>
+                                                    onfocus="this.select()"
+                                                    autocomplete="off"  id="paid" value="#{opdPreSettleController.cashPaid}" class="h5">
+                                                    <p:ajax process="total dis netTotal paid" update="balance netTotal" event="keyup"/>
+                                                </p:inputText>
                                             </div>
                                         </div>
                                         <div class="row">
@@ -311,12 +315,12 @@
                                             </div>
                                             <div class="col-5">
                                                 <h:outputLabel id="balance" value="#{opdPreSettleController.cashPaid-opdPreSettleController.preBill.netTotal}" class="h5">
-                                                <f:convertNumber pattern="#,##0.00" />
-                                            </h:outputLabel>
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
                                             </div>
                                         </div>
                                     </h:panelGroup>
-                                    
+
                                 </p:panel>
                             </div>
                         </div>
