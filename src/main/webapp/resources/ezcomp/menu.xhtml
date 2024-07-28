@@ -1159,7 +1159,9 @@
                     <p:menuitem  ajax="false"  action="#{searchController.navigateToAnalytics}" 
                                  value="Analytics" 
                                  rendered="#{webUserController.hasPrivilege('ReportsSearchCashCardOwn')}" ></p:menuitem>  
-                    <p:menuitem  ajax="false"  action="/reports/index?faces-redirect=true" value="Reports" rendered="#{webUserController.hasPrivilege('ReportsSearchCashCardOwn')}" ></p:menuitem>                                            
+                    <p:menuitem  ajax="false"  action="/reports/index?faces-redirect=true" value="Reports" rendered="#{webUserController.hasPrivilege('ReportsSearchCashCardOwn')}" ></p:menuitem> 
+                    <p:menuitem  ajax="false"  action="/reports/dynamic_reports/dynamic_reports?faces-redirect=true" 
+                                 value="Dynamic Reports" rendered="#{webUserController.hasPrivilege('ReportsSearchCashCardOwn')}" ></p:menuitem> 
                     <p:menuitem  ajax="false"  action="/reportInstitution/report_own?faces-redirect=true" value="Institution Report" rendered="#{webUserController.hasPrivilege('ReportsSearchCashCardOwn')}" ></p:menuitem>                               
                     <p:menuitem  ajax="false"  action="/reportIncome/report_income?faces-redirect=true" value="Income Report"  ></p:menuitem>
                     <p:menuitem  ajax="false"  action="/revenue_reports/index?faces-redirect=true" value="Revenue Reports"  ></p:menuitem>
