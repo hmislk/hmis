@@ -26,25 +26,25 @@
                         </f:facet>
                         <p:panelGrid columns="4" class="w-100" >
                             <h:outputLabel value="From Date"/>
-                            <p:calendar id="frmDate" value="#{channelReportControllerOld.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                            <p:calendar id="frmDate" value="#{channelReportTemplateController.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                             </p:calendar>
 
                             <h:outputLabel value="To Date"/>
-                            <p:calendar id="toDate" value="#{channelReportControllerOld.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                            <p:calendar id="toDate" value="#{channelReportTemplateController.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                             </p:calendar>
 
                             <p:outputLabel value="Paid Only" />
-                            <p:selectBooleanCheckbox value="#{channelReportControllerOld.paid}" />
+                            <p:selectBooleanCheckbox value="#{channelReportTemplateController.paid}" />
 
                             <p:outputLabel value="Only Summary" />
-                            <p:selectBooleanCheckbox value="#{channelReportControllerOld.summery}" />
+                            <p:selectBooleanCheckbox value="#{channelReportTemplateController.summery}" />
 
                         </p:panelGrid>
                         
                         <h:panelGrid columns="6" class="mt-2">
-                            <p:commandButton style="margin-right: 10px;" id="btnRefresh" ajax="false" value="By Created Date" styleClass="noPrintButton" action="#{channelReportControllerOld.createChannelHospitalIncomeByCreatedDateWithDoc()}"/>
+                            <p:commandButton style="margin-right: 10px;" id="btnRefresh" ajax="false" value="By Created Date" styleClass="noPrintButton" action="#{channelReportTemplateController.createChannelHospitalIncomeByCreatedDateWithDoc()}"/>
                             <p:defaultCommand target="btnRefresh"/>
-                            <p:commandButton style="margin-right: 10px;" id="btnRefresh1" ajax="false" value="By Session Date" styleClass="noPrintButton" action="#{channelReportControllerOld.createChannelHospitalIncomeBySessionDateWithDoc()}"/>
+                            <p:commandButton style="margin-right: 10px;" id="btnRefresh1" ajax="false" value="By Session Date" styleClass="noPrintButton" action="#{channelReportTemplateController.createChannelHospitalIncomeBySessionDateWithDoc()}"/>
                             <p:defaultCommand target="btnRefresh"/>
 
                             <p:commandButton style="margin-right: 10px;" ajax="false" value="Print" styleClass="noPrintButton"  >
@@ -56,17 +56,17 @@
                         </h:panelGrid>
                         
                         <p:panel id="reportPrint" >
-                            <p:dataTable value="#{channelReportControllerOld.bookingCountSummryRows}" var="b" id="tbl" >
+                            <p:dataTable value="#{channelReportTemplateController.bookingCountSummryRows}" var="b" id="tbl" >
                                 <f:facet name="header" >
                                     <h:outputLabel value="#{sessionController.institution.name}"/> <br/>
 
                                     <h:outputLabel value="Channel Hospital Income"/><br/>
                                     <h:outputLabel value="From :"/>
-                                    <h:outputLabel class="ml-2"  value="#{channelReportControllerOld.fromDate}" >
+                                    <h:outputLabel class="ml-2"  value="#{channelReportTemplateController.fromDate}" >
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                     </h:outputLabel>                          
                                     <h:outputLabel value="&emsp;&emsp;To :"/>
-                                    <h:outputLabel class="ml-2"  value="#{channelReportControllerOld.toDate}" >
+                                    <h:outputLabel class="ml-2"  value="#{channelReportTemplateController.toDate}" >
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                     </h:outputLabel>
                                 </f:facet>
@@ -76,91 +76,91 @@
                                     </p:row>
                                     <p:row>
                                         <p:column rowspan="2" headerText="Booking Type" />
-                                        <p:column colspan="4" headerText="Billed" rendered="#{!channelReportControllerOld.summery}"/>
-                                        <p:column colspan="4" headerText="Cancel" rendered="#{!channelReportControllerOld.summery}"/>
-                                        <p:column colspan="4" headerText="Refund" rendered="#{!channelReportControllerOld.summery}"/>
+                                        <p:column colspan="4" headerText="Billed" rendered="#{!channelReportTemplateController.summery}"/>
+                                        <p:column colspan="4" headerText="Cancel" rendered="#{!channelReportTemplateController.summery}"/>
+                                        <p:column colspan="4" headerText="Refund" rendered="#{!channelReportTemplateController.summery}"/>
                                         <p:column rowspan="2" headerText="Hos Total" />
                                         <p:column rowspan="2" headerText="Hos Vat Total" />
                                         <p:column rowspan="2" headerText="Doc Vat Total" />
-                                        <p:column rowspan="2" headerText="Total"  rendered="#{!channelReportControllerOld.summery}"/>
+                                        <p:column rowspan="2" headerText="Total"  rendered="#{!channelReportTemplateController.summery}"/>
                                     </p:row>
                                     <p:row>
-                                        <p:column headerText="Hos" rendered="#{!channelReportControllerOld.summery}"/>
-                                        <p:column headerText="Hos Vat" rendered="#{!channelReportControllerOld.summery}"/>
-                                        <p:column headerText="Doc" rendered="#{!channelReportControllerOld.summery}"/>
-                                        <p:column headerText="Doc Vat" rendered="#{!channelReportControllerOld.summery}"/>
-                                        <p:column headerText="Hos" rendered="#{!channelReportControllerOld.summery}"/>
-                                        <p:column headerText="Hos Vat" rendered="#{!channelReportControllerOld.summery}"/>
-                                        <p:column headerText="Doc" rendered="#{!channelReportControllerOld.summery}"/>
-                                        <p:column headerText="Doc Vat" rendered="#{!channelReportControllerOld.summery}"/>
-                                        <p:column headerText="Hos" rendered="#{!channelReportControllerOld.summery}"/>
-                                        <p:column headerText="Hos Vat" rendered="#{!channelReportControllerOld.summery}"/>
-                                        <p:column headerText="Doc" rendered="#{!channelReportControllerOld.summery}"/>
-                                        <p:column headerText="Doc Vat" rendered="#{!channelReportControllerOld.summery}"/>
+                                        <p:column headerText="Hos" rendered="#{!channelReportTemplateController.summery}"/>
+                                        <p:column headerText="Hos Vat" rendered="#{!channelReportTemplateController.summery}"/>
+                                        <p:column headerText="Doc" rendered="#{!channelReportTemplateController.summery}"/>
+                                        <p:column headerText="Doc Vat" rendered="#{!channelReportTemplateController.summery}"/>
+                                        <p:column headerText="Hos" rendered="#{!channelReportTemplateController.summery}"/>
+                                        <p:column headerText="Hos Vat" rendered="#{!channelReportTemplateController.summery}"/>
+                                        <p:column headerText="Doc" rendered="#{!channelReportTemplateController.summery}"/>
+                                        <p:column headerText="Doc Vat" rendered="#{!channelReportTemplateController.summery}"/>
+                                        <p:column headerText="Hos" rendered="#{!channelReportTemplateController.summery}"/>
+                                        <p:column headerText="Hos Vat" rendered="#{!channelReportTemplateController.summery}"/>
+                                        <p:column headerText="Doc" rendered="#{!channelReportTemplateController.summery}"/>
+                                        <p:column headerText="Doc Vat" rendered="#{!channelReportTemplateController.summery}"/>
                                     </p:row>
                                 </p:columnGroup>
                                 <p:column style="text-align: left;" >
                                     <p:outputLabel value="#{b.bookingType}" />
                                 </p:column>
 
-                                <p:column style="text-align: right;" rendered="#{!channelReportControllerOld.summery}">
+                                <p:column style="text-align: right;" rendered="#{!channelReportTemplateController.summery}">
                                     <p:outputLabel value="#{b.billHos}" >
                                         <f:convertNumber pattern="#,###,##0.00"  />
                                     </p:outputLabel>
                                 </p:column>
-                                <p:column style="text-align: right;" rendered="#{!channelReportControllerOld.summery}">
+                                <p:column style="text-align: right;" rendered="#{!channelReportTemplateController.summery}">
                                     <p:outputLabel value="#{b.billHosVat}" >
                                         <f:convertNumber pattern="#,###,##0.00"  />
                                     </p:outputLabel>
                                 </p:column>
-                                <p:column style="text-align: right;" rendered="#{!channelReportControllerOld.summery}">
+                                <p:column style="text-align: right;" rendered="#{!channelReportTemplateController.summery}">
                                     <p:outputLabel value="#{b.getbDoc()}" >
                                         <f:convertNumber pattern="#,###,##0.00"  />
                                     </p:outputLabel>
                                 </p:column>
-                                <p:column style="text-align: right;" rendered="#{!channelReportControllerOld.summery}">
+                                <p:column style="text-align: right;" rendered="#{!channelReportTemplateController.summery}">
                                     <p:outputLabel value="#{b.getbDocVat()}" >
                                         <f:convertNumber pattern="#,###,##0.00"  />
                                     </p:outputLabel>
                                 </p:column>
 
-                                <p:column style="text-align: right;" rendered="#{!channelReportControllerOld.summery}">
+                                <p:column style="text-align: right;" rendered="#{!channelReportTemplateController.summery}">
                                     <p:outputLabel value="#{b.canHos}" >
                                         <f:convertNumber pattern="#,###,##0.00"  />
                                     </p:outputLabel>
                                 </p:column>
-                                <p:column style="text-align: right;" rendered="#{!channelReportControllerOld.summery}">
+                                <p:column style="text-align: right;" rendered="#{!channelReportTemplateController.summery}">
                                     <p:outputLabel value="#{b.canHosVat}" >
                                         <f:convertNumber pattern="#,###,##0.00"  />
                                     </p:outputLabel>
                                 </p:column>
-                                <p:column style="text-align: right;" rendered="#{!channelReportControllerOld.summery}">
+                                <p:column style="text-align: right;" rendered="#{!channelReportTemplateController.summery}">
                                     <p:outputLabel value="#{b.canDoc}" >
                                         <f:convertNumber pattern="#,###,##0.00"  />
                                     </p:outputLabel>
                                 </p:column>
-                                <p:column style="text-align: right;" rendered="#{!channelReportControllerOld.summery}">
+                                <p:column style="text-align: right;" rendered="#{!channelReportTemplateController.summery}">
                                     <p:outputLabel value="#{b.canDocVat}" >
                                         <f:convertNumber pattern="#,###,##0.00"  />
                                     </p:outputLabel>
                                 </p:column>
 
-                                <p:column style="text-align: right;" rendered="#{!channelReportControllerOld.summery}">
+                                <p:column style="text-align: right;" rendered="#{!channelReportTemplateController.summery}">
                                     <p:outputLabel value="#{b.refHos}" >
                                         <f:convertNumber pattern="#,###,##0.00"  />
                                     </p:outputLabel>
                                 </p:column>
-                                <p:column style="text-align: right;" rendered="#{!channelReportControllerOld.summery}">
+                                <p:column style="text-align: right;" rendered="#{!channelReportTemplateController.summery}">
                                     <p:outputLabel value="#{b.refHosVat}" >
                                         <f:convertNumber pattern="#,###,##0.00"  />
                                     </p:outputLabel>
                                 </p:column>
-                                <p:column style="text-align: right;" rendered="#{!channelReportControllerOld.summery}">
+                                <p:column style="text-align: right;" rendered="#{!channelReportTemplateController.summery}">
                                     <p:outputLabel value="#{b.refDoc}" >
                                         <f:convertNumber pattern="#,###,##0.00"  />
                                     </p:outputLabel>
                                 </p:column>
-                                <p:column style="text-align: right;" rendered="#{!channelReportControllerOld.summery}">
+                                <p:column style="text-align: right;" rendered="#{!channelReportTemplateController.summery}">
                                     <p:outputLabel value="#{b.refDocVat}" >
                                         <f:convertNumber pattern="#,###,##0.00"  />
                                     </p:outputLabel>
@@ -190,7 +190,7 @@
                                     </p:outputLabel>
                                 </p:column>
 
-                                <p:column style="text-align: right;" rendered="#{!channelReportControllerOld.summery}">
+                                <p:column style="text-align: right;" rendered="#{!channelReportTemplateController.summery}">
                                     <p:outputLabel value="#{(b.billHos+b.billHosVat+b.getbDoc()+b.getbDocVat())-
                                                             ((b.canHos+b.canHosVat+b.canDoc+b.canDocVat)+
                                                             (b.refHos+b.refHosVat+b.refDoc+b.refDocVat))}" >
@@ -198,98 +198,98 @@
                                     </p:outputLabel>
                                 </p:column>
                             </p:dataTable>
-                            <p:dataTable value="#{channelReportControllerOld.bookingCountSummryRowsScan}" var="b" id="tblscn" >
+                            <p:dataTable value="#{channelReportTemplateController.bookingCountSummryRowsScan}" var="b" id="tblscn" >
                                 <p:columnGroup type="header">
                                     <p:row>
                                         <p:column colspan="17" headerText="Scan Income" />
                                     </p:row>
                                     <p:row>
                                         <p:column rowspan="2" headerText="Booking Type" />
-                                        <p:column colspan="4" headerText="Billed" rendered="#{!channelReportControllerOld.summery}"/>
-                                        <p:column colspan="4" headerText="Cancel" rendered="#{!channelReportControllerOld.summery}"/>
-                                        <p:column colspan="4" headerText="Refund" rendered="#{!channelReportControllerOld.summery}"/>
+                                        <p:column colspan="4" headerText="Billed" rendered="#{!channelReportTemplateController.summery}"/>
+                                        <p:column colspan="4" headerText="Cancel" rendered="#{!channelReportTemplateController.summery}"/>
+                                        <p:column colspan="4" headerText="Refund" rendered="#{!channelReportTemplateController.summery}"/>
                                         <p:column rowspan="2" headerText="Hos Total" />
                                         <p:column rowspan="2" headerText="Hos Vat Total" />
                                         <p:column rowspan="2" headerText="Doc Vat Total" />
-                                        <p:column rowspan="2" headerText="Total"  rendered="#{!channelReportControllerOld.summery}"/>
+                                        <p:column rowspan="2" headerText="Total"  rendered="#{!channelReportTemplateController.summery}"/>
                                     </p:row>
                                     <p:row>
-                                        <p:column headerText="Hos" rendered="#{!channelReportControllerOld.summery}"/>
-                                        <p:column headerText="Hos Vat" rendered="#{!channelReportControllerOld.summery}"/>
-                                        <p:column headerText="Doc" rendered="#{!channelReportControllerOld.summery}"/>
-                                        <p:column headerText="Doc Vat" rendered="#{!channelReportControllerOld.summery}"/>
-                                        <p:column headerText="Hos" rendered="#{!channelReportControllerOld.summery}"/>
-                                        <p:column headerText="Hos Vat" rendered="#{!channelReportControllerOld.summery}"/>
-                                        <p:column headerText="Doc" rendered="#{!channelReportControllerOld.summery}"/>
-                                        <p:column headerText="Doc Vat" rendered="#{!channelReportControllerOld.summery}"/>
-                                        <p:column headerText="Hos" rendered="#{!channelReportControllerOld.summery}"/>
-                                        <p:column headerText="Hos Vat" rendered="#{!channelReportControllerOld.summery}"/>
-                                        <p:column headerText="Doc" rendered="#{!channelReportControllerOld.summery}"/>
-                                        <p:column headerText="Doc Vat" rendered="#{!channelReportControllerOld.summery}"/>
+                                        <p:column headerText="Hos" rendered="#{!channelReportTemplateController.summery}"/>
+                                        <p:column headerText="Hos Vat" rendered="#{!channelReportTemplateController.summery}"/>
+                                        <p:column headerText="Doc" rendered="#{!channelReportTemplateController.summery}"/>
+                                        <p:column headerText="Doc Vat" rendered="#{!channelReportTemplateController.summery}"/>
+                                        <p:column headerText="Hos" rendered="#{!channelReportTemplateController.summery}"/>
+                                        <p:column headerText="Hos Vat" rendered="#{!channelReportTemplateController.summery}"/>
+                                        <p:column headerText="Doc" rendered="#{!channelReportTemplateController.summery}"/>
+                                        <p:column headerText="Doc Vat" rendered="#{!channelReportTemplateController.summery}"/>
+                                        <p:column headerText="Hos" rendered="#{!channelReportTemplateController.summery}"/>
+                                        <p:column headerText="Hos Vat" rendered="#{!channelReportTemplateController.summery}"/>
+                                        <p:column headerText="Doc" rendered="#{!channelReportTemplateController.summery}"/>
+                                        <p:column headerText="Doc Vat" rendered="#{!channelReportTemplateController.summery}"/>
                                     </p:row>
                                 </p:columnGroup>
                                 <p:column style="text-align: left;" >
                                     <p:outputLabel value="#{b.bookingType}" />
                                 </p:column>
 
-                                <p:column style="text-align: right;" rendered="#{!channelReportControllerOld.summery}">
+                                <p:column style="text-align: right;" rendered="#{!channelReportTemplateController.summery}">
                                     <p:outputLabel value="#{b.billHos}" >
                                         <f:convertNumber pattern="#,###,##0.00"  />
                                     </p:outputLabel>
                                 </p:column>
-                                <p:column style="text-align: right;" rendered="#{!channelReportControllerOld.summery}">
+                                <p:column style="text-align: right;" rendered="#{!channelReportTemplateController.summery}">
                                     <p:outputLabel value="#{b.billHosVat}" >
                                         <f:convertNumber pattern="#,###,##0.00"  />
                                     </p:outputLabel>
                                 </p:column>
-                                <p:column style="text-align: right;" rendered="#{!channelReportControllerOld.summery}">
+                                <p:column style="text-align: right;" rendered="#{!channelReportTemplateController.summery}">
                                     <p:outputLabel value="#{b.getbDoc()}" >
                                         <f:convertNumber pattern="#,###,##0.00"  />
                                     </p:outputLabel>
                                 </p:column>
-                                <p:column style="text-align: right;" rendered="#{!channelReportControllerOld.summery}">
+                                <p:column style="text-align: right;" rendered="#{!channelReportTemplateController.summery}">
                                     <p:outputLabel value="#{b.getbDocVat()}" >
                                         <f:convertNumber pattern="#,###,##0.00"  />
                                     </p:outputLabel>
                                 </p:column>
 
-                                <p:column style="text-align: right;" rendered="#{!channelReportControllerOld.summery}">
+                                <p:column style="text-align: right;" rendered="#{!channelReportTemplateController.summery}">
                                     <p:outputLabel value="#{b.canHos}" >
                                         <f:convertNumber pattern="#,###,##0.00"  />
                                     </p:outputLabel>
                                 </p:column>
-                                <p:column style="text-align: right;" rendered="#{!channelReportControllerOld.summery}">
+                                <p:column style="text-align: right;" rendered="#{!channelReportTemplateController.summery}">
                                     <p:outputLabel value="#{b.canHosVat}" >
                                         <f:convertNumber pattern="#,###,##0.00"  />
                                     </p:outputLabel>
                                 </p:column>
-                                <p:column style="text-align: right;" rendered="#{!channelReportControllerOld.summery}">
+                                <p:column style="text-align: right;" rendered="#{!channelReportTemplateController.summery}">
                                     <p:outputLabel value="#{b.canDoc}" >
                                         <f:convertNumber pattern="#,###,##0.00"  />
                                     </p:outputLabel>
                                 </p:column>
-                                <p:column style="text-align: right;" rendered="#{!channelReportControllerOld.summery}">
+                                <p:column style="text-align: right;" rendered="#{!channelReportTemplateController.summery}">
                                     <p:outputLabel value="#{b.canDocVat}" >
                                         <f:convertNumber pattern="#,###,##0.00"  />
                                     </p:outputLabel>
                                 </p:column>
 
-                                <p:column style="text-align: right;" rendered="#{!channelReportControllerOld.summery}">
+                                <p:column style="text-align: right;" rendered="#{!channelReportTemplateController.summery}">
                                     <p:outputLabel value="#{b.refHos}" >
                                         <f:convertNumber pattern="#,###,##0.00"  />
                                     </p:outputLabel>
                                 </p:column>
-                                <p:column style="text-align: right;" rendered="#{!channelReportControllerOld.summery}">
+                                <p:column style="text-align: right;" rendered="#{!channelReportTemplateController.summery}">
                                     <p:outputLabel value="#{b.refHosVat}" >
                                         <f:convertNumber pattern="#,###,##0.00"  />
                                     </p:outputLabel>
                                 </p:column>
-                                <p:column style="text-align: right;" rendered="#{!channelReportControllerOld.summery}">
+                                <p:column style="text-align: right;" rendered="#{!channelReportTemplateController.summery}">
                                     <p:outputLabel value="#{b.refDoc}" >
                                         <f:convertNumber pattern="#,###,##0.00"  />
                                     </p:outputLabel>
                                 </p:column>
-                                <p:column style="text-align: right;" rendered="#{!channelReportControllerOld.summery}">
+                                <p:column style="text-align: right;" rendered="#{!channelReportTemplateController.summery}">
                                     <p:outputLabel value="#{b.refDocVat}" >
                                         <f:convertNumber pattern="#,###,##0.00"  />
                                     </p:outputLabel>
@@ -319,7 +319,7 @@
                                     </p:outputLabel>
                                 </p:column>
 
-                                <p:column style="text-align: right;" rendered="#{!channelReportControllerOld.summery}">
+                                <p:column style="text-align: right;" rendered="#{!channelReportTemplateController.summery}">
                                     <p:outputLabel value="#{(b.billHos+b.billHosVat+b.getbDoc()+b.getbDocVat())-
                                                             ((b.canHos+b.canHosVat+b.canDoc+b.canDocVat)+
                                                             (b.refHos+b.refHosVat+b.refDoc+b.refDocVat))}" >

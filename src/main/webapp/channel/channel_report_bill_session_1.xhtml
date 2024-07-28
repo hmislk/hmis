@@ -18,19 +18,19 @@
                         </f:facet>
                         <p:panelGrid columns="2" >
                             <h:outputLabel value="From : " />
-                            <p:calendar value="#{channelReportControllerOld.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
+                            <p:calendar value="#{channelReportTemplateController.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                             <h:outputLabel value="To : " />
-                            <p:calendar value="#{channelReportControllerOld.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
+                            <p:calendar value="#{channelReportTemplateController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                             <h:outputLabel value="Specialtiy : "/>
-                            <hr:completeSpeciality value="#{channelReportControllerOld.reportKeyWord.speciality}"/>
+                            <hr:completeSpeciality value="#{channelReportTemplateController.reportKeyWord.speciality}"/>
                             <h:outputLabel value="Staff : "/>
-                            <hr:completeStaff value="#{channelReportControllerOld.reportKeyWord.staff}"/>
+                            <hr:completeStaff value="#{channelReportTemplateController.reportKeyWord.staff}"/>
                             <h:outputLabel value="Agency : "/>
-                            <hr:completeAgency value="#{channelReportControllerOld.reportKeyWord.institution}"/>                            
+                            <hr:completeAgency value="#{channelReportTemplateController.reportKeyWord.institution}"/>                            
                         </p:panelGrid>
                         <h:panelGrid columns="6" class="mt-2 mb-2">
-                            <p:commandButton style="margin-right: 10px" ajax="false" value="Process Paid" action="#{channelReportControllerOld.createBillSession_report_1()}"/>
-                            <p:commandButton style="margin-right: 10px" ajax="false" value="Clear" action="#{channelReportControllerOld.makeNull()}"/>
+                            <p:commandButton style="margin-right: 10px" ajax="false" value="Process Paid" action="#{channelReportTemplateController.createBillSession_report_1()}"/>
+                            <p:commandButton style="margin-right: 10px" ajax="false" value="Clear" action="#{channelReportTemplateController.makeNull()}"/>
                             <p:commandButton style="margin-right: 10px" ajax="false" value="Excel" styleClass="noPrintButton"  >
                                 <p:dataExporter type="xlsx" target="tb1,tb2,tb3,tb4" fileName="bill_session_report"  />
                             </p:commandButton>
@@ -40,15 +40,15 @@
                         </h:panelGrid>
 
                         <p:panel id="gpBillPreview" >                     
-                            <p:dataTable value="#{channelReportControllerOld.billSessionsBilled}" id="tb1" var="bs">
+                            <p:dataTable value="#{channelReportTemplateController.billSessionsBilled}" id="tb1" var="bs">
                                 <f:facet name="header">
                                     <h:outputLabel value="BILL SESSION"/>
                                     <h:outputLabel class="ml-2" value="From : " style=" white-space:pre-line;"/>
-                                    <h:outputLabel class="ml-2" value="#{channelReportControllerOld.fromDate}" >
+                                    <h:outputLabel class="ml-2" value="#{channelReportTemplateController.fromDate}" >
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                     </h:outputLabel>                          
                                     <h:outputLabel value="&emsp;&emsp;To :"/>
-                                    <h:outputLabel class="ml-2" value="#{channelReportControllerOld.toDate}" >
+                                    <h:outputLabel class="ml-2" value="#{channelReportTemplateController.toDate}" >
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                     </h:outputLabel>
                                     <h:outputLabel value="#{commonReport.department.name}"/>
@@ -88,14 +88,14 @@
                                     <h:outputLabel value="Cancelled" rendered="#{bs.bill.cancelled}"/>
                                     <h:outputLabel value="Refunded" rendered="#{bs.bill.refunded}"/>
                                     <f:facet name="footer">
-                                        <p:outputLabel value="#{channelReportControllerOld.netTotal}">
+                                        <p:outputLabel value="#{channelReportTemplateController.netTotal}">
                                             <f:convertNumber pattern="#,###.##" />
                                         </p:outputLabel>
                                     </f:facet>
                                 </p:column>
                             </p:dataTable>
 
-                            <p:dataTable value="#{channelReportControllerOld.billSessionsCancelled}" id="tb2" var="bs">
+                            <p:dataTable value="#{channelReportTemplateController.billSessionsCancelled}" id="tb2" var="bs">
                                 <p:column headerText="Booking ID">
                                     <h:outputLabel  value="#{bs.bill.bookingId}" />
                                 </p:column>
@@ -130,14 +130,14 @@
                                     <h:outputLabel value="Cancelled" rendered="#{bs.bill.cancelled}"/>
                                     <h:outputLabel value="Refunded" rendered="#{bs.bill.refunded}"/>
                                     <f:facet name="footer">
-                                        <p:outputLabel value="#{channelReportControllerOld.cancelTotal}">
+                                        <p:outputLabel value="#{channelReportTemplateController.cancelTotal}">
                                             <f:convertNumber pattern="#,###.##" />
                                         </p:outputLabel>
                                     </f:facet>
                                 </p:column>
                             </p:dataTable>
 
-                            <p:dataTable value="#{channelReportControllerOld.billSessionsReturn}" id="tb3" var="bs">
+                            <p:dataTable value="#{channelReportTemplateController.billSessionsReturn}" id="tb3" var="bs">
                                 <p:column headerText="Booking ID">
                                     <h:outputLabel  value="#{bs.bill.bookingId}" />
                                 </p:column>
@@ -172,7 +172,7 @@
                                     <h:outputLabel value="Cancelled" rendered="#{bs.bill.cancelled}"/>
                                     <h:outputLabel value="Refunded" rendered="#{bs.bill.refunded}"/>
                                     <f:facet name="footer">
-                                        <p:outputLabel value="#{channelReportControllerOld.refundTotal}">
+                                        <p:outputLabel value="#{channelReportTemplateController.refundTotal}">
                                             <f:convertNumber pattern="#,###.##" />
                                         </p:outputLabel>
                                     </f:facet>
@@ -180,14 +180,14 @@
                             </p:dataTable>
 
 
-                            <p:dataTable value="#{channelReportControllerOld.valueList}" id="tb4" var="ls">
+                            <p:dataTable value="#{channelReportTemplateController.valueList}" id="tb4" var="ls">
                                 <p:column headerText="BillType">
                                     <h:outputLabel  value="#{ls.string}"/>
                                 </p:column>
                                 <p:column headerText="Billed">
                                     <h:outputLabel  value="#{ls.value1}"/>
                                     <f:facet name="footer">
-                                        <p:outputLabel value="#{channelReportControllerOld.totalBilled}">
+                                        <p:outputLabel value="#{channelReportTemplateController.totalBilled}">
                                             <f:convertNumber pattern="#,###" />
                                         </p:outputLabel>
                                     </f:facet>
@@ -195,7 +195,7 @@
                                 <p:column headerText="Cancelled">
                                     <h:outputLabel  value="#{ls.value2}"/>
                                     <f:facet name="footer">
-                                        <p:outputLabel value="#{channelReportControllerOld.totalCancel}">
+                                        <p:outputLabel value="#{channelReportTemplateController.totalCancel}">
                                             <f:convertNumber pattern="#,###" />
                                         </p:outputLabel>
                                     </f:facet>
@@ -203,7 +203,7 @@
                                 <p:column headerText="Refund">
                                     <h:outputLabel  value="#{ls.value3}"/>
                                     <f:facet name="footer">
-                                        <p:outputLabel value="#{channelReportControllerOld.totalRefund}">
+                                        <p:outputLabel value="#{channelReportTemplateController.totalRefund}">
                                             <f:convertNumber pattern="#,###" />
                                         </p:outputLabel>
                                     </f:facet>
