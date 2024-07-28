@@ -1746,6 +1746,19 @@ public class BillController implements Serializable {
 
         cancellationBatchBill.copy(batchBill);
         cancellationBatchBill.setBilledBill(batchBill);
+        
+        if (batchBill.getPaymentMethod() == PaymentMethod.PatientDeposit) {
+            System.out.println("Before Balance = " + cancellationBatchBill.getPatient().getRunningBalance());
+            if (cancellationBatchBill.getPatient().getRunningBalance() == null) {
+                System.out.println("Null");
+                cancellationBatchBill.getPatient().setRunningBalance(Math.abs(cancellationBatchBill.getNetTotal()));
+            } else {
+                System.out.println("Not Null - Add BillValue");
+                cancellationBatchBill.getPatient().setRunningBalance(cancellationBatchBill.getPatient().getRunningBalance() + Math.abs(cancellationBatchBill.getNetTotal()));
+            }
+            patientFacade.edit(cancellationBatchBill.getPatient());
+            System.out.println("After Balance = " + cancellationBatchBill.getPatient().getRunningBalance());
+        }
 
         createPaymentForOpdBatchBillCancellation(cancellationBatchBill, batchBill.getPaymentMethod());
 
@@ -1753,6 +1766,7 @@ public class BillController implements Serializable {
         opdBillController.setBills(bills);
         opdBillController.setBatchBill(batchBill);
         getSessionController().setLoggedUser(wb);
+        printPreview = true;
         return "/opd/opd_batch_bill_print?faces-redirect=true";
     }
 
@@ -1986,7 +2000,6 @@ public class BillController implements Serializable {
 
             p.setPaidValue(p.getBill().getNetTotal());
             paymentFacade.create(p);
-
             ps.add(p);
         }
         return ps;
@@ -2113,7 +2126,6 @@ public class BillController implements Serializable {
         temp.setPatient(tmpPatient);
 
 //        temp.setMembershipScheme(membershipSchemeController.fetchPatientMembershipScheme(tmpPatient, getSessionController().getApplicationPreference().isMembershipExpires()));
-
         temp.setPaymentScheme(getPaymentScheme());
         temp.setPaymentMethod(paymentMethod);
         temp.setCreatedAt(new Date());
@@ -2774,7 +2786,6 @@ public class BillController implements Serializable {
         double billVat = 0.0;
 
 //        MembershipScheme membershipScheme = membershipSchemeController.fetchPatientMembershipScheme(getSearchedPatient(), getSessionController().getApplicationPreference().isMembershipExpires());
-
         for (BillEntry be : getLstBillEntries()) {
             //////// // System.out.println("bill item entry");
             double entryGross = 0.0;
