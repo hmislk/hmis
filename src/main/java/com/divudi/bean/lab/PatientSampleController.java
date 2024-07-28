@@ -122,6 +122,25 @@ public class PatientSampleController implements Serializable {
         return current;
     }
 
+    public String navigateToViewPatientSample(PatientSample ps) {
+        if (ps == null) {
+            JsfUtil.addErrorMessage("Nothing selected");
+            return null;
+        }
+        current = ps;
+        return "/lab/patient_sample?faces-redirect=true;";
+
+    }
+
+    public String navigateToEditPatientSample(PatientSample ps) {
+        if (ps == null) {
+            JsfUtil.addErrorMessage("Nothing selected");
+            return null;
+        }
+        current = ps;
+        return "/lab/patient_sample_edit?faces-redirect=true;";
+    }
+
     public PatientSample getAnyPatientSample() {
         return getItems().get(0);
     }

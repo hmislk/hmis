@@ -129,10 +129,8 @@ public class SessionController implements Serializable, HttpSessionListener {
 
     private static final long serialVersionUID = 1L;
     WebUser loggedUser = null;
-    @Deprecated
     private UserPreference loggedPreference;
     private UserPreference applicationPreference;
-    @Deprecated
     private UserPreference institutionPreference;
     private UserPreference departmentPreference;
     private UserPreference userPreference;
@@ -1906,7 +1904,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         return loggedPreference;
     }
 
-    @Deprecated
+    
     public void setLoggedPreference(UserPreference loggedPreference) {
         this.loggedPreference = loggedPreference;
     }
@@ -2069,10 +2067,12 @@ public class SessionController implements Serializable, HttpSessionListener {
     }
 
     public UserPreference getDepartmentPreference() {
+        //System.out.println("getting departmentPreference = " + departmentPreference);
         return departmentPreference;
     }
 
     public void setDepartmentPreference(UserPreference departmentPreference) {
+        System.out.println("setting departmentPreference = " + departmentPreference);
         this.departmentPreference = departmentPreference;
     }
 
