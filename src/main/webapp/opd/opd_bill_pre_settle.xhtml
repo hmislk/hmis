@@ -224,13 +224,6 @@
                                         </h:panelGroup>
                                     </h:panelGroup>
 
-
-
-
-
-
-
-
                                     <div class="row my-3" >
                                         <h:panelGrid columns="6">
                                             <h:outputLabel class="mx-2" value="Discount Schema "/>
@@ -249,26 +242,6 @@
                                                             event="change" 
                                                             listener="#{opdPreSettleController.calculateDiscount}"/>
                                                 </p:selectOneMenu>
-                                            </h:panelGroup>
-                                            <h:panelGroup id="gpLocalForeign"  class="col-md-2" >
-                                                <p:commandButton value="Mark Foreigner" 
-                                                                 class="mx-2"
-                                                                 action="#{opdPreSettleController.markAsForeigner}" 
-                                                                 rendered="#{!opdPreSettleController.foreigner}" 
-                                                                 process="@this" 
-                                                                 update="gpLocalForeign :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}" 
-                                                                 ajax="false"
-                                                                 >
-
-                                                </p:commandButton>
-                                                <p:commandButton value="Mark Local" 
-                                                                 class="mx-2"
-                                                                 action="#{opdPreSettleController.markAsLocal}" 
-                                                                 rendered="#{opdPreSettleController.foreigner}" 
-                                                                 process="@this" 
-                                                                 update="gpLocalForeign :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}" 
-                                                                 ajax="false"
-                                                                 ></p:commandButton>
                                             </h:panelGroup>
                                         </h:panelGrid>
                                     </div>

@@ -1147,10 +1147,12 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
                 billOfBatchBillPre.setBillFees(billController.billFeesOfBill(billOfBatchBillPre));
             }
         }
-        getPreBill().setPaymentMethod(preBatchBill.getPaymentMethod());
-        fillPaymentMethodDetails();
+        getPreBill().setPaymentMethod(null);
+        paymentScheme = new PaymentScheme();
+        //fillPaymentMethodDetails();
         netTotal = getPreBill().getNetTotal();
-        calculateDiscount();
+        
+        //calculateDiscount();
         return "/opd/opd_bill_pre_settle?faces-redirect=true";
 
     }
