@@ -10,6 +10,11 @@
         template="/lab/sample_index.xhtml">
 
         <ui:define name="subcontent">
+            <h:head>
+                <style>
+                    #{configOptionApplicationController.getLongTextValueByKey('CSS for Sample Container Sticker')}
+                </style>
+            </h:head>
 
             <h:panelGroup rendered="#{!webUserController.hasPrivilege('LabSampleCollecting')}" >
                 You are NOT authorized
@@ -115,37 +120,34 @@
                             </p:column>
 
                             <p:column headerText="Samples">
+
+
                                 <ui:repeat value="#{smpIx.patientSampleWrappers}" var="psw">
-                                    <p:panel id="samplePanel_#{psw.patientSample.id}" header="#{psw.patientSample.id}" toggleable="true" collapsed="true">
-                                        <h:panelGrid columns="2" class="table table-striped">
-                                            <h:outputLabel value="Patient" style="font-weight: bold;"/>
-                                            <h:outputLabel value="#{psw.patientSample.patient.person.shortenedName}"/>
-
-                                            <h:outputLabel value="Age" style="font-weight: bold;"/>
-                                            <h:outputLabel value="#{psw.patientSample.patient.person.ageAsShortString}"/>
-
-                                            <h:outputLabel value="Sex" style="font-weight: bold;"/>
-                                            <h:outputLabel value="#{psw.patientSample.patient.person.sex.shortLabel}"/>
-
-                                            <h:outputLabel value="ID" style="font-weight: bold;"/>
-                                            <h:outputLabel value="#{psw.patientSample.patient.id}"/>
-
-                                            <h:outputLabel value="PHN" style="font-weight: bold;"/>
-                                            <h:outputLabel value="#{psw.patientSample.patient.phn}"/>
-
-                                        </h:panelGrid>
-
-                                        <table >
+                                    <p:panel id="samplePanelList" toggleable="true" collapsed="true">
+                                        <f:facet name="header" >
+                                            <h:outputLabel 
+                                                class="m-1"
+                                                value="#{psw.patientSample.id}" ></h:outputLabel>
+                                            <p:commandLink 
+                                                class="m-1 ml-5"
+                                                value="To Edit" 
+                                                ajax="false" 
+                                                action="#{patientSampleController.navigateToViewPatientSample(psw.patientSample)}" >
+                                            </p:commandLink>
+                                        </f:facet>
+                                        <table class="table table-striped">
+                                            <tr>
+                                                <th >
+                                                    <h:outputLabel value="Test" ></h:outputLabel>
+                                                </th>
+                                                <th >
+                                                    <h:outputLabel value="Component" ></h:outputLabel>
+                                                </th>
+                                            </tr>
                                             <ui:repeat value="#{patientInvestigationController.getPatientSampleComponentsByPatientSample(psw.patientSample)}" var="psc">
                                                 <tr>
                                                     <td>
-                                                        <h:outputLabel value="Ix" style="font-weight: bold;"/>
-                                                    </td>
-                                                    <td>
                                                         <h:outputLabel value="#{psc.patientInvestigation.investigation.name}"/>
-                                                    </td>
-                                                    <td>
-                                                        <h:outputLabel value="Component" style="font-weight: bold;"/>
                                                     </td>
                                                     <td>
                                                         <h:outputLabel value="#{psc.investigationComponant.name}"/>
@@ -155,7 +157,71 @@
                                         </table>
                                     </p:panel>
                                 </ui:repeat>
+
+
+
+
+
+
                             </p:column>
+
+                            <p:column headerText="Printing">
+                                <p:panel id="samplePanelPrint" 
+                                         header="#{psw.patientSample.id}" 
+                                         toggleable="true" 
+                                         collapsed="true">
+                                    <f:facet name="header" >
+                                        #{psw.patientSample.id}
+                                        <p:commandButton ajax="false" value="Print" >
+                                            <p:printer target="barcode" ></p:printer>
+                                        </p:commandButton>
+                                    </f:facet>
+                                    <h:panelGroup id="barcode">
+                                        <ui:repeat value="#{smpIx.patientSampleWrappers}" var="psc">
+                                            <div class="sticker">
+                                                <div class="patient-info">
+                                                    #{psc.patientSample.patient.person.shortenedName}&nbsp;|&nbsp;
+
+                                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Patient Age in Sample Stickers')}">
+                                                        #{psc.patientSample.patient.person.ageAsShortString}&nbsp;|&nbsp;
+                                                    </h:panelGroup>
+
+                                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Patient Sex in Sample Stickers')}">
+                                                        #{psc.patientSample.patient.person.sex.shortLabel}&nbsp;|&nbsp;
+                                                    </h:panelGroup>
+
+                                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Patient ID in Sample Stickers')}">
+                                                        #{psc.patientSample.patient.person.id}&nbsp;|&nbsp;
+                                                    </h:panelGroup>
+
+                                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Patient PHN in Sample Stickers')}">
+                                                        #{psc.patientSample.patient.phn}
+                                                    </h:panelGroup>
+                                                </div>
+                                                <div class="patient-sample-info">
+                                                    <ui:repeat value="#{patientInvestigationController.getPatientSampleComponentsByPatientSample(psc.patientSample)}" var="psw">
+                                                        #{psw.investigationComponant.name} &nbsp;|&nbsp;
+                                                    </ui:repeat>
+                                                </div>
+                                                <div class="barcode-info">
+                                                    
+                                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Barcode in Sample Stickers')}">
+                                                        <p:barcode value="#{psc.patientSample.idStr}" 
+                                                                   type="#{configOptionApplicationController.getShortTextValueByKey('Sample Sticker - Barcode Type','code128')}" 
+                                                                   height="#{configOptionApplicationController.getShortTextValueByKey('Sample Sticker - Barcode Height in Pixles','80')}"
+                                                                   width="#{configOptionApplicationController.getShortTextValueByKey('Sample Sticker - Barcode Width in Pixles','300')}"
+                                                                   orientation="0" ></p:barcode>
+                                                    </h:panelGroup>
+                                                </div>
+
+                                            </div>
+                                        </ui:repeat>
+                                    </h:panelGroup>
+                                </p:panel>
+                            </p:column>
+
+
+
 
 
 

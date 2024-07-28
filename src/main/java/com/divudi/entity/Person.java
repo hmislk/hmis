@@ -216,7 +216,7 @@ public class Person implements Serializable {
         ageMonthsComponent = months;
         ageYearsComponent = years;
     }
-    
+
     public void calShortAgeFromDob() {
         ageAsShortString = "";
         ageInDays = 0L;
@@ -224,7 +224,7 @@ public class Person implements Serializable {
             return;
         }
 
-         LocalDate ldDob = new LocalDate(getDob());
+        LocalDate ldDob = new LocalDate(getDob());
         LocalDate currentDate = LocalDate.now();
 
         Period period = new Period(ldDob, currentDate, PeriodType.yearMonthDay());
@@ -263,8 +263,6 @@ public class Person implements Serializable {
         }
         return ageAsString;
     }
-    
-    
 
     public Long getAgeInDays() {
         return ageInDays;
@@ -692,7 +690,7 @@ public class Person implements Serializable {
     public String getAgeAsShortString() {
         calShortAgeFromDob();
         if (ageAsShortString == null || ageAsShortString.trim().equals("")) {
-            ageAsShortString = "Not Recorded";
+            ageAsShortString = "";
         }
         return ageAsShortString;
     }
