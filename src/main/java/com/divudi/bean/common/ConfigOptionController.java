@@ -42,7 +42,7 @@ public class ConfigOptionController implements Serializable {
 
     @Inject
     private SessionController sessionController;
-    
+
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
 
@@ -52,7 +52,6 @@ public class ConfigOptionController implements Serializable {
     private WebUser webUser;
     private List<ConfigOption> options;
     private List<ConfigOption> filteredOptions;
-
 
     private String key;
     private String value;
@@ -93,6 +92,20 @@ public class ConfigOptionController implements Serializable {
         department = sessionController.getDepartment();
         webUser = null;
         return "/admin/institutions/admin_mange_user_options?faces-redirect=true";
+    }
+
+    public void deleteOption(ConfigOption delo) {
+        if (delo==null) {
+            JsfUtil.addErrorMessage("Nothing Selected");
+            return;
+        }
+        delo.setRetireComments("del");
+        delo.setRetired(true);
+        delo.setRetiredAt(new Date());
+        delo.setRetirer(sessionController.getLoggedUser());
+        saveOption(delo);
+        configOptionApplicationController.loadApplicationOptions();
+        JsfUtil.addSuccessMessage("Deleted");
     }
 
     public void saveDepartmentOption() {
@@ -289,7 +302,7 @@ public class ConfigOptionController implements Serializable {
             return Long.parseLong(option.getOptionValue());
         } catch (NumberFormatException e) {
 // Log or handle the case where the value cannot be parsed into a Long
-                        return null;
+            return null;
         }
     }
 
@@ -311,8 +324,6 @@ public class ConfigOptionController implements Serializable {
         }
         return Boolean.parseBoolean(option.getOptionValue());
     }
-
-    
 
     public ConfigOption getOptionValueByKeyForInstitution(String key, Institution institution) {
         return getOptionValueByKey(key, OptionScope.INSTITUTION, institution, null, null);
@@ -393,7 +404,6 @@ public class ConfigOptionController implements Serializable {
         return getAllOptions(webUser);
     }
 
-    
     public boolean filterByCustom(Object value, Object filter, Locale locale) {
         if (filter == null || filter.toString().isEmpty()) {
             return true;
@@ -408,7 +418,7 @@ public class ConfigOptionController implements Serializable {
         }
         return true;
     }
-    
+
     private <T> T convertOptionValue(ConfigOption option, Class<T> type) {
         String value = option.getOptionValue();
         OptionValueType valueType = option.getValueType();
@@ -567,8 +577,6 @@ public class ConfigOptionController implements Serializable {
     public void setFilteredOptions(List<ConfigOption> filteredOptions) {
         this.filteredOptions = filteredOptions;
     }
-    
-    
 
     @FacesConverter(forClass = ConfigOption.class)
     public static class OptionConverter implements Converter {
