@@ -1,6 +1,7 @@
 package com.divudi.entity.lab;
 
 import com.divudi.entity.Department;
+import com.divudi.entity.Institution;
 import com.divudi.entity.WebUser;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.Serializable;
@@ -27,9 +28,11 @@ public class DepartmentMachine implements Serializable {
     private Department department;
     private Machine machine;
     private String name;
+    private String code;
+    private String serialNumber;
     @Lob
     private String description;
-    private String code;
+
     //Created Properties
     @ManyToOne
     @JsonIgnore
@@ -48,9 +51,26 @@ public class DepartmentMachine implements Serializable {
     private Date retiredAt;
     private String retireComments;
     private Boolean active;
-    
-    
-    
+    @ManyToOne
+    private Institution supplier;
+    @Temporal(javax.persistence.TemporalType.DATE)
+    private Date manufactureDate;
+    @Temporal(javax.persistence.TemporalType.DATE)
+    private Date installationDate;
+    private String status;
+    private String location;
+    @Temporal(javax.persistence.TemporalType.DATE)
+    private Date calibrationDate;
+    private String maintenanceSchedule;
+    private String networkSettings;
+
+    public DepartmentMachine() {
+    }
+
+    public DepartmentMachine(Department department, Machine machine) {
+        this.department = department;
+        this.machine = machine;
+    }
 
     public Long getId() {
         return id;
@@ -60,6 +80,8 @@ public class DepartmentMachine implements Serializable {
         this.id = id;
     }
 
+    
+    
     @Override
     public int hashCode() {
         int hash = 0;
@@ -180,5 +202,77 @@ public class DepartmentMachine implements Serializable {
     public void setActive(Boolean active) {
         this.active = active;
     }
-    
+
+    public String getSerialNumber() {
+        return serialNumber;
+    }
+
+    public void setSerialNumber(String serialNumber) {
+        this.serialNumber = serialNumber;
+    }
+
+    public Institution getSupplier() {
+        return supplier;
+    }
+
+    public void setSupplier(Institution supplier) {
+        this.supplier = supplier;
+    }
+
+    public Date getManufactureDate() {
+        return manufactureDate;
+    }
+
+    public void setManufactureDate(Date manufactureDate) {
+        this.manufactureDate = manufactureDate;
+    }
+
+    public Date getInstallationDate() {
+        return installationDate;
+    }
+
+    public void setInstallationDate(Date installationDate) {
+        this.installationDate = installationDate;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getLocation() {
+        return location;
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
+    }
+
+    public Date getCalibrationDate() {
+        return calibrationDate;
+    }
+
+    public void setCalibrationDate(Date calibrationDate) {
+        this.calibrationDate = calibrationDate;
+    }
+
+    public String getMaintenanceSchedule() {
+        return maintenanceSchedule;
+    }
+
+    public void setMaintenanceSchedule(String maintenanceSchedule) {
+        this.maintenanceSchedule = maintenanceSchedule;
+    }
+
+    public String getNetworkSettings() {
+        return networkSettings;
+    }
+
+    public void setNetworkSettings(String networkSettings) {
+        this.networkSettings = networkSettings;
+    }
+
 }

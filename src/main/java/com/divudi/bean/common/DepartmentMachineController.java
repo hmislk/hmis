@@ -10,6 +10,7 @@ package com.divudi.bean.common;
 
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.entity.Department;
+import com.divudi.entity.Institution;
 import com.divudi.entity.lab.DepartmentMachine;
 import com.divudi.entity.lab.Machine;
 import com.divudi.facade.DepartmentMachineFacade;
@@ -30,9 +31,9 @@ import javax.inject.Named;
 
 /**
  *
- *  @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- *  Consultant in Health Informatics
- * 
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Consultant
+ * in Health Informatics
+ *
  */
 @Named
 @SessionScoped
@@ -45,9 +46,63 @@ public class DepartmentMachineController implements Serializable {
     private DepartmentMachineFacade ejbFacade;
     private DepartmentMachine current;
     private List<DepartmentMachine> items = null;
+    private Institution institution;
+    private Department department;
+    private Machine machine;
+
+    public void addDepartmentMachine() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Nothing selected");
+            return;
+        }
+        if (current.getName() == null) {
+            JsfUtil.addErrorMessage("No Name");
+            return;
+        }
+
+        if (current.getDepartment() == null) {
+            JsfUtil.addErrorMessage("Select Department");
+            return;
+        }
+        if (current.getMachine() == null) {
+            JsfUtil.addErrorMessage("Select Machine");
+            return;
+        }
+        save(current);
+        current = new DepartmentMachine();
+        listDepMachines();
+    }
+
+    public void toEdit(DepartmentMachine dm) {
+        if (dm == null) {
+            JsfUtil.addErrorMessage("Nothing to add");
+            return;
+        }
+        current = dm;
+    }
+
+    public void prepareToAddNew() {
+        current = new DepartmentMachine();
+        current.setDepartment(department);
+        current.setMachine(machine);
+
+    }
+    
+    public void clearDeptAndDept() {
+       department=null;
+       institution=null;
+    }
 
     public void save(DepartmentMachine depMachine) {
         if (depMachine == null) {
+            return;
+        }
+        if (depMachine.getDepartment() == null) {
+            JsfUtil.addErrorMessage("No Department");
+            return;
+        }
+        if (depMachine.getMachine() == null) {
+            JsfUtil.addErrorMessage("No Machine");
             return;
         }
         if (depMachine.getId() != null) {
@@ -79,6 +134,16 @@ public class DepartmentMachineController implements Serializable {
         this.current = current;
     }
 
+    public void deleteDeptMachine(DepartmentMachine dm) {
+        if (dm == null) {
+            JsfUtil.addErrorMessage("Nothing to add");
+            return;
+        }
+        current = dm;
+        delete();
+        listDepMachines();
+    }
+
     public void delete() {
         if (current != null) {
             current.setRetired(true);
@@ -105,6 +170,10 @@ public class DepartmentMachineController implements Serializable {
                 + " where a.retired=false "
                 + " order by a.name";
         items = getFacade().findByJpql(j);
+    }
+
+    public void listDepMachines() {
+        items = fillDepartmentMachines(department, machine);
     }
 
     public List<DepartmentMachine> fillDepartmentMachines(Department dep) {
@@ -134,6 +203,30 @@ public class DepartmentMachineController implements Serializable {
         return items;
     }
 
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
+    }
+
+    public Machine getMachine() {
+        return machine;
+    }
+
+    public void setMachine(Machine machine) {
+        this.machine = machine;
+    }
+
+    public Institution getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
+    }
+
     /**
      *
      */
@@ -142,24 +235,32 @@ public class DepartmentMachineController implements Serializable {
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
+            if (value == null || value.trim().isEmpty()) {
                 return null;
             }
             DepartmentMachineController controller = (DepartmentMachineController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "categoryItemController");
-            return controller.getFacade().find(getKey(value));
+                    getValue(facesContext.getELContext(), null, "departmentMachineController");
+
+            Long key = getKey(value);
+            if (key == null) {
+                return null;  // Avoid calling find with null
+            }
+            return controller.getFacade().find(key);
         }
 
         java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
-            return key;
+            try {
+                return Long.valueOf(value.trim());
+            } catch (NumberFormatException e) {
+                return null;  // Log this if needed
+            }
         }
 
         String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
+            if (value == null) {
+                return null;
+            }
+            return value.toString();
         }
 
         @Override

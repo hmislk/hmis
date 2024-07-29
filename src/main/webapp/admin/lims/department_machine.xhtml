@@ -7,80 +7,159 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <h:body>
-
         <ui:composition template="/admin/lims/index.xhtml">
 
-            <ui:define name="title">
-                Manage Analyzer Tests
-            </ui:define>
+           
 
             <ui:define name="subcontent">
 
                 <h:form >
 
-                    <p:panel header="Manage Analyzer Test" >
-                        <h:panelGrid columns="5" >
-                            <p:outputLabel value="Analyzer" ></p:outputLabel>
-                            <p:selectOneMenu value="#{departmentMachineController.machine}" >
-                                <f:selectItem itemLabel="Select" ></f:selectItem>
-                                <f:selectItems value="#{machineController.items}" ></f:selectItems>
-                            </p:selectOneMenu>
-                            <p:commandButton ajax="false" action="#{itemController.fillMachineTests()}" value="List Analyzer Tests" ></p:commandButton>
-                            <p:spacer height="1" width="300" ></p:spacer>
-                            <p:commandButton ajax="false" action="/lab/administration" value="List Analyzer Tests" ></p:commandButton>
-                        </h:panelGrid>
-                        <p:dialog id="dlg" modal="true" widgetVar="dlg" >
-                            <p:panel id="test" header="Test" >
-                                <p:commandButton id="btnSave" value="Save" process="@this test" update="tbl" 
-                                                  action="#{itemController.createOrUpdateTest()}" 
-                                                 oncomplete="PF('dlg').hide();" />
-                                <h:panelGrid columns="2" >
-                                    <p:outputLabel value="Code" ></p:outputLabel>
-                                    <p:inputText value="#{itemController.current.code}" ></p:inputText>
-                                    
-                                    <p:outputLabel value="Name" ></p:outputLabel>
-                                    <p:inputText value="#{itemController.current.name}" ></p:inputText>
-                                    <p:outputLabel value="Description" ></p:outputLabel>
-                                    <p:inputTextarea value="#{itemController.current.descreption}" ></p:inputTextarea>
-                                </h:panelGrid>
-                            </p:panel>
-                        </p:dialog>
-                        <h:panelGrid columns="2" class="alignTop">
-                            <h:panelGrid columns="1" id="actions" >
-                                <p:commandButton  
-                                                 styleClass="linkButton" 
-                                                 value="Add" action="#{itemController.toCreateNewTest()}" process="@this" update="dlg" oncomplete="PF('dlg').show()" />
-                                <p:commandButton disabled="#{itemController.current == null}" 
-                                                 styleClass="linkButton" 
-                                                 value="Edit" process="@this" update="dlg" oncomplete="PF('dlg').show()" />
-                                
-                                <p:commandButton disabled="#{itemController.current == null}" 
-                                                 styleClass="linkButton" action="#{itemController.removeTest}" 
-                                                 value="Remove" process="@this" update="dlg" oncomplete="PF('dlg').show()" />
-                                
-                            </h:panelGrid>
-                            <p:dataTable id="tbl" value="#{itemController.machineTests}" var="t" selection="#{itemController.current}" 
-                                         selectionMode="single" rowKey="#{t.id}">
-                                <p:ajax event="rowSelect" process="@this" update=":#{p:resolveFirstComponentWithId('actions',view).clientId}" ></p:ajax>
-                                <p:ajax event="rowUnselect" process="@this" update=":#{p:resolveFirstComponentWithId('actions',view).clientId}" ></p:ajax>
+                    <p:panel header="Manage Department Analyzers" >
 
-                                <p:column headerText="Code" filterBy="#{t.code}" sortBy="#{t.code}" >
-                                    <p:outputLabel value="#{t.code}" ></p:outputLabel>
-                                </p:column>
-                                <p:column headerText="Name" filterBy="#{t.name}" sortBy="#{t.name}" >
-                                    <p:outputLabel value="#{t.name}" ></p:outputLabel>
-                                </p:column>
-                                <p:column headerText="Description" filterBy="#{t.descreption}" sortBy="#{t.descreption}" >
-                                    <p:outputLabel value="#{t.descreption}" ></p:outputLabel>
-                                </p:column>
-                            </p:dataTable>
-                        </h:panelGrid>
+                        <p:panelGrid columns="2" >
+
+
+
+
+                            <p:panelGrid columns="2" >
+                                <p:outputLabel value="Analyzer" ></p:outputLabel>
+                                <p:selectOneMenu value="#{departmentMachineController.machine}" >
+                                    <f:selectItem itemLabel="Select" ></f:selectItem>
+                                    <f:selectItems value="#{machineController.items}" ></f:selectItems>
+                                </p:selectOneMenu>
+                                <p:outputLabel value="Institution" ></p:outputLabel>
+                                <p:autoComplete 
+                                    id="acIns"
+                                    completeMethod="#{institutionController.completeIns}"
+                                    value="#{departmentMachineController.institution}"
+                                    var="ins"
+                                    itemLabel="#{ins.name}"
+                                    itemValue="#{ins}"
+                                    >
+                                    <p:ajax event="itemSelect" process="acIns" update="gpDep" ></p:ajax>
+                                    <p:ajax event="blur" process="acIns" update="gpDep" ></p:ajax>
+                                </p:autoComplete>
+                                <p:outputLabel value="Department" ></p:outputLabel>
+                                <h:panelGroup id="gpDep" >
+                                    <p:selectOneMenu 
+                                        id="cmbDept"
+                                        filter="true"
+                                        filterMatchMode="contains"
+                                        value="#{departmentMachineController.department}"
+                                        rendered="#{departmentMachineController.institution ne null}"
+                                        >
+                                        <f:selectItems value="#{departmentController.getInstitutionDepatrments(departmentMachineController.institution)}"
+                                                       var="dep"
+                                                       itemLabel="#{dep.name}"
+                                                       itemValue="#{dep}" >
+                                        </f:selectItems>
+                                    </p:selectOneMenu>
+                                    <p:outputLabel 
+                                        value="#{departmentMachineController.department}"
+                                        rendered="#{departmentMachineController.institution eq null}"
+                                        >
+                                    </p:outputLabel>
+                                    <p:commandButton title="Clear Department"
+                                                 ajax="false"
+                                                 rendered="#{departmentMachineController.department ne null}"
+                                                 action="#{departmentMachineController.clearDeptAndDept()}" 
+                                                 icon="pi pi-times" styleClass="ui-button-danger" >
+                                    </p:commandButton>
+                                    
+                                </h:panelGroup>
+                                <p:commandButton 
+                                    ajax="false" 
+                                    action="#{departmentMachineController.listDepMachines}" 
+                                    value="List Department Analyzers" ></p:commandButton>
+                                <p:commandButton 
+                                    ajax="false" 
+                                    action="#{departmentMachineController.prepareToAddNew()}" 
+                                    value="To Add a New Machine" ></p:commandButton>
+
+                            </p:panelGrid>
+                            <p:panelGrid columns="2" >
+                                <p:outputLabel value="Analyzer" ></p:outputLabel>
+                                <p:selectOneMenu value="#{departmentMachineController.current.machine}" >
+                                    <f:selectItem itemLabel="Select" ></f:selectItem>
+                                    <f:selectItems value="#{machineController.items}" ></f:selectItems>
+                                </p:selectOneMenu>
+                                <p:outputLabel value="Institution" ></p:outputLabel>
+                                <p:outputLabel value="#{departmentMachineController.current.department.institution.name}" ></p:outputLabel>
+                                <p:outputLabel value="Department" ></p:outputLabel>
+                                <p:outputLabel value="#{departmentMachineController.current.department.name}" ></p:outputLabel>
+                                <p:outputLabel value="Name" ></p:outputLabel>
+                                <h:inputText value="#{departmentMachineController.current.name}" ></h:inputText>
+
+                                <p:outputLabel value="Serial Number:" for="serialNumber"/>
+                                <p:inputText id="serialNumber" value="#{departmentMachineController.current.serialNumber}" />
+
+                                <p:outputLabel value="Description:" for="description"/>
+                                <p:inputTextarea id="description" value="#{departmentMachineController.current.description}" />
+
+                                <p:outputLabel value="Status:" for="status"/>
+                                <p:selectOneMenu id="status" value="#{departmentMachineController.current.status}">
+                                    <f:selectItem itemLabel="Select Status" itemDisabled="true" noSelectionOption="true"/>
+                                    <f:selectItem itemLabel="Operational" itemValue="Operational"/>
+                                    <f:selectItem itemLabel="Maintenance" itemValue="Maintenance"/>
+                                    <f:selectItem itemLabel="Out of Service" itemValue="Out of Service"/>
+                                </p:selectOneMenu>
+
+                                <p:outputLabel value="Location:" for="location"/>
+                                <p:inputText id="location" value="#{departmentMachineController.current.location}" />
+
+                                <p:outputLabel value="Calibration Date:" for="calibrationDate"/>
+                                <p:calendar id="calibrationDate" value="#{departmentMachineController.current.calibrationDate}" pattern="dd/MM/yyyy" />
+
+                                <p:outputLabel value="Maintenance Schedule:" for="maintenanceSchedule"/>
+                                <p:inputTextarea id="maintenanceSchedule" value="#{departmentMachineController.current.maintenanceSchedule}" />
+
+
+                                <p:commandButton 
+                                    ajax="false" 
+                                    action="#{departmentMachineController.addDepartmentMachine()}" 
+                                    value="Add Department Analyzer" ></p:commandButton>
+
+                            </p:panelGrid>
+
+                        </p:panelGrid>
+
+                        <p:dataTable id="tbl" 
+                                     value="#{departmentMachineController.items}" 
+                                     var="t" 
+                                     rowKey="#{t.id}">
+                            <p:column headerText="Institution" filterBy="#{t.department.institution.name}" sortBy="#{t.department.institution.name}" >
+                                <p:outputLabel value="#{t.department.institution.name}" ></p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Department" filterBy="#{t.department.name}" sortBy="#{t.department.name}" >
+                                <p:outputLabel value="#{t.department.name}" ></p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Machine" filterBy="#{t.name}" sortBy="#{t.name}" >
+                                <p:outputLabel value="#{t.name}" ></p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Serial" filterBy="#{t.serialNumber}" sortBy="#{t.serialNumber}" >
+                                <p:outputLabel value="#{t.serialNumber}" ></p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Action">
+                                <p:commandButton value="Edit" 
+                                                 ajax="false"
+                                                 action="#{departmentMachineController.toEdit(t)}" 
+                                                 icon="pi pi-pencil" styleClass="ui-button-primary"/>
+                                <p:commandButton value="Delete"
+                                                 ajax="false"
+                                                 action="#{departmentMachineController.deleteDeptMachine(t)}" 
+                                                 icon="pi pi-times" styleClass="ui-button-danger"
+                                                 onclick="if (!confirm('Are you sure you want to delete this item?'))
+                                                             return false;"/>
+                            </p:column>
+                        </p:dataTable>
+
                     </p:panel>
 
                 </h:form>
             </ui:define>
 
-         
+
 
         </ui:composition>
 
