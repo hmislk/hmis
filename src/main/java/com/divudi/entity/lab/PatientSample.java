@@ -115,24 +115,23 @@ public class PatientSample implements Serializable {
     private Machine machine;
     @ManyToOne
     private Sample sample;
-    
+
     private Boolean sampleReceivedAtLab;
-    
+
     @ManyToOne
     private WebUser sampleReceiverAtLab;
-    
+
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date sampleReceivedAtLabDate;
-    
+
     private String sampleReceivedAtLabComments;
-    
+
     @ManyToOne
     private Department sampleReceivedAtLabDepartment;
-    
+
     @ManyToOne
     private Institution sampleReceivedAtLabInstitution;
-    
-    
+
     //Cancellation
     private Boolean cancelled = false;
     @ManyToOne
@@ -152,8 +151,6 @@ public class PatientSample implements Serializable {
     private Date retiredAt;
     private String retireComments;
 
-    
-    
     public Long getId() {
         return id;
     }
@@ -163,11 +160,9 @@ public class PatientSample implements Serializable {
     }
 
     public String getIdStr() {
-        String formatted = String.format("%08d", id);
+        String formatted = id + "";
         return formatted;
     }
-    
-    
 
     @Override
     public int hashCode() {
@@ -570,8 +565,6 @@ public class PatientSample implements Serializable {
         this.barcodeGenerator = barcodeGenerator;
     }
 
-    
-
     public Department getBarcodeGeneratedDepartment() {
         return barcodeGeneratedDepartment;
     }
@@ -644,6 +637,4 @@ public class PatientSample implements Serializable {
         this.sampleReceivedAtLabInstitution = sampleReceivedAtLabInstitution;
     }
 
-    
-    
 }

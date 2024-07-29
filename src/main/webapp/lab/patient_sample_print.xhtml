@@ -22,10 +22,12 @@
                 <h:form>        
 
                     <p:commandButton ajax="false" value="Print" >
-                        <p:printer target="barcode" ></p:printer>
+                        <p:printer target="gpPrint" ></p:printer>
                     </p:commandButton>
 
 
+                    #{patientSampleController.items}
+                    
                     <h:panelGroup id="gpPrint" >
                         <ui:repeat value="#{patientSampleController.items}" var="ps">
                             <p:barcode value="01234567895" type="upca" format="png"/>
