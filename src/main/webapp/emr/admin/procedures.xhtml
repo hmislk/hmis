@@ -8,10 +8,12 @@
                 xmlns:p="http://primefaces.org/ui">
     <ui:define name="subcontent">
         <h:form >
-            <p:growl id="msg"/>
-            <p:focus id="selectFocus" context="gpSelect"/>
-            <p:focus id="detailFocus" context="gpDetail"/>
-            <p:panel header="Manage Procedures">
+
+            
+            <p:panel header="Manage Procedures" rendered="false">
+                <p:growl id="msg"/>
+                <p:focus id="selectFocus" context="gpSelect"/>
+                <p:focus id="detailFocus" context="gpDetail"/>
                 <div class="container-fluid">
                     <div class="row">
                         <div class="col-md-5">

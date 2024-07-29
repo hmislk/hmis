@@ -86,6 +86,7 @@ public class Bill implements Serializable {
     @Transient
     boolean transError;
 
+    private String ipOpOrCc;
     
     
 
@@ -2223,5 +2224,22 @@ public class Bill implements Serializable {
     public void setLocalNumber(String localNumber) {
         this.localNumber = localNumber;
     }
+
+    public String getIpOpOrCc() {
+        ipOpOrCc="OP";
+        if(this.getPatientEncounter()!=null){
+            ipOpOrCc="IP";
+        }else if(this.getCollectingCentre()!=null){
+            ipOpOrCc="CC";
+        }
+        return ipOpOrCc;
+    }
+
+    public void setIpOpOrCc(String ipOpOrCc) {
+        this.ipOpOrCc = ipOpOrCc;
+    }
+    
+    
+    
 
 }
