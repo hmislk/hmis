@@ -734,6 +734,25 @@ public class ItemController implements Serializable {
             return null;
         }
     }
+    
+    public Item findItemByNameAndCode(String name, String code) {
+        try {
+            String jpql;
+            Map m = new HashMap();
+            jpql = "select i "
+                    + " from Item i "
+                    + " where i.retired=:ret "
+                    + " and i.code=:code "
+                    + " and i.name=:name ";
+            m.put("ret", false);
+            m.put("name", name);
+            m.put("code", code);
+            Item item = getFacade().findFirstByJpql(jpql, m);
+            return item;
+        } catch (Exception e) {
+            return null;
+        }
+    }
 
     public Item findMasterItemByName(String name) {
         try {

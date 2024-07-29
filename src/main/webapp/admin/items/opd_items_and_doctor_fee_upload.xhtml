@@ -28,7 +28,7 @@
                         <p:commandButton 
                             icon="fa fa-upload"
                             value="Upload"
-                            action="#{dataUploadController.uploadItemsAndHospitalFees()}"
+                            action="#{dataUploadController.uploadItemsAndDoctorFees()}"
                             ajax="false"/>
 
 
@@ -47,43 +47,68 @@
                         <tbody>
                             <tr>
                                 <td>A</td>
-                                <td>Item Name</td>
-                                <td>Item Name. Required</td>
+                                <td>Name</td>
+                                <td>Name. Required</td>
                             </tr>
                             <tr>
                                 <td>B</td>
-                                <td>Item Code</td>
-                                <td>Item Code Optional</td>
+                                <td>Printing Name</td>
+                                <td>Printing Name name. Optional.</td>
                             </tr>
                             <tr>
                                 <td>C</td>
+                                <td>Full Name</td>
+                                <td>Full Name Optional</td>
+                            </tr>
+                            <tr>
+                                <td>D</td>
+                                <td>Item Code</td>
+                                <td>Item Code Optional</td>
+                            </tr>
+<!--                            <tr>
+                                <td>E</td>
                                 <td>Category</td>
                                 <td>Category name. Required.</td>
                             </tr>
                             <tr>
-                                <td>D</td>
+                                <td>F</td>
                                 <td>Financial Category</td>
                                 <td>Financial Category name. Optional.</td>
-                            </tr>
+                            </tr>-->
                             <tr>
-                                <td>E</td>
-                                <td>Fee Name</td>
-                                <td>Optional. Default is Doctor Fee.</td>
-                            </tr>
-                            <tr>
-                                <td>F</td>
-                                <td>Doctor Fee</td>
-                                <td>Optional. Created for Logged Department and Institution</td>
-                            </tr>
-                             <tr>
                                 <td>G</td>
                                 <td>Institution</td>
-                                <td>Optional. Created for Logged Institution</td>
+                                <td>Institution. Optional. If left blank, logged institution is used.</td>
                             </tr>
-                             <tr>
+                            <tr>
                                 <td>H</td>
                                 <td>Department</td>
-                                <td>Optional. Created for Logged Department</td>
+                                <td>Department. Optional. If left blank, logged department is used.</td>
+                            </tr>
+<!--                            <tr>
+                                <td>I</td>
+                                <td>Inward Charge Category</td>
+                                <td>Inward Charge Category. Optional.</td>
+                            </tr>-->
+                            <tr>
+                                <td>J</td>
+                                <td>Item Type</td>
+                                <td>Optional. Default is Investigation. Other options include Service, InwardService, Surgery.</td>
+                            </tr>
+                            <tr>
+                                <td>K</td>
+                                <td>Staff</td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td>L</td>
+                                <td>Fee Name</td>
+                                <td>Optional. Default is Staff Fee.</td>
+                            </tr>
+                            <tr>
+                                <td>M</td>
+                                <td>Staff Fee</td>
+                                <td>Optional. Created for Logged Department and Institution</td>
                             </tr>
                         </tbody>
 
@@ -106,7 +131,7 @@
                         #{item.department.name}
                     </p:column>
                     <p:column >
-
+                        
                         #{item.total}
                     </p:column>
 
