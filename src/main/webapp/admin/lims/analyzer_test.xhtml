@@ -23,7 +23,7 @@
                             <p:outputLabel value="Analyzer" ></p:outputLabel>
                             <p:selectOneMenu value="#{itemController.machine}" >
                                 <f:selectItem itemLabel="Select" ></f:selectItem>
-                                <f:selectItems value="#{machineController.institutionMachines}" ></f:selectItems>
+                                <f:selectItems value="#{machineController.items}" ></f:selectItems>
                             </p:selectOneMenu>
                             <p:commandButton ajax="false" action="#{itemController.fillMachineTests()}" value="List Analyzer Tests" ></p:commandButton>
                             <p:spacer height="1" width="300" ></p:spacer>
