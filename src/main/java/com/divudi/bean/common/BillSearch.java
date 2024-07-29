@@ -2124,6 +2124,17 @@ public class BillSearch implements Serializable {
         if (errorsPresentOnOpdBillCancellation()) {
             return;
         }
+        
+        if(paymentMethod == PaymentMethod.PatientDeposit){
+            if(getBill().getPatient().getHasAnAccount() == null){
+                JsfUtil.addErrorMessage("Create Patient Account First");
+                return;
+            }
+            if(!getBill().getPatient().getHasAnAccount()){
+                JsfUtil.addErrorMessage("Create Patient Account First");
+                return;
+            }
+        }
 
         if (!getWebUserController().hasPrivilege("OpdCancel")) {
             JsfUtil.addErrorMessage("You have no privilege to cancel OPD bills. Please contact System Administrator.");
