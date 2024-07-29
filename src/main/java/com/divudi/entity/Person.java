@@ -32,7 +32,7 @@ import org.joda.time.PeriodType;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Author : Dr. M H B Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
  * Consultant (Health Informatics)
  */
 @Entity
@@ -72,7 +72,7 @@ public class Person implements Serializable {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date dob;
 
-    //Created Properties
+    // Created Properties
     @ManyToOne
     WebUser creater;
 
@@ -83,7 +83,7 @@ public class Person implements Serializable {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date editedAt;
 
-    //    Retairing properties
+    // Retiring properties
     boolean retired;
     @ManyToOne
     WebUser retirer;
@@ -91,13 +91,10 @@ public class Person implements Serializable {
     Date retiredAt;
     String retireComments;
     @ManyToOne
-
     Area area;
     @ManyToOne
-
     Institution institution;
     @ManyToOne
-
     Department department;
     @Enumerated(EnumType.STRING)
     Title title;
@@ -139,8 +136,8 @@ public class Person implements Serializable {
     @Transient
     private String smsNumber;
 
-//    @Inject
-//    SessionController SessionController;
+    // @Inject
+    // SessionController SessionController;
     @PostConstruct
     public void init() {
         calAgeFromDob();
@@ -188,7 +185,7 @@ public class Person implements Serializable {
 
     public void calAgeFromDob() {
         ageAsString = "";
-        ageInDays = 0l;
+        ageInDays = 0L;
         if (getDob() == null) {
             return;
         }
@@ -234,13 +231,13 @@ public class Person implements Serializable {
         int days = period.getDays();
 
         if (years > 5) {
-            ageAsString = years + "Y";
+            ageAsShortString = years + "Y";
         } else if (years > 0) {
-            ageAsString = years + "Y" + months + "M";
+            ageAsShortString = years + "Y" + months + "M";
         } else if (months > 0) {
-            ageAsString = months + "M" + days + "d";
+            ageAsShortString = months + "M" + days + "d";
         } else {
-            ageAsString = days + "d";
+            ageAsShortString = days + "d";
         }
 
         period = new Period(ldDob, currentDate, PeriodType.days());
@@ -262,6 +259,14 @@ public class Person implements Serializable {
             ageAsString = "Not Recorded";
         }
         return ageAsString;
+    }
+
+    public String getAgeAsShortString() {
+        calShortAgeFromDob();
+        if (ageAsShortString == null || ageAsShortString.trim().equals("")) {
+            ageAsShortString = "";
+        }
+        return ageAsShortString;
     }
 
     public Long getAgeInDays() {
@@ -347,21 +352,21 @@ public class Person implements Serializable {
         this.createdAt = createdAt;
     }
 
-//    public WebUser getEditer() {
-//        return editer;
-//    }
-//
-//    public void setEditer(WebUser editer) {
-//        this.editer = editer;
-//    }
-//
-//    public Date getEditedAt() {
-//        return editedAt;
-//    }
-//
-//    public void setEditedAt(Date editedAt) {
-//        this.editedAt = editedAt;
-//    }
+    // public WebUser getEditer() {
+    // return editer;
+    // }
+    //
+    // public void setEditer(WebUser editer) {
+    // this.editer = editer;
+    // }
+    //
+    // public Date getEditedAt() {
+    // return editedAt;
+    // }
+    //
+    // public void setEditedAt(Date editedAt) {
+    // this.editedAt = editedAt;
+    // }
     public WebUser getCreater() {
         return creater;
     }
@@ -436,38 +441,27 @@ public class Person implements Serializable {
 
     @Transient
     public String getShortenedName() {
-        if (name == null || name.isEmpty()) {
+        if (name == null || name.trim().isEmpty()) {
             return "";
         }
-        String[] words = name.split("\\s+");
-        StringBuilder shortened = new StringBuilder();
+        String[] words = name.trim().split("\\s+");
+        StringBuilder shortenedName = new StringBuilder();
 
         for (String word : words) {
-            if (shortened.length() > 0) {
-                shortened.append("");
+            if (word.length() > 6) {
+                word = word.substring(0, 6);
             }
-            if (word.length() > 5) {
-                shortened.append(word.substring(0, 5));
-            } else {
-                shortened.append(word);
-            }
+            shortenedName.append(capitalize(word)).append(" ");
         }
 
-        if (shortened.length() > 15) {
-            shortened.setLength(15);
-        }
+        return shortenedName.toString().trim();
+    }
 
-        // Capitalize first letter of each word
-        String[] parts = shortened.toString().split(" ");
-        StringBuilder result = new StringBuilder();
-        for (String part : parts) {
-            if (part.length() > 0) {
-                result.append(Character.toUpperCase(part.charAt(0)))
-                        .append(part.substring(1).toLowerCase());
-            }
+    private String capitalize(String word) {
+        if (word == null || word.isEmpty()) {
+            return word;
         }
-
-        return result.toString();
+        return word.substring(0, 1).toUpperCase() + word.substring(1).toLowerCase();
     }
 
     @Override
@@ -686,13 +680,4 @@ public class Person implements Serializable {
     public void setSmsNumber(String smsNumber) {
         this.smsNumber = smsNumber;
     }
-
-    public String getAgeAsShortString() {
-        calShortAgeFromDob();
-        if (ageAsShortString == null || ageAsShortString.trim().equals("")) {
-            ageAsShortString = "";
-        }
-        return ageAsShortString;
-    }
-
 }

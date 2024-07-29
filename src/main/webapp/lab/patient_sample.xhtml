@@ -19,7 +19,25 @@
             </h:panelGroup>
 
             <h:panelGroup rendered="#{webUserController.hasPrivilege('LabSampleCollecting')}" >
-                <h:form>        
+                <h:form>   
+
+
+                    <p:commandButton ajax="false" value="Print" >
+                        <p:printer target="gpPrint" ></p:printer>
+                    </p:commandButton>
+
+
+
+
+                    <h:panelGroup id="gpPrint" >
+                        <p:barcode 
+                            cache="false"
+                            value="#{patientSampleController.current.idStr}" 
+                                   type="int2of5" />
+                    </h:panelGroup>
+
+
+
                     <p:panel >
                         <f:facet name="header">
                             <h:outputLabel class="mt-2" value="Sample"/>
@@ -48,25 +66,23 @@
                             <p:outputLabel value="#{patientSampleController.current.createdAt}" ></p:outputLabel>
 
                             <p:outputLabel value="Collected" ></p:outputLabel>
-                            <p:outputLabel value="#{patientSampleController.current.collected}" ></p:outputLabel>
+                            <p:outputLabel value="#{patientSampleController.current.sampleCollected}" ></p:outputLabel>
 
                             <p:outputLabel value="Sample Collector" ></p:outputLabel>
                             <p:outputLabel value="#{patientSampleController.current.sampleCollecter.name}" ></p:outputLabel>
 
                             <p:outputLabel value="Sampled At" ></p:outputLabel>
-                            <p:outputLabel value="#{patientSampleController.current.sampledAt}" ></p:outputLabel>
+                            <p:outputLabel value="#{patientSampleController.current.sampleCollectedAt}" >
+                            </p:outputLabel>
 
                             <p:outputLabel value="Sample Outside" ></p:outputLabel>
-                            <p:outputLabel value="#{patientSampleController.current.sampleOutside}" ></p:outputLabel>
+                            <p:outputLabel value="#{patientSampleController.current.sampleCollectedOutside}" ></p:outputLabel>
 
-                            <p:outputLabel value="Sample Comments" ></p:outputLabel>
-                            <p:outputLabel value="#{patientSampleController.current.sampleComments}" ></p:outputLabel>
-
-                            <p:outputLabel value="Sample Department" ></p:outputLabel>
-                            <p:outputLabel value="#{patientSampleController.current.sampleDepartment.name}" ></p:outputLabel>
+                            <p:outputLabel value="Sample Collected Department" ></p:outputLabel>
+                            <p:outputLabel value="#{patientSampleController.current.sampleCollectedDepartment.name}" ></p:outputLabel>
 
                             <p:outputLabel value="Sample Institution" ></p:outputLabel>
-                            <p:outputLabel value="#{patientSampleController.current.sampleInstitution.name}" ></p:outputLabel>
+                            <p:outputLabel value="#{patientSampleController.current.sampleCollectedInstitution.name}" ></p:outputLabel>
 
                             <p:outputLabel value="Ready To Send To Analyzer" ></p:outputLabel>
                             <p:outputLabel value="#{patientSampleController.current.readyTosentToAnalyzer}" ></p:outputLabel>
