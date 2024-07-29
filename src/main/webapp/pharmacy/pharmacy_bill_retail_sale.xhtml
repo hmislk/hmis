@@ -261,15 +261,23 @@
                                             <p:column headerText="Qty" style="width: 8%">
                                                 <p:cellEditor>  
                                                     <f:facet name="output">  
-                                                        <h:outputText value="#{bi.qty}" >
-                                                            <f:convertNumber integerOnly="true" />
+                                                        <h:outputText value="#{bi.qty}">
+                                                            <f:convertNumber integerOnly="true" pattern="#,##0"/>
                                                         </h:outputText>
                                                     </f:facet>  
                                                     <f:facet name="input">  
-                                                        <p:inputText autocomplete="off" id="ipTblQty" value="#{bi.qty}" style="width:96%"/>  
+                                                        <p:inputText 
+                                                            autocomplete="off" 
+                                                            id="ipTblQty" 
+                                                            value="#{bi.qty}" 
+                                                            style="width:96%"
+                                                            converterMessage="Please enter a valid integer value.">
+                                                            <f:convertNumber integerOnly="true"/>
+                                                        </p:inputText>  
                                                     </f:facet>  
                                                 </p:cellEditor> 
                                             </p:column>
+
 
                                             <p:column>
                                                 <p:rowEditor style="display: inline-block; margin-right: 10px;"/>
