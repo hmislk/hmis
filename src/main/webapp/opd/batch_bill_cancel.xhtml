@@ -36,8 +36,7 @@
                                     <h:outputText styleClass="fas fa-money-bill"></h:outputText>
                                     <h:outputLabel value="Payment Mode" class="mx-2"></h:outputLabel>
                                 </f:facet>
-                                <p:selectOneMenu id="cmbPs" value="#{billController.paymentMethod}"  
-                                                 disabled="#{billController.batchBill.paymentMethod eq 'Cash'}"
+                                <p:selectOneMenu id="cmbPs" value="#{billController.paymentMethod}"
                                                  rendered="#{billController.batchBill.billType eq 'OpdBathcBill'}">
                                     <f:selectItem itemLabel="Select paymentMethod"/>
                                     <f:selectItems value="#{inwardPaymentController.paymentMethods}"/>
@@ -155,6 +154,9 @@
                             <prints:posOpdBill bill="#{billSearch.bill.cancelledBill}" duplicate="#{opdBillController.duplicatePrint}"/>
                             <prints:A4_paper_with_headings bill="#{billSearch.bill.cancelledBill}" duplicate="#{opdBillController.duplicatePrint}"/>
                             <prints:A4_paper_without_headings bill="#{billSearch.bill.cancelledBill}" duplicate="#{opdBillController.duplicatePrint}"/>
+                            
+                            
+                            
                         </h:panelGroup>
                     </h:panelGroup>
                 </h:form>                
