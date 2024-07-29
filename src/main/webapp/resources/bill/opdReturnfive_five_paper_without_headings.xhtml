@@ -250,7 +250,7 @@
                     <h:panelGroup rendered="#{cc.attrs.bill.margin > 0? 'false':'true'}">
                         <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip"   >
 
-                            <h:panelGroup rendered="#{not bip.item.printFeesForBills}">
+                            <h:panelGroup rendered="#{not bip.item.printFeesForBills and bip.grossValue ne 0.0}">
                                 <tr>
                                     <td  style="overflow: visible;">
                                         <div class="d-flex gap-0">
