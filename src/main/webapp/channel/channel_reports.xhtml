@@ -21,8 +21,10 @@
                                             <p:commandButton 
                                                 class="w-100"
                                                 value="Session Counts" 
+
                                                 action="#{channelReportTemplateController.navigateToChannlingSessionCount}" 
                                                 ajax="false"/>
+
                                             <p:commandButton 
                                                 class="w-100" 
                                                 ajax="false" 
@@ -41,6 +43,7 @@
                                                 class="w-100" 
                                                 value="Category Counts"
                                                 action="/channel/channel_report_patient_count_income" ajax="false" actionListener="#{channelReportTemplateController.clearAll}"/>
+
                                             <p:commandButton class="w-100" value="Channel Hospital Income With Doc Fee" action="/channel/channel_report_patient_count_income_with_doc?faces-redirect=true" ajax="false" actionListener="#{channelReportTemplateController.clearAll}"/>
                                         </div>
                                     </p:tab>
