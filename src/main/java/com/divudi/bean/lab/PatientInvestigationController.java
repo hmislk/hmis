@@ -1265,20 +1265,31 @@ public class PatientInvestigationController implements Serializable {
     }
 
     public void listBillsWithGeneratedBarcodes() {
-        String temSql;
-        Map temMap = new HashMap();
-        temSql = "SELECT i "
+        String jpql;
+        Map params = new HashMap();
+        jpql = "SELECT i "
                 + " FROM PatientInvestigation i "
                 + " where i.retired=:ret  "
                 + " and i.barcodeGenerated=:bg "
-                + " and i.billItem.bill.billDate between :fromDate and :toDate "
-                + " order by i.id desc";
-        temMap.put("fromDate", getFromDate());
-        temMap.put("toDate", getToDate());
-        temMap.put("ret", false);
-        temMap.put("bg", true);
+                + " and i.billItem.bill.billDate between :fromDate and :toDate ";
+
+        if (orderedInstitution != null) {
+            jpql += " and i.billItem.bill.institution=:ins ";
+            params.put("ins", getOrderedInstitution());
+        }
+
+        if (orderedInstitution != null) {
+            jpql += " and i.billItem.bill.department=:dep ";
+            params.put("dep", getOrderedDepartment());
+        }
+
+        jpql += " order by i.id desc";
+        params.put("fromDate", getFromDate());
+        params.put("toDate", getToDate());
+        params.put("ret", false);
+        params.put("bg", true);
         billBarcodes = new ArrayList<>();
-        List<PatientInvestigation> pis = getFacade().findByJpql(temSql, temMap, TemporalType.TIMESTAMP);
+        List<PatientInvestigation> pis = getFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
         billBarcodes = createBilBarcodeObjects(pis);
     }
 
