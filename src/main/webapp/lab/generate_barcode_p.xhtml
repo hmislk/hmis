@@ -201,6 +201,12 @@
                                         <p:commandButton ajax="false" value="Print" >
                                             <p:printer target="barcode" ></p:printer>
                                         </p:commandButton>
+                                        
+                                        <p:commandButton ajax="false" value="To Print Barcodes"
+                                                         action="#{patientSampleController.navigateToPrintBarcodes(psw.patientSample)}">
+                                            
+                                        </p:commandButton>
+                                        
                                     </f:facet>
                                     <h:panelGroup id="barcode">
                                         <ui:repeat value="#{smpIx.patientSampleWrappers}" var="psc">
