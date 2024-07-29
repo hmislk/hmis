@@ -48,6 +48,13 @@
                                 icon="fas fa-cogs" 
                                 value="Process" 
                                 action="#{channelReportTemplateController.fillOnlineBookings()}" ajax="false" ></p:commandButton>
+                            <p:commandButton 
+                                class="ui-button-success mx-2"
+                                icon ="fas fa-file-excel"
+                                ajax="false"
+                                value="Excel">
+                                <p:dataExporter target="tbl1" fileName="Online_Sessions_Count_#{channelReportTemplateController.toDate}" type="xlsx" />
+                            </p:commandButton>
                         </h:panelGrid>
 
 

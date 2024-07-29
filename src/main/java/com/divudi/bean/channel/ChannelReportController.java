@@ -2137,9 +2137,9 @@ public class ChannelReportController implements Serializable {
             doctorPaymentSummeryRow.setConsultant(stf);
 
             if (bySession) {
-                doctorPaymentSummeryRow.setDoctorPaymentSummeryRowSubs(getDoctorPaymentSummeryRowSubsBySession(bts, BillType.PaymentBill, stf, fromDate, toDate));
+                doctorPaymentSummeryRow.setDoctorPaymentSummeryRowSubs(getDoctorPaymentSummeryRowSubsBySession(bts, BillType.ChannelProPayment, stf, fromDate, toDate));
             } else {
-                doctorPaymentSummeryRow.setDoctorPaymentSummeryRowSubs(getDoctorPaymentSummeryRowSubs(bts, BillType.PaymentBill, stf, fromDate, toDate));
+                doctorPaymentSummeryRow.setDoctorPaymentSummeryRowSubs(getDoctorPaymentSummeryRowSubs(bts, BillType.ChannelProPayment, stf, fromDate, toDate));
             }
             if (!doctorPaymentSummeryRow.getDoctorPaymentSummeryRowSubs().isEmpty()) {
                 doctorPaymentSummeryRows.add(doctorPaymentSummeryRow);
