@@ -1,0 +1,178 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:opd="http://xmlns.jcp.org/jsf/composite/ezcomp/opd">
+    <ui:composition 
+        template="/lab/sample_index.xhtml">
+
+        <ui:define name="subcontent">
+            <h:head>
+
+            </h:head>
+
+            <h:panelGroup rendered="#{!webUserController.hasPrivilege('LabSampleCollecting')}" >
+                You are NOT authorized
+            </h:panelGroup>
+
+            <h:panelGroup rendered="#{webUserController.hasPrivilege('LabSampleCollecting')}" >
+                <h:form>        
+                    <p:panel >
+                        <f:facet name="header">
+                            <h:outputLabel class="mt-2" value="Sample"/>
+                        </f:facet>
+
+                        <p:panelGrid columns="2" >
+                            <p:outputLabel value="Bill No." ></p:outputLabel>
+                            <p:outputLabel value="#{patientSampleController.current.bill.deptId}" ></p:outputLabel>
+                            <p:outputLabel value="Patient" ></p:outputLabel>
+                            <p:outputLabel value="#{patientSampleController.current.bill.patient.person.nameWithTitle}" ></p:outputLabel>
+                            <p:outputLabel value="Bill No." ></p:outputLabel>
+                            <p:outputLabel value="#{patientSampleController.current}" ></p:outputLabel>
+                            <p:outputLabel value="Machine" ></p:outputLabel>
+                            <p:outputLabel value="#{patientSampleController.current.machine.name}" ></p:outputLabel>
+
+
+
+                            <p:outputLabel value="Bill" ></p:outputLabel>
+                            <p:outputLabel value="#{patientSampleController.current.bill.deptId}" ></p:outputLabel>
+
+                            <p:outputLabel value="Creater" ></p:outputLabel>
+                            <p:outputLabel value="#{patientSampleController.current.creater.name}" ></p:outputLabel>
+
+                            <p:outputLabel value="Created At" ></p:outputLabel>
+                            <p:outputLabel value="#{patientSampleController.current.createdAt}" ></p:outputLabel>
+
+                            <p:outputLabel value="Collected" ></p:outputLabel>
+                            <p:outputLabel value="#{patientSampleController.current.collected}" ></p:outputLabel>
+
+                            <p:outputLabel value="Sample Collector" ></p:outputLabel>
+                            <p:outputLabel value="#{patientSampleController.current.sampleCollecter.name}" ></p:outputLabel>
+
+                            <p:outputLabel value="Sampled At" ></p:outputLabel>
+                            <p:outputLabel value="#{patientSampleController.current.sampledAt}" ></p:outputLabel>
+
+                            <p:outputLabel value="Sample Outside" ></p:outputLabel>
+                            <p:outputLabel value="#{patientSampleController.current.sampleOutside}" ></p:outputLabel>
+
+                            <p:outputLabel value="Sample Comments" ></p:outputLabel>
+                            <p:outputLabel value="#{patientSampleController.current.sampleComments}" ></p:outputLabel>
+
+                            <p:outputLabel value="Sample Department" ></p:outputLabel>
+                            <p:outputLabel value="#{patientSampleController.current.sampleDepartment.name}" ></p:outputLabel>
+
+                            <p:outputLabel value="Sample Institution" ></p:outputLabel>
+                            <p:outputLabel value="#{patientSampleController.current.sampleInstitution.name}" ></p:outputLabel>
+
+                            <p:outputLabel value="Ready To Send To Analyzer" ></p:outputLabel>
+                            <p:outputLabel value="#{patientSampleController.current.readyTosentToAnalyzer}" ></p:outputLabel>
+
+                            <p:outputLabel value="Sample Request Type" ></p:outputLabel>
+                            <p:outputLabel value="#{patientSampleController.current.sampleRequestType}" ></p:outputLabel>
+
+                            <p:outputLabel value="Sent To Analyzer" ></p:outputLabel>
+                            <p:outputLabel value="#{patientSampleController.current.sentToAnalyzer}" ></p:outputLabel>
+
+                            <p:outputLabel value="Sent To Analyzer By" ></p:outputLabel>
+                            <p:outputLabel value="#{patientSampleController.current.sentToAnalyzerBy.name}" ></p:outputLabel>
+
+                            <p:outputLabel value="Sent To Analyzer At" ></p:outputLabel>
+                            <p:outputLabel value="#{patientSampleController.current.sentToAnalyzerAt}" ></p:outputLabel>
+
+                            <p:outputLabel value="Sent To Analyzer Comments" ></p:outputLabel>
+                            <p:outputLabel value="#{patientSampleController.current.sentToAnalyzerComments}" ></p:outputLabel>
+
+                            <p:outputLabel value="Sent To Analyzer Department" ></p:outputLabel>
+                            <p:outputLabel value="#{patientSampleController.current.sentToAnalyzerDepartment.name}" ></p:outputLabel>
+
+                            <p:outputLabel value="Sent To Analyzer Institution" ></p:outputLabel>
+                            <p:outputLabel value="#{patientSampleController.current.sentToAnalyzerInstitution.name}" ></p:outputLabel>
+
+                            <p:outputLabel value="Received From Analyzer" ></p:outputLabel>
+                            <p:outputLabel value="#{patientSampleController.current.receivedFromAnalyzer}" ></p:outputLabel>
+
+                            <p:outputLabel value="Received From Analyzer By" ></p:outputLabel>
+                            <p:outputLabel value="#{patientSampleController.current.receivedFromAnalyzerBy.name}" ></p:outputLabel>
+
+                            <p:outputLabel value="Received From Analyzer At" ></p:outputLabel>
+                            <p:outputLabel value="#{patientSampleController.current.receivedFromAnalyzerAt}" ></p:outputLabel>
+
+                            <p:outputLabel value="Received From Analyzer Comments" ></p:outputLabel>
+                            <p:outputLabel value="#{patientSampleController.current.receivedFromAnalyzerComments}" ></p:outputLabel>
+
+                            <p:outputLabel value="Received From Analyzer Department" ></p:outputLabel>
+                            <p:outputLabel value="#{patientSampleController.current.receivedFromAnalyzerDepartment.name}" ></p:outputLabel>
+
+                            <p:outputLabel value="Received From Analyzer Institution" ></p:outputLabel>
+                            <p:outputLabel value="#{patientSampleController.current.receivedFromAnalyzerInstitution.name}" ></p:outputLabel>
+
+                            <p:outputLabel value="Duplicated From" ></p:outputLabel>
+                            <p:outputLabel value="#{patientSampleController.current.duplicatedFrom.id}" ></p:outputLabel>
+
+                            <p:outputLabel value="Duplicated To" ></p:outputLabel>
+                            <p:outputLabel value="#{patientSampleController.current.duplicatedTo.id}" ></p:outputLabel>
+
+                            <p:outputLabel value="Diverted From" ></p:outputLabel>
+                            <p:outputLabel value="#{patientSampleController.current.divertedFrom.id}" ></p:outputLabel>
+
+                            <p:outputLabel value="Diverted To" ></p:outputLabel>
+                            <p:outputLabel value="#{patientSampleController.current.divertedTo.id}" ></p:outputLabel>
+
+                            <p:outputLabel value="Investigation Component" ></p:outputLabel>
+                            <p:outputLabel value="#{patientSampleController.current.investigationComponant.name}" ></p:outputLabel>
+
+                            <p:outputLabel value="Test" ></p:outputLabel>
+                            <p:outputLabel value="#{patientSampleController.current.test.name}" ></p:outputLabel>
+
+                            <p:outputLabel value="Tube" ></p:outputLabel>
+                            <p:outputLabel value="#{patientSampleController.current.tube.name}" ></p:outputLabel>
+
+                            <p:outputLabel value="Machine" ></p:outputLabel>
+                            <p:outputLabel value="#{patientSampleController.current.machine.name}" ></p:outputLabel>
+
+                            <p:outputLabel value="Sample" ></p:outputLabel>
+                            <p:outputLabel value="#{patientSampleController.current.sample.name}" ></p:outputLabel>
+
+                            <p:outputLabel value="Cancelled" ></p:outputLabel>
+                            <p:outputLabel value="#{patientSampleController.current.cancelled}" ></p:outputLabel>
+
+                            <p:outputLabel value="Cancelled User" ></p:outputLabel>
+                            <p:outputLabel value="#{patientSampleController.current.cancelledUser.name}" ></p:outputLabel>
+
+                            <p:outputLabel value="Cancelled At" ></p:outputLabel>
+                            <p:outputLabel value="#{patientSampleController.current.cancelledAt}" ></p:outputLabel>
+
+                            <p:outputLabel value="Cancel Comments" ></p:outputLabel>
+                            <p:outputLabel value="#{patientSampleController.current.cancellComments}" ></p:outputLabel>
+
+                            <p:outputLabel value="Cancel Department" ></p:outputLabel>
+                            <p:outputLabel value="#{patientSampleController.current.cancellDepartment.name}" ></p:outputLabel>
+
+                            <p:outputLabel value="Cancel Institution" ></p:outputLabel>
+                            <p:outputLabel value="#{patientSampleController.current.cancellInstitution.name}" ></p:outputLabel>
+
+                            <p:outputLabel value="Retired" ></p:outputLabel>
+                            <p:outputLabel value="#{patientSampleController.current.retired}" ></p:outputLabel>
+
+                            <p:outputLabel value="Retirer" ></p:outputLabel>
+                            <p:outputLabel value="#{patientSampleController.current.retirer.name}" ></p:outputLabel>
+
+                            <p:outputLabel value="Retired At" ></p:outputLabel>
+                            <p:outputLabel value="#{patientSampleController.current.retiredAt}" ></p:outputLabel>
+
+                            <p:outputLabel value="Retire Comments" ></p:outputLabel>
+                            <p:outputLabel value="#{patientSampleController.current.retireComments}" ></p:outputLabel>
+
+                        </p:panelGrid>
+
+
+
+                    </p:panel>
+                </h:form>
+            </h:panelGroup>
+        </ui:define>
+    </ui:composition>
+</html>

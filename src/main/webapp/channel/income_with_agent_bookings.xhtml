@@ -22,7 +22,7 @@
                                 showTime="true"
                                 showButtonBar="true"
                                 timeInput="true"
-                                value="#{channelReportControllerOld.fromDate}" 
+                                value="#{channelReportTemplateController.fromDate}" 
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></p:datePicker> 
                                 <h:outputLabel value="To" />
                                 <h:outputLabel value=":" />
@@ -32,33 +32,33 @@
                                     showTime="true"
                                     showButtonBar="true"
                                     timeInput="true"
-                                    value="#{channelReportControllerOld.toDate}" 
+                                    value="#{channelReportTemplateController.toDate}" 
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></p:datePicker>
                                 <h:outputLabel  value="Institution"  ></h:outputLabel>
                                 <h:outputLabel value=":" />
-                                <p:autoComplete  class="mx-4 w-100" inputStyleClass="w-100" value="#{channelReportControllerOld.institution}"
+                                <p:autoComplete  class="mx-4 w-100" inputStyleClass="w-100" value="#{channelReportTemplateController.institution}"
                                                  completeMethod="#{institutionController.completeIns}" 
                                              var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" forceSelection="true" rendered="true" requiredMessage="You must select a department" >
                             </p:autoComplete>
                         </h:panelGrid>
                         <h:panelGrid columns="6" class="my-2">
-                            <p:commandButton class="ui-button-warning mt-2 mb-2" icon="fas fa-cogs" value="Process" action="#{channelReportControllerOld.fillIncomeWithAgentBookings()}" ajax="false" ></p:commandButton>
+                            <p:commandButton class="ui-button-warning mt-2 mb-2" icon="fas fa-cogs" value="Process" action="#{channelReportTemplateController.fillIncomeWithAgentBookings()}" ajax="false" ></p:commandButton>
                         </h:panelGrid>
 
 
                         <p:panel header="Income With Agent Booking" >
 
 
-                            <p:dataTable  value="#{channelReportControllerOld.rowBundle.rows}" var="r" >
+                            <p:dataTable  value="#{channelReportTemplateController.rowBundle.rows}" var="r" >
                                 <f:facet name="header">
 
-                                    <h:outputLabel value="#{channelReportControllerOld.institution.name}"/>
+                                    <h:outputLabel value="#{channelReportTemplateController.institution.name}"/>
                                     <h:outputLabel value="From : " />
-                                    <h:outputLabel class="ml-2"  value="#{channelReportControllerOld.fromDate}" >
+                                    <h:outputLabel class="ml-2"  value="#{channelReportTemplateController.fromDate}" >
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                     </h:outputLabel>                          
                                     <h:outputLabel value="&emsp;&emsp;To :"/>
-                                    <h:outputLabel class="ml-2"  value="#{channelReportControllerOld.toDate}" >
+                                    <h:outputLabel class="ml-2"  value="#{channelReportTemplateController.toDate}" >
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                     </h:outputLabel>
                                 </f:facet>
@@ -116,19 +116,19 @@
                                     <p:row>
                                         <p:column  footerText="Total" >
                                         </p:column>
-                                        <p:column style="text-align: right;"  footerText="#{channelReportControllerOld.rowBundle.bundle.cashTotal}">
+                                        <p:column style="text-align: right;"  footerText="#{channelReportTemplateController.rowBundle.bundle.cashTotal}">
                                         </p:column>
-                                        <p:column footerText="#{channelReportControllerOld.rowBundle.bundle.cardTotal}">
+                                        <p:column footerText="#{channelReportTemplateController.rowBundle.bundle.cardTotal}">
                                         </p:column>
-                                        <p:column footerText="#{channelReportControllerOld.rowBundle.bundle.chequeTotal}">
+                                        <p:column footerText="#{channelReportTemplateController.rowBundle.bundle.chequeTotal}">
                                         </p:column>
-                                        <p:column footerText="#{channelReportControllerOld.rowBundle.bundle.slipTotal}">
+                                        <p:column footerText="#{channelReportTemplateController.rowBundle.bundle.slipTotal}">
                                         </p:column>
-                                        <p:column footerText="#{channelReportControllerOld.rowBundle.bundle.collectionTotal}">
+                                        <p:column footerText="#{channelReportTemplateController.rowBundle.bundle.collectionTotal}">
                                         </p:column>
-                                        <p:column footerText="#{channelReportControllerOld.rowBundle.bundle.agentTotal}">
+                                        <p:column footerText="#{channelReportTemplateController.rowBundle.bundle.agentTotal}">
                                         </p:column>
-                                        <p:column footerText="#{channelReportControllerOld.rowBundle.bundle.value}">
+                                        <p:column footerText="#{channelReportTemplateController.rowBundle.bundle.value}">
                                         </p:column>
 
                                     </p:row>

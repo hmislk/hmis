@@ -169,19 +169,19 @@
                 <table  style="width: 90%; margin-left: 8%;" >
 
                     <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
-
+                        <h:panelGroup rendered="#{bip.grossValue ne 0.0}">
                         <tr>
                             <td style="width: 80%; overflow: visible;">
                                 <h:outputLabel value="#{bip.item.name}"  styleClass="itemsBlock"  >
                                 </h:outputLabel>
                             </td>
                             <td style="width: 20%;">
-                                <h:outputLabel    value="#{-bip.netValue}" style="text-align: right;" >
+                                <h:outputLabel    value="#{-bip.grossValue}" style="text-align: right;" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </td>
                         </tr>
-
+                            </h:panelGroup >
                     </ui:repeat>
                 </table>
             </div>
