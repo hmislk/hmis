@@ -606,7 +606,6 @@ public class ChannelReportTemplateController implements Serializable {
 
     }
 
-
     public void fillCategorySessionCounts() {
         bundle = new ReportTemplateRowBundle();
         String j;
@@ -724,8 +723,6 @@ public class ChannelReportTemplateController implements Serializable {
         }
 
     }
-
-
     public void fillDailyDoctorCounts() {
         bundle = new ReportTemplateRowBundle();
         String j;
