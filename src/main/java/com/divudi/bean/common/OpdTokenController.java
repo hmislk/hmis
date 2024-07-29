@@ -354,7 +354,7 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
     }
 
     public String navigateToManageOpdTokensWaiting() {
-        fillOpdTokensWaiting();
+        //fillOpdTokensWaiting();
         fillOpdWaitingTokensCounts();
         return "/opd/token/opd_tokens_waiting?faces-redirect=true"; // Adjust the navigation string as per your page structure
     }

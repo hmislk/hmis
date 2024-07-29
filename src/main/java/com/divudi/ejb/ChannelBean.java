@@ -828,58 +828,61 @@ public List<SessionInstance> listSessionInstancesByDate(Date sessionDate, Boolea
         if (!conditions.isEmpty()) {
             jpql.append(" and (").append(String.join(" or ", conditions)).append(")");
         }
+        
+         // Adding sorting to JPQL with custom order
+        jpql.append(" order by case when i.completed = true then 1 else 0 end, i.completed asc, i.started desc, i.sessionDate asc, i.startingTime asc");
 
         sessionInstances = sessionInstanceFacade.findByJpql(jpql.toString(), params, TemporalType.DATE);
 
-        Collections.sort(sessionInstances, new Comparator<SessionInstance>() {
-            @Override
-            public int compare(SessionInstance s1, SessionInstance s2) {
-                // Check if the session dates are null
-                Date d1 = s1.getSessionDate();
-                Date d2 = s2.getSessionDate();
-                if (d1 == null && d2 == null) {
-                    return 0;
-                }
-                if (d1 == null) {
-                    return -1;
-                }
-                if (d2 == null) {
-                    return 1;
-                }
-
-                int dateCompare = d1.compareTo(d2);
-                if (dateCompare != 0) {
-                    return dateCompare;
-                }
-
-                // Check if the originating sessions or their names are null
-                ServiceSession session1 = s1.getOriginatingSession();
-                ServiceSession session2 = s2.getOriginatingSession();
-                if (session1 == null && session2 == null) {
-                    return 0;
-                }
-                if (session1 == null) {
-                    return -1;
-                }
-                if (session2 == null) {
-                    return 1;
-                }
-
-                String name1 = session1.getName();
-                String name2 = session2.getName();
-                if (name1 == null && name2 == null) {
-                    return 0;
-                }
-                if (name1 == null) {
-                    return -1;
-                }
-                if (name2 == null) {
-                    return 1;
-                }
-
-                return name1.compareTo(name2);
-            }
-        });
+//        Collections.sort(sessionInstances, new Comparator<SessionInstance>() {
+//            @Override
+//            public int compare(SessionInstance s1, SessionInstance s2) {
+//                // Check if the session dates are null
+//                Date d1 = s1.getSessionDate();
+//                Date d2 = s2.getSessionDate();
+//                if (d1 == null && d2 == null) {
+//                    return 0;
+//                }
+//                if (d1 == null) {
+//                    return -1;
+//                }
+//                if (d2 == null) {
+//                    return 1;
+//                }
+//
+//                int dateCompare = d1.compareTo(d2);
+//                if (dateCompare != 0) {
+//                    return dateCompare;
+//                }
+//
+//                // Check if the originating sessions or their names are null
+//                ServiceSession session1 = s1.getOriginatingSession();
+//                ServiceSession session2 = s2.getOriginatingSession();
+//                if (session1 == null && session2 == null) {
+//                    return 0;
+//                }
+//                if (session1 == null) {
+//                    return -1;
+//                }
+//                if (session2 == null) {
+//                    return 1;
+//                }
+//
+//                String name1 = session1.getName();
+//                String name2 = session2.getName();
+//                if (name1 == null && name2 == null) {
+//                    return 0;
+//                }
+//                if (name1 == null) {
+//                    return -1;
+//                }
+//                if (name2 == null) {
+//                    return 1;
+//                }
+//
+//                return name1.compareTo(name2);
+//            }
+//        });
 
         return sessionInstances;
     }

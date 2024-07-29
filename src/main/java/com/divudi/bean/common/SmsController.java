@@ -110,15 +110,15 @@ public class SmsController implements Serializable {
     public SmsController() {
     }
 
-    public void sendSmsAwaitingToSendInDatabase() {
-        String j = "Select e from Sms e where e.sentSuccessfully=false and e.retired=false";
-        List<Sms> smses = getSmsFacade().findByJpql(j);
-        for (Sms e : smses) {
-            e.setSentSuccessfully(Boolean.TRUE);
-            getSmsFacade().edit(e);
-            Boolean sentSuccessfully = smsManager.sendSms(e);
-        }
-    }
+//    public void sendSmsAwaitingToSendInDatabase() {
+//        String j = "Select e from Sms e where e.sentSuccessfully=false and e.retired=false";
+//        List<Sms> smses = getSmsFacade().findByJpql(j);
+//        for (Sms e : smses) {
+//            e.setSentSuccessfully(Boolean.TRUE);
+//            getSmsFacade().edit(e);
+//            Boolean sentSuccessfully = smsManager.sendSms(e);
+//        }
+//    }
 
     public Boolean sendSms(String number, String message, String username, String password, String sendingAlias) {
         Sms s = new Sms();

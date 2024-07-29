@@ -28,6 +28,7 @@
                             <h:outputText styleClass="#{bookingController.selectedSessionInstance.started ? (bookingController.selectedSessionInstance.completed ? 'fa fa-check-circle text-success ' : 'fa fa-hourglass-start text-warning') : 'fa fa-times-circle text-danger'}" style=";margin-right: 0px" />
                             <h:outputText class="mx-2" value="#{bookingController.selectedSessionInstance.started ? (bookingController.selectedSessionInstance.completed ? 'Completed' : 'Ongoing') : 'Not Started'}" 
                                           style="margin-right: 16px;font-size: 15pt"/>
+                            <h:outputText class="mx-2" value="Room : #{bookingController.selectedSessionInstance.roomNo}"/>
                         </div>
 
                         <div class="d-flex justify-content-center align-items-center">
@@ -62,6 +63,11 @@
                                              action="#{bookingController.reloadSessionInstance()}"
                                              oncomplete="PF('reloadSessionWarn').show()" 
                                              disabled="#{bookingController.selectedSessionInstance == null}" />
+                            
+                            <p:commandButton icon="fa fa-cog" 
+                                             styleClass="ui-button-warning mx-1" 
+                                             oncomplete="PF('ChannelRoomNumberChange').show()" 
+                                             disabled="#{bookingController.selectedSessionInstance == null}" />
 
                         </div>
                     </div>
@@ -78,7 +84,33 @@
                                         <h:outputText value="The session has been successfully completed." />
                                     </h:panelGrid>
                                 </p:dialog>-->
-
+                
+                
+                 <p:dialog minHeight="100" width="800" header="Room Number Change" widgetVar="ChannelRoomNumberChange" modal="true" resizable="false">
+                     <h:panelGrid columns="3" class="w-75 mx-4">
+                         <p:outputLabel value="Current Room Number" />
+                         <p:outputLabel value=":" />
+                         <p:outputLabel value="#{bookingController.selectedSessionInstance.roomNo}" />
+                         
+                         <p:outputLabel value="New Room Number" />
+                         <p:outputLabel value=":" />
+                         <p:inputNumber value="#{bookingController.selectedSessionInstance.roomNo}" />
+                     </h:panelGrid>
+                    <f:facet name="footer">
+                        <p:commandButton
+                            class="mx-2 ui-button-warning"
+                            ajax="false"
+                            icon="fas fa-save"
+                            value="Save"
+                            action="#{bookingController.saveSelectedSessionInstance()}"
+                            onclick="PF('ChannelRoomNumberChange').hide();" />
+                        <p:commandButton
+                            value="Close"
+                            class="mx-2 ui-button-danger"
+                            onclick="PF('ChannelRoomNumberChange').hide();" />
+                    </f:facet>
+                </p:dialog>
+                
                 <p:dialog minHeight="100" width="800" header="Confirmation" widgetVar="completeSessionWarn" modal="true" resizable="false">
                     <p>Are you sure you want to complete this channel session?</p>
 
@@ -304,7 +336,7 @@
                                                             <p:commandButton 
                                                                 id="btnCall"
                                                                 value="Attend"
-                                                                rendered="#{!bs.currentlyConsulted and bs.paidBillSession ne null and !bs.completed and !bs.bill.cancelled}"
+                                                                rendered="#{!bs.currentlyConsulted and bs.bill.paidBill ne null and !bs.completed and !bs.bill.cancelled}"
                                                                 disabled="#{!bookingController.selectedSessionInstance.started}"
                                                                 onclick="PF('attendPatientWarn').show()"
                                                                 icon="fas fa-clipboard-user"
