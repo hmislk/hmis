@@ -436,7 +436,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
             }
         }
 
-        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelPaid};
+        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelPaid,BillType.ChannelResheduleWithPayment};
         List<BillType> bts = Arrays.asList(billTypes);
         String sql = " SELECT b FROM BillFee b "
                 + "  where type(b.bill)=:class "

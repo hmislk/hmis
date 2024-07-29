@@ -8,11 +8,11 @@
       xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod">
 
     <h:body>
-        <h:form>
+        
             <ui:composition template="./index.xhtml">
 
                 <ui:define name="subcontent">
-                    
+                    <h:form>
                     <p:panel >
                         <f:facet name="header">
                             <i class="fa fa-money-bill-wave mt-2"/>
@@ -168,8 +168,9 @@
 
                         </p:panel>
                     </p:panel>
+                    </h:form>
                 </ui:define>
             </ui:composition>
-        </h:form>
+        
     </h:body>
 </html>

@@ -37,6 +37,7 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Map;
 import java.util.logging.Level;
@@ -73,32 +74,81 @@ public class SmsManagerEjb {
     @Schedule(second = "0", minute = "*/30", hour = "*", persistent = false)
     public void sendSmsToDoctorsBeforeSessionTimer() {
         if(configOptionApplicationController.getBooleanValueByKey("Send SMS for Doctor Reminder")){
-            sendSmsToDoctorsBeforeSession();
+            //sendSmsToDoctorsBeforeSession();
         }     
+        if (configOptionApplicationController.getBooleanValueByKey("Send SMS for Doctor Reminder")) {
+            if (configOptionApplicationController.getBooleanValueByKey("Check & Send SMS for Doctor Reminder")) {
+                sendSmsToDoctorsBeforeSessionWithChecks();
+            } else {
+                sendSmsToDoctorsBeforeSession();
+            }
+        }
     }
 
-    @SuppressWarnings("unused")
-    @Schedule(second = "19", minute = "*/5", hour = "*", persistent = false)
+//    @SuppressWarnings("unused")
+//    @Schedule(second = "19", minute = "*/5", hour = "*", persistent = false)
+//    public void myTimer() {
+//        sendSmsAwaitingToSendInDatabase();
+//    }
 
-    public void myTimer() {
-        sendSmsAwaitingToSendInDatabase();
-    }
+//    private void sendSmsAwaitingToSendInDatabase() {
+//        String j = "Select e from Sms e where e.pending=true and e.retired=false and e.createdAt>:d";
+//        Map m = new HashMap();
+//        Calendar c = Calendar.getInstance();
+//        c.set(Calendar.HOUR_OF_DAY, 0);
+//        m.put("d", c.getTime());
+//        List<Sms> smses = getSmsFacade().findByJpql(j, m, TemporalType.DATE);
+//        for (Sms e : smses) {
+//            e.setSentSuccessfully(Boolean.TRUE);
+//            e.setPending(false);
+//            getSmsFacade().edit(e);
+//            Boolean sent = sendSms(e);
+//            e.setSentAt(new Date());
+//            e.setPending(false);
+//            getSmsFacade().edit(e);
+//        }
+//    }
+    
+    private void sendSmsToDoctorsBeforeSessionWithChecks() {
+        // Define fromDate as the start of today
+        Date fromDate = CommonFunctions.getStartOfDay();
 
-    private void sendSmsAwaitingToSendInDatabase() {
-        String j = "Select e from Sms e where e.pending=true and e.retired=false and e.createdAt>:d";
-        Map m = new HashMap();
-        Calendar c = Calendar.getInstance();
-        c.set(Calendar.HOUR_OF_DAY, 0);
-        m.put("d", c.getTime());
-        List<Sms> smses = getSmsFacade().findByJpql(j, m, TemporalType.DATE);
-        for (Sms e : smses) {
-            e.setSentSuccessfully(Boolean.TRUE);
-            e.setPending(false);
-            getSmsFacade().edit(e);
-            Boolean sent = sendSms(e);
-            e.setSentAt(new Date());
-            e.setPending(false);
-            getSmsFacade().edit(e);
+        // Define toDate as the end of today
+        Date toDate = CommonFunctions.getEndOfDay();
+
+        // Fetch all session instances for today
+        List<SessionInstance> sessions = channelBean.listSessionInstances(fromDate, toDate, null, null, null);
+
+        // Define fromTime as the current time
+        Date fromTime = new Date();
+        Calendar calf = Calendar.getInstance();
+        calf.setTime(fromTime);
+        calf.add(Calendar.MINUTE, 30);
+        Date fromTime1 = calf.getTime();
+
+        // Calculate toTime as 60 minutes from fromTime
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(fromTime);
+        cal.add(Calendar.MINUTE, 60);
+        Date toTime = cal.getTime();
+
+        // Filter sessions that start within the next 60 minutes
+        List<SessionInstance> upcomingSessions = sessions.stream()
+                .filter(session -> {
+                    Date sessionStartDateTime = getSessionStartDateTime(session); // Combine session date and time
+                    return sessionStartDateTime != null && sessionStartDateTime.after(fromTime1) && sessionStartDateTime.before(toTime);
+                })
+                .collect(Collectors.toList());
+        // Iterate over the filtered sessions and send SMS to doctor
+        for (SessionInstance s : upcomingSessions) {
+            if (s.getBookedPatientCount() != null) {
+                if (!s.isCancelled() && s.getBookedPatientCount() > 0) {
+                    boolean isSmsSentBefore = checkSmsToDoctors(s);
+                    if (!isSmsSentBefore) {
+                        sendSmsToDoctors(s);
+                    }
+                }
+            }
         }
     }
 
@@ -174,6 +224,38 @@ public class SmsManagerEjb {
             e.setSentSuccessfully(sent);
             getSmsFacade().edit(e);
         
+    }
+    
+    private boolean checkSmsToDoctors(SessionInstance session) {
+        List<Sms> sentSmsList = new ArrayList<>();
+        Sms ec = new Sms();
+        ec.setCreatedAt(new Date());
+        if (session.getStaff().getPerson().getMobile() == null || session.getStaff().getPerson().getMobile().isEmpty()) {
+            ec.setReceipientNumber(session.getStaff().getPerson().getPhone());
+        } else {
+            ec.setReceipientNumber(session.getStaff().getPerson().getMobile());
+        }
+        ec.setSendingMessage(createDoctorRemiderSms(session));
+        ec.setPending(false);
+        ec.setSmsType(MessageType.ChannelDoctorReminder);
+
+        String jpql = "select s "
+                + "from Sms s "
+                + "where s.retired = :ret "
+                + "and s.sendingMessage = :sm "
+                + "and s.receipientNumber = :rn "
+                + "and s.smsType = :st "
+                + "and s.createdAt <= :bd "
+                + "order by s.id";
+        Map<String, Object> params = new HashMap<>();
+        params.put("ret", false);
+        params.put("sm", ec.getSendingMessage());
+        params.put("st", ec.getSmsType());
+        params.put("rn", ec.getReceipientNumber());
+        params.put("bd", ec.getCreatedAt());
+
+        sentSmsList = smsFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        return !sentSmsList.isEmpty();
     }
     
     private String createDoctorRemiderSms(SessionInstance s) {

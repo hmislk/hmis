@@ -76,15 +76,6 @@
                                                 action="#{opdBillController.navigateToNewOpdBill()}"
                                                 rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable Navigation Button To OPD Billing From Channel Booking By Date')}"/>
 
-
-                                            <!-- List All Session Data Button -->
-                                            <p:commandButton 
-                                                ajax="false" 
-                                                title="All" 
-                                                icon="fa fa-list" 
-                                                styleClass="ui-button-primary mx-1" 
-                                                action="#{bookingControllerViewScope.listAll}" />
-
                                             <!-- View Completed Session Data Button -->
                                             <p:commandButton 
                                                 ajax="false" 
@@ -113,9 +104,17 @@
                                             <p:commandButton 
                                                 ajax="false" 
                                                 title="Cancelled" 
-                                                icon="fa fa-times" 
+                                                icon="fa fa-times-circle" 
                                                 styleClass="ui-button-danger mx-1" 
                                                 action="#{bookingControllerViewScope.listCancelled()}" />
+                                            
+                                            <!-- List All Session Data Button -->
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                title="All" 
+                                                icon="fa fa-list" 
+                                                styleClass="ui-button-primary mx-1" 
+                                                action="#{bookingControllerViewScope.listAll}" />
 
                                         </div>
                                     </div>
@@ -227,7 +226,7 @@
                                                         </div>
                                                         <div class="text-center">
                                                             <h:outputLabel style="font-weight: bolder" value="N"/><br/>
-                                                            <p:badge value="#{(s.bookedPatientCount + bookingControllerViewScope.totalReservedNumberCount(s)) + 1}" size="large" styleClass="mr-2"></p:badge>
+                                                            <p:badge value="#{((s.bookedPatientCount + bookingControllerViewScope.totalReservedNumberCount(s)) - s.reservedBookingCount) + 1}" size="large" styleClass="mr-2"></p:badge>
                                                         </div>
                                                     </div>
 

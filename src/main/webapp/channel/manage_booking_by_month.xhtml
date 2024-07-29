@@ -384,7 +384,7 @@
                                                             immediate="true"
                                                             disabled="#{bookingControllerViewScopeMonth.selectedBillSession.bill.billType.parent ne 'ChannelCreditFlow'
                                                                         or bookingControllerViewScopeMonth.selectedBillSession.bill.cancelled==true
-                                                                        or  bookingControllerViewScopeMonth.selectedBillSession.bill.paidAmount ne 0}"
+                                                                        or  bookingControllerViewScopeMonth.selectedBillSession.bill.paidAmount ne 0 or bookingControllerViewScopeMonth.selectedSessionInstance.completed}"
                                                             oncomplete="PF('dlgSettleAD').show();"
                                                             class="ui-button-success mx-2 w-100"
                                                             >

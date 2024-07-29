@@ -139,7 +139,7 @@
 
 
 
-                                            <p:column >
+                                            <p:column styleClass="#{s.completed ?'ui-messages-success': s.started ? 'ui-messages-info': s.cancelled ? 'ui-messages-fatal' : ''}"  style="#{s.completed ? 'background-color: #dff0d8' : s.started ? 'background-color: #d9edf7' : s.cancelled ? 'background-color: #f2dede' : ''}" >
                                                 <div class="d-flex align-items-center w-100">
                                                     <div>
                                                         <i class="fa-solid fa-user-doctor" style="font-size: 26pt;margin-right: 28px"></i>
@@ -202,7 +202,7 @@
                                                     </div>
                                                 </div>
                                             </p:column>
-                                            <p:column>
+                                           <p:column styleClass="#{s.completed ?'ui-messages-success': s.started ? 'ui-messages-info': s.cancelled ? 'ui-messages-fatal' : ''}"  style="#{s.completed ? 'background-color: #dff0d8' : s.started ? 'background-color: #d9edf7' : s.cancelled ? 'background-color: #f2dede' : ''}" >
                                                 <div class="d-flex align-items-center justify-content-between ">
                                                     <div class="d-flex align-items-center">
                                                         <div class="text-center">
@@ -224,7 +224,7 @@
                                                         </div>
                                                         <div class="text-center">
                                                             <h:outputLabel style="font-weight: bolder" value="N"/><br/>
-                                                            <p:badge value="#{(s.bookedPatientCount + bookingControllerViewScopeMonth.totalReservedNumberCount(s)) + 1}" size="large" styleClass="mr-2"></p:badge>
+                                                            <p:badge value="#{((s.bookedPatientCount + bookingControllerViewScopeMonth.totalReservedNumberCount(s)) - s.reservedBookingCount) + 1}" size="large" styleClass="mr-2"></p:badge>
                                                         </div>
                                                     </div>
 
