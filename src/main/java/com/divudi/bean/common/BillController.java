@@ -1689,7 +1689,7 @@ public class BillController implements Serializable {
         printPreview = false;
         return "/opd/batch_bill_cancel?faces-redirect=true;";
     }
-
+  
     public String cancelBatchBill() {
         if (getBatchBill() == null) {
             JsfUtil.addErrorMessage("No bill");
