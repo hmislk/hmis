@@ -1755,7 +1755,7 @@ public class BillController implements Serializable {
         for (Bill originalBill : bills) {
             cancelSingleBillWhenCancellingOpdBatchBill(originalBill, cancellationBatchBill);
         }
-
+ 
         cancellationBatchBill.setBilledBill(batchBill);
         
         if (cancellationBatchBill.getPaymentMethod() == PaymentMethod.PatientDeposit) {
