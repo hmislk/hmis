@@ -41,7 +41,7 @@
                                              var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" forceSelection="true" rendered="true" requiredMessage="You must select a department" >
                             </p:autoComplete>
 
-                            
+
                         </h:panelGrid>
                         <h:panelGrid columns="6" class="my-2">
                             <p:commandButton 
@@ -49,7 +49,7 @@
                                 icon="fas fa-cogs" 
                                 value="Process" 
                                 action="#{channelReportTemplateController.fillOnlineBookings()}" ajax="false" ></p:commandButton>
-                                <p:commandButton 
+                            <p:commandButton 
                                 class="ui-button-success mx-2"
                                 icon ="fas fa-file-excel"
                                 ajax="false"
@@ -57,10 +57,6 @@
                                 <p:dataExporter target="tbl1" fileName="Category_Session_Count_#{channelReportTemplateController.toDate}" type="xlsx" />
                             </p:commandButton>
                         </h:panelGrid>
-
-
-
-
 
                         <p:dataTable 
                             value="#{channelReportTemplateController.bundle.reportTemplateRows}" 
@@ -121,9 +117,9 @@
                                     <p:outputLabel value="Patient Name" />
                                 </f:facet>
                                 <p:outputLabel value="#{a.billSession.bill.patient.person.nameWithTitle}" />
-<!--                                <f:facet name="footer" >
-                                    <h:outputText value="#{channelReportTemplateController.bundle.long1}"></h:outputText>
-                                </f:facet>-->
+                                <!--                                <f:facet name="footer" >
+                                                                    <h:outputText value="#{channelReportTemplateController.bundle.long1}"></h:outputText>
+                                                                </f:facet>-->
                             </p:column>
                             <p:column width="4em">
                                 <f:facet name="header">
@@ -143,7 +139,7 @@
                                     <h:outputText value="#{channelReportTemplateController.bundle.long4}" ></h:outputText>
                                 </f:facet>
                             </p:column>
-                            
+
                             <p:column>
                                 <f:facet name="header">
                                     <p:outputLabel value="Phone Number" />
