@@ -1,0 +1,66 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="paymentMethodData"  type="com.divudi.data.dataStructure.PaymentMethodData" />
+        <cc:attribute name="valueRequired" type="boolean" />
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <div class="d-flex gap-2" >
+            <p:autoComplete 
+                id="creditCompany" 
+                class="w-100 -mx-2"
+                inputStyleClass="form-control"
+                forceSelection="true"
+                value="#{opdBillController.creditCompany}"  
+                completeMethod="#{creditCompanyController.completeCredit}" 
+                var="ix"
+                minQueryLength="4"
+                placeholder="Company (Type at least 4 letters to search)"
+                itemLabel="#{ix.name}" 
+                itemValue="#{ix}" 
+                size="10"  >
+
+                <f:ajax  
+                    event="itemSelect" 
+                    listener="#{opdBillController.calTotals()}"
+                    execute="@this" 
+                    render=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}  :#{p:resolveFirstComponentWithId('tblRequests',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId}" />
+            </p:autoComplete>
+
+            <p:inputText 
+                id="polNo" 
+                style="width: 200px;"
+                value="#{cc.attrs.paymentMethodData.credit.referralNo}" 
+                placeholder="Policy NO" >
+            </p:inputText>
+            
+            <p:inputText 
+                id="memo" 
+                style="width: 300px;"
+                value="#{cc.attrs.paymentMethodData.credit.comment}" 
+                placeholder="Memo" >
+            </p:inputText>
+
+            <p:commandLink 
+                id="btnAddNewCreditCom" 
+                value="(+)"
+                class="mx-3 mt-1"
+                title="Add New Credit Company"
+                ajax="false" 
+                action="#{navigationController.navigateToCreditCompany()}"
+                actionListener="#{creditCompanyController.prepareAdd()}" />  
+
+            <p:watermark value="Policy NO" for="polNo" />
+        </div>
+
+    </cc:implementation>
+</html>

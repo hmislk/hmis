@@ -72,6 +72,8 @@ public class EnumController implements Serializable {
     List<PaymentMethod> paymentMethodsForOpdBilling;
     List<PaymentMethod> paymentMethodsForChanneling;
     List<PaymentMethod> paymentMethodsForPharmacyBilling;
+    private List<PaymentMethod> paymentMethodsForPatientDeposit;
+    private List<PaymentMethod> paymentMethodsForStaffCreditSettle;
     SessionNumberType[] sessionNumberTypes;
 
     @PostConstruct
@@ -89,6 +91,7 @@ public class EnumController implements Serializable {
         }
         return paymentMethodsForOpdBilling;
     }
+    
 
     public List<PaymentMethod> getPaymentMethodsForPackageBilling() {
         if (paymentMethodsForOpdBilling == null) {
@@ -102,6 +105,16 @@ public class EnumController implements Serializable {
         paymentMethodsForChanneling = null;
     }
 
+    public void fillPaymentMethodsForPatientDeposit(){
+        paymentMethodsForPatientDeposit = new ArrayList<>();
+        for(PaymentMethod pm : PaymentMethod.values()){
+           boolean include = configOptionApplicationController.getBooleanValueByKey(pm.getLabel() + " is available for Patient Deposit", true); 
+           if(include){
+               paymentMethodsForPatientDeposit.add(pm);
+           }
+        }
+    }
+    
     public void fillPaymentMethodsForOpdBilling() {
         paymentMethodsForOpdBilling = new ArrayList<>();
         for (PaymentMethod pm : PaymentMethod.values()) {
@@ -788,6 +801,36 @@ public class EnumController implements Serializable {
 
     public void setPaymentScheme(PaymentScheme paymentScheme) {
         this.paymentScheme = paymentScheme;
+    }
+
+    public List<PaymentMethod> getPaymentMethodsForPatientDeposit() {
+        paymentMethodsForPatientDeposit = new ArrayList<>();
+        for (PaymentMethod pm : PaymentMethod.values()) {
+            boolean include = configOptionApplicationController.getBooleanValueByKey(pm.getLabel() + " is available for Patient Deposit", true);
+            if (include) {
+                paymentMethodsForPatientDeposit.add(pm);
+            }
+        }
+        return paymentMethodsForPatientDeposit;
+    }
+
+    public void setPaymentMethodsForPatientDeposit(List<PaymentMethod> paymentMethodsForPatientDeposit) {
+        this.paymentMethodsForPatientDeposit = paymentMethodsForPatientDeposit;
+    }
+
+    public List<PaymentMethod> getPaymentMethodsForStaffCreditSettle() {
+        paymentMethodsForStaffCreditSettle = new ArrayList<>();
+        for (PaymentMethod pm : PaymentMethod.values()) {
+            boolean include = configOptionApplicationController.getBooleanValueByKey(pm.getLabel() + " is available for Staff Credit Settle", true);
+            if (include) {
+                paymentMethodsForStaffCreditSettle.add(pm);
+            }
+        }
+        return paymentMethodsForStaffCreditSettle;
+    }
+
+    public void setPaymentMethodsForStaffCreditSettle(List<PaymentMethod> paymentMethodsForStaffCreditSettle) {
+        this.paymentMethodsForStaffCreditSettle = paymentMethodsForStaffCreditSettle;
     }
 
 }

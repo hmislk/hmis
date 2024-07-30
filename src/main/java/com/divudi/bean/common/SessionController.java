@@ -129,10 +129,8 @@ public class SessionController implements Serializable, HttpSessionListener {
 
     private static final long serialVersionUID = 1L;
     WebUser loggedUser = null;
-    @Deprecated
     private UserPreference loggedPreference;
     private UserPreference applicationPreference;
-    @Deprecated
     private UserPreference institutionPreference;
     private UserPreference departmentPreference;
     private UserPreference userPreference;
@@ -714,24 +712,19 @@ public class SessionController implements Serializable, HttpSessionListener {
         institution = null;
         boolean l = checkUsersWithoutDepartment();
         if (l) {
-            setTheTimeout();
             return "/index1.xhtml?faces-redirect=true";
         } else {
             JsfUtil.addErrorMessage("Invalid User! Login Failure. Please try again");
             return "";
         }
     }
-
-    private void setTheTimeout() {
-        ExternalContext ec = FacesContext.getCurrentInstance().getExternalContext();
-        Long currentTimeOut = configOptionApplicationController.getLongValueByKey("Application Timeout in Minutes", 15l);
-        if (currentTimeOut == null || currentTimeOut < 5) {
-            currentTimeOut = 15l;
-        }
-        Long currentTimeOutInSeconds = currentTimeOut * 60;
-        String currentTimeOutInSecondsString = currentTimeOutInSeconds.toString();
-        ec.getSessionMap().put("com.sun.faces.timeout", currentTimeOutInSecondsString);
+    
+    public String getLogoutPageUrl() {
+        String contextPath = FacesContext.getCurrentInstance().getExternalContext().getRequestContextPath();
+        return contextPath + "/faces/logout.xhtml"; // Adjust the path as needed
     }
+
+    
 
     public String loginForChannelingTabView() {
         department = null;
@@ -1084,9 +1077,12 @@ public class SessionController implements Serializable, HttpSessionListener {
         m.put("un", userName.toLowerCase());
         List<WebUser> allUsers = getFacede().findByJpql(jpql, m);
         for (WebUser u : allUsers) {
+            System.out.println("u = " + u.getName());
+            System.out.println("u = " + u.getId());
             if ((u.getName()).equalsIgnoreCase(userName)) {
                 boolean passwordIsOk = SecurityController.matchPassword(password, u.getWebUserPassword());
                 if (passwordIsOk) {
+                    System.out.println("password ok");
 
                     departments = listLoggableDepts(u);
 
@@ -1187,15 +1183,20 @@ public class SessionController implements Serializable, HttpSessionListener {
     }
 
     public String selectDepartment() {
+        System.out.println("loggedUser = " + loggedUser);
         if (loggedUser == null) {
+            JsfUtil.addErrorMessage("No User logged");
             return "/login?faces-redirect=true";
         }
+        System.out.println("loggedUser.getId() = " + loggedUser.getId());
         if (loggedUser.getWebUserPerson() == null) {
-            Person p = new Person();
-            p.setName(loggedUser.getName());
-            personFacade.create(p);
-            loggedUser.setWebUserPerson(p);
-            webUserFacade.edit(loggedUser);
+            JsfUtil.addErrorMessage("No person");
+            return "";
+//            Person p = new Person();
+//            p.setName(loggedUser.getName());
+//            personFacade.create(p);
+//            loggedUser.setWebUserPerson(p);
+//            webUserFacade.edit(loggedUser);
         }
 
         loggedUser.setDepartment(department);
@@ -1699,6 +1700,7 @@ public class SessionController implements Serializable, HttpSessionListener {
      * @param loggedUser
      */
     public void setLoggedUser(WebUser loggedUser) {
+        System.out.println("loggedUser = " + loggedUser);
         this.loggedUser = loggedUser;
     }
 
@@ -1728,7 +1730,10 @@ public class SessionController implements Serializable, HttpSessionListener {
         }
         m.put("ret", true);
         m.put("wu", twu);
+        System.out.println("m = " + m);
+        System.out.println("sql = " + sql);
         List<WebUserPrivilege> twups = getWebUserPrivilegeFacade().findByJpql(sql, m);
+        System.out.println("twups = " + twups);
         return twups;
     }
 
@@ -1894,7 +1899,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         return loggedPreference;
     }
 
-    @Deprecated
+    
     public void setLoggedPreference(UserPreference loggedPreference) {
         this.loggedPreference = loggedPreference;
     }
@@ -2057,10 +2062,12 @@ public class SessionController implements Serializable, HttpSessionListener {
     }
 
     public UserPreference getDepartmentPreference() {
+        //System.out.println("getting departmentPreference = " + departmentPreference);
         return departmentPreference;
     }
 
     public void setDepartmentPreference(UserPreference departmentPreference) {
+        System.out.println("setting departmentPreference = " + departmentPreference);
         this.departmentPreference = departmentPreference;
     }
 

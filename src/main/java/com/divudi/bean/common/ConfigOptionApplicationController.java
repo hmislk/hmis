@@ -56,29 +56,18 @@ public class ConfigOptionApplicationController implements Serializable {
 
     private void initializeDenominations() {
         String denominationsStr = getLongTextValueByKey("Currency Denominations");
-        if (denominationsStr != null && !denominationsStr.trim().isEmpty()) {
-            denominations = Arrays.stream(denominationsStr.split(","))
-                    .map(String::trim) // Trim any extra spaces
-                    .filter(s -> !s.isEmpty()) // Filter out empty strings
-                    .map(Integer::parseInt)
-                    .map(value -> new Denomination(value, 0))
-                    .collect(Collectors.toList());
-        } else {
-            denominations = new ArrayList<>();  // Initialize to an empty list if the string is null or empty
+        if (denominationsStr == null || !denominationsStr.trim().isEmpty()) {
+            denominationsStr = "1,2,5,10,20,50,100,500,1000,5000";
         }
-    }
-
-    public List<Integer> getCurrencyDenominations() {
-        String denominationsStr = getLongTextValueByKey("Currency Denominations");
-        return Arrays.stream(denominationsStr.split(","))
+        denominations = Arrays.stream(denominationsStr.split(","))
+                .map(String::trim) // Trim any extra spaces
+                .filter(s -> !s.isEmpty()) // Filter out empty strings
                 .map(Integer::parseInt)
+                .map(value -> new Denomination(value, 0))
                 .collect(Collectors.toList());
     }
 
-    public String getCurrencyDenominationsAsJson() {
-        List<Integer> denominations = getCurrencyDenominations();
-        return new JSONArray(denominations).toString();
-    }
+   
 
     public void loadApplicationOptions() {
         applicationOptions = new HashMap<>();
@@ -111,6 +100,12 @@ public class ConfigOptionApplicationController implements Serializable {
     }
 
     public List<Denomination> getDenominations() {
+        if (denominations == null) {
+            initializeDenominations();
+        }
+        for(Denomination d:denominations){
+            d.setCount(0);
+        }
         return denominations;
     }
 

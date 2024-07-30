@@ -142,6 +142,7 @@ public class MachineController implements Serializable {
         this.current = current;
     }
 
+    @Deprecated
     public List<Machine> getInstitutionMachines() {
         if (sessionController.getLoggedUser().getInstitution() != institution) {
             institutionMachines = null;
@@ -155,7 +156,7 @@ public class MachineController implements Serializable {
         }
         return institutionMachines;
     }
-
+    
     public List<Machine> fillMachines() {
         String j = "select m "
                 + " from Machine m "

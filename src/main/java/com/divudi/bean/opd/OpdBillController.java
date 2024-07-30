@@ -294,6 +294,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     private Double totalSaffFee;
     private boolean canChangeSpecialityAndDoctorInAddedBillItem;
     private String localNumber;
+    
+    private String refNo;
 
     /**
      *
@@ -1683,6 +1685,11 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         } else if (getPaymentMethod() == PaymentMethod.Slip) {
             if (getPaymentMethodData().getSlip().getComment().trim().equals("") && configOptionApplicationController.getBooleanValueByKey("OPD Billing - Slip Comment is Mandatory", false)) {
                 JsfUtil.addErrorMessage("Please Enter a Slip Comment..");
+                error = true;
+            }
+        } else if (getPaymentMethod() == PaymentMethod.Credit) {
+            if (getPaymentMethodData().getCredit().getComment().trim().equals("") && configOptionApplicationController.getBooleanValueByKey("OPD Billing - Credit Comment is Mandatory", false)) {
+                JsfUtil.addErrorMessage("Please Enter a Credit Comment..");
                 error = true;
             }
         }
@@ -3168,6 +3175,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
                     case Agent:
                     case Credit:
+                        p.setReferenceNo(cd.getPaymentMethodData().getCredit().getReferralNo());
+                        p.setComments(cd.getPaymentMethodData().getCredit().getComment());
                     case PatientDeposit:
                         if (getPatient().getRunningBalance() != null) {
                             getPatient().setRunningBalance(getPatient().getRunningBalance() - cd.getPaymentMethodData().getPatient_deposit().getTotalValue());
@@ -3221,6 +3230,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
                 case Agent:
                 case Credit:
+                    p.setReferenceNo(paymentMethodData.getCredit().getReferralNo());
+                    p.setComments(paymentMethodData.getCredit().getComment());
                 case PatientDeposit:
                 case Slip:
                     p.setBank(paymentMethodData.getSlip().getInstitution());
@@ -4168,6 +4179,17 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
     public void setLocalNumber(String localNumber) {
         this.localNumber = localNumber;
+    }
+
+    public String getRefNo() {
+        if(refNo == null){
+            refNo = getPaymentMethodData().getCredit().getReferralNo();
+        }
+        return refNo;
+    }
+
+    public void setRefNo(String refNo) {
+        this.refNo = refNo;
     }
 
 }

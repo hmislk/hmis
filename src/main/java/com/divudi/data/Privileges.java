@@ -25,6 +25,7 @@ public enum Privileges {
     Store,
     Search,
     CashTransaction,
+    ChangeCreditLimitInCC,
     //Submenu Privileges
     OpdBilling,
     OpdCollectingCentreBillingMenu,
@@ -40,6 +41,9 @@ public enum Privileges {
     OpdBillSearchEdit,
     OpdLabReportSearch,
     OpdReprintOriginalBill,
+    
+    AddCreditLimitInRegistration,
+    
     InwardAdmissions,
     InwardAdmissionsAdmission,
     InwardAdmissionsEditAdmission,
@@ -486,7 +490,24 @@ public enum Privileges {
     OpticianEmr,
     OpticianStockManagement,
     OpticianProductCatalog,
-    OpticianRepairManagement,;
+    OpticianRepairManagement,
+    
+    
+    @Deprecated
+    Ophthalmology,
+    @Deprecated
+    OphthalmologyPatientManagement,
+    @Deprecated
+    OphthalmologyAppointmentManagement,
+    @Deprecated
+    OphthalmologyEmr,
+    @Deprecated
+    OphthalmologyStockManagement,
+    @Deprecated
+    OphthalmologyProductCatalog,
+    @Deprecated
+    OphthalmologyRepairManagement,
+    ;
 
     public String getLabel() {
         switch (this) {

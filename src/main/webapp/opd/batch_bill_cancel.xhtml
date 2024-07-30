@@ -13,10 +13,10 @@
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form>
-                    <h:panelGroup rendered="#{!billSearch.printPreview}" styleClass="alignTop">
+                    <h:panelGroup rendered="#{!billController.printPreview}" styleClass="alignTop">
                         <p:panel>
                             <f:facet name="header">
-                                <h:outputText value="Cancellation" class="mt-5"/>
+                                <h:outputText value="Batch Bill Cancellation" class="mt-5"/>
                                 <h:panelGrid columns="3" style="float: right" class="w-50">
                                     <p:inputText placeholder="Enter Comments to Cancel Bill" value="#{billController.comment}" style="float: right" class="p-2 w-100"/>
 
@@ -36,8 +36,7 @@
                                     <h:outputText styleClass="fas fa-money-bill"></h:outputText>
                                     <h:outputLabel value="Payment Mode" class="mx-2"></h:outputLabel>
                                 </f:facet>
-                                <p:selectOneMenu id="cmbPs" value="#{billController.paymentMethod}"  
-                                                 disabled="#{billController.batchBill.paymentMethod eq 'Cash'}"
+                                <p:selectOneMenu id="cmbPs" value="#{billController.paymentMethod}"
                                                  rendered="#{billController.batchBill.billType eq 'OpdBathcBill'}">
                                     <f:selectItem itemLabel="Select paymentMethod"/>
                                     <f:selectItems value="#{inwardPaymentController.paymentMethods}"/>
@@ -111,7 +110,7 @@
                     </h:panelGroup>
 
                     <!-- Print Preview Panel -->
-                    <h:panelGroup rendered="#{billSearch.printPreview}" >
+                    <h:panelGroup rendered="#{billController.printPreview}" >
                         <div class="d-flex justify-content-center">
                             <p:outputLabel value="Paper Type" class="m-2"></p:outputLabel>
                             <p:selectOneMenu value="#{sessionController.departmentPreference.opdBillPaperType}" class="m-1" style="width: 13em;">
@@ -155,6 +154,9 @@
                             <prints:posOpdBill bill="#{billSearch.bill.cancelledBill}" duplicate="#{opdBillController.duplicatePrint}"/>
                             <prints:A4_paper_with_headings bill="#{billSearch.bill.cancelledBill}" duplicate="#{opdBillController.duplicatePrint}"/>
                             <prints:A4_paper_without_headings bill="#{billSearch.bill.cancelledBill}" duplicate="#{opdBillController.duplicatePrint}"/>
+                            
+                            
+                            
                         </h:panelGroup>
                     </h:panelGroup>
                 </h:form>                

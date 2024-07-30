@@ -1,0 +1,265 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:opd="http://xmlns.jcp.org/jsf/composite/ezcomp/opd">
+    <ui:composition 
+        template="/lab/sample_index.xhtml">
+
+        <ui:define name="subcontent">
+            <h:head>
+                <style>
+                    #{configOptionApplicationController.getLongTextValueByKey('CSS for Sample Container Sticker')}
+                </style>
+            </h:head>
+
+            <h:panelGroup rendered="#{!webUserController.hasPrivilege('LabSampleCollecting')}" >
+                You are NOT authorized
+            </h:panelGroup>
+
+            <h:panelGroup rendered="#{webUserController.hasPrivilege('LabSampleCollecting')}" >
+                <h:form>        
+                    <p:panel >
+                        <f:facet name="header">
+                            <h:outputLabel class="mt-2" value="To Collect"/>
+                        </f:facet>
+
+                        <h:panelGrid columns="2" class="w-100 p-2 m-2">
+                            <h:panelGrid columns="2" class="w-100 p-2 m-2 b-1">
+                                <h:outputLabel class="w-100 m-2" value="From Date"/>
+                                <p:calendar 
+                                    id="fromDate" 
+                                    value="#{patientInvestigationController.fromDate}" 
+                                    navigator="true" 
+                                    class="w-100 m-2"
+                                    pattern="dd MMMM yy - hh:mm a">
+                                </p:calendar>
+                                <h:outputLabel class="w-100 m-2" value="To Date"/>
+                                <p:calendar 
+                                    class="w-100 m-2"
+                                    id="toDate" 
+                                    value="#{patientInvestigationController.toDate}" 
+                                    navigator="true" 
+                                    pattern="dd MMMM yy - hh:mm a">
+                                </p:calendar>
+                                <h:outputLabel class="w-100 m-2" value="Ordered Institution"/>
+                                <p:autoComplete 
+                                    class="w-100 m-2"
+                                    id="acIns" 
+                                    value="#{patientInvestigationController.orderedInstitution}" 
+                                    completeMethod="#{institutionController.completeIns}"
+                                    var="i"
+                                    itemLabel="#{i.name}"
+                                    itemValue="#{i}"
+                                    >
+                                    <p:ajax event="itemSelect" process="acIns" update="cmdOd" ></p:ajax>
+                                </p:autoComplete>
+                                <h:outputLabel class="w-100 m-2" value="Ordered Institution"/>
+                                <h:panelGroup id="cmdOd" >
+                                    <p:selectOneMenu
+                                        rendered="#{patientInvestigationController.orderedInstitution ne null}"
+                                        filter="true"
+                                        filterMatchMode="contains"
+                                        value="#{patientInvestigationController.orderedDepartment}" >
+                                        <f:selectItems 
+                                            value="#{departmentController.getInstitutionDepatrments(patientInvestigationController.orderedInstitution)}"
+                                            var="d"
+                                            itemLabel="#{d.name}"
+                                            itemValue="#{d}"></f:selectItems>
+                                    </p:selectOneMenu>
+                                </h:panelGroup>
+
+
+                            </h:panelGrid>
+
+                            <h:panelGrid columns="1" class="w-100 p-2 m-2 b-1">
+                                <p:commandButton 
+                                    class="w-100 m-2" 
+                                    id="btnListToGenera" 
+                                    ajax="false" 
+                                    actionListener="#{patientInvestigationController.listBillsToGenerateBarcodes()}" 
+                                    value="List to Generate"
+                                    icon="fa fa-list-alt"> <!-- Example FontAwesome icon for listing -->
+                                </p:commandButton>
+                                <p:commandButton 
+                                    class="w-100 m-2" 
+                                    id="btnListGenerated" 
+                                    ajax="false" 
+                                    actionListener="#{patientInvestigationController.listBillsWithGeneratedBarcodes()}" 
+                                    value="List Generated"
+                                    icon="fa fa-check-square"> <!-- Example FontAwesome icon for generated lists -->
+                                </p:commandButton>
+                                <p:commandButton 
+                                    class="w-100 m-2" 
+                                    id="btnGeneraBarcodes" 
+                                    ajax="false" 
+                                    actionListener="#{patientInvestigationController.generateBarcodesForSelectedBills()}" 
+                                    value="Generate Barcodes"
+                                    icon="fa fa-barcode"> <!-- Example FontAwesome icon for barcode generation -->
+                                </p:commandButton>
+                            </h:panelGrid>
+
+
+                        </h:panelGrid>
+
+
+                        <p:dataTable  
+                            id="sample" 
+                            class="w-100"
+                            value="#{patientInvestigationController.billBarcodes}" 
+                            var="smpIx" 
+                            paginator="true"
+                            rowKey="#{smpIx.uuid}"
+                            paginatorPosition="bottom"
+                            selection="#{patientInvestigationController.selectedBillBarcodes}"
+                            rows="10"
+                            paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                            rowsPerPageTemplate="10,25,50"
+                            >
+
+                            <p:column selectionMode="multiple">
+
+                            </p:column>
+
+                            <p:column headerText="Bill Dept ID" width="100">
+                                <p:commandLink 
+                                    ajax="false" 
+                                    class="m-2"
+                                    value="#{smpIx.bill.deptId}" 
+                                    action="#{billSearch.navigateToViewOpdBill()}">
+                                    <f:setPropertyActionListener value="#{smpIx.bill}" target="#{billSearch.bill}"/>
+                                </p:commandLink>
+                            </p:column>
+
+                            <p:column headerText="Patient" >
+                                <h:outputLabel value="#{smpIx.bill.patient.person.nameWithTitle}" 
+                                               class="#{smpIx.bill.cancelled or smpIx.bill.refunded ? 'text-danger':''}"/>
+                            </p:column>
+
+                            <p:column headerText="Investigations" >
+                                <ui:repeat value="#{smpIx.patientInvestigationWrappers}" var="piw" >
+                                    <h:outputLabel value="#{piw.patientInvestigation.billItem.item.name}"/>
+                                </ui:repeat>
+                            </p:column>
+
+                            <p:column headerText="Samples">
+
+
+                                <ui:repeat value="#{smpIx.patientSampleWrappers}" var="psw">
+                                    <p:panel id="samplePanelList" toggleable="true" collapsed="true">
+                                        <f:facet name="header" >
+                                            <h:outputLabel 
+                                                class="m-1"
+                                                value="#{psw.patientSample.id}" ></h:outputLabel>
+                                            <p:commandLink 
+                                                class="m-1 ml-5"
+                                                value="To Edit" 
+                                                ajax="false" 
+                                                action="#{patientSampleController.navigateToViewPatientSample(psw.patientSample)}" >
+                                            </p:commandLink>
+                                        </f:facet>
+                                        <table class="table table-striped">
+                                            <tr>
+                                                <th >
+                                                    <h:outputLabel value="Test" ></h:outputLabel>
+                                                </th>
+                                                <th >
+                                                    <h:outputLabel value="Component" ></h:outputLabel>
+                                                </th>
+                                            </tr>
+                                            <ui:repeat value="#{patientInvestigationController.getPatientSampleComponentsByPatientSample(psw.patientSample)}" var="psc">
+                                                <tr>
+                                                    <td>
+                                                        <h:outputLabel value="#{psc.patientInvestigation.investigation.name}"/>
+                                                    </td>
+                                                    <td>
+                                                        <h:outputLabel value="#{psc.investigationComponant.name}"/>
+                                                    </td>
+                                                </tr>
+                                            </ui:repeat>
+                                        </table>
+                                    </p:panel>
+                                </ui:repeat>
+
+
+
+
+
+
+                            </p:column>
+
+                            <p:column headerText="Printing">
+                                <p:panel id="samplePanelPrint" 
+                                         header="#{psw.patientSample.id}" 
+                                         toggleable="true" 
+                                         collapsed="true">
+                                    <f:facet name="header" >
+                                        #{psw.patientSample.id}
+                                        <p:commandButton ajax="false" value="Print" >
+                                            <p:printer target="barcode" ></p:printer>
+                                        </p:commandButton>
+                                    </f:facet>
+                                    <h:panelGroup id="barcode">
+                                        <ui:repeat value="#{smpIx.patientSampleWrappers}" var="psc">
+                                            <div class="sticker">
+                                                <div class="patient-info">
+                                                    #{psc.patientSample.patient.person.shortenedName}&nbsp;|&nbsp;
+
+                                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Patient Age in Sample Stickers')}">
+                                                        #{psc.patientSample.patient.person.ageAsShortString}&nbsp;|&nbsp;
+                                                    </h:panelGroup>
+
+                                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Patient Sex in Sample Stickers')}">
+                                                        #{psc.patientSample.patient.person.sex.shortLabel}&nbsp;|&nbsp;
+                                                    </h:panelGroup>
+
+                                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Patient ID in Sample Stickers')}">
+                                                        #{psc.patientSample.patient.person.id}&nbsp;|&nbsp;
+                                                    </h:panelGroup>
+
+                                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Patient PHN in Sample Stickers')}">
+                                                        #{psc.patientSample.patient.phn}
+                                                    </h:panelGroup>
+                                                </div>
+                                                <div class="patient-sample-info">
+                                                    <ui:repeat value="#{patientInvestigationController.getPatientSampleComponentsByPatientSample(psc.patientSample)}" var="psw">
+                                                        #{psw.investigationComponant.name} &nbsp;|&nbsp;
+                                                    </ui:repeat>
+                                                </div>
+                                                <div class="barcode-info">
+
+                                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Barcode in Sample Stickers')}">
+                                                        <p:barcode value="#{psc.patientSample.idStr}" 
+                                                                   type="#{configOptionApplicationController.getShortTextValueByKey('Sample Sticker - Barcode Type','code128')}" 
+                                                                   height="#{configOptionApplicationController.getShortTextValueByKey('Sample Sticker - Barcode Height in Pixles','80')}"
+                                                                   width="#{configOptionApplicationController.getShortTextValueByKey('Sample Sticker - Barcode Width in Pixles','300')}"
+                                                                   orientation="0" ></p:barcode>
+                                                    </h:panelGroup>
+                                                </div>
+
+                                            </div>
+                                        </ui:repeat>
+                                    </h:panelGroup>
+                                </p:panel>
+                            </p:column>
+
+
+
+
+
+
+
+                        </p:dataTable>
+
+
+
+
+                    </p:panel>
+                </h:form>
+            </h:panelGroup>
+        </ui:define>
+    </ui:composition>
+</html>

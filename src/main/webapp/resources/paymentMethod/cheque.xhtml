@@ -14,9 +14,9 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <div class="d-flex gap-2">
+        <div class="d-flex gap-2 mt-2">
             <h:panelGroup rendered="#{cc.attrs.valueRequired}" class="" layout="block"  >
-                <p:inputText autocomplete="off"   value="#{cc.attrs.paymentMethodData.cheque.totalValue}" style="width: 10em;" id="txtVal" >
+                <p:inputText autocomplete="off"   value="#{cc.attrs.paymentMethodData.cheque.totalValue}" style="width: 10em;" class="w-100" id="txtVal" >
                     <p:ajax process="@this" ></p:ajax>
                 </p:inputText>
                 <p:watermark value="Value" for="txtVal" />
@@ -24,7 +24,7 @@
 
             <div class="" >
 
-                <p:inputText placeholder="Cheque No" autocomplete="off"  value="#{cc.attrs.paymentMethodData.cheque.no}" style="width: 10em;" class="mx-2" id="chequNo" >
+                <p:inputText placeholder="Cheque No" autocomplete="off"  value="#{cc.attrs.paymentMethodData.cheque.no}" style="width: 10em;" class="" id="chequNo" >
 
                     <p:ajax process="@this" ></p:ajax>
                 </p:inputText>

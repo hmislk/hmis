@@ -38,6 +38,16 @@
             href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.2/font/bootstrap-icons.css"/>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous"></link>
         <h:outputScript library="js" name="jsfcrud.js"/>
+        <script type="text/javascript">
+            var timeoutInMinutes = #{configOptionApplicationController.getShortTextValueByKey('Application Timeout in Minutes', '15')};
+            var timeoutDuration = timeoutInMinutes * 60000; // Convert minutes to milliseconds
+            var timeoutPageUrl = '#{sessionController.logoutPageUrl}'; // Get the dynamic URL from the bean
+
+            setTimeout(function () {
+                alert('Session has expired. You will now be redirected to the session timeout page.');
+                window.location.href = timeoutPageUrl; // Use the dynamically generated URL
+            }, timeoutDuration);
+        </script>
     </h:head>
     <h:body >
         <style>
@@ -90,66 +100,86 @@
             }
 
         </style>
-        <h:panelGroup rendered="#{!sessionController.firstLogin}" class="w-100">
-            <h:panelGroup rendered ="#{not sessionController.logged}"  >
-                <h:panelGroup rendered="#{!applicationController.hasAwebsiteAsFrontEnd}" >
-                    <ui:insert name="login">
-                        <ez:login/>
-                    </ui:insert>
-                </h:panelGroup>
-                <h:panelGroup rendered="#{applicationController.hasAwebsiteAsFrontEnd}" >
-                    <h:panelGroup rendered="#{applicationController.hasAwebsiteAsFrontEnd}">
-                        <!--<f:event rendered="#{applicationController.hasAwebsiteAsFrontEnd}" type="preRenderView" listener="#{sessionController.redirectToIndex1}" />-->
+
+
+        <h:panelGroup rendered="false" class="d-flex justify-content-center align-items-center vh-100">
+            <div class="card text-center w-50">
+                <div class="card-header bg-primary text-white">
+                    Important Notification
+                </div>
+                <div class="card-body">
+                    <h1>Server has been migrated to a new location</h1>
+                    <h1>Use this link afterwards:</h1>
+                    <h1 class="text-primary"><a href="https://vfs.carecode.org/" target="_blank">https://vfs.carecode.org/</a></h1>
+                    <h1>Click here to login.</h1>
+                    <h1>Next time, type that URL. This page will not be accessible soon.</h1>
+                    <h2>Call for details - 0715812399</h2>
+                </div>
+            </div>
+        </h:panelGroup>
+
+
+        <h:panelGroup rendered="true" >
+            <h:panelGroup rendered="#{!sessionController.firstLogin}" class="w-100">
+                <h:panelGroup rendered ="#{not sessionController.logged}"  >
+                    <h:panelGroup rendered="#{!applicationController.hasAwebsiteAsFrontEnd}" >
+                        <ui:insert name="login">
+                            <ez:login/>
+                        </ui:insert>
+                    </h:panelGroup>
+                    <h:panelGroup rendered="#{applicationController.hasAwebsiteAsFrontEnd}" >
+                        <h:panelGroup rendered="#{applicationController.hasAwebsiteAsFrontEnd}">
+                            <!--<f:event rendered="#{applicationController.hasAwebsiteAsFrontEnd}" type="preRenderView" listener="#{sessionController.redirectToIndex1}" />-->
+                        </h:panelGroup>
                     </h:panelGroup>
                 </h:panelGroup>
-            </h:panelGroup>
-            <h:panelGroup rendered ="#{sessionController.logged and sessionController.department ne null}"  >
+                <h:panelGroup rendered ="#{sessionController.logged and sessionController.department ne null}"  >
 
-                <div class="deptAndUser">
-                    <div class="d-flex align-items-center">
-                        <h5><h:outputLabel style="text-transform: uppercase" class="text-left" value="#{sessionController.loggedUser.department.name}"/></h5>
-                        <h6 class="mx-2">|</h6>
-                        <h6><h:outputLabel value="#{sessionController.loggedUser.name}" rendered="#{!configOptionApplicationController.getBooleanValueByKey('Display logged users name on system watermark',false)}"/></h6>
-                        <h6><h:outputLabel value="#{sessionController.loggedUser.webUserPerson.name}" rendered="#{configOptionApplicationController.getBooleanValueByKey('Display logged users name on system watermark',false)}"/></h6>
-                        <h6><h:outputLabel class="text-left" rendered="#{versionController.systemVersion ne null}" value="&emsp;V.#{versionController.systemVersion}"/></h6>
+                    <div class="deptAndUser">
+                        <div class="d-flex align-items-center">
+                            <h5><h:outputLabel style="text-transform: uppercase" class="text-left" value="#{sessionController.loggedUser.department.name}"/></h5>
+                            <h6 class="mx-2">|</h6>
+                            <h6><h:outputLabel value="#{sessionController.loggedUser.name}" rendered="#{!configOptionApplicationController.getBooleanValueByKey('Display logged users name on system watermark',false)}"/></h6>
+                            <h6><h:outputLabel value="#{sessionController.loggedUser.webUserPerson.name}" rendered="#{configOptionApplicationController.getBooleanValueByKey('Display logged users name on system watermark',false)}"/></h6>
+                            <h6><h:outputLabel class="text-left" rendered="#{versionController.systemVersion ne null}" value="&emsp;V.#{versionController.systemVersion}"/></h6>
+                        </div>
                     </div>
-                </div>
 
-                <div class="companyWaterMark d-flex align-items-center">
-                    <div class="mx-2">
-                        <img src="../../resources/image/CompanyLogo/companyLogo.png" width="50px"/>
+                    <div class="companyWaterMark d-flex align-items-center">
+                        <div class="mx-2">
+                            <img src="../../resources/image/CompanyLogo/companyLogo.png" width="50px"/>
+                        </div>
+                        <div>
+                            <h6><h:outputLabel class="text-left" value="Powered by"/></h6>
+                            <h5><h:outputLabel value="CareCode Solutions"/></h5>
+                        </div>
                     </div>
-                    <div>
-                        <h6><h:outputLabel class="text-left" value="Powered by"/></h6>
-                        <h5><h:outputLabel value="CareCode Solutions"/></h5>
-                    </div>
-                </div>
 
-                <p:panel 
-                    rendered="#{sessionController.department ne null}" 
-                    class="m-0 p-0 no-padding-margin-border"
-                    style=" padding: 0 !important;
-                    margin: 0 !important;
-                    border: none !important;">
-                    <ez:menu />
-                    <ez:user_icon_bar rendered="false"/>
-                    <ui:insert name="content" class="m-0 p-0 borderless" >
+                    <p:panel 
+                        rendered="#{sessionController.department ne null}" 
+                        class="m-0 p-0 no-padding-margin-border"
+                        style=" padding: 0 !important;
+                        margin: 0 !important;
+                        border: none !important;">
+                        <ez:menu />
+                        <ez:user_icon_bar rendered="false"/>
+                        <ui:insert name="content" class="m-0 p-0 borderless" >
 
-                    </ui:insert>
-                </p:panel>
+                        </ui:insert>
+                    </p:panel>
+                </h:panelGroup>
+                <h:panelGroup rendered="#{sessionController.logged and sessionController.department eq null}" class="w-100">
+                    <ez:select_department class="w-100"/>
+                </h:panelGroup>
+                <ez:footer/>
             </h:panelGroup>
-            <h:panelGroup rendered="#{sessionController.logged and sessionController.department eq null}" class="w-100">
-                <ez:select_department class="w-100"/>
+            <h:panelGroup rendered="#{sessionController.firstLogin}" >
+                <ez:first_login/>
             </h:panelGroup>
-            <ez:footer/>
+            <div class="d-flex justify-content-center align-items-center">
+                <p:growl id="growl" life="2000"  />
+            </div>
         </h:panelGroup>
-        <h:panelGroup rendered="#{sessionController.firstLogin}" >
-            <ez:first_login/>
-        </h:panelGroup>
-        <div class="d-flex justify-content-center align-items-center">
-            <p:growl id="growl" life="2000"  />
-        </div>
-
 
 
     </h:body>

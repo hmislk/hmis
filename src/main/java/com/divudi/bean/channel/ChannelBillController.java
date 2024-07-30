@@ -467,6 +467,7 @@ public class ChannelBillController implements Serializable {
         bookingBillSession.getBill().setPaidAmount(newSettleBill.getPaidAmount());
         bookingBillSession.getBill().setBalance(0.0);
         bookingBillSession.getBill().setPaidBill(newSettleBill);
+        bookingBillSession.setRetired(false);
         bookingBillSession.setPaidBillSession(newlyCreatedSettlingBillSession);
         getBillFacade().edit(bookingBillSession.getBill());
 

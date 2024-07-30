@@ -121,6 +121,15 @@
 
                             <p:column headerText="Actions" width="9em">
                                 <p:commandButton 
+                                    id="edit"
+                                    ajax="false"
+                                    icon="fas fa-edit"
+                                    class="ui-button-warning"
+                                    action="#{storePurchaseOrderRequestController.navigateToUpdatePurchaseOrder()}"
+                                    >
+                                    <f:setPropertyActionListener target="#{storePurchaseOrderRequestController.currentBill}" value="#{b}"/>
+                                </p:commandButton>
+                                <p:commandButton 
                                     id="approve"
                                     ajax="false"
                                     icon="fas fa-check-circle"

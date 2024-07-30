@@ -1,0 +1,504 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp">
+
+    <h:body>
+
+        <ui:composition template="/analytics/index.xhtml">
+            <ui:define name="report">
+                <h:form>
+                    <p:panelGrid columns="1" rendered="#{financialTransactionController.nonClosedShiftStartFundBill ne null}" class="w-100">
+                        <f:facet name="header">
+                            <p:outputLabel value="Shift Summary" class="mx-2 mr-5"/>
+                            <p:commandButton class="ui-button-info mx-2 ml-5" 
+                                             ajax="false" 
+                                             value="To View Shift Report" 
+                                             action="#{financialTransactionController.navigateToCashierReport()}" ></p:commandButton>
+                        </f:facet>
+
+                        <p:panelGrid columns="1" >
+                            <p:panelGrid columns="3">
+                                <h:panelGroup>
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <i class="fas fa-user-md"></i> Staff Details
+                                        </div>
+                                        <div class="card-body">
+                                            <p><strong>Staff:</strong> #{financialTransactionController.nonClosedShiftStartFundBill.staff.person.nameWithTitle}</p>
+                                            <p><strong>Total Value:</strong> 
+                                                <h:outputText value="#{financialTransactionController.nonClosedShiftStartFundBill.referenceBill.total}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputText>
+                                            </p>
+                                            <p><strong>Duration:</strong> 
+                                                #{financialTransactionController.calculateDuration(
+                                                  financialTransactionController.nonClosedShiftStartFundBill.createdAt, 
+                                                  financialTransactionController.nonClosedShiftStartFundBill.referenceBill.createdAt)}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </h:panelGroup>
+
+                                <h:panelGroup>
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <i class="fas fa-sign-in-alt"></i> Shift Start
+                                        </div>
+                                        <div class="card-body">
+                                            <p><strong>Start Bill ID:</strong> #{financialTransactionController.nonClosedShiftStartFundBill.id}</p>
+                                            <p><strong>Start:</strong> 
+                                                <h:outputText value="#{financialTransactionController.nonClosedShiftStartFundBill.createdAt}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                </h:outputText>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </h:panelGroup>
+
+                                <h:panelGroup rendered="#{not empty financialTransactionController.nonClosedShiftStartFundBill.referenceBill}">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <i class="fas fa-sign-out-alt"></i> Shift End
+                                        </div>
+                                        <div class="card-body">
+                                            <p><strong>End Bill ID:</strong> #{financialTransactionController.nonClosedShiftStartFundBill.referenceBill.id}</p>
+                                            <p><strong>End:</strong> 
+                                                <h:outputText value="#{financialTransactionController.nonClosedShiftStartFundBill.referenceBill.createdAt}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                </h:outputText>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </h:panelGroup>
+
+                                <h:panelGroup rendered="#{empty financialTransactionController.nonClosedShiftStartFundBill.referenceBill}">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <i class="fas fa-exclamation-circle"></i> Shift Status
+                                        </div>
+                                        <div class="card-body">
+                                            <p>Shift is not yet ended.</p>
+                                        </div>
+                                    </div>
+                                </h:panelGroup>
+                            </p:panelGrid>
+
+
+
+                            <h:panelGroup >
+                                <table class="table table-bordered">
+                                    <thead class="thead-light">
+                                        <tr>
+                                            <th style="width:6em;">Category</th>
+                                            <th style="width:6em;">In</th>
+                                            <th style="width:6em;">Out</th>
+                                            <th style="width:6em;">Net Total</th>
+                                            <th rowspan="6" style="width:6em;">Net Cash Total</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td style="width:6em;">
+                                                <h:outputText 
+                                                    value="Cash"
+                                                    ></h:outputText>
+                                            </td>
+                                            <td align="right" style="width:6em;">
+                                                <p:commandLink 
+                                                    ajax="false"
+                                                    action="#{financialTransactionController.selectCashierSummaryBreakdownFromShiftClosingForCashAdmin()}">
+                                                    <h:outputText value="#{financialTransactionController.financialReportByPayments.collectedCash}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </p:commandLink>
+                                            </td>
+                                            <td align="right" style="width:6em;">
+                                                <p:commandLink 
+                                                    ajax="false"
+                                                    action="#{financialTransactionController.selectRefundedCashDetails()}">
+                                                    <h:outputText value="#{financialTransactionController.financialReportByPayments.refundedCash}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </p:commandLink>
+                                            </td>
+                                            <td align="right" style="width:6em;">
+                                                <p:commandLink 
+                                                    ajax="false"
+                                                    action="#{financialTransactionController.selectNetCashTotalDetails()}">
+                                                    <h:outputText value="#{financialTransactionController.financialReportByPayments.netCashTotal}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </p:commandLink>
+                                            </td>
+                                            <td align="right" style="width:6em;">
+                                                <p:commandLink 
+                                                    ajax="false"
+                                                    action="#{financialTransactionController.selectNetCashTotalDetails()}">
+                                                    <h:outputText value="#{financialTransactionController.financialReportByPayments.netCashTotal}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </p:commandLink>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="width:6em;">
+                                                <h:outputText 
+                                                    value="Card"></h:outputText>
+                                            </td>
+                                            <td align="right" style="width:6em;">
+                                                <p:commandLink 
+                                                    ajax="false"
+                                                    action="#{financialTransactionController.selectCollectedCreditCardDetails()}">
+                                                    <h:outputText value="#{financialTransactionController.financialReportByPayments.collectedCreditCard}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </p:commandLink>
+                                            </td>
+                                            <td align="right" style="width:6em;">
+                                                <p:commandLink 
+                                                    ajax="false"
+                                                    action="#{financialTransactionController.selectRefundedCreditCardDetails()}">
+                                                    <h:outputText value="#{financialTransactionController.financialReportByPayments.refundedCreditCard}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </p:commandLink>
+                                            </td>
+                                            <td align="right" style="width:6em;">
+                                                <p:commandLink 
+                                                    ajax="false"
+                                                    action="#{financialTransactionController.selectNetCreditCardTotalDetails()}">
+                                                    <h:outputText value="#{financialTransactionController.financialReportByPayments.netCreditCardTotal}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </p:commandLink>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="width:6em;">
+                                                <h:outputText 
+                                                    value="Voucher" ></h:outputText>
+                                            </td>
+                                            <td align="right" style="width:6em;">
+                                                <p:commandLink 
+                                                    ajax="false"
+                                                    action="#{financialTransactionController.selectCollectedVoucherDetails()}">
+                                                    <h:outputText value="#{financialTransactionController.financialReportByPayments.collectedVoucher}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </p:commandLink>
+                                            </td>
+                                            <td align="right" style="width:6em;">
+                                                <p:commandLink 
+                                                    ajax="false"
+                                                    action="#{financialTransactionController.selectRefundedVoucherDetails()}">
+                                                    <h:outputText value="#{financialTransactionController.financialReportByPayments.refundedVoucher}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </p:commandLink>
+                                            </td>
+                                            <td align="right" style="width:6em;">
+                                                <p:commandLink 
+                                                    ajax="false"
+                                                    action="#{financialTransactionController.selectNetVoucherTotalDetails()}">
+                                                    <h:outputText value="#{financialTransactionController.financialReportByPayments.netVoucherTotal}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </p:commandLink>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="width:6em;">
+                                                <h:outputText 
+                                                    value="Other" ></h:outputText>
+                                            </td>
+                                            <td align="right" style="width:6em;">
+                                                <p:commandLink 
+                                                    ajax="false"
+                                                    action="#{financialTransactionController.selectCollectedOtherNonCreditDetails()}">
+                                                    <h:outputText value="#{financialTransactionController.financialReportByPayments.collectedOtherNonCredit}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </p:commandLink>
+                                            </td>
+                                            <td align="right" style="width:6em;">
+                                                <p:commandLink 
+                                                    ajax="false"
+                                                    action="#{financialTransactionController.selectRefundedOtherNonCreditDetails()}">
+                                                    <h:outputText value="#{financialTransactionController.financialReportByPayments.refundedOtherNonCredit}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </p:commandLink>
+                                            </td>
+                                            <td align="right" style="width:6em;">
+                                                <p:commandLink 
+                                                    ajax="false"
+                                                    action="#{financialTransactionController.selectNetOtherNonCreditTotalDetails()}">
+                                                    <h:outputText value="#{financialTransactionController.financialReportByPayments.netOtherNonCreditTotal}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </p:commandLink>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="width:6em;">Float My-Safe (Start Funds)</td>
+                                            <td align="right" style="width:6em;">
+                                                <h:outputText value="#{financialTransactionController.financialReportByPayments.shiftStartFunds}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputText>
+                                            </td>
+                                            <td style="width:6em;"></td> <!-- Assuming no refunded column for My-Safe -->
+                                            <td align="right" style="width:6em;">
+                                                <p:commandLink 
+                                                    ajax="false"
+                                                    action="#{financialTransactionController.selectShiftStartFundsDetails()}">
+                                                    <h:outputText value="#{financialTransactionController.financialReportByPayments.shiftStartFunds}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </p:commandLink>
+                                            </td> <!-- Assuming My-Safe equals net for floats -->
+                                        </tr>
+                                        <tr>
+                                            <td style="width:6em;">Float Collected Handovers</td>
+                                            <td align="right" style="width:6em;">
+                                                <h:outputText value="#{financialTransactionController.financialReportByPayments.floatReceived}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputText>
+
+                                            </td>
+                                            <td align="right" style="width:6em;">
+                                                <p:commandLink 
+                                                    ajax="false"
+                                                    action="#{financialTransactionController.selectFloatHandoverDetails()}">
+                                                    <h:outputText value="#{financialTransactionController.financialReportByPayments.floatHandover}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </p:commandLink>
+                                            </td> <!-- Assuming no refunded column for floats -->
+                                            <td align="right" style="width:6em;">
+                                                <p:commandLink 
+                                                    ajax="false"
+                                                    action="#{financialTransactionController.selectNetFloatDetails()}">
+                                                    <h:outputText value="#{financialTransactionController.financialReportByPayments.floatReceived - financialTransactionController.financialReportByPayments.floatHandover}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </p:commandLink>
+                                            </td> <!-- Assuming collected equals net for floats -->
+                                        </tr>
+                                        <tr>
+                                            <td style="width:6em;">Bank Transaction</td>
+                                            <td align="right" style="width:6em;">
+                                                <p:commandLink 
+                                                    ajax="false"
+                                                    action="#{financialTransactionController.selectBankWithdrawalsDetails()}">
+                                                    <h:outputText value="#{financialTransactionController.financialReportByPayments.bankWithdrawals}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </p:commandLink>
+                                            </td>
+                                            <td align="right" style="width:6em;">
+                                                <p:commandLink 
+                                                    ajax="false"
+                                                    action="#{financialTransactionController.selectBankDepositsDetails()}">
+                                                    <h:outputText value="#{financialTransactionController.financialReportByPayments.bankDeposits}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </p:commandLink>
+                                            </td> <!-- Assuming no refunded column for bank withdrawals -->
+                                            <td align="right" style="width:6em;">
+                                                <p:commandLink 
+                                                    ajax="false"
+                                                    action="#{financialTransactionController.selectNetBankTransactionDetails()}">
+                                                    <h:outputText value="#{financialTransactionController.financialReportByPayments.bankWithdrawals - financialTransactionController.financialReportByPayments.bankDeposits}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </p:commandLink>
+                                            </td> <!-- Assuming withdrawals equals net -->
+                                        </tr>
+                                        <h:panelGroup rendered="false">
+                                            <tr>
+                                                <td style="width:6em;">Cash In / Outs</td>
+                                                <td align="right" style="width:6em;">
+                                                    <p:commandLink 
+                                                        ajax="false"
+                                                        action="#{financialTransactionController.selectCashCollectedTransferInDetails()}">
+                                                        <h:outputText value="#{financialTransactionController.financialReportByPayments.cashCollectedTransferIn}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </p:commandLink>
+                                                </td>
+                                                <td align="right" style="width:6em;">
+                                                    <p:commandLink 
+                                                        ajax="false"
+                                                        action="#{financialTransactionController.selectCashGivenOutTransferOutDetails()}">
+                                                        <h:outputText value="#{financialTransactionController.financialReportByPayments.cashGivenOutTransferOut}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </p:commandLink>
+                                                </td> <!-- Assuming no refunded column for cash given out -->
+                                                <td align="right" style="width:6em;">
+                                                    <p:commandLink 
+                                                        ajax="false"
+                                                        action="#{financialTransactionController.selectNetCashInOutDetails()}">
+                                                        <h:outputText value="#{financialTransactionController.financialReportByPayments.cashCollectedTransferIn - financialTransactionController.financialReportByPayments.cashGivenOutTransferOut}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </p:commandLink>
+                                                </td> <!-- Assuming cash given out equals net -->
+                                            </tr>
+                                        </h:panelGroup>
+                                        <tr class="table-primary">
+                                            <td style="width:6em;">Total</td>
+                                            <td colspan="2"></td>
+                                            <td align="right" style="width:6em;">
+                                                <p:commandLink 
+                                                    ajax="false"
+                                                    action="#{financialTransactionController.selectTotalDetails()}">
+                                                    <h:outputText value="#{financialTransactionController.financialReportByPayments.total}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </p:commandLink>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="width:6em;">Short/Excess</td>
+                                            <td colspan="2"></td>
+                                            <td align="right" style="width:6em;">
+                                                <p:commandLink 
+                                                    ajax="false"
+                                                    action="#{financialTransactionController.selectShortExcessDetails()}">
+                                                    <h:panelGroup styleClass="#{financialTransactionController.currentBill.netTotal - financialTransactionController.financialReportByPayments.total ge 0 ? 'text-success' : 'text-danger'}">
+                                                        <h:outputText value="#{financialTransactionController.currentBill.netTotal - financialTransactionController.financialReportByPayments.total}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                        <h:outputText value=" #{financialTransactionController.currentBill.netTotal - financialTransactionController.financialReportByPayments.total ge 0 ? 'Excess' : 'Shortage'}">
+                                                            <i class="#{financialTransactionController.currentBill.netTotal - financialTransactionController.financialReportByPayments.total ge 0 ? 'fa fa-arrow-up' : 'fa fa-arrow-down'}" />
+                                                        </h:outputText>
+                                                    </h:panelGroup>
+                                                </p:commandLink>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="true" layout="block" class="w-100" style="overflow-x: scroll;">
+                                <p:commandButton value="Export to excel" >
+                                    <p:dataExporter type="xlsx" target="tblPayments" fileName="exportedData"/>
+                                </p:commandButton>
+                                <p:dataTable 
+                                    id="tblPayments" 
+                                    value="#{financialTransactionController.paymentsSelected}" 
+                                    var="bp" 
+                                    paginator="true"
+                                    paginatorPosition="bottom"
+                                    rows="5"
+                                    rowKey="#{bp.id}"
+                                    paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                    currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
+                                    rowsPerPageTemplate="5,10,20,50,100">
+
+                                    <p:column headerText="Payment ID" filterBy="#{bp.id}" sortBy="#{bp.id}">
+                                        <p:inputText value="#{bp.id}" ></p:inputText>
+                                    </p:column>
+
+                                    <p:column headerText="Time" filterBy="#{bp.createdAt}" sortBy="#{bp.createdAt}">
+                                        <h:outputText value="#{bp.createdAt}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
+                                        </h:outputText>
+                                    </p:column>
+
+                                    <p:column headerText="Payment Method" filterBy="#{bp.paymentMethod}" sortBy="#{bp.paymentMethod}">
+                                        <h:outputText value="#{bp.paymentMethod}" ></h:outputText>
+                                    </p:column>
+
+                                    <p:column headerText="From" filterBy="#{bp.bill.fromStaff.person.name}" sortBy="#{bp.bill.fromStaff.person.name}">
+                                        <h:outputText value="#{bp.bill.fromStaff.person.name}" ></h:outputText>
+                                    </p:column>
+                                    <p:column headerText="To" filterBy="#{bp.bill.toStaff.person.name}" sortBy="#{bp.bill.toStaff.person.name}">
+                                        <h:outputText value="#{bp.bill.toStaff.person.name}" ></h:outputText>
+                                    </p:column>
+
+                                    <p:column headerText="Bill ID" filterBy="#{bp.bill.id}" sortBy="#{bp.bill.id}">
+                                        <p:inputText value="#{bp.bill.id}" ></p:inputText>
+                                    </p:column>
+
+                                    <p:column headerText="Bill Type" rendered="false" filterBy="#{bp.bill.billType}" sortBy="#{bp.bill.billType}">
+                                        <p:inputText value="#{bp.bill.billType}" ></p:inputText>
+                                    </p:column>
+
+                                    <p:column headerText="Bill Class" rendered="false" filterBy="#{bp.bill.billClass}" sortBy="#{bp.bill.billClass}">
+                                        <p:inputText value="#{bp.bill.billClass}" ></p:inputText>
+                                    </p:column>
+
+                                    <p:column headerText="Bill Type Atomic" filterBy="#{bp.bill.billTypeAtomic}" sortBy="#{bp.bill.billTypeAtomic}">
+                                        <h:outputText value="#{bp.bill.billTypeAtomic}" ></h:outputText>
+                                    </p:column>
+
+                                    <p:column headerText="Bill Type Atomic Cash Type" rendered="false" filterBy="#{bp.bill.billTypeAtomic.billFinanceType}" sortBy="#{bp.bill.billTypeAtomic.billFinanceType}">
+                                        <h:outputText value="#{bp.bill.billTypeAtomic.billFinanceType}" ></h:outputText>
+                                    </p:column>
+                                    
+                                    <p:column headerText="Doctor Name"  filterBy="#{bp.bill.staff.person.nameWithTitle}" sortBy="#{bp.bill.staff.person.nameWithTitle}">
+                                        <p:outputLabel value="#{bp.bill.staff.person.nameWithTitle}" ></p:outputLabel>
+                                    </p:column>
+
+                                    <p:column headerText="Payment Method" rendered="false" filterBy="#{bp.bill.paymentMethod.label}" filterMatchMode="contains" sortBy="#{bp.bill.paymentMethod.label}">
+                                        <h:outputText value="#{bp.bill.paymentMethod}" ></h:outputText>
+                                    </p:column>
+
+                                    <p:column headerText="Patient" rendered="false" filterBy="#{bp.bill.patient.person.nameWithTitle}" sortBy="#{bp.bill.patient.person.nameWithTitle}">
+                                        <h:outputText value="#{bp.bill.patient.person.nameWithTitle}" ></h:outputText>
+                                    </p:column>
+
+                                    <p:column headerText="Value" filterBy="#{bp.paidValue}" sortBy="#{bp.paidValue}">
+                                        <h:outputText value="#{bp.paidValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </p:column>
+
+                                    <p:column headerText="Action" exportable="false">
+                                        <p:commandButton 
+                                            class="ui-button-success"
+                                            icon="fa-solid fa-eye"
+                                            value="View Bill" 
+                                            ajax="false"
+                                            action="#{billSearch.navigateViewBillByBillTypeAtomic()}">
+                                            <f:setPropertyActionListener value="#{bp.bill}" target="#{billSearch.bill}" />
+                                        </p:commandButton>
+                                    </p:column>
+                                </p:dataTable>
+
+                            </h:panelGroup>
+
+                        </p:panelGrid>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    </p:panelGrid>
+
+
+
+                </h:form>
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

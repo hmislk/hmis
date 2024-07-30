@@ -1,0 +1,88 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+
+        <ui:composition template="/admin/lims/index.xhtml">
+
+            <ui:define name="title">
+                Manage Analyzer Tests
+            </ui:define>
+
+            <ui:define name="subcontent">
+
+                <h:form >
+
+                    <p:panel header="Manage Analyzer Test" >
+                        <h:panelGrid columns="5" >
+                            <p:outputLabel value="Analyzer" ></p:outputLabel>
+                            <p:selectOneMenu value="#{departmentMachineController.machine}" >
+                                <f:selectItem itemLabel="Select" ></f:selectItem>
+                                <f:selectItems value="#{machineController.items}" ></f:selectItems>
+                            </p:selectOneMenu>
+                            <p:commandButton ajax="false" action="#{itemController.fillMachineTests()}" value="List Analyzer Tests" ></p:commandButton>
+                            <p:spacer height="1" width="300" ></p:spacer>
+                            <p:commandButton ajax="false" action="/lab/administration" value="List Analyzer Tests" ></p:commandButton>
+                        </h:panelGrid>
+                        <p:dialog id="dlg" modal="true" widgetVar="dlg" >
+                            <p:panel id="test" header="Test" >
+                                <p:commandButton id="btnSave" value="Save" process="@this test" update="tbl" 
+                                                  action="#{itemController.createOrUpdateTest()}" 
+                                                 oncomplete="PF('dlg').hide();" />
+                                <h:panelGrid columns="2" >
+                                    <p:outputLabel value="Code" ></p:outputLabel>
+                                    <p:inputText value="#{itemController.current.code}" ></p:inputText>
+                                    
+                                    <p:outputLabel value="Name" ></p:outputLabel>
+                                    <p:inputText value="#{itemController.current.name}" ></p:inputText>
+                                    <p:outputLabel value="Description" ></p:outputLabel>
+                                    <p:inputTextarea value="#{itemController.current.descreption}" ></p:inputTextarea>
+                                </h:panelGrid>
+                            </p:panel>
+                        </p:dialog>
+                        <h:panelGrid columns="2" class="alignTop">
+                            <h:panelGrid columns="1" id="actions" >
+                                <p:commandButton  
+                                                 styleClass="linkButton" 
+                                                 value="Add" action="#{itemController.toCreateNewTest()}" process="@this" update="dlg" oncomplete="PF('dlg').show()" />
+                                <p:commandButton disabled="#{itemController.current == null}" 
+                                                 styleClass="linkButton" 
+                                                 value="Edit" process="@this" update="dlg" oncomplete="PF('dlg').show()" />
+                                
+                                <p:commandButton disabled="#{itemController.current == null}" 
+                                                 styleClass="linkButton" action="#{itemController.removeTest}" 
+                                                 value="Remove" process="@this" update="dlg" oncomplete="PF('dlg').show()" />
+                                
+                            </h:panelGrid>
+                            <p:dataTable id="tbl" value="#{itemController.machineTests}" var="t" selection="#{itemController.current}" 
+                                         selectionMode="single" rowKey="#{t.id}">
+                                <p:ajax event="rowSelect" process="@this" update=":#{p:resolveFirstComponentWithId('actions',view).clientId}" ></p:ajax>
+                                <p:ajax event="rowUnselect" process="@this" update=":#{p:resolveFirstComponentWithId('actions',view).clientId}" ></p:ajax>
+
+                                <p:column headerText="Code" filterBy="#{t.code}" sortBy="#{t.code}" >
+                                    <p:outputLabel value="#{t.code}" ></p:outputLabel>
+                                </p:column>
+                                <p:column headerText="Name" filterBy="#{t.name}" sortBy="#{t.name}" >
+                                    <p:outputLabel value="#{t.name}" ></p:outputLabel>
+                                </p:column>
+                                <p:column headerText="Description" filterBy="#{t.descreption}" sortBy="#{t.descreption}" >
+                                    <p:outputLabel value="#{t.descreption}" ></p:outputLabel>
+                                </p:column>
+                            </p:dataTable>
+                        </h:panelGrid>
+                    </p:panel>
+
+                </h:form>
+            </ui:define>
+
+         
+
+        </ui:composition>
+
+    </h:body>
+</html>
