@@ -27,15 +27,14 @@
                             <h:outputLabel class="mt-2" value="To Collect"/>
                         </f:facet>
 
-                        <h:panelGrid columns="2" class="w-100">
-                            <p:panelGrid columns="2" class="w-100">
+                        <h:panelGrid columns="2" class="w-100 p-2 m-2">
+                            <h:panelGrid columns="2" class="w-100 p-2 m-2 b-1">
                                 <h:outputLabel class="w-100 m-2" value="From Date"/>
                                 <p:calendar 
                                     id="fromDate" 
                                     value="#{patientInvestigationController.fromDate}" 
                                     navigator="true" 
                                     class="w-100 m-2"
-                                    inputStyleClass="form-control"
                                     pattern="dd MMMM yy - hh:mm a">
                                 </p:calendar>
                                 <h:outputLabel class="w-100 m-2" value="To Date"/>
@@ -44,12 +43,39 @@
                                     id="toDate" 
                                     value="#{patientInvestigationController.toDate}" 
                                     navigator="true" 
-                                    inputStyleClass="form-control"
                                     pattern="dd MMMM yy - hh:mm a">
                                 </p:calendar>
-                            </p:panelGrid>
+                                <h:outputLabel class="w-100 m-2" value="Ordered Institution"/>
+                                <p:autoComplete 
+                                    class="w-100 m-2"
+                                    id="acIns" 
+                                    value="#{patientInvestigationController.orderedInstitution}" 
+                                    completeMethod="#{institutionController.completeIns}"
+                                    var="i"
+                                    itemLabel="#{i.name}"
+                                    itemValue="#{i}"
+                                    >
+                                    <p:ajax event="itemSelect" process="acIns" update="cmdOd" ></p:ajax>
+                                </p:autoComplete>
+                                <h:outputLabel class="w-100 m-2" value="Ordered Institution"/>
+                                <h:panelGroup id="cmdOd" >
+                                    <p:selectOneMenu
+                                        rendered="#{patientInvestigationController.orderedInstitution ne null}"
+                                        filter="true"
+                                        filterMatchMode="contains"
+                                        value="#{patientInvestigationController.orderedDepartment}" >
+                                        <f:selectItems 
+                                            value="#{departmentController.getInstitutionDepatrments(patientInvestigationController.orderedInstitution)}"
+                                            var="d"
+                                            itemLabel="#{d.name}"
+                                            itemValue="#{d}"></f:selectItems>
+                                    </p:selectOneMenu>
+                                </h:panelGroup>
 
-                            <p:panelGrid columns="3" class="w-100">
+
+                            </h:panelGrid>
+
+                            <h:panelGrid columns="1" class="w-100 p-2 m-2 b-1">
                                 <p:commandButton 
                                     class="w-100 m-2" 
                                     id="btnListToGenera" 
@@ -74,7 +100,7 @@
                                     value="Generate Barcodes"
                                     icon="fa fa-barcode"> <!-- Example FontAwesome icon for barcode generation -->
                                 </p:commandButton>
-                            </p:panelGrid>
+                            </h:panelGrid>
 
 
                         </h:panelGrid>
@@ -204,7 +230,7 @@
                                                     </ui:repeat>
                                                 </div>
                                                 <div class="barcode-info">
-                                                    
+
                                                     <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Barcode in Sample Stickers')}">
                                                         <p:barcode value="#{psc.patientSample.idStr}" 
                                                                    type="#{configOptionApplicationController.getShortTextValueByKey('Sample Sticker - Barcode Type','code128')}" 

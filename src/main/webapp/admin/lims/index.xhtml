@@ -94,22 +94,31 @@
                                         value="Manage Investigations" 
                                         action="#{investigationCategoryController.navigateToInvestigations()}" />
                                     <p:commandButton   class="w-100"  ajax="false" value="Upload Investigations" action="#{investigationCategoryController.navigateToInvestigationFormat()}" />
-
-                                    <p:commandButton
-                                        class="w-100"
-                                        ajax="false" 
-                                        value="Analyzers"
-                                        action="/admin/lims/machine" />
-                                    <p:commandButton 
-                                        class="w-100" 
-                                        ajax="false" 
-                                        value="Analyzer Tests" 
-                                        action="/admin/lims/analyzer_test" />
                                     <p:commandButton 
                                         class="w-100" 
                                         ajax="false" 
                                         value="Sample Components" 
-                                        action="/admin/lims/sample_component" />
+                                        action="/admin/lims/sample_component?faces-redirect=true" />
+
+                                </div>
+                            </p:tab>
+                            <p:tab title="Manage Investigations">
+                                <div class="d-grid gap-2">
+                                    <p:commandButton
+                                        class="w-100"
+                                        ajax="false" 
+                                        value="Analyzers"
+                                        action="/admin/lims/machine?faces-redirect=true" />
+                                    <p:commandButton 
+                                        class="w-100" 
+                                        ajax="false" 
+                                        value="Analyzer Tests" 
+                                        action="/admin/lims/analyzer_test?faces-redirect=true" />
+                                    <p:commandButton 
+                                        class="w-100" 
+                                        ajax="false" 
+                                        value="Department Analyzers" 
+                                        action="/admin/lims/department_machine?faces-redirect=true" />
 
                                 </div>
                             </p:tab>
