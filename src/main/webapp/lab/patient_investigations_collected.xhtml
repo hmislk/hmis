@@ -126,7 +126,7 @@
                                 </p:autoComplete>
                             </p:column>
 
-                            <p:column headerText="Actions" styleClass="text-center">
+                            <p:column headerText="Actions*" styleClass="text-center">
                                 <!-- Collect Button with Tooltip and PrimeFaces & Bootstrap Classes -->
                                 <p:commandButton  
                                     disabled="#{smpIx.collected or smpIx.billItem.bill.cancelled eq true or smpIx.billItem.transRefund eq true}"   
@@ -151,6 +151,20 @@
                                     icon="fa fa-undo" 
                                     styleClass="ui-button-warning m-2"
                                     title="Revert"
+                                    >
+                                    <f:setPropertyActionListener value="#{smpIx}" target="#{patientInvestigationController.current}"></f:setPropertyActionListener>
+                                </p:commandButton>
+                                
+                                <!-- Revert Button with Tooltip and PrimeFaces & Bootstrap Classes -->
+                                <p:commandButton  
+                                    disabled="#{!smpIx.collected or smpIx.billItem.transRefund}"   
+                                    id="btnSampleSent" 
+                                    action="#{patientInvestigationController.revertMarkedSample()}" 
+                                    process="chkSampledOutside calSampledDate btnSampleRevert" 
+                                    update="@all"
+                                    icon="fa fa-undo" 
+                                    styleClass="ui-button-warning m-2"
+                                    title="Sent To Lab"
                                     >
                                     <f:setPropertyActionListener value="#{smpIx}" target="#{patientInvestigationController.current}"></f:setPropertyActionListener>
                                 </p:commandButton>
