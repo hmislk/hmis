@@ -228,7 +228,7 @@ public class ChannelReportTemplateController implements Serializable {
         return "/channel/reports/category_session_counts?faces-redirect=true;";
     }
 
-    //ToDo : Pubudu
+  
     public String navigateToOnlineBookings() {
         bundle = new ReportTemplateRowBundle();
         return "/channel/reports/category_session_counts?faces-redirect=true;";
@@ -612,19 +612,19 @@ public class ChannelReportTemplateController implements Serializable {
         Map m = new HashMap();
         rows = new ArrayList<>();
 
-        j = "select new com.divudi.data.ReportTemplateRow(pubudu) "
-                + " from SessionInstance pubudu "
-                + " where pubudu.retired=false "
-                + " and pubudu.sessionDate between :fd and :td ";
+        j = "select new com.divudi.data.ReportTemplateRow(si) "
+                + " from SessionInstance si "
+                + " where si.retired=false "
+                + " and si.sessionDate between :fd and :td ";
 
         if (institution != null) {
             m.put("ins", institution);
-            j += " and pubudu.institution=:ins ";
+            j += " and si.institution=:ins ";
         }
 
         if (category != null) {
             m.put("cat", category);
-            j += " and pubudu.originatingSession.category=:cat ";
+            j += " and si.originatingSession.category=:cat ";
         }
 
         m.put("fd", fromDate);
@@ -658,9 +658,7 @@ public class ChannelReportTemplateController implements Serializable {
             }
         }
 
-    }
-
-    //To Do - Pubudu
+ si
     public void fillOnlineBookings() {
         bundle = new ReportTemplateRowBundle();
         String j;
