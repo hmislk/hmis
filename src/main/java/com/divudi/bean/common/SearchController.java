@@ -52,9 +52,12 @@ import com.divudi.facade.StockFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.opd.OpdBillController;
 import com.divudi.bean.pharmacy.PharmacyBillSearch;
+import com.divudi.data.BillCategory;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillFinanceType;
 import com.divudi.data.BillTypeAtomic;
+import com.divudi.data.CountedServiceType;
+import com.divudi.data.ServiceType;
 import com.divudi.data.analytics.ReportTemplateType;
 import com.divudi.entity.Payment;
 import com.divudi.entity.WebUser;
@@ -547,6 +550,21 @@ public class SearchController implements Serializable {
         return "/analytics/opd_bill_list?faces-redirect=true";
     }
 
+    public String navigateToChannellingPaymentBillList() {
+        bills = null;
+        return "/analytics/channelling_payment_list?faces-redirect=true";
+    }
+
+    public String navigateToChannellingPaymentBillFeeList() {
+        bills = null;
+        return "/analytics/channelling_payment_fee_list?faces-redirect=true";
+    }
+
+    public String navigateToProfessionalPaymentBillList() {
+        bills = null;
+        return "/analytics/channelling_payment_list?faces-redirect=true";
+    }
+
     public String toSearchBills() {
         bills = null;
         return "/dataAdmin/search_bill?faces-redirect=true";
@@ -900,7 +918,6 @@ public class SearchController implements Serializable {
 
     }
 
-    
     public void fillToSelectedDepartmentPatientInvestigations() {
         Date startTime = new Date();
 
@@ -951,7 +968,6 @@ public class SearchController implements Serializable {
 
     }
 
-    
     public void createPreRefundTable() {
 
         bills = null;
@@ -6872,6 +6888,51 @@ public class SearchController implements Serializable {
 
     }
 
+    public void searchChannelProfessionalPaymentBills() {
+        Date startTime = new Date();
+        List<BillTypeAtomic> billTypesAtomics = new ArrayList<>();
+        billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE);
+        billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_FOR_AGENCIES);
+        billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_FOR_AGENCIES_RETURN);
+        billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_RETURN);
+        billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_SESSION);
+        createTableByKeyword(billTypesAtomics, institution, department, null, null, null, null);
+        checkLabReportsApproved(bills);
+
+    }
+
+    public void searchProfessionalPaymentBills() {
+        Date startTime = new Date();
+        List<BillTypeAtomic> billTypesAtomics = new ArrayList<>();
+        billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE);
+        billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_FOR_AGENCIES);
+        billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_FOR_AGENCIES_RETURN);
+        billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_RETURN);
+        billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_SESSION);
+        billTypesAtomics.add(BillTypeAtomic.OPD_PROFESSIONAL_PAYMENT_BILL);
+        billTypesAtomics.add(BillTypeAtomic.OPD_PROFESSIONAL_PAYMENT_BILL_RETURN);
+        billTypesAtomics.add(BillTypeAtomic.INWARD_SERVICE_PROFESSIONAL_PAYMENT_BILL);
+        billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE);
+        billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES);
+        billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE_RETURN);
+        billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES_RETURN);
+
+        createTableByKeyword(billTypesAtomics, institution, department, null, null, null, null);
+        checkLabReportsApproved(bills);
+    }
+
+    public void searchChannelProfessionalPaymentBillFees() {
+        Date startTime = new Date();
+        List<BillTypeAtomic> billTypesAtomics = new ArrayList<>();
+        billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE);
+        billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_FOR_AGENCIES);
+        billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_FOR_AGENCIES_RETURN);
+        billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_RETURN);
+        billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_SESSION);
+        createTableByKeyword(billTypesAtomics, institution, department, null, null, null, null);
+        checkLabReportsApproved(bills);
+    }
+
     public void listOpdBatcuBills() {
         Date startTime = new Date();
         createTableByKeyword(BillType.OpdBathcBill, institution, department);
@@ -8043,8 +8104,7 @@ public class SearchController implements Serializable {
             totalBillCount += bss.getBillCount();
         }
     }
-    
-    
+
     public void processAllFinancialTransactionalSummarybySingleUserByIdsAdmin() {
         if (startBillId == null && endBillId == null) {
             JsfUtil.addErrorMessage("Enter at leat on bill number");

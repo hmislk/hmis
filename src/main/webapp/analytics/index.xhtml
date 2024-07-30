@@ -115,6 +115,31 @@
 
                                         </div>
                                     </p:tab>
+
+
+                                    <p:tab title="Professional Payment Reports">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton
+                                                ajax="false" 
+                                                value="Channel Professional Payments By Doctor" 
+                                                action="#{searchController.navigateToChannellingPaymentBillList()}" 
+                                                styleClass="linkButton"></p:commandButton>
+                                            <p:commandButton
+                                                ajax="false" 
+                                                value="Channel Professional Payments By Patient" 
+                                                action="#{searchController.navigateToChannellingPaymentBillFeeList()}" 
+                                                styleClass="linkButton"></p:commandButton>
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                value="OPD Professional Payment" 
+                                                action="#{searchController.navigateToChannellingPaymentBillFeeList()}" 
+                                                
+                                                ></p:commandButton>
+                                            <p:commandButton ajax="false" value="Professional Payments" action="#" styleClass="linkButton"></p:commandButton>
+
+                                        </div>
+                                    </p:tab>
+
                                     <p:tab title="Lab Reports" disabled="true">
                                         <div class="d-grid gap-2">
                                             <p:commandButton ajax="false" value="Bill List" action="#"  styleClass="linkButton"></p:commandButton>
