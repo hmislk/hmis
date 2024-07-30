@@ -5,7 +5,7 @@
     <artifactId>ruhunu-demo</artifactId>
     <version>3.0.0</version>
     <packaging>war</packaging>
-    <name>ruhunu-demo</name>
+    <name>ruhunu-dev</name>
 
     <properties>
         <endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
