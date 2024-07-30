@@ -12,7 +12,7 @@
 
             <ui:define name="subContent">
                 <h:form>
-                    <p:panel header="Online Session Booking Counts" >
+                    <p:panel header="Online Session Bookings" >
                         <h:panelGrid columns="3" class="my-2" >
                             <h:outputLabel value="From " />
                             <h:outputLabel value=":" />
@@ -23,7 +23,7 @@
                                 showButtonBar="true"
                                 timeInput="true"
                                 value="#{channelReportTemplateController.fromDate}" 
-                                pattern="#{sessionController.applicationPreference.longDateFormat}" ></p:datePicker> 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></p:datePicker> 
                             <h:outputLabel value="To" />
                             <h:outputLabel value=":" />
                             <p:datePicker
@@ -33,7 +33,7 @@
                                 showButtonBar="true"
                                 timeInput="true"
                                 value="#{channelReportTemplateController.toDate}" 
-                                pattern="#{sessionController.applicationPreference.longDateFormat}" ></p:datePicker>
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></p:datePicker>
                             <h:outputLabel  value="Institution"  ></h:outputLabel>
                             <h:outputLabel value=":" />
                             <p:autoComplete  class="mx-4 w-100" inputStyleClass="w-100" value="#{channelReportTemplateController.institution}"
@@ -41,6 +41,7 @@
                                              var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" forceSelection="true" rendered="true" requiredMessage="You must select a department" >
                             </p:autoComplete>
 
+                            
                         </h:panelGrid>
                         <h:panelGrid columns="6" class="my-2">
                             <p:commandButton 
@@ -48,12 +49,12 @@
                                 icon="fas fa-cogs" 
                                 value="Process" 
                                 action="#{channelReportTemplateController.fillOnlineBookings()}" ajax="false" ></p:commandButton>
-                            <p:commandButton 
+                                <p:commandButton 
                                 class="ui-button-success mx-2"
                                 icon ="fas fa-file-excel"
                                 ajax="false"
                                 value="Excel">
-                                <p:dataExporter target="tbl1" fileName="Online_Sessions_Count_#{channelReportTemplateController.toDate}" type="xlsx" />
+                                <p:dataExporter target="tbl1" fileName="Category_Session_Count_#{channelReportTemplateController.toDate}" type="xlsx" />
                             </p:commandButton>
                         </h:panelGrid>
 
@@ -70,7 +71,7 @@
                             paginator="true"
                             rows="10">
                             <f:facet name="header">
-                                <p:outputLabel value="Channel Session Counts" />
+                                <p:outputLabel value="Online Session Bookings" />
                                 <p:outputLabel value="#{channelReportTemplateController.institution.name}" />
                                 <br></br>
                                 <p:outputLabel value="From :" />
@@ -93,7 +94,7 @@
                                 <f:facet name="header">
                                     <p:outputLabel value="Date" />
                                 </f:facet>
-                                <p:outputLabel value="#{a.billSession.sessionInstance.sessionDate}" >
+                                <p:outputLabel value="#{a.billSession.sessionDate}" >
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"  />
                                 </p:outputLabel>
                             </p:column>
@@ -101,61 +102,53 @@
                                 <f:facet name="header">
                                     <p:outputLabel value="Consultant" />
                                 </f:facet>
-                                <p:outputLabel value="#{a.billSession.sessionInstance.originatingSession.staff.person.nameWithTitle}" />
+                                <p:outputLabel value="#{a.billSession.bill.staff.person.nameWithTitle}" />
                             </p:column>
-                            <p:column width="6em">
+                            <p:column width="8em">
                                 <f:facet name="header">
                                     <p:outputLabel value="Speciality" />
                                 </f:facet>
-                                <p:outputLabel value="#{a.billSession.sessionInstance.originatingSession.staff.speciality.name}" />
+                                <p:outputLabel value="#{a.billSession.bill.staff.speciality.name}" />
                             </p:column>
                             <p:column width="6em">
                                 <f:facet name="header">
                                     <p:outputLabel value="Session" />
                                 </f:facet>
-                                <p:outputLabel value="#{a.billSession.sessionInstance.originatingSession.name}" />
+                                <p:outputLabel value="#{a.billSession.sessionInstance.name}" />
                             </p:column>
-                            <p:column width="8em" >
+                            <p:column>
                                 <f:facet name="header">
                                     <p:outputLabel value="Patient Name" />
                                 </f:facet>
                                 <p:outputLabel value="#{a.billSession.bill.patient.person.nameWithTitle}" />
-                                <f:facet name="footer" >
+<!--                                <f:facet name="footer" >
                                     <h:outputText value="#{channelReportTemplateController.bundle.long1}"></h:outputText>
-                                </f:facet>
+                                </f:facet>-->
                             </p:column>
                             <p:column width="4em">
                                 <f:facet name="header">
-                                    <p:outputLabel value="Paid" />
+                                    <p:outputLabel value="Amount" />
                                 </f:facet>
-                                <p:outputLabel value="#{a.billSession.bill.paid}" />
+                                <p:outputLabel value="#{a.billSession.bill.paidAmount}" />
                                 <f:facet name="footer" >
                                     <h:outputText value="#{channelReportTemplateController.bundle.long3}" ></h:outputText>
                                 </f:facet>
                             </p:column>
                             <p:column width="4em">
                                 <f:facet name="header">
-                                    <p:outputLabel value="Cancelled" />
+                                    <p:outputLabel value="Payment Type" />
                                 </f:facet>
-                                <p:outputLabel value="#{a.billSession.bill.cancelled}" />
+                                <p:outputLabel value="#{a.billSession.bill.paymentMethod}" />
                                 <f:facet name="footer" >
                                     <h:outputText value="#{channelReportTemplateController.bundle.long4}" ></h:outputText>
                                 </f:facet>
                             </p:column>
-                            <p:column width="4em">
-                                <f:facet name="header">
-                                    <p:outputLabel value="Refunded" />
-                                </f:facet>
-                                <p:outputLabel value="#{a.billSession.bill.refunded} "  />
-                                <f:facet name="footer" >
-                                    <h:outputText value="#{channelReportTemplateController.bundle.long5}"></h:outputText>
-                                </f:facet>
-                            </p:column>
-                            <p:column width="6em">
+                            
+                            <p:column>
                                 <f:facet name="header">
                                     <p:outputLabel value="Phone Number" />
                                 </f:facet>
-                                <p:outputLabel value="#{a.billSession.bill.patient.phoneNumberStringTransient}" />
+                                <p:outputLabel value="#{a.billSession.bill.patient.person.phone}" />
                                 <f:facet name="footer" >
                                     <h:outputText value="#{channelReportTemplateController.bundle.long6}"></h:outputText>
                                 </f:facet>
