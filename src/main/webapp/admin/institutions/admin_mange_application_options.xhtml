@@ -97,8 +97,9 @@
                             <!-- For LONG_TEXT -->
                             <p:inputTextarea 
                                 class="w-100" 
+                                rows="5"
                                 id="valueInputLongText" value="#{configOptionController.option.optionValue}"
-                                rendered="#{configOptionController.option.valueType eq 'LONG_TEXT'}" autoResize="true"/>
+                                rendered="#{configOptionController.option.valueType eq 'LONG_TEXT'}" autoResize="false"/>
 
                             <p:selectOneMenu 
                                 id="enumValueSelector"

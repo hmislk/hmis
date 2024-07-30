@@ -1689,7 +1689,7 @@ public class BillController implements Serializable {
         printPreview = false;
         return "/opd/batch_bill_cancel?faces-redirect=true;";
     }
-
+  
     public String cancelBatchBill() {
         if (getBatchBill() == null) {
             JsfUtil.addErrorMessage("No bill");
@@ -1708,8 +1708,20 @@ public class BillController implements Serializable {
             JsfUtil.addErrorMessage("You have no privilege to cancel OPD bills. Please contact System Administrator.");
             return "";
         }
-
+         
+        if(paymentMethod == PaymentMethod.PatientDeposit){
+            if(getBatchBill().getPatient().getHasAnAccount() == null){
+                JsfUtil.addErrorMessage("Create Patient Account First");
+                return "";
+            }
+            if(!getBatchBill().getPatient().getHasAnAccount()){
+                JsfUtil.addErrorMessage("Create Patient Account First");
+                return "";
+            }
+        }
+        
         Bill cancellationBatchBill = new CancelledBill();
+        cancellationBatchBill.copy(batchBill);
         cancellationBatchBill.setDepartment(sessionController.getDepartment());
         cancellationBatchBill.setInstitution(sessionController.getInstitution());
         cancellationBatchBill.setFromDepartment(batchBill.getFromDepartment());
@@ -1743,21 +1755,16 @@ public class BillController implements Serializable {
         for (Bill originalBill : bills) {
             cancelSingleBillWhenCancellingOpdBatchBill(originalBill, cancellationBatchBill);
         }
-
-        cancellationBatchBill.copy(batchBill);
+ 
         cancellationBatchBill.setBilledBill(batchBill);
         
-        if (batchBill.getPaymentMethod() == PaymentMethod.PatientDeposit) {
-            System.out.println("Before Balance = " + cancellationBatchBill.getPatient().getRunningBalance());
+        if (cancellationBatchBill.getPaymentMethod() == PaymentMethod.PatientDeposit) {
             if (cancellationBatchBill.getPatient().getRunningBalance() == null) {
-                System.out.println("Null");
                 cancellationBatchBill.getPatient().setRunningBalance(Math.abs(cancellationBatchBill.getNetTotal()));
             } else {
-                System.out.println("Not Null - Add BillValue");
                 cancellationBatchBill.getPatient().setRunningBalance(cancellationBatchBill.getPatient().getRunningBalance() + Math.abs(cancellationBatchBill.getNetTotal()));
             }
             patientFacade.edit(cancellationBatchBill.getPatient());
-            System.out.println("After Balance = " + cancellationBatchBill.getPatient().getRunningBalance());
         }
 
         createPaymentForOpdBatchBillCancellation(cancellationBatchBill, batchBill.getPaymentMethod());

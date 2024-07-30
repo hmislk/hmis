@@ -5,16 +5,12 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:ch="http://xmlns.jcp.org/jsf/composite/channel"
       xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
-      xmlns:au="http://xmlns.jcp.org/jsf/composite/autocomplete"
-      xmlns:pat="http://xmlns.jcp.org/jsf/composite/patient"
       xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
       xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp">
 
     <h:head>
         <title>Channel Booking By Date</title>
-
     </h:head>
 
     <h:body>
@@ -42,9 +38,21 @@
                                     <div class="d-flex align-items-center w-100">
                                         <div class="d-flex align-items-center ">
                                             <p:outputLabel value="From"></p:outputLabel>
-                                            <p:calendar id="fromDate" value="#{bookingControllerViewScope.fromDate}" size="10" class="mx-2"></p:calendar>
+                                            <p:calendar 
+                                                id="fromDate" 
+                                                        disabled="true" 
+                                                        value="#{bookingControllerViewScope.fromDate}" 
+                                                        size="10" 
+                                                        pattern="#{sessionController.applicationPreference.shortDateFormat}"
+                                                        class="mx-2"></p:calendar>
                                             <p:outputLabel value="To" ></p:outputLabel>
-                                            <p:calendar id="toDate" value="#{bookingControllerViewScope.toDate}" size="10"  class="mx-2"></p:calendar>
+                                            <p:calendar 
+                                                id="toDate" 
+                                                disabled="true" 
+                                                value="#{bookingControllerViewScope.toDate}" 
+                                                size="10"  
+                                                pattern="#{sessionController.applicationPreference.shortDateFormat}"
+                                                class="mx-2"></p:calendar>
                                         </div>
 
                                         <div class="d-flex align-items-center w-100">
@@ -56,11 +64,13 @@
                                         </div>
 
                                         <div class="d-flex align-items-center w-100">
+
                                             <p:commandButton value="Today" action="#{bookingControllerViewScope.addToDayToToDateNew()}" ajax="false" class="mx-1 ui-button-info"></p:commandButton>
                                             <p:commandButton value="+1" action="#{bookingControllerViewScope.addSingleDateToToDateNew()}" ajax="false" class="mx-1 ui-button-info"></p:commandButton>
                                             <p:commandButton value="+2" action="#{bookingControllerViewScope.addTwoDaysNew()}" ajax="false" class="mx-1 ui-button-info"></p:commandButton>
-                                            <p:commandButton value="+7" action="#{bookingControllerViewScope.addSevenDaysNew()}" ajax="false" class="mx-1 ui-button-info"></p:commandButton>
-                                            <p:commandButton value="+1 Month" action="#{bookingControllerViewScope.addMonthNew()}" ajax="false" class="mx-1 ui-button-info"></p:commandButton>
+                                            <p:commandButton value="+7" rendered="false" action="#{bookingControllerViewScope.addSevenDaysNew()}" ajax="false" class="mx-1 ui-button-info"></p:commandButton>
+                                            <p:commandButton value="+1 Month" rendered="false" action="#{bookingControllerViewScope.addMonthNew()}" ajax="false" class="mx-1 ui-button-info"></p:commandButton>
+
                                         </div>
                                     </div>
 
@@ -68,26 +78,17 @@
                                         <div class="d-flex align-items-center">
                                             <p:commandButton 
                                                 ajax="false" 
-                                                title="OPD Billing" 
+                                                title="OPD Billing"
                                                 icon="fa fa-fw fa-notes-medical" 
                                                 styleClass="ui-button-warning mx-1" 
                                                 action="#{opdBillController.navigateToNewOpdBill()}"
                                                 rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable Navigation Button To OPD Billing From Channel Booking By Date')}"/>
 
-
-                                            <!-- List All Session Data Button -->
-                                            <p:commandButton 
-                                                ajax="false" 
-                                                title="All" 
-                                                icon="fa fa-list" 
-                                                styleClass="ui-button-primary mx-1" 
-                                                action="#{bookingControllerViewScope.listAll}" />
-
                                             <!-- View Completed Session Data Button -->
                                             <p:commandButton 
                                                 ajax="false" 
                                                 title="Completed" 
-                                                icon="fa fa-check" 
+                                                icon="fa fa-check"
                                                 styleClass="ui-button-secondary mx-1" 
                                                 action="#{bookingControllerViewScope.listCompleted()}" />
 
@@ -111,12 +112,17 @@
                                             <p:commandButton 
                                                 ajax="false" 
                                                 title="Cancelled" 
-                                                icon="fa fa-times" 
+                                                icon="fa fa-times-circle" 
                                                 styleClass="ui-button-danger mx-1" 
                                                 action="#{bookingControllerViewScope.listCancelled()}" />
-
-
-
+                                            
+                                            <!-- List All Session Data Button -->
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                title="All" 
+                                                icon="fa fa-list" 
+                                                styleClass="ui-button-primary mx-1" 
+                                                action="#{bookingControllerViewScope.listAll}" />
 
                                         </div>
                                     </div>
@@ -167,7 +173,7 @@
                                                             <h:outputText class="mx-2" value="#{s.endingTime}">
                                                                 <f:convertDateTime pattern="hh:mm a"/>
                                                             </h:outputText>
-
+                                                            
                                                             <!-- Conditional message for delayed start time -->
                                                             <h:panelGroup rendered="#{s.startingTime gt s.originatingSession.startingTime}">
                                                                 <br/>
@@ -221,14 +227,14 @@
                                                                 <p:badge value="0" size="large" styleClass="mr-2" rendered="#{0 >= s.maxNo - s.bookedPatientCount}" severity="danger"></p:badge>
                                                             </h:panelGroup>
                                                             <h:panelGroup rendered="#{s.cancelPatientCount ne null}" >
-                                                                <p:badge value="#{s.maxNo - (s.bookedPatientCount - s.cancelPatientCount)}" size="large" styleClass="mr-2" rendered="#{s.maxNo - (s.bookedPatientCount - s.cancelPatientCount) > 3}"></p:badge>
-                                                                <p:badge value="#{s.maxNo - (s.bookedPatientCount - s.cancelPatientCount)}" size="large" styleClass="mr-2" rendered="#{3 >= (s.maxNo - (s.bookedPatientCount - s.cancelPatientCount)) and (s.maxNo - (s.bookedPatientCount - s.cancelPatientCount)) > 0}" severity="warning"></p:badge>
-                                                                <p:badge value="0" size="large" styleClass="mr-2" rendered="#{0 >= s.maxNo - (s.bookedPatientCount - s.cancelPatientCount)}" severity="danger"></p:badge>
+                                                                <p:badge value="#{s.maxNo - ((s.bookedPatientCount + bookingControllerViewScope.totalReservedNumberCount(s))- s.cancelPatientCount)}" size="large" styleClass="mr-2" rendered="#{s.maxNo - ((s.bookedPatientCount + bookingControllerViewScope.totalReservedNumberCount(s)) - s.cancelPatientCount) > 3}"></p:badge>
+                                                                <p:badge value="#{s.maxNo - ((s.bookedPatientCount + bookingControllerViewScope.totalReservedNumberCount(s)) - s.cancelPatientCount)}" size="large" styleClass="mr-2" rendered="#{3 >= (s.maxNo - ((s.bookedPatientCount + bookingControllerViewScope.totalReservedNumberCount(s)) - s.cancelPatientCount)) and (s.maxNo - ((s.bookedPatientCount + bookingControllerViewScope.totalReservedNumberCount(s)) - s.cancelPatientCount)) > 0}" severity="warning"></p:badge>
+                                                                <p:badge value="0" size="large" styleClass="mr-2" rendered="#{0 >= s.maxNo - ((s.bookedPatientCount + bookingControllerViewScope.totalReservedNumberCount(s)) - s.cancelPatientCount)}" severity="danger"></p:badge>
                                                             </h:panelGroup>                                  
                                                         </div>
                                                         <div class="text-center">
                                                             <h:outputLabel style="font-weight: bolder" value="N"/><br/>
-                                                            <p:badge value="#{s.bookedPatientCount + 1}" size="large" styleClass="mr-2"></p:badge>
+                                                            <p:badge value="#{((s.bookedPatientCount + bookingControllerViewScope.totalReservedNumberCount(s)) - s.reservedBookingCount) + 1}" size="large" styleClass="mr-2"></p:badge>
                                                         </div>
                                                     </div>
 
@@ -451,7 +457,7 @@
                                                         itemLabel="#{paysch.name}" 
                                                         itemValue="#{paysch}"  />
                                                     <p:ajax 
-                                                        process="@this"
+                                                        process="@this pay"
                                                         update="gdManageBookings :#{p:resolveFirstComponentWithId('totalsPanel',view).clientId} paymentDetails lstItems"
                                                         event="change"
                                                         listener="#{bookingControllerViewScope.calculateSelectedBillSessionTotal()}"/>
@@ -972,7 +978,7 @@
                                                 <ez:bms5x5ChannelBill bill="#{bookingControllerViewScope.printingBill}" payments="#{bookingControllerViewScope.payments}"/> 
                                             </h:panelGroup>
                                             <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'FiveFivePrintedPaper'}" >
-                                                <ez:bms5x5WIthoutHeaderChannelBill controller="#{bookingControllerViewScope}" bill="#{bookingControllerViewScope.printingBill}" paymentMethodData="#{bookingControllerViewScope.paymentMethodData}" payments="#{bookingControllerViewScope.payments}"/>
+                                                <ez:bms5x5WIthoutHeaderChannelBill bill="#{bookingControllerViewScope.printingBill}" paymentMethodData="#{bookingControllerViewScope.paymentMethodData}" payments="#{bookingControllerViewScope.payments}"/>
                                             </h:panelGroup>
                                         </ui:repeat>
                                     </h:panelGroup>

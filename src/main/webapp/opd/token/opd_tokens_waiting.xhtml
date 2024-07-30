@@ -177,27 +177,69 @@
                 </div>
             </div>
             <div class="container-fluid" style="margin-top: 160px">
-                
-                
-                <h1 class="text-white">dfsdfsd</h1>
-                
-                <ui:repeat var="tokenCounts" value="#{opdTokenController.tokenCounts}" >
-                    <h:outputLabel value="#{tokenCounts.department.name}" class="text-white"></h:outputLabel>
-                    <h:outputLabel value="#{tokenCounts.staff.person.nameWithTitle}" class="text-white"></h:outputLabel>
-                    <h:outputLabel value="#{tokenCounts.tokenCount}" class="text-white"></h:outputLabel>
-                    
-                    
-                    
-                </ui:repeat>
 
-           
+                <ui:repeat var="tokenCount" value="#{opdTokenController.tokenCounts}" >
+
+
+                    <div class="box my-2">
+                        <div class="row">
+                            <div class="col-4  d-flex justify-content-center align-items-center #{tokenCount.department.name == 'Dressing' ? 'department-a' : 
+                                                                                                  (tokenCount.department.name == 'Consultation' ? 'department-b' : 
+                                                                                                  (tokenCount.department.name == 'department-c' ? 'department-c' : 'department-d'))}">
+                                <div class="mx-2">
+                                    <div>
+                                        <p style="font-size: 38pt;font-weight: bolder">#{tokenCount.department.name}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-4 section2">
+                                <div class="row">
+                                    <div class="col-6">
+                                        <div >
+                                            <div class="token-circle element" style="background-color: #{tokenCount.department.name == 'Dressing' ? '#1abc9c' :
+                                                                                                         (tokenCount.department.name == 'Consultation' ? '#ff6b6b' :
+                                                                                                         (tokenCount.department.name == 'DepartmentC' ? '#9b59b6' :
+                                                                                                         '#f39c12'))}">
+                                                <h:outputText value="#{tokenCount.tokenCount}" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-6 align-items-center">
+                                        <div class="align-items-center">
+                                            <h:outputLabel class="mt-5" style="font-size: 1.5em;font-weight: bold; text-transform: uppercase" value="are in waiting queue" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                            <div class="col-4 section3 ">
+                                <div class="row">
+                                    <div class="col-6 d-flex justify-content-center align-items-center">
+                                        <div class="mt-2">
+                                            <img width="90px" src="https://i.pinimg.com/564x/a4/04/08/a4040890a14cf4de8ecea56265f66cf7.jpg"/>
+                                        </div>
+                                    </div>
+                                    <div class="col-6 d-flex justify-content-center align-items-center">
+                                        <div>
+                                            <div class="d-flex justify-content-center align-items-center">
+                                                <p style="font-size: 1.5em;font-weight: bold; text-transform: uppercase">#{tokenCount.staff.person.nameWithTitle}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+                            </div>
+                        </div>
+                    </div>
+                </ui:repeat>
             </div>
 
 
 
 
             <!-- Automatic Process Every 5 Seconds -->
-            <p:poll interval="5" listener="#{opdTokenController.fillOpdTokensCalled()}" update="@form" />
+            <p:poll interval="5" listener="#{opdTokenController.fillOpdWaitingTokensCounts()}" update="@form" />
         </h:form>
 
         <script>

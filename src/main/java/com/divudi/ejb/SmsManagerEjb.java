@@ -59,7 +59,7 @@ public class SmsManagerEjb {
     UserPreferenceFacade userPreferenceFacade;
     @EJB
     SmsFacade smsFacade;
-    @EJB
+    @EJB 
     private SessionInstanceFacade sessionInstanceFacade;
     @EJB
     private ChannelBean channelBean;
@@ -68,11 +68,14 @@ public class SmsManagerEjb {
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     private SessionController sessionController;
-
+    
     // Schedule sendSmsToDoctorsBeforeSession to run every 30 minutes
     @SuppressWarnings("unused")
     @Schedule(second = "0", minute = "*/30", hour = "*", persistent = false)
     public void sendSmsToDoctorsBeforeSessionTimer() {
+        if(configOptionApplicationController.getBooleanValueByKey("Send SMS for Doctor Reminder")){
+            //sendSmsToDoctorsBeforeSession();
+        }     
         if (configOptionApplicationController.getBooleanValueByKey("Send SMS for Doctor Reminder")) {
             if (configOptionApplicationController.getBooleanValueByKey("Check & Send SMS for Doctor Reminder")) {
                 sendSmsToDoctorsBeforeSessionWithChecks();
@@ -82,31 +85,30 @@ public class SmsManagerEjb {
         }
     }
 
-    @SuppressWarnings("unused")
-    @Schedule(second = "19", minute = "*/5", hour = "*", persistent = false)
+//    @SuppressWarnings("unused")
+//    @Schedule(second = "19", minute = "*/5", hour = "*", persistent = false)
+//    public void myTimer() {
+//        sendSmsAwaitingToSendInDatabase();
+//    }
 
-    public void myTimer() {
-        sendSmsAwaitingToSendInDatabase();
-    }
-
-    private void sendSmsAwaitingToSendInDatabase() {
-        String j = "Select e from Sms e where e.pending=true and e.retired=false and e.createdAt>:d";
-        Map m = new HashMap();
-        Calendar c = Calendar.getInstance();
-        c.set(Calendar.HOUR_OF_DAY, 0);
-        m.put("d", c.getTime());
-        List<Sms> smses = getSmsFacade().findByJpql(j, m, TemporalType.DATE);
-        for (Sms e : smses) {
-            e.setSentSuccessfully(Boolean.TRUE);
-            e.setPending(false);
-            getSmsFacade().edit(e);
-            Boolean sent = sendSms(e);
-            e.setSentAt(new Date());
-            e.setPending(false);
-            getSmsFacade().edit(e);
-        }
-    }
-
+//    private void sendSmsAwaitingToSendInDatabase() {
+//        String j = "Select e from Sms e where e.pending=true and e.retired=false and e.createdAt>:d";
+//        Map m = new HashMap();
+//        Calendar c = Calendar.getInstance();
+//        c.set(Calendar.HOUR_OF_DAY, 0);
+//        m.put("d", c.getTime());
+//        List<Sms> smses = getSmsFacade().findByJpql(j, m, TemporalType.DATE);
+//        for (Sms e : smses) {
+//            e.setSentSuccessfully(Boolean.TRUE);
+//            e.setPending(false);
+//            getSmsFacade().edit(e);
+//            Boolean sent = sendSms(e);
+//            e.setSentAt(new Date());
+//            e.setPending(false);
+//            getSmsFacade().edit(e);
+//        }
+//    }
+    
     private void sendSmsToDoctorsBeforeSessionWithChecks() {
         // Define fromDate as the start of today
         Date fromDate = CommonFunctions.getStartOfDay();
@@ -151,8 +153,8 @@ public class SmsManagerEjb {
     }
 
     public void sendSmsToDoctorsBeforeSession() {
-
-        // Define fromDate as the start of today
+        
+         // Define fromDate as the start of today
         Date fromDate = CommonFunctions.getStartOfDay();
 
         // Define toDate as the end of today
@@ -183,8 +185,8 @@ public class SmsManagerEjb {
                 .collect(Collectors.toList());
         // Iterate over the filtered sessions and send SMS to doctors
         for (SessionInstance s : upcomingSessions) {
-            if (s.getBookedPatientCount() != null) {
-                if (!s.isCancelled() && s.getBookedPatientCount() > 0) {
+            if(s.getBookedPatientCount() != null){
+                if(!s.isCancelled() && s.getBookedPatientCount() > 0){
                     sendSmsToDoctors(s);
                 }
             }
@@ -208,22 +210,22 @@ public class SmsManagerEjb {
 
     private void sendSmsToDoctors(SessionInstance session) {
         Sms e = new Sms();
-        e.setCreatedAt(new Date());
-        if (session.getStaff().getPerson().getMobile() == null || session.getStaff().getPerson().getMobile().isEmpty()) {
-            e.setReceipientNumber(session.getStaff().getPerson().getPhone());
-        } else {
-            e.setReceipientNumber(session.getStaff().getPerson().getMobile());
-        }
-        e.setSendingMessage(createDoctorRemiderSms(session));
-        e.setPending(false);
-        e.setSmsType(MessageType.ChannelDoctorReminder);
-        getSmsFacade().create(e);
-        Boolean sent = sendSms(e);
-        e.setSentSuccessfully(sent);
-        getSmsFacade().edit(e);
-
+            e.setCreatedAt(new Date());
+            if(session.getStaff().getPerson().getMobile() == null || session.getStaff().getPerson().getMobile().isEmpty()){
+               e.setReceipientNumber(session.getStaff().getPerson().getPhone());
+            }else{
+               e.setReceipientNumber(session.getStaff().getPerson().getMobile()); 
+            }
+            e.setSendingMessage(createDoctorRemiderSms(session));
+            e.setPending(false);
+            e.setSmsType(MessageType.ChannelDoctorReminder);
+            getSmsFacade().create(e);
+            Boolean sent = sendSms(e);
+            e.setSentSuccessfully(sent);
+            getSmsFacade().edit(e);
+        
     }
-
+    
     private boolean checkSmsToDoctors(SessionInstance session) {
         List<Sms> sentSmsList = new ArrayList<>();
         Sms ec = new Sms();
@@ -255,7 +257,7 @@ public class SmsManagerEjb {
         sentSmsList = smsFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
         return !sentSmsList.isEmpty();
     }
-
+    
     private String createDoctorRemiderSms(SessionInstance s) {
         String template = configOptionApplicationController.getLongTextValueByKey("Template for SMS sent on Doctor Reminder");
         if (template == null || template.isEmpty()) {
@@ -263,9 +265,9 @@ public class SmsManagerEjb {
         }
         return createSmsForCDoctorRemider(s, template);
     }
-
+    
     public String createSmsForCDoctorRemider(SessionInstance si, String template) {
-        if (si == null) {
+        if(si == null){
             return "";
         }
         String s;
@@ -274,7 +276,7 @@ public class SmsManagerEjb {
         String doc = si.getStaff().getPerson().getNameWithTitle();
         String booked = si.getBookedPatientCount().toString();
         String paid = si.getPaidPatientCount().toString();
-
+        
         String insName = si.getInstitution().getName();
 
         s = template.replace("{doctor}", doc)

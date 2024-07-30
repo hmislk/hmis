@@ -270,50 +270,75 @@ public class BookingController implements Serializable, ControllerWithPatient {
 
     public void filterSessionInstances() {
         sessionInstancesToday = getSessionInstances();
-        if (sessionInstanceFilter == null || sessionInstanceFilter.trim().isEmpty()) {
-            if (sessionInstances != null) {
-                sessionInstancesFiltered = new ArrayList<>(sessionInstances);
-            } else {
-                sessionInstancesFiltered = new ArrayList<>();
-                return;
-            }
-            return;
+
+        // Ensure sessionInstances is not null
+        if (sessionInstances == null) {
+            sessionInstances = new ArrayList<>();
         }
 
-        sessionInstancesFiltered = new ArrayList<>();
-        String[] filterKeywords = sessionInstanceFilter.trim().toLowerCase().split("\\s+");
+        if (sessionInstanceFilter == null || sessionInstanceFilter.trim().isEmpty()) {
+            // If filter is null or empty, load all session instances
+            sessionInstancesFiltered = new ArrayList<>(sessionInstances);
+        } else {
+            // Apply filter
+            sessionInstancesFiltered = new ArrayList<>();
+            String[] filterKeywords = sessionInstanceFilter.trim().toLowerCase().split("\\s+");
 
-        for (SessionInstance si : getSortedSessionInstances()) {
-            System.out.println("si = " + si);
-            String match1 = (si.getOriginatingSession() != null && si.getOriginatingSession().getName() != null)
-                    ? si.getOriginatingSession().getName().toLowerCase() : "";
-            String match2 = (si.getOriginatingSession() != null && si.getOriginatingSession().getStaff() != null
-                    && si.getOriginatingSession().getStaff().getPerson() != null
-                    && si.getOriginatingSession().getStaff().getPerson().getName() != null)
-                    ? si.getOriginatingSession().getStaff().getPerson().getName().toLowerCase() : "";
-            String match3 = (si.getOriginatingSession() != null && si.getOriginatingSession().getStaff() != null
-                    && si.getOriginatingSession().getStaff().getSpeciality() != null
-                    && si.getOriginatingSession().getStaff().getSpeciality().getName() != null)
-                    ? si.getOriginatingSession().getStaff().getSpeciality().getName().toLowerCase() : "";
+            for (SessionInstance si : getSortedSessionInstances()) {
+                String match1 = (si.getOriginatingSession() != null && si.getOriginatingSession().getName() != null)
+                        ? si.getOriginatingSession().getName().toLowerCase() : "";
+                String match2 = (si.getOriginatingSession() != null && si.getOriginatingSession().getStaff() != null
+                        && si.getOriginatingSession().getStaff().getPerson() != null
+                        && si.getOriginatingSession().getStaff().getPerson().getName() != null)
+                        ? si.getOriginatingSession().getStaff().getPerson().getName().toLowerCase() : "";
+                String match3 = (si.getOriginatingSession() != null && si.getOriginatingSession().getStaff() != null
+                        && si.getOriginatingSession().getStaff().getSpeciality() != null
+                        && si.getOriginatingSession().getStaff().getSpeciality().getName() != null)
+                        ? si.getOriginatingSession().getStaff().getSpeciality().getName().toLowerCase() : "";
 
-            boolean matchesAll = true;
-            for (String keyword : filterKeywords) {
-                if (!(match1.contains(keyword) || match2.contains(keyword) || match3.contains(keyword))) {
-                    matchesAll = false;
-                    break;
+                boolean matchesAll = true;
+                for (String keyword : filterKeywords) {
+                    if (!(match1.contains(keyword) || match2.contains(keyword) || match3.contains(keyword))) {
+                        matchesAll = false;
+                        break;
+                    }
+                }
+
+                if (matchesAll) {
+                    sessionInstancesFiltered.add(si);
                 }
             }
-
-            if (matchesAll) {
-                sessionInstancesFiltered.add(si);
-            }
         }
+
+        // Sort the filtered session instances
+        sessionInstancesFiltered.sort(new Comparator<SessionInstance>() {
+            @Override
+            public int compare(SessionInstance si1, SessionInstance si2) {
+                // Sort by status first
+                int statusComparison = getStatusOrder(si1).compareTo(getStatusOrder(si2));
+                if (statusComparison != 0) {
+                    return statusComparison;
+                }
+                // If status is the same, sort by starting time
+                return si1.getStartingTime().compareTo(si2.getStartingTime());
+            }
+
+            private Integer getStatusOrder(SessionInstance si) {
+                if (si.isCompleted() || si.isCancelled()) {
+                    return 3; // Completed and canceled sessions come last
+                } else if (si.isStarted()) {
+                    return 1; // Started sessions come first
+                } else {
+                    return 2; // All other sessions come in the middle
+                }
+            }
+        });
+
         sessionInstancesToday = sessionInstancesFiltered;
         if (!sessionInstancesFiltered.isEmpty()) {
-            selectedSessionInstance = selectedSessionInstance = sessionInstancesFiltered.get(0);
+            selectedSessionInstance = sessionInstancesFiltered.get(0);
             sessionInstanceSelected();
         }
-
     }
 
     public void sessionInstanceSelected() {
@@ -439,6 +464,10 @@ public class BookingController implements Serializable, ControllerWithPatient {
         return s;
     }
 
+    public void saveSelectedSessionInstance() {
+        sessionInstanceFacade.edit(selectedSessionInstance);
+    }
+
     private void createBillSessionForReschedule(BillSession bs, SessionInstance si) {
         BillSession newBillSession = new BillSession();
         if (bs == null) {
@@ -557,7 +586,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
             return;
         }
 
-        if(!selectedSessionInstance.isArrived()){
+        if (!selectedSessionInstance.isArrived()) {
             markAsArrived();
         }
         selectedSessionInstance.setStarted(true);
@@ -625,7 +654,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
         JsfUtil.addSuccessMessage("Session Completed");
         sendSmsOnChannelMissingChannelBookings();
     }
-    
+
     public void sendChannellingStatusUpdateNotificationSms(BillSession methodBillSession) {
         if (methodBillSession == null) {
             JsfUtil.addErrorMessage("Nothing to send");
@@ -671,7 +700,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
 
         JsfUtil.addSuccessMessage("SMS Sent");
     }
-    
+
     public String smsBody(BillSession r) {
         String securityKey = sessionController.getApplicationPreference().getEncrptionKey();
         if (securityKey == null || securityKey.trim().equals("")) {
@@ -840,7 +869,8 @@ public class BookingController implements Serializable, ControllerWithPatient {
 
     public String navigateToChannelQueueFromMenu() {
         sessionInstances = channelBean.listTodaysSesionInstances();
-        sessionInstancesToday=sessionInstances;
+        sessionInstancesToday = sessionInstances;
+        filterSessionInstances();
         return "/channel/channel_queue?faces-redirect=true";
     }
 
