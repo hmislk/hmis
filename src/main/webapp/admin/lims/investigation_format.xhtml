@@ -123,7 +123,7 @@
                                                     <p:outputLabel value="Analyzer" ></p:outputLabel>
                                                     <p:selectOneMenu value="#{investigationItemController.machine}" >
                                                         <f:selectItem itemLabel="Select" ></f:selectItem>
-                                                        <f:selectItems value="#{machineController.institutionMachines}" ></f:selectItems>
+                                                        <f:selectItems value="#{machineController.items}" ></f:selectItems>
                                                     </p:selectOneMenu>
 
 
@@ -545,7 +545,7 @@
                                                     <h:outputLabel value=" : " style="width: 30px; text-align: center"/>
                                                     <p:selectOneMenu value="#{investigationItemController.current.machine}" >
                                                         <f:selectItem itemLabel="Select" ></f:selectItem>
-                                                        <f:selectItems value="#{machineController.institutionMachines}" ></f:selectItems>
+                                                        <f:selectItems value="#{machineController.items}" ></f:selectItems>
                                                     </p:selectOneMenu>
 
                                                     <h:outputText value="Test"/>

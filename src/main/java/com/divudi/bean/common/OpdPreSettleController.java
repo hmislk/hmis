@@ -889,10 +889,10 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
             }
             return false;
         } else if (getPaymentMethod() == PaymentMethod.Slip) {
-            if (getPaymentMethodData().getSlip().getTotalValue()<=0.0) {
+            if (getPaymentMethodData().getSlip().getTotalValue() <= 0.0) {
                 JsfUtil.addErrorMessage("Add Slip Amount");
                 return true;
-            }else if (getPaymentMethodData().getSlip().getInstitution() == null) {
+            } else if (getPaymentMethodData().getSlip().getInstitution() == null) {
                 JsfUtil.addErrorMessage("Select Slip Bank");
                 return true;
             } else if (getPaymentMethodData().getSlip().getDate() == null) {
@@ -1179,7 +1179,7 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
         netTotal = 0;
         balance = 0;
     }
-    
+
     private void clearBillItem() {
         billItem = null;
         removingBillItem = null;
@@ -1702,12 +1702,27 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
         p.setCreatedAt(new Date());
         p.setCreater(getSessionController().getLoggedUser());
         p.setPaymentMethod(pm);
+        
+        System.out.println("pm = " + pm);
 
-        if (p.getId() == null) {
+        if (pm == PaymentMethod.PatientDeposit) {
+            System.out.println("Before Balance = " + bill.getPatient().getRunningBalance());
+            if (bill.getPatient().getRunningBalance() == null) {
+                System.out.println("Null");
+                bill.getPatient().setRunningBalance(Math.abs(bill.getNetTotal()));
+            } else {
+                System.out.println("Not Null - Add BillValue");
+                bill.getPatient().setRunningBalance(bill.getPatient().getRunningBalance() + Math.abs(bill.getNetTotal()));
+            }
+            patientFacade.edit(bill.getPatient());
+            System.out.println("After Balance = " + bill.getPatient().getRunningBalance());
+        }
+        System.out.println("001");  
+        if (p.getId() == null) { 
             getPaymentFacade().create(p);
         }
         getPaymentFacade().edit(p);
-
+        System.out.println("End Payment");  
         return p;
     }
 

@@ -723,8 +723,6 @@ public class ChannelReportTemplateController implements Serializable {
         }
 
     }
-
-
     public void fillDailyDoctorCounts() {
         bundle = new ReportTemplateRowBundle();
         String j;

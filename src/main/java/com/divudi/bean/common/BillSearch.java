@@ -2124,6 +2124,17 @@ public class BillSearch implements Serializable {
         if (errorsPresentOnOpdBillCancellation()) {
             return;
         }
+        
+        if(paymentMethod == PaymentMethod.PatientDeposit){
+            if(getBill().getPatient().getHasAnAccount() == null){
+                JsfUtil.addErrorMessage("Create Patient Account First");
+                return;
+            }
+            if(!getBill().getPatient().getHasAnAccount()){
+                JsfUtil.addErrorMessage("Create Patient Account First");
+                return;
+            }
+        }
 
         if (!getWebUserController().hasPrivilege("OpdCancel")) {
             JsfUtil.addErrorMessage("You have no privilege to cancel OPD bills. Please contact System Administrator.");
@@ -2132,7 +2143,6 @@ public class BillSearch implements Serializable {
 
         CancelledBill cancellationBill = createOpdCancelBill(bill);
         billController.save(cancellationBill);
-        System.out.println("cancellationBill.getDepartment().getName() = " + cancellationBill.getDepartment().getName());
         Payment p = getOpdPreSettleController().createPaymentForCancellationsforOPDBill(cancellationBill, paymentMethod);
         List<BillItem> list = cancelBillItems(getBill(), cancellationBill, p);
         cancellationBill.setBillItems(list);
