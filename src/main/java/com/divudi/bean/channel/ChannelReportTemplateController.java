@@ -672,23 +672,23 @@ public class ChannelReportTemplateController implements Serializable {
             BillSession bs = new BillSession();
             bs.getSessionInstance().getSessionDate();
             if(bs.getBill().getBillTypeAtomic()==BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT_ONLINE ){
-                
+                bs.getBill().getPatient().getPerson();
             }
         }
       
-        j = "select new com.divudi.data.ReportTemplateRow(pubudu) "
-                + " from SessionInstance pubudu "
-                + " where pubudu.retired=false "
-                + " and pubudu.sessionDate between :fd and :td ";
+        j = "select new com.divudi.data.ReportTemplateRow(bs) "
+                + " from BillSession bs "
+                + " where bs.retired=false "
+                + " and bs.sessionInstance.sessionDate between :fd and :td ";
 
         if (institution != null) {
             m.put("ins", institution);
-            j += " and pubudu.institution=:ins ";
+            j += " and bs.institution=:ins ";
         }
 
         if (category != null) {
             m.put("cat", category);
-            j += " and pubudu.originatingSession.category=:cat ";
+            j += " and bs.originatingSession.category=:cat ";
         }
 
         m.put("fd", fromDate);
