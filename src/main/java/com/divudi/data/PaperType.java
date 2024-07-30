@@ -5,6 +5,7 @@ public enum PaperType {
     PosPaper("POS Paper"),
     PosPrintedPaper("POS Paper without headings"),
     FiveFivePaper("5 inch to 5 inch Paper with headings"),
+    FiveFivePaperCoustom1("5 inch to 5 inch Paper with headings Coustom 1"),
     FiveFivePrintedPaper("5 inch to 5 inch Paper without headings"),
     A4Paper("A4 Paper"),
     A4PrintedPaper("A4 Paper without headings"),
