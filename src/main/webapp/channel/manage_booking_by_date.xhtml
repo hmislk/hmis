@@ -348,10 +348,12 @@
 
                                     </div>
                                     <div class="col-6">
+                                        
+                                        
                                         <p:panel class="m-1">
                                             <f:facet name="header" >
                                                 <h:outputText styleClass="fa fa-money-bill-wave" /> <!-- FontAwesome Icon -->
-                                                <h:outputText value="Payment Details" class="mx-4"></h:outputText>
+                                                <h:outputText value="Payment Details**" class="mx-4"></h:outputText>
                                             </f:facet>
                                             <div class="row my-1"  >
                                                 <div class="col-5" >
@@ -362,7 +364,7 @@
                                                         value="#{bookingControllerViewScope.settlePaymentMethod}"
                                                         >     
                                                         <f:selectItems 
-                                                            value="#{enumController.paymentMethodsForChanneling}"  
+                                                            value="#{enumController.paymentMethodsForChannelSettling}"  
                                                             var="pm"
                                                             itemLabel="#{pm.label}"
                                                             itemValue="#{pm}"/>
@@ -620,7 +622,7 @@
                                                 <p:row>
                                                     <p:column  colspan="2" >
                                                         <h:outputText styleClass="fa-solid fa-money-bill-wave"/>
-                                                        <h:outputText class="mx-4" value="Payment Details"/>
+                                                        <h:outputText class="mx-4" value="Payment Details*"/>
                                                     </p:column>
                                                 </p:row>
                                             </f:facet>
@@ -684,10 +686,10 @@
                                                         itemLabel="#{paysch.name}" 
                                                         itemValue="#{paysch}"  />
                                                     <p:ajax 
-                                                        process="@this"
+                                                        process="@this "
                                                         update="gdManageBookings :#{p:resolveFirstComponentWithId('totalsPanel',view).clientId} paymentDetails lstItems"
                                                         event="change"
-                                                        listener="#{bookingControllerViewScope.calculateSelectedBillSessionTotal()}"/>
+                                                        listener="#{bookingControllerViewScope.calculateSelectedBillSessionTotalForSettling()}"/>
                                                 </p:selectOneMenu>
                                             </h:panelGrid>
                                         </p:panel>

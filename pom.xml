@@ -326,7 +326,7 @@
                 <configuration>
                     <release>8</release> <!-- Compile with Java 8 compatibility -->
 
-                    <debug>true</debug>
+                    <debug>false</debug>
 
                 </configuration>
             </plugin>

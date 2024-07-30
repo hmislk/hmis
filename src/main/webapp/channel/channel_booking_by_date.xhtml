@@ -5,16 +5,12 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:ch="http://xmlns.jcp.org/jsf/composite/channel"
       xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
-      xmlns:au="http://xmlns.jcp.org/jsf/composite/autocomplete"
-      xmlns:pat="http://xmlns.jcp.org/jsf/composite/patient"
       xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
       xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp">
 
     <h:head>
         <title>Channel Booking By Date</title>
-
     </h:head>
 
     <h:body>
@@ -42,9 +38,21 @@
                                     <div class="d-flex align-items-center w-100">
                                         <div class="d-flex align-items-center ">
                                             <p:outputLabel value="From"></p:outputLabel>
-                                            <p:calendar id="fromDate" value="#{bookingControllerViewScope.fromDate}" size="10" class="mx-2"></p:calendar>
+                                            <p:calendar 
+                                                id="fromDate" 
+                                                        disabled="true" 
+                                                        value="#{bookingControllerViewScope.fromDate}" 
+                                                        size="10" 
+                                                        pattern="#{sessionController.applicationPreference.shortDateFormat}"
+                                                        class="mx-2"></p:calendar>
                                             <p:outputLabel value="To" ></p:outputLabel>
-                                            <p:calendar id="toDate" value="#{bookingControllerViewScope.toDate}" size="10"  class="mx-2"></p:calendar>
+                                            <p:calendar 
+                                                id="toDate" 
+                                                disabled="true" 
+                                                value="#{bookingControllerViewScope.toDate}" 
+                                                size="10"  
+                                                pattern="#{sessionController.applicationPreference.shortDateFormat}"
+                                                class="mx-2"></p:calendar>
                                         </div>
 
                                         <div class="d-flex align-items-center w-100">
@@ -60,8 +68,8 @@
                                             <p:commandButton value="Today" action="#{bookingControllerViewScope.addToDayToToDateNew()}" ajax="false" class="mx-1 ui-button-info"></p:commandButton>
                                             <p:commandButton value="+1" action="#{bookingControllerViewScope.addSingleDateToToDateNew()}" ajax="false" class="mx-1 ui-button-info"></p:commandButton>
                                             <p:commandButton value="+2" action="#{bookingControllerViewScope.addTwoDaysNew()}" ajax="false" class="mx-1 ui-button-info"></p:commandButton>
-                                            <p:commandButton value="+7" action="#{bookingControllerViewScope.addSevenDaysNew()}" ajax="false" class="mx-1 ui-button-info"></p:commandButton>
-                                            <p:commandButton value="+1 Month" action="#{bookingControllerViewScope.addMonthNew()}" ajax="false" class="mx-1 ui-button-info"></p:commandButton>
+                                            <p:commandButton value="+7" rendered="false" action="#{bookingControllerViewScope.addSevenDaysNew()}" ajax="false" class="mx-1 ui-button-info"></p:commandButton>
+                                            <p:commandButton value="+1 Month" rendered="false" action="#{bookingControllerViewScope.addMonthNew()}" ajax="false" class="mx-1 ui-button-info"></p:commandButton>
 
                                         </div>
                                     </div>
@@ -449,7 +457,7 @@
                                                         itemLabel="#{paysch.name}" 
                                                         itemValue="#{paysch}"  />
                                                     <p:ajax 
-                                                        process="@this"
+                                                        process="@this pay"
                                                         update="gdManageBookings :#{p:resolveFirstComponentWithId('totalsPanel',view).clientId} paymentDetails lstItems"
                                                         event="change"
                                                         listener="#{bookingControllerViewScope.calculateSelectedBillSessionTotal()}"/>
