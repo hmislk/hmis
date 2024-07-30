@@ -763,7 +763,7 @@ public class BookingControllerViewScopeMonth implements Serializable {
         viewScopeDataTransferController.setNeedToFillMembershipDetails(false);
         viewScopeDataTransferController.setNeedToPrepareForNewBooking(false);
 
-        return "/channel/session_instance?faces-redirect=true";
+        return "/channel/session_instance_by_month?faces-redirect=true";
     }
 
     public String navigateToManageSessionInstanceFromProfPay(SessionInstance sessionInstance) {
@@ -1165,8 +1165,8 @@ public class BookingControllerViewScopeMonth implements Serializable {
             params.put("keyword", "%" + sessionInstanceFilter.trim().toLowerCase() + "%");
         }
 
-        // Adding sorting to JPQL
-        jpql.append(" order by i.sessionDate, i.originatingSession.name");
+         // Adding sorting to JPQL with custom order
+        jpql.append(" order by case when i.completed = true then 1 else 0 end, i.completed asc, i.started desc, i.sessionDate asc, i.startingTime asc");
 
         Long numberOfSessionToLoad = configOptionApplicationController.getLongValueByKey("Maximum Number of Sessions to Load during channel booking by dates page.", 30L);
 
@@ -2716,6 +2716,26 @@ public class BookingControllerViewScopeMonth implements Serializable {
             JsfUtil.addErrorMessage("Please enter a name");
             return true;
         }
+        
+        if(p.getPerson().getDob() == null){
+            JsfUtil.addErrorMessage("Please enter patient age");
+            return true;
+        }
+        
+        if (p.getPerson().getPhone() == null || p.getPerson().getPhone().trim().equals("")) {
+            JsfUtil.addErrorMessage("Please enter a phone number");
+            return true;
+        }
+        
+        if (p.getPerson().getMobile() == null || p.getPerson().getMobile().trim().equals("")) {
+            JsfUtil.addErrorMessage("Please enter a mobile number");
+            return true;
+        }
+        
+        if (p.getPerson().getArea()== null) {
+            JsfUtil.addErrorMessage("Please enter a area");
+            return true;
+        }
 
         return false;
     }
@@ -2903,7 +2923,12 @@ public class BookingControllerViewScopeMonth implements Serializable {
                 long totalPatientCount;
 
                 List<Integer> reservedNumbers = CommonFunctions.convertStringToIntegerList(selectedSessionInstance.getReserveNumbers());
-                bookedPatientCount = bookedPatientCount + reservedNumbers.size();
+                
+                if(reservedBooking){
+                     bookedPatientCount = bookedPatientCount;
+                }else{
+                    bookedPatientCount = bookedPatientCount + reservedNumbers.size();
+                } 
 
                 if (selectedSessionInstance.getCancelPatientCount() != null) {
                     long canceledPatientCount = selectedSessionInstance.getCancelPatientCount();
@@ -4357,7 +4382,9 @@ public class BookingControllerViewScopeMonth implements Serializable {
             BillType.ChannelCash,
             BillType.ChannelOnCall,
             BillType.ChannelStaff,
-            BillType.ChannelCredit
+            BillType.ChannelCredit,
+            BillType.ChannelResheduleWithPayment,
+            BillType.ChannelResheduleWithOutPayment
         };
         List<BillType> bts = Arrays.asList(billTypes);
         String sql = "Select bs "
@@ -4380,6 +4407,7 @@ public class BookingControllerViewScopeMonth implements Serializable {
         long cancelPatientCount = 0;
         long refundedPatientCount = 0;
         long onCallPatientCount = 0;
+        long reservedBookingCount = 0;
 
         if (billSessions == null) {
             selectedSessionInstance.setBookedPatientCount(0l);
@@ -4394,6 +4422,16 @@ public class BookingControllerViewScopeMonth implements Serializable {
         for (BillSession bs : billSessions) {
             if (bs != null) {
                 bookedPatientCount++; // Always increment if bs is not null
+
+                // Additional check for reserved status
+                try {
+                    if (bs.isReservedBooking()) {
+                        reservedBookingCount++;
+                    }
+                } catch (NullPointerException npe) {
+                    // Log or handle the fact that there was an NPE checking completion status
+
+                }
 
                 // Additional check for completion status
                 try {
@@ -4453,6 +4491,7 @@ public class BookingControllerViewScopeMonth implements Serializable {
         selectedSessionInstance.setCancelPatientCount(cancelPatientCount);
         selectedSessionInstance.setRefundedPatientCount(refundedPatientCount);
         selectedSessionInstance.setOnCallPatientCount(onCallPatientCount);
+        selectedSessionInstance.setReservedBookingCount(reservedBookingCount);
 
         // Assuming remainingPatientCount is calculated as booked - completed
         selectedSessionInstance.setRemainingPatientCount(bookedPatientCount - completedPatientCount);
@@ -4466,7 +4505,9 @@ public class BookingControllerViewScopeMonth implements Serializable {
             BillType.ChannelCash,
             BillType.ChannelOnCall,
             BillType.ChannelStaff,
-            BillType.ChannelCredit
+            BillType.ChannelCredit,
+            BillType.ChannelResheduleWithPayment,
+            BillType.ChannelResheduleWithOutPayment
         };
         List<BillType> bts = Arrays.asList(billTypes);
         String sql = "Select bs "
@@ -4489,6 +4530,7 @@ public class BookingControllerViewScopeMonth implements Serializable {
         long cancelPatientCount = 0;
         long refundedPatientCount = 0;
         long onCallPatientCount = 0;
+        long reservedBookingCount = 0;
 
         if (tempBillSessions == null) {
             s.setBookedPatientCount(0l);
@@ -4503,6 +4545,16 @@ public class BookingControllerViewScopeMonth implements Serializable {
         for (BillSession bs : tempBillSessions) {
             if (bs != null) {
                 bookedPatientCount++; // Always increment if bs is not null
+
+                // Additional check for reserved status
+                try {
+                    if (bs.isReservedBooking()) {
+                        reservedBookingCount++;
+                    }
+                } catch (NullPointerException npe) {
+                    // Log or handle the fact that there was an NPE checking completion status
+
+                }
 
                 // Additional check for completion status
                 try {
@@ -4562,101 +4614,11 @@ public class BookingControllerViewScopeMonth implements Serializable {
         s.setCancelPatientCount(cancelPatientCount);
         s.setRefundedPatientCount(refundedPatientCount);
         s.setOnCallPatientCount(onCallPatientCount);
+        s.setReservedBookingCount(reservedBookingCount);
 
         // Assuming remainingPatientCount is calculated as booked - completed
         s.setRemainingPatientCount(bookedPatientCount - completedPatientCount);
         sessionInstanceController.save(s);
-    }
-
-    private boolean errorCheckForAddingNewBooking() {
-        if (getSelectedSessionInstance() == null) {
-            errorText = "Please Select Specility and Doctor.";
-            JsfUtil.addErrorMessage("Please Select Specility and Doctor.");
-            return true;
-        }
-
-        if (getSelectedSessionInstance().isDeactivated()) {
-            errorText = "******** Doctor Leave day Can't Channel ********";
-            JsfUtil.addErrorMessage("Doctor Leave day Can't Channel.");
-            return true;
-        }
-
-        if (getSelectedSessionInstance().getOriginatingSession() == null) {
-            errorText = "Please Select Session.";
-            JsfUtil.addErrorMessage("Please Select Session");
-            return true;
-        }
-
-        if (getPatient().getPerson().getName() == null || getPatient().getPerson().getName().trim().equals("")) {
-            errorText = "Can not bill without Patient.";
-            JsfUtil.addErrorMessage("Can't Settle Without Patient.");
-            return true;
-        }
-        if ((getPatient().getPerson().getPhone() == null || getPatient().getPerson().getPhone().trim().equals("")) && !getSessionController().getInstitutionPreference().isChannelSettleWithoutPatientPhoneNumber()) {
-            errorText = "Can not bill without Patient Contact Number.";
-            JsfUtil.addErrorMessage("Can't Settle Without Patient Contact Number.");
-            return true;
-        }
-
-        if (paymentMethod == null) {
-            errorText = "Please select Paymentmethod";
-            JsfUtil.addErrorMessage("Please select Paymentmethod");
-            return true;
-        }
-
-        if (paymentMethod == PaymentMethod.Agent) {
-            if (institution == null) {
-                errorText = "Please select Agency";
-                JsfUtil.addErrorMessage("Please select Agency");
-                return true;
-            }
-
-            if (institution.getBallance() - getSelectedSessionInstance().getOriginatingSession().getTotal() < 0 - institution.getAllowedCredit()) {
-                errorText = "Agency Balance is Not Enough";
-                JsfUtil.addErrorMessage("Agency Balance is Not Enough");
-                return true;
-            }
-            if (agentReferenceBookController.checkAgentReferenceNumber(getAgentRefNo()) && !getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber()) {
-                errorText = "Invaild Reference Number.";
-                JsfUtil.addErrorMessage("Invaild Reference Number.");
-                return true;
-            }
-            if (agentReferenceBookController.checkAgentReferenceNumberAlredyExsist(getAgentRefNo(), institution, BillType.ChannelAgent, PaymentMethod.Agent) && !getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber()) {
-                errorText = "This Reference Number( " + getAgentRefNo() + " ) is alredy Given.";
-                JsfUtil.addErrorMessage("This Reference Number is alredy Given.");
-                setAgentRefNo("");
-                return true;
-            }
-            if (agentReferenceBookController.checkAgentReferenceNumber(institution, getAgentRefNo()) && !getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber()) {
-                errorText = "This Reference Number is Blocked Or This channel Book is Not Issued.";
-                JsfUtil.addErrorMessage("This Reference Number is Blocked Or This channel Book is Not Issued.");
-                return true;
-            }
-        }
-        if (paymentMethod == PaymentMethod.Staff) {
-            if (toStaff == null) {
-                errorText = "Please Select Staff.";
-                JsfUtil.addErrorMessage("Please Select Staff.");
-                return true;
-            }
-        }
-        ////System.out.println("getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber() = " + getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber());
-        if (institution != null) {
-            if (getAgentRefNo().trim().isEmpty() && !getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber()) {
-                errorText = "Please Enter Agent Ref No";
-                JsfUtil.addErrorMessage("Please Enter Agent Ref No.");
-                return true;
-            }
-        }
-        ////System.out.println("getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber() = " + getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber());
-        if (getSelectedSessionInstance().getOriginatingSession().getMaxNo() != 0.0 && getSelectedSessionInstance().getTransDisplayCountWithoutCancelRefund() >= getSelectedSessionInstance().getOriginatingSession().getMaxNo()) {
-            errorText = "No Space to Book.";
-            JsfUtil.addErrorMessage("No Space to Book");
-            return true;
-        }
-
-        ////System.out.println("getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber() = " + getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber());
-        return false;
     }
 
     public void fillAbsentBillSessions(SelectEvent event) {
@@ -4830,11 +4792,13 @@ public class BookingControllerViewScopeMonth implements Serializable {
         if (collectingCentre != null) {
             savingBill.setCollectingCentre(collectingCentre);
         }
-        if (savingBill.getPaidAmount() == 0.0) {
+         if (savingBill.getPaidAmount() == 0.0) {
             if (!(savingBill.getPaymentMethod() == PaymentMethod.OnCall)) {
                 savingBill.setPaidAmount(feeNetTotalForSelectedBill);
             } else {
-                savingBill.setNetTotal(feeNetTotalForSelectedBill);
+                if(feeNetTotalForSelectedBill != null){
+                    savingBill.setNetTotal(feeNetTotalForSelectedBill);
+                } 
             }
         }
 
@@ -5687,6 +5651,7 @@ public class BookingControllerViewScopeMonth implements Serializable {
         BillSession bs = new BillSession();
         bs.setAbsent(false);
         bs.setBill(bill);
+        bs.setReservedBooking(forReservedNumbers);
         bs.setBillItem(billItem);
         bs.setCreatedAt(new Date());
         bs.setCreater(getSessionController().getLoggedUser());
