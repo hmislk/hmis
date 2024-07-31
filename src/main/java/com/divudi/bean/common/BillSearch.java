@@ -4,6 +4,7 @@
  */
 package com.divudi.bean.common;
 
+import com.divudi.bean.channel.ChannelSearchController;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.collectingCentre.CollectingCentreBillController;
 import com.divudi.bean.lab.PatientInvestigationController;
@@ -169,6 +170,8 @@ public class BillSearch implements Serializable {
 
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    ChannelSearchController channelSearchController;
     /**
      * Class Variables
      */
@@ -2124,13 +2127,13 @@ public class BillSearch implements Serializable {
         if (errorsPresentOnOpdBillCancellation()) {
             return;
         }
-        
-        if(paymentMethod == PaymentMethod.PatientDeposit){
-            if(getBill().getPatient().getHasAnAccount() == null){
+
+        if (paymentMethod == PaymentMethod.PatientDeposit) {
+            if (getBill().getPatient().getHasAnAccount() == null) {
                 JsfUtil.addErrorMessage("Create Patient Account First");
                 return;
             }
-            if(!getBill().getPatient().getHasAnAccount()){
+            if (!getBill().getPatient().getHasAnAccount()) {
                 JsfUtil.addErrorMessage("Create Patient Account First");
                 return;
             }
@@ -2740,7 +2743,7 @@ public class BillSearch implements Serializable {
             return "";
         }
         //System.out.println("bill = " + bill.getIdStr());
-        
+
         if (configOptionApplicationController.getBooleanValueByKey("Set the Original Bill PaymentMethod to Cancelation Bill")) {
             paymentMethod = bill.getPaymentMethod();
         } else {
@@ -2833,7 +2836,21 @@ public class BillSearch implements Serializable {
         return "/opd/bill_reprint?faces-redirect=true;";
     }
 
+    public String navigateToViewChannelingProfessionalPaymentBill() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("Nothing to cancel");
+            return "";
+        }
+        channelSearchController.setBill(bill);
+        channelSearchController.setPrintPreview(true);
+        return "/channel/channel_payment_bill_reprint.xhtml?faces-redirect=true;";
+    }
+
     public String navigateViewBillByBillTypeAtomic() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No Bill is Selected");
+            return null;
+        }
         BillTypeAtomic billTypeAtomic = bill.getBillTypeAtomic();
         switch (billTypeAtomic) {
             case PHARMACY_RETAIL_SALE_CANCELLED:
@@ -2865,8 +2882,13 @@ public class BillSearch implements Serializable {
 
             case CHANNEL_REFUND:
                 return "";
-
             case CHANNEL_PAYMENT_FOR_BOOKING_BILL:
+            case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE:
+            case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_FOR_AGENCIES:
+            case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_FOR_AGENCIES_RETURN:
+            case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_RETURN:
+            case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_SESSION:
+                return navigateToViewChannelingProfessionalPaymentBill();
 
         }
 
@@ -2903,10 +2925,10 @@ public class BillSearch implements Serializable {
             JsfUtil.addErrorMessage("Nothing to cancel");
             return "";
         }
-        
-        if(configOptionApplicationController.getBooleanValueByKey("Set the Original Bill PaymentMethod to Refunded Bill")){
+
+        if (configOptionApplicationController.getBooleanValueByKey("Set the Original Bill PaymentMethod to Refunded Bill")) {
             paymentMethod = getBill().getPaymentMethod();
-        }else{
+        } else {
             paymentMethod = PaymentMethod.Cash;
         }
         //System.out.println("Refund"+ paymentMethod);
