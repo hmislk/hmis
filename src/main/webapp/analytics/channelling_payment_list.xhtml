@@ -72,15 +72,13 @@
 
 
                             <p:column headerText="ID" width="3em" style="text-align: right;" sortBy="#{bill.id}" filterBy="#{bill.id}">
-                                <p:outputLabel value="#{bill.id}" />
-
-                                <p:commandButton 
+                                <p:commandLink 
                                     value="#{bill.id}" 
                                     ajax="false"
                                     action="#{billSearch.navigateViewBillByBillTypeAtomic()}"
                                     >
                                     <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}" ></f:setPropertyActionListener>
-                                </p:commandButton>
+                                </p:commandLink>
 
                             </p:column>
 
