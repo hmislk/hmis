@@ -308,7 +308,7 @@
                                             </p:column>
                                             <p:column headerText="Qty" style="width: 11%">
                                                 <p:inputText autocomplete="off" id="ipTblQty" value="#{bi.qty}" style="width:96%">
-                                                    <f:convertNumber integerOnly="true"/>
+                                                    <f:convertNumber integerOnly="true" />
                                                     <p:ajax event="keyup" process="@this" update="gros :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}" listener="#{pharmacySaleController.quantityInTableChangeEvent(bi)}"/>
                                                 </p:inputText>
                                             </p:column>
