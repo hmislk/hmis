@@ -878,6 +878,16 @@ public class WebUserController implements Serializable {
         getUserDepartmentController().setItems(getUserDepartmentController().fillWebUserDepartments(selected));
         return "/admin/users/user_department?faces-redirect=true";
     }
+    
+    public String navigateToManageRoutes() {
+        if (selected == null) {
+            JsfUtil.addErrorMessage("Please select a user");
+            return "";
+        }
+        getUserDepartmentController().setSelectedUser(selected);
+        getUserDepartmentController().setItems(getUserDepartmentController().fillWebUserDepartments(selected));
+        return "/admin/users/user_department?faces-redirect=true";
+    }
 
     public String toManageDashboards() {
         if (selected == null) {
