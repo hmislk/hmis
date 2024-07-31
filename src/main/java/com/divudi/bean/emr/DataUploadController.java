@@ -84,6 +84,7 @@ import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.SymanticType;
 import com.divudi.entity.Doctor;
 import com.divudi.entity.inward.InwardService;
+import com.divudi.facade.FeeFacade;
 import com.divudi.java.CommonFunctions;
 import com.mysql.cj.jdbc.interceptors.SessionAssociationInterceptor;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -218,6 +219,7 @@ public class DataUploadController implements Serializable {
     private StreamedContent templateForCreditCompanyUpload;
 
     List<Item> itemsToSave;
+    List<Item> itemsSaved;
     List<Item> itemsSkipped;
     List<Item> masterItemsToSave;
     List<ItemFee> itemFeesToSave;
@@ -1338,22 +1340,22 @@ public class DataUploadController implements Serializable {
         Iterator<Row> rowIterator = sheet.rowIterator();
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             
         itemsToSave = new ArrayList<>();
-//        masterItemsToSave = new ArrayList<>();
+//      masterItemsToSave = new ArrayList<>();
         itemFeesToSave = new ArrayList<>();
         categoriesSaved = new ArrayList<>();
         institutionsSaved = new ArrayList<>();
         departmentsSaved = new ArrayList<>();
         itemsSkipped = new ArrayList<>();
+        itemsSaved= new ArrayList<>();
+        
 
         Item item;
-        // New running financial category
-
-        // Assuming the first row contains headers, skip it
         if (rowIterator.hasNext()) {
             rowIterator.next();
         }
 
         while (rowIterator.hasNext()) {
+            
             Institution runningIns = null;
             Department runningDept = null;
             Category runningCategory = null;
@@ -1385,23 +1387,21 @@ public class DataUploadController implements Serializable {
             String feeName = "Doctor Fee";
             Double doctorFee = 0.0;
             
-            Cell staffCell = row.getCell(6);
+            Cell staffCell = row.getCell(2);
             if (staffCell != null && staffCell.getCellType() == CellType.STRING) {
                 staffName = staffCell.getStringCellValue();
             }
             if (staffName != null) {
-                staff = staffController.findAndSaveStaffByName(staffName);
-                staffToSave.add(staff);
+                staff = staffController.findStaffByName(name);
             } 
-            
-            Cell insCell = row.getCell(6);
+            System.out.println("staffName = " + staffName);
+            Cell insCell = row.getCell(4);
             if (insCell != null && insCell.getCellType() == CellType.STRING) {
                 institutionName = insCell.getStringCellValue();
             }
             if (institutionName == null || institutionName.trim().equals("")) {
                 institutionName = sessionController.getInstitution().getName();
             }
-
             if (runningIns == null) {
                 institution = institutionController.findAndSaveInstitutionByName(institutionName);
                 institutionsSaved.add(institution);
@@ -1413,9 +1413,9 @@ public class DataUploadController implements Serializable {
                 institutionsSaved.add(institution);
                 runningIns = institution;
             }
-            
+            System.out.println("institutionName = " + institutionName);
 
-            Cell deptCell = row.getCell(7);
+            Cell deptCell = row.getCell(5);
             if (deptCell != null && deptCell.getCellType() == CellType.STRING) {
                 departmentName = deptCell.getStringCellValue();
             }
@@ -1433,8 +1433,20 @@ public class DataUploadController implements Serializable {
                 runningDept = department;
                 departmentsSaved.add(department);
             }
-
-            Cell nameCell = row.getCell(0);
+            System.out.println("departmentName = " + departmentName);
+            
+            Cell codeCell = row.getCell(0);
+            if (codeCell != null && codeCell.getCellType() == CellType.STRING) {
+                code = codeCell.getStringCellValue();
+            } else if (codeCell != null && codeCell.getCellType() == CellType.NUMERIC) {
+                code = codeCell.getNumericCellValue() + "";
+            }
+            if (code == null || code.trim().equals("")) {
+                code = serviceController.generateShortCode(name);
+            }
+            
+            
+            Cell nameCell = row.getCell(1);
             if (nameCell != null && nameCell.getCellType() == CellType.STRING) {
                 name = nameCell.getStringCellValue();
                 if (name == null || name.trim().equals("")) {
@@ -1443,66 +1455,16 @@ public class DataUploadController implements Serializable {
             }
             comments = name;
             name = CommonFunctions.sanitizeStringForDatabase(name);
-            item = itemController.findItemByName(name, code, department);
-            if (item != null) {
-                itemsSkipped.add(item);
-                continue;
-            }
-
-            // Handle financial category
-            Cell financialCategoryCell = row.getCell(5);
-            if (financialCategoryCell != null && financialCategoryCell.getCellType() == CellType.STRING) {
-                financialCategoryName = financialCategoryCell.getStringCellValue();
-            }
-            if (financialCategoryName == null || financialCategoryName.trim().equals("")) {
-                financialCategoryName = "Default Financial Category"; // Default value if needed
-            }
-
-            if (runningFinancialCategory == null) {
-                financialCategory = categoryController.findCategoryByName(financialCategoryName);
-                if (financialCategory == null) {
-                    financialCategory = new Category();
-                    financialCategory.setName(financialCategoryName);
-                    categoryFacade.create(financialCategory);
-                    categoriesSaved.add(financialCategory);
-                }
-                runningFinancialCategory = financialCategory;
-            } else if (runningFinancialCategory.getName() == null) {
-                financialCategory = runningFinancialCategory;
-            } else if (runningFinancialCategory.getName().equals(financialCategoryName)) {
-                financialCategory = runningFinancialCategory;
-            } else {
-                financialCategory = categoryController.findCategoryByName(financialCategoryName);
-                if (financialCategory == null) {
-                    financialCategory = new Category();
-                    financialCategory.setName(financialCategoryName);
-                    categoryFacade.create(financialCategory);
-                    categoriesSaved.add(financialCategory);
-                }
-                runningFinancialCategory = financialCategory;
-            }
-
-            Cell inwardCcCell = row.getCell(8);
-            if (inwardCcCell != null && inwardCcCell.getCellType() == CellType.STRING) {
-                inwardName = inwardCcCell.getStringCellValue();
-            }
-            if (inwardName != null && !inwardName.trim().equals("")) {
-                iwct = enumController.getInaChargeType(inwardName);
-            }
-            if (iwct == null) {
-                iwct = InwardChargeType.OtherCharges;
-            }
-
-            Cell feeNameCell = row.getCell(10);
+            item = itemController.findItemByNameAndCode(name, code);
+                     
+            
+            Cell feeNameCell = row.getCell(5);
             if (feeNameCell != null && feeNameCell.getCellType() == CellType.STRING) {
                 feeName = feeNameCell.getStringCellValue();
             }
-
-            if (item == null) {
-                continue;
-            }
-
-            Cell doctorFeeTypeCell = row.getCell(11);
+            System.out.println("feeName = " + feeName);
+                        
+            Cell doctorFeeTypeCell = row.getCell(4);
             if (doctorFeeTypeCell != null) {
                 if (doctorFeeTypeCell.getCellType() == CellType.NUMERIC) {
                     // If it's a numeric value
@@ -1535,28 +1497,27 @@ public class DataUploadController implements Serializable {
                 itf.setItem(item);
                 itf.setInstitution(institution);
                 itf.setDepartment(department);
-                itf.setFeeType(FeeType.OwnInstitution);
+                itf.setFeeType(FeeType.Staff);
                 itf.setFee(doctorFee);
                 itf.setFfee(doctorFee);
                 itf.setSpeciality(staff.getSpeciality());
                 itf.setStaff(staff);
                 itf.setCreatedAt(new Date());
                 itf.setCreater(sessionController.getLoggedUser());
-                // itemFeeFacade.create(itf);
-                itemFeesToSave.add(itf);
+                itemFeeFacade.create(itf);
+                
             }
 
             item.setTotal(doctorFee);
             item.setTotalForForeigner((doctorFee) * 2);
             item.setDblValue(doctorFee);
-            itemsToSave.add(item);
+            itemController.saveSelected(item);
+            System.out.println("item = 2 " + item);
+            if (item!=null) {
+                itemsSaved.add(item);
+            }
         }
-
-//        itemFacade.batchCreate(masterItemsToSave, 5000);
-        itemFacade.batchCreate(itemsToSave, 5000);
-        itemFeeFacade.batchCreate(itemFeesToSave, 10000);
-
-        return itemsToSave;
+        return itemsSaved;
     }
 
     private List<ClinicalEntity> readSurgeriesFromExcel(InputStream inputStream) throws IOException {
@@ -1698,7 +1659,7 @@ public class DataUploadController implements Serializable {
         item = cli;
         itemController.saveSelected(item);
         if (item != null) {
-            itemsToSave.add(item);
+            surgeriesToSave.add(item);
         }
     }
     return surgeriesToSave;
