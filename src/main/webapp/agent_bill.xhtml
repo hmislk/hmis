@@ -65,7 +65,7 @@
 
                 <f:facet name="header">
                     <div class="d-flex justify-content-between">
-                        <h:outputLabel value="Doctor/Staff Payment Voucher" class="mt-2"/>
+                        <h:outputLabel value="Agent Payment Voucher" class="mt-2"/>
                         <div class="d-flex gap-2">
                             <p:commandButton 
                                 class="ui-button-success" 
@@ -99,10 +99,7 @@
                 </div>
 
                 <h:panelGroup id="gpBillPreview" class="d-flex justify-content-center">
-                    <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaperCoustom1'}" >
-                        <bi:OPD_Doc_Payment_5x5 bill="#{agentPaymentRecieveBillController.current}" controller="#{staffPaymentBillController}"/>
-                    </h:panelGroup>
-                    <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaper'}">
+                    <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaperCoustom1'}">
                         <bi:Agent_Payment_5x5_1 controller="#{agentPaymentRecieveBillController}"  bill="#{agentPaymentRecieveBillController.current}" duplicate="false"/>    
                     </h:panelGroup>
                 </h:panelGroup>
