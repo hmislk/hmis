@@ -10,6 +10,7 @@ package com.divudi.bean.hr;
 
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.FormItemValue;
+import com.divudi.bean.common.PersonController;
 import com.divudi.bean.common.SessionController;
 
 import com.divudi.data.InvestigationItemType;
@@ -43,6 +44,7 @@ import com.divudi.facade.StaffEmploymentFacade;
 import com.divudi.facade.StaffFacade;
 import com.divudi.facade.StaffSalaryFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.Title;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.Serializable;
@@ -87,6 +89,17 @@ public class StaffController implements Serializable {
     StaffSalaryController staffSalaryController;
     @Inject
     CommonController commonController;
+    @Inject
+    PersonController personController;
+    
+    
+    
+    
+    
+    
+    
+    
+    
     ////
     @EJB
     private StaffEmploymentFacade staffEmploymentFacade;
@@ -117,6 +130,7 @@ public class StaffController implements Serializable {
     List<Staff> itemsToRemove;
     Date tempRetireDate = null;
     boolean removeResign = false;
+    
 
     public void removeSelectedItems() {
         for (Staff s : itemsToRemove) {
@@ -277,7 +291,7 @@ public class StaffController implements Serializable {
         staffWithCode = getEjbFacade().findByJpql(sql, hm);
 
     }
-    
+
     public Staff getstaffByName(String name) {
         String jpql = "select s "
                 + " from Staff s "
@@ -288,7 +302,7 @@ public class StaffController implements Serializable {
         m.put("name", name);
         return getFacade().findFirstByJpql(jpql, m);
     }
-    
+
     public void save(Staff stf) {
         if (stf == null) {
             return;
@@ -1421,9 +1435,10 @@ public class StaffController implements Serializable {
         m.put("name", name);
         return getFacade().findFirstByJpql(jpql, m);
     }
-    
+
     public Staff findAndSaveStaffByName(String name) {
         Staff s;
+        Person p;
         String jpql = "select c "
                 + " from Staff c "
                 + " where c.retired=:ret "
@@ -1431,10 +1446,20 @@ public class StaffController implements Serializable {
         Map m = new HashMap();
         m.put("ret", false);
         m.put("name", name);
-        s= getFacade().findFirstByJpql(jpql, m);
+        s = getFacade().findFirstByJpql(jpql, m);
+
         if (s == null) {
+            p = new Person();
+            p.setTitle(Title.Dr);
+            p.setName(name);
+            p.setCreatedAt(new Date());
+            p.setCreater(getSessionController().getLoggedUser());
+            System.out.println("p = " + p);
+            personController.save(p);
             s = new Staff();
-            s.getPerson().setName(name);
+            s.setPerson(p);
+            s.setCreatedAt(new Date());
+            s.setCreater(getSessionController().getLoggedUser());
             getFacade().create(s);
         } else {
             s.setRetired(false);
