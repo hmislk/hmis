@@ -7452,7 +7452,6 @@ public class SearchController implements Serializable {
             Institution toIns,
             Department toDep) {
 
-        List<BillFee> billFees = null;
         String sql;
         Map temMap = new HashMap();
 
