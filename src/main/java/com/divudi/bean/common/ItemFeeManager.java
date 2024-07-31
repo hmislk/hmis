@@ -348,7 +348,6 @@ public class ItemFeeManager implements Serializable {
         } else {
             jpql += " and f.forCategory is null";
         }
-
         return itemFeeFacade.findByJpql(jpql, m);
     }
 
