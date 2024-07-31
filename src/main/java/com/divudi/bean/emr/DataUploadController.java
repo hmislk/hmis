@@ -1442,7 +1442,7 @@ public class DataUploadController implements Serializable {
             }
             
             name = CommonFunctions.sanitizeStringForDatabase(name);
-            item = itemController.findItemByNameAndCode(name, code);
+            item = itemController.findItemByCode(code);
 
             Cell feeNameCell = row.getCell(5);
             if (feeNameCell != null && feeNameCell.getCellType() == CellType.STRING) {
