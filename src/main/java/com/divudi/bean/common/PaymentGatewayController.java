@@ -6,7 +6,6 @@ import com.divudi.bean.common.CommonController;
 import com.divudi.data.channel.PatientPortalController;
 import com.divudi.entity.PaymentGatewayTransaction;
 import com.divudi.facade.PaymentGatewayTransactionFacade;
-import com.divudi.bean.common.ConfigOptionApplicationController;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.URLDecoder;
@@ -44,9 +43,10 @@ public class PaymentGatewayController implements Serializable {
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
 
-    private String merchantId;
-    private String apiUsername; 
-    private String apiPassword; 
+
+    private String merchantId ; // Actual Merchant ID
+    private String apiUsername; // Actual API Username
+    private String apiPassword; // Actual API Password
     private String paymentStatus;
     private String sessionId;
     private String paymentUrl;

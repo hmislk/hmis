@@ -8,13 +8,13 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <h:body>
+       
+            <ui:composition template="./index.xhtml">
 
-        <ui:composition template="./index.xhtml">
+                <ui:define name="subcontent">
+                     <h:form>
 
-            <ui:define name="subcontent">
-
-                <h:form>
-
+                    
                     <p:panel >
                         <f:facet name="header">
                             <i class="fa fa-money-bill-wave mt-2"/>
@@ -109,7 +109,7 @@
                                                 value="#{financialTransactionController.currentPayment.paidValue}" >
                                             </p:inputText>
                                         </h:panelGroup>
-
+                                        
                                         <h:panelGroup
                                             class="row my-1"
                                             layout="block" 
@@ -199,10 +199,11 @@
 
                         </p:panel>
                     </p:panel>
-
-                </h:form>
-            </ui:define>
-        </ui:composition>
-
+                     
+                     </h:form>
+                         
+                </ui:define>
+            </ui:composition>
+        
     </h:body>
 </html>

@@ -46,18 +46,28 @@ public class PatientSample implements Serializable {
     private WebUser creater;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date createdAt;
+    //Barcode Generation
+    private Boolean barcodeGenerated;
+    @ManyToOne
+    private WebUser barcodeGenerator;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date barcodeGeneratedAt;
+    @ManyToOne
+    private Department barcodeGeneratedDepartment;
+    @ManyToOne
+    private Institution barcodeGeneratedInstitution;
     //Sample Collection
-    private Boolean collected;
+    private Boolean sampleCollected;
     @ManyToOne
     private WebUser sampleCollecter;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-    private Date sampledAt;
-    private Boolean sampleOutside;
-    private String sampleComments;
+    private Date sampleCollectedAt;
+    private Boolean sampleCollectedOutside;
+    private String sampleCollectionComments;
     @ManyToOne
-    private Department sampleDepartment;
+    private Department sampleCollectedDepartment;
     @ManyToOne
-    private Institution sampleInstitution;
+    private Institution sampleCollectedInstitution;
     //Sent To Analyzer
     private Boolean readyTosentToAnalyzer;
     @Enumerated(EnumType.STRING)
@@ -105,10 +115,23 @@ public class PatientSample implements Serializable {
     private Machine machine;
     @ManyToOne
     private Sample sample;
-    
-    
-    
-    
+
+    private Boolean sampleReceivedAtLab;
+
+    @ManyToOne
+    private WebUser sampleReceiverAtLab;
+
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date sampleReceivedAtLabDate;
+
+    private String sampleReceivedAtLabComments;
+
+    @ManyToOne
+    private Department sampleReceivedAtLabDepartment;
+
+    @ManyToOne
+    private Institution sampleReceivedAtLabInstitution;
+
     //Cancellation
     private Boolean cancelled = false;
     @ManyToOne
@@ -137,11 +160,9 @@ public class PatientSample implements Serializable {
     }
 
     public String getIdStr() {
-        String formatted = String.format("%08d", id);
+        String formatted = id + "";
         return formatted;
     }
-    
-    
 
     @Override
     public int hashCode() {
@@ -224,12 +245,12 @@ public class PatientSample implements Serializable {
         this.sample = sample;
     }
 
-    public Boolean getCollected() {
-        return collected;
+    public Boolean getSampleCollected() {
+        return sampleCollected;
     }
 
-    public void setCollected(Boolean collected) {
-        this.collected = collected;
+    public void setSampleCollected(Boolean sampleCollected) {
+        this.sampleCollected = sampleCollected;
     }
 
     public WebUser getSampleCollecter() {
@@ -240,44 +261,44 @@ public class PatientSample implements Serializable {
         this.sampleCollecter = sampleCollecter;
     }
 
-    public Date getSampledAt() {
-        return sampledAt;
+    public Date getSampleCollectedAt() {
+        return sampleCollectedAt;
     }
 
-    public void setSampledAt(Date sampledAt) {
-        this.sampledAt = sampledAt;
+    public void setSampleCollectedAt(Date sampleCollectedAt) {
+        this.sampleCollectedAt = sampleCollectedAt;
     }
 
-    public Boolean getSampleOutside() {
-        return sampleOutside;
+    public Boolean getSampleCollectedOutside() {
+        return sampleCollectedOutside;
     }
 
-    public void setSampleOutside(Boolean sampleOutside) {
-        this.sampleOutside = sampleOutside;
+    public void setSampleCollectedOutside(Boolean sampleCollectedOutside) {
+        this.sampleCollectedOutside = sampleCollectedOutside;
     }
 
-    public String getSampleComments() {
-        return sampleComments;
+    public String getSampleCollectionComments() {
+        return sampleCollectionComments;
     }
 
-    public void setSampleComments(String sampleComments) {
-        this.sampleComments = sampleComments;
+    public void setSampleCollectionComments(String sampleCollectionComments) {
+        this.sampleCollectionComments = sampleCollectionComments;
     }
 
-    public Department getSampleDepartment() {
-        return sampleDepartment;
+    public Department getSampleCollectedDepartment() {
+        return sampleCollectedDepartment;
     }
 
-    public void setSampleDepartment(Department sampleDepartment) {
-        this.sampleDepartment = sampleDepartment;
+    public void setSampleCollectedDepartment(Department sampleCollectedDepartment) {
+        this.sampleCollectedDepartment = sampleCollectedDepartment;
     }
 
-    public Institution getSampleInstitution() {
-        return sampleInstitution;
+    public Institution getSampleCollectedInstitution() {
+        return sampleCollectedInstitution;
     }
 
-    public void setSampleInstitution(Institution sampleInstitution) {
-        this.sampleInstitution = sampleInstitution;
+    public void setSampleCollectedInstitution(Institution sampleCollectedInstitution) {
+        this.sampleCollectedInstitution = sampleCollectedInstitution;
     }
 
     public Boolean getCancelled() {
@@ -528,6 +549,92 @@ public class PatientSample implements Serializable {
         this.divertedTo = divertedTo;
     }
 
-    
-    
+    public Boolean getBarcodeGenerated() {
+        return barcodeGenerated;
+    }
+
+    public void setBarcodeGenerated(Boolean barcodeGenerated) {
+        this.barcodeGenerated = barcodeGenerated;
+    }
+
+    public WebUser getBarcodeGenerator() {
+        return barcodeGenerator;
+    }
+
+    public void setBarcodeGenerator(WebUser barcodeGenerator) {
+        this.barcodeGenerator = barcodeGenerator;
+    }
+
+    public Department getBarcodeGeneratedDepartment() {
+        return barcodeGeneratedDepartment;
+    }
+
+    public void setBarcodeGeneratedDepartment(Department barcodeGeneratedDepartment) {
+        this.barcodeGeneratedDepartment = barcodeGeneratedDepartment;
+    }
+
+    public Institution getBarcodeGeneratedInstitution() {
+        return barcodeGeneratedInstitution;
+    }
+
+    public void setBarcodeGeneratedInstitution(Institution barcodeGeneratedInstitution) {
+        this.barcodeGeneratedInstitution = barcodeGeneratedInstitution;
+    }
+
+    public Date getBarcodeGeneratedAt() {
+        return barcodeGeneratedAt;
+    }
+
+    public void setBarcodeGeneratedAt(Date barcodeGeneratedAt) {
+        this.barcodeGeneratedAt = barcodeGeneratedAt;
+    }
+
+    public Boolean getSampleReceivedAtLab() {
+        return sampleReceivedAtLab;
+    }
+
+    public void setSampleReceivedAtLab(Boolean sampleReceivedAtLab) {
+        this.sampleReceivedAtLab = sampleReceivedAtLab;
+    }
+
+    public WebUser getSampleReceiverAtLab() {
+        return sampleReceiverAtLab;
+    }
+
+    public void setSampleReceiverAtLab(WebUser sampleReceiverAtLab) {
+        this.sampleReceiverAtLab = sampleReceiverAtLab;
+    }
+
+    public Date getSampleReceivedAtLabDate() {
+        return sampleReceivedAtLabDate;
+    }
+
+    public void setSampleReceivedAtLabDate(Date sampleReceivedAtLabDate) {
+        this.sampleReceivedAtLabDate = sampleReceivedAtLabDate;
+    }
+
+    public String getSampleReceivedAtLabComments() {
+        return sampleReceivedAtLabComments;
+    }
+
+    public void setSampleReceivedAtLabComments(String sampleReceivedAtLabComments) {
+        this.sampleReceivedAtLabComments = sampleReceivedAtLabComments;
+    }
+
+    public Department getSampleReceivedAtLabDepartment() {
+        return sampleReceivedAtLabDepartment;
+    }
+
+    public void setSampleReceivedAtLabDepartment(Department sampleReceivedAtLabDepartment) {
+        this.sampleReceivedAtLabDepartment = sampleReceivedAtLabDepartment;
+    }
+
+    public Institution getSampleReceivedAtLabInstitution() {
+        return sampleReceivedAtLabInstitution;
+    }
+
+    public void setSampleReceivedAtLabInstitution(Institution sampleReceivedAtLabInstitution) {
+        this.sampleReceivedAtLabInstitution = sampleReceivedAtLabInstitution;
+    }
+
 }

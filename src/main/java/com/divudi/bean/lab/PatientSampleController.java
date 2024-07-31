@@ -15,10 +15,12 @@ import com.divudi.entity.Category;
 import com.divudi.entity.lab.Sample;
 import com.divudi.facade.SampleFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.lab.PatientSampleWrapper;
 import com.divudi.entity.lab.PatientSample;
 import com.divudi.facade.PatientSampleFacade;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -32,6 +34,7 @@ import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
+import kotlin.collections.ArrayDeque;
 
 /**
  *
@@ -70,6 +73,11 @@ public class PatientSampleController implements Serializable {
         items = null;
     }
 
+    public String navigateToPrintBarcodes(PatientSample pts){
+        items = new ArrayList<>();
+        return "/lab/patient_sample_print?faces-rediret=true;";
+    }
+    
     public void saveSelected() {
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
