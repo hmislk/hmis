@@ -1436,38 +1436,6 @@ public class StaffController implements Serializable {
         return getFacade().findFirstByJpql(jpql, m);
     }
 
-    public Staff findAndSaveStaffByName(String name) {
-        Staff s;
-        Person p;
-        String jpql = "select c "
-                + " from Staff c "
-                + " where c.retired=:ret "
-                + " and c.person.name=:name";
-        Map m = new HashMap();
-        m.put("ret", false);
-        m.put("name", name);
-        s = getFacade().findFirstByJpql(jpql, m);
-
-        if (s == null) {
-            p = new Person();
-            p.setTitle(Title.Dr);
-            p.setName(name);
-            p.setCreatedAt(new Date());
-            p.setCreater(getSessionController().getLoggedUser());
-            System.out.println("p = " + p);
-            personController.save(p);
-            s = new Staff();
-            s.setPerson(p);
-            s.setCreatedAt(new Date());
-            s.setCreater(getSessionController().getLoggedUser());
-            getFacade().create(s);
-        } else {
-            s.setRetired(false);
-            getFacade().edit(s);
-        }
-        return s;
-    }
-
     public PersonFacade getPersonFacade() {
         return personFacade;
     }

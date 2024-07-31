@@ -18,7 +18,7 @@
         <div class="container-fluid" >
             <div class="card" >
                 <div class="card-header" >
-                    <h2>Upload OPD Items</h2>
+                    <h2>Staff Fee Upload</h2>
                 </div>
                 <div class="card-body" >
                     <h:form enctype="multipart/form-data">
@@ -46,54 +46,14 @@
                         </thead>
                         <tbody>
                             <tr>
-                                <td>A</td>
-                                <td>Name</td>
-                                <td>Name. Required</td>
-                            </tr>
-                            <tr>
-                                <td>B</td>
-                                <td>Printing Name</td>
-                                <td>Printing Name name. Optional.</td>
-                            </tr>
-                            <tr>
-                                <td>C</td>
-                                <td>Full Name</td>
-                                <td>Full Name Optional</td>
-                            </tr>
-                            <tr>
                                 <td>D</td>
                                 <td>Item Code</td>
                                 <td>Item Code Optional</td>
                             </tr>
-<!--                            <tr>
-                                <td>E</td>
-                                <td>Category</td>
-                                <td>Category name. Required.</td>
-                            </tr>
                             <tr>
-                                <td>F</td>
-                                <td>Financial Category</td>
-                                <td>Financial Category name. Optional.</td>
-                            </tr>-->
-                            <tr>
-                                <td>G</td>
-                                <td>Institution</td>
-                                <td>Institution. Optional. If left blank, logged institution is used.</td>
-                            </tr>
-                            <tr>
-                                <td>H</td>
-                                <td>Department</td>
-                                <td>Department. Optional. If left blank, logged department is used.</td>
-                            </tr>
-<!--                            <tr>
-                                <td>I</td>
-                                <td>Inward Charge Category</td>
-                                <td>Inward Charge Category. Optional.</td>
-                            </tr>-->
-                            <tr>
-                                <td>J</td>
-                                <td>Item Type</td>
-                                <td>Optional. Default is Investigation. Other options include Service, InwardService, Surgery.</td>
+                                <td>A</td>
+                                <td>Name</td>
+                                <td>Name. Required</td>
                             </tr>
                             <tr>
                                 <td>K</td>
@@ -109,6 +69,16 @@
                                 <td>M</td>
                                 <td>Staff Fee</td>
                                 <td>Optional. Created for Logged Department and Institution</td>
+                            </tr>
+                            <tr>
+                                <td>G</td>
+                                <td>Institution</td>
+                                <td>Institution. Optional. If left blank, logged institution is used.</td>
+                            </tr>
+                            <tr>
+                                <td>H</td>
+                                <td>Department</td>
+                                <td>Department. Optional. If left blank, logged department is used.</td>
                             </tr>
                         </tbody>
 
@@ -131,7 +101,7 @@
                         #{item.department.name}
                     </p:column>
                     <p:column >
-                        
+
                         #{item.total}
                     </p:column>
 
