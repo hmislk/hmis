@@ -228,10 +228,9 @@ public class ChannelReportTemplateController implements Serializable {
         return "/channel/reports/category_session_counts?faces-redirect=true;";
     }
 
-    //ToDo : Pubudu
     public String navigateToOnlineBookings() {
         bundle = new ReportTemplateRowBundle();
-        return "/channel/reports/category_session_counts?faces-redirect=true;";
+        return "/channel/reports/online_session_booking_count?faces-redirect=true;";
     }
 
     public void clearWithDefultValue() {
@@ -612,19 +611,19 @@ public class ChannelReportTemplateController implements Serializable {
         Map m = new HashMap();
         rows = new ArrayList<>();
 
-        j = "select new com.divudi.data.ReportTemplateRow(pubudu) "
-                + " from SessionInstance pubudu "
-                + " where pubudu.retired=false "
-                + " and pubudu.sessionDate between :fd and :td ";
+        j = "select new com.divudi.data.ReportTemplateRow(si) "
+                + " from SessionInstance si "
+                + " where si.retired=false "
+                + " and si.sessionDate between :fd and :td ";
 
         if (institution != null) {
             m.put("ins", institution);
-            j += " and pubudu.institution=:ins ";
+            j += " and si.institution=:ins ";
         }
 
         if (category != null) {
             m.put("cat", category);
-            j += " and pubudu.originatingSession.category=:cat ";
+            j += " and si.originatingSession.category=:cat ";
         }
 
         m.put("fd", fromDate);
@@ -660,7 +659,6 @@ public class ChannelReportTemplateController implements Serializable {
 
     }
 
-    //To Do - Pubudu
     public void fillOnlineBookings() {
         bundle = new ReportTemplateRowBundle();
         String j;
@@ -668,27 +666,27 @@ public class ChannelReportTemplateController implements Serializable {
         rows = new ArrayList<>();
         //BillSession
         boolean test = false;
-        if(test){
+        if (test) {
             BillSession bs = new BillSession();
             bs.getSessionInstance().getSessionDate();
-            if(bs.getBill().getBillTypeAtomic()==BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT_ONLINE ){
-                
+            if (bs.getBill().getBillTypeAtomic() == BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT_ONLINE) {
+                bs.getBill().getPatient().getPerson();
             }
         }
-      
-        j = "select new com.divudi.data.ReportTemplateRow(pubudu) "
-                + " from SessionInstance pubudu "
-                + " where pubudu.retired=false "
-                + " and pubudu.sessionDate between :fd and :td ";
+
+        j = "select new com.divudi.data.ReportTemplateRow(bs) "
+                + " from BillSession bs "
+                + " where bs.retired=false "
+                + " and bs.sessionInstance.sessionDate between :fd and :td ";
 
         if (institution != null) {
             m.put("ins", institution);
-            j += " and pubudu.institution=:ins ";
+            j += " and bs.institution=:ins ";
         }
 
         if (category != null) {
             m.put("cat", category);
-            j += " and pubudu.originatingSession.category=:cat ";
+            j += " and bs.originatingSession.category=:cat ";
         }
 
         m.put("fd", fromDate);
@@ -723,6 +721,7 @@ public class ChannelReportTemplateController implements Serializable {
         }
 
     }
+
     public void fillDailyDoctorCounts() {
         bundle = new ReportTemplateRowBundle();
         String j;
@@ -786,7 +785,6 @@ public class ChannelReportTemplateController implements Serializable {
         }
 
     }
-
 
     public List<BillSession> createBillSessionQuery(Bill bill, PaymentEnum paymentEnum, DateEnum dateEnum, ReportKeyWord reportKeyWord) {
         BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
