@@ -121,21 +121,25 @@
                                         <div class="d-grid gap-2">
                                             <p:commandButton
                                                 ajax="false" 
-                                                value="Channel Professional Payments By Doctor" 
+                                                value="Channel Professional Payments By Payments" 
                                                 action="#{searchController.navigateToChannellingPaymentBillList()}" 
                                                 styleClass="linkButton"></p:commandButton>
                                             <p:commandButton
                                                 ajax="false" 
-                                                value="Channel Professional Payments By Patient" 
+                                                value="Channel Professional Payments By Payment Items" 
                                                 action="#{searchController.navigateToChannellingPaymentBillFeeList()}" 
                                                 styleClass="linkButton"></p:commandButton>
                                             <p:commandButton 
                                                 ajax="false" 
-                                                value="OPD Professional Payment" 
-                                                action="#{searchController.navigateToChannellingPaymentBillFeeList()}" 
-                                                
+                                                value="OPD Professional Payment by Payment" 
+                                                action="#{searchController.navigateToProfessionalPaymentBillList()}" 
+
                                                 ></p:commandButton>
-                                            <p:commandButton ajax="false" value="Professional Payments" action="#" styleClass="linkButton"></p:commandButton>
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                value="Professional Payments by Payment" 
+                                                action="#{searchController.navigateToProfessionalPaymentBillList()}" >
+                                            </p:commandButton>
 
                                         </div>
                                     </p:tab>

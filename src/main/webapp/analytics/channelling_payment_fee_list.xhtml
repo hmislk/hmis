@@ -58,8 +58,8 @@
                         <p:dataTable 
                             rowIndexVar="i" 
                             id="tblBills" 
-                            value="#{searchController.bills}" 
-                            var="bill" 
+                            value="#{searchController.billFees}" 
+                            var="billFee" 
                             class="w-100"
                             rows="20"
                             paginator="true" 
@@ -72,37 +72,44 @@
 
 
                             <p:column headerText="ID" width="5em" style="text-align: right;">
-                                <p:outputLabel value="#{bill.id}" />
+                                <p:outputLabel value="#{billFee.id}" />
                             </p:column>
 
-                            <p:column headerText="Date" width="10em" style="text-align: right;" rendered="false">
-                                <p:outputLabel value="#{bill.billDate}" >
+                            <p:column headerText="Paid Date" width="10em" style="text-align: right;" rendered="false">
+                                <p:outputLabel value="#{billFee.bill.billDate}" >
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
                                 </p:outputLabel>
                             </p:column>
                             
-                            <p:column headerText="Receipt No" width="10em" style="text-align: right;">
-                                <p:outputLabel value="#{bill.deptId}" />
+                            <p:column headerText="Bill Receipt No" width="10em" style="text-align: right;">
+                                <p:outputLabel value="#{billFee.bill.deptId}" />
+                            </p:column>
+                            
+                            <p:column headerText="Service Date" width="10em" style="text-align: right;" rendered="false">
+                                <p:outputLabel value="#{billFee.referenceBillFee.bill.billDate}" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
+                                </p:outputLabel>
+                            </p:column>
+                            
+                            <p:column headerText="Service Receipt No" width="10em" style="text-align: right;">
+                                <p:outputLabel value="#{billFee.referenceBillFee.bill.deptId}" />
                             </p:column>
 
-                            <p:column headerText="Date" width="120" style="text-align: right;">
-                                <p:commandLink id="insNo" ajax="false" value="#{bill.insId}" action="#{searchController.viewOPD(bill)}">
-                                    <f:setPropertyActionListener value="#{bill}" target="#{billSearch.billSearch}"/>
-                                </p:commandLink>
+                            <p:column headerText="Patient" width="10em" style="text-align: right;">
+                                <p:outputLabel value="#{billFee.bill.patient.person.name}" />
                             </p:column>
-
 
                             <p:column 
                                 headerText="Staff" 
-                                sortBy="#{bill.staff.person.name}"
-                                filterBy="#{bill.staff.person.name}"
+                                sortBy="#{billFee.staff.person.name}"
+                                filterBy="#{billFee.staff.person.name}"
                                 filterMatchMode="contains"
                                 style="text-align: right;">
-                                <h:outputLabel value="#{bill.toStaff.person.name}" />
+                                <h:outputLabel value="#{billFee.toStaff.person.name}" />
                             </p:column>
 
                             <p:column headerText="Value" width="100">                              
-                                <h:outputLabel value="#{bill.netTotal}" >
+                                <h:outputLabel value="#{billFee.netTotal}" >
                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                 </h:outputLabel>
                             </p:column>
@@ -114,31 +121,31 @@
                                     <h:outputLabel value="Status" class="w-100 d-flex justify-content-center" />
                                 </f:facet>
                                 <div class="d-flex justify-content-center">
-                                    <h:panelGroup rendered="#{bill.cancelled}" class="d-flex gap-2">
+                                    <h:panelGroup rendered="#{billFee.cancelled}" class="d-flex gap-2">
                                         <p:badge value="Cancelled" severity="danger" styleClass="mr-2"></p:badge>
                                         <h:outputLabel value="By " />
                                         <h:outputLabel 
                                             style="color: red;"
-                                            value="#{bill.cancelledBill.creater.webUserPerson.name}" >                                       
+                                            value="#{billFee.cancelledBill.creater.webUserPerson.name}" >                                       
                                         </h:outputLabel>
                                         <h:outputLabel value="At " />
                                         <h:outputLabel 
                                             style="color: red;"
-                                            value="#{bill.cancelledBill.createdAt}" >
+                                            value="#{billFee.cancelledBill.createdAt}" >
                                             <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
                                         </h:outputLabel>
                                     </h:panelGroup>
-                                    <h:panelGroup rendered="#{bill.refunded}" class="d-flex gap-2">
+                                    <h:panelGroup rendered="#{billFee.refunded}" class="d-flex gap-2">
                                         <p:badge value="Refunded" severity="warning" styleClass="mr-2"></p:badge>
                                         <h:outputLabel value="By " />
                                         <h:outputLabel 
                                             style="color: orange;"
-                                            value="#{bill.refundedBill.creater.webUserPerson.name}" >
+                                            value="#{billFee.refundedBill.creater.webUserPerson.name}" >
                                         </h:outputLabel>
                                         <h:outputLabel value="At " />
                                         <h:outputLabel 
                                             style="color: orange;"
-                                            value="#{bill.refundedBill.createdAt}" >
+                                            value="#{billFee.refundedBill.createdAt}" >
                                             <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
                                         </h:outputLabel>
                                     </h:panelGroup>
