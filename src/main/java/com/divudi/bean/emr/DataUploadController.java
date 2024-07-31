@@ -1387,12 +1387,12 @@ public class DataUploadController implements Serializable {
             String feeName = "Doctor Fee";
             Double doctorFee = 0.0;
             
-            Cell staffCell = row.getCell(7);
+            Cell staffCell = row.getCell(2);
             if (staffCell != null && staffCell.getCellType() == CellType.STRING) {
                 staffName = staffCell.getStringCellValue();
             }
             if (staffName != null) {
-                staff = staffController.findAndSaveStaffByName(staffName);
+                staff = staffController.findStaffByName(name);
             } 
             System.out.println("staffName = " + staffName);
             Cell insCell = row.getCell(4);
@@ -1434,41 +1434,8 @@ public class DataUploadController implements Serializable {
                 departmentsSaved.add(department);
             }
             System.out.println("departmentName = " + departmentName);
-
-            Cell nameCell = row.getCell(0);
-            if (nameCell != null && nameCell.getCellType() == CellType.STRING) {
-                name = nameCell.getStringCellValue();
-                if (name == null || name.trim().equals("")) {
-                    continue;
-                }
-            }
             
-            comments = name;
-            name = CommonFunctions.sanitizeStringForDatabase(name);
-            item = itemController.findItemByNameAndCode(name, code);
-            if (item != null) {
-                itemsSkipped.add(item);
-                continue;
-            }
-            System.out.println("nameCell = " + nameCell);
-//            Item masterItem = itemController.findMasterItemByName(name);
-            Cell printingNameCell = row.getCell(1);
-            if (printingNameCell != null && printingNameCell.getCellType() == CellType.STRING) {
-                printingName = printingNameCell.getStringCellValue();
-            }
-            if (printingName == null || printingName.trim().equals("")) {
-                printingName = name;
-            }
-            System.out.println("printingName = " + printingName);
-            Cell fullNameCell = row.getCell(2);
-            if (fullNameCell != null && fullNameCell.getCellType() == CellType.STRING) {
-                fullName = fullNameCell.getStringCellValue();
-            }
-            if (fullName == null || fullName.trim().equals("")) {
-                fullName = name;
-            }
-            System.out.println("fullName = " + fullName);
-            Cell codeCell = row.getCell(3);
+            Cell codeCell = row.getCell(0);
             if (codeCell != null && codeCell.getCellType() == CellType.STRING) {
                 code = codeCell.getStringCellValue();
             } else if (codeCell != null && codeCell.getCellType() == CellType.NUMERIC) {
@@ -1477,142 +1444,27 @@ public class DataUploadController implements Serializable {
             if (code == null || code.trim().equals("")) {
                 code = serviceController.generateShortCode(name);
             }
-             System.out.println("code = " + code);
             
-            Cell feeNameCell = row.getCell(8);
+            
+            Cell nameCell = row.getCell(1);
+            if (nameCell != null && nameCell.getCellType() == CellType.STRING) {
+                name = nameCell.getStringCellValue();
+                if (name == null || name.trim().equals("")) {
+                    continue;
+                }
+            }
+            comments = name;
+            name = CommonFunctions.sanitizeStringForDatabase(name);
+            item = itemController.findItemByNameAndCode(name, code);
+                     
+            
+            Cell feeNameCell = row.getCell(5);
             if (feeNameCell != null && feeNameCell.getCellType() == CellType.STRING) {
                 feeName = feeNameCell.getStringCellValue();
             }
             System.out.println("feeName = " + feeName);
-            Cell itemTypeCell = row.getCell(6);
-            if (itemTypeCell != null && itemTypeCell.getCellType() == CellType.STRING) {
-                itemType = itemTypeCell.getStringCellValue();
-            }
-            if (itemType == null || itemType.trim().equals("")) {
-                itemType = "Investigation";
-            }
-            System.out.println("itemTypeCell = " + itemTypeCell);
-            if (itemType.equals("Service")) {
-//                if (masterItem == null) {
-//                    masterItem = new Service();
-//                    masterItem.setName(name);
-//                    masterItem.setPrintName(printingName);
-//                    masterItem.setFullName(fullName);
-//                    masterItem.setCode(code);
-//                    masterItem.setCategory(category);
-//                    masterItem.setFinancialCategory(financialCategory);
-//                    masterItem.setIsMasterItem(true);
-//                    masterItem.setInwardChargeType(iwct);
-//                    masterItem.setCreater(sessionController.getLoggedUser());
-//                    masterItem.setCreatedAt(new Date());
-//                    masterItemsToSave.add(masterItem);
-//                }
-
-                Service service = new Service();
-                service.setName(name);
-                service.setPrintName(printingName);
-                service.setFullName(fullName);
-                service.setCode(code);
-//                service.setMasterItemReference(masterItem);
-                service.setInstitution(institution);
-                service.setDepartment(department);
-                service.setInwardChargeType(iwct);
-                service.setCreater(sessionController.getLoggedUser());
-                service.setCreatedAt(new Date());
-                item = service;
-            } else if (itemType.equals("Investigation")) {
-
-//                if (masterItem == null) {
-//                    masterItem = new Investigation();
-//                    masterItem.setName(name);
-//                    masterItem.setPrintName(printingName);
-//                    masterItem.setFullName(fullName);
-//                    masterItem.setCode(code);
-//                    masterItem.setIsMasterItem(true);
-//                    masterItem.setCategory(category);
-//                    masterItem.setFinancialCategory(financialCategory);
-//                    masterItem.setInwardChargeType(iwct);
-//                    masterItem.setCreater(sessionController.getLoggedUser());
-//                    masterItem.setCreatedAt(new Date());
-//                    masterItemsToSave.add(masterItem);
-//                }
-                Investigation ix = new Investigation();
-                ix.setName(name);
-                ix.setPrintName(printingName);
-                ix.setFullName(fullName);
-                ix.setCode(code);
-                ix.setInstitution(institution);
-                ix.setDepartment(department);
-                ix.setInwardChargeType(iwct);
-//                ix.setMasterItemReference(masterItem);
-                ix.setCreater(sessionController.getLoggedUser());
-                ix.setCreatedAt(new Date());
-                item = ix;
-            } else if (itemType.equals("InwardService")) {
-
-//                if (masterItem == null) {
-//                    masterItem = new Investigation();
-//                    masterItem.setName(name);
-//                    masterItem.setPrintName(printingName);
-//                    masterItem.setFullName(fullName);
-//                    masterItem.setCode(code);
-//                    masterItem.setIsMasterItem(true);
-//                    masterItem.setCategory(category);
-//                    masterItem.setFinancialCategory(financialCategory);
-//                    masterItem.setInwardChargeType(iwct);
-//                    masterItem.setCreater(sessionController.getLoggedUser());
-//                    masterItem.setCreatedAt(new Date());
-//                    masterItemsToSave.add(masterItem);
-//                }
-                InwardService iwdService = new InwardService();
-                iwdService.setName(name);
-                iwdService.setPrintName(printingName);
-                iwdService.setFullName(fullName);
-                iwdService.setCode(code);
-                iwdService.setInstitution(institution);
-                iwdService.setDepartment(department);
-                iwdService.setInwardChargeType(iwct);
-//                iwdService.setMasterItemReference(masterItem);
-                iwdService.setCreater(sessionController.getLoggedUser());
-                iwdService.setCreatedAt(new Date());
-                item = iwdService;
-            } else if (itemType.equals("Surgery")) {
-//                if (masterItem == null) {
-//                    masterItem = new Service();
-//                    masterItem.setName(name);
-//                    masterItem.setPrintName(printingName);
-//                    masterItem.setFullName(fullName);
-//                    masterItem.setCode(code);
-//                    masterItem.setCategory(category);
-//                    masterItem.setFinancialCategory(financialCategory);
-//                    masterItem.setIsMasterItem(true);
-//                    masterItem.setInwardChargeType(iwct);
-//                    masterItem.setSymanticType(SymanticType.Therapeutic_Procedure);
-//                    masterItem.setCreater(sessionController.getLoggedUser());
-//                    masterItem.setCreatedAt(new Date());
-//                    masterItemsToSave.add(masterItem);
-//                }
-
-                ClinicalEntity cli = new ClinicalEntity();
-                cli.setName(name);
-                cli.setPrintName(printingName);
-                cli.setFullName(fullName);
-                cli.setCode(code);
-//                cli.setMasterItemReference(masterItem);
-                cli.setInstitution(institution);
-                cli.setDepartment(department);
-                cli.setInwardChargeType(iwct);
-                cli.setSymanticType(SymanticType.Therapeutic_Procedure);
-                cli.setCreater(sessionController.getLoggedUser());
-                cli.setCreatedAt(new Date());
-                item = cli;
-            }
-
-            if (item != null) {
-                itemController.saveSelected(item);
-            }
-            
-            Cell doctorFeeTypeCell = row.getCell(9);
+                        
+            Cell doctorFeeTypeCell = row.getCell(4);
             if (doctorFeeTypeCell != null) {
                 if (doctorFeeTypeCell.getCellType() == CellType.NUMERIC) {
                     // If it's a numeric value
@@ -1645,7 +1497,7 @@ public class DataUploadController implements Serializable {
                 itf.setItem(item);
                 itf.setInstitution(institution);
                 itf.setDepartment(department);
-                itf.setFeeType(FeeType.OwnInstitution);
+                itf.setFeeType(FeeType.Staff);
                 itf.setFee(doctorFee);
                 itf.setFfee(doctorFee);
                 itf.setSpeciality(staff.getSpeciality());
