@@ -24,14 +24,14 @@
 
                     <p:panelGrid columns="2" styleClass="noPrintButton"> 
                         <h:outputLabel value="From Date"/>
-                        <p:calendar id="frmDate" value="#{channelReportControllerOld.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
+                        <p:calendar id="frmDate" value="#{channelReportTemplateController.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
 
                         <h:outputLabel value="To Date"/>
-                        <p:calendar id="toDate" value="#{channelReportControllerOld.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
+                        <p:calendar id="toDate" value="#{channelReportTemplateController.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                     </p:panelGrid>
                     <h:panelGrid columns="3" class="my-2"> 
                         <p:commandButton style="margin-right: 10px" ajax="false" id="btnRefresh" value="Process" 
-                                         action="#{channelReportControllerOld.createDailyDoctorAnalysisDisplay()}">
+                                         action="#{channelReportTemplateController.createDailyDoctorAnalysisDisplay()}">
                         </p:commandButton>
                         <p:commandButton  ajax="false" value="Print" styleClass="noPrintButton" style="float: right; margin-right: 10px" >
                             <p:printer target="reportPrint"  />
@@ -172,7 +172,7 @@
                                 </td>
                             </tr>
 
-                            <ui:repeat value="#{channelReportControllerOld.weekdayDisplays}" var="b" id="tbl" >
+                            <ui:repeat value="#{channelReportTemplateController.weekdayDisplays}" var="b" id="tbl" >
                                 <tr>
                                     <td >
                                         <p:outputLabel value="#{b.date}" >

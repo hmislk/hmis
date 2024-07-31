@@ -105,7 +105,7 @@
                                             </div>
                                         </div>
                                     </h:panelGroup>
-                                    
+
                                     <div class="row">
                                         <p:focus  context="acIx"/>
                                         <div class="col-md-10">
@@ -163,7 +163,7 @@
                                                 icon="fa fa-plus"
                                                 class="w-100 mx-1 my-1 ui-button-success"
                                                 action="#{opdPreBillController.addToBill()}" 
-                                                process="acIx btnAddIx txtQty :#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('pay',view).clientId} panelBillItems"
+                                                process="acIx btnAddIx txtQty panelBillItems"
                                                 update="focusIx tblBillItem :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}  pIxAdd">
                                             </p:commandButton>
                                             <p:defaultCommand target="btnAddIx" />
@@ -266,7 +266,7 @@
                                                             <f:facet name="header">Item Name</f:facet>
                                                             <h:outputLabel value="#{bif.billItem.item.name}" />
                                                         </p:column>
-                                                         <p:column>
+                                                        <p:column>
                                                             <f:facet name="header">Type</f:facet>
                                                             <h:outputLabel value="#{bif.fee.feeType}" />
                                                         </p:column>
@@ -320,38 +320,22 @@
 
                                 <p:panel id="paymentDetails">
                                     <f:facet name="header" >
-                                        <h:outputText styleClass="fa fa-money-bill-wave" /> <!-- FontAwesome Icon -->
-                                        <h:outputText value="Payment Details" class="mx-4"></h:outputText>
-                                    </f:facet>
-                                    <div class="row my-1"  >
-                                        <div class="col-5" >
-                                            <p:selectOneMenu   
-                                                id="pay" 
-                                                class="w-100"
-                                                value="#{opdPreBillController.paymentMethod}"
-                                                >     
-                                                <f:selectItems 
-                                                    value="#{enumController.paymentMethodsForOpdBilling}"  
-                                                    var="pm"
-                                                    itemLabel="#{pm.label}"
-                                                    itemValue="#{pm}"/>
-                                                <p:ajax process="@this cmbPs" 
-                                                        update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}  tblBillItem paymentDetails"
-                                                        event="change" />
-                                            </p:selectOneMenu>
-                                        </div>
-                                        <div class="col-7 " >
-                                            <h:panelGrid columns="3" class="m-1 w-100">
 
+                                        <div class="d-flex justify-content-between">
+                                            <div class="d-flex gap-2 mt-2">
+                                                <h:outputText value="Payment Details"></h:outputText>
+                                            </div>
+                                            <div class="d-flex gap-2">
                                                 <p:commandButton  
                                                     value="Settle"
                                                     style="float: right;"
                                                     ajax="false"
                                                     icon="fa fa-check"              
                                                     action="#{opdPreBillController.settleBill}" 
-                                                    class="ui-button-success mx-2 w-100"
+                                                    class="ui-button-success"
                                                     >
                                                 </p:commandButton>
+
                                                 <p:commandButton  
                                                     value="New Bill"
                                                     style="float: right;"
@@ -359,7 +343,7 @@
                                                     icon="fa fa-plus"              
                                                     action="#{opdPreBillController.navigateToBillingForCashierFromMenu()}"  
                                                     actionListener="#{opdPreBillController.prepareNewBill}"
-                                                    class="ui-button-warning mx-2 w-100"
+                                                    class="ui-button-warning"
                                                     >
                                                 </p:commandButton>
 
@@ -368,64 +352,45 @@
                                                     value="Lookup" 
                                                     ajax="false"
                                                     icon="fa fa-search"
-                                                    class="ui-button-warning mx-2 w-100" 
+                                                    class="ui-button-warning" 
                                                     action="#{patientController.navigateToSearchPatients()}" 
                                                     >
                                                 </p:commandButton>
-
-                                            </h:panelGrid>
-
-                                        </div>
-
-                                    </div>
-
-                                    <div class="row my-1 mt-1" >
-                                        <div class="col-md-4" >
-                                            <p:selectOneMenu   
-                                                id="cmbPs" 
-                                                value="#{opdPreBillController.paymentScheme}"
-                                                class="w-100">     
-                                                <f:selectItem 
-                                                    itemLabel="Select Discount Scheme"/>
-                                                <f:selectItems 
-                                                    value="#{paymentSchemeController.paymentSchemesForOPD}" 
-                                                    var="paysch" itemLabel="#{paysch.name}" itemValue="#{paysch}"  />
-                                                <p:ajax process="@this pay" 
-                                                        update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('creditCompany',view).clientId} :#{p:resolveFirstComponentWithId('creditStaff',view).clientId}  tblBillItem paymentDetails" 
-                                                        event="change" />
-                                            </p:selectOneMenu>
-
-                                        </div>
-
-
-                                        <div class="row mt-1">
-                                            <div class="col-8" >
-                                                <p:inputText 
-                                                    value="#{opdPreBillController.comment}" 
-                                                    placeholder="Comments"
-                                                    class="w-100"         
-                                                    id="comment"/>
                                             </div>
-
-                                            <h:panelGroup id="gpLocalForeign" layout="block"  class="col-md-4" rendered="#{!configOptionApplicationController.getBooleanValueByKey('Save the Patient with Patient Status')}">
-                                                <p:commandButton value="Mark Foreigner" 
-                                                                 class="mx-1"
-                                                                 action="#{opdPreBillController.markAsForeigner}" 
-                                                                 rendered="#{!opdPreBillController.foreigner}" 
-                                                                 process="@this" 
-                                                                 update="gpLocalForeign :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('creditCompany',view).clientId} :#{p:resolveFirstComponentWithId('creditStaff',view).clientId}  tblBillItem paymentDetails" 
-                                                                 ></p:commandButton>
-                                                <p:commandButton value="Mark Local" 
-                                                                 class="mx-1"
-                                                                 action="#{opdPreBillController.markAsLocal}" 
-                                                                 rendered="#{opdPreBillController.foreigner}" 
-                                                                 process="@this" 
-                                                                 update="gpLocalForeign :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('creditCompany',view).clientId} :#{p:resolveFirstComponentWithId('creditStaff',view).clientId}  tblBillItem paymentDetails" 
-                                                                 >
-                                                </p:commandButton>
-                                            </h:panelGroup>
+                                        </div>
+                                    </f:facet>
+                                    <div class="row"  >
+                                        <div class="d-flex gap-2 " >
+                                            <p:inputText 
+                                                value="#{opdPreBillController.comment}" 
+                                                placeholder="Comments"
+                                                class="w-100"         
+                                                id="comment">
+                                            </p:inputText>
+                                            <div class="d-flex">
+                                                <h:panelGroup id="gpLocalForeign" layout="block"  class="col-md-4" rendered="#{!configOptionApplicationController.getBooleanValueByKey('Save the Patient with Patient Status')}">
+                                                    <p:commandButton 
+                                                        value="Mark Foreigner" 
+                                                        class="mx-1"
+                                                        action="#{opdPreBillController.markAsForeigner}" 
+                                                        rendered="#{!opdPreBillController.foreigner}" 
+                                                        process="@this" 
+                                                        update="gpLocalForeign :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('creditCompany',view).clientId} :#{p:resolveFirstComponentWithId('creditStaff',view).clientId}  tblBillItem paymentDetails" 
+                                                        ></p:commandButton>
+                                                    <p:commandButton 
+                                                        value="Mark Local" 
+                                                        class="mx-1"
+                                                        action="#{opdPreBillController.markAsLocal}" 
+                                                        rendered="#{opdPreBillController.foreigner}" 
+                                                        process="@this" 
+                                                        update="gpLocalForeign :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('creditCompany',view).clientId} :#{p:resolveFirstComponentWithId('creditStaff',view).clientId}  tblBillItem paymentDetails" 
+                                                        >
+                                                    </p:commandButton>
+                                                </h:panelGroup>
+                                            </div>
                                         </div>
                                     </div>
+
                                 </p:panel>
 
                                 <p:panel class="m-1">

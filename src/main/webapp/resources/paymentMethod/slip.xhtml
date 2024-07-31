@@ -9,17 +9,20 @@
     <!-- INTERFACE -->
     <cc:interface>
         <cc:attribute name="paymentMethodData"  type="com.divudi.data.dataStructure.PaymentMethodData" />
-        <cc:attribute name="valueRequired" type="boolean" />
+        <cc:attribute name="valueRequired" type="boolean" default="true"/>
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <div class="d-flex gap-2 m-2">
-            <p:inputText autocomplete="off"   value="#{cc.attrs.paymentMethodData.slip.totalValue}"  id="txtVal">
-                <p:ajax process="@this" ></p:ajax>
-            </p:inputText>
+        <div class="d-flex gap-2 mt-2">
+            <h:panelGroup rendered="#{cc.attrs.valueRequired}" class="" layout="block"  >
+                <p:inputText autocomplete="off"   value="#{cc.attrs.paymentMethodData.slip.totalValue}" style="width: 10em;" class="w-100" id="txtVal" >
+                    <p:ajax process="@this" ></p:ajax>
+                </p:inputText>
+                <p:watermark value="Value" for="txtVal" />
+            </h:panelGroup>
             <p:watermark value="Value" for="txtVal" />
-            <p:selectOneMenu value="#{cc.attrs.paymentMethodData.slip.institution}" style="width: 10em;" >
+            <p:selectOneMenu value="#{cc.attrs.paymentMethodData.slip.institution}" style="width: 200px;" >
                 <f:selectItem itemLabel="Select Bank"/>
                 <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
                 <p:ajax process="@this" ></p:ajax>

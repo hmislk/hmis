@@ -1,0 +1,33 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:p="http://primefaces.org/ui">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <div class="row d-grid align-items-center" style="height: 70vh;">
+            <div class="col-12  justify-content-center " >
+                <div class="d-flex justify-content-center">
+                    <i class="fa fa-exclamation-triangle" style="font-size: 10rem; color:#008DDA "></i>
+                </div>
+                <div class="d-flex justify-content-center">
+                    <p:outputLabel value="You are not Authorized to Access this Page.. !" class="m-2" style="font-size: 40px; color: red; font-weight: 700;"></p:outputLabel>
+                </div>
+                <div class="d-flex justify-content-center">
+                    <p:commandButton 
+                        ajax="false" 
+                        action="/home?faces-redirect=true" 
+                        icon="pi pi-home"
+                        class="ui-button-success px-5 px-5" 
+                        value="Go to Home">
+                    </p:commandButton>
+                </div> 
+            </div>
+        </div>
+    </cc:implementation>
+</html>

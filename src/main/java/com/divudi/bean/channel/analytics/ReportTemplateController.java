@@ -24,6 +24,8 @@ import com.divudi.entity.Institution;
 import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
 import com.divudi.facade.ReportTemplateFacade;
+import com.divudi.java.CommonFunctions;
+import com.graphbuilder.math.func.CombinFunction;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -548,6 +550,23 @@ public class ReportTemplateController implements Serializable {
                         paramStartId,
                         paramEndId);
                 break;
+            case SESSION_INSTANCE_LIST:
+                bundle = handleSessionInstanceList(
+                        btas,
+                        paramDate,
+                        paramFromDate,
+                        paramToDate,
+                        paramInstitution,
+                        paramDepartment,
+                        paramFromInstitution,
+                        paramFromDepartment,
+                        paramToInstitution,
+                        paramToDepartment,
+                        paramUser,
+                        paramCreditCompany,
+                        paramStartId,
+                        paramEndId);
+                break;
             default:
                 JsfUtil.addErrorMessage("Unknown Report Type");
                 return null;
@@ -565,6 +584,7 @@ public class ReportTemplateController implements Serializable {
             return "";
         }
         reportTemplateRowBundle = generateReport(current.getReportTemplateType(), current.getBillTypeAtomics(), date, fromDate, toDate, institution, department, fromInstitution, fromDepartment, toInstitution, toDepartment, user, creditCompany, startId, endId);
+        reportTemplateRowBundle.setReportTemplate(current);
         return "";
     }
 
@@ -2092,6 +2112,126 @@ public class ReportTemplateController implements Serializable {
         return bundle;
     }
 
+    private ReportTemplateRowBundle handleSessionInstanceList(
+            List<BillTypeAtomic> btas,
+            Date paramDate,
+            Date paramFromDate,
+            Date paramToDate,
+            Institution paramInstitution,
+            Department paramDepartment,
+            Institution paramFromInstitution,
+            Department paramFromDepartment,
+            Institution paramToInstitution,
+            Department paramToDepartment,
+            WebUser paramUser,
+            Institution paramCreditCompany,
+            Long paramStartId,
+            Long paramEndId) {
+
+        String jpql;
+        Map<String, Object> parameters = new HashMap<>();
+        ReportTemplateRowBundle bundle = new ReportTemplateRowBundle();
+
+        jpql = "select new com.divudi.data.ReportTemplateRow(ss) "
+                + " from SessionInstance ss "
+                + " where ss.retired<>:br ";
+        parameters.put("br", true);
+
+        if (paramDate != null) {
+            jpql += " and ss.sessionDate=:bd";
+            parameters.put("bd", paramDate);
+        }
+
+        if (paramToDate != null) {
+            jpql += " and ss.sessionDate < :td";
+            parameters.put("td", paramToDate);
+        }
+
+        if (paramFromDate != null) {
+            jpql += " and ss.sessionDate > :fd";
+            parameters.put("fd", paramFromDate);
+        }
+
+        if (paramInstitution != null) {
+            jpql += " and ss.institution=:ins";
+            parameters.put("ins", paramInstitution);
+        }
+
+        if (paramDepartment != null) {
+            jpql += " and ss.department=:dep";
+            parameters.put("dep", paramDepartment);
+        }
+
+        if (paramUser != null) {
+            jpql += " and ss.creater=:wu";
+            parameters.put("wu", paramUser);
+        }
+
+        System.out.println("jpql = " + jpql);
+        System.out.println("parameters = " + parameters);
+
+        List<ReportTemplateRow> rs = (List<ReportTemplateRow>) ejbFacade.findLightsByJpql(jpql, parameters, TemporalType.DATE);
+
+        if (rs == null || rs.isEmpty()) {
+            System.out.println("No results found.");
+            return null;
+        } else {
+            System.out.println("Results found: " + rs.size());
+        }
+
+        
+        long idCounter = 1;
+
+        for (ReportTemplateRow row : rs) {
+            row.setId(idCounter++);
+            if (row.getBtas() == null) {
+                row.setBtas(btas);
+            }
+            if (row.getDate() == null) {
+                row.setDate(paramDate);
+            }
+            if (row.getFromDate() == null) {
+                row.setFromDate(paramFromDate);
+            }
+            if (row.getToDate() == null) {
+                row.setToDate(paramToDate);
+            }
+            if (row.getInstitution() == null) {
+                row.setInstitution(paramInstitution);
+            }
+            if (row.getDepartment() == null) {
+                row.setDepartment(paramDepartment);
+            }
+            if (row.getFromInstitution() == null) {
+                row.setFromInstitution(paramFromInstitution);
+            }
+            if (row.getFromDepartment() == null) {
+                row.setFromDepartment(paramFromDepartment);
+            }
+            if (row.getToInstitution() == null) {
+                row.setToInstitution(paramToInstitution);
+            }
+            if (row.getToDepartment() == null) {
+                row.setToDepartment(paramToDepartment);
+            }
+            if (row.getUser() == null) {
+                row.setUser(paramUser);
+            }
+            if (row.getCreditCompany() == null) {
+                row.setCreditCompany(paramCreditCompany);
+            }
+            if (row.getStartId() == null) {
+                row.setStartId(paramStartId);
+            }
+            if (row.getEndId() == null) {
+                row.setEndId(paramEndId);
+            }
+        }
+
+        bundle.setReportTemplateRows(rs);
+        return bundle;
+    }
+
     private ReportTemplateRowBundle handleToDepartmentSummaryByBillFee(
             List<BillTypeAtomic> btas,
             Date paramDate,
@@ -2332,6 +2472,9 @@ public class ReportTemplateController implements Serializable {
     }
 
     public Date getDate() {
+        if(date==null){
+            date=CommonFunctions.getStartOfDay();
+        }
         return date;
     }
 
@@ -2340,6 +2483,9 @@ public class ReportTemplateController implements Serializable {
     }
 
     public Date getFromDate() {
+        if(fromDate==null){
+            fromDate = CommonFunctions.getStartOfDay();
+        }
         return fromDate;
     }
 
@@ -2348,6 +2494,9 @@ public class ReportTemplateController implements Serializable {
     }
 
     public Date getToDate() {
+        if(toDate==null){
+            toDate = CommonFunctions.getEndOfDay();
+        }
         return toDate;
     }
 

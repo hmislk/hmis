@@ -93,6 +93,11 @@ public class InstitutionController implements Serializable {
         }
         return "/admin/institutions/institution?faces-redirect=true";
     }
+    
+    public void makeNull(){
+        current = null;
+        
+    }
 
     public String deleteInstitution() {
         if (current == null) {

@@ -20,7 +20,7 @@
                     <p:panelGrid columns="2" styleClass="noPrintButton" id="pg1"> 
                         <h:outputLabel value="From Date"/>
                         <p:datePicker id="frmDate" 
-                                      value="#{channelReportControllerOld.fromDate}" 
+                                      value="#{channelReportTemplateController.fromDate}" 
                                       showTime="true"
                                       hideOnDateTimeSelect="true"
                                       monthNavigator="true"
@@ -29,7 +29,7 @@
 
                         <h:outputLabel value="To Date"/>
                         <p:datePicker id="toDate" 
-                                      value="#{channelReportControllerOld.toDate}" 
+                                      value="#{channelReportTemplateController.toDate}" 
                                       showTime="true"
                                       hideOnDateTimeSelect="true"
                                       monthNavigator="true"
@@ -40,7 +40,7 @@
 
                     <h:panelGrid columns="2" class="mt-2">
                         <p:commandButton class="mx-2" ajax="false" id="btnRefresh" value="Process" 
-                                         action="#{channelReportControllerOld.channelAllBillList()}">
+                                         action="#{channelReportTemplateController.channelAllBillList()}">
                         </p:commandButton>
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
                             <p:dataExporter type="xls" target="tbl1" fileName="channel_bill_list"  />
@@ -49,16 +49,16 @@
                 </p:panel>
 
 
-                <p:dataTable value="#{channelReportControllerOld.billedBills}" var="b" id="tbl1" >
+                <p:dataTable value="#{channelReportTemplateController.billedBills}" var="b" id="tbl1" >
                     <f:facet name="header" >
                         <p:outputLabel value="Channel Bill List" />
                         <br></br>
                         <h:outputLabel value="From : " style=" white-space:pre-line;"/>
-                        <h:outputLabel class="ml-2"  value="#{channelReportControllerOld.fromDate}" >
+                        <h:outputLabel class="ml-2"  value="#{channelReportTemplateController.fromDate}" >
                             <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                         </h:outputLabel>                          
                         <h:outputLabel value="&emsp;&emsp;To :"/>
-                        <h:outputLabel class="ml-2"  value="#{channelReportControllerOld.toDate}" >
+                        <h:outputLabel class="ml-2"  value="#{channelReportTemplateController.toDate}" >
                             <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                         </h:outputLabel>
                     </f:facet>
@@ -122,14 +122,14 @@
                         <p:outputLabel value="#{b.patient.person.nameWithTitle}" >
                         </p:outputLabel>
                     </p:column>
-                    <p:column style="text-align: right;" rendered="#{channelReportControllerOld.webUser eq null}" >
+                    <p:column style="text-align: right;" rendered="#{channelReportTemplateController.webUser eq null}" >
                         <f:facet name="header" >
                             <p:outputLabel value="Creator" />
                         </f:facet>
                         <p:outputLabel value="#{b.creater.webUserPerson.name}" >
                         </p:outputLabel>
                     </p:column>
-                    <p:column rendered="#{channelReportControllerOld.agncyOnCall}">
+                    <p:column rendered="#{channelReportTemplateController.agncyOnCall}">
                         <f:facet name="header" >
                             <p:outputLabel value="Agent" />
                         </f:facet>

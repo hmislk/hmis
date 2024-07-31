@@ -899,13 +899,13 @@ public class Lims {
                             pts.setPatient(b.getPatient());
                             pts.setBill(b);
 
-                            pts.setSampleDepartment(wu.getDepartment());
-                            pts.setSampleInstitution(wu.getInstitution());
+                            pts.setSampleCollectedDepartment(wu.getDepartment());
+                            pts.setSampleCollectedInstitution(wu.getInstitution());
                             pts.setSampleCollecter(wu);
-                            pts.setSampledAt(new Date());
+                            pts.setSampleCollectedAt(new Date());
                             pts.setCreatedAt(new Date());
                             pts.setCreater(wu);
-                            pts.setCollected(false);
+                            pts.setSampleCollected(false);
                             pts.setReadyTosentToAnalyzer(false);
                             pts.setSentToAnalyzer(false);
                             patientSampleFacade.create(pts);

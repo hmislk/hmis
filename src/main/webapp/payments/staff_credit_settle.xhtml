@@ -12,72 +12,97 @@
 
     <ui:define name="content">
 
-
-        <h:panelGroup rendered="#{!patientController.printPreview}" >
+        <h:panelGroup rendered="#{!staffPaymentBillController.printPreview}" >
             <h:form  >
                 <p:panel>
                     <f:facet name="header">
                         <div class="d-flex align-items-center justify-content-between">
                             <div>
-                                <h:outputText value="Staff Credit Settlee"/>
+                                <h:outputText value="Staff Credit Settle"/>
                             </div>
-                            <div>
-                                <p:commandButton class="ui-button-success"
-                                                 icon="fas fa-check"
-                                                 id="btnSettle"
-                                                 value="Settle"
-                                                 action="#{patientController.settlePatientDepositReceive}"
-                                                 ajax="false"
-                                                 style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;" >
+                            <div class="d-flex gap-2">
+                                <p:commandButton 
+                                    class="ui-button-success"
+                                    icon="fas fa-check"
+                                    id="btnSettle"
+                                    value="Settle"
+                                    action="#{staffPaymentBillController.settleStaffCredit()}"
+                                    ajax="false"
+                                    style="width: 150px; ">
                                 </p:commandButton>
-                                <p:defaultCommand target="btnSettle"/>
-                                <p:commandButton icon="fas fa-plus" class="mx-2" value="New Bill" ajax="false" action="#{patientController.navigateToReceiveDepositsFromPatientProfile()}"  >
+                                <p:commandButton 
+                                    icon="fas fa-plus" 
+                                    class="ui-button-warning" 
+                                    value="New Bill" 
+                                    ajax="false" 
+                                    action="#{staffPaymentBillController.createNewSettleBill()}"  >
                                 </p:commandButton>
                             </div>
                         </div>
                     </f:facet> 
+
                     <div class="row" >
                         <div class="col-6" >
-                            <common:patient_details
-                                id="ccPatientDetails"
-                                editable="true"
-                                controller="#{patientController}"/>
+                            <p:panel header="Details of Preson">
+                                <p:autoComplete   
+                                    id="cmbDoc1" 
+                                    value="#{staffPaymentBillController.currentStaff}" 
+                                    completeMethod="#{staffController.completeStaffWithoutDoctors}" 
+                                    forceSelection="true"
+                                    var="ix" 
+                                    itemLabel="#{ix.person.name}" 
+                                    itemValue="#{ix}" 
+                                    class="w-100"
+                                    size="20"
+                                    inputStyleClass="form-control"
+                                    style="width: 400px;">
+                                    <p:column headerText="Code" style="width: 150px; padding: 3px;">
+                                        #{ix.code}
+                                    </p:column>
+                                    <p:column headerText="Name" style="width: 400px; padding: 3px;">
+                                        #{ix.person.nameWithTitle}
+                                    </p:column>
+                                    <p:column headerText="Credit Entitlement" style="width: 150px; padding: 3px;">
+                                        <h:outputLabel value="#{ix.creditLimitQualified}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
 
+                                    </p:column>
+                                    <p:column headerText="Credit Utilized"  style="width: 150px; padding: 3px;">
+                                        <h:outputLabel value="#{ix.currentCreditValue}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+
+                                    </p:column>
+                                </p:autoComplete>
+
+                            </p:panel>
                         </div>
                         <div class="col-6" >
-                            <p:panel>
-                                <f:facet name="header">
-                                    <h:outputLabel value="Patient Deposit Details" />
-                                </f:facet>
-
-                                <div class="d-flex flex-wrap w-100">
-                                    <p:selectOneMenu id="cmbPs" value="#{patientController.bill.paymentMethod}"> 
-                                        <f:selectItems value="#{enumController.paymentMethodsForPatientDeposit}"/>
-                                        <p:ajax process="cmbPs" update="panelGroup creditCard cheque slip eWallet" event="change" />
+                            <p:panel header="Payment Details">
+                                <div class="d-flex gap-2">
+                                    <p:selectOneMenu style="width: 250px;" id="cmbPs" value="#{staffPaymentBillController.current.paymentMethod}">                                                                     
+                                        <f:selectItem itemLabel="Select Payment Method"  />
+                                        <f:selectItems value="#{enumController.paymentMethodsForStaffCreditSettle}"  />
+                                        <p:ajax process="cmbPs" update="creditCard cheque slip" event="change" />
                                     </p:selectOneMenu>
 
-                                    <h:panelGroup id="panelGroup" style="display: #{patientController.bill.paymentMethod eq 'Card' or patientController.bill.paymentMethod eq 'Cheque' or patientController.bill.paymentMethod eq 'Slip' or patientController.bill.paymentMethod eq 'ewallet' ? 'none' : 'block'};">
-                                        <p:inputText class="mx-1" value="#{patientController.bill.netTotal}" id="txtNetTotal"/>
-                                        <p:watermark value="Total" for="txtNetTotal"/>
+                                    <p:inputText value="#{staffPaymentBillController.current.netTotal}"/>
 
-                                        <p:inputText value="#{patientController.bill.comments}" id="comment"/>
-                                        <p:watermark value="Comment" for="comment"/>
+                                    <p:inputText value="#{staffPaymentBillController.current.comments}" id="comment"/>
+                                    <p:watermark value="Comment" for="comment"/>
+                                </div>
+                                <div class="d-flex gap-2"> 
+                                    <h:panelGroup id="creditCard" style="display: #{staffPaymentBillController.current.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
+                                        <pa:creditCard paymentMethodData="#{staffPaymentBillController.staffPaymentMethodData}" valueRequired="false"/>
                                     </h:panelGroup>
 
-                                    <h:panelGroup id="creditCard" class="m-1" style="display: #{patientController.bill.paymentMethod eq 'Card' ? 'block' : 'none'};">
-                                        <pa:creditCard paymentMethodData="#{patientController.paymentMethodData}"/>
+                                    <h:panelGroup id="cheque" style="display: #{staffPaymentBillController.current.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >
+                                        <pa:cheque paymentMethodData="#{staffPaymentBillController.staffPaymentMethodData}" valueRequired="false"/>
                                     </h:panelGroup>
 
-                                    <h:panelGroup id="cheque" style="display: #{patientController.bill.paymentMethod eq 'Cheque' ? 'block' : 'none'};">
-                                        <pa:cheque paymentMethodData="#{patientController.paymentMethodData}"/>
-                                    </h:panelGroup>
-
-                                    <h:panelGroup id="slip" style="display: #{patientController.bill.paymentMethod eq 'Slip' ? 'block' : 'none'};">
-                                        <pa:slip paymentMethodData="#{patientController.paymentMethodData}"/>
-                                    </h:panelGroup>
-                                    
-                                    <h:panelGroup id="eWallet" style="display: #{patientController.bill.paymentMethod ne 'ewallet' ? 'none' : 'block'} ;">
-                                        <pa:ewallet  class="m-2" paymentMethodData="#{patientController.paymentMethodData}"/>
+                                    <h:panelGroup id="slip" style="display: #{staffPaymentBillController.current.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
+                                        <pa:slip paymentMethodData="#{staffPaymentBillController.staffPaymentMethodData}" valueRequired="false"/>
                                     </h:panelGroup>
                                 </div>
                             </p:panel>
@@ -87,34 +112,28 @@
             </h:form>
         </h:panelGroup>
 
-
-        <h:panelGroup rendered="#{patientController.printPreview}">
+        <h:panelGroup rendered="#{staffPaymentBillController.printPreview}">
             <h:form >
                 <p:panel>
 
                     <f:facet name="header">
-                        <h:panelGrid columns="4" style="size: 0.5rem; float: right" >
-                            <p:commandButton value="Print Bill" icon="pi pi-print" class="ui-button-info" ajax="false">
+                        <div class="d-flex gap-2 justify-content-end">
+                            <p:commandButton 
+                                value="Print Bill" 
+                                icon="pi pi-print" 
+                                class="ui-button-info" 
+                                ajax="false">
                                 <p:printer target="billPanel"></p:printer>
                             </p:commandButton>
-                            <p:commandButton icon="fas fa-plus" class="mx-1" value="New Bill" 
-                                             ajax="false" action="/payments/patient/receive?faces-redirect=true"
-                                             actionListener="#{patientController.clearDataForPatientDeposite()}" >
+                            <p:commandButton 
+                                icon="fas fa-plus" 
+                                class="ui-button-warning" 
+                                value="New Bill" 
+                                ajax="false" 
+                                action="#{staffPaymentBillController.createNewSettleBill()}"  >
                             </p:commandButton>
-                            <p:commandButton ajax="false" icon="fas fa-search" value="Patient Lookup" class="mx-1 ui-button-warning"
-                                             action="#{patientController.navigateToSearchPatients}"></p:commandButton>
-                            <p:commandButton
-                                value="Profile"
-                                ajax="false"
-                                icon="fa fa-user"
-                                class="ui-button-warning  w-100"
-                                action="#{patientController.navigateToOpdPatientProfile()}"
-                                >
-                                <f:setPropertyActionListener
-                                    value="#{patientController.bill.patient}"
-                                    target="#{patientController.current}" ></f:setPropertyActionListener>
-                            </p:commandButton>
-                        </h:panelGrid>
+
+                        </div>
                     </f:facet>
 
 
@@ -131,86 +150,79 @@
                                             <div class="header">
                                                 <h2>
                                                     <h:outputText
-                                                        value="#{patientController.bill.department.printingName}"
-                                                        style="font-size: var(--font-size-bill) /2 ; font-weight: bold;"></h:outputText>
+                                                        value="#{staffPaymentBillController.current.department.printingName}"
+                                                        style="font-size: var(font-size-bill) /2 ; font-weight: bold;"></h:outputText>
                                                 </h2>
                                                 <p>
                                                     <h:outputText
-                                                        value="#{patientController.bill.department.address}"
-                                                        style="font-size: var(--font-size-bill) /2 ;"></h:outputText>
+                                                        value="#{staffPaymentBillController.current.department.address}"
+                                                        style="font-size: var(font-size-bill) /2 ;"></h:outputText>
                                                 </p>
                                                 <p>
                                                     <h:outputText
-                                                        value="Telephone: #{patientController.bill.department.telephone1}"
-                                                        style="font-size: var(--font-size-bill) /2 ;"></h:outputText>
+                                                        value="Telephone: #{staffPaymentBillController.current.department.telephone1}"
+                                                        style="font-size: var(font-size-bill) /2 ;"></h:outputText>
                                                 </p>
                                                 <p>
                                                     <h:outputText
-                                                        value="Email: #{patientController.bill.department.email}"
-                                                        style="font-size: var(--font-size-bill) /2 ;"></h:outputText>
+                                                        value="Email: #{staffPaymentBillController.current.department.email}"
+                                                        style="font-size: var(font-size-bill) /2 ;"></h:outputText>
                                                 </p>
                                             </div>
                                             <hr/>
                                             <div class="header">
                                                 <h4>
                                                     <h:outputText
-                                                        value="Patient Deposit Invoice"
-                                                        style="font-size: var(--font-size-bill) /2 ;"></h:outputText>
+                                                        value="Staff Credit Settle"
+                                                        style="font-size: var(font-size-bill) /2 ;"></h:outputText>
                                                 </h4>
                                             </div>
                                             <hr/>
                                             <p>
                                                 <strong>
-                                                    <h:outputText value="Name:" style="font-size: var(--font-size-bill) /2 ;"></h:outputText>
+                                                    <h:outputText value="Staff Name:" style="font-size: var(font-size-bill) /2 ;"></h:outputText>
                                                 </strong>
-                                                <h:outputText value="#{patientController.bill.patient.person.nameWithTitle}" style="font-size: var(--font-size-bill) /2 ;"></h:outputText>
+                                                <h:outputText value="#{staffPaymentBillController.current.staff.person.nameWithTitle}" style="font-size: var(font-size-bill) /2 ;"></h:outputText>
                                             </p>
                                             <p>
                                                 <strong>
-                                                    <h:outputText value="Age:" style="font-size: var(--font-size-bill) /2 ;"></h:outputText>
+                                                    <h:outputText value="Sex:" style="font-size: var(font-size-bill) /2 ;"></h:outputText>
                                                 </strong>
-                                                <h:outputText value="#{patientController.bill.ageAtBilledDate}" style="font-size: var(--font-size-bill) /2 ;"></h:outputText>
-                                            </p>
-                                            <p>
-                                                <strong>
-                                                    <h:outputText value="Sex:" style="font-size: var(--font-size-bill) /2 ;"></h:outputText>
-                                                </strong>
-                                                <h:outputText value="#{patientController.bill.patient.person.sex}" style="font-size: var(--font-size-bill) /2 ;"></h:outputText>
+                                                <h:outputText value="#{staffPaymentBillController.current.staff.person.sex}" style="font-size: var(--font-size-bill) /2 ;"></h:outputText>
                                             </p>
                                             <p>
                                                 <strong>
                                                     <h:outputText value="Phone:" style="font-size: var(--font-size-bill) /2 ;"></h:outputText>
                                                 </strong>
-                                                <h:outputText value="#{patientController.bill.patient.person.phone}" style="font-size: var(--font-size-bill) /2 ;"></h:outputText>
+                                                <h:outputText value="#{staffPaymentBillController.current.staff.person.phone}" style="font-size: var(--font-size-bill) /2 ;"></h:outputText>
                                             </p>
                                             <p>
                                                 <strong>
                                                     <h:outputText value="Address:" style="font-size: var(--font-size-bill) /2 ;"></h:outputText>
                                                 </strong>
-                                                <h:outputText value="#{patientController.bill.patient.person.address}" style="font-size: var(--font-size-bill) /2 ;"></h:outputText>
+                                                <h:outputText value="#{staffPaymentBillController.current.staff.person.address}" style="font-size: var(--font-size-bill) /2 ;"></h:outputText>
                                             </p>
                                             <hr/>
-                                            <p:barcode type="code39" value="#{patientController.bill.idStr}" style="width: 100%; height: 6rem;"></p:barcode>
+                                            <p:barcode type="code39" value="#{staffPaymentBillController.current.idStr}" style="width: 100%; height: 6rem;"></p:barcode>
                                             <hr/>
-                                            <h4>Payment Details</h4>
                                             <p>
                                                 <strong>
                                                     <h:outputText value="Total:" style="font-size: var(--font-size-bill) /2 ;"></h:outputText>
                                                 </strong>
-                                                <h:outputText value="#{patientController.bill.netTotal}" style="font-size: var(--font-size-bill) /2 ;"></h:outputText>
+                                                <h:outputText value="#{staffPaymentBillController.current.netTotal}" style="font-size: var(--font-size-bill) /2 ;"></h:outputText>
                                             </p>
                                             <p>
                                                 <strong>
                                                     <h:outputText value="Payment Method:" style="font-size: var(--font-size-bill) /2 ;"></h:outputText>
                                                 </strong>
-                                                <h:outputText value="#{patientController.bill.paymentMethod}" style="font-size: var(--font-size-bill) /2 ;"></h:outputText>
+                                                <h:outputText value="#{staffPaymentBillController.current.paymentMethod}" style="font-size: var(--font-size-bill) /2 ;"></h:outputText>
                                             </p>
                                             <hr/>
                                             <p>
                                                 <strong>
                                                     <h:outputText value="Cashier:" style="font-size: var(--font-size-bill) /2 ;"></h:outputText>
                                                 </strong>
-                                                <h:outputText value="#{patientController.bill.creater.webUserPerson.name}" style="font-size: var(--font-size-bill) /2 ;"></h:outputText>
+                                                <h:outputText value="#{staffPaymentBillController.current.creater.webUserPerson.name}" style="font-size: var(--font-size-bill) /2 ;"></h:outputText>
                                             </p>
                                         </h:panelGroup>
                                     </div>
@@ -226,3 +238,4 @@
     </ui:define>
 
 </ui:composition>
+
