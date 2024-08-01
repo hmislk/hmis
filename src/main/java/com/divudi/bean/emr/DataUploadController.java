@@ -2968,7 +2968,6 @@ public class DataUploadController implements Serializable {
     }
     
     private List<Institution> readSuppliersFromExcel(InputStream inputStream) throws IOException {
-        System.out.println("readSuppliersFromExcel ");
         Workbook workbook = new XSSFWorkbook(inputStream);
         Sheet sheet = workbook.getSheetAt(0);
         Iterator<Row> rowIterator = sheet.rowIterator();
@@ -2980,7 +2979,6 @@ public class DataUploadController implements Serializable {
         if (rowIterator.hasNext()) {
             rowIterator.next();
         }
-        System.out.println("readSuppliersFromExcel 2");
         while (rowIterator.hasNext()) {
             Row row = rowIterator.next();
 
@@ -2997,7 +2995,6 @@ public class DataUploadController implements Serializable {
             String ownerName = null;
             String address = null;
             
-            System.out.println("readSuppliersFromExcel 3");
             
             Cell faxCell = row.getCell(5);
             if (faxCell != null && faxCell.getCellType() == CellType.STRING) {
@@ -3005,7 +3002,6 @@ public class DataUploadController implements Serializable {
             }
 
            
-            System.out.println("fax = " + fax);
             
             Cell emailCell = row.getCell(6);
             if (emailCell != null && emailCell.getCellType() == CellType.STRING) {
@@ -3013,7 +3009,6 @@ public class DataUploadController implements Serializable {
             }
 
             
-            System.out.println("email = " + email);
             
             Cell webCell = row.getCell(7);
             if (webCell != null && webCell.getCellType() == CellType.STRING) {
@@ -3021,21 +3016,18 @@ public class DataUploadController implements Serializable {
             }
 
           
-            System.out.println("web = " + web);
             Cell mobCell = row.getCell(8);
             if (mobCell != null && mobCell.getCellType() == CellType.STRING) {
                 mobilenumber = mobCell.getStringCellValue();
             }
 
             
-            System.out.println("mobilenumber = " + mobilenumber);
             Cell codeCell = row.getCell(0);
             if (codeCell != null && codeCell.getCellType() == CellType.STRING) {
                 code = codeCell.getStringCellValue();
             }
 
            
-            System.out.println("code = " + code);
             //    Item masterItem = itemController.findMasterItemByName(code);
             Cell agentNameCell = row.getCell(1);
 
@@ -3043,7 +3035,6 @@ public class DataUploadController implements Serializable {
                 supplierName = agentNameCell.getStringCellValue();
             }
             
-            System.out.println("supplierName = " + supplierName);
             Cell agentPrintingNameCell = row.getCell(2);
 
             if (agentPrintingNameCell != null && agentPrintingNameCell.getCellType() == CellType.STRING) {
@@ -3053,7 +3044,6 @@ public class DataUploadController implements Serializable {
             if (supplierPrintingName == null || supplierPrintingName.trim().equals("")) {
                 supplierPrintingName = supplierPrintingName;
             }
-            System.out.println("supplierPrintingName = " + supplierPrintingName);
             Cell activeCell = row.getCell(3);
 
             if (activeCell != null && activeCell.getCellType() == CellType.BOOLEAN) {
@@ -3064,7 +3054,6 @@ public class DataUploadController implements Serializable {
                 active = false;
             }
 
-            System.out.println("active = " + active);
             Cell contactNumberCell = row.getCell(4);
 
             if (contactNumberCell != null) {
@@ -3079,7 +3068,6 @@ public class DataUploadController implements Serializable {
             if (phone == null || phone.trim().equals("")) {
                 phone = null;
             }
-            System.out.println("phone = " + phone);
            
             Cell ownerNameCell = row.getCell(9);
 
@@ -3089,7 +3077,6 @@ public class DataUploadController implements Serializable {
             if (ownerName == null || ownerName.trim().equals("")) {
                 ownerName = null;
             }
-            System.out.println("ownerName = " + ownerName);
             Cell addressCell = row.getCell(10);
 
             if (addressCell != null && addressCell.getCellType() == CellType.STRING) {
@@ -3104,7 +3091,6 @@ public class DataUploadController implements Serializable {
             if (supplier == null) {
                 supplier = new Institution();
             }
-            System.out.println("supplier = " + supplier);
             supplier.setCode(code);
             supplier.setInstitutionCode(code);
             supplier.setName(supplierName);
@@ -3119,7 +3105,6 @@ public class DataUploadController implements Serializable {
             supplier.setAddress(address);
             supplier.setInstitutionType(InstitutionType.Dealer);
             institutionController.save(supplier);
-            System.out.println("supplier = " + supplier);
             suppliersList.add(supplier);
         }
 
