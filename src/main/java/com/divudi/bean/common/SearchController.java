@@ -6976,6 +6976,18 @@ public class SearchController implements Serializable {
                                         System.out.println("Different staff found: " + bf.getReferenceBillFee().getStaff());
                                     }
                                 }
+                            } else {
+                                if (bf.getReferenceBillFee().getBill().getStaff() != null) {
+                                    if (bs == null) {
+                                        bs = bf.getReferenceBillFee().getBill().getStaff();
+                                        System.out.println("Initial staff set: " + bs);
+                                    } else {
+                                        if (!bs.equals(bf.getReferenceBillFee().getBill().getStaff())) {
+                                            sameStaff = false;
+                                            System.out.println("Different staff found: " + bf.getReferenceBillFee().getBill().getStaff());
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
