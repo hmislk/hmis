@@ -7070,6 +7070,25 @@ public class SearchController implements Serializable {
         //checkLabReportsApproved(bills);
 
     }
+    
+    public void createStaffCreditBillList(){
+        String jpql;
+        Map m = new HashMap();
+        jpql = "select b from Bill b "
+                + "where b.toStaff is not null "
+                + "and b.createdAt between :fromDate and :toDate "
+                + "and b.retired = false "
+                + "order by b.createdAt desc";
+        
+        m.put("fromDate", fromDate);
+        m.put("toDate", toDate);
+        
+        System.out.println("m = " + m);
+        System.out.println("jpql = " + jpql);
+
+        bills = getBillFacade().findByJpql(jpql, m, TemporalType.TIMESTAMP);
+        System.out.println("bills = " + bills);
+    }
 
     public void createCCBillTableByKeyword(BillType billType, Institution ins, Department dep) {
         billLights = null;
