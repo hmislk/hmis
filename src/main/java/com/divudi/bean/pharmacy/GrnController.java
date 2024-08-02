@@ -888,9 +888,7 @@ public class GrnController implements Serializable {
             }else{
                 billFacade.edit(getCurrentGrnBillPre());
             }
-            
             getCurrentGrnBillPre().setForwardReferenceBill(getGrnBill());
-            getGrnBill().setReferenceBill(currentGrnBillPre);
             getBillFacade().edit(getCurrentGrnBillPre());
         }
         if (getGrnBill().getId() == null) {
