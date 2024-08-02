@@ -60,9 +60,10 @@
                                     <h:outputText styleClass="fas fa-money-bill"></h:outputText>
                                     <h:outputLabel value="Payment Mode" class="mx-2"></h:outputLabel>
                                 </f:facet>
-                                <p:selectOneMenu id="cmbPs" value="#{billSearch.paymentMethod}"  
-                                                 disabled="#{billSearch.bill.paymentMethod eq 'Cash'}"
-                                                 rendered="#{billSearch.bill.billType eq 'OpdBill'}">
+                                <p:selectOneMenu 
+                                    id="cmbPs" 
+                                    value="#{billSearch.paymentMethod}" 
+                                    rendered="#{billSearch.bill.billType eq 'OpdBill'}">
                                     <f:selectItem itemLabel="Select paymentMethod"/>
                                     <f:selectItems value="#{inwardPaymentController.paymentMethods}"/>
                                 </p:selectOneMenu>

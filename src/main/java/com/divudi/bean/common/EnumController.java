@@ -71,6 +71,7 @@ public class EnumController implements Serializable {
     ConfigOptionApplicationController configOptionApplicationController;
     List<PaymentMethod> paymentMethodsForOpdBilling;
     List<PaymentMethod> paymentMethodsForChanneling;
+    List<PaymentMethod> paymentMethodsForChannelSettling;
     List<PaymentMethod> paymentMethodsForPharmacyBilling;
     private List<PaymentMethod> paymentMethodsForPatientDeposit;
     private List<PaymentMethod> paymentMethodsForStaffCreditSettle;
@@ -91,7 +92,6 @@ public class EnumController implements Serializable {
         }
         return paymentMethodsForOpdBilling;
     }
-    
 
     public List<PaymentMethod> getPaymentMethodsForPackageBilling() {
         if (paymentMethodsForOpdBilling == null) {
@@ -105,16 +105,16 @@ public class EnumController implements Serializable {
         paymentMethodsForChanneling = null;
     }
 
-    public void fillPaymentMethodsForPatientDeposit(){
+    public void fillPaymentMethodsForPatientDeposit() {
         paymentMethodsForPatientDeposit = new ArrayList<>();
-        for(PaymentMethod pm : PaymentMethod.values()){
-           boolean include = configOptionApplicationController.getBooleanValueByKey(pm.getLabel() + " is available for Patient Deposit", true); 
-           if(include){
-               paymentMethodsForPatientDeposit.add(pm);
-           }
+        for (PaymentMethod pm : PaymentMethod.values()) {
+            boolean include = configOptionApplicationController.getBooleanValueByKey(pm.getLabel() + " is available for Patient Deposit", true);
+            if (include) {
+                paymentMethodsForPatientDeposit.add(pm);
+            }
         }
     }
-    
+
     public void fillPaymentMethodsForOpdBilling() {
         paymentMethodsForOpdBilling = new ArrayList<>();
         for (PaymentMethod pm : PaymentMethod.values()) {
@@ -141,6 +141,13 @@ public class EnumController implements Serializable {
         }
         return paymentMethodsForChanneling;
     }
+    
+     public List<PaymentMethod> getPaymentMethodsForChannelSettling() {
+        if (paymentMethodsForChannelSettling == null) {
+            fillPaymentMethodsForChannelSettling();
+        }
+        return paymentMethodsForChannelSettling;
+    }
 
     public void fillPaymentMethodsForChanneling() {
         paymentMethodsForChanneling = new ArrayList<>();
@@ -148,6 +155,18 @@ public class EnumController implements Serializable {
             boolean include = configOptionApplicationController.getBooleanValueByKey(pm.getLabel() + " is available for Channeling", true);
             if (include) {
                 paymentMethodsForChanneling.add(pm);
+            }
+        }
+    }
+
+    public void fillPaymentMethodsForChannelSettling() {
+        paymentMethodsForChannelSettling = new ArrayList<>();
+        for (PaymentMethod pm : PaymentMethod.values()) {
+            if (!pm.equals(PaymentMethod.OnCall)) {
+                boolean include = configOptionApplicationController.getBooleanValueByKey(pm.getLabel() + " is available for Channeling", true);
+                if (include) {
+                    paymentMethodsForChannelSettling.add(pm);
+                }
             }
         }
     }
@@ -374,7 +393,7 @@ public class EnumController implements Serializable {
                 .filter(label -> label.toLowerCase().contains(query.toLowerCase())) // Filtering based on query
                 .collect(Collectors.toList()); // Collecting results into a List
     }
-    
+
     public List<String> completeReportTemplateFilters(String query) {
         return Arrays.stream(ReportTemplateFilter.values())
                 .map(ReportTemplateFilter::getLabel) // Using getLabel() to get the user-friendly string
@@ -460,7 +479,7 @@ public class EnumController implements Serializable {
     }
 
     public InwardChargeType[] getInwardChargeTypesForSetting() {
-         return InwardChargeType.values();
+        return InwardChargeType.values();
     }
 
     public PatientEncounterComponentType[] getPatientEncounterComponentTypes() {
