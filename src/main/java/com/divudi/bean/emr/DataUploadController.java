@@ -203,10 +203,12 @@ public class DataUploadController implements Serializable {
     private List<Item> items;
     private List<ItemFee> itemFees;
     private List<Institution> collectingCentres;
+    private List<Institution> suppliers;
     private List<Department> departments;
     private List<Area> areas;
     private StreamedContent templateForItemWithFeeUpload;
     private StreamedContent templateForCollectingCentreUpload;
+    private StreamedContent templateForsupplierUpload;
     private StreamedContent templateForInvestigationUpload;
     private StreamedContent templateForDiagnosisUpload;
     private StreamedContent templateForPatientUpload;
@@ -247,6 +249,11 @@ public class DataUploadController implements Serializable {
     public String navigateToDepartmentUpload() {
         uploadComplete = false;
         return "/admin/institutions/department_upload?faces-redirect=true";
+    }
+    
+    public String navigateToSupplierUpload() {
+        uploadComplete = false;
+        return "/admin/institutions/supplier_upload?faces-redirect=true";
     }
 
     public void uploadPatientAreas() {
@@ -2677,6 +2684,22 @@ public class DataUploadController implements Serializable {
         uploadComplete = true;
         JsfUtil.addSuccessMessage("Successfully Uploaded");
     }
+    
+    public void uploadSuppliers() {
+        suppliers = new ArrayList<>();
+        if (file != null) {
+            try ( InputStream inputStream = file.getInputStream()) {
+                System.out.println("inputStream = " + inputStream);
+                suppliers = readSuppliersFromExcel(inputStream);
+            } catch (IOException e) {
+                e.printStackTrace();
+                uploadComplete = false;
+                JsfUtil.addErrorMessage("Error in Uploading. " + e.getMessage());
+            }
+        }
+        uploadComplete = true;
+        JsfUtil.addSuccessMessage("Successfully Uploaded");
+    }
 
     public void uploadDepartments() {
         departments = new ArrayList<>();
@@ -2938,6 +2961,150 @@ public class DataUploadController implements Serializable {
         }
 
         return collectingCentresList;
+    }
+    
+    private List<Institution> readSuppliersFromExcel(InputStream inputStream) throws IOException {
+        Workbook workbook = new XSSFWorkbook(inputStream);
+        Sheet sheet = workbook.getSheetAt(0);
+        Iterator<Row> rowIterator = sheet.rowIterator();
+
+        List<Institution> suppliersList = new ArrayList<>();
+        Institution supplier;
+
+        // Assuming the first row contains headers, skip it
+        if (rowIterator.hasNext()) {
+            rowIterator.next();
+        }
+        while (rowIterator.hasNext()) {
+            Row row = rowIterator.next();
+
+            supplier = null;
+            String code = null;
+            String supplierName = null;
+            Boolean active = null;
+            String supplierPrintingName = null;
+            String phone = null;
+            String email = null;
+            String fax=null;
+            String web=null;
+            String mobilenumber=null;
+            String ownerName = null;
+            String address = null;
+            
+            
+            Cell faxCell = row.getCell(5);
+            if (faxCell != null && faxCell.getCellType() == CellType.STRING) {
+                fax = faxCell.getStringCellValue();
+            }
+
+           
+            
+            Cell emailCell = row.getCell(6);
+            if (emailCell != null && emailCell.getCellType() == CellType.STRING) {
+                email = emailCell.getStringCellValue();
+            }
+
+            
+            
+            Cell webCell = row.getCell(7);
+            if (webCell != null && webCell.getCellType() == CellType.STRING) {
+                web = webCell.getStringCellValue();
+            }
+
+          
+            Cell mobCell = row.getCell(8);
+            if (mobCell != null && mobCell.getCellType() == CellType.STRING) {
+                mobilenumber = mobCell.getStringCellValue();
+            }
+
+            
+            Cell codeCell = row.getCell(0);
+            if (codeCell != null && codeCell.getCellType() == CellType.STRING) {
+                code = codeCell.getStringCellValue();
+            }
+
+           
+            //    Item masterItem = itemController.findMasterItemByName(code);
+            Cell agentNameCell = row.getCell(1);
+
+            if (agentNameCell != null && agentNameCell.getCellType() == CellType.STRING) {
+                supplierName = agentNameCell.getStringCellValue();
+            }
+            
+            Cell agentPrintingNameCell = row.getCell(2);
+
+            if (agentPrintingNameCell != null && agentPrintingNameCell.getCellType() == CellType.STRING) {
+                supplierPrintingName = agentPrintingNameCell.getStringCellValue();
+
+            }
+            if (supplierPrintingName == null || supplierPrintingName.trim().equals("")) {
+                supplierPrintingName = supplierPrintingName;
+            }
+            Cell activeCell = row.getCell(3);
+
+            if (activeCell != null && activeCell.getCellType() == CellType.BOOLEAN) {
+                active = activeCell.getBooleanCellValue();
+
+            }
+            if (active == null) {
+                active = false;
+            }
+
+            Cell contactNumberCell = row.getCell(4);
+
+            if (contactNumberCell != null) {
+                if (contactNumberCell.getCellType() == CellType.NUMERIC) {
+                    DecimalFormat decimalFormat = new DecimalFormat("#");
+                    phone = decimalFormat.format(contactNumberCell.getNumericCellValue());
+
+                } else if (contactNumberCell.getCellType() == CellType.STRING) {
+                    phone = contactNumberCell.getStringCellValue();
+                }
+            }
+            if (phone == null || phone.trim().equals("")) {
+                phone = null;
+            }
+           
+            Cell ownerNameCell = row.getCell(9);
+
+            if (ownerNameCell != null && ownerNameCell.getCellType() == CellType.STRING) {
+                ownerName = ownerNameCell.getStringCellValue();
+            }
+            if (ownerName == null || ownerName.trim().equals("")) {
+                ownerName = null;
+            }
+            Cell addressCell = row.getCell(10);
+
+            if (addressCell != null && addressCell.getCellType() == CellType.STRING) {
+                address = addressCell.getStringCellValue();
+            }
+            if (address == null || address.trim().equals("")) {
+                address = null;
+            }
+
+            supplier = institutionController.findAndSaveInstitutionByCode(code);
+            
+            if (supplier == null) {
+                supplier = new Institution();
+            }
+            supplier.setCode(code);
+            supplier.setInstitutionCode(code);
+            supplier.setName(supplierName);
+            supplier.setInactive(active);
+            supplier.setOwnerName(ownerName);
+            supplier.setMobile(mobilenumber);
+            supplier.setFax(fax);
+            supplier.setChequePrintingName(supplierPrintingName);
+            supplier.setPhone(phone);
+            supplier.setEmail(email);
+            supplier.setOwnerName(ownerName);
+            supplier.setAddress(address);
+            supplier.setInstitutionType(InstitutionType.Dealer);
+            institutionController.save(supplier);
+            suppliersList.add(supplier);
+        }
+
+        return suppliersList;
     }
 
     private List<Department> readDepartmentFromExcel(InputStream inputStream) throws IOException {
@@ -4869,6 +5036,15 @@ public class DataUploadController implements Serializable {
         }
         return templateForCollectingCentreUpload;
     }
+    
+    public StreamedContent getTemplateForSupplierUpload() {
+        try {
+            createTemplateForSupplierUpload();
+        } catch (IOException e) {
+            // Handle IOException
+        }
+        return templateForsupplierUpload;
+    }
 
     public void createTemplateForCollectingCentreUpload() throws IOException {
         XSSFWorkbook workbook = new XSSFWorkbook();
@@ -4899,6 +5075,40 @@ public class DataUploadController implements Serializable {
         // Set the downloading file
         templateForCollectingCentreUpload = DefaultStreamedContent.builder()
                 .name("template_for_collecting_centres_upload.xlsx")
+                .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                .stream(() -> inputStream)
+                .build();
+    }
+    
+    public void createTemplateForSupplierUpload() throws IOException {
+        XSSFWorkbook workbook = new XSSFWorkbook();
+
+        // Creating the first sheet for data entry
+        XSSFSheet dataSheet = workbook.createSheet("Collecting Centres");
+
+        // Create header row in data sheet
+        Row headerRow = dataSheet.createRow(0);
+        String[] columnHeaders = {"Code", "Supplier Name", "Supplier Printing Name", "Active","Supplier Contact No","Fax", "Email Address","web","mobile no","Owner Name","Agent Address"};
+        for (int i = 0; i < columnHeaders.length; i++) {
+            Cell cell = headerRow.createCell(i);
+            cell.setCellValue(columnHeaders[i]);
+        }
+
+        // Auto-size columns for aesthetics
+        for (int i = 0; i < columnHeaders.length; i++) {
+            dataSheet.autoSizeColumn(i);
+        }
+
+        // Write the output to a byte array
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        workbook.write(outputStream);
+        workbook.close();
+
+        InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+
+        // Set the downloading file
+        templateForsupplierUpload = DefaultStreamedContent.builder()
+                .name("template_for_supplier_upload.xlsx")
                 .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
                 .stream(() -> inputStream)
                 .build();
@@ -5070,6 +5280,22 @@ public class DataUploadController implements Serializable {
 
     public void setSurgeriesToSkiped(List<ClinicalEntity> surgeriesToSkiped) {
         this.surgeriesToSkiped = surgeriesToSkiped;
+    }
+
+    public List<Institution> getSuppliers() {
+        return suppliers;
+    }
+
+    public void setSuppliers(List<Institution> suppliers) {
+        this.suppliers = suppliers;
+    }
+
+    public StreamedContent getTemplateForsupplierUpload() {
+        return templateForsupplierUpload;
+    }
+
+    public void setTemplateForsupplierCentreUpload(StreamedContent templateForsupplierCentreUpload) {
+        this.templateForsupplierUpload = templateForsupplierCentreUpload;
     }
 
 }
