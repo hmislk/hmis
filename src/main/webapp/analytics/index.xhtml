@@ -115,6 +115,39 @@
 
                                         </div>
                                     </p:tab>
+
+
+                                    <p:tab title="Professional Payment Reports">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton
+                                                ajax="false" 
+                                                value="Channel Professional Payments By Payments" 
+                                                action="#{searchController.navigateToChannellingPaymentBillList()}" 
+                                                styleClass="linkButton"></p:commandButton>
+                                            <p:commandButton
+                                                ajax="false" 
+                                                value="Channel Professional Payments By Payment Items" 
+                                                action="#{searchController.navigateToChannellingPaymentBillFeeList()}" 
+                                                styleClass="linkButton"></p:commandButton>
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                value="OPD Professional Payment by Payment" 
+                                                action="#{searchController.navigateToOpdBillList()}" 
+                                                ></p:commandButton>
+                                            <p:commandButton
+                                                ajax="false" 
+                                                value="OPD Professional Payments By Payment Items" 
+                                                action="#{searchController.navigateToOpdPaymentBillFeeList()}" 
+                                                styleClass="linkButton"></p:commandButton>
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                value="Professional Payments by Payment" 
+                                                action="#{searchController.navigateToProfessionalPaymentBillList()}" >
+                                            </p:commandButton>
+
+                                        </div>
+                                    </p:tab>
+
                                     <p:tab title="Lab Reports" disabled="true">
                                         <div class="d-grid gap-2">
                                             <p:commandButton ajax="false" value="Bill List" action="#"  styleClass="linkButton"></p:commandButton>

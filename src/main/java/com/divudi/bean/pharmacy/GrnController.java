@@ -882,8 +882,13 @@ public class GrnController implements Serializable {
         //   getGrnBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getGrnBill(), BillType.PharmacyGrnBill, BillNumberSuffix.GRN));
         getGrnBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_GRN);
         if (getCurrentGrnBillPre() != null) {
+            
+            if(getCurrentGrnBillPre().getId()==null){
+                billFacade.create(getCurrentGrnBillPre());
+            }else{
+                billFacade.edit(getCurrentGrnBillPre());
+            }
             getCurrentGrnBillPre().setForwardReferenceBill(getGrnBill());
-            getGrnBill().setReferenceBill(currentGrnBillPre);
             getBillFacade().edit(getCurrentGrnBillPre());
         }
         if (getGrnBill().getId() == null) {
