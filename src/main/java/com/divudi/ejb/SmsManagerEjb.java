@@ -582,82 +582,93 @@ public class SmsManagerEjb {
 
     // Modified by Dr M H B Ariyaratne with assistance from ChatGPT from OpenAI
     public boolean sendSmsByOauth2(Sms sms) {
-        if (sms == null) {
-            return false;
-        }
-        try {
-            // Prepare the JSON payload
-            JSONObject jsonPayload = new JSONObject();
-            jsonPayload.put(configOptionApplicationController.getShortTextValueByKey("OAuth2 SMS Gateway - Parameter 1 Name", "campaignName"), configOptionApplicationController.getShortTextValueByKey("OAuth2 SMS Gateway - Parameter 1 Value", "Test"));
-            jsonPayload.put(configOptionApplicationController.getShortTextValueByKey("OAuth2 SMS Gateway - Parameter 2 Name", "mask"), configOptionApplicationController.getShortTextValueByKey("OAuth2 SMS Gateway - Parameter 2 Value", "Test"));
-            jsonPayload.put(configOptionApplicationController.getShortTextValueByKey("OAuth2 SMS Gateway - Parameter Name for SMS Numbers", "numbers"), sms.getReceipientNumber());
-            jsonPayload.put(configOptionApplicationController.getShortTextValueByKey("OAuth2 SMS Gateway - Parameter Name for SMS Text", "content"), sms.getSendingMessage());
-
-            String loginUrl = configOptionApplicationController.getShortTextValueByKey("OAuth2 SMS Gateway - Login URL", "https://bsms.hutch.lk/api/login");
-            String refreshTokenUrl = configOptionApplicationController.getShortTextValueByKey("OAuth2 SMS Gateway - Refresh Token URL", "https://bsms.hutch.lk/api/login/api/token/accessToken");
-            String smsGatewayUrl = configOptionApplicationController.getShortTextValueByKey("OAuth2 SMS Gateway - URL", "https://bsms.hutch.lk/api/login/api/sendsms");
-            String userName = configOptionApplicationController.getShortTextValueByKey("OAuth2 SMS Gateway - Username");
-            String password = configOptionApplicationController.getShortTextValueByKey("OAuth2 SMS Gateway - Password");
-            URL url = new URL(smsGatewayUrl);
-
-            String accessToken = configOptionApplicationController.getShortTextValueByKey("OAuth2 SMS Gateway - Access Token");
-            if (accessToken == null || accessToken.trim().equals("")) {
-                accessToken = getNewAccessToken(userName, password, loginUrl);
-            }
-            // Print the JSON payload
-            // Using 4 for pretty print
-            // Print the JSON payload
-            // Using 4 for pretty print
-
-            long expiresIn = getExpiryFromJWT(accessToken) - Instant.now().getEpochSecond();
-            if (expiresIn < 3) { // Example: Check if less than an hour remains
-                // Example: Check if less than an hour remains
-                accessToken = getAccessToken(LOGIN_URL, accessToken, accessToken, loginUrl, refreshTokenUrl);
-                configOptionApplicationController.saveShortTextOption("OAuth2 SMS Gateway - Access Token", accessToken);
-            }
-
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("POST");
-            conn.setRequestProperty("Content-Type", "application/json");
-            conn.setRequestProperty("Accept", "*/*");
-            conn.setRequestProperty("X-API-VERSION", "v1");
-            conn.setRequestProperty("Authorization", "Bearer " + accessToken);
-            conn.setDoOutput(true); // This line enables output to the connection
-
-            try (OutputStream os = conn.getOutputStream()) {
-                byte[] input = jsonPayload.toString().getBytes("utf-8");
-                os.write(input, 0, input.length);
-            }
-
-            try (BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), "utf-8"))) {
-                StringBuilder response = new StringBuilder();
-                String responseLine;
-                while ((responseLine = br.readLine()) != null) {
-                    response.append(responseLine.trim());
-                }
-                sms.setReceivedMessage(response.toString());
-            } catch (IOException e) {
-                InputStream errorStream = conn.getErrorStream();
-                if (errorStream != null) {
-                    try (BufferedReader br = new BufferedReader(new InputStreamReader(errorStream, "utf-8"))) {
-                        StringBuilder response = new StringBuilder();
-                        String responseLine;
-                        while ((responseLine = br.readLine()) != null) {
-                            response.append(responseLine.trim());
-                        }
-                    } catch (IOException ex) {
-                        ex.printStackTrace();
-                    }
-                }
-            }
-            saveSms(sms);
-            return true;
-        } catch (Exception e) {
-            sms.setReceivedMessage(sms.getReceivedMessage() + e.getMessage());
-            saveSms(sms);
-            return false;
-        }
+    System.out.println("sendSmsByOauth2 called");
+    System.out.println("sms = " + sms);
+    if (sms == null) {
+        System.out.println("sms is null");
+        return false;
     }
+    try {
+        // Prepare the JSON payload
+        JSONObject jsonPayload = new JSONObject();
+        jsonPayload.put(configOptionApplicationController.getShortTextValueByKey("OAuth2 SMS Gateway - Parameter 1 Name", "campaignName"), configOptionApplicationController.getShortTextValueByKey("OAuth2 SMS Gateway - Parameter 1 Value", "Test"));
+        jsonPayload.put(configOptionApplicationController.getShortTextValueByKey("OAuth2 SMS Gateway - Parameter 2 Name", "mask"), configOptionApplicationController.getShortTextValueByKey("OAuth2 SMS Gateway - Parameter 2 Value", "Test"));
+        jsonPayload.put(configOptionApplicationController.getShortTextValueByKey("OAuth2 SMS Gateway - Parameter Name for SMS Numbers", "numbers"), sms.getReceipientNumber());
+        jsonPayload.put(configOptionApplicationController.getShortTextValueByKey("OAuth2 SMS Gateway - Parameter Name for SMS Text", "content"), sms.getSendingMessage());
+        
+        System.out.println("JSON payload: " + jsonPayload.toString(4));
+
+        String loginUrl = configOptionApplicationController.getShortTextValueByKey("OAuth2 SMS Gateway - Login URL", "https://bsms.hutch.lk/api/login");
+        String refreshTokenUrl = configOptionApplicationController.getShortTextValueByKey("OAuth2 SMS Gateway - Refresh Token URL", "https://bsms.hutch.lk/api/login/api/token/accessToken");
+        String smsGatewayUrl = configOptionApplicationController.getShortTextValueByKey("OAuth2 SMS Gateway - URL", "https://bsms.hutch.lk/api/login/api/sendsms");
+        String userName = configOptionApplicationController.getShortTextValueByKey("OAuth2 SMS Gateway - Username");
+        String password = configOptionApplicationController.getShortTextValueByKey("OAuth2 SMS Gateway - Password");
+        URL url = new URL(smsGatewayUrl);
+
+        String accessToken = configOptionApplicationController.getShortTextValueByKey("OAuth2 SMS Gateway - Access Token");
+        if (accessToken == null || accessToken.trim().equals("")) {
+            accessToken = getNewAccessToken(userName, password, loginUrl);
+        }
+        
+        System.out.println("Access token: " + accessToken);
+
+        long expiresIn = getExpiryFromJWT(accessToken) - Instant.now().getEpochSecond();
+        if (expiresIn < 3) { // Example: Check if less than an hour remains
+            System.out.println("Access token about to expire, refreshing...");
+            accessToken = getAccessToken(loginUrl, accessToken, accessToken, loginUrl, refreshTokenUrl);
+            configOptionApplicationController.saveShortTextOption("OAuth2 SMS Gateway - Access Token", accessToken);
+        }
+
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestMethod("POST");
+        conn.setRequestProperty("Content-Type", "application/json");
+        conn.setRequestProperty("Accept", "*/*");
+        conn.setRequestProperty("X-API-VERSION", "v1");
+        conn.setRequestProperty("Authorization", "Bearer " + accessToken);
+        conn.setDoOutput(true); // This line enables output to the connection
+
+        System.out.println("Sending HTTP request to " + smsGatewayUrl);
+
+        try (OutputStream os = conn.getOutputStream()) {
+            byte[] input = jsonPayload.toString().getBytes("utf-8");
+            os.write(input, 0, input.length);
+            System.out.println("HTTP request payload sent");
+        }
+
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), "utf-8"))) {
+            StringBuilder response = new StringBuilder();
+            String responseLine;
+            while ((responseLine = br.readLine()) != null) {
+                response.append(responseLine.trim());
+            }
+            sms.setReceivedMessage(response.toString());
+            System.out.println("HTTP response received: " + response.toString());
+        } catch (IOException e) {
+            System.out.println("IOException during HTTP response reading: " + e.getMessage());
+            InputStream errorStream = conn.getErrorStream();
+            if (errorStream != null) {
+                try (BufferedReader br = new BufferedReader(new InputStreamReader(errorStream, "utf-8"))) {
+                    StringBuilder response = new StringBuilder();
+                    String responseLine;
+                    while ((responseLine = br.readLine()) != null) {
+                        response.append(responseLine.trim());
+                    }
+                    System.out.println("HTTP error response: " + response.toString());
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }
+        saveSms(sms);
+        return true;
+    } catch (Exception e) {
+        System.out.println("Exception caught: " + e.getMessage());
+        sms.setReceivedMessage(sms.getReceivedMessage() + e.getMessage());
+        saveSms(sms);
+        return false;
+    }
+}
+
 
     public void saveSms(Sms savingSms) {
         if (savingSms == null) {
