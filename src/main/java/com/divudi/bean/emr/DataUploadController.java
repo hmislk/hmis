@@ -81,6 +81,7 @@ import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.VtmFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.SymanticHyrachi;
 import com.divudi.data.SymanticType;
 import com.divudi.entity.Doctor;
 import com.divudi.entity.inward.InwardService;
@@ -3106,6 +3107,120 @@ public class DataUploadController implements Serializable {
 
         return suppliersList;
     }
+    
+      private List<ItemFee> readCollectingCentrePriceListFromXcel(InputStream inputStream) throws IOException {
+        Workbook workbook = new XSSFWorkbook(inputStream);
+        Sheet sheet = workbook.getSheetAt(0);
+        Iterator<Row> rowIterator = sheet.rowIterator();
+
+        itemFees = new ArrayList<>();
+
+        // Assuming the first row contains headers, skip it
+        if (rowIterator.hasNext()) {
+            rowIterator.next();
+        }
+        Institution runningIns = null;
+        Department runningDept = null;
+        while (rowIterator.hasNext()) {
+            Row row = rowIterator.next();
+             Institution institution;
+            Department department;
+            Item item=null;
+            String departmentName=null;
+            Category category = null;
+            String institutionName = null;
+            String itemCode =null;
+            String itemName=null;
+            String feeListType=null;
+            Double price=0.0;
+            
+            Cell insCell = row.getCell(4);
+            if (insCell != null && insCell.getCellType() == CellType.STRING) {
+                institutionName = insCell.getStringCellValue();
+            }
+            if (institutionName == null || institutionName.trim().equals("")) {
+                institutionName = "Other";
+            }
+            if (runningIns == null) {
+                institution = institutionController.findAndSaveInstitutionByName(institutionName);
+                runningIns = institution;
+            } else if (runningIns.getName().equals(institutionName)) {
+                institution = runningIns;
+            } else {
+                institution = institutionController.findAndSaveInstitutionByName(institutionName);
+                runningIns = institution;
+            }
+            
+            Cell deptCell = row.getCell(5);
+            if (deptCell != null && deptCell.getCellType() == CellType.STRING) {
+                departmentName = deptCell.getStringCellValue();
+            }
+            if (departmentName == null || departmentName.trim().equals("")) {
+                departmentName = institutionName;
+            }
+            if (runningDept == null) {
+                department = departmentController.findAndSaveDepartmentByName(departmentName);
+                runningDept = department;
+            } else if (runningDept.getName().equals(departmentName)) {
+                department = runningDept;
+            } else {
+                department = departmentController.getDefaultDepatrment(institution);
+                runningDept = department;
+            }
+            
+            // Column A: Department Code (Required)
+            Cell itemCodeCell = row.getCell(0);
+            if (itemCodeCell != null && itemCodeCell.getCellType() == CellType.STRING) {
+                itemCode = itemCodeCell.getStringCellValue();
+            }
+            if (itemCode != null) {
+                item=itemController.findItemByCode(itemCode);
+            }
+            if (itemCode == null || itemCode.trim().isEmpty()) {
+                continue;
+            }
+
+            // Column B: Department Name (Required)
+            Cell itemNameCell = row.getCell(1);
+            if (itemNameCell != null && itemNameCell.getCellType() == CellType.STRING) {
+                itemName = itemNameCell.getStringCellValue();
+            }
+            if (itemName == null || itemName.trim().isEmpty()) {
+                continue;
+            }
+
+            // Column C: Bill Prefix (Optional)
+            Cell priceCell = row.getCell(3);
+            if (priceCell != null && priceCell.getCellType() == CellType.NUMERIC) {
+                price = priceCell.getNumericCellValue();
+            }
+            
+            Cell itemFeeListCell = row.getCell(2);
+            if (itemFeeListCell != null && itemFeeListCell.getCellType() == CellType.STRING) {
+                feeListType = itemFeeListCell.getStringCellValue();
+            }
+            if (feeListType != null) {
+                category=categoryController.findAndCreateCategoryByName(itemName);
+                category.setSymanticType(SymanticHyrachi.Fee_List_Type);
+                categoryFacade.edit(category);
+            }
+            
+            ItemFee fee=new ItemFee();
+            fee.setCreatedAt(new Date());
+            fee.setCreater(sessionController.getLoggedUser());
+            fee.setForInstitution(null);
+            fee.setForCategory(category);
+            fee.setItem(item);
+            fee.setFee(price);
+            fee.setInstitution(institution);
+            fee.setDepartment(department);
+            itemFeeFacade.create(fee);
+       
+        }
+        
+        return itemFees;
+
+    }
 
     private List<Department> readDepartmentFromExcel(InputStream inputStream) throws IOException {
         Workbook workbook = new XSSFWorkbook(inputStream);
@@ -3336,6 +3451,17 @@ public class DataUploadController implements Serializable {
         if (file != null) {
             try ( InputStream inputStream = file.getInputStream()) {
                 itemFees = replaceItemFeesFromExcel(inputStream);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+    
+    public void uploadCollectingCentrePriceList() {
+        itemFees = new ArrayList<>();
+        if (file != null) {
+            try ( InputStream inputStream = file.getInputStream()) {
+                itemFees = readCollectingCentrePriceListFromXcel(inputStream);
             } catch (IOException e) {
                 e.printStackTrace();
             }
