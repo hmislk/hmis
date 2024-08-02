@@ -8,10 +8,11 @@
       xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp">
 
     <h:body>
-        <h:form>
-            <ui:composition template="/cashier/index.xhtml">
 
-                <ui:define name="subcontent">
+        <ui:composition template="/cashier/index.xhtml">
+
+            <ui:define name="subcontent">
+                <h:form>
                     <div style="width: 100%; height: 100%; display: flex; justify-content: center; align-items: center;">
                         <h:panelGroup rendered="#{financialTransactionController.nonClosedShiftStartFundBill eq null}"  style="text-align: center; width: 100%; height: 100%;">
                             <div class="mt-5">
@@ -29,14 +30,14 @@
 
 
 
-                 
+
 
 
                     <ez:shift_end_summary_table/>
 
+                </h:form>
+            </ui:define>
+        </ui:composition>
 
-                </ui:define>
-            </ui:composition>
-        </h:form>
     </h:body>
 </html>

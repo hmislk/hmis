@@ -382,9 +382,6 @@
                                                             icon="fa fa-check"
                                                             action="#{bookingControllerViewScope.settleCredit()}"
                                                             immediate="true"
-                                                            disabled="#{bookingControllerViewScope.selectedBillSession.bill.billType.parent ne 'ChannelCreditFlow'
-                                                                        or bookingControllerViewScope.selectedBillSession.bill.cancelled==true
-                                                                        or  bookingControllerViewScope.selectedBillSession.bill.paidAmount ne 0}"
                                                             oncomplete="PF('dlgSettleAD').show();"
                                                             class="ui-button-success mx-2 w-100"
                                                             >

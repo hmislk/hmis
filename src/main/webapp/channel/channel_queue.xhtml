@@ -102,28 +102,24 @@
 
                 </div>
                 <p:spacer height="65px" />
-                <ui:repeat var="s" 
-                           id="tblSessions"
-                           value="#{bookingController.sortedSessionInstances}" 
-                           class="w-100 mt-5">
 
-                    <div class="bgCard row  w-100 p-2 shadow mt-1">
-                        <div class="col-3 bg-primary text-white d-flex align-items-center">
-                            <div class="px-4">
-                                <h:outputText style="font-size: 30pt" styleClass="far fa-clock"/>
-                            </div>
-                            <div class="p-1 px-2">
-                                <h:outputText value="#{s.name}" style="font-weight: bold;font-size: 10pt"/><br/>
-                                <h:outputText value="#{s.sessionDate}"  style="font-size: 8pt;">
-                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
-                                </h:outputText>
-                                <h:outputText class="mx-2" value="#{s.startingTime}"  style="font-weight: bold; font-size: 8pt;">
-                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortTimeFormat}"/>
-                                </h:outputText>
-                            </div>
-                        </div>
-                        <div class="col-3 bg-dark">
-                            <div class="d-flex align-items-center text-white p-2">
+                <div class=" m-2">
+                    <div class="shadow-lg">
+                        <p:inputText id="txtFilter" class="w-100" style="padding-left:20;height: 55px" value="#{bookingController.sessionInstanceFilter}" placeholder="Search">
+                            <p:ajax event="keyup" process="@this" update="tblSi" listener="#{bookingController.filterSessionInstances}">
+                            </p:ajax>
+                        </p:inputText>
+                    </div>
+                </div>
+
+                <h:panelGroup id="tblSi">
+                    <ui:repeat var="s" 
+                               id="tblSessions"
+                               value="#{bookingController.sessionInstancesFiltered}" 
+                               class="w-100 mt-5">
+
+                        <div class="bgCard row  w-100 p-2 shadow mt-1">
+                            <div class="col-3 bg-light text-white d-flex align-items-center">
                                 <div class="px-4">
                                     <h:outputText style="font-size: 30pt;color: black" styleClass="far fa-clock"/>
                                 </div>

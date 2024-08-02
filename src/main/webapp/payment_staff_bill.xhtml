@@ -58,11 +58,10 @@
                                 id="tblFee" value="#{staffPaymentBillController.dueBillFees}"
                                            selection="#{staffPaymentBillController.payingBillFees}"
                                            class="w-100"
-                                           rows="10"
-                                           paginator="false" paginatorPosition="bottom"
+                                           paginator="true" paginatorPosition="bottom"
                                            paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                            currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
-                                           rowsPerPageTemplate="5,10,{ShowAll|'All'}"
+                                           rowsPerPageTemplate="{ShowAll|'All'}"
                                            var="bf" rowKey="#{bf.id}" >
 
                                 <f:ajax  event="rowSelectCheckbox" execute="tblFee" listener="#{staffPaymentBillController.performCalculations()}"   

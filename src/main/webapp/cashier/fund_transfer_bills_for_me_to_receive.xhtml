@@ -10,6 +10,7 @@
 
         <ui:composition template="./index.xhtml">
             <ui:define name="subcontent">
+                <h:form>
                 <div style="width: 100%; height: 100%; display: flex; justify-content: center; align-items: center;">
                     <h:panelGroup rendered="#{financialTransactionController.nonClosedShiftStartFundBill eq null}"  style="text-align: center; width: 100%; height: 100%;">
                         <div class="mt-5">
@@ -67,6 +68,7 @@
 
 
                 </p:panel>
+                    </h:form>
             </ui:define>
         </ui:composition>
 
