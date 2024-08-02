@@ -13,7 +13,7 @@
                 <h:form>
                     <p:panel header="Department Stock Adjustment : Purchase Rate"  rendered="#{!storeAdjustmentController.printPreview}">
                         <div class="row">
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <p:panel>
                                     <f:facet name="header">
                                         <h:outputLabel value="Select Item"/>
@@ -50,44 +50,59 @@
                                         <p:inputText autocomplete="off" value="#{storeAdjustmentController.pr}" ></p:inputText>
                                         <h:outputLabel value="Comment" ></h:outputLabel>
                                         <p:inputTextarea value="#{storeAdjustmentController.comment}" class="w-100"></p:inputTextarea>
-                                        <h:outputLabel value="" ></h:outputLabel>
+                                        <h:outputLabel value="" ><p:defaultCommand target="btnAdjust"/></h:outputLabel>
                                         <p:commandButton id="btnAdjust" value="Make Adjustment" ajax="false" action="#{storeAdjustmentController.adjustPurchaseRate()}" >
                                         </p:commandButton>
-                                        <p:defaultCommand target="btnAdjust"/>
                                     </p:panelGrid>
                                 </p:panel>
                             </div>
-                            
-                            <div class="col-md-6">
+
+                            <div class="col-md">
                                 <p:panel>
                                     <f:facet name="header">
                                         <h:outputLabel value="Details"/>
                                     </f:facet>
-                                    <p:panelGrid columns="2" id="det">
 
-                                        <h:outputLabel value="Name"/>
-                                        <h:outputLabel value="#{storeAdjustmentController.stock.itemBatch.item.name}" ></h:outputLabel>
-                                        <h:outputLabel value="Retail Sale Rate"/>
+                                    <div class="row">
+                                        <div class="col-md-3"><h:outputLabel value="Name"/></div>
+                                        <div class="col-md-2"><h:outputLabel value=":"/></div>
+                                        <div class="col-md-7"><h:outputLabel value="#{storeAdjustmentController.stock.itemBatch.item.name}" ></h:outputLabel></div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-3"><h:outputLabel value="Retail Sale Rate"/></div>
+                                        <div class="col-md-2"><h:outputLabel value=":"/></div>
+                                        <div class="col-md-7"><h:outputLabel value="#{storeAdjustmentController.stock.itemBatch.retailsaleRate}" >
+                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                            </h:outputLabel>
+                                        </div>
+                                    </div>
 
-                                        <h:outputLabel value="#{storeAdjustmentController.stock.itemBatch.retailsaleRate}" >
-                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                        </h:outputLabel>
+                                    <div class="row">
+                                        <div class="col-md-3"><h:outputLabel value="Purchase Rate"/></div>
+                                        <div class="col-md-2"><h:outputLabel value=":"/></div>
+                                        <div class="col-md-7"><h:outputLabel value="#{storeAdjustmentController.stock.itemBatch.purcahseRate}" >
+                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                            </h:outputLabel>
+                                        </div>
+                                    </div>
 
-                                        <h:outputLabel value="Purchase Rate"/>
-                                        <h:outputLabel value="#{storeAdjustmentController.stock.itemBatch.purcahseRate}" >
-                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                        </h:outputLabel>
+                                    <div class="row">
+                                        <div class="col-md-3"><h:outputLabel value="Stocks"/></div>
+                                        <div class="col-md-2"><h:outputLabel value=":"/></div>
+                                        <div class="col-md-7"><h:outputLabel value="#{storeAdjustmentController.stock.stock}" >
+                                                <f:convertNumber pattern="#,###" ></f:convertNumber>
+                                            </h:outputLabel>
+                                        </div>
+                                    </div>
 
-                                        <h:outputLabel value="Stocks"/>
-                                        <h:outputLabel value="#{storeAdjustmentController.stock.stock}" >
-                                            <f:convertNumber pattern="#,###" ></f:convertNumber>
-                                        </h:outputLabel>
-
-                                        <h:outputLabel value="Expiry"/>
-                                        <h:outputLabel value="#{storeAdjustmentController.stock.itemBatch.dateOfExpire}" >
-                                            <f:convertDateTime pattern="MMM yyyy" ></f:convertDateTime>
-                                        </h:outputLabel>
-                                    </p:panelGrid>
+                                    <div class="row">
+                                        <div class="col-md-3"><h:outputLabel value="Expiry"/></div>
+                                        <div class="col-md-2"><h:outputLabel value=":"/></div>
+                                        <div class="col-md-7"><h:outputLabel value="#{storeAdjustmentController.stock.itemBatch.dateOfExpire}" >
+                                                <f:convertDateTime pattern="MMM yyyy" ></f:convertDateTime>
+                                            </h:outputLabel>
+                                        </div>
+                                    </div>
                                 </p:panel>
                                 <p:panel rendered="#{storeAdjustmentController.printPreview}">
                                     <p:commandButton ajax="false" action="#{storeAdjustmentController.makeNull()}" value="New Adjustment"/>
