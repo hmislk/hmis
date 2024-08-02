@@ -151,6 +151,49 @@ public class SmsManagerEjb {
             }
         }
     }
+    
+    private void sendSmsToDoctorsBeforeSessionWithChecks() {
+        // Define fromDate as the start of today
+        Date fromDate = CommonFunctions.getStartOfDay();
+
+        // Define toDate as the end of today
+        Date toDate = CommonFunctions.getEndOfDay();
+
+        // Fetch all session instances for today
+        List<SessionInstance> sessions = channelBean.listSessionInstances(fromDate, toDate, null, null, null);
+
+        // Define fromTime as the current time
+        Date fromTime = new Date();
+        Calendar calf = Calendar.getInstance();
+        calf.setTime(fromTime);
+        calf.add(Calendar.MINUTE, 30);
+        Date fromTime1 = calf.getTime();
+
+        // Calculate toTime as 60 minutes from fromTime
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(fromTime);
+        cal.add(Calendar.MINUTE, 60);
+        Date toTime = cal.getTime();
+
+        // Filter sessions that start within the next 60 minutes
+        List<SessionInstance> upcomingSessions = sessions.stream()
+                .filter(session -> {
+                    Date sessionStartDateTime = getSessionStartDateTime(session); // Combine session date and time
+                    return sessionStartDateTime != null && sessionStartDateTime.after(fromTime1) && sessionStartDateTime.before(toTime);
+                })
+                .collect(Collectors.toList());
+        // Iterate over the filtered sessions and send SMS to doctor
+        for (SessionInstance s : upcomingSessions) {
+            if (s.getBookedPatientCount() != null) {
+                if (!s.isCancelled() && s.getBookedPatientCount() > 0) {
+                    boolean isSmsSentBefore = checkSmsToDoctors(s);
+                    if (!isSmsSentBefore) {
+                        sendSmsToDoctors(s);
+                    }
+                }
+            }
+        }
+    }
 
     public void sendSmsToDoctorsBeforeSession() {
         
