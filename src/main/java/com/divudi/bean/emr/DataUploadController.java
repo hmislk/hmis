@@ -1502,10 +1502,6 @@ public class DataUploadController implements Serializable {
 
             }
 
-            item.setTotal(doctorFee);
-            item.setTotalForForeigner((doctorFee) * 2);
-            item.setDblValue(doctorFee);
-            itemController.saveSelected(item);
             System.out.println("item = 2 " + item);
             if (item != null) {
                 itemsSaved.add(item);
