@@ -1502,6 +1502,7 @@ public class DataUploadController implements Serializable {
 
             }
 
+
             System.out.println("item = 2 " + item);
             if (item != null) {
                 itemsSaved.add(item);
@@ -3107,6 +3108,7 @@ public class DataUploadController implements Serializable {
 
         return suppliersList;
     }
+
     
       private List<ItemFee> readCollectingCentrePriceListFromXcel(InputStream inputStream) throws IOException {
         Workbook workbook = new XSSFWorkbook(inputStream);
@@ -3221,6 +3223,7 @@ public class DataUploadController implements Serializable {
         return itemFees;
 
     }
+
 
     private List<Department> readDepartmentFromExcel(InputStream inputStream) throws IOException {
         Workbook workbook = new XSSFWorkbook(inputStream);

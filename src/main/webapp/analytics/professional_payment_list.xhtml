@@ -60,6 +60,7 @@
                                 value="Add Missing Staff" 
                                 action="#{searchController.updateToStaffForChannelProfessionalPaymentBills}" ></h:commandButton>
 
+
                         </h:panelGrid>
 
                         <p:dataTable 
@@ -78,11 +79,13 @@
                             scrollWidth="100%">
 
                             <p:column headerText="ID" width="3em" style="text-align: right;" sortBy="#{bill.id}" filterBy="#{bill.id}">
+
                                 <p:commandLink value="#{bill.id}" 
                                                ajax="false"
                                                action="#{billSearch.navigateViewOpdBillByBillTypeAtomic()}">
                                     <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}" ></f:setPropertyActionListener>
                                 </p:commandLink>
+
                             </p:column>
 
                             <p:column headerText="Date" width="6em" style="text-align: center;" sortBy="#{bill.billDate}" >
@@ -90,6 +93,7 @@
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
                                 </p:outputLabel>
                             </p:column>
+
 
                             <p:column headerText="Time" width="5em" style="text-align: center;" sortBy="#{bill.billTime}">
                                 <p:outputLabel value="#{bill.billTime}" >
@@ -113,6 +117,7 @@
                                       sortBy="#{bill.billTypeAtomic.label}" 
                                       filterBy="#{bill.billTypeAtomic.label}">
                                 <p:outputLabel value="#{bill.billTypeAtomic.label}" />
+
                             </p:column>
 
                             <p:column headerText="Date" width="10em" style="text-align: left;" rendered="false">
@@ -139,7 +144,9 @@
 
 
 
+
                             <p:column headerText="Status" width="400" rendered="false">
+
                                 <f:facet name="header">
                                     <h:outputLabel value="Status" class="w-100 d-flex justify-content-center" />
                                 </f:facet>
