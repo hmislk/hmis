@@ -1437,8 +1437,6 @@ public class StaffController implements Serializable {
         Map m = new HashMap();
         m.put("ret", true);
         m.put("name", name);
-        System.out.println("m = " + m);
-        System.out.println("p = " + jpql);
         return getFacade().findFirstByJpql(jpql, m);
     }
 
