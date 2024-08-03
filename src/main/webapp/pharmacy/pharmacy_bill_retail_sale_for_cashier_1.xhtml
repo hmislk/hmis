@@ -812,7 +812,7 @@
                             <h:panelGroup id="gpBillPreviewPos" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'PosPaper'}"> 
                                 <div >
                                     <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}">                             
-                                        <phi:saleBill bill="#{pharmacySaleController1.printBill}"></phi:saleBill>
+                                        <phi:saleBill_for_Cashier bill="#{pharmacySaleController1.printBill}"></phi:saleBill_for_Cashier>
                                     </h:panelGroup>
                                 </div>
                             </h:panelGroup>
@@ -820,7 +820,7 @@
                             <h:panelGroup id="gpBillPreviewFiveFive" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'FiveFivePaper'}"> 
                                 <div >
                                     <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}" > 
-                                        <phi:saleBill_five_five bill="#{pharmacySaleController1.printBill}"></phi:saleBill_five_five>
+                                        <phi:saleBill_five_five_for_Cashier bill="#{pharmacySaleController1.printBill}"></phi:saleBill_five_five_for_Cashier>
                                     </h:panelGroup>
                                 </div>
                             </h:panelGroup>
