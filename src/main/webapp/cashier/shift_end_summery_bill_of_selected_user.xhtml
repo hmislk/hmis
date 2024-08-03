@@ -265,10 +265,13 @@
                                         <tr>
                                             <td style="width:6em;">Float Collected Handovers</td>
                                             <td align="right" style="width:6em;">
-                                                <h:outputText value="#{financialTransactionController.financialReportByPayments.floatReceived}">
-                                                    <f:convertNumber pattern="#,##0.00" />
-                                                </h:outputText>
-
+                                                <p:commandLink
+                                                    ajax="false"
+                                                    action="#{financialTransactionController.selectFloatReceivedDetails()}">
+                                                    <h:outputText value="#{financialTransactionController.financialReportByPayments.floatReceived}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </p:commandLink>
                                             </td>
                                             <td align="right" style="width:6em;">
                                                 <p:commandLink 
