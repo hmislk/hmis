@@ -1344,6 +1344,7 @@
                                         <h:panelGroup class="w-100">
                                             <p:outputLabel for="cmbDoc" value="Doctor" ></p:outputLabel>
                                             <p:commandLink id="btnAddNewDoc" 
+                                                           rendered="#{webUserController.hasPrivilege('OpdAddNewRefferalDoctor')}"
                                                            type="button"  
                                                            value="&nbsp;(+)" 
                                                            oncomplete="PF('dlg').show();" 
@@ -1425,7 +1426,7 @@
                                         <h:panelGroup class="w-100" >
                                             <p:outputLabel value="Centre" />
                                             <p:commandLink 
-                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Allow Users To Add New Collecting Centre in Opd Billing')}"
+                                                rendered="#{webUserController.hasPrivilege('addNewCollectingCentre')}"
                                                 id="btnAddNewCc" 
                                                 value="&nbsp;(+)"  
                                                 ajax="false" 
