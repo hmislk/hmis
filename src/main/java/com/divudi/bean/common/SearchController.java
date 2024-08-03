@@ -7071,6 +7071,33 @@ public class SearchController implements Serializable {
 
     }
 
+    public void createStaffCreditBillList() {
+        String jpql;
+        Map m = new HashMap();
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        jpql = "select b from Bill b "
+                + "where b.toStaff is not null "
+                + "and b.createdAt between :fromDate and :toDate "
+                + "and b.retired = false ";
+        jpql += " and b.billTypeAtomic in :btas ";
+        
+        btas.addAll(BillTypeAtomic.findByServiceType(ServiceType.OPD));
+        btas.addAll(BillTypeAtomic.findByServiceType(ServiceType.CHANNELLING));
+        btas.removeAll(BillTypeAtomic.findByCategory(BillCategory.PAYMENTS));
+
+        jpql += " order by b.createdAt desc";
+
+        m.put("fromDate", fromDate);
+        m.put("toDate", toDate);
+         m.put("btas", btas);
+
+        System.out.println("m = " + m);
+        System.out.println("jpql = " + jpql);
+
+        bills = getBillFacade().findByJpql(jpql, m, TemporalType.TIMESTAMP);
+        System.out.println("bills = " + bills);
+    }
+
     public void createCCBillTableByKeyword(BillType billType, Institution ins, Department dep) {
         billLights = null;
         String sql;

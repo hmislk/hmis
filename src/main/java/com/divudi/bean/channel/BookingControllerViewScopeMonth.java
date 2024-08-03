@@ -429,9 +429,9 @@ public class BookingControllerViewScopeMonth implements Serializable {
             return;
         }
 
-        Bill printingBill = createBillForChannelReshedule(selectedBillSession);
+        Bill printingBill = createBillForChannelReshedule(selectedBillSession);        
         BillItem savingBillItem = createSessionItemForReshedule(printingBill);
-        if (printingBill.getBillTypeAtomic().getBillFinanceType() == BillFinanceType.CASH_IN) {
+        if (printingBill.getBillType() == BillType.ChannelResheduleWithPayment) {
             createPayment(printingBill, paymentMethod);
         }
 
@@ -445,6 +445,38 @@ public class BookingControllerViewScopeMonth implements Serializable {
         newBillSession.setSessionDate(getSelectedSessionInstanceForRechedule().getSessionDate());
         newBillSession.setSessionTime(getSelectedSessionInstanceForRechedule().getSessionTime());
         newBillSession.setStaff(getSelectedSessionInstanceForRechedule().getStaff());
+        
+        printingBill.setSingleBillSession(newBillSession);
+        printingBill.setSingleBillItem(savingBillItem);
+        printingBill.getSingleBillItem().setItem(savingBillItem.getItem());
+        
+        newBillSession.setBill(printingBill);
+        
+        PriceMatrix priceMatrix;
+        List<BillFee> savingBillFees = new ArrayList<>();
+
+        priceMatrix = priceMatrixController.fetchChannellingMemberShipDiscount(paymentMethod, paymentScheme, selectedSessionInstance.getOriginatingSession().getCategory());
+        System.out.println("priceMatrix = " + priceMatrix);
+
+        List<BillFee> savingBillFeesFromSession = createBillFeeForSessions(printingBill, savingBillItem, true, priceMatrix);
+        
+
+        if (savingBillFeesFromSession != null) {
+            savingBillFees.addAll(savingBillFeesFromSession);
+        }
+        
+        savingBillItem.setHospitalFee(billBeanController.calFeeValue(FeeType.OwnInstitution, savingBillItem));
+        savingBillItem.setStaffFee(billBeanController.calFeeValue(FeeType.Staff, savingBillItem));
+        savingBillItem.setBillSession(newBillSession);
+        getBillSessionFacade().edit(newBillSession);
+        printingBill.setHospitalFee(billBeanController.calFeeValue(FeeType.OwnInstitution, printingBill));
+        printingBill.setStaffFee(billBeanController.calFeeValue(FeeType.Staff, printingBill));
+        printingBill.setSingleBillItem(savingBillItem);
+        printingBill.setSingleBillSession(newBillSession);
+        printingBill.setBillFees(savingBillFees);
+        
+        calculateBillTotalsFromBillFees(printingBill, savingBillFees);
+        
         List<Integer> lastSessionReservedNumbers = CommonFunctions.convertStringToIntegerList(getSelectedSessionInstance().getOriginatingSession().getReserveNumbers());
         List<Integer> reservedNumbers = CommonFunctions.convertStringToIntegerList(getSelectedSessionInstanceForRechedule().getOriginatingSession().getReserveNumbers());
 
