@@ -69,19 +69,19 @@
 
                             <p:column headerText="Total" width="8em" style="text-align: left;" >
                                 <p:outputLabel value="#{b.total}" >
-
+                                    <f:convertDateTime pattern="#,##0.00" ></f:convertDateTime>
                                 </p:outputLabel>
                             </p:column>
 
                             <p:column headerText="Discount" width="8em" style="text-align: left;" >
                                 <p:outputLabel value="#{b.discount}" >
-
+                                    <f:convertDateTime pattern="#,##0.00" ></f:convertDateTime>
                                 </p:outputLabel>
                             </p:column>
 
                             <p:column headerText="Net" width="8em" style="text-align: left;" >
                                 <p:outputLabel value="#{b.netTotal}" >
-
+                                    <f:convertDateTime pattern="#,##0.00" ></f:convertDateTime>
                                 </p:outputLabel>
                             </p:column>
 
