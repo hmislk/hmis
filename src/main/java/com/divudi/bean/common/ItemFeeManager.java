@@ -87,6 +87,10 @@ public class ItemFeeManager implements Serializable {
     public String navigateToUploadItemFees() {
         return "/admin/pricing/item_fee_upload?faces-redirect=true";
     }
+    
+    public String navigateToUploadCollectingCentreFeeList() {
+        return "/admin/pricing/collecting_centre_price_list_upload?faces-redirect=true";
+    }
 
     public String navigateToUploadCollectingCentreItemFees() {
         return "/admin/pricing/item_fee_upload_collecting_centre?faces-redirect=true";
