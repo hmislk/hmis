@@ -72,6 +72,7 @@
 
 
                             <p:column headerText="ID" width="3em" style="text-align: right;" sortBy="#{bill.id}" filterBy="#{bill.id}">
+
                                 <p:commandLink 
                                     value="#{bill.id}" 
                                     ajax="false"
@@ -79,6 +80,7 @@
                                     >
                                     <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}" ></f:setPropertyActionListener>
                                 </p:commandLink>
+
 
                             </p:column>
 
@@ -98,11 +100,13 @@
                                 <p:outputLabel value="#{bill.deptId}" />
                             </p:column>
 
+
                             <p:column headerText="Cashier" width="10em" style="text-align: left;" 
                                       sortBy="#{bill.creater.webUserPerson.name}" 
                                       filterBy="#{bill.creater.webUserPerson.name}">
                                 <p:outputLabel value="#{bill.creater.webUserPerson.name}" />
                             </p:column>
+
 
                             <p:column headerText="Payment Type" 
                                       width="10em" 
@@ -137,6 +141,7 @@
 
 
                             <p:column headerText="Status" width="400"  rendered="false">
+
                                 <f:facet name="header">
                                     <h:outputLabel value="Status" class="w-100 d-flex justify-content-center" />
                                 </f:facet>

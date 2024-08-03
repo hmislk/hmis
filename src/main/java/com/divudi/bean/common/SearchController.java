@@ -6976,6 +6976,7 @@ public class SearchController implements Serializable {
                                         System.out.println("Different staff found: " + bf.getReferenceBillFee().getStaff());
                                     }
                                 }
+
                             } else {
                                 if (bf.getReferenceBillFee().getBill().getStaff() != null) {
                                     if (bs == null) {
@@ -6988,6 +6989,7 @@ public class SearchController implements Serializable {
                                         }
                                     }
                                 }
+
                             }
                         }
                     }
