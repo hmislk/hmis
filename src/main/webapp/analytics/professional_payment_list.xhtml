@@ -53,10 +53,15 @@
                             <p:commandButton class="ui-button-success mx-2" icon="fas fa-file-excel" id="btnExcel" ajax="false" value="Excel" >
                                 <p:dataExporter fileName="Chanelling Professional Payments" type="xls" target="tblBills" ></p:dataExporter>
                             </p:commandButton>
-                            
-                            
-                            <h:commandButton rendered="false" value="Add Missing Staff" action="#{searchController.updateToStaffForChannelProfessionalPaymentBills}" ></h:commandButton>
-                            
+
+
+
+                            <h:commandButton 
+                                rendered="true"
+                                value="Add Missing Staff" 
+                                action="#{searchController.updateToStaffForChannelProfessionalPaymentBills}" ></h:commandButton>
+
+
                         </h:panelGrid>
 
                         <p:dataTable 
@@ -75,7 +80,13 @@
                             scrollWidth="100%">
 
                             <p:column headerText="ID" width="3em" style="text-align: right;" sortBy="#{bill.id}" filterBy="#{bill.id}">
-                                <p:outputLabel value="#{bill.id}" />
+
+                                <p:commandLink value="#{bill.id}" 
+                                               ajax="false"
+                                               action="#{billSearch.navigateViewOpdBillByBillTypeAtomic()}">
+                                    <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}" ></f:setPropertyActionListener>
+                                </p:commandLink>
+
                             </p:column>
 
                             <p:column headerText="Date" width="6em" style="text-align: center;" sortBy="#{bill.billDate}" >
@@ -83,23 +94,31 @@
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
                                 </p:outputLabel>
                             </p:column>
-                            
+
+
                             <p:column headerText="Time" width="5em" style="text-align: center;" sortBy="#{bill.billTime}">
-                                 <p:outputLabel value="#{bill.billTime}" >
-                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.shortTimeFormat}" ></f:convertDateTime>
+                                <p:outputLabel value="#{bill.billTime}" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortTimeFormat}" ></f:convertDateTime>
                                 </p:outputLabel>
                             </p:column>
-                            
+
                             <p:column headerText="Receipt No" width="10em" style="text-align: left;" sortBy="#{bill.deptId}" filterBy="#{bill.deptId}">
                                 <p:outputLabel value="#{bill.deptId}" />
                             </p:column>
-                            
-                             <p:column headerText="Payment Type" 
-                                       width="10em" 
-                                       style="text-align: left;" 
-                                       sortBy="#{bill.billTypeAtomic.label}" 
-                                       filterBy="#{bill.billTypeAtomic.label}">
-                                 <p:outputLabel value="#{bill.billTypeAtomic.label}" />
+
+                            <p:column headerText="Cashier" width="10em" style="text-align: left;" 
+                                      sortBy="#{bill.creater.webUserPerson.name}" 
+                                      filterBy="#{bill.creater.webUserPerson.name}">
+                                <p:outputLabel value="#{bill.creater.webUserPerson.name}" />
+                            </p:column>
+
+                            <p:column headerText="Payment Type" 
+                                      width="10em" 
+                                      style="text-align: left;" 
+                                      sortBy="#{bill.billTypeAtomic.label}" 
+                                      filterBy="#{bill.billTypeAtomic.label}">
+                                <p:outputLabel value="#{bill.billTypeAtomic.label}" />
+
                             </p:column>
 
                             <p:column headerText="Date" width="10em" style="text-align: left;" rendered="false">
@@ -126,7 +145,9 @@
 
 
 
-                            <p:column headerText="Status" width="400">
+
+                            <p:column headerText="Status" width="400" rendered="false">
+
                                 <f:facet name="header">
                                     <h:outputLabel value="Status" class="w-100 d-flex justify-content-center" />
                                 </f:facet>
