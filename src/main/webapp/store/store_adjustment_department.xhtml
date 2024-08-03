@@ -32,7 +32,7 @@
                                                           itemValue="#{i}" >
                                             <p:ajax 
                                                 process="acStock" 
-                                                listener="#{pharmacyAdjustmentController.fillAmpStocks}"
+                                                listener="#{storeAdjustmentController.fillSelectStock}"
                                                 update="tblStock" ></p:ajax>
                                             <p:column headerText="Item">
                                                 <h:outputLabel value="#{i.itemBatch.item.name}" ></h:outputLabel>
@@ -75,7 +75,6 @@
 
                                             <f:ajax event="itemSelect" execute="@this" render="det"/>
                                         </p:autoComplete>
-
                                         <h:outputLabel value="Batches" class="my-2"></h:outputLabel>
                                         <p:dataTable 
                                             id="tblStock"
