@@ -12,7 +12,7 @@
         <ui:composition template="admin_institutions_index.xhtml">
 
             <ui:define name="admin">
-                
+
                 <div class="row" >
                     <h:form >
                         <p:panel >
@@ -37,17 +37,34 @@
                             </div>
                             <div class="row p-1">
                                 <div class="col-md-2">
+                                    <h:outputLabel class="form-label" for="cmdIns" value="Institution" ></h:outputLabel>
+                                </div>
+                                <div class="col-md-10">
+                                    <p:autoComplete 
+                                        forceSelection="true"
+                                        value="#{routeController.current.institution}"
+                                        completeMethod="#{institutionController.completeIns}" id="ins2"
+                                        var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" 
+                                        class="w-100" inputStyleClass="w-100"
+                                        required="true">
+                                    </p:autoComplete>
+                                </div>
+                            </div>
+                            <div class="row p-1">
+                                <div class="col-md-2">
                                     <h:outputLabel class="form-label" for="txtContents"  value="Description" ></h:outputLabel>
                                 </div>
                                 <div class="col-md-10">
                                     <h:inputTextarea  class="form form-control" id="txtDescription" value="#{routeController.current.description}"></h:inputTextarea>
                                 </div>
                             </div>
+
+
                         </p:panel>
                     </h:form>
 
                 </div>
-                
+
 
             </ui:define>
 

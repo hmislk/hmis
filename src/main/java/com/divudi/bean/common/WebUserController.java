@@ -886,7 +886,7 @@ public class WebUserController implements Serializable {
         }
         getUserDepartmentController().setSelectedUser(selected);
         getUserDepartmentController().setItems(getUserDepartmentController().fillWebUserDepartments(selected));
-        return "/admin/users/user_department?faces-redirect=true";
+        return "/admin/users/user_routes?faces-redirect=true";
     }
 
     public String toManageDashboards() {
