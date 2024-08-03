@@ -341,6 +341,14 @@ public class PettyCashBillController implements Serializable {
         return p;
     }
     
+    public Payment createPaymentForPettyCashBillCancellation(Bill cb, PaymentMethod pm) {
+        Payment p = new Payment();
+        p.setBill(cb);
+        p.setPaidValue(0 - Math.abs(cb.getNetTotal()));
+        setPaymentMethodData(p, pm);
+        return p;
+    }
+    
     public void createPaymentForPettyCashBill(Bill b, PaymentMethod pm) {
         Payment p = new Payment();
         p.setBill(b);
