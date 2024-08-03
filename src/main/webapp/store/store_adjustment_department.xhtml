@@ -9,7 +9,6 @@
 
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
-
             <ui:define name="content">
                 <h:form>
                     <p:panel header="Department Stock Adjustment : Quantity" rendered="#{!storeAdjustmentController.printPreview}">
@@ -31,6 +30,10 @@
                                                           var="i" 
                                                           itemLabel="#{i.itemBatch.item.name}" 
                                                           itemValue="#{i}" >
+                                            <p:ajax 
+                                                process="acStock" 
+                                                listener="#{pharmacyAdjustmentController.fillAmpStocks}"
+                                                update="tblStock" ></p:ajax>
                                             <p:column headerText="Item">
                                                 <h:outputLabel value="#{i.itemBatch.item.name}" ></h:outputLabel>
                                             </p:column>
@@ -72,6 +75,45 @@
 
                                             <f:ajax event="itemSelect" execute="@this" render="det"/>
                                         </p:autoComplete>
+
+                                        <h:outputLabel value="Batches" class="my-2"></h:outputLabel>
+                                        <p:dataTable 
+                                            id="tblStock"
+                                            value="#{storeAdjustmentController.stock}"
+                                            var="i"
+                                            rows="10"
+                                            selectionMode="single"
+                                            rowKey="#{i.id}"
+                                            selection="#{storeAdjustmentController.stock}">
+                                            <p:column 
+                                                headerText="Rate" 
+                                                sortBy="#{i.itemBatch.retailsaleRate}"
+                                                styleClass="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
+                                                <h:outputText value="#{i.itemBatch.retailsaleRate}" >
+                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                </h:outputText>
+                                            </p:column>
+                                            <p:column 
+                                                sortBy="#{i.stock}"
+                                                headerText="Stocks" 
+                                                styleClass="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
+                                                <h:outputText value="#{i.stock}" >
+                                                    <f:convertNumber pattern="#,###.##" ></f:convertNumber>
+                                                </h:outputText>
+                                            </p:column>
+                                            <p:column
+                                                headerText="Expiry" 
+                                                sortBy="#{i.itemBatch.dateOfExpire}"
+                                                styleClass="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
+                                                <h:outputText value="#{i.itemBatch.dateOfExpire}" style="width: 100px!important;" >
+                                                    <f:convertDateTime pattern="MMM yyyy" ></f:convertDateTime>
+
+                                                </h:outputText>
+                                            </p:column>
+                                            <p:ajax event="rowSelect" update=":#{p:resolveFirstComponentWithId('det',view).clientId}" />
+                                            <p:ajax event="rowUnselect" update=":#{p:resolveFirstComponentWithId('det',view).clientId}" />
+                                        </p:dataTable>
+
                                     </h:panelGrid>
 
                                 </p:panel>
@@ -176,11 +218,7 @@
                     </p:panel>
 
                 </h:form>
-
             </ui:define>
-
-
         </ui:composition>
-
     </h:body>
 </html>
