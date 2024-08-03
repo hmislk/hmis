@@ -1422,9 +1422,10 @@
                                             </p:commandButton>  
                                         </h:panelGroup>
 
-                                        <h:panelGroup class="w-100">
+                                        <h:panelGroup class="w-100" >
                                             <p:outputLabel value="Centre" />
                                             <p:commandLink 
+                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Allow Users To Add New Collecting Centre in Opd Billing')}"
                                                 id="btnAddNewCc" 
                                                 value="&nbsp;(+)"  
                                                 ajax="false" 
