@@ -130,7 +130,7 @@
                 <p:panel rendered="#{cashRecieveBillController.printPreview}" >
                     <p:commandButton value="New Bill" ajax="false" action="#{cashRecieveBillController.prepareNewBill()}"  >
                     </p:commandButton>
-                    <bi:insRecieve billController="#{cashRecieveBillController}"  bill="#{cashRecieveBillController.current}" dup="false"/>                       
+                    <bi:insRecieve_custom billController="#{cashRecieveBillController}"  bill="#{cashRecieveBillController.current}" dup="false"/>                       
                 </p:panel>
 
             </h:form>
