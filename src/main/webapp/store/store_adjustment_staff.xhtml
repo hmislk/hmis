@@ -16,7 +16,7 @@
                     <p:panel header="Staff Stock Adjustment" >
                         <p:panelGrid columns="2" >
                             <h:outputLabel value="Item" ></h:outputLabel>
-                            <p:autoComplete   forceSelection="true"  id="acStock" value="#{storeAdjustmentController.stock}" completeMethod="#{storeAdjustmentController.completeStaffStocks}" var="i" itemLabel="#{i.itemBatch.item.name}" itemValue="#{i}" >
+                            <p:autoComplete   forceSelection="true"  id="acStock"  class="w-100" value="#{storeAdjustmentController.stock}" completeMethod="#{storeAdjustmentController.completeStaffStocks}" var="i" itemLabel="#{i.itemBatch.item.name}" itemValue="#{i}" >
                                 <p:column headerText="Staff">
                                     <h:outputLabel value="#{i.staff.person.name}" ></h:outputLabel>
                                 </p:column>
@@ -40,9 +40,9 @@
                                 </p:column>
                             </p:autoComplete>
                             <h:outputLabel value="New Quentity" ></h:outputLabel>
-                            <p:inputText autocomplete="off" value="#{storeAdjustmentController.qty}" ></p:inputText>
+                            <p:inputText autocomplete="off"  class="w-100" value="#{storeAdjustmentController.qty}" ></p:inputText>
                             <h:outputLabel value="Comment" ></h:outputLabel>
-                            <p:inputTextarea value="#{storeAdjustmentController.comment}" ></p:inputTextarea>
+                            <p:inputTextarea value="#{storeAdjustmentController.comment}"  class="w-100" ></p:inputTextarea>
                             <h:outputLabel value="" ></h:outputLabel>
                             <p:commandButton value="Make Adjustment" ajax="false" action="#{storeAdjustmentController.adjustDepartmentStock()}" >
                             </p:commandButton>

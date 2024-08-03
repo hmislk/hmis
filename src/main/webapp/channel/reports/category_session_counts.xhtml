@@ -40,7 +40,6 @@
                                              completeMethod="#{institutionController.completeIns}" 
                                              var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" forceSelection="true" rendered="true" requiredMessage="You must select a department" >
                             </p:autoComplete>
-
                             <h:outputLabel  value="Category"  ></h:outputLabel>
                             <h:outputLabel value=":" />
                             <p:autoComplete 
@@ -56,18 +55,21 @@
                                 requiredMessage="Please select a category"
                                 ></p:autoComplete>
                         </h:panelGrid>
+                        
                         <h:panelGrid columns="6" class="my-2">
                             <p:commandButton 
                                 class="ui-button-warning mt-2 mb-2" 
                                 icon="fas fa-cogs" 
                                 value="Process" 
                                 action="#{channelReportTemplateController.fillCategorySessionCounts()}" ajax="false" ></p:commandButton>
+                            <p:commandButton 
+                                class="ui-button-success mx-2"
+                                icon ="fas fa-file-excel"
+                                ajax="false"
+                                value="Excel">
+                                <p:dataExporter target="tbl1" fileName="Category_Session_Count_#{channelReportTemplateController.toDate}" type="xlsx" />
+                            </p:commandButton>
                         </h:panelGrid>
-
-
-
-
-
                         <p:dataTable 
                             value="#{channelReportTemplateController.bundle.reportTemplateRows}" 
                             var="a" 
@@ -168,13 +170,9 @@
                                 </f:facet>
                             </p:column>
                         </p:dataTable>
-
-
                     </p:panel>
                 </h:form>
             </ui:define>
-
         </ui:composition>
-
     </h:body>
 </html>

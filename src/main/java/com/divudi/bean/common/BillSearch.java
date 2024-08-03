@@ -4,6 +4,7 @@
  */
 package com.divudi.bean.common;
 
+import com.divudi.bean.channel.ChannelSearchController;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.collectingCentre.CollectingCentreBillController;
 import com.divudi.bean.lab.PatientInvestigationController;
@@ -51,8 +52,31 @@ import com.divudi.facade.PharmaceuticalBillItemFacade;
 import com.divudi.facade.WebUserFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.pharmacy.PharmacyBillSearch;
+import com.divudi.data.BillCategory;
+import com.divudi.data.BillFinanceType;
 import com.divudi.data.BillTypeAtomic;
+import static com.divudi.data.BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT;
+import static com.divudi.data.BillTypeAtomic.CHANNEL_PAYMENT_FOR_BOOKING_BILL;
+import static com.divudi.data.BillTypeAtomic.CHANNEL_REFUND;
+import static com.divudi.data.BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT;
+import static com.divudi.data.BillTypeAtomic.OPD_BILL_CANCELLATION;
+import static com.divudi.data.BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION;
+import static com.divudi.data.BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER;
+import static com.divudi.data.BillTypeAtomic.OPD_BILL_REFUND;
+import static com.divudi.data.BillTypeAtomic.OPD_BILL_WITH_PAYMENT;
+import static com.divudi.data.BillTypeAtomic.OPD_PROFESSIONAL_PAYMENT_BILL;
+import static com.divudi.data.BillTypeAtomic.OPD_PROFESSIONAL_PAYMENT_BILL_RETURN;
+import static com.divudi.data.BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED;
+import static com.divudi.data.BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE;
+import static com.divudi.data.BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_FOR_AGENCIES;
+import static com.divudi.data.BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_FOR_AGENCIES_RETURN;
+import static com.divudi.data.BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_RETURN;
+import static com.divudi.data.BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_SESSION;
+import static com.divudi.data.BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES;
+import static com.divudi.data.BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES_RETURN;
+import com.divudi.data.CountedServiceType;
 import com.divudi.data.OptionScope;
+import com.divudi.data.ServiceType;
 import com.divudi.entity.Doctor;
 import com.divudi.facade.FeeFacade;
 import com.divudi.java.CommonFunctions;
@@ -169,6 +193,8 @@ public class BillSearch implements Serializable {
 
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    ChannelSearchController channelSearchController;
     /**
      * Class Variables
      */
@@ -2125,6 +2151,17 @@ public class BillSearch implements Serializable {
             return;
         }
 
+        if (paymentMethod == PaymentMethod.PatientDeposit) {
+            if (getBill().getPatient().getHasAnAccount() == null) {
+                JsfUtil.addErrorMessage("Create Patient Account First");
+                return;
+            }
+            if (!getBill().getPatient().getHasAnAccount()) {
+                JsfUtil.addErrorMessage("Create Patient Account First");
+                return;
+            }
+        }
+
         if (!getWebUserController().hasPrivilege("OpdCancel")) {
             JsfUtil.addErrorMessage("You have no privilege to cancel OPD bills. Please contact System Administrator.");
             return;
@@ -2132,7 +2169,6 @@ public class BillSearch implements Serializable {
 
         CancelledBill cancellationBill = createOpdCancelBill(bill);
         billController.save(cancellationBill);
-        System.out.println("cancellationBill.getDepartment().getName() = " + cancellationBill.getDepartment().getName());
         Payment p = getOpdPreSettleController().createPaymentForCancellationsforOPDBill(cancellationBill, paymentMethod);
         List<BillItem> list = cancelBillItems(getBill(), cancellationBill, p);
         cancellationBill.setBillItems(list);
@@ -2730,7 +2766,7 @@ public class BillSearch implements Serializable {
             return "";
         }
         //System.out.println("bill = " + bill.getIdStr());
-        
+
         if (configOptionApplicationController.getBooleanValueByKey("Set the Original Bill PaymentMethod to Cancelation Bill")) {
             paymentMethod = bill.getPaymentMethod();
         } else {
@@ -2823,7 +2859,32 @@ public class BillSearch implements Serializable {
         return "/opd/bill_reprint?faces-redirect=true;";
     }
 
+    public String navigateToViewChannelingProfessionalPaymentBill() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("Nothing to cancel");
+            return "";
+        }
+        channelSearchController.setBill(bill);
+        channelSearchController.setPrintPreview(true);
+        return "/channel/channel_payment_bill_reprint.xhtml?faces-redirect=true;";
+    }
+
+    //to do
+    public String navigateToViewOpdProfessionalPaymentBill() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("Nothing to cancel");
+            return "";
+        }
+        setBill(bill);
+        printPreview = true;
+        return "/payment_bill_reprint.xhtml?faces-redirect=true;";
+    }
+
     public String navigateViewBillByBillTypeAtomic() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No Bill is Selected");
+            return null;
+        }
         BillTypeAtomic billTypeAtomic = bill.getBillTypeAtomic();
         switch (billTypeAtomic) {
             case PHARMACY_RETAIL_SALE_CANCELLED:
@@ -2855,11 +2916,74 @@ public class BillSearch implements Serializable {
 
             case CHANNEL_REFUND:
                 return "";
-
             case CHANNEL_PAYMENT_FOR_BOOKING_BILL:
+            case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE:
+            case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_FOR_AGENCIES:
+            case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_FOR_AGENCIES_RETURN:
+            case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_RETURN:
+            case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_SESSION:
+                return navigateToViewChannelingProfessionalPaymentBill();
 
         }
 
+        return "";
+    }
+
+    public String navigateViewOpdBillByBillTypeAtomic() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No Bill is Selected");
+            return null;
+        }
+        BillTypeAtomic billTypeAtomic = bill.getBillTypeAtomic();
+        switch (billTypeAtomic) {
+            case PHARMACY_RETAIL_SALE_CANCELLED:
+                pharmacyBillSearch.setBill(bill);
+                return pharmacyBillSearch.navigateToViewPharmacyGrn();
+            case OPD_BILL_REFUND:
+                return navigateToViewOpdBill();
+
+            case OPD_BILL_CANCELLATION:
+                return navigateToViewOpdBill();
+
+            case OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER:
+                return navigateToViewOpdBill();
+
+            case OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION:
+                return navigateToViewOpdBill();
+
+            case OPD_PROFESSIONAL_PAYMENT_BILL:
+                return navigateToViewOpdBill();
+
+            case OPD_BILL_WITH_PAYMENT:
+                return navigateToViewOpdBill();
+
+            case OPD_BATCH_BILL_WITH_PAYMENT:
+                return navigateToViewOpdBill();
+
+            case CHANNEL_BOOKING_WITH_PAYMENT:
+                return "";
+
+            case CHANNEL_REFUND:
+                return "";
+            case CHANNEL_PAYMENT_FOR_BOOKING_BILL:
+            case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE:
+            case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_FOR_AGENCIES:
+            case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_FOR_AGENCIES_RETURN:
+            case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_RETURN:
+            case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_SESSION:
+                return navigateToViewChannelingProfessionalPaymentBill();
+                
+            case OPD_BATCH_BILL_TO_COLLECT_PAYMENT_AT_CASHIER:
+            case OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER:
+            case OPD_BATCH_BILL_CANCELLATION:
+            case OPD_BILL_TO_COLLECT_PAYMENT_AT_CASHIER:
+            case OPD_PROFESSIONAL_PAYMENT_BILL_RETURN:
+            case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES:
+            case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES_RETURN:
+                return navigateToViewOpdProfessionalPaymentBill();
+                
+        }
+        JsfUtil.addErrorMessage("Wrong Bill Type");
         return "";
     }
 
@@ -2893,10 +3017,10 @@ public class BillSearch implements Serializable {
             JsfUtil.addErrorMessage("Nothing to cancel");
             return "";
         }
-        
-        if(configOptionApplicationController.getBooleanValueByKey("Set the Original Bill PaymentMethod to Refunded Bill")){
+
+        if (configOptionApplicationController.getBooleanValueByKey("Set the Original Bill PaymentMethod to Refunded Bill")) {
             paymentMethod = getBill().getPaymentMethod();
-        }else{
+        } else {
             paymentMethod = PaymentMethod.Cash;
         }
         //System.out.println("Refund"+ paymentMethod);

@@ -23,10 +23,13 @@
                                 <p:panel header="Patient Detail">
                                     <p:panelGrid columns="2">
                                         <h:outputLabel value="Staff ​Name:" ></h:outputLabel>
-                                        <h:outputLabel value="#{channelSearchController.bill.staff.person.nameWithTitle }" ></h:outputLabel>                                        
+                                        <h:outputLabel value="#{channelSearchController.bill.staff.person.nameWithTitle }" ></h:outputLabel>   
+                                        <h:outputLabel value="#{channelSearchController.bill.toStaff.person.nameWithTitle }" ></h:outputLabel>   
                                         <h:outputLabel value="Phone" >
                                         </h:outputLabel>
                                         <h:outputLabel value="#{channelSearchController.bill.staff.person.phone}" >
+                                        </h:outputLabel>
+                                        <h:outputLabel value="#{channelSearchController.bill.toStaff.person.phone}" >
                                         </h:outputLabel>
                                     </p:panelGrid>
                                 </p:panel>

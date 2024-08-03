@@ -35,6 +35,7 @@ import javax.persistence.Transient;
 /**
  *
  * @author Dr M H B Ariyaratne <buddhika.ari at gmail.com>
+ * 0715812399
  */
 @Entity
 public class SessionInstance implements Serializable {

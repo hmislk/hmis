@@ -139,7 +139,10 @@ public class StoreTransferReceiveController implements Serializable {
     public void settle() {
 
         saveBill();
-
+        if(getReceivedBill().getComments() == null || getReceivedBill().getComments().trim().equals("")) {
+            JsfUtil.addErrorMessage("Please enter a comment");
+            return;
+        }
         for (BillItem i : getBillItems()) {
 
 //            i.getPharmaceuticalBillItem().setQtyInUnit(i.getQty());

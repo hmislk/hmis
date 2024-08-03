@@ -78,6 +78,7 @@ import com.divudi.data.OptionScope;
 import static com.divudi.data.PaymentMethod.OnlineSettlement;
 import com.divudi.data.dataStructure.ComponentDetail;
 import com.divudi.ejb.StaffBean;
+import com.divudi.entity.Category;
 import com.divudi.entity.Doctor;
 import com.divudi.entity.Fee;
 import com.divudi.entity.Payment;
@@ -430,9 +431,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             return;
         }
 
-        Bill printingBill = createBillForChannelReshedule(selectedBillSession);
+        Bill printingBill = createBillForChannelReshedule(selectedBillSession);        
         BillItem savingBillItem = createSessionItemForReshedule(printingBill);
-        if (printingBill.getBillTypeAtomic().getBillFinanceType() == BillFinanceType.CASH_IN) {
+        if (printingBill.getBillType() == BillType.ChannelResheduleWithPayment) {
             createPayment(printingBill, paymentMethod);
         }
 
@@ -446,6 +447,38 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         newBillSession.setSessionDate(getSelectedSessionInstanceForRechedule().getSessionDate());
         newBillSession.setSessionTime(getSelectedSessionInstanceForRechedule().getSessionTime());
         newBillSession.setStaff(getSelectedSessionInstanceForRechedule().getStaff());
+        
+        printingBill.setSingleBillSession(newBillSession);
+        printingBill.setSingleBillItem(savingBillItem);
+        printingBill.getSingleBillItem().setItem(savingBillItem.getItem());
+        
+        newBillSession.setBill(printingBill);
+        
+        PriceMatrix priceMatrix;
+        List<BillFee> savingBillFees = new ArrayList<>();
+
+        priceMatrix = priceMatrixController.fetchChannellingMemberShipDiscount(paymentMethod, paymentScheme, getSelectedSessionInstanceForRechedule().getOriginatingSession().getCategory());
+        System.out.println("priceMatrix = " + priceMatrix);
+
+        List<BillFee> savingBillFeesFromSession = createBillFeeForSessions(printingBill, savingBillItem, true, priceMatrix);
+        
+
+        if (savingBillFeesFromSession != null) {
+            savingBillFees.addAll(savingBillFeesFromSession);
+        }
+        
+        savingBillItem.setHospitalFee(billBeanController.calFeeValue(FeeType.OwnInstitution, savingBillItem));
+        savingBillItem.setStaffFee(billBeanController.calFeeValue(FeeType.Staff, savingBillItem));
+        savingBillItem.setBillSession(newBillSession);
+        getBillSessionFacade().edit(newBillSession);
+        printingBill.setHospitalFee(billBeanController.calFeeValue(FeeType.OwnInstitution, printingBill));
+        printingBill.setStaffFee(billBeanController.calFeeValue(FeeType.Staff, printingBill));
+        printingBill.setSingleBillItem(savingBillItem);
+        printingBill.setSingleBillSession(newBillSession);
+        printingBill.setBillFees(savingBillFees);
+        
+        calculateBillTotalsFromBillFees(printingBill, savingBillFees);
+        
         List<Integer> lastSessionReservedNumbers = CommonFunctions.convertStringToIntegerList(getSelectedSessionInstance().getOriginatingSession().getReserveNumbers());
         List<Integer> reservedNumbers = CommonFunctions.convertStringToIntegerList(getSelectedSessionInstanceForRechedule().getOriginatingSession().getReserveNumbers());
 
@@ -483,7 +516,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         bs.setReferenceBillSession(newBillSession);
         getBillSessionFacade().edit(bs);
         newBillSessionForSMS = newBillSession;
-
         System.out.println("newBillSessionForSMS = " + newBillSessionForSMS);
         printingBill.setSingleBillSession(newBillSession);
         billFacade.edit(printingBill);
@@ -1603,7 +1635,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             if (financialTransactionController.getNonClosedShiftStartFundBill() != null) {
                 fromDate = new Date();
                 toDate = new Date();
-                listAllSesionInstances();
+//                listAllSesionInstances();
                 prepareForNewChannellingBill();
                 return "/channel/channel_booking_by_date?faces-redirect=true";
             } else {
@@ -1613,8 +1645,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         } else {
             fromDate = new Date();
             toDate = new Date();
-            listAllSesionInstances();
-            prepareForNewChannellingBill();
+//            listAllSesionInstances();
+//            prepareForNewChannellingBill();
             return "/channel/channel_booking_by_date?faces-redirect=true";
         }
 
@@ -7457,6 +7489,65 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         System.out.println("feeNetTotalForSelectedBill 3 = " + feeNetTotalForSelectedBill);
         feeNetTotalForSelectedBill = feeTotalForSelectedBill - feeDiscountForSelectedBill;
         System.out.println("feeNetTotalForSelectedBill 4 = " + feeNetTotalForSelectedBill);
+    }
+    
+    public void calculateSelectedBillSessionTotalForSettling() {
+        System.out.println("calculateSelectedBillSessionTotalForSettling");
+        Category cat = getBillSession().getSessionInstance().getOriginatingSession().getCategory();
+        PaymentSchemeDiscount paymentSchemeDiscount = priceMatrixController.fetchChannellingMemberShipDiscount(settlePaymentMethod, paymentScheme,  cat);
+        feeTotalForSelectedBill = 0.0;
+        feeDiscountForSelectedBill = 0.0;
+        feeNetTotalForSelectedBill = 0.0;
+        System.out.println("paymentSchemeDiscount = " + paymentSchemeDiscount);
+        System.out.println("settlePaymentMethod = " + settlePaymentMethod);
+        System.out.println("paymentScheme = " + paymentScheme);
+        List<BillFee> billFees = getBillSession().getBill().getBillFees();
+        System.out.println("billFees = " + billFees);
+        if(billFees==null){
+            billFees= billBeanController.getBillFee(getBillSession().getBill());
+        }
+        System.out.println("billFees = " + billFees);
+        if (paymentSchemeDiscount != null) {
+            for (BillFee bf : billFees) {
+                
+                ItemFee itmf=(ItemFee) bf.getFee() ;
+                
+                System.out.println("itmf = " + itmf);
+                if (foriegn) {
+                    feeTotalForSelectedBill += itmf.getFfee();
+                    if (itmf.isDiscountAllowed()) {
+                        feeDiscountForSelectedBill += itmf.getFfee() * (paymentSchemeDiscount.getDiscountPercent() / 100);
+                    }
+                } else {
+                    feeTotalForSelectedBill += itmf.getFee();
+                    System.out.println("itmf = " + itmf.getFee());
+                    System.out.println("feeTotalForSelectedBill = " + feeTotalForSelectedBill);
+                    if (itmf.isDiscountAllowed()) {
+                        feeDiscountForSelectedBill += itmf.getFee() * (paymentSchemeDiscount.getDiscountPercent() / 100);
+                    }
+                }
+            }
+        } else {
+            for (ItemFee itmf : getSelectedItemFees()) {
+                System.out.println("itmf = " + itmf);
+                if (foriegn) {
+                    feeTotalForSelectedBill += itmf.getFfee();
+                    System.out.println("itmf = " + itmf);
+                } else {
+                    feeTotalForSelectedBill += itmf.getFee();
+                    System.out.println("itmf 2 = " + itmf);
+                }
+            }
+
+        }
+
+        System.out.println("feeTotalForSelectedBill = " + feeTotalForSelectedBill);
+        System.out.println("feeDiscountForSelectedBill = " + feeDiscountForSelectedBill);
+        System.out.println("feeNetTotalForSelectedBill 3 = " + feeNetTotalForSelectedBill);
+        feeNetTotalForSelectedBill = feeTotalForSelectedBill - feeDiscountForSelectedBill;
+        System.out.println("feeNetTotalForSelectedBill 4 = " + feeNetTotalForSelectedBill);
+        getBillSession().getBill().setNetTotal(feeNetTotalForSelectedBill);
+        getBillSession().getBill().setDiscount(feeDiscountForSelectedBill);
     }
 
     public SmsFacade getSmsFacade() {
