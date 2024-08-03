@@ -79,6 +79,8 @@ import com.divudi.data.OptionScope;
 import com.divudi.data.ServiceType;
 import com.divudi.entity.Doctor;
 import com.divudi.facade.FeeFacade;
+import com.divudi.facade.PatientFacade;
+import com.divudi.facade.StaffFacade;
 import com.divudi.java.CommonFunctions;
 import com.divudi.light.common.BillLight;
 import java.io.Serializable;
@@ -157,6 +159,8 @@ public class BillSearch implements Serializable {
     private EmailFacade emailFacade;
     @EJB
     FeeFacade feeFacade;
+    @EJB
+    private StaffFacade staffFacade;
     /**
      * Controllers
      */
@@ -1267,9 +1271,9 @@ public class BillSearch implements Serializable {
 
             double refundingValue = 0;
             for (BillFee rbf : i.getBillFees()) {
-                System.out.println("rbf.getFeeValue() name = " + rbf.getFee().getName());
-                System.out.println("rbf.getFeeValue() = " + rbf.getFeeValue());
-                System.out.println("rbf.getFeeValue() fee = " + rbf.getFee().getFee());
+                //System.out.println("rbf.getFeeValue() name = " + rbf.getFee().getName());
+                //System.out.println("rbf.getFeeValue() = " + rbf.getFeeValue());
+                //System.out.println("rbf.getFeeValue() fee = " + rbf.getFee().getFee());
                 refundingValue += rbf.getFeeValue();
             }
             i.setNetValue(refundingValue);
@@ -1569,6 +1573,13 @@ public class BillSearch implements Serializable {
             JsfUtil.addErrorMessage("One or more bill Item you are refunding has been already paid to Service Provider. Can not refund again.");
             return "";
         }
+        
+        if (paymentMethod == PaymentMethod.Staff) {
+            if (getBill().getToStaff() == null) {
+                JsfUtil.addErrorMessage("Can't Select Staff Method");
+                return "";
+            }
+        }
 
         if (refundingBill.getBillItems() != null) {
             for (BillItem bi : refundingBill.getBillItems()) {
@@ -1602,22 +1613,35 @@ public class BillSearch implements Serializable {
         Payment p = getOpdPreSettleController().createPaymentForCancellationsAndRefunds(refundingBill, paymentMethod);
 
         //TODO: Create Payments for Bill Items
-        if (getBill().getPaymentMethod() == PaymentMethod.Credit) {
-            if (getBill().getToStaff() != null) {
-                staffBean.updateStaffCredit(getBill().getToStaff(), 0 - (getBill().getNetTotal() + getBill().getVat()));
-                JsfUtil.addSuccessMessage("Staff Credit Updated");
-            } else if (getBill().getCreditCompany() != null) {
-                //TODO : Update Credit COmpany Bill
-            }
+        if (getBill().getPaymentMethod() == PaymentMethod.Staff) {
+            //System.out.println("PaymentMethod - Staff");
+
+            //System.out.println("Before Balance = " + getBill().getToStaff().getCurrentCreditValue());
+            getBill().getToStaff().setCurrentCreditValue(getBill().getToStaff().getCurrentCreditValue() - Math.abs(getRefundingBill().getNetTotal()));
+
+            //System.out.println("After Balance = " + getBill().getToStaff().getCurrentCreditValue());
+            staffFacade.edit(getBill().getToStaff());
+            //System.out.println("Staff Credit Updated");
+
         } else if (getBill().getPaymentMethod() == PaymentMethod.PatientDeposit) {
-            //TODO: Update Patient Deposit
+            //System.out.println("Before Balance = " + bill.getPatient().getRunningBalance());
+            if (bill.getPatient().getRunningBalance() == null) {
+                //System.out.println("Null");
+                bill.getPatient().setRunningBalance(Math.abs(bill.getNetTotal()));
+            } else {
+                //System.out.println("Not Null - Add BillValue");
+                bill.getPatient().setRunningBalance(bill.getPatient().getRunningBalance() + Math.abs(bill.getNetTotal()));
+            }
+            patientFacade.edit(bill.getPatient());
+            //System.out.println("After Balance = " + bill.getPatient().getRunningBalance());
         }
 
-        //TODO - Update Bill Payment Values
-        //TODO - Update Bill Paid Value
         printPreview = true;
         return "";
     }
+
+    @EJB
+    private PatientFacade patientFacade;
 
     public boolean sampleHasBeenCollected(Bill rf) {
         boolean oneItemIsSampled = false;
@@ -2162,6 +2186,13 @@ public class BillSearch implements Serializable {
             }
         }
 
+        if (paymentMethod == PaymentMethod.Staff) {
+            if (getBill().getToStaff() == null) {
+                JsfUtil.addErrorMessage("Can't Select Staff Method");
+                return;
+            }
+        }
+        
         if (!getWebUserController().hasPrivilege("OpdCancel")) {
             JsfUtil.addErrorMessage("You have no privilege to cancel OPD bills. Please contact System Administrator.");
             return;
@@ -2972,7 +3003,7 @@ public class BillSearch implements Serializable {
             case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_RETURN:
             case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_SESSION:
                 return navigateToViewChannelingProfessionalPaymentBill();
-                
+
             case OPD_BATCH_BILL_TO_COLLECT_PAYMENT_AT_CASHIER:
             case OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER:
             case OPD_BATCH_BILL_CANCELLATION:
@@ -2981,7 +3012,7 @@ public class BillSearch implements Serializable {
             case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES:
             case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES_RETURN:
                 return navigateToViewOpdProfessionalPaymentBill();
-                
+
         }
         JsfUtil.addErrorMessage("Wrong Bill Type");
         return "";
@@ -4088,6 +4119,22 @@ public class BillSearch implements Serializable {
 
     public void setReferredBy(Doctor referredBy) {
         this.referredBy = referredBy;
+    }
+
+    public PatientFacade getPatientFacade() {
+        return patientFacade;
+    }
+
+    public void setPatientFacade(PatientFacade patientFacade) {
+        this.patientFacade = patientFacade;
+    }
+
+    public StaffFacade getStaffFacade() {
+        return staffFacade;
+    }
+
+    public void setStaffFacade(StaffFacade staffFacade) {
+        this.staffFacade = staffFacade;
     }
 
     public class PaymentSummary {
