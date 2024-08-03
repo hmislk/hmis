@@ -1078,19 +1078,12 @@ public class GrnController implements Serializable {
     }
 
     public void checkQty(BillItem bi) {
-        System.out.println("Before Edit Qty = " + bi.getTmpQty());
-        System.out.println(bi.getTmpQty() < 0.0);
         if (bi.getTmpQty() < 0.0) {
             bi.setTmpQty(0.0);
         }
-        System.out.println("After Edit Qty = " + bi.getTmpQty());
-        
-        System.out.println("Before Edit FreeQty = " + bi.getTmpFreeQty());
-        System.out.println(bi.getTmpFreeQty() < 0.0);
         if (bi.getTmpFreeQty() < 0.0) {
             bi.setTmpFreeQty(0.0);
         }
-        System.out.println("After Edit FreeQty = " + bi.getTmpFreeQty());
         onEdit(bi);
     }
 
