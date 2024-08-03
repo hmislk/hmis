@@ -91,6 +91,7 @@
                                 <p:outputLabel value="#{bill.deptId}" />
                             </p:column>
 
+
                             <p:column headerText="Cashier" width="10em" style="text-align: left;" 
                                       sortBy="#{bill.creater.webUserPerson.name}" 
                                       filterBy="#{bill.creater.webUserPerson.name}">
@@ -129,7 +130,9 @@
 
 
 
+
                             <p:column headerText="Status" width="400"  rendered="false">
+
                                 <f:facet name="header">
                                     <h:outputLabel value="Status" class="w-100 d-flex justify-content-center" />
                                 </f:facet>
