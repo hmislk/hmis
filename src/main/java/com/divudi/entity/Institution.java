@@ -34,7 +34,6 @@ import javax.xml.bind.annotation.XmlTransient;
  * @author buddhika
  */
 @Entity
-@XmlRootElement
 public class Institution implements Serializable, IdentifiableWithNameOrCode {
 
     static final long serialVersionUID = 1L;

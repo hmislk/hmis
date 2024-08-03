@@ -29,7 +29,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @Entity
 @Inheritance
-@XmlRootElement
+
 public class PaysheetComponent implements Serializable {
 
     private static final long serialVersionUID = 1L;

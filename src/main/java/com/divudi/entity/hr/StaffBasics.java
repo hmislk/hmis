@@ -21,7 +21,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  * @author safrin
  */
 @Entity
-@XmlRootElement
+
 public class StaffBasics implements Serializable {
 
     @ManyToOne

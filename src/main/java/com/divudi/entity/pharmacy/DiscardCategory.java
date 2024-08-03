@@ -15,7 +15,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  * @author buddhika
  */
 @Entity
-@XmlRootElement
+
 public class DiscardCategory extends Category implements Serializable {
  
 }

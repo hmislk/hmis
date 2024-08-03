@@ -27,7 +27,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @Entity
 @Inheritance
-@XmlRootElement
+
 public class Department implements Serializable {
 
     static final long serialVersionUID = 1L;

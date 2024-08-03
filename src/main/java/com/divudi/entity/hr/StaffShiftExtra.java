@@ -13,7 +13,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  * @author buddhika
  */
 @Entity
-@XmlRootElement
+
 public class StaffShiftExtra extends StaffShift implements Serializable {
   
       

@@ -318,18 +318,16 @@
     
     <build>
         <plugins>
-            <!-- Maven Compiler Plugin for JDK 11 with Java 8 Compatibility -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.8.1</version>
                 <configuration>
-                    <release>8</release> <!-- Compile with Java 8 compatibility -->
+                    <release>8</release>
                     <debug>false</debug>
+                    <compileOnSave>false</compileOnSave>
                 </configuration>
             </plugin>
-
-            <!-- Maven WAR Plugin -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-war-plugin</artifactId>
@@ -338,15 +336,13 @@
                     <failOnMissingWebXml>false</failOnMissingWebXml>
                 </configuration>
             </plugin>
-
-            <!-- Maven Dependency Plugin -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
                 <version>3.1.2</version>
-                <!-- Any specific configurations related to your project dependencies -->
             </plugin>
         </plugins>
+
     </build>
 
 

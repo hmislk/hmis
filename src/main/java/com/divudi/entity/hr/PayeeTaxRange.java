@@ -17,7 +17,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  * @author safrin
  */
 @Entity
-@XmlRootElement
+
 public class PayeeTaxRange implements Serializable {
     @ManyToOne
     private HrmVariables hrmVariables;

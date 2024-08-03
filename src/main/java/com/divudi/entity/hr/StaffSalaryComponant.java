@@ -25,7 +25,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  * @author Buddhika
  */
 @Entity
-@XmlRootElement
+
 public class StaffSalaryComponant implements Serializable {
 
     private static final long serialVersionUID = 1L;

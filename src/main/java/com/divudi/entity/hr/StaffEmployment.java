@@ -33,7 +33,7 @@ import javax.xml.bind.annotation.XmlTransient;
  * @author safrin
  */
 @Entity
-@XmlRootElement
+
 public class StaffEmployment implements Serializable {
 
     @OneToMany(mappedBy = "staffEmployment", cascade = CascadeType.ALL, fetch = FetchType.LAZY)

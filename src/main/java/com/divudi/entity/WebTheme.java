@@ -22,7 +22,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Informatics)
  */
 @Entity
-@XmlRootElement
+
 public class WebTheme implements Serializable {
      static final long serialVersionUID = 1L;
     @Id

@@ -18,7 +18,7 @@ import javax.xml.bind.annotation.XmlTransient;
  * @author buddhika
  */
 @Entity
-@XmlRootElement
+
 public class Grade extends Category implements Serializable {
   
     private static final long serialVersionUID = 1L;

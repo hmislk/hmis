@@ -16,7 +16,7 @@ import javax.persistence.TemporalType;
 import javax.xml.bind.annotation.XmlRootElement;
 
 @Entity
-@XmlRootElement
+
 public class LeaveForm extends HrForm {
 
     @Temporal(TemporalType.TIMESTAMP)

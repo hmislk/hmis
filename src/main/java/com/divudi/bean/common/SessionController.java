@@ -36,6 +36,7 @@ import com.divudi.facade.WebUserFacade;
 import com.divudi.facade.WebUserPrivilegeFacade;
 import com.divudi.facade.WebUserRoleFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.entity.Route;
 import com.divudi.entity.Staff;
 import com.divudi.facade.StaffFacade;
 import java.io.IOException;
@@ -145,6 +146,7 @@ public class SessionController implements Serializable, HttpSessionListener {
     private List<Department> loggableDepartments;
     private List<Department> loggableSubDepartments;
     private List<Institution> loggableInstitutions;
+    private List<Institution> loggableCollectingCentres;
     private List<UserIcon> userIcons;
 
     Institution institution;
@@ -1473,6 +1475,31 @@ public class SessionController implements Serializable, HttpSessionListener {
                 + " order by wd.department.institution.name";
         return institutionFacade.findByJpql(jpql, m);
     }
+    
+    public List<Institution> fillLoggableCollectingCentres() {
+        WebUser e = getLoggedUser();
+        if (e == null) {
+            return new ArrayList<>();
+        }
+        String jpql;
+        Map m = new HashMap();
+        m.put("wu", e);
+        
+        
+        if(false){
+            Route r= new Route();
+            r.getInstitution();
+            Institution cc = new Institution();
+        }
+        
+        jpql = "select DISTINCT wd.department.institution "
+                + " from WebUserDepartment wd "
+                + " where wd.retired=false "
+                + " and wd.department.retired=false "
+                + " and wd.webUser=:wu "
+                + " order by wd.department.institution.name";
+        return institutionFacade.findByJpql(jpql, m);
+    }
 
     public ApplicationEjb getApplicationEjb() {
         return applicationEjb;
@@ -2120,6 +2147,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         return loggableInstitutions;
     }
 
+    
     public List<UserIcon> getUserIcons() {
         return userIcons;
     }

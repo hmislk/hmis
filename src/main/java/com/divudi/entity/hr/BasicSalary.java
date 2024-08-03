@@ -14,7 +14,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  * @author Buddhika
  */
 @Entity
-@XmlRootElement
+
 public class BasicSalary extends PaysheetComponent implements Serializable {
 
     private static final long serialVersionUID = 1L;

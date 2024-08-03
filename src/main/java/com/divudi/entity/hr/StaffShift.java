@@ -39,7 +39,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @Entity
 @Inheritance
-@XmlRootElement
+
 public class StaffShift implements Serializable {
 
     @ManyToOne

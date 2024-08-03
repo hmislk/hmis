@@ -22,7 +22,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @Entity
 @Inheritance
-@XmlRootElement
+
 public class Form implements Serializable {
 
     private static final long serialVersionUID = 1L;

@@ -19,7 +19,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  * @author safrin
  */
 @Entity
-@XmlRootElement
+
 public class BankAccount implements Serializable {
 //    @OneToOne(mappedBy = "bankAccount")
     private Staff staff;

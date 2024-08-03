@@ -26,7 +26,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  * @author safrin
  */
 @Entity
-@XmlRootElement
+
 public class StaffLeaveEntitle implements Serializable {
 
     private static final long serialVersionUID = 1L;

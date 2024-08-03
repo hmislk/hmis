@@ -977,6 +977,59 @@ public class SearchController implements Serializable {
         checkRefundBillItems(patientInvestigations);
 
     }
+    
+    
+    public void fillCollectingCentreCourierPatientInvestigations() {
+        String jpql = "select pi "
+                + " from PatientInvestigation pi "
+                + " join pi.investigation i "
+                + " join pi.billItem.bill b "
+                + " join b.patient.person p "
+                + " where "
+                + " b.createdAt between :fromDate and :toDate  "
+                + " and pi.investigation.department=:dep ";
+
+        Map temMap = new HashMap();
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+        temMap.put("dep", getReportKeyWord().getDepartment());
+        
+        if(institution==null){
+            jpql += " b.collectingCentre in :ccs ";
+             temMap.put("ccs", sessionController.getLoggableInstitutions());
+        }else{
+            jpql += " b.collectingCentre=:cc ";
+        }
+
+        if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
+            jpql += " and  ((p.name) like :patientName )";
+            temMap.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
+            jpql += " and  ((b.deptId) like :billNo )";
+            temMap.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getPatientPhone() != null && !getSearchKeyword().getPatientPhone().trim().equals("")) {
+            jpql += " and  ((p.phone) like :patientPhone )";
+            temMap.put("patientPhone", "%" + getSearchKeyword().getPatientPhone().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getItemName() != null && !getSearchKeyword().getItemName().trim().equals("")) {
+            jpql += " and  ((i.name) like :itm )";
+            temMap.put("itm", "%" + getSearchKeyword().getItemName().trim().toUpperCase() + "%");
+        }
+
+       
+
+        jpql += " order by pi.id desc  ";
+//    
+
+        patientInvestigations = getPatientInvestigationFacade().findByJpql(jpql, temMap, TemporalType.TIMESTAMP, 50);
+        checkRefundBillItems(patientInvestigations);
+
+    }
 
     public void createPreRefundTable() {
 
@@ -10829,7 +10882,7 @@ public class SearchController implements Serializable {
     public String navigateToLabReportSearch() {
         patientInvestigations = new ArrayList<>();
         getReportKeyWord().setDepartment(getSessionController().getLoggedUser().getDepartment());
-        return "/lab/search_for_reporting_ondemand";
+        return "/lab/search_for_reporting_ondemand?faces-redirect=true";
     }
 
     public String navigateToListSingleUserBills() {

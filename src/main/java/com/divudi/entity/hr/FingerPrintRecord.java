@@ -34,7 +34,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @Entity
 @Inheritance
-@XmlRootElement
+
 public class FingerPrintRecord implements Serializable {
 
     @OneToOne(mappedBy = "loggedRecord")

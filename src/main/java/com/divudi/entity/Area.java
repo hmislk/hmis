@@ -25,7 +25,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  *
  */
 @Entity
-@XmlRootElement
+
 public class Area implements Serializable {
 
      static final long serialVersionUID = 1L;

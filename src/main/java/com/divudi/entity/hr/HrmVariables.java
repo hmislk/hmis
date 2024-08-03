@@ -27,7 +27,7 @@ import javax.xml.bind.annotation.XmlTransient;
  * @author Buddhika
  */
 @Entity
-@XmlRootElement
+
 public class HrmVariables implements Serializable {
 
     private static final long serialVersionUID = 1L;

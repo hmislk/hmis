@@ -23,7 +23,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  * @author safrin
  */
 @Entity
-@XmlRootElement
+
 public class Loan implements Serializable {
 
     private static final long serialVersionUID = 1L;
