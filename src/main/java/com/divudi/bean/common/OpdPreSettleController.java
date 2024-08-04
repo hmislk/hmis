@@ -50,6 +50,7 @@ import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
+import com.divudi.facade.StaffFacade;
 import com.divudi.facade.TokenFacade;
 
 import java.io.Serializable;
@@ -116,6 +117,9 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
     TokenFacade tokenFacade;
     @EJB
     StaffBean staffBean;
+    @EJB
+    private StaffFacade staffFacade;
+    
 /////////////////////////
     Item selectedAlternative;
 
@@ -1697,26 +1701,36 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
         p.setCreater(getSessionController().getLoggedUser());
         p.setPaymentMethod(pm);
         
-        System.out.println("pm = " + pm);
+        //System.out.println("pm = " + pm);
 
         if (pm == PaymentMethod.PatientDeposit) {
-            System.out.println("Before Balance = " + bill.getPatient().getRunningBalance());
+            //System.out.println("Before Balance = " + bill.getPatient().getRunningBalance());
             if (bill.getPatient().getRunningBalance() == null) {
-                System.out.println("Null");
+                //System.out.println("Null");
                 bill.getPatient().setRunningBalance(Math.abs(bill.getNetTotal()));
             } else {
-                System.out.println("Not Null - Add BillValue");
+                //System.out.println("Not Null - Add BillValue");
                 bill.getPatient().setRunningBalance(bill.getPatient().getRunningBalance() + Math.abs(bill.getNetTotal()));
             }
             patientFacade.edit(bill.getPatient());
-            System.out.println("After Balance = " + bill.getPatient().getRunningBalance());
+            //System.out.println("After Balance = " + bill.getPatient().getRunningBalance());
         }
-        System.out.println("001");  
+        
+        if (pm == PaymentMethod.Staff) {
+            //System.out.println("PaymentMethod - Staff");
+            //System.out.println("Before Balance = " + bill.getToStaff().getCurrentCreditValue());
+            bill.getToStaff().setCurrentCreditValue( bill.getToStaff().getCurrentCreditValue() - Math.abs(bill.getNetTotal()));
+            //System.out.println("After Balance = " + bill.getToStaff().getCurrentCreditValue());
+            staffFacade.edit(bill.getToStaff());
+            //System.out.println("Staff Credit Updated");
+        }
+        
+        //System.out.println("001");  
         if (p.getId() == null) { 
             getPaymentFacade().create(p);
         }
         getPaymentFacade().edit(p);
-        System.out.println("End Payment");  
+        //System.out.println("End Payment");  
         return p;
     }
 
@@ -2009,6 +2023,14 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
 
     public void setForeigner(boolean foreigner) {
         this.foreigner = foreigner;
+    }
+
+    public StaffFacade getStaffFacade() {
+        return staffFacade;
+    }
+
+    public void setStaffFacade(StaffFacade staffFacade) {
+        this.staffFacade = staffFacade;
     }
 
 }
