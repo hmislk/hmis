@@ -29,6 +29,10 @@ public class CourierController implements Serializable {
     public String navigateToCourierViewReports() {
         return "/collecting_centre/courier/viewReports.xhtml?faces-redirect=true";
     }
+    
+     public String navigateToCourierIndex() {
+        return "/collecting_centre/courier/index.xhtml?faces-redirect=true";
+    }
 
     public String navigateToCourierPrintReports() {
         return "/collecting_centre/courier/printReports.xhtml?faces-redirect=true";

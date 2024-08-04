@@ -149,6 +149,8 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     StaffBean staffBean;
     @Inject
     CategoryController categoryController;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
     /**
      * Properties
      */
@@ -1089,14 +1091,15 @@ public class CollectingCentreBillController implements Serializable, ControllerW
             JsfUtil.addErrorMessage("Please select a collecting centre");
             return true;
         }
-        if (referralId == null || referralId.trim().equals("")) {
-            JsfUtil.addErrorMessage("Please enter a referrance number");
-            return true;
+        boolean collectingCentreBillingRequiresReferanceNumbers = configOptionApplicationController.getBooleanValueByKey("Collecting Centre Billing Requires Referance Numbers", true);
+        boolean collectingCentreBillingRequiresCreditBalanceManagement = configOptionApplicationController.getBooleanValueByKey("Collecting Centre Billing Requires Credit Balance Management", true);
+
+        if (collectingCentreBillingRequiresReferanceNumbers) {
+            if (referralId == null || referralId.trim().equals("")) {
+                JsfUtil.addErrorMessage("Please enter a referrance number");
+                return true;
+            }
         }
-//        else if (collectingCenterReferranceNumberAlreadyUsed(collectingCentre)) {
-//            JsfUtil.addErrorMessage("Referral number alredy entered");
-//            return true;
-//        }
 
         if (getLstBillEntries().isEmpty()) {
             JsfUtil.addErrorMessage("Please Add tests before billing");
@@ -1110,31 +1113,25 @@ public class CollectingCentreBillController implements Serializable, ControllerW
             }
         }
 
-        ///not wanted 
-//        if ((collectingCentre.getBallance() - Math.abs(feeTotalExceptCcfs)) < 0 - collectingCentre.getStandardCreditLimit()) {
-//            JsfUtil.addErrorMessage("This bill excees the Collecting Centre Limit");
-//            return true;
-//        }
-    double awailableBalance = Math.abs(collectingCentre.getBallance() + Math.abs(collectingCentre.getAllowedCredit()));
+        double awailableBalance = Math.abs(collectingCentre.getBallance() + Math.abs(collectingCentre.getAllowedCredit()));
 
-        if (awailableBalance < Math.abs(feeTotalExceptCcfs)) {
-            JsfUtil.addErrorMessage("Collecting Centre Balance is Not Enough");
-            return true;
+        if (collectingCentreBillingRequiresCreditBalanceManagement) {
+            if (awailableBalance < Math.abs(feeTotalExceptCcfs)) {
+                JsfUtil.addErrorMessage("Collecting Centre Balance is Not Enough");
+                return true;
+            }
         }
 
-//        if (agentReferenceBookController.numberHasBeenIssuedToTheAgent(getReferralId())) {
-//            JsfUtil.addErrorMessage("Invaild Reference Number.");
-//            return true;
-//        }
-        if (agentReferenceBookController.agentReferenceNumberIsAlredyUsed(getReferralId(), collectingCentre, BillType.CollectingCentreBill, PaymentMethod.Agent)) {
-            JsfUtil.addErrorMessage("This Reference Number is alredy Used.");
-            setReferralId("");
-            return true;
-        }
-
-        if (!agentReferenceBookController.numberHasBeenIssuedToTheAgent(collectingCentre, getReferralId())) {
-            JsfUtil.addErrorMessage("This Reference Number is Blocked Or This channel Book is Not Issued.");
-            return true;
+        if (collectingCentreBillingRequiresReferanceNumbers) {
+            if (agentReferenceBookController.agentReferenceNumberIsAlredyUsed(getReferralId(), collectingCentre, BillType.CollectingCentreBill, PaymentMethod.Agent)) {
+                JsfUtil.addErrorMessage("This Reference Number is alredy Used.");
+                setReferralId("");
+                return true;
+            }
+            if (!agentReferenceBookController.numberHasBeenIssuedToTheAgent(collectingCentre, getReferralId())) {
+                JsfUtil.addErrorMessage("This Reference Number is Blocked Or This channel Book is Not Issued.");
+                return true;
+            }
         }
 
         return false;
@@ -1533,7 +1530,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         setPatient(getPatient());
         return "/collecting_centre/bill?faces-redirect=true";
     }
-    
+
     public String navigateToCollectingCenterBillingfromBillPriview() {
         prepareNewBillKeepingCollectingCenter();
         fillAvailableAgentReferanceNumbers(collectingCentre);
