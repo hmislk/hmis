@@ -102,8 +102,8 @@ public enum BillType {
     ChannelAgent(ChannelCashFlow),
     ChannelOnCall(ChannelCreditFlow),
     ChannelStaff(ChannelCreditFlow),
-    ChannelResheduleWithOutPayment,
-    ChannelResheduleWithPayment,
+    ChannelResheduleWithOutPayment(ChannelCreditFlow),
+    ChannelResheduleWithPayment(ChannelCashFlow),
     //    @Deprecated need to payment bills for separately
     ChannelProPayment,
     ChannelAgencyPayment,

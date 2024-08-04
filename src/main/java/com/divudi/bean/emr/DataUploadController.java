@@ -1599,10 +1599,7 @@ if (retiredCell != null) {
 
             }
 
-            item.setTotal(doctorFee);
-            item.setTotalForForeigner((doctorFee) * 2);
-            item.setDblValue(doctorFee);
-            itemController.saveSelected(item);
+
             System.out.println("item = 2 " + item);
             if (item != null) {
                 itemsSaved.add(item);
@@ -3208,6 +3205,7 @@ if (retiredCell != null) {
 
         return suppliersList;
     }
+
     
       private List<ItemFee> readCollectingCentrePriceListFromXcel(InputStream inputStream) throws IOException {
         Workbook workbook = new XSSFWorkbook(inputStream);
@@ -3323,6 +3321,7 @@ if (retiredCell != null) {
         return itemFees;
 
     }
+
 
     private List<Department> readDepartmentFromExcel(InputStream inputStream) throws IOException {
         Workbook workbook = new XSSFWorkbook(inputStream);

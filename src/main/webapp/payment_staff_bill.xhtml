@@ -56,13 +56,13 @@
 
                             <p:dataTable   
                                 id="tblFee" value="#{staffPaymentBillController.dueBillFees}"
-                                selection="#{staffPaymentBillController.payingBillFees}"
-                                class="w-100"
-                                paginator="true" paginatorPosition="bottom"
-                                paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
-                                rowsPerPageTemplate="{ShowAll|'All'}"
-                                var="bf" rowKey="#{bf.id}" >
+                                           selection="#{staffPaymentBillController.payingBillFees}"
+                                           class="w-100"
+                                           paginator="true" paginatorPosition="bottom"
+                                           paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                           currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
+                                           rowsPerPageTemplate="{ShowAll|'All'}"
+                                           var="bf" rowKey="#{bf.id}" >
 
                                 <f:ajax  event="rowSelectCheckbox" execute="tblFee" listener="#{staffPaymentBillController.performCalculations()}"   
                                          render=":#{p:resolveFirstComponentWithId('scStaff',view).clientId}  :#{p:resolveFirstComponentWithId('lblDue',view).clientId} :#{p:resolveFirstComponentWithId('lblPay',view).clientId} tblFee"  />  
@@ -123,14 +123,14 @@
                                     </f:facet>    
                                     <h:outputLabel value="#{bf.billItem.item.name}" />
                                 </p:column>
-
+                                
                                 <p:column headerText="Charge" >
                                     <f:facet name="header">
                                         <h:outputLabel value="Charge Type"/>
                                     </f:facet>    
                                     <h:outputLabel value="#{bf.fee.feeType}" />
                                 </p:column>
-
+                                
                                 <p:column headerText="Charge" >
                                     <f:facet name="header">
                                         <h:outputLabel value="Charge"/>
@@ -202,22 +202,8 @@
 
                         </f:facet>
 
-                        <div class="d-flex m-1 justify-content-end">
-                            <p:outputLabel value="Paper Type" class="m-2"></p:outputLabel>
-                            <p:selectOneMenu value="#{sessionController.departmentPreference.opdBillPaperType}" class="m-1" style="width: 13em;">
-                                <f:selectItem itemLabel="Please Select Paper Type" />
-                                <f:selectItems value="#{enumController.paperTypes}" />
-                            </p:selectOneMenu>
-                            <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button m-1" title="Redraw Bill"></p:commandButton>
-                        </div>
-
                         <h:panelGroup id="gpBillPreview" class="d-flex justify-content-center">
-                            <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaperCoustom1'}" >
-                                <bi:OPD_Doc_Payment_5x5 bill="#{staffPaymentBillController.current}" controller="#{staffPaymentBillController}"/>
-                            </h:panelGroup>
-                            <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaper'}">
-                                <bi:A4PaperPamentOPDDoctor controller="#{staffPaymentBillController}" bill="#{staffPaymentBillController.current}" dup="false"/>
-                            </h:panelGroup>
+                            <bi:A4PaperPamentOPDDoctor controller="#{staffPaymentBillController}" bill="#{staffPaymentBillController.current}" dup="false"/>
                         </h:panelGroup>
 
                     </p:panel>
