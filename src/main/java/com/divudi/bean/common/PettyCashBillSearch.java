@@ -12,6 +12,7 @@ import com.divudi.data.dataStructure.SearchKeyword;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.BillTypeAtomic;
 import com.divudi.ejb.EjbApplication;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillComponent;
@@ -20,6 +21,7 @@ import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
+import com.divudi.entity.Payment;
 import com.divudi.entity.PaymentScheme;
 import com.divudi.entity.WebUser;
 import com.divudi.facade.BillComponentFacade;
@@ -84,6 +86,8 @@ public class PettyCashBillSearch implements Serializable {
     SessionController sessionController;
     @Inject
     private WebUserController webUserController;
+    @Inject
+    PettyCashBillController pettyCashBillController;
     @EJB
     EjbApplication ejbApplication;
     private List<BillItem> tempbillItems;
@@ -257,6 +261,7 @@ public class PettyCashBillSearch implements Serializable {
         cb.setCreater(getSessionController().getLoggedUser());
         cb.setDepartment(getSessionController().getDepartment());
         cb.setInstitution(getSessionController().getInstitution());
+        cb.setBillTypeAtomic(BillTypeAtomic.PETTY_CASH_BILL_CANCELLATION);
         cb.setPaymentMethod(paymentMethod);
         cb.setComments(comment);
 
@@ -308,7 +313,6 @@ public class PettyCashBillSearch implements Serializable {
             }
 
             CancelledBill cb = createCancelBill();
-
             //Copy & paste
             //if (webUserController.hasPrivilege("LabBillCancelling")) {
             if (true) {
@@ -321,6 +325,7 @@ public class PettyCashBillSearch implements Serializable {
 
                 WebUser wb = getCashTransactionBean().saveBillCashInTransaction(cb, getSessionController().getLoggedUser());
                 getSessionController().setLoggedUser(wb);
+                Payment p = pettyCashBillController.createPaymentForPettyCashBillCancellation(cb, paymentMethod);
                 printPreview = true;
             } else {
                 getEjbApplication().getBillsToCancel().add(cb);
