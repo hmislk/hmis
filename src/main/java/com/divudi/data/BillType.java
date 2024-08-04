@@ -47,6 +47,8 @@ public enum BillType {
     AgentCreditNoteBill,
     AgentDebitNoteBill,
     PatientPaymentReceiveBill,
+    PatientPaymentRefundBill,
+    PatientPaymentCanceldBill,
     CollectingCentrePaymentReceiveBill,
     CollectingCentreCreditNoteBill,
     CollectingCentreDebitNoteBill,

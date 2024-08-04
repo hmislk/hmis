@@ -58,6 +58,17 @@
                                     </div>
 
                                 </p:tab>
+                                <p:tab title="Patient Deposit" >
+                                    <div class="d-grid gap-2">
+                                        <p:commandButton  
+                                            class="w-100" 
+                                            ajax="false" 
+                                            action="#{patientController.navigateToPatientDepositRefund()}" 
+                                            value="Return Patient Deposit">
+                                        </p:commandButton>
+                                    </div>
+
+                                </p:tab>
                             </p:accordionPanel>
                         </h:form>
                     </div>
