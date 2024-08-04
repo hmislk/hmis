@@ -8,6 +8,7 @@
 package com.divudi.bean.common;
 
 import com.divudi.bean.channel.BookingController;
+import com.divudi.bean.collectingCentre.CourierController;
 import com.divudi.bean.pharmacy.PharmacySaleController;
 import com.divudi.data.InstitutionType;
 import com.divudi.data.Privileges;
@@ -123,6 +124,8 @@ public class SessionController implements Serializable, HttpSessionListener {
     BookingController bookingController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    CourierController courierController;
     /**
      * Properties
      */
@@ -1277,6 +1280,8 @@ public class SessionController implements Serializable, HttpSessionListener {
                 return opdTokenController.navigateToManageOpdTokensCalled();
             case PHARMACY_TOKEN_DISPLAY:
                 return tokenController.navigateToManagePharmacyTokensCalled();
+            case COURIER_LANDING_PAGE:
+                return courierController.navigateToCourierIndex();
             case HOME:
             default:
                 return "/home?faces-redirect=true";
