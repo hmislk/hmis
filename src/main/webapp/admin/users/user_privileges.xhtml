@@ -35,7 +35,7 @@
                                 id="cmbDepartment"
                                 placeholder="Department"
                                 value="#{userPrivilageController.department}" 
-                                style="width: 500px"
+                                class="w-100"
                                 required="true"
                                 requiredMessage="Please select a department"
                                 filter="true">
@@ -45,8 +45,7 @@
                                     var="d"
                                     itemLabel="#{d.name}"
                                     itemValue="#{d}" />
-                                <p:ajax event="change" process="@this" listener="#{userPrivilageController.makePrivilegesNeededToBeReloaded}" update="gpDetails" />
-                                <p:ajax event="blur" process="@this" listener="#{userPrivilageController.makePrivilegesNeededToBeReloaded}" update="gpDetails tmp" />
+                                <p:ajax event="blur" process="@this"  update="gpDetails tmp" />
                             </p:selectOneMenu>
                             <h:outputText id="tmp" value="#{userPrivilageController.department.name}" style="font-weight: bold;" />
                         </h:panelGrid>
