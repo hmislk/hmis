@@ -27,7 +27,6 @@ import com.divudi.entity.membership.OpdMemberShipDiscount;
 import com.divudi.entity.membership.PaymentSchemeDiscount;
 import com.divudi.entity.membership.PharmacyMemberShipDiscount;
 import com.divudi.facade.PaymentSchemeDiscountFacade;
-import com.divudi.facade.PaymentSchemeFacade;
 import com.divudi.facade.PriceMatrixFacade;
 import java.io.Serializable;
 import java.util.Date;

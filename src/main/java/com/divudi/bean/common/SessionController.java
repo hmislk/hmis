@@ -51,7 +51,6 @@ import java.util.Map;
 import javax.annotation.PreDestroy;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
-import javax.faces.context.ExternalContext;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.servlet.http.HttpSessionEvent;
@@ -1116,6 +1115,7 @@ public class SessionController implements Serializable, HttpSessionListener {
                     getFacede().edit(u);
                     setLoggedUser(u);
                     loggableDepartments = fillLoggableDepts();
+                    loggableCollectingCentres = fillLoggableCollectingCentres();
                     if (webUserController.grantAllPrivilegesToAllUsersForTesting) {
                         loggableDepartments = departmentController.fillAllItems();
                     }
@@ -1483,21 +1483,14 @@ public class SessionController implements Serializable, HttpSessionListener {
         }
         String jpql;
         Map m = new HashMap();
-        m.put("wu", e);
-        
-        
-        if(false){
-            Route r= new Route();
-            r.getInstitution();
-            Institution cc = new Institution();
-        }
-        
-        jpql = "select DISTINCT wd.department.institution "
-                + " from WebUserDepartment wd "
-                + " where wd.retired=false "
-                + " and wd.department.retired=false "
-                + " and wd.webUser=:wu "
-                + " order by wd.department.institution.name";
+        jpql = "select i "
+                + " from Institution i "
+                + " where i.retired<>:ret "
+                + " and i.route in :lds "
+                + " and i.institutionType=:cc ";
+         m.put("ret", true);
+         m.put("cc", InstitutionType.CollectingCentre);
+         m.put("lds", loggableDepartments);
         return institutionFacade.findByJpql(jpql, m);
     }
 
@@ -1528,6 +1521,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         loggableDepartments = null;
         loggableSubDepartments = null;
         loggableInstitutions = null;
+        loggableCollectingCentres=null;
         userIcons = null;
         setLogged(false);
         setActivated(false);
@@ -2155,36 +2149,38 @@ public class SessionController implements Serializable, HttpSessionListener {
     public void setUserIcons(List<UserIcon> userIcons) {
         this.userIcons = userIcons;
     }
-
-    private void createUserPrivilegesForAllDepartments(WebUser tmpLoggedUser, Department loggedDept, List<Department> tmpLoggableDeps) {
-        List<WebUserPrivilege> twups = fillUserPrivileges(tmpLoggedUser, null, true);
-        if (tmpLoggedUser == null) {
-            return;
-        }
-        if (loggedDept == null) {
-            return;
-        }
-        if (tmpLoggableDeps == null) {
-            return;
-        }
-        if (tmpLoggableDeps.isEmpty()) {
-            return;
-        }
-        List<Department> tds = tmpLoggableDeps;
-        tds.remove(loggedDept);
-        for (WebUserPrivilege twup : twups) {
-            twup.setDepartment(loggedDept);
-            getWebUserPrivilegeFacade().edit(twup);
-            for (Department d : tds) {
-                WebUserPrivilege nwup = new WebUserPrivilege();
-                nwup.setWebUser(tmpLoggedUser);
-                nwup.setDepartment(d);
-                nwup.setPrivilege(twup.getPrivilege());
-                getWebUserPrivilegeFacade().create(nwup);
-            }
-        }
-
-    }
+    
+    
+//
+//    private void createUserPrivilegesForAllDepartments(WebUser tmpLoggedUser, Department loggedDept, List<Department> tmpLoggableDeps) {
+//        List<WebUserPrivilege> twups = fillUserPrivileges(tmpLoggedUser, null, true);
+//        if (tmpLoggedUser == null) {
+//            return;
+//        }
+//        if (loggedDept == null) {
+//            return;
+//        }
+//        if (tmpLoggableDeps == null) {
+//            return;
+//        }
+//        if (tmpLoggableDeps.isEmpty()) {
+//            return;
+//        }
+//        List<Department> tds = tmpLoggableDeps;
+//        tds.remove(loggedDept);
+//        for (WebUserPrivilege twup : twups) {
+//            twup.setDepartment(loggedDept);
+//            getWebUserPrivilegeFacade().edit(twup);
+//            for (Department d : tds) {
+//                WebUserPrivilege nwup = new WebUserPrivilege();
+//                nwup.setWebUser(tmpLoggedUser);
+//                nwup.setDepartment(d);
+//                nwup.setPrivilege(twup.getPrivilege());
+//                getWebUserPrivilegeFacade().create(nwup);
+//            }
+//        }
+//
+//    }
 
     public List<Department> getLoggableSubDepartments() {
         return loggableSubDepartments;
@@ -2192,6 +2188,14 @@ public class SessionController implements Serializable, HttpSessionListener {
 
     public void setLoggableSubDepartments(List<Department> loggableSubDepartments) {
         this.loggableSubDepartments = loggableSubDepartments;
+    }
+
+    public List<Institution> getLoggableCollectingCentres() {
+        return loggableCollectingCentres;
+    }
+
+    public void setLoggableCollectingCentres(List<Institution> loggableCollectingCentres) {
+        this.loggableCollectingCentres = loggableCollectingCentres;
     }
 
 }

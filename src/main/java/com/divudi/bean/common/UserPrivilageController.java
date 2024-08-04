@@ -72,6 +72,7 @@ public class UserPrivilageController implements Serializable {
     private Department department;
     private List<Department> departments;
     private List<PrivilegeHolder> currentUserPrivilegeHolders;
+    private boolean privilegesLoaded;
 
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Constructors">
@@ -711,49 +712,92 @@ public class UserPrivilageController implements Serializable {
     public void saveWebUserPrivileges() {
         List<PrivilegeHolder> selectedPrivileges = extractPrivileges(selectedNodes);
 
-        for (WebUserPrivilege wup : getCurrentWebUserPrivileges()) {
+        // Retire all current web user privileges initially
+        List<WebUserPrivilege> currentPrivileges = getCurrentWebUserPrivileges();
+        System.out.println("Retiring all current web user privileges:");
+        for (WebUserPrivilege wup : currentPrivileges) {
             wup.setRetired(true);
-
+            System.out.println("Retiring privilege: " + wup.getPrivilege());
         }
-        getFacade().batchEdit(getCurrentWebUserPrivileges());
+
         if (selectedPrivileges == null) {
+            System.out.println("No selected privileges to process.");
+            getFacade().batchEdit(currentPrivileges);
             return;
         }
 
         List<WebUserPrivilege> newWups = new ArrayList<>();
-        List<WebUserPrivilege> oldWups = new ArrayList<>();
+        List<WebUserPrivilege> nonRetiredPrivileges = new ArrayList<>();
 
         for (PrivilegeHolder ph : selectedPrivileges) {
             if (ph.getPrivilege() == null) {
                 continue;
             }
-            String jpql = "select w"
-                    + " from WebUserPrivilege w "
-                    + " where w.department=:dep "
-                    + " and w.webUser=:wu "
-                    + " and w.privilege=:p";
-            Map m = new HashMap();
-            m.put("dep", department);
-            m.put("wu", currentWebUser);
-            m.put("p", ph.getPrivilege());
-            WebUserPrivilege wup = getFacade().findFirstByJpql(jpql, m);
-            if (wup == null) {
-                wup = new WebUserPrivilege();
-                wup.setDepartment(department);
-                wup.setWebUser(currentWebUser);
-                wup.setPrivilege(ph.getPrivilege());
-                newWups.add(wup);
-            } else {
-                wup.setRetired(false);
-                oldWups.add(wup);
+
+            boolean found = false;
+            for (WebUserPrivilege wup : currentPrivileges) {
+                if (wup.getPrivilege() == ph.getPrivilege()) {
+                    wup.setRetired(false);
+                    nonRetiredPrivileges.add(wup);
+                    found = true;
+                    System.out.println("Unretiring privilege: " + wup.getPrivilege());
+                    break;
+                }
+            }
+
+            if (!found) {
+                WebUserPrivilege newWup = new WebUserPrivilege();
+                newWup.setDepartment(department);
+                newWup.setWebUser(currentWebUser);
+                newWup.setPrivilege(ph.getPrivilege());
+                newWups.add(newWup);
+                System.out.println("Adding new privilege: " + newWup.getPrivilege());
             }
         }
+
         getFacade().batchCreate(newWups);
-        getFacade().batchEdit(oldWups);
+        getFacade().batchEdit(currentPrivileges);
+
+        // Combine non-retired current privileges and newly added privileges
+        List<WebUserPrivilege> updatedPrivileges = new ArrayList<>(nonRetiredPrivileges);
+        updatedPrivileges.addAll(newWups);
+
+        // Set the combined list as current web user privileges
+        setCurrentWebUserPrivileges(updatedPrivileges);
+
+        // Log final state after saving
+        System.out.println("Final web user privileges:");
+        for (WebUserPrivilege wup : updatedPrivileges) {
+            System.out.println("Final privilege: " + wup.getPrivilege() + ", retired: " + wup.isRetired());
+        }
+
         fillUserPrivileges();
         JsfUtil.addSuccessMessage("Updated");
     }
 
+    private List<PrivilegeHolder> extractPrivileges(TreeNode[] selectedNodes) {
+        List<PrivilegeHolder> privileges = new ArrayList<>();
+        if (selectedNodes != null) {
+            for (TreeNode node : selectedNodes) {
+                PrivilegeHolder ph = (PrivilegeHolder) node.getData();
+                privileges.add(ph);
+            }
+        }
+        return privileges;
+    }
+
+//    public static List<PrivilegeHolder> extractPrivileges(TreeNode[] selectedNodes) {
+//        List<PrivilegeHolder> privileges = new ArrayList<>();
+//        if (selectedNodes != null) {
+//            for (TreeNode node : selectedNodes) {
+//                Object data = node.getData();
+//                if (data instanceof PrivilegeHolder) {
+//                    privileges.add((PrivilegeHolder) data);
+//                }
+//            }
+//        }
+//        return privileges;
+//    }
     public void saveWebUserRolePrivileges() {
         List<PrivilegeHolder> selectedPrivileges = extractPrivileges(selectedNodes);
 
@@ -795,19 +839,6 @@ public class UserPrivilageController implements Serializable {
         getRoleFacede().batchEdit(oldWups);
         fillUserRolePrivileges();
         JsfUtil.addSuccessMessage("Updated");
-    }
-
-    public static List<PrivilegeHolder> extractPrivileges(TreeNode[] selectedNodes) {
-        List<PrivilegeHolder> privileges = new ArrayList<>();
-        if (selectedNodes != null) {
-            for (TreeNode node : selectedNodes) {
-                Object data = node.getData();
-                if (data instanceof PrivilegeHolder) {
-                    privileges.add((PrivilegeHolder) data);
-                }
-            }
-        }
-        return privileges;
     }
 
     private static void checkNodes(TreeNode root, List<PrivilegeHolder> privilegesToCheck) {
@@ -865,8 +896,8 @@ public class UserPrivilageController implements Serializable {
         }
         String j = "SELECT i "
                 + " FROM WebUserPrivilege i "
-                + " where i.webUser<>:wu "
-                + " and i.retired=:ret "
+                + " where i.webUser=:wu "
+                + " and i.retired<>:ret "
                 + " and i.department=:dep";
         Map m = new HashMap();
         m.put("wu", currentWebUser);
@@ -876,8 +907,13 @@ public class UserPrivilageController implements Serializable {
         currentUserPrivilegeHolders = createPrivilegeHolders(currentWebUserPrivileges);
         unselectTreeNodes(rootTreeNode);
         checkNodes(rootTreeNode, currentUserPrivilegeHolders);
+        privilegesLoaded=true;
     }
 
+    public void makePrivilegesNeededToBeReloaded(){
+        privilegesLoaded=false;
+    }
+    
     public void fillUserRolePrivileges(WebUserRole u) {
         webUserRole = u;
         fillUserRolePrivileges();
@@ -1026,6 +1062,16 @@ public class UserPrivilageController implements Serializable {
     public void setRoleFacede(WebUserRolePrivilegeFacade facede) {
         this.facede = facede;
     }
+
+    public boolean isPrivilegesLoaded() {
+        return privilegesLoaded;
+    }
+
+    public void setPrivilegesLoaded(boolean privilegesLoaded) {
+        this.privilegesLoaded = privilegesLoaded;
+    }
+    
+    
 
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Converters">

@@ -13,7 +13,6 @@ import com.divudi.data.DepartmentType;
 import com.divudi.data.FeeType;
 import com.divudi.data.InstitutionType;
 import com.divudi.data.PaymentMethod;
-import com.divudi.data.MessageType;
 import com.divudi.data.dataStructure.SearchKeyword;
 import com.divudi.data.hr.ReportKeyWord;
 
@@ -56,13 +55,11 @@ import com.divudi.data.BillCategory;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillFinanceType;
 import com.divudi.data.BillTypeAtomic;
-import com.divudi.data.CountedServiceType;
 import com.divudi.data.ServiceType;
 import com.divudi.data.analytics.ReportTemplateType;
 import com.divudi.entity.Payment;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
-import com.divudi.entity.pharmacy.PharmaceuticalItem;
 import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
 import com.divudi.facade.TokenFacade;
@@ -996,9 +993,10 @@ public class SearchController implements Serializable {
         
         if(institution==null){
             jpql += " b.collectingCentre in :ccs ";
-             temMap.put("ccs", sessionController.getLoggableInstitutions());
+             temMap.put("ccs", sessionController.getLoggableCollectingCentres());
         }else{
             jpql += " b.collectingCentre=:cc ";
+            temMap.put("ccs", sessionController.getLoggableCollectingCentres());
         }
 
         if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
@@ -11478,4 +11476,6 @@ public class SearchController implements Serializable {
         this.pharmacyAdjustmentRows = pharmacyAdjustmentRows;
     }
 
+      
+    
 }

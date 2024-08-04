@@ -1,12 +1,7 @@
 package com.divudi.bean.common;
 
 import com.divudi.data.ItemLight;
-import com.divudi.entity.Packege;
-import com.divudi.entity.Service;
-import com.divudi.entity.lab.Investigation;
 import com.divudi.facade.ItemFacade;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
