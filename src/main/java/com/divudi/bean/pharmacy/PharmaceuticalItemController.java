@@ -7,7 +7,6 @@ package com.divudi.bean.pharmacy;
 import com.divudi.entity.pharmacy.PharmaceuticalItem;
 import com.divudi.facade.PharmaceuticalItemFacade;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

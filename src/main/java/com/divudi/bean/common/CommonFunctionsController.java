@@ -5,7 +5,6 @@ import com.divudi.data.Title;
 import com.divudi.data.dataStructure.DateRange;
 import com.divudi.data.dataStructure.YearMonthDay;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.TimeZone;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Named;
@@ -13,10 +12,6 @@ import java.util.Date;
 import java.time.ZoneId;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  *

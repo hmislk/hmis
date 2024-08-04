@@ -1,6 +1,5 @@
 package com.divudi.bean.optician;
 
-import com.divudi.bean.opd.*;
 import com.divudi.bean.cashTransaction.FinancialTransactionController;
 import com.divudi.bean.common.*;
 import com.divudi.bean.collectingCentre.CollectingCentreBillController;
@@ -17,7 +16,6 @@ import com.divudi.data.MessageType;
 import com.divudi.data.OpdBillingStrategy;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.Sex;
-import com.divudi.data.SmsSentResponse;
 import com.divudi.data.Title;
 import com.divudi.data.dataStructure.BillListWithTotals;
 import com.divudi.data.dataStructure.ComponentDetail;
@@ -54,7 +52,6 @@ import com.divudi.entity.UserPreference;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.hr.WorkingTime;
 import com.divudi.entity.lab.Investigation;
-import com.divudi.entity.membership.MembershipScheme;
 import com.divudi.facade.BillComponentFacade;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;

@@ -8,7 +8,8 @@
                 xmlns:p="http://primefaces.org/ui"            
                 xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill"
                 xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
-                xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod">
+                xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
+                xmlns:prints="http://xmlns.jcp.org/jsf/composite/ezcomp/prints">
 
     <ui:define name="content">
 
@@ -119,7 +120,7 @@
                     </f:facet>
 
 
-                    <h:outputStylesheet library="css" name="/printing/fivefiveprinting.css" ></h:outputStylesheet>
+                    
 
 
 
@@ -129,90 +130,7 @@
                                 <div class="align-items-center my-2" style="max-width: 80%" >
                                     <div>
                                         <h:panelGroup id="billPanel" class="bill" layout="block">
-                                            <div class="header">
-                                                <h2>
-                                                    <h:outputText
-                                                        value="#{patientController.bill.department.printingName}"
-                                                        style="font-size: var(--font-size-bill) /2 ; font-weight: bold;"></h:outputText>
-                                                </h2>
-                                                <p>
-                                                    <h:outputText
-                                                        value="#{patientController.bill.department.address}"
-                                                        style="font-size: var(--font-size-bill) /2 ;"></h:outputText>
-                                                </p>
-                                                <p>
-                                                    <h:outputText
-                                                        value="Telephone: #{patientController.bill.department.telephone1}"
-                                                        style="font-size: var(--font-size-bill) /2 ;"></h:outputText>
-                                                </p>
-                                                <p>
-                                                    <h:outputText
-                                                        value="Email: #{patientController.bill.department.email}"
-                                                        style="font-size: var(--font-size-bill) /2 ;"></h:outputText>
-                                                </p>
-                                            </div>
-                                            <hr/>
-                                            <div class="header">
-                                                <h4>
-                                                    <h:outputText
-                                                        value="Patient Deposit Invoice"
-                                                        style="font-size: var(--font-size-bill) /2 ;"></h:outputText>
-                                                </h4>
-                                            </div>
-                                            <hr/>
-                                            <p>
-                                                <strong>
-                                                    <h:outputText value="Name:" style="font-size: var(--font-size-bill) /2 ;"></h:outputText>
-                                                </strong>
-                                                <h:outputText value="#{patientController.bill.patient.person.nameWithTitle}" style="font-size: var(--font-size-bill) /2 ;"></h:outputText>
-                                            </p>
-                                            <p>
-                                                <strong>
-                                                    <h:outputText value="Age:" style="font-size: var(--font-size-bill) /2 ;"></h:outputText>
-                                                </strong>
-                                                <h:outputText value="#{patientController.bill.ageAtBilledDate}" style="font-size: var(--font-size-bill) /2 ;"></h:outputText>
-                                            </p>
-                                            <p>
-                                                <strong>
-                                                    <h:outputText value="Sex:" style="font-size: var(--font-size-bill) /2 ;"></h:outputText>
-                                                </strong>
-                                                <h:outputText value="#{patientController.bill.patient.person.sex}" style="font-size: var(--font-size-bill) /2 ;"></h:outputText>
-                                            </p>
-                                            <p>
-                                                <strong>
-                                                    <h:outputText value="Phone:" style="font-size: var(--font-size-bill) /2 ;"></h:outputText>
-                                                </strong>
-                                                <h:outputText value="#{patientController.bill.patient.person.phone}" style="font-size: var(--font-size-bill) /2 ;"></h:outputText>
-                                            </p>
-                                            <p>
-                                                <strong>
-                                                    <h:outputText value="Address:" style="font-size: var(--font-size-bill) /2 ;"></h:outputText>
-                                                </strong>
-                                                <h:outputText value="#{patientController.bill.patient.person.address}" style="font-size: var(--font-size-bill) /2 ;"></h:outputText>
-                                            </p>
-                                            <hr/>
-                                            <p:barcode type="code39" value="#{patientController.bill.idStr}" style="width: 100%; height: 6rem;"></p:barcode>
-                                            <hr/>
-                                            <h4>Payment Details</h4>
-                                            <p>
-                                                <strong>
-                                                    <h:outputText value="Total:" style="font-size: var(--font-size-bill) /2 ;"></h:outputText>
-                                                </strong>
-                                                <h:outputText value="#{patientController.bill.netTotal}" style="font-size: var(--font-size-bill) /2 ;"></h:outputText>
-                                            </p>
-                                            <p>
-                                                <strong>
-                                                    <h:outputText value="Payment Method:" style="font-size: var(--font-size-bill) /2 ;"></h:outputText>
-                                                </strong>
-                                                <h:outputText value="#{patientController.bill.paymentMethod}" style="font-size: var(--font-size-bill) /2 ;"></h:outputText>
-                                            </p>
-                                            <hr/>
-                                            <p>
-                                                <strong>
-                                                    <h:outputText value="Cashier:" style="font-size: var(--font-size-bill) /2 ;"></h:outputText>
-                                                </strong>
-                                                <h:outputText value="#{patientController.bill.creater.webUserPerson.name}" style="font-size: var(--font-size-bill) /2 ;"></h:outputText>
-                                            </p>
+                                            <prints:five_five_paper_patient_deposit bill="#{patientController.bill}" />
                                         </h:panelGroup>
                                     </div>
                                 </div>

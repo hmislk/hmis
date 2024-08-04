@@ -61,6 +61,7 @@
                             rowsPerPageTemplate="5,10,15"
                             >
                             <p:column headerText="Approve At"  >
+                                
                                 <h:commandLink action="pharmacy_reprint_po" >
                                     <h:outputLabel value="#{p.createdAt}" >
                                         <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
@@ -102,13 +103,13 @@
                                     <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{p}"/>
                                 </h:commandLink>
                             </p:column>
-                            <p:column headerText="PO Number" >                   
+                            <p:column headerText="PO Number" width="150px;">                   
                                 <h:commandLink action="pharmacy_reprint_po"  >    
                                     <h:outputLabel  value="#{p.deptId}"/>
                                     <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{p}"/>
                                 </h:commandLink>
                             </p:column>              
-                            <p:column headerText="PO Value">
+                            <p:column headerText="PO Value" width="150px;">
                                 <h:commandLink action="pharmacy_reprint_po"  >   
                                     <h:outputLabel value="#{p.netTotal}">
                                         <f:convertNumber pattern="#,##0.00" />
@@ -116,7 +117,7 @@
                                     <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{p}"/>
                                 </h:commandLink>
                             </p:column>
-                            <p:column width="15%">
+                            <p:column width="180px;">
                                 <div class="row">
                                     <div class="d-flex gap-2 mb-1">
                                         <p:commandButton 
@@ -173,7 +174,7 @@
 
 
                             </p:column>
-                            <p:column headerText="Goods Received Notes" width="28em">                   
+                            <p:column headerText="Goods Received Notes" width="36em">     
                                 <h:dataTable var="b" 
                                              border="0"
                                              class="table table-borderless"

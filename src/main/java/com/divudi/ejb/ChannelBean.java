@@ -7,7 +7,6 @@ package com.divudi.ejb;
 import com.divudi.bean.channel.BookingController;
 import com.divudi.bean.channel.ChannelBillController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.data.ApplicationInstitution;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
 import com.divudi.data.dataStructure.ChannelFee;
@@ -34,7 +33,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
@@ -679,7 +677,7 @@ public class ChannelBean {
         return listTodaysSessionInstances(null, null, null);
     }
 
-    public List<SessionInstance> listTodaysSessionInstances(Boolean ongoing, Boolean completed, Boolean pending) {
+     public List<SessionInstance> listTodaysSessionInstances(Boolean ongoing, Boolean completed, Boolean pending) {
         List<SessionInstance> sessionInstances = new ArrayList<>();
         StringBuilder jpql = new StringBuilder("select i from SessionInstance i where i.retired=:ret and i.sessionDate=:sd");
 
@@ -708,17 +706,17 @@ public class ChannelBean {
         sessionInstances = sessionInstanceFacade.findByJpql(jpql.toString(), params, TemporalType.DATE);
 
         // Sorting logic remains unchanged
-        Collections.sort(sessionInstances, new Comparator<SessionInstance>() {
-            @Override
-            public int compare(SessionInstance s1, SessionInstance s2) {
-                int dateCompare = s1.getSessionDate().compareTo(s2.getSessionDate());
-                if (dateCompare != 0) {
-                    return dateCompare;
-                } else {
-                    return s1.getOriginatingSession().getName().compareTo(s2.getOriginatingSession().getName());
-                }
-            }
-        });
+//        Collections.sort(sessionInstances, new Comparator<SessionInstance>() {
+//            @Override
+//            public int compare(SessionInstance s1, SessionInstance s2) {
+//                int dateCompare = s1.getSessionDate().compareTo(s2.getSessionDate());
+//                if (dateCompare != 0) {
+//                    return dateCompare;
+//                } else {
+//                    return s1.getOriginatingSession().getName().compareTo(s2.getOriginatingSession().getName());
+//                }
+//            }
+//        });
         return sessionInstances;
     }
 

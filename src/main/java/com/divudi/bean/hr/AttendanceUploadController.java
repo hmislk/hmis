@@ -5,7 +5,6 @@
 package com.divudi.bean.hr;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.data.hr.FingerPrintRecordType;
 import com.divudi.data.hr.Times;
 import com.divudi.ejb.HumanResourceBean;
 import com.divudi.entity.Staff;
