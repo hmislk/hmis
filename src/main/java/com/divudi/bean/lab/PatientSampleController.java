@@ -8,14 +8,9 @@
  */
 package com.divudi.bean.lab;
 
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 
-import com.divudi.entity.Category;
-import com.divudi.entity.lab.Sample;
-import com.divudi.facade.SampleFacade;
 import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.lab.PatientSampleWrapper;
 import com.divudi.entity.lab.PatientSample;
 import com.divudi.facade.PatientSampleFacade;
 import com.divudi.java.CommonFunctions;
@@ -34,7 +29,6 @@ import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
-import kotlin.collections.ArrayDeque;
 
 /**
  *

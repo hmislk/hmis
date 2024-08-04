@@ -16,12 +16,10 @@ import com.divudi.data.dataStructure.ServiceFee;
 import com.divudi.data.inward.InwardChargeType;
 import com.divudi.entity.Category;
 import com.divudi.entity.Department;
-import com.divudi.entity.Fee;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.ItemFee;
 import com.divudi.entity.Service;
-import com.divudi.entity.clinical.ClinicalEntity;
 import com.divudi.facade.CategoryFacade;
 import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.FeeFacade;
@@ -34,7 +32,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
@@ -54,7 +51,6 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import javax.servlet.http.HttpServletResponse;
-import java.util.Random;
 
 /**
  *

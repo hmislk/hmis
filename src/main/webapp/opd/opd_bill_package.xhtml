@@ -483,6 +483,7 @@
                                             <p:tab id="pacName" title="Package Name" >
                                                 <div class="d-flex justify-content-between">
                                                     <h:outputLabel  style="font-weight: 500; font-size: 18px;" value="#{billPackageController.currentBillItem.item.name}"/>
+                                                    <h:outputLabel value="#{billPackageController.total}"/>
                                                     <p:commandButton 
                                                         id="btnRemove" 
                                                         value="X" 
@@ -490,7 +491,7 @@
                                                         class="ui-button-danger"
                                                         rendered="#{billPackageController.currentBillItem.item ne null}" 
                                                         action="#{billPackageController.removeBillItem}" 
-                                                        ajax="false" />                                                
+                                                        ajax="false" />
                                                 </div>
                                             </p:tab>
                                             <p:tab id="tabBillItems" title="Bill Items" >
@@ -506,6 +507,9 @@
                                                     <p:column  style="width: 30px;">
                                                         <f:facet name="header">No</f:facet>
                                                             #{rowIndex+1}
+                                                        <f:facet name="footer" >
+                                                            <h:outputText value="Total"></h:outputText>
+                                                        </f:facet>
                                                     </p:column>
                                                     <p:column>
                                                         <f:facet name="header">Item</f:facet>
@@ -516,6 +520,9 @@
                                                         <h:outputLabel value="#{bi.billItem.netValue}">
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputLabel>
+                                                        <f:facet name="footer" >
+                                                            <h:outputText value="#{billPackageController.total}">Total</h:outputText>
+                                                        </f:facet>
                                                     </p:column>
                                                     <p:column  style="width: 200px;">
                                                         <f:facet name="header">Department</f:facet>
@@ -554,6 +561,9 @@
                                                     <p:column style="width: 30px;">
                                                         <f:facet name="header">No</f:facet>
                                                             #{rowIndex+1}
+                                                        <f:facet name="footer" >
+                                                            <h:outputText value="Total"></h:outputText>
+                                                        </f:facet>
                                                     </p:column>
 
                                                     <p:column >
@@ -561,12 +571,20 @@
                                                         <h:outputLabel  value="#{bif.billItem.item.name}"/>
                                                     </p:column>
 
-                                                    <p:column style="width: 200px;">
+                                                    <p:column style="width: 100px;">
                                                         <f:facet name="header">Fee</f:facet>
                                                         <p:inputText autocomplete="off" id="txtFeeVal" value="#{bif.feeValue}" disabled="#{!bif.billItem.item.userChangable}" >
                                                             <f:convertNumber pattern="#,##0.00" />
                                                             <f:ajax event="keyup" execute="txtFeeVal" render=" :#{p:resolveFirstComponentWithId('tblRequests',view).clientId}  :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}" listener="#{billPackageController.feeChanged}" />
                                                         </p:inputText>
+                                                        <f:facet name="footer" >
+                                                            <h:outputText value="#{billPackageController.total}">Total</h:outputText>
+                                                        </f:facet>
+                                                    </p:column>
+                                                    <p:column  style="width: 100px;">
+                                                        <f:facet name="header">Fee Type</f:facet>
+                                                        <h:outputLabel value="#{bif.fee.feeType}">
+                                                        </h:outputLabel>
                                                     </p:column>
                                                     <p:column style="width: 200px;">
                                                         <f:facet name="header">Payee</f:facet>
@@ -607,6 +625,8 @@
                                                             ajax="false"
                                                             icon="fa fa-check"
                                                             action="#{billPackageController.settleBill()}" 
+                                                            onclick="if (!confirm('Are you sure you want to Settle This Bill ?'))
+                                                        return false;"
                                                             class="ui-button-success mx-1"
                                                             >
                                                         </p:commandButton>
@@ -654,21 +674,21 @@
                                                                         itemLabel="#{ix.name}" 
                                                                         itemValue="#{ix}" 
                                                                         size="10"  >
- 
+
                                                                         <f:ajax  
                                                                             event="itemSelect" 
                                                                             listener="#{billPackageController.calTotals()}"
                                                                             execute="@this" 
                                                                             render=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}  :#{p:resolveFirstComponentWithId('tblRequests',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId}" />
                                                                     </p:autoComplete> 
- 
+
                                                                     <p:inputText 
                                                                         id="polNo" 
                                                                         style="width: 200px;"
                                                                         value="#{billPackageController.paymentMethodData.credit.referralNo}" 
                                                                         placeholder="Policy NO" >
                                                                     </p:inputText>
-                                                                    
+
                                                                     <p:inputText 
                                                                         id="memo" 
                                                                         style="width: 300px;"
