@@ -1343,6 +1343,7 @@
                                         <h:panelGroup class="w-100">
                                             <p:outputLabel for="cmbDoc" value="Doctor" ></p:outputLabel>
                                             <p:commandLink id="btnAddNewDoc" 
+                                                           rendered="#{webUserController.hasPrivilege('OpdAddNewRefferalDoctor')}"
                                                            type="button"  
                                                            value="&nbsp;(+)" 
                                                            oncomplete="PF('dlg').show();" 
@@ -1421,9 +1422,10 @@
                                             </p:commandButton>  
                                         </h:panelGroup>
 
-                                        <h:panelGroup class="w-100">
+                                        <h:panelGroup class="w-100" >
                                             <p:outputLabel value="Centre" />
                                             <p:commandLink 
+                                                rendered="#{webUserController.hasPrivilege('OpdAddNewCollectingCentre')}"
                                                 id="btnAddNewCc" 
                                                 value="&nbsp;(+)"  
                                                 ajax="false" 

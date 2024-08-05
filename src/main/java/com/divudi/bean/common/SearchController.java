@@ -4482,6 +4482,11 @@ public class SearchController implements Serializable {
             sql += " and  ((b.billItem.item.name) like :staff )";
             temMap.put("staff", "%" + getSearchKeyword().getItemName().trim().toUpperCase() + "%");
         }
+        
+        if (getSearchKeyword().getBhtNo() != null && !getSearchKeyword().getBhtNo().trim().equals("")) {
+            sql += " and  ((b.paidForBillFee.bill.patientEncounter.bhtNo) like :bht )";
+            temMap.put("bht", "%" + getSearchKeyword().getBhtNo().trim().toUpperCase() + "%");
+        }
 
         sql += "  order by b.staff.id    ";
 
@@ -4549,6 +4554,11 @@ public class SearchController implements Serializable {
         if (getSearchKeyword().getItemName() != null && !getSearchKeyword().getItemName().trim().equals("")) {
             sql += " and  ((b.billItem.item.name) like :staff )";
             temMap.put("staff", "%" + getSearchKeyword().getItemName().trim().toUpperCase() + "%");
+        }
+        
+        if (getSearchKeyword().getBhtNo() != null && !getSearchKeyword().getBhtNo().trim().equals("")) {
+            sql += " and  ((b.paidForBillFee.bill.patientEncounter.bhtNo) like :bht )";
+            temMap.put("bht", "%" + getSearchKeyword().getBhtNo().trim().toUpperCase() + "%");
         }
 
         sql += "  order by b.staff.id    ";
@@ -5140,6 +5150,11 @@ public class SearchController implements Serializable {
             sql += " and  b.paidForBillFee.bill.creditCompany=:cc ";
             temMap.put("cc", getReportKeyWord().getInstitution());
         }
+        
+        if (getSearchKeyword().getBhtNo() != null && !getSearchKeyword().getBhtNo().trim().equals("")) {
+            sql += " and  ((b.paidForBillFee.bill.patientEncounter.bhtNo) like :bht )";
+            temMap.put("bht", "%" + getSearchKeyword().getBhtNo().trim().toUpperCase() + "%");
+        }
 
         sql += " order by b.createdAt desc  ";
 
@@ -5203,6 +5218,11 @@ public class SearchController implements Serializable {
         if (getReportKeyWord().getInstitution() != null) {
             sql += " and  b.paidForBillFee.bill.creditCompany=:cc ";
             temMap.put("cc", getReportKeyWord().getInstitution());
+        }
+        
+        if (getSearchKeyword().getBhtNo() != null && !getSearchKeyword().getBhtNo().trim().equals("")) {
+            sql += " and  ((b.paidForBillFee.bill.patientEncounter.bhtNo) like :bht )";
+            temMap.put("bht", "%" + getSearchKeyword().getBhtNo().trim().toUpperCase() + "%");
         }
 
         sql += " order by b.createdAt desc  ";
@@ -6986,6 +7006,7 @@ public class SearchController implements Serializable {
                                         System.out.println("Different staff found: " + bf.getReferenceBillFee().getStaff());
                                     }
                                 }
+
                             } else {
                                 if (bf.getReferenceBillFee().getBill().getStaff() != null) {
                                     if (bs == null) {
@@ -6998,6 +7019,7 @@ public class SearchController implements Serializable {
                                         }
                                     }
                                 }
+
                             }
                         }
                     }
@@ -7088,7 +7110,9 @@ public class SearchController implements Serializable {
         jpql = "select b from Bill b "
                 + "where b.toStaff is not null "
                 + "and b.createdAt between :fromDate and :toDate "
-                + "and b.retired = false ";
+                + "and b.retired = false "
+                + "and b.cancelled = false "
+                + "and b.refunded = false ";
         jpql += " and b.billTypeAtomic in :btas ";
         if (staff != null) {
             jpql += " and b.toStaff=:staff ";
@@ -7130,7 +7154,9 @@ public class SearchController implements Serializable {
         btas.addAll(BillTypeAtomic.findByServiceType(ServiceType.OPD));
         btas.addAll(BillTypeAtomic.findByServiceType(ServiceType.CHANNELLING));
         btas.removeAll(BillTypeAtomic.findByCategory(BillCategory.PAYMENTS));
-
+        btas.removeAll(BillTypeAtomic.findByCategory(BillCategory.CANCELLATION));
+        btas.removeAll(BillTypeAtomic.findByCategory(BillCategory.REFUND));
+        
         jpql += " order by b.createdAt desc";
 
         m.put("fromDate", fromDate);

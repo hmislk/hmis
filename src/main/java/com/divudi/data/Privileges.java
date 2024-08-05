@@ -41,6 +41,8 @@ public enum Privileges {
     OpdBillSearchEdit,
     OpdLabReportSearch,
     OpdReprintOriginalBill,
+    OpdAddNewRefferalDoctor,
+    OpdAddNewCollectingCentre,
     
     AddCreditLimitInRegistration,
     
