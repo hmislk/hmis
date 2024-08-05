@@ -1,6 +1,5 @@
 package com.divudi.bean.common;
 
-import com.divudi.entity.Staff;
 import com.divudi.entity.Upload;
 import com.divudi.facade.UploadFacade;
 import java.io.ByteArrayInputStream;

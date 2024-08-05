@@ -10,7 +10,6 @@ package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.SessionController;
 
-import com.divudi.entity.clinical.ClinicalEntity;
 import com.divudi.entity.pharmacy.PharmaceuticalItemCategory;
 import com.divudi.facade.PharmaceuticalItemCategoryFacade;
 import com.divudi.bean.common.util.JsfUtil;

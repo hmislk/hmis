@@ -2,7 +2,6 @@ package com.divudi.bean.clinical;
 
 import com.divudi.bean.common.SessionController;
 
-import com.divudi.data.SymanticType;
 import com.divudi.data.clinical.DocumentTemplateType;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.clinical.DocumentTemplate;

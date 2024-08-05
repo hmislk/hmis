@@ -7,7 +7,6 @@ package com.divudi.facade.forms;
 
 
 import com.divudi.entity.forms.ComponentAsignment;
-import com.divudi.entity.web.WebTemplate;
 import com.divudi.facade.AbstractFacade;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;

@@ -51,6 +51,17 @@
                                     <h:panelGrid id="gpDetail" columns="2" class="w-100">
                                         <h:outputLabel class="form-label" for="txtName" value="Name" ></h:outputLabel>
                                         <p:inputText class="form form-control" id="txtName" value="#{routeController.current.name}"></p:inputText>
+                                        <h:outputLabel class="form-label" for="acIns" value="Institution" ></h:outputLabel>
+                                        <p:autoComplete 
+                                            required="true"
+                                            requiredMessage="Select an institution"
+                                            forceSelection="true"
+                                            value="#{routeController.current.institution}"
+                                            completeMethod="#{institutionController.completeIns}" id="ins2"
+                                            var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" 
+                                            class="w-100" inputStyleClass="w-100">
+                                        </p:autoComplete>
+
                                         <h:outputLabel class="form-label" for="txtContents"  value="Description" ></h:outputLabel>
                                         <p:inputTextarea  class="form form-control" id="txtDescription" value="#{routeController.current.description}"></p:inputTextarea>
                                     </h:panelGrid>
