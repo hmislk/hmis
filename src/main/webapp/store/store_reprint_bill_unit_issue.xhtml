@@ -16,7 +16,7 @@
                     <p:panel  >
                         <f:facet name="header" >
                             <div class="d-flex justify-content-between">
-                                <h:outputLabel value="Reprint Pre Bill" ></h:outputLabel>
+                                <h:outputLabel value="Reprint Store Issue" ></h:outputLabel>
                                 <div class="d-flex gap-2">
                                     <p:commandButton 
                                         ajax="false" 
@@ -28,7 +28,8 @@
                                     <p:commandButton 
                                         ajax="false" 
                                         value="To Return Item" 
-                                        
+                                        icon="fa fa-money-bill-wave"
+                                        class="ui-button-warning"
                                         action="store_bill_return_issue?faces-redirect=true"   
                                         disabled="#{storeBillSearch.bill.cancelled eq true}"  >                                
                                         <f:setPropertyActionListener 
