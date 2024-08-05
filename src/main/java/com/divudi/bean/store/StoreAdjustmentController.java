@@ -667,4 +667,19 @@ public class StoreAdjustmentController implements Serializable {
 
    
 
+    public void fillSelectStock(){
+        List<Stock> items = new ArrayList<>();
+        
+        String sql;
+        Map m = new HashMap();
+        sql = "select i "
+                + " from Stock i "
+                + " where i.department=:d "
+                + " order by i.stock desc";
+        m.put("d", sessionController.getDepartment());
+
+        items = getStockFacade().findByJpql(sql, m);
+
+        
+    }
 }

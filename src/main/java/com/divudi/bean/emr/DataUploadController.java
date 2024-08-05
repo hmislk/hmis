@@ -3414,7 +3414,8 @@ if (retiredCell != null) {
                 feeListType = itemFeeListCell.getStringCellValue();
             }
             if (feeListType != null) {
-                category=categoryController.findAndCreateCategoryByName(itemName);
+                System.out.println("itemFeeListCell = " + feeListType);
+                category=categoryController.findAndCreateCategoryByName(feeListType);
                 category.setSymanticType(SymanticHyrachi.Fee_List_Type);
                 categoryFacade.edit(category);
             }
