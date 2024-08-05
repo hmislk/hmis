@@ -6557,7 +6557,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             }
         }
 
-        if (settlePaymentMethod == PaymentMethod.Agent && settleInstitution == null) {
+        if (settlePaymentMethod == PaymentMethod.Agent && institution == null) {
             JsfUtil.addErrorMessage("Please select Agency");
             return true;
         }
