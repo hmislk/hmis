@@ -46,7 +46,6 @@ import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
 import com.divudi.entity.EncounterCreditCompany;
-import com.divudi.entity.Institution;
 import com.divudi.entity.clinical.ClinicalFindingValue;
 import com.divudi.facade.ClinicalFindingValueFacade;
 import com.divudi.facade.EncounterCreditCompanyFacade;

@@ -31,7 +31,6 @@ import com.divudi.facade.ItemsDistributorsFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillTypeAtomic;
-import com.divudi.data.OptionScope;
 import com.divudi.data.dataStructure.PaymentMethodData;
 import java.io.Serializable;
 import java.util.ArrayList;

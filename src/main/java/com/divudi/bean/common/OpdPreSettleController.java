@@ -12,11 +12,9 @@ import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.BillTypeAtomic;
-import com.divudi.data.FeeType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.Sex;
 import com.divudi.data.Title;
-import com.divudi.data.TokenType;
 import com.divudi.data.dataStructure.ComponentDetail;
 import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.data.dataStructure.YearMonthDay;
@@ -24,7 +22,6 @@ import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 import com.divudi.ejb.StaffBean;
 import com.divudi.entity.Bill;
-import com.divudi.entity.BillEntry;
 import com.divudi.entity.BillFee;
 import com.divudi.entity.BillFeePayment;
 import com.divudi.entity.BillItem;
@@ -42,7 +39,6 @@ import com.divudi.entity.PriceMatrix;
 import com.divudi.entity.Staff;
 import com.divudi.entity.Token;
 import com.divudi.entity.WebUser;
-import com.divudi.entity.membership.MembershipScheme;
 import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.entity.pharmacy.Stock;
 import com.divudi.facade.BillFacade;
@@ -54,6 +50,7 @@ import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
+import com.divudi.facade.StaffFacade;
 import com.divudi.facade.TokenFacade;
 
 import java.io.Serializable;
@@ -63,12 +60,10 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.persistence.TemporalType;
 import org.primefaces.event.TabChangeEvent;
 
 /**
@@ -122,6 +117,9 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
     TokenFacade tokenFacade;
     @EJB
     StaffBean staffBean;
+    @EJB
+    private StaffFacade staffFacade;
+    
 /////////////////////////
     Item selectedAlternative;
 
@@ -1703,26 +1701,36 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
         p.setCreater(getSessionController().getLoggedUser());
         p.setPaymentMethod(pm);
         
-        System.out.println("pm = " + pm);
+        //System.out.println("pm = " + pm);
 
         if (pm == PaymentMethod.PatientDeposit) {
-            System.out.println("Before Balance = " + bill.getPatient().getRunningBalance());
+            //System.out.println("Before Balance = " + bill.getPatient().getRunningBalance());
             if (bill.getPatient().getRunningBalance() == null) {
-                System.out.println("Null");
+                //System.out.println("Null");
                 bill.getPatient().setRunningBalance(Math.abs(bill.getNetTotal()));
             } else {
-                System.out.println("Not Null - Add BillValue");
+                //System.out.println("Not Null - Add BillValue");
                 bill.getPatient().setRunningBalance(bill.getPatient().getRunningBalance() + Math.abs(bill.getNetTotal()));
             }
             patientFacade.edit(bill.getPatient());
-            System.out.println("After Balance = " + bill.getPatient().getRunningBalance());
+            //System.out.println("After Balance = " + bill.getPatient().getRunningBalance());
         }
-        System.out.println("001");  
+        
+        if (pm == PaymentMethod.Staff) {
+            //System.out.println("PaymentMethod - Staff");
+            //System.out.println("Before Balance = " + bill.getToStaff().getCurrentCreditValue());
+            bill.getToStaff().setCurrentCreditValue( bill.getToStaff().getCurrentCreditValue() - Math.abs(bill.getNetTotal()));
+            //System.out.println("After Balance = " + bill.getToStaff().getCurrentCreditValue());
+            staffFacade.edit(bill.getToStaff());
+            //System.out.println("Staff Credit Updated");
+        }
+        
+        //System.out.println("001");  
         if (p.getId() == null) { 
             getPaymentFacade().create(p);
         }
         getPaymentFacade().edit(p);
-        System.out.println("End Payment");  
+        //System.out.println("End Payment");  
         return p;
     }
 
@@ -2015,6 +2023,14 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
 
     public void setForeigner(boolean foreigner) {
         this.foreigner = foreigner;
+    }
+
+    public StaffFacade getStaffFacade() {
+        return staffFacade;
+    }
+
+    public void setStaffFacade(StaffFacade staffFacade) {
+        this.staffFacade = staffFacade;
     }
 
 }
