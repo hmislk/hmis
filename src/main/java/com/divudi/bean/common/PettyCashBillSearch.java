@@ -101,6 +101,16 @@ public class PettyCashBillSearch implements Serializable {
     private String comment;
     WebUser user;
     private SearchKeyword searchKeyword;
+    
+    public void sendToApprovePettyCashBillCancellation(){
+        Bill b=new Bill();
+        b.setCreatedAt(new Date());
+        b.setCreater(webUserController.getCurrent());
+        b.setReferenceBill(getBill());
+        b.setBillType(BillType.PettyCashCancelApprove);
+        billFacade.create(b);
+        
+    }
 
     public WebUser getUser() {
         return user;

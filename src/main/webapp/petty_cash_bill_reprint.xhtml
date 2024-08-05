@@ -20,6 +20,11 @@
                             <p:commandButton ajax="false" value="Cancel" action="petty_cash_bill_cancel" disabled="#{pettyCashBillSearch.bill.cancelled}">                           
                             </p:commandButton>
 
+                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Need Approvel For Petty Cash Bill Cancelletion')}" >
+                                <p:commandButton ajax="false" value="To Cancel" action="petty_cash_bill_cancel" disabled="#{pettyCashBillSearch.bill.cancelled}">                           
+                                </p:commandButton>
+                            </h:panelGroup>
+
                             <p:commandButton  class="mx-1" value="Return" onclick="PF('confirmationDialog').show()">                           
                             </p:commandButton>
                         </f:facet>
