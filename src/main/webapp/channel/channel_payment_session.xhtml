@@ -118,7 +118,7 @@
                                     <f:ajax  event="rowSelect" execute="tblFee" listener="#{channelStaffPaymentBillController.performCalculations()}"   
                                              render=":#{p:resolveFirstComponentWithId('lblDue',view).clientId} :#{p:resolveFirstComponentWithId('lblPay',view).clientId}"  />
 
-                                    <p:column selectionMode="multiple" ></p:column>
+                                    <p:column selectionBox="true" ></p:column>
 
                                     <p:column headerText="No">
                                         <h:outputLabel value="#{i+1}">

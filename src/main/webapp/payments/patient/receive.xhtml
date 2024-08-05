@@ -59,11 +59,9 @@
 
                                     <h:panelGroup id="panelGroup" style="display: #{patientController.bill.paymentMethod eq 'Card' or patientController.bill.paymentMethod eq 'Cheque' or patientController.bill.paymentMethod eq 'Slip' or patientController.bill.paymentMethod eq 'ewallet' ? 'none' : 'block' };">
                                         <p:inputText class="mx-1" value="#{patientController.bill.netTotal}" id="txtNetTotal"/>
-                                        <p:watermark value="Total" for="txtNetTotal"/>
-
+                                        
                                         <p:inputText value="#{patientController.bill.comments}" id="comment"/>
-                                        <p:watermark value="Comment" for="comment"/>
-                                    </h:panelGroup>
+                                                                            </h:panelGroup>
 
                                     <h:panelGroup id="creditCard" class="m-1" style="display: #{patientController.bill.paymentMethod eq 'Card' ? 'block' : 'none'};">
                                         <pa:creditCard paymentMethodData="#{patientController.paymentMethodData}"/>

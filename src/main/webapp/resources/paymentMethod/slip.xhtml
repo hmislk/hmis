@@ -19,10 +19,8 @@
                 <p:inputText autocomplete="off"   value="#{cc.attrs.paymentMethodData.slip.totalValue}" style="width: 10em;" class="w-100" id="txtVal" >
                     <p:ajax process="@this" ></p:ajax>
                 </p:inputText>
-                <p:watermark value="Value" for="txtVal" />
-            </h:panelGroup>
-            <p:watermark value="Value" for="txtVal" />
-            <p:selectOneMenu value="#{cc.attrs.paymentMethodData.slip.institution}" style="width: 200px;" >
+                            </h:panelGroup>
+                        <p:selectOneMenu value="#{cc.attrs.paymentMethodData.slip.institution}" style="width: 200px;" >
                 <f:selectItem itemLabel="Select Bank"/>
                 <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
                 <p:ajax process="@this" ></p:ajax>
@@ -31,7 +29,6 @@
                 <p:ajax process="@this" ></p:ajax>
             </p:calendar>
             <p:inputText value="#{cc.attrs.paymentMethodData.slip.comment}" placeholder="Enter Slip Comments" ></p:inputText>
-            <p:watermark value="Date" for="date"/>
-        </div>
+                    </div>
     </cc:implementation>
 </html>

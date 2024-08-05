@@ -527,6 +527,16 @@ public class SearchController implements Serializable {
         return "/analytics/sms_list?faces-redirect=true";
     }
 
+    public String navigateToStaffCreditBillList() {
+        bills = null;
+        return "/analytics/staff_credit_bill_list?faces-redirect=true";
+    }
+
+    public String navigateToGeneralCreditBillList() {
+        bills = null;
+        return "/analytics/general_credit_bill_list?faces-redirect=true";
+    }
+
     public String navigateToFailedSmsList() {
         return "/analytics/sms_faild?faces-redirect=true";
     }
@@ -7080,7 +7090,11 @@ public class SearchController implements Serializable {
                 + "and b.createdAt between :fromDate and :toDate "
                 + "and b.retired = false ";
         jpql += " and b.billTypeAtomic in :btas ";
-        
+        if (staff != null) {
+            jpql += " and b.toStaff=:staff ";
+            m.put("staff", staff);
+        }
+
         btas.addAll(BillTypeAtomic.findByServiceType(ServiceType.OPD));
         btas.addAll(BillTypeAtomic.findByServiceType(ServiceType.CHANNELLING));
         btas.removeAll(BillTypeAtomic.findByCategory(BillCategory.PAYMENTS));
@@ -7089,7 +7103,39 @@ public class SearchController implements Serializable {
 
         m.put("fromDate", fromDate);
         m.put("toDate", toDate);
-         m.put("btas", btas);
+        m.put("btas", btas);
+
+        System.out.println("m = " + m);
+        System.out.println("jpql = " + jpql);
+
+        bills = getBillFacade().findByJpql(jpql, m, TemporalType.TIMESTAMP);
+        System.out.println("bills = " + bills);
+    }
+
+    public void createGeneralCreditBillList() {
+        String jpql;
+        Map m = new HashMap();
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        jpql = "select b from Bill b "
+                + "where b.creditCompany is not null "
+                + "and b.createdAt between :fromDate and :toDate "
+                + "and b.retired = false ";
+        jpql += " and b.billTypeAtomic in :btas ";
+        
+        if (creditCompany != null) {
+            jpql += " and b.creditCompany=:cc ";
+            m.put("cc", creditCompany);
+        }
+
+        btas.addAll(BillTypeAtomic.findByServiceType(ServiceType.OPD));
+        btas.addAll(BillTypeAtomic.findByServiceType(ServiceType.CHANNELLING));
+        btas.removeAll(BillTypeAtomic.findByCategory(BillCategory.PAYMENTS));
+
+        jpql += " order by b.createdAt desc";
+
+        m.put("fromDate", fromDate);
+        m.put("toDate", toDate);
+        m.put("btas", btas);
 
         System.out.println("m = " + m);
         System.out.println("jpql = " + jpql);
