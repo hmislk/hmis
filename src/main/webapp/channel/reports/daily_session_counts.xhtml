@@ -115,6 +115,12 @@
                                 </f:facet>
                                 <p:outputLabel value="#{a.sessionInstance.originatingSession.name}" />
                             </p:column>
+                            <p:column width="8em">
+                                <f:facet name="header">
+                                    <p:outputLabel value="Category" />
+                                </f:facet>
+                                <p:outputLabel value="#{a.sessionInstance.originatingSession.category.name}" />
+                            </p:column>
                             <p:column width="4em">
                                 <f:facet name="header">
                                     <p:outputLabel value="Booked" />
