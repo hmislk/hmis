@@ -46,7 +46,7 @@
                                     <h:outputLabel value="#{dep.institution.name}"/>
                                 </p:column>
                             </p:autoComplete>
-                            
+
                             <h:outputLabel value="Category" />
                             <p:autoComplete class="w-100 mx-4"
                                             inputStyleClass="w-100" value="#{searchController.category}" 
@@ -89,53 +89,13 @@
                                 <p:outputLabel value="#{billFee.bill.deptId}" />
                             </p:column>
 
-                            <p:column headerText="Channel Payment Done Date" width="8em" style="text-align: left;" >
-                                <p:outputLabel value="#{billFee.referenceBillFee.bill.billDate}" >
-                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
-                                </p:outputLabel>
-                            </p:column>
-
-                            <p:column headerText="Channel Receipt No" 
-                                      sortBy="#{billFee.referenceBillFee.bill.deptId}"
-                                      filterBy="#{billFee.referenceBillFee.bill.deptId}"
-                                      filterMatchMode="contains"
-                                      width="10em" style="text-align: left;">
-                                <p:outputLabel value="#{billFee.referenceBillFee.bill.deptId}" />
-                            </p:column>
-
-                            <p:column headerText="Patient" 
-                                      sortBy="#{billFee.referenceBillFee.bill.patient.person.name}"
-                                      filterBy="#{billFee.referenceBillFee.bill.patient.person.name}"
-                                      filterMatchMode="contains"
-                                      style="text-align: left;">
-                                <p:outputLabel value="#{billFee.referenceBillFee.bill.patient.person.name}" />
-                            </p:column>
-
                             <p:column 
                                 headerText="Professional" 
-                                sortBy="#{billFee.referenceBillFee.staff.person.name}"
-                                filterBy="#{billFee.referenceBillFee.staff.person.name}"
+                                sortBy="#{billFee.bill.toStaff.person.name}"
+                                filterBy="#{billFee.bill.toStaff.person.name}"
                                 filterMatchMode="contains"
                                 style="text-align: left;">
-                                <h:outputLabel value="#{billFee.referenceBillFee.staff.person.name}" />
-                            </p:column>
-                            
-                             <p:column 
-                                headerText="Bill Category" 
-                                sortBy="#{billFee.referenceBillFee.billItem.bill.category.name}"
-                                filterBy="#{billFee.referenceBillFee.billItem.bill.category.name}"
-                                filterMatchMode="contains"
-                                style="text-align: left;">
-                                <h:outputLabel value="#{billFee.referenceBillFee.billItem.item.category.name}" />
-                            </p:column>
-                            
-                            <p:column 
-                                headerText="Bill Department" 
-                                sortBy="#{billFee.referenceBillFee.billItem.bill.toDepartment.name}"
-                                filterBy="#{billFee.referenceBillFee.billItem.bill.toDepartment.name}"
-                                filterMatchMode="contains"
-                                style="text-align: left;">
-                                <h:outputLabel value="#{billFee.referenceBillFee.billItem.bill.toDepartment.name}" />
+                                <h:outputLabel value="#{billFee.bill.toStaff.person.name}" />
                             </p:column>
 
                             <p:column headerText="Value" width="100" style="text-align: right;">                              
@@ -143,10 +103,6 @@
                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                 </h:outputLabel>
                             </p:column>
-
-
-
-
 
                         </p:dataTable>
 
