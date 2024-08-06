@@ -161,6 +161,7 @@ public class StorePurchaseController implements Serializable {
         printPreview = false;
         currentBillItem = null;
         bill = null;
+        billExpenses = null;
         billItems = null;
     }
 
@@ -602,6 +603,14 @@ public class StorePurchaseController implements Serializable {
 
         getCurrentExpense().setSearialNo(getBillExpenses().size());
         getBillExpenses().add(currentExpense);
+        currentExpense = null;
+        calTotal();
+    }
+    
+    public void removeExpense(BillItem removeExpences) {
+        getCurrentExpense().setSearialNo(getBillExpenses().size());
+        getBillExpenses().remove(removeExpences);
+        getBillExpenses();
         currentExpense = null;
         calTotal();
     }

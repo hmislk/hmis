@@ -169,13 +169,14 @@
                                                  value="#{storePurchaseController.currentBillItem.pharmaceuticalBillItem.stringValue}"  /> 
                                 </div>
                                 <div class="col-1">
-                                    <p:commandButton id="btnAdd" 
-                                                     value="Add" 
-                                                     class="ui-button-success"
-                                                     icon="fas fa-plus"
-                                                     action="#{storePurchaseController.addItem}" 
+                                    <p:commandButton 
+                                        id="btnAdd" 
+                                        value="Add" 
+                                        class="ui-button-success"
+                                        icon="fas fa-plus"
+                                        action="#{storePurchaseController.addItem}" 
 
-                                                     process="itemselectgrid" update="itemList itemselectgrid tot focusItem :#{p:resolveFirstComponentWithId('total',view).clientId} :#{p:resolveFirstComponentWithId('totalSaleValue',view).clientId} msg"/>
+                                        process="itemselectgrid" update="itemList itemselectgrid :#{p:resolveFirstComponentWithId('tot',view).clientId} focusItem :#{p:resolveFirstComponentWithId('total',view).clientId} :#{p:resolveFirstComponentWithId('totalSaleValue',view).clientId} msg"/>
 
                                 </div>
                             </div>
@@ -196,7 +197,7 @@
                                     </p:column>
                                     <f:ajax event="itemSelect" execute="@this" render="txtInventoryCode panelInventoryItemDetails" listener="#{storePurchaseController.createSerialNumber()}" ></f:ajax>
                                 </p:autoComplete>
-                                <p:commandButton class="mx-1 ui-button-primary" value="Process" action="#{storePurchaseController.addItemWithLastRate}" process="PnlAdd" update="itemList PnlAdd tot focusItem :#{p:resolveFirstComponentWithId('total',view).clientId} :#{p:resolveFirstComponentWithId('totalSaleValue',view).clientId}"/>
+                                <p:commandButton class="mx-1 ui-button-primary" value="Process" action="#{storePurchaseController.addItemWithLastRate}" process="PnlAdd" update="itemList PnlAdd :#{p:resolveFirstComponentWithId('tot',view).clientId} focusItem :#{p:resolveFirstComponentWithId('total',view).clientId} :#{p:resolveFirstComponentWithId('totalSaleValue',view).clientId}"/>
 
                             </h:panelGrid>
                         </p:panel>
@@ -331,7 +332,7 @@
                                              class="ui-button-Warning"
                                              action="#{storePurchaseController.addExpense()}" 
                                              process="billExpenseGrid" 
-                                             update="tblExpenses billExpenseGrid tot :#{p:resolveFirstComponentWithId('net',view).clientId} :#{p:resolveFirstComponentWithId('lblBillExpenses',view).clientId}"/>
+                                             update="tblExpenses :#{p:resolveFirstComponentWithId('billExpenseGrid',view).clientId} :#{p:resolveFirstComponentWithId('tot',view).clientId} :#{p:resolveFirstComponentWithId('net',view).clientId} :#{p:resolveFirstComponentWithId('lblBillExpenses',view).clientId}"/>
                         </h:panelGrid>
                         <p:dataTable id="tblExpenses" value="#{storePurchaseController.billExpenses}" var="be"
                                      emptyMessage="No Bill Expenses" >
@@ -345,6 +346,17 @@
                             </p:column>
                             <p:column headerText="Descreption" >
                                 <h:outputLabel value="#{be.descreption}" ></h:outputLabel>
+                            </p:column>
+                            <p:column headerText="Action" >
+                                <p:commandButton 
+                                    id="btnRemoveExpense" 
+                                    title="Remove Expense" 
+                                    icon="fas fa-trash"
+                                    class="ui-button-danger"
+                                    action="#{storePurchaseController.removeExpense(be)}" 
+                                    process="btnRemoveExpense" 
+                                    update="tblExpenses :#{p:resolveFirstComponentWithId('billExpenseGrid',view).clientId} :#{p:resolveFirstComponentWithId('tot',view).clientId} :#{p:resolveFirstComponentWithId('net',view).clientId} :#{p:resolveFirstComponentWithId('lblBillExpenses',view).clientId}">
+                                </p:commandButton>
                             </p:column>
                         </p:dataTable>
                     </p:panel>
