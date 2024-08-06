@@ -974,8 +974,7 @@ public class SearchController implements Serializable {
         checkRefundBillItems(patientInvestigations);
 
     }
-    
-    
+
     public void fillCollectingCentreCourierPatientInvestigations() {
         String jpql = "select pi "
                 + " from PatientInvestigation pi "
@@ -990,11 +989,11 @@ public class SearchController implements Serializable {
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
         temMap.put("dep", getReportKeyWord().getDepartment());
-        
-        if(institution==null){
+
+        if (institution == null) {
             jpql += " and b.collectingCentre in :ccs ";
-             temMap.put("ccs", sessionController.getLoggableCollectingCentres());
-        }else{
+            temMap.put("ccs", sessionController.getLoggableCollectingCentres());
+        } else {
             jpql += " and b.collectingCentre=:cc ";
             temMap.put("cc", sessionController.getLoggableCollectingCentres());
         }
@@ -1018,8 +1017,6 @@ public class SearchController implements Serializable {
             jpql += " and  ((i.name) like :itm )";
             temMap.put("itm", "%" + getSearchKeyword().getItemName().trim().toUpperCase() + "%");
         }
-
-       
 
         jpql += " order by pi.id desc  ";
 //    
@@ -4523,7 +4520,7 @@ public class SearchController implements Serializable {
             sql += " and  ((b.billItem.item.name) like :staff )";
             temMap.put("staff", "%" + getSearchKeyword().getItemName().trim().toUpperCase() + "%");
         }
-        
+
         if (getSearchKeyword().getBhtNo() != null && !getSearchKeyword().getBhtNo().trim().equals("")) {
             sql += " and  ((b.paidForBillFee.bill.patientEncounter.bhtNo) like :bht )";
             temMap.put("bht", "%" + getSearchKeyword().getBhtNo().trim().toUpperCase() + "%");
@@ -4596,7 +4593,7 @@ public class SearchController implements Serializable {
             sql += " and  ((b.billItem.item.name) like :staff )";
             temMap.put("staff", "%" + getSearchKeyword().getItemName().trim().toUpperCase() + "%");
         }
-        
+
         if (getSearchKeyword().getBhtNo() != null && !getSearchKeyword().getBhtNo().trim().equals("")) {
             sql += " and  ((b.paidForBillFee.bill.patientEncounter.bhtNo) like :bht )";
             temMap.put("bht", "%" + getSearchKeyword().getBhtNo().trim().toUpperCase() + "%");
@@ -5191,7 +5188,7 @@ public class SearchController implements Serializable {
             sql += " and  b.paidForBillFee.bill.creditCompany=:cc ";
             temMap.put("cc", getReportKeyWord().getInstitution());
         }
-        
+
         if (getSearchKeyword().getBhtNo() != null && !getSearchKeyword().getBhtNo().trim().equals("")) {
             sql += " and  ((b.paidForBillFee.bill.patientEncounter.bhtNo) like :bht )";
             temMap.put("bht", "%" + getSearchKeyword().getBhtNo().trim().toUpperCase() + "%");
@@ -5260,7 +5257,7 @@ public class SearchController implements Serializable {
             sql += " and  b.paidForBillFee.bill.creditCompany=:cc ";
             temMap.put("cc", getReportKeyWord().getInstitution());
         }
-        
+
         if (getSearchKeyword().getBhtNo() != null && !getSearchKeyword().getBhtNo().trim().equals("")) {
             sql += " and  ((b.paidForBillFee.bill.patientEncounter.bhtNo) like :bht )";
             temMap.put("bht", "%" + getSearchKeyword().getBhtNo().trim().toUpperCase() + "%");
@@ -7155,18 +7152,18 @@ public class SearchController implements Serializable {
                 + "and b.cancelled = false "
                 + "and b.refunded = false ";
         jpql += " and b.billTypeAtomic in :btas ";
-        
+
         btas.addAll(BillTypeAtomic.findByServiceType(ServiceType.OPD));
         btas.addAll(BillTypeAtomic.findByServiceType(ServiceType.CHANNELLING));
         btas.removeAll(BillTypeAtomic.findByCategory(BillCategory.PAYMENTS));
         btas.removeAll(BillTypeAtomic.findByCategory(BillCategory.CANCELLATION));
         btas.removeAll(BillTypeAtomic.findByCategory(BillCategory.REFUND));
-        
+
         jpql += " order by b.createdAt desc";
 
         m.put("fromDate", fromDate);
         m.put("toDate", toDate);
-         m.put("btas", btas);
+        m.put("btas", btas);
 
         System.out.println("m = " + m);
         System.out.println("jpql = " + jpql);
@@ -8874,6 +8871,80 @@ public class SearchController implements Serializable {
         sql += " order by b.insId ";
 //        m.put("class", PreBill.class);
         bills = getBillFacade().findByJpql(sql, m, 5000);
+    }
+
+    public void searchByInsId() {
+        if (getSearchKeyword().getInsId() == null || getSearchKeyword().getInsId().isEmpty()) {
+            JsfUtil.addErrorMessage("Enter Insurance ID");
+            return;
+        }
+        bills = null;
+        String sql = "select b from Bill b where b.id is not null and (b.insId=:insId or b.deptId=:insId)";
+        Map<String, Object> params = new HashMap<>();
+        params.put("insId", getSearchKeyword().getInsId());
+        sql += " order by b.insId";
+        bills = getBillFacade().findByJpql(sql, params, 5000);
+    }
+
+    public void searchByDeptId() {
+        if (getSearchKeyword().getDeptId() == null || getSearchKeyword().getDeptId().isEmpty()) {
+            JsfUtil.addErrorMessage("Enter Department ID");
+            return;
+        }
+        bills = null;
+        String sql = "select b from Bill b where b.id is not null and (b.insId=:deptId or b.deptId=:deptId)";
+        Map<String, Object> params = new HashMap<>();
+        params.put("deptId", getSearchKeyword().getDeptId());
+        sql += " order by b.insId";
+        bills = getBillFacade().findByJpql(sql, params, 5000);
+    }
+
+    public void searchByBhtNo() {
+        if (getSearchKeyword().getBhtNo() == null || getSearchKeyword().getBhtNo().trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Enter BHT No");
+            return;
+        }
+        bills = null;
+        String sql = "select b from Bill b where b.id is not null and b.patientEncounter.bhtNo=:bht";
+        Map<String, Object> params = new HashMap<>();
+        params.put("bht", getSearchKeyword().getBhtNo());
+        sql += " order by b.insId";
+        bills = getBillFacade().findByJpql(sql, params, 5000);
+    }
+
+    public void searchByRefBillNo() {
+        if (getSearchKeyword().getRefBillNo() == null) {
+            JsfUtil.addErrorMessage("Enter Bill No");
+            return;
+        }
+        try {
+            long refBillNo = Long.parseLong(getSearchKeyword().getRefBillNo());
+            bills = null;
+            String sql = "select b from Bill b where b.id is not null and b.id=:id";
+            Map<String, Object> params = new HashMap<>();
+            params.put("id", refBillNo);
+            sql += " order by b.insId";
+            bills = getBillFacade().findByJpql(sql, params, 5000);
+        } catch (NumberFormatException e) {
+            JsfUtil.addErrorMessage("Invalid Bill No format");
+        }
+    }
+
+    public void searchBill() {
+        if (getSearchKeyword().getInsId() == null && getSearchKeyword().getDeptId() == null
+                && getSearchKeyword().getBhtNo() == null && getSearchKeyword().getRefBillNo() == null) {
+            JsfUtil.addErrorMessage("Enter BHT No, Bill No, Insurance ID or Department ID");
+            return;
+        }
+        if (getSearchKeyword().getInsId() != null && !getSearchKeyword().getInsId().isEmpty()) {
+            searchByInsId();
+        } else if (getSearchKeyword().getDeptId() != null && !getSearchKeyword().getDeptId().isEmpty()) {
+            searchByDeptId();
+        } else if (getSearchKeyword().getBhtNo() != null && !getSearchKeyword().getBhtNo().trim().isEmpty()) {
+            searchByBhtNo();
+        } else if (getSearchKeyword().getRefBillNo() != null) {
+            searchByRefBillNo();
+        }
     }
 
     public void createSearchAll() {
@@ -11476,6 +11547,4 @@ public class SearchController implements Serializable {
         this.pharmacyAdjustmentRows = pharmacyAdjustmentRows;
     }
 
-      
-    
 }
