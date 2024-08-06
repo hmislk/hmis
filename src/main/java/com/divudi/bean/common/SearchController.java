@@ -2426,7 +2426,7 @@ public class SearchController implements Serializable {
             sql += " and  ((b.department.name) like :dep )";
             m.put("dep", "%" + getSearchKeyword().getDepartment().trim().toUpperCase() + "%");
         }
-        
+
         if (getSearchKeyword().getToDepartment() != null && !getSearchKeyword().getToDepartment().trim().equals("")) {
             sql += " and  ((b.toDepartment.name) like :dep )";
             m.put("dep", "%" + getSearchKeyword().getToDepartment().trim().toUpperCase() + "%");
@@ -2524,7 +2524,6 @@ public class SearchController implements Serializable {
         m.put("fd", getFromDate());
         m.put("td", getToDate());
         m.put("ins", getSessionController().getInstitution());
-        m.put("dep", getSessionController().getDepartment());
         String sql;
 
         sql = "Select b from Bill b "
@@ -2533,9 +2532,18 @@ public class SearchController implements Serializable {
                 + " and b.createdAt between :fd and :td "
                 + " and b.billType=:bt"
                 + " and b.institution=:ins "
-                + " and b.department=:dep "
                 + " and type(b)=:class ";
 
+        if (webUserController.hasPrivilege("StoreAdministration")) {
+            if (getSearchKeyword().getDepartment() != null && !getSearchKeyword().getDepartment().trim().equals("")) {
+                sql += " and  ((b.department.name) like :dep )";
+                m.put("dep", "%" + getSearchKeyword().getDepartment().trim().toUpperCase() + "%");
+            }
+        } else {
+            sql += "and b.department=:dep ";
+            m.put("dep", getSessionController().getDepartment());
+
+        }
         if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
             sql += " and  ((b.patientEncounter.patient.person.name) like :patientName )";
             m.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
@@ -3485,12 +3493,12 @@ public class SearchController implements Serializable {
                 + " and bi.bill.billType=:bType "
                 + " and bi.createdAt between :fromDate and :toDate ";
 
-        if (getSearchKeyword().getToDepartment()!= null && !getSearchKeyword().getToDepartment().trim().equals("")) {
+        if (getSearchKeyword().getToDepartment() != null && !getSearchKeyword().getToDepartment().trim().equals("")) {
             sql += " and  ((bi.bill.toDepartment.name) like :todept )";
             m.put("todept", "%" + getSearchKeyword().getToDepartment().trim().toUpperCase() + "%");
         }
-        
-        if (getSearchKeyword().getFromDepartment()!= null && !getSearchKeyword().getFromDepartment().trim().equals("")) {
+
+        if (getSearchKeyword().getFromDepartment() != null && !getSearchKeyword().getFromDepartment().trim().equals("")) {
             sql += " and  ((bi.bill.fromDepartment.name) like :fromdept )";
             m.put("fromdept", "%" + getSearchKeyword().getFromDepartment().trim().toUpperCase() + "%");
         }
@@ -4533,7 +4541,7 @@ public class SearchController implements Serializable {
             sql += " and  ((b.billItem.item.name) like :staff )";
             temMap.put("staff", "%" + getSearchKeyword().getItemName().trim().toUpperCase() + "%");
         }
-        
+
         if (getSearchKeyword().getBhtNo() != null && !getSearchKeyword().getBhtNo().trim().equals("")) {
             sql += " and  ((b.paidForBillFee.bill.patientEncounter.bhtNo) like :bht )";
             temMap.put("bht", "%" + getSearchKeyword().getBhtNo().trim().toUpperCase() + "%");
@@ -4606,7 +4614,7 @@ public class SearchController implements Serializable {
             sql += " and  ((b.billItem.item.name) like :staff )";
             temMap.put("staff", "%" + getSearchKeyword().getItemName().trim().toUpperCase() + "%");
         }
-        
+
         if (getSearchKeyword().getBhtNo() != null && !getSearchKeyword().getBhtNo().trim().equals("")) {
             sql += " and  ((b.paidForBillFee.bill.patientEncounter.bhtNo) like :bht )";
             temMap.put("bht", "%" + getSearchKeyword().getBhtNo().trim().toUpperCase() + "%");
@@ -5201,7 +5209,7 @@ public class SearchController implements Serializable {
             sql += " and  b.paidForBillFee.bill.creditCompany=:cc ";
             temMap.put("cc", getReportKeyWord().getInstitution());
         }
-        
+
         if (getSearchKeyword().getBhtNo() != null && !getSearchKeyword().getBhtNo().trim().equals("")) {
             sql += " and  ((b.paidForBillFee.bill.patientEncounter.bhtNo) like :bht )";
             temMap.put("bht", "%" + getSearchKeyword().getBhtNo().trim().toUpperCase() + "%");
@@ -5270,7 +5278,7 @@ public class SearchController implements Serializable {
             sql += " and  b.paidForBillFee.bill.creditCompany=:cc ";
             temMap.put("cc", getReportKeyWord().getInstitution());
         }
-        
+
         if (getSearchKeyword().getBhtNo() != null && !getSearchKeyword().getBhtNo().trim().equals("")) {
             sql += " and  ((b.paidForBillFee.bill.patientEncounter.bhtNo) like :bht )";
             temMap.put("bht", "%" + getSearchKeyword().getBhtNo().trim().toUpperCase() + "%");
@@ -7165,18 +7173,18 @@ public class SearchController implements Serializable {
                 + "and b.cancelled = false "
                 + "and b.refunded = false ";
         jpql += " and b.billTypeAtomic in :btas ";
-        
+
         btas.addAll(BillTypeAtomic.findByServiceType(ServiceType.OPD));
         btas.addAll(BillTypeAtomic.findByServiceType(ServiceType.CHANNELLING));
         btas.removeAll(BillTypeAtomic.findByCategory(BillCategory.PAYMENTS));
         btas.removeAll(BillTypeAtomic.findByCategory(BillCategory.CANCELLATION));
         btas.removeAll(BillTypeAtomic.findByCategory(BillCategory.REFUND));
-        
+
         jpql += " order by b.createdAt desc";
 
         m.put("fromDate", fromDate);
         m.put("toDate", toDate);
-         m.put("btas", btas);
+        m.put("btas", btas);
 
         System.out.println("m = " + m);
         System.out.println("jpql = " + jpql);
