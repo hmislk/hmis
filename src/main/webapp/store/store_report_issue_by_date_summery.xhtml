@@ -24,9 +24,7 @@
                     </p:autoComplete>
                     
                 </h:panelGrid>
-                <p:watermark value="From Department" for="fromDep"/>
-                <p:watermark value="To Department" for="toDep"/>
-                
+                                                
                 <h:panelGrid columns="3">
                     <p:commandButton ajax="false" value="Process" action="#{storeSaleReport.createIssueReportByDateStore()}"/>
                     <p:commandButton ajax="false" value="Excel" actionListener="#{storeSaleReport.createIssueReportByDateStore()}" styleClass="noPrintButton" style="float: right;" >

@@ -16,8 +16,7 @@
     <cc:implementation>
         <h:panelGroup rendered="#{cc.attrs.valueRequired}" class="col" layout="block">
             <p:inputText autocomplete="off"   value="#{cc.attrs.paymentMethodData.ewallet.totalValue}"  id="txtVal"/>
-            <p:watermark value="Value" for="txtVal" />
-        </h:panelGroup>
+                    </h:panelGroup>
         <div class="d-flex gap-2">
 
             <p:inputText autocomplete="off"   value="#{cc.attrs.paymentMethodData.ewallet.no}" id="refno" class=""/>                                
@@ -29,9 +28,7 @@
             </p:selectOneMenu>
 
             <p:inputText autocomplete="off"   value="#{cc.attrs.paymentMethodData.ewallet.comment}" id="memo" class=""/>
-            <p:watermark value="Memo" for="memo" />
-            <p:watermark value="eWallet Ref. No." for="refno" />
-
+                        
         </div>
 
     </cc:implementation>

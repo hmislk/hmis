@@ -20,7 +20,7 @@ Developed using Java Enterprise Edition, the system offers both a web applicatio
 
 
 
-Current Version: 3.0.0.20240803.5 (This line will be automatically updated to reflect the latest version)
+Current Version: 3.0.0.20240805.3 (This line will be automatically updated to reflect the latest version)
 
 
 
@@ -77,7 +77,7 @@ The features available to different roles of the users are stated in detail in t
 * Dr M H B Ariyaratne - Initiated the Project, Product owner, System Architect, Lead Developer since 2004 to date
 
 ## Project Management 
-* Mr.K.M.G.T.R. Waidyarathne - Project Management from 2013 to date
+* Mr.K.M.G.T.R. Waidyarathne - Recruitment Management from 2013 to 2022, Project Management from 2022 to 2024
 
 ## Business Analyst
 * Miss Binuthi Nilakna Ariyaratne - From 2024 to date

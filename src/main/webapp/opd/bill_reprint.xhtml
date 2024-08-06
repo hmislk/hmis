@@ -18,7 +18,20 @@
                         <f:facet name="header">
                             <div class="d-flex justify-content-between">
                                 <p:outputLabel value="Reprint" class="mt-2"></p:outputLabel>
-                                <p:commandButton 
+                                <div class="d-flex gap-2">
+                                    <p:commandButton 
+                                    value="To Refund Patient Balance" 
+                                    rendered="#{opdBillController.batchBill.paymentMethod eq 'PatientDeposit'}"
+                                    class="ui-button-group m-1"
+                                    icon="fa fa-money-bill-alt"
+                                    action="#{patientController.navigateToPatientDepositRefundFromOPDBill(opdBillController.batchBill.patient)}"
+                                    ajax="false">
+                                    <f:setPropertyActionListener 
+                                        value="#{billSearch.bill.patient}" 
+                                        target="#{patientController.current}" >
+                                    </f:setPropertyActionListener>
+                                </p:commandButton>
+                                    <p:commandButton 
                                     value="Print to Original Bill" 
                                     class="ui-button-info m-1"
                                     icon="fa fa-print"
@@ -26,6 +39,8 @@
                                     rendered="#{webUserController.hasPrivilege('OpdReprintOriginalBill')}"
                                     ajax="false">
                                 </p:commandButton>
+                                </div>
+                                
                             </div> 
                         </f:facet>
                         <div class="row">

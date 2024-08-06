@@ -115,9 +115,7 @@
                                                     value="#{channelStaffPaymentBillController.paymentMethod}" >
                                                     <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"/>
                                                 </p:selectOneMenu>
-                                                <p:watermark value="Speciality" for="acSpeciality"/>
-                                                <p:watermark value="Staff" for="scStaff"/>
-                                            </h:panelGrid>
+                                                                                                                                            </h:panelGrid>
                                             <div class="d-flex justify-content-end mt-2">
                                                 <p:commandButton 
                                                     ajax="false"
@@ -168,7 +166,7 @@
                                     <f:ajax  event="rowSelect" execute="tblFee" listener="#{channelStaffPaymentBillController.performCalculations()}"   
                                              render=":#{p:resolveFirstComponentWithId('lblDue',view).clientId} :#{p:resolveFirstComponentWithId('lblPay',view).clientId}"  />
 
-                                    <p:column selectionMode="multiple" ></p:column>
+                                    <p:column selectionBox="true" ></p:column>
 
                                     <p:column headerText="No">
                                         <h:outputLabel value="#{i+1}">

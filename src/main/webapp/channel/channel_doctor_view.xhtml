@@ -49,9 +49,10 @@
                     </p:commandButton>
                 </div>
 
+                <h1>Doc View</h1>
                 <p:dataTable 
                     id="doctorView" 
-                    value="#{channelReportController.doctorViewSessions}" 
+                    value="#{bookingControllerViewScope.billSessions}" 
                     style="margin-left: 1%; margin-right: 1%;"
                     var="bs" 
                     sortBy="#{bs.bill.billClass}">

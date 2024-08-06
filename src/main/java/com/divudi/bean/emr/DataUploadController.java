@@ -3201,7 +3201,6 @@ if (retiredCell != null) {
 
         return suppliersList;
     }
-
     
       private List<ItemFee> readCollectingCentrePriceListFromXcel(InputStream inputStream) throws IOException {
         Workbook workbook = new XSSFWorkbook(inputStream);
@@ -3317,7 +3316,6 @@ if (retiredCell != null) {
         return itemFees;
 
     }
-
 
     private List<Department> readDepartmentFromExcel(InputStream inputStream) throws IOException {
         Workbook workbook = new XSSFWorkbook(inputStream);

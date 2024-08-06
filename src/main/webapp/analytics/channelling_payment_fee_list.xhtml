@@ -46,6 +46,20 @@
                                     <h:outputLabel value="#{dep.institution.name}"/>
                                 </p:column>
                             </p:autoComplete>
+                            
+                            <h:outputLabel value="Category" />
+                            <p:autoComplete class="w-100 mx-4"
+                                            inputStyleClass="w-100" value="#{searchController.category}" 
+                                            forceSelection="true"
+                                            completeMethod="#{categoryController.completeServiceCategory}" 
+                                            var="dep" itemLabel="#{dep.name}" itemValue="#{dep}" >
+                                <p:column>
+                                    <h:outputLabel value="#{dep.name}"/>
+                                </p:column>
+                                <p:column>
+                                    <h:outputLabel value="#{dep.institution.name}"/>
+                                </p:column>
+                            </p:autoComplete>
                         </h:panelGrid>
                         <h:panelGrid columns="2" class="my-2" >
                             <p:commandButton class="ui-button-warning" icon="fas fa-magnifying-glass" id="btnSearch" ajax="false" value="Search" 
@@ -110,6 +124,24 @@
                                 filterMatchMode="contains"
                                 style="text-align: left;">
                                 <h:outputLabel value="#{billFee.referenceBillFee.staff.person.name}" />
+                            </p:column>
+                            
+                            <p:column 
+                                headerText="Bill Category" 
+                                sortBy="#{billFee.referenceBillFee.billItem.bill.category.name}"
+                                filterBy="#{billFee.referenceBillFee.billItem.bill.category.name}"
+                                filterMatchMode="contains"
+                                style="text-align: left;">
+                                <h:outputLabel value="#{billFee.referenceBillFee.billItem.item.category.name}" />
+                            </p:column>
+                            
+                            <p:column 
+                                headerText="Bill Department" 
+                                sortBy="#{billFee.referenceBillFee.billItem.bill.department.name}"
+                                filterBy="#{billFee.referenceBillFee.billItem.bill.department.name}"
+                                filterMatchMode="contains"
+                                style="text-align: left;">
+                                <h:outputLabel value="#{billFee.referenceBillFee.billItem.bill.department.name}" />
                             </p:column>
 
                             <p:column headerText="Value" width="100" style="text-align: right;">                              

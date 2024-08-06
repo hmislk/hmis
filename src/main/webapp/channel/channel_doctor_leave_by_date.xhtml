@@ -74,8 +74,7 @@
                                             listener="#{serviceSessionLeaveController.fillLeaveItems}" 
                                             />
                                 </p:calendar>
-                                <p:watermark for="date" value="Date" />
-                            </td>
+                                                            </td>
                         </tr>
                         <tr>
                             <td>
@@ -195,9 +194,7 @@
                         <tr>
                             <td>
                                 <p:inputText id="inComment" value="#{serviceSessionLeaveController.current.deactivateComment}" />
-                                <p:watermark for="inComment" value="Comment" rendered="#{!serviceSessionLeaveController.removeLeave}" />
-                                <p:watermark for="inComment" value="Leave Remove Comment" rendered="#{serviceSessionLeaveController.removeLeave}"/>
-                                <p:commandButton ajax="false" value="Add Leave To Selected Date" rendered="#{!serviceSessionLeaveController.removeLeave}"
+                                                                                                <p:commandButton ajax="false" value="Add Leave To Selected Date" rendered="#{!serviceSessionLeaveController.removeLeave}"
                                                  action="#{serviceSessionLeaveController.addLeaveForServiceSessionByDate}" 
                                                  onclick="if (!confirm('Really want to add leave ?'))
                                                              return false"/>
