@@ -73,6 +73,8 @@ public class EnumController implements Serializable {
     List<PaymentMethod> paymentMethodsForChanneling;
     List<PaymentMethod> paymentMethodsForChannelSettling;
     List<PaymentMethod> paymentMethodsForPharmacyBilling;
+    private List<PaymentMethod> paymentMethodsForPatientDepositRefund;
+
     private List<PaymentMethod> paymentMethodsForPatientDeposit;
     private List<PaymentMethod> paymentMethodsForStaffCreditSettle;
     SessionNumberType[] sessionNumberTypes;
@@ -141,8 +143,8 @@ public class EnumController implements Serializable {
         }
         return paymentMethodsForChanneling;
     }
-    
-     public List<PaymentMethod> getPaymentMethodsForChannelSettling() {
+
+    public List<PaymentMethod> getPaymentMethodsForChannelSettling() {
         if (paymentMethodsForChannelSettling == null) {
             fillPaymentMethodsForChannelSettling();
         }
@@ -850,6 +852,21 @@ public class EnumController implements Serializable {
 
     public void setPaymentMethodsForStaffCreditSettle(List<PaymentMethod> paymentMethodsForStaffCreditSettle) {
         this.paymentMethodsForStaffCreditSettle = paymentMethodsForStaffCreditSettle;
+    }
+
+    public List<PaymentMethod> getPaymentMethodsForPatientDepositRefund() {
+        paymentMethodsForPatientDepositRefund = new ArrayList<>();
+        for (PaymentMethod pm : PaymentMethod.values()) {
+            boolean include = configOptionApplicationController.getBooleanValueByKey(pm.getLabel() + " is available for Patient Deposit Return", true);
+            if (include) {
+                paymentMethodsForPatientDepositRefund.add(pm);
+            }
+        }
+        return paymentMethodsForPatientDepositRefund;
+    }
+
+    public void setPaymentMethodsForPatientDepositRefund(List<PaymentMethod> paymentMethodsForPatientDepositRefund) {
+        this.paymentMethodsForPatientDepositRefund = paymentMethodsForPatientDepositRefund;
     }
 
 }

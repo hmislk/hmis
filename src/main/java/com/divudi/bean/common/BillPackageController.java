@@ -312,7 +312,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             }
         }
     }
-    
+
     public boolean validatePaymentMethodDeta() {
         boolean error = false;
 
@@ -349,11 +349,11 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         if (errorCheck()) {
             return;
         }
-        
+
         if (validatePaymentMethodDeta()) {
             return;
         }
-        
+
         savePatient();
         if (getBillBean().calculateNumberOfBillsPerOrder(getLstBillEntries()) == 1) {
             BilledBill temp = new BilledBill();
@@ -527,7 +527,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
                 case Agent:
                 case Credit:
                     p.setReferenceNo(paymentMethodData.getCredit().getReferralNo());
-                    p.setComments(paymentMethodData.getCredit().getComment()); 
+                    p.setComments(paymentMethodData.getCredit().getComment());
                 case PatientDeposit:
                 case Slip:
                     p.setBank(paymentMethodData.getSlip().getInstitution());
@@ -713,7 +713,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
                 return true;
             }
         }
-        
+
         if (configOptionApplicationController.getBooleanValueByKey("Package Bill – Credit Company Policy Number required", false)) {
             System.out.println("Chack Policy No");
             if (paymentMethod == PaymentMethod.Credit && paymentMethodData.getCredit().getReferralNo().trim().equalsIgnoreCase("")) {
@@ -1518,23 +1518,17 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     }
 
     public List<Item> getGenderBasedPackaes() {
-        //System.out.println("getPackages");
         if (packaes == null) {
             fillPackages();
         }
         if (configOptionApplicationController.getBooleanValueByKey("Package bill – Reloading of Packages with Consideration of Gender")) {
-            //System.out.println("option ok");
             if (getPatient() == null) {
-                //System.out.println("pt is null");
                 return packaes;
             } else if (getPatient().getPerson().getSex() == null) {
-                //System.out.println("sex is null");
                 return packaes;
             } else if (getPatient().getPerson().getSex() == Sex.Male) {
-                //System.out.println("males");
                 return malePackaes;
             } else if (getPatient().getPerson().getSex() == Sex.Female) {
-                //System.out.println("females");
                 return femalePackaes;
             } else {
                 return bothPackaes;
@@ -1552,29 +1546,50 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             packaes = itemController.getPackaes();
             fillPackages();
         }
+        System.out.println("packaes = " + packaes.size());
         return packaes;
     }
 
+    private List<Item> listOfTheNonExpiredPackages;
+
     private void fillPackages() {
-        //System.out.println("fillPackages");
         packaes = itemController.getPackaes();
-        //System.out.println("packaes = " + packaes);
         if (packaes == null) {
             return;
         }
+
+
+        getListOfTheNonExpiredPackages();
+
+        if (configOptionApplicationController.getBooleanValueByKey("Package bill – Reloading packages Considering the Expiry Date.", false)) {
+
+            int k = 0;
+            for (Item i : packaes) {
+                if (i.getExpiryDate() == null) {
+                    listOfTheNonExpiredPackages.add(i);
+                } else {
+                    if (new Date().after(i.getExpiryDate())) {
+                    } else {
+                        listOfTheNonExpiredPackages.add(i);
+                    }
+                }
+            }
+        }else{
+            listOfTheNonExpiredPackages = packaes;
+        }
+
         malePackaes = new ArrayList<>();
         femalePackaes = new ArrayList<>();
-        bothPackaes = new ArrayList<>();
-        for (Item i : packaes) {
-            //System.out.println("i = " + i);
+        bothPackaes = new ArrayList<>();       
+        
+        packaes = listOfTheNonExpiredPackages;
+        
+        for (Item i : listOfTheNonExpiredPackages) {
             if (i.getForGender() == null) {
-                //System.out.println("gender nill");
                 bothPackaes.add(i);
             } else if (i.getForGender().equalsIgnoreCase("Male")) {
-                //System.out.println("mp = " );
                 malePackaes.add(i);
             } else if (i.getForGender().equalsIgnoreCase("Female")) {
-                //System.out.println("fp = " );
                 femalePackaes.add(i);
             } else if (i.getForGender().equalsIgnoreCase("Both")) {
                 bothPackaes.add(i);
@@ -1583,7 +1598,19 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             } else {
                 bothPackaes.add(i);
             }
+
         }
+    }
+
+    public List<Item> getListOfTheNonExpiredPackages() {
+        if (listOfTheNonExpiredPackages == null) {
+            listOfTheNonExpiredPackages = new ArrayList<>();
+        }
+        return listOfTheNonExpiredPackages;
+    }
+
+    public void setListOfTheNonExpiredPackages(List<Item> listOfTheNonExpiredPackages) {
+        this.listOfTheNonExpiredPackages = listOfTheNonExpiredPackages;
     }
 
 }
