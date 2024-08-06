@@ -25,11 +25,44 @@
                 <div class="row">
                     <div class="col-2">
                         <h:outputLabel value="From Date"/>
-                        <p:calendar id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" class="w-100" inputStyleClass="w-100">      
+                        <p:calendar 
+                            id="fromDate" 
+                            value="#{searchController.fromDate}" 
+                            navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                            class="w-100" 
+                            inputStyleClass="w-100">      
                         </p:calendar>
                         <h:outputLabel value="To Date"/>
-                        <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" class="w-100" inputStyleClass="w-100">                                                                              
+                        <p:calendar 
+                            id="toDate" 
+                            value="#{searchController.toDate}" 
+                            navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                            class="w-100" 
+                            inputStyleClass="w-100">                                                                              
                         </p:calendar>
+
+                        <p:commandButton 
+                            value="All Request" 
+                            action="#{searchController.createPoRequestedAndApprovedStore()}" 
+                            ajax="false" 
+                            icon="fa fa-search"
+                            class="w-100 ui-button-warning my-2">
+                        </p:commandButton>
+                        <p:commandButton 
+                            value="Approved Only" 
+                            action="#{searchController.createApprovedStore()}" 
+                            ajax="false"
+                            icon="fa fa-search"
+                            class="w-100 ui-button-warning">
+                        </p:commandButton>
+                        <p:commandButton 
+                            value="Not Approved" 
+                            action="#{searchController.createNotApprovedStore()}" 
+                            ajax="false" 
+                            icon="fa fa-search"
+                            class="w-100 ui-button-warning my-2">
+                        </p:commandButton>
+
                         <h:outputLabel value="Distributor"/>
                         <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.toInstitution}" class="w-100"/>
                         <h:outputLabel value="Requested User"/>
@@ -44,9 +77,7 @@
                         <p:inputText autocomplete="off" value="#{searchController.searchKeyword.netTotal}" class="w-100"/>
                         <h:outputLabel value="Max Result"/>
                         <p:inputText autocomplete="off" value="#{searchController.maxResult}" class="w-100"/>
-                        <p:commandButton value="All Request" action="#{searchController.createPoRequestedAndApprovedStore()}" ajax="false" class="w-100 ui-button-Warning my-2"></p:commandButton>
-                        <p:commandButton value="Approved Only" action="#{searchController.createApprovedStore()}" ajax="false" class="w-100 ui-button-Warning"></p:commandButton>
-                        <p:commandButton value="Not Approved" action="#{searchController.createNotApprovedStore()}" ajax="false" class="w-100 ui-button-Warning my-2"></p:commandButton>
+
                     </div>
                     <div class="col-10">
                         <p:dataTable id="tbl" value="#{searchController.bills}" var="b">
@@ -126,6 +157,7 @@
                                     icon="fas fa-edit"
                                     class="ui-button-warning"
                                     action="#{storePurchaseOrderRequestController.navigateToUpdatePurchaseOrder()}"
+                                    disabled="#{b.checkedBy ne null or b.referenceBill.creater ne null and b.referenceBill.cancelled eq false or b.cancelled eq true}"
                                     >
                                     <f:setPropertyActionListener target="#{storePurchaseOrderRequestController.currentBill}" value="#{b}"/>
                                 </p:commandButton>
@@ -135,11 +167,16 @@
                                     icon="fas fa-check-circle"
                                     class="ui-button-success mx-2"
                                     action="#{storePurchaseOrderController.navigateToPurchaseOrderApproval()}"
-                                    disabled="#{b.referenceBill.creater ne null or b.referenceBill.cancelled eq false or b.cancelled eq true or !webUserController.hasPrivilege('StorePurchaseOrderApprove')}">
+                                    disabled="#{b.checkedBy eq null or b.referenceBill.creater ne null or b.referenceBill.cancelled eq false or b.cancelled eq true or !webUserController.hasPrivilege('StorePurchaseOrderApprove')}">
                                     <f:setPropertyActionListener target="#{storePurchaseOrderController.requestedBill}" value="#{b}"/>
                                 </p:commandButton>
 
-                                <p:commandButton ajax="false" id="view" icon="fas fa-eye" action="store_reprint_po?faces-redirect=true" disabled="#{b.referenceBill.creater eq null or b.referenceBill.referenceBill eq null}">
+                                <p:commandButton 
+                                    ajax="false" 
+                                    id="view" 
+                                    icon="fas fa-eye" 
+                                    action="store_reprint_po?faces-redirect=true" 
+                                    disabled="#{b.referenceBill.creater eq null or b.referenceBill.referenceBill eq null}">
                                     <f:setPropertyActionListener target="#{storeBillSearch.bill}" value="#{b.referenceBill}"/>
                                 </p:commandButton>
                                 <p:tooltip for="approve" value="Go to Approve the PO"  showDelay="0" hideDelay="0"></p:tooltip>
