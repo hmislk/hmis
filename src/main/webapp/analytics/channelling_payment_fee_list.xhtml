@@ -52,13 +52,7 @@
                                             inputStyleClass="w-100" value="#{searchController.category}" 
                                             forceSelection="true"
                                             completeMethod="#{categoryController.completeServiceCategory}" 
-                                            var="dep" itemLabel="#{dep.name}" itemValue="#{dep}" >
-                                <p:column>
-                                    <h:outputLabel value="#{dep.name}"/>
-                                </p:column>
-                                <p:column>
-                                    <h:outputLabel value="#{dep.institution.name}"/>
-                                </p:column>
+                                            var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" >
                             </p:autoComplete>
                         </h:panelGrid>
                         <h:panelGrid columns="2" class="my-2" >
@@ -137,11 +131,11 @@
                             
                             <p:column 
                                 headerText="Bill Department" 
-                                sortBy="#{billFee.referenceBillFee.billItem.bill.department.name}"
-                                filterBy="#{billFee.referenceBillFee.billItem.bill.department.name}"
+                                sortBy="#{billFee.referenceBillFee.billItem.bill.toDepartment.name}"
+                                filterBy="#{billFee.referenceBillFee.billItem.bill.toDepartment.name}"
                                 filterMatchMode="contains"
                                 style="text-align: left;">
-                                <h:outputLabel value="#{billFee.referenceBillFee.billItem.bill.department.name}" />
+                                <h:outputLabel value="#{billFee.referenceBillFee.billItem.bill.toDepartment.name}" />
                             </p:column>
 
                             <p:column headerText="Value" width="100" style="text-align: right;">                              
