@@ -374,16 +374,17 @@
                             <h:outputLabel value=" : " class="mx-3"/>
                             <h:outputText value="#{cc.attrs.controller.patient.person.address}" />
 
-                            
+
                             <h:outputLabel value="Patient Status " class="mx-3" rendered="#{configOptionApplicationController.getBooleanValueByKey('Save the Patient with Patient Status')}"/>
                             <h:outputLabel value=" : " class="mx-3" rendered="#{configOptionApplicationController.getBooleanValueByKey('Save the Patient with Patient Status')}"/>
-                            <p:badge 
-                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Save the Patient with Patient Status')}"
-                                value="#{cc.attrs.controller.patient.person.foreigner?'Patient is Forigner':'Patient is Local'}" 
-                                severity="#{cc.attrs.controller.patient.person.foreigner?'warning':'success'}" 
-                                styleClass="mr-2">
-                            </p:badge>
-                            
+                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Save the Patient with Patient Status')}">
+                                <p:badge
+                                    value="#{cc.attrs.controller.patient.person.foreigner?'Patient is Forigner':'Patient is Local'}" 
+                                    severity="#{cc.attrs.controller.patient.person.foreigner?'warning':'success'}" 
+                                    styleClass="mr-2">
+                                </p:badge>
+                            </h:panelGroup>
+
                             <h:outputLabel value="Account Balance " class="mx-3" rendered="#{cc.attrs.controller.patient.hasAnAccount}"/>
                             <h:outputLabel value=" : " class="mx-3" rendered="#{cc.attrs.controller.patient.hasAnAccount}"/>
                             <h:outputText value="#{cc.attrs.controller.patient.runningBalance}" rendered="#{cc.attrs.controller.patient.hasAnAccount}">
