@@ -4,8 +4,6 @@
  */
 package com.divudi.bean.clinical.tmp;
 
-import com.divudi.data.Privileges;
-import com.divudi.data.dataStructure.PrivilageNode;
 import javax.inject.Named;
 import javax.enterprise.context.ApplicationScoped;
 import org.primefaces.model.CheckboxTreeNode;

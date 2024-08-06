@@ -25,7 +25,6 @@ import javax.persistence.OneToMany;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Transient;
-import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
 /**
@@ -33,7 +32,7 @@ import javax.xml.bind.annotation.XmlTransient;
  * @author Buddhika
  */
 @Entity
-@XmlRootElement
+
 public class StaffSalary implements Serializable {
 
     @OneToMany(mappedBy = "staffSalary", fetch = FetchType.EAGER)

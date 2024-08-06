@@ -11,7 +11,6 @@ package com.divudi.bean.channel;
 import com.divudi.bean.common.*;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.entity.BillSession;
-import com.divudi.entity.Institution;
 import com.divudi.entity.channel.AppointmentActivity;
 import com.divudi.entity.channel.SessionInstance;
 import com.divudi.entity.channel.SessionInstanceActivity;

@@ -80,7 +80,6 @@ import com.divudi.data.dataStructure.ComponentDetail;
 import com.divudi.ejb.StaffBean;
 import com.divudi.entity.Category;
 import com.divudi.entity.Doctor;
-import com.divudi.entity.Fee;
 import com.divudi.entity.Payment;
 import com.divudi.entity.UserPreference;
 import com.divudi.entity.channel.AgentReferenceBook;

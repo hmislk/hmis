@@ -15,14 +15,13 @@ import javax.persistence.Id;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.Temporal;
-import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  *
  * @author Buddhika
  */
 @Entity
-@XmlRootElement
+
 public class SalaryHold implements Serializable {
 
     private static final long serialVersionUID = 1L;

@@ -12,7 +12,6 @@ import com.divudi.entity.Consultant;
 import com.divudi.entity.Doctor;
 import com.divudi.entity.Person;
 import com.divudi.entity.Speciality;
-import com.divudi.entity.Vocabulary;
 import com.divudi.facade.ConsultantFacade;
 import com.divudi.facade.PersonFacade;
 import java.io.Serializable;
