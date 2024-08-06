@@ -38,6 +38,16 @@
             href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.2/font/bootstrap-icons.css"/>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous"></link>
         <h:outputScript library="js" name="jsfcrud.js"/>
+        <script type="text/javascript">
+            var timeoutInMinutes = #{configOptionApplicationController.getShortTextValueByKey('Application Timeout in Minutes', '15')};
+            var timeoutDuration = timeoutInMinutes * 60000; // Convert minutes to milliseconds
+            var timeoutPageUrl = '#{sessionController.logoutPageUrl}'; // Get the dynamic URL from the bean
+
+            setTimeout(function () {
+                alert('Session has expired. You will now be redirected to the session timeout page.');
+                window.location.href = timeoutPageUrl; // Use the dynamically generated URL
+            }, timeoutDuration);
+        </script>
     </h:head>
     <h:body >
         <style>
@@ -170,9 +180,6 @@
                 <p:growl id="growl" life="2000"  />
             </div>
         </h:panelGroup>
-
-
-
 
 
     </h:body>

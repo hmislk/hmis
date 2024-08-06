@@ -8,13 +8,13 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <h:body>
+       
+            <ui:composition template="./index.xhtml">
 
-        <ui:composition template="./index.xhtml">
+                <ui:define name="subcontent">
+                     <h:form>
 
-            <ui:define name="subcontent">
-
-                <h:form>
-
+                    
                     <p:panel >
                         <f:facet name="header">
                             <i class="fa fa-money-bill-wave mt-2"/>
@@ -73,8 +73,7 @@
                                                 <p:inputText autocomplete="off"   value="#{financialTransactionController.currentPayment.paidValue}"  id="txtVal">
                                                     <p:ajax process="@this" ></p:ajax>
                                                 </p:inputText>
-                                                <p:watermark value="Value" for="txtVal" />
-                                                <p:inputText autocomplete="off"  value="#{financialTransactionController.currentPayment.chequeRefNo}" id="chequNo">
+                                                                                                <p:inputText autocomplete="off"  value="#{financialTransactionController.currentPayment.chequeRefNo}" id="chequNo">
                                                     <p:ajax process="@this" ></p:ajax>
                                                 </p:inputText>
 
@@ -89,9 +88,7 @@
                                                 </p:calendar>
 
 
-                                                <p:watermark value="Cheque No" for="chequNo"/>
-                                                <p:watermark value="Cheque Date" for="ChequeDate"/>
-
+                                                                                                
                                             </div>
 
 
@@ -109,7 +106,7 @@
                                                 value="#{financialTransactionController.currentPayment.paidValue}" >
                                             </p:inputText>
                                         </h:panelGroup>
-
+                                        
                                         <h:panelGroup
                                             class="row my-1"
                                             layout="block" 
@@ -199,10 +196,11 @@
 
                         </p:panel>
                     </p:panel>
-
-                </h:form>
-            </ui:define>
-        </ui:composition>
-
+                     
+                     </h:form>
+                         
+                </ui:define>
+            </ui:composition>
+        
     </h:body>
 </html>

@@ -8,11 +8,11 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <h:body>
-       
+        
             <ui:composition template="/cashier/index.xhtml">
 
                 <ui:define name="subcontent">
- <h:form>
+<h:form>
                     <p:panel >
                         <f:facet name="header">
                             <i class="fas fa-piggy-bank mt-2"/>
@@ -64,10 +64,7 @@
                                                 <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
                                                 <p:ajax process="@this" ></p:ajax>
                                             </p:selectOneMenu>
-                                            <p:watermark value="Value" for="txtChqValue" />
-                                            <p:watermark value="Cheque No" for="chequNo"/>
-                                            <p:watermark value="Cheque Date" for="ChequeDate"/>
-                                        </h:panelGrid>
+                                                                                                                                                                            </h:panelGrid>
 
                                         <h:panelGrid
                                             class="row my-1 w-100"
@@ -92,10 +89,7 @@
                                                 <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
                                                 <p:ajax process="@this" ></p:ajax>
                                             </p:selectOneMenu>
-                                            <p:watermark value="Value" for="txtCashValue" />
-                                            <p:watermark value="Reference No" for="txtCashRefNo"/>
-                                            <p:watermark value="Bank" for="cashDepositedBank"/>
-
+                                                                                                                                    
                                         </h:panelGrid>
 
                                         <h:panelGrid
@@ -119,10 +113,7 @@
                                                 <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
                                                 <p:ajax process="@this" ></p:ajax>
                                             </p:selectOneMenu>
-                                            <p:watermark value="Value" for="txtCashValue" />
-                                            <p:watermark value="Card Reference No" for="txtCardRefNo"/>
-                                            <p:watermark value="Bank" for="cardBank"/>
-                                        </h:panelGrid>
+                                                                                                                                                                            </h:panelGrid>
                                         <h:panelGrid
                                             columns="2"
                                             class="row my-1"
@@ -227,8 +218,9 @@
 
                         </p:panel>
                     </p:panel>
-             </h:form>
+    </h:form>
                 </ui:define>
             </ui:composition>
+        
     </h:body>
 </html>

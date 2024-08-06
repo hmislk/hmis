@@ -9,7 +9,6 @@ import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.pharmacy.PharmacyBillSearch;
 import com.divudi.bean.pharmacy.PharmacyPreSettleController;
 import com.divudi.bean.pharmacy.PharmacySaleController;
-import com.divudi.data.PaymentMethod;
 import com.divudi.data.TokenCount;
 import com.divudi.data.TokenType;
 import com.divudi.ejb.BillNumberGenerator;
@@ -354,7 +353,7 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
     }
 
     public String navigateToManageOpdTokensWaiting() {
-        fillOpdTokensWaiting();
+        //fillOpdTokensWaiting();
         fillOpdWaitingTokensCounts();
         return "/opd/token/opd_tokens_waiting?faces-redirect=true"; // Adjust the navigation string as per your page structure
     }

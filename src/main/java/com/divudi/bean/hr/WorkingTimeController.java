@@ -10,7 +10,6 @@ package com.divudi.bean.hr;
 
 import com.divudi.bean.common.BillController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
-import com.divudi.bean.common.ConfigOptionController;
 import com.divudi.bean.common.FeeController;
 import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.OpdPreBillController;
@@ -35,7 +34,6 @@ import com.divudi.entity.BillFeePayment;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.Doctor;
-import com.divudi.entity.PatientEncounter;
 import com.divudi.entity.Payment;
 import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;

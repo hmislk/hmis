@@ -15,7 +15,6 @@ import com.divudi.data.PersonInstitutionType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.SmsManagerEjb;
 import com.divudi.entity.Sms;
-import com.divudi.data.SmsSentResponse;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
@@ -438,7 +437,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
             }
         }
 
-        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelPaid};
+        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelPaid,BillType.ChannelResheduleWithPayment};
         List<BillType> bts = Arrays.asList(billTypes);
         String sql = " SELECT b FROM BillFee b "
                 + "  where type(b.bill)=:class "

@@ -24,7 +24,18 @@
                             <h:outputText value="Batch Bill" class="my-3"></h:outputText>
                             <!-- Command Buttons -->
                             <div class="d-flex" style="float: right;">
-
+                                <p:commandButton 
+                                    value="To Refund Patient Balance" 
+                                    rendered="#{opdBillController.batchBill.paymentMethod eq 'PatientDeposit'}"
+                                    class="ui-button-group mx-1"
+                                    icon="fa fa-money-bill-alt"
+                                    action="#{patientController.navigateToPatientDepositRefundFromOPDBill(opdBillController.batchBill.patient)}"
+                                    ajax="false">
+                                    <f:setPropertyActionListener 
+                                        value="#{opdBillController.batchBill.patient}" 
+                                        target="#{patientController.current}" >
+                                    </f:setPropertyActionListener>
+                                </p:commandButton>
                                 <p:commandButton value="New OPD Bill" 
                                                  class="ui-button-primary mx-1"
                                                  icon="fa fa-plus"
@@ -95,6 +106,11 @@
                                         <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaper'}" >
                                             <ui:repeat value="#{opdBillController.bills}" var="ffb" >
                                                 <prints:five_five_paper_with_headings bill="#{ffb}" duplicate="#{opdBillController.duplicatePrint}" payments="#{opdBillController.payments}"/>                        
+                                            </ui:repeat>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaperCoustom1'}" >
+                                            <ui:repeat value="#{opdBillController.bills}" var="ffb" >
+                                                <prints:five_five_paper_coustom_1 bill="#{ffb}" duplicate="#{opdBillController.duplicatePrint}" payments="#{opdBillController.payments}"/>                        
                                             </ui:repeat>
                                         </h:panelGroup>
                                         <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePrintedPaper'}" >
@@ -241,9 +257,8 @@
                                 <table class="ui-datatable ui-widget w-100 m-1">
                                     <thead>
                                         <tr  class="ui-widget-header">
-                                            <th colspan="2" class="d-flex justify-content-between align-items-center">
+                                            <th colspan="2" class="w-100 d-flex justify-content-between align-items-center">
                                                 <span>Batch Bill Details</span>
-
                                                 <p:commandButton 
                                                     ajax="false" 
                                                     icon="fa fa-ban" 

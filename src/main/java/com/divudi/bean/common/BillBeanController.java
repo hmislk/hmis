@@ -13,7 +13,6 @@ import com.divudi.data.BillType;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.FeeType;
 import com.divudi.data.OpdBillingStrategy;
-import com.divudi.data.OpdTokenNumberGenerationStrategy;
 import com.divudi.data.PaymentMethod;
 import static com.divudi.data.PaymentMethod.Card;
 import static com.divudi.data.PaymentMethod.Cheque;
@@ -52,7 +51,6 @@ import com.divudi.entity.inward.EncounterComponent;
 import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.PatientInvestigation;
 import com.divudi.entity.membership.AllowedPaymentMethod;
-import com.divudi.entity.membership.MembershipScheme;
 import com.divudi.entity.membership.PaymentSchemeDiscount;
 import com.divudi.facade.AllowedPaymentMethodFacade;
 import com.divudi.facade.BillComponentFacade;
@@ -2558,16 +2556,19 @@ public class BillBeanController implements Serializable {
             b.setBank(paymentMethodData.getCheque().getInstitution());
             b.setChequeRefNo(paymentMethodData.getCheque().getNo());
             b.setChequeDate(paymentMethodData.getCheque().getDate());
+            b.setComments(paymentMethodData.getCheque().getComment());
         }
+        
         if (paymentMethod.equals(PaymentMethod.Slip)) {
             b.setBank(paymentMethodData.getSlip().getInstitution());
             b.setChequeDate(paymentMethodData.getSlip().getDate());
-            //   b.setComments(paymentMethodData.getSlip().getComment());
+            b.setComments(paymentMethodData.getSlip().getComment());
         }
 
         if (paymentMethod.equals(PaymentMethod.Card)) {
             b.setCreditCardRefNo(paymentMethodData.getCreditCard().getNo());
             b.setBank(paymentMethodData.getCreditCard().getInstitution());
+            b.setComments(paymentMethodData.getSlip().getComment());
         }
 
         if (paymentMethod.equals(PaymentMethod.OnlineSettlement)) {

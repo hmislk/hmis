@@ -10,6 +10,7 @@ package com.divudi.bean.hr;
 
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.FormItemValue;
+import com.divudi.bean.common.PersonController;
 import com.divudi.bean.common.SessionController;
 
 import com.divudi.data.InvestigationItemType;
@@ -87,6 +88,17 @@ public class StaffController implements Serializable {
     StaffSalaryController staffSalaryController;
     @Inject
     CommonController commonController;
+    @Inject
+    PersonController personController;
+    
+    
+    
+    
+    
+    
+    
+    
+    
     ////
     @EJB
     private StaffEmploymentFacade staffEmploymentFacade;
@@ -117,6 +129,7 @@ public class StaffController implements Serializable {
     List<Staff> itemsToRemove;
     Date tempRetireDate = null;
     boolean removeResign = false;
+    
 
     public void removeSelectedItems() {
         for (Staff s : itemsToRemove) {
@@ -277,7 +290,7 @@ public class StaffController implements Serializable {
         staffWithCode = getEjbFacade().findByJpql(sql, hm);
 
     }
-    
+
     public Staff getstaffByName(String name) {
         String jpql = "select s "
                 + " from Staff s "
@@ -288,7 +301,7 @@ public class StaffController implements Serializable {
         m.put("name", name);
         return getFacade().findFirstByJpql(jpql, m);
     }
-    
+
     public void save(Staff stf) {
         if (stf == null) {
             return;
@@ -1412,13 +1425,19 @@ public class StaffController implements Serializable {
     }
 
     public Staff findStaffByName(String name) {
+        if(name==null){
+            return null;
+        }
+        name = name.trim();
         String jpql = "select c "
                 + " from Staff c "
-                + " where c.retired=:ret "
+                + " where c.retired<>:ret "
                 + " and c.person.name=:name";
         Map m = new HashMap();
-        m.put("ret", false);
+        m.put("ret", true);
         m.put("name", name);
+        System.out.println("m = " + m);
+        System.out.println("p = " + jpql);
         return getFacade().findFirstByJpql(jpql, m);
     }
 

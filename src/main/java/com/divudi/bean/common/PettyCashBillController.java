@@ -23,7 +23,6 @@ import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillTypeAtomic;
-import com.divudi.entity.BillFee;
 import com.divudi.entity.Payment;
 import com.divudi.entity.RefundBill;
 import com.divudi.facade.PaymentFacade;
@@ -337,6 +336,14 @@ public class PettyCashBillController implements Serializable {
         Payment p = new Payment();
         p.setBill(rb);
         p.setPaidValue(0 - Math.abs(rb.getNetTotal()));
+        setPaymentMethodData(p, pm);
+        return p;
+    }
+    
+    public Payment createPaymentForPettyCashBillCancellation(Bill cb, PaymentMethod pm) {
+        Payment p = new Payment();
+        p.setBill(cb);
+        p.setPaidValue(0 - Math.abs(cb.getNetTotal()));
         setPaymentMethodData(p, pm);
         return p;
     }

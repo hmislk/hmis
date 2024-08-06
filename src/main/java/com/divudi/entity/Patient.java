@@ -15,7 +15,6 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.Index;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.PostLoad;
@@ -43,11 +42,11 @@ public class Patient implements Serializable {
     private Long patientMobileNumber;
     @ManyToOne(cascade = CascadeType.ALL)
     Person person;
-    //personaI dentification Number
+
     Integer pinNo;
-    //healthdentification Number
+
     Integer hinNo;
-    //Created Properties
+
     @ManyToOne
     Institution createdInstitution;
     @ManyToOne
@@ -115,8 +114,7 @@ public class Patient implements Serializable {
 
     @Transient
     Bill bill;
-    @Transient
-    CommonFunctions commonFunctions;
+
             
     @Transient
     private String phoneNumberStringTransient;
@@ -584,7 +582,6 @@ public class Patient implements Serializable {
         this.editingMode = editingMode;
     }
 
-    @Transient
     public String getPhoneNumberStringTransient() {
         if (this.getPerson() == null) {
             return null;
@@ -593,7 +590,6 @@ public class Patient implements Serializable {
         return phoneNumberStringTransient;
     }
     
-    @Transient
     public String getMobileNumberStringTransient() {
         if (this.getPerson() == null) {
             return null;

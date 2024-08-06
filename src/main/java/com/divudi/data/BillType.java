@@ -47,6 +47,8 @@ public enum BillType {
     AgentCreditNoteBill,
     AgentDebitNoteBill,
     PatientPaymentReceiveBill,
+    PatientPaymentRefundBill,
+    PatientPaymentCanceldBill,
     CollectingCentrePaymentReceiveBill,
     CollectingCentreCreditNoteBill,
     CollectingCentreDebitNoteBill,
@@ -102,8 +104,8 @@ public enum BillType {
     ChannelAgent(ChannelCashFlow),
     ChannelOnCall(ChannelCreditFlow),
     ChannelStaff(ChannelCreditFlow),
-    ChannelResheduleWithOutPayment,
-    ChannelResheduleWithPayment,
+    ChannelResheduleWithOutPayment(ChannelCreditFlow),
+    ChannelResheduleWithPayment(ChannelCashFlow),
     //    @Deprecated need to payment bills for separately
     ChannelProPayment,
     ChannelAgencyPayment,
@@ -159,6 +161,7 @@ public enum BillType {
     FinancialReconciliationBill, // For reconciling all types of recorded transactions against actual bank statements and balances
     @Deprecated
     FinancialAuditingBill, // For broader auditing purposes, ensuring compliance with policies and regulatory requirements
+    StaffCreditSettle
     ;
 
     public String getLabel() {

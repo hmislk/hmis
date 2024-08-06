@@ -26,6 +26,15 @@
                         <i class="fa fa-venus-mars fa-fw" style="color: #17a2b8;" title="Sex" rendered="#{not empty cc.attrs.patient.person.sex}"></i>
                         <p:outputLabel value="#{cc.attrs.patient.person.sex}" rendered="#{not empty cc.attrs.patient.person.sex}" style="margin-left: 20px;"/>
 
+                        <i class="fa fa-globe fa-fw" style="color: #58e7e9;" title="Status" rendered="#{not empty cc.attrs.patient.person.foreigner}"></i>
+                        <p:badge 
+                            style="margin-left: 20px;"
+                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Save the Patient with Patient Status')}"
+                            value="#{cc.attrs.patient.person.foreigner?'Patient is Forigner':'Patient is Local'}" 
+                            severity="#{cc.attrs.patient.person.foreigner?'warning':'success'}" 
+                            styleClass="mr-2">
+                        </p:badge>
+
                         <i class="fa fa-calendar fa-fw" style="color: #fd7e14;" title="Date of Birth" rendered="#{not empty cc.attrs.patient.person.dob}"></i>
                         <p:outputLabel value="#{cc.attrs.patient.person.dob}" rendered="#{not empty cc.attrs.patient.person.dob}" style="margin-left: 20px;">
                             <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />

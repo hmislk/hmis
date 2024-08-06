@@ -5,20 +5,14 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.data.ApplicationInstitution;
 import com.divudi.data.MessageType;
-import com.divudi.data.SmsSentResponse;
 import com.divudi.data.hr.ReportKeyWord;
-
 import com.divudi.ejb.SmsManagerEjb;
-import com.divudi.entity.Bill;
 import com.divudi.entity.Sms;
-import com.divudi.entity.UserPreference;
 import com.divudi.facade.SmsFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.java.CommonFunctions;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -65,32 +59,12 @@ public class SmsController implements Serializable {
     private String smsNumber;
     private String smsOutput;
 
+    // New variable to control SMS sending
+    private static boolean doNotSendAnySms = false;
+
     public List<Sms> getFaildsms() {
         return faildsms;
     }
-
-//    public void sentCheckSms() {
-//        if (smsMessage == null) {
-//            JsfUtil.addErrorMessage("Message?");
-//            return;
-//        }
-//        if (smsNumber == null) {
-//            JsfUtil.addErrorMessage("Message?");
-//            return;
-//        }
-//        smsOutput = smsManager.sendSmsByApplicationPreferenceReturnString(smsNumber, smsMessage, sessionController.getApplicationPreference());
-//
-//        UserPreference pf = sessionController.getApplicationPreference();
-//        smsOutput += "\n" + "Username Parameter : " + pf.getSmsUsernameParameterName();
-//        smsOutput += "\n" + "Username : " + pf.getSmsUsername();
-//        smsOutput += "\n" + "Passwprd Parameter : " + pf.getSmsPasswordParameterName();
-//        smsOutput += "\n" + "Password : " + pf.getSmsPassword();
-//        smsOutput += "\n" + "Alias Parameter : " + pf.getSmsUserAliasParameterName();
-//        smsOutput += "\n" + "Alias : " + pf.getSmsUserAlias();
-//        smsOutput += "\n" + "Number Parameter : " + pf.getSmsPhoneNumberParameterName();
-//        smsOutput += "\n" + "Text Parameter : " + pf.getSmsMessageParameterName();
-//
-//    }
 
     public void setFaildsms(List<Sms> faildsms) {
         this.faildsms = faildsms;
@@ -110,17 +84,10 @@ public class SmsController implements Serializable {
     public SmsController() {
     }
 
-    public void sendSmsAwaitingToSendInDatabase() {
-        String j = "Select e from Sms e where e.sentSuccessfully=false and e.retired=false";
-        List<Sms> smses = getSmsFacade().findByJpql(j);
-        for (Sms e : smses) {
-            e.setSentSuccessfully(Boolean.TRUE);
-            getSmsFacade().edit(e);
-            Boolean sentSuccessfully = smsManager.sendSms(e);
-        }
-    }
-
     public Boolean sendSms(String number, String message, String username, String password, String sendingAlias) {
+        if (doNotSendAnySms) {
+            return false;
+        }
         Sms s = new Sms();
         s.setReceipientNumber(number);
         s.setSendingMessage(message);
@@ -128,134 +95,27 @@ public class SmsController implements Serializable {
     }
 
     public void sendSms() {
+        if (doNotSendAnySms) {
+            return;
+        }
         Sms s = new Sms();
         s.setReceipientNumber(smsNumber);
         s.setSendingMessage(smsMessage);
         save(s);
-        boolean b= smsManager.sendSms(s);
+        boolean b = smsManager.sendSms(s);
         selectedSms = s;
     }
 
-    
-//    public Boolean sendSmsPromo(String number, String message, String username, String password, String sendingAlias) {
-//        Sms s = new Sms();
-//        s.setReceipientNumber(number);
-//        s.setSendingMessage(message);
-//        return smsManager.sendSms(s);
-//    }
     public Boolean sendSms(String number, String message) {
+        if (doNotSendAnySms) {
+            return false;
+        }
         Sms s = new Sms();
         s.setReceipientNumber(number);
         s.setSendingMessage(message);
         return smsManager.sendSms(s);
     }
 
-//    public Boolean sendSmsPromo(String number, String message) {
-//        Sms s = new Sms();
-//        s.setReceipientNumber(number);
-//        s.setSendingMessage(message);
-//        return smsManager.sendSms(s);
-//    }
-//    public void sendSmsToNumberList(String sendingNo, ApplicationInstitution ai, String msg, Bill b, MessageType smsType) {
-//        if (sendingNo.contains("077") || sendingNo.contains("076")
-//                || sendingNo.contains("071") || sendingNo.contains("070")
-//                || sendingNo.contains("072")
-//                || sendingNo.contains("075")
-//                || sendingNo.contains("078")) {
-//        } else {
-//            return;
-//        }
-//        Sms e = new Sms();
-//        e.setSentSuccessfully(Boolean.TRUE);
-//        SmsSentResponse sent = sendSmsPromo(sendingNo, msg);
-//
-//        if (sent.isSentSuccefully()) {
-//            e.setSentSuccessfully(true);
-//            e.setSentAt(new Date());
-//            e.setCreatedAt(new Date());
-//            e.setCreater(getSessionController().getLoggedUser());
-//            e.setBill(b);
-//            e.setReceivedMessage(sent.getReceivedMessage());
-//            e.setSmsType(smsType);
-//            e.setSendingMessage(msg);
-//            getSmsFacade().create(e);
-//        }
-//
-//    }
-//    public void sendSmsForPatientReport() {
-//        Date startTime = new Date();
-//        Sms e = new Sms();
-//        e.setCreatedAt(new Date());
-//        e.setCreater(sessionController.getLoggedUser());
-//        e.setBill(null);
-//        e.setPatientReport(null);
-//        e.setPatientInvestigation(null);
-//        e.setCreatedAt(new Date());
-//        e.setCreater(sessionController.getLoggedUser());
-//        e.setReceipientNumber(number);
-//        e.setSendingMessage(message);
-//        e.setDepartment(getSessionController().getLoggedUser().getDepartment());
-//        e.setInstitution(getSessionController().getInstitution());
-//        e.setSentSuccessfully(false);
-//        getSmsFacade().create(e);
-//        smsManager.sendSmsByApplicationPreference(e.getReceipientNumber(), e.getSendingMessage(), sessionController.getApplicationPreference());
-//        JsfUtil.addSuccessMessage("SMS Sent");
-//    }
-//    
-//    public void createSmsTable() {
-//        long lng = getCommonFunctions().getDayCount(getReportKeyWord().getFromDate(), getReportKeyWord().getToDate());
-//        if (Math.abs(lng) > 2 && !getReportKeyWord().isAdditionalDetails()) {
-//            JsfUtil.addErrorMessage("Date Range is too Long");
-//            return;
-//        }
-//        String sql;
-//        Map m = new HashMap();
-//        smsSummeryRows = new ArrayList<>();
-//        smses = new ArrayList<>();
-//
-//        if (getReportKeyWord().isAdditionalDetails()) {
-//            sql = " select s.smsType, count(s) ";
-//        } else {
-//            sql = " select s ";
-//        }
-//        sql += " from Sms s where s.retired=false "
-//                + " and s.createdAt between :fd and :td ";
-//
-//        if (getReportKeyWord().getSmsType() != null) {
-//            sql += " and s.smsType=:st ";
-//            m.put("st", getReportKeyWord().getSmsType());
-//        }
-//
-//        if (getReportKeyWord().isAdditionalDetails()) {
-//            sql += " group by s.smsType ";
-//        } else {
-//            sql += " order by s.id ";
-//        }
-//
-//        m.put("fd", getReportKeyWord().getFromDate());
-//        m.put("td", getReportKeyWord().getToDate());
-//
-//        if (getReportKeyWord().isAdditionalDetails()) {
-//            List<Object[]> objects = getSmsFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
-//            long l = 0l;
-//            for (Object[] ob : objects) {
-//                SmsSummeryRow row = new SmsSummeryRow();
-//                MessageType smsType = (MessageType) ob[0];
-//                long count = (long) ob[1];
-//                row.setSmsType(smsType);
-//                row.setCount(count);
-//                l += count;
-//                smsSummeryRows.add(row);
-//            }
-//            SmsSummeryRow row = new SmsSummeryRow();
-//            row.setSmsType(null);
-//            row.setCount(l);
-//            smsSummeryRows.add(row);
-//        } else {
-//            smses = getSmsFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
-//        }
-//
-//    }
     public void fillAllSms() {
         String j = "select s "
                 + " from Sms s "
@@ -266,13 +126,6 @@ public class SmsController implements Serializable {
         smses = smsFacade.findByJpql(j, m, TemporalType.TIMESTAMP);
     }
 
-//    
-//    public void sendSms() {
-//        selectedSms = new Sms();
-//        selectedSms.setSendingMessage(smsMessage);
-//        selectedSms.setReceipientNumber(smsNumber);
-//        smsManager.sendSms(selectedSms);
-//    }
     public void fillAllFaildSms() {
         // Modified by Dr M H B Ariyaratne with assistance from ChatGPT from OpenAI
         String j = "select s "
@@ -287,6 +140,10 @@ public class SmsController implements Serializable {
     }
 
     public void sentUnsentSms() {
+        if (doNotSendAnySms) {
+            JsfUtil.addErrorMessage("SMS sending is disabled");
+            return;
+        }
         if (selectedSms == null) {
             JsfUtil.addErrorMessage("No SMS selected");
             return;
@@ -415,7 +272,7 @@ public class SmsController implements Serializable {
 
     private void save(Sms s) {
         if(s==null){
-            JsfUtil.addErrorMessage("no sms");
+            JsfUtil.addErrorMessage("No SMS");
             return;
         }
         if(s.getId()==null){

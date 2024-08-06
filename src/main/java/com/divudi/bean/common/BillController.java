@@ -43,7 +43,6 @@ import com.divudi.entity.Person;
 import com.divudi.entity.PriceMatrix;
 import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
-import com.divudi.entity.membership.MembershipScheme;
 import com.divudi.facade.BillComponentFacade;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
@@ -58,19 +57,13 @@ import com.divudi.facade.PersonFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.opd.OpdBillController;
 import com.divudi.data.BillTypeAtomic;
-import com.divudi.data.HistoryType;
 import com.divudi.data.dataStructure.ComponentDetail;
-import com.divudi.data.dataStructure.DailyCash;
-import com.divudi.data.dataStructure.SearchKeyword;
-import com.divudi.entity.AppEmail;
 import com.divudi.entity.FamilyMember;
 import com.divudi.entity.PreBill;
 import com.divudi.entity.RefundBill;
 import com.divudi.java.CommonFunctions;
 import com.divudi.light.common.BillLight;
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1689,7 +1682,7 @@ public class BillController implements Serializable {
         printPreview = false;
         return "/opd/batch_bill_cancel?faces-redirect=true;";
     }
-
+  
     public String cancelBatchBill() {
         if (getBatchBill() == null) {
             JsfUtil.addErrorMessage("No bill");
@@ -1708,8 +1701,20 @@ public class BillController implements Serializable {
             JsfUtil.addErrorMessage("You have no privilege to cancel OPD bills. Please contact System Administrator.");
             return "";
         }
-
+         
+        if(paymentMethod == PaymentMethod.PatientDeposit){
+            if(getBatchBill().getPatient().getHasAnAccount() == null){
+                JsfUtil.addErrorMessage("Create Patient Account First");
+                return "";
+            }
+            if(!getBatchBill().getPatient().getHasAnAccount()){
+                JsfUtil.addErrorMessage("Create Patient Account First");
+                return "";
+            }
+        }
+        
         Bill cancellationBatchBill = new CancelledBill();
+        cancellationBatchBill.copy(batchBill);
         cancellationBatchBill.setDepartment(sessionController.getDepartment());
         cancellationBatchBill.setInstitution(sessionController.getInstitution());
         cancellationBatchBill.setFromDepartment(batchBill.getFromDepartment());
@@ -1743,9 +1748,17 @@ public class BillController implements Serializable {
         for (Bill originalBill : bills) {
             cancelSingleBillWhenCancellingOpdBatchBill(originalBill, cancellationBatchBill);
         }
-
-        cancellationBatchBill.copy(batchBill);
+ 
         cancellationBatchBill.setBilledBill(batchBill);
+        
+        if (cancellationBatchBill.getPaymentMethod() == PaymentMethod.PatientDeposit) {
+            if (cancellationBatchBill.getPatient().getRunningBalance() == null) {
+                cancellationBatchBill.getPatient().setRunningBalance(Math.abs(cancellationBatchBill.getNetTotal()));
+            } else {
+                cancellationBatchBill.getPatient().setRunningBalance(cancellationBatchBill.getPatient().getRunningBalance() + Math.abs(cancellationBatchBill.getNetTotal()));
+            }
+            patientFacade.edit(cancellationBatchBill.getPatient());
+        }
 
         createPaymentForOpdBatchBillCancellation(cancellationBatchBill, batchBill.getPaymentMethod());
 
@@ -1753,6 +1766,7 @@ public class BillController implements Serializable {
         opdBillController.setBills(bills);
         opdBillController.setBatchBill(batchBill);
         getSessionController().setLoggedUser(wb);
+        printPreview = true;
         return "/opd/opd_batch_bill_print?faces-redirect=true";
     }
 
@@ -1986,7 +2000,6 @@ public class BillController implements Serializable {
 
             p.setPaidValue(p.getBill().getNetTotal());
             paymentFacade.create(p);
-
             ps.add(p);
         }
         return ps;
@@ -2113,7 +2126,6 @@ public class BillController implements Serializable {
         temp.setPatient(tmpPatient);
 
 //        temp.setMembershipScheme(membershipSchemeController.fetchPatientMembershipScheme(tmpPatient, getSessionController().getApplicationPreference().isMembershipExpires()));
-
         temp.setPaymentScheme(getPaymentScheme());
         temp.setPaymentMethod(paymentMethod);
         temp.setCreatedAt(new Date());
@@ -2774,7 +2786,6 @@ public class BillController implements Serializable {
         double billVat = 0.0;
 
 //        MembershipScheme membershipScheme = membershipSchemeController.fetchPatientMembershipScheme(getSearchedPatient(), getSessionController().getApplicationPreference().isMembershipExpires());
-
         for (BillEntry be : getLstBillEntries()) {
             //////// // System.out.println("bill item entry");
             double entryGross = 0.0;

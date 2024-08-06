@@ -16,7 +16,6 @@ import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.DepartmentType;
 import com.divudi.data.FeeType;
-import com.divudi.data.InstitutionType;
 import com.divudi.data.ItemLight;
 import static com.divudi.data.ItemListingStrategy.ALL_ITEMS;
 import static com.divudi.data.ItemListingStrategy.ITEMS_MAPPED_TO_LOGGED_DEPARTMENT;
@@ -56,7 +55,6 @@ import com.divudi.entity.Staff;
 import com.divudi.entity.UserPreference;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.hr.WorkingTime;
-import com.divudi.entity.membership.MembershipScheme;
 import com.divudi.facade.BillComponentFacade;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
@@ -70,8 +68,6 @@ import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillTypeAtomic;
-import com.divudi.entity.Family;
-import com.divudi.entity.FamilyMember;
 import com.divudi.entity.Token;
 import com.divudi.facade.TokenFacade;
 import com.divudi.java.CommonFunctions;
@@ -1015,10 +1011,10 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
         updatingPreBill.setReferredBy(referredBy);
         updatingPreBill.setReferenceNumber(referralId);
         updatingPreBill.setReferredByInstitution(referredByInstitution);
-        updatingPreBill.setCreditCompany(creditCompany);
+        //updatingPreBill.setCreditCompany(creditCompany);
         updatingPreBill.setComments(comment);
 
-        getBillBean().setPaymentMethodData(updatingPreBill, paymentMethod, getPaymentMethodData());
+        //getBillBean().setPaymentMethodData(updatingPreBill, paymentMethod, getPaymentMethodData());
 
         updatingPreBill.setBillDate(new Date());
         updatingPreBill.setBillTime(new Date());
@@ -1026,8 +1022,8 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
 
 //        updatingPreBill.setMembershipScheme(membershipSchemeController.fetchPatientMembershipScheme(getPatient(), getSessionController().getApplicationPreference().isMembershipExpires()));
 
-        updatingPreBill.setPaymentScheme(getPaymentScheme());
-        updatingPreBill.setPaymentMethod(paymentMethod);
+        //updatingPreBill.setPaymentScheme(getPaymentScheme());
+        //updatingPreBill.setPaymentMethod(paymentMethod);
         updatingPreBill.setCreatedAt(new Date());
         updatingPreBill.setCreater(getSessionController().getLoggedUser());
 
@@ -1138,10 +1134,10 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
             }
         }
 
-        if (getPaymentMethod() == null) {
-            JsfUtil.addErrorMessage("Select Payment Method.");
-            return true;
-        }
+//        if (getPaymentMethod() == null) {
+//            JsfUtil.addErrorMessage("Select Payment Method.");
+//            return true;
+//        }
 
 //        if (getPaymentSchemeController().errorCheckPaymentMethod(paymentMethod, getPaymentMethodData())) {
 //            return true;
@@ -1162,10 +1158,10 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
 //                }
 //            }
 //        }
-        if ((getCreditCompany() != null || toStaff != null) && (paymentMethod != PaymentMethod.Credit && paymentMethod != PaymentMethod.Cheque && paymentMethod != PaymentMethod.Slip)) {
-            JsfUtil.addErrorMessage("Check Payment method");
-            return true;
-        }
+//        if ((getCreditCompany() != null || toStaff != null) && (paymentMethod != PaymentMethod.Credit && paymentMethod != PaymentMethod.Cheque && paymentMethod != PaymentMethod.Slip)) {
+//            JsfUtil.addErrorMessage("Check Payment method");
+//            return true;
+//        }
 
         return false;
     }

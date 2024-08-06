@@ -12,12 +12,12 @@
 
             <ui:define name="content">
 
-
                 <p:panel header="Store Administration" >
                     <div class="row">
                         <div class="col-3">
-
-                            <p:accordionPanel>
+ 
+                            <p:accordionPanel activeIndex="-1">
+                                <p:ajax process="@this"></p:ajax>
                                 <p:tab title="1) Store Item">
                                     <h:form> 
                                         <div class="d-grid gap-2">     
@@ -49,21 +49,18 @@
                                     </h:form>
                                 </p:tab>
                                 <p:tab title="3) Institutions">
-                                    <h:form> 
+                                    <h:form>
                                         <div class="d-grid gap-2">
-
-                                            <p:commandButton styleClass="linkButton" ajax="false" value="1) Distributor" action="store_dealer" ></p:commandButton>                                
-                                            <p:commandButton styleClass="linkButton" ajax="false" value="2) Item Distributors" action="store_items_distributors" ></p:commandButton>
-
+                                            <p:commandButton styleClass="linkButton" ajax="false" value="1) Store Dealer" action="store_dealer?faces-redirect=true" ></p:commandButton>                                
+                                            <p:commandButton styleClass="linkButton" ajax="false" value="2) Item Distributors" action="store_items_distributors?faces-redirect=true" ></p:commandButton>
                                         </div>
                                     </h:form>
                                 </p:tab>
                                 <p:tab title="4) Other">
                                     <h:form> 
                                         <div class="d-grid gap-2">
-                                            <p:commandButton styleClass="linkButton" ajax="false" value="1) Measurment Units" action="store_measurement_unit" ></p:commandButton>
-                                            <p:commandButton styleClass="linkButton" ajax="false" value="2) Frequencies" action="store_frequency_unit" ></p:commandButton>
-
+                                            <p:commandButton styleClass="linkButton" ajax="false" value="1) Measurment Units" action="store_measurement_unit?faces-redirect=true" ></p:commandButton>
+                                            <p:commandButton styleClass="linkButton" ajax="false" value="2) Frequencies" action="store_frequency_unit?faces-redirect=true" ></p:commandButton>
                                         </div>
                                     </h:form>
                                 </p:tab>
@@ -86,8 +83,6 @@
                                     </h:form>
                                 </p:tab>
                             </p:accordionPanel>
-
-
 
                         </div>
                         <div class="col-9">  

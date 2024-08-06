@@ -8,17 +8,14 @@
  */
 package com.divudi.bean.lab;
 
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 
-import com.divudi.entity.Category;
-import com.divudi.entity.lab.Sample;
-import com.divudi.facade.SampleFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.entity.lab.PatientSample;
 import com.divudi.facade.PatientSampleFacade;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -70,6 +67,11 @@ public class PatientSampleController implements Serializable {
         items = null;
     }
 
+    public String navigateToPrintBarcodes(PatientSample pts){
+        items = new ArrayList<>();
+        return "/lab/patient_sample_print?faces-rediret=true;";
+    }
+    
     public void saveSelected() {
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
@@ -120,6 +122,25 @@ public class PatientSampleController implements Serializable {
             current = new PatientSample();
         }
         return current;
+    }
+
+    public String navigateToViewPatientSample(PatientSample ps) {
+        if (ps == null) {
+            JsfUtil.addErrorMessage("Nothing selected");
+            return null;
+        }
+        current = ps;
+        return "/lab/patient_sample?faces-redirect=true;";
+
+    }
+
+    public String navigateToEditPatientSample(PatientSample ps) {
+        if (ps == null) {
+            JsfUtil.addErrorMessage("Nothing selected");
+            return null;
+        }
+        current = ps;
+        return "/lab/patient_sample_edit?faces-redirect=true;";
     }
 
     public PatientSample getAnyPatientSample() {

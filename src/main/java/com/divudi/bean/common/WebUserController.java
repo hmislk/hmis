@@ -48,7 +48,6 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.persistence.TemporalType;
 import org.primefaces.event.FlowEvent;
 
 /**
@@ -828,6 +827,7 @@ public class WebUserController implements Serializable {
         getUserPrivilageController().setCurrentWebUser(selected);
         getUserPrivilageController().init();
         getUserPrivilageController().setDepartments(getUserPrivilageController().fillWebUserDepartments(selected));
+        getUserPrivilageController().setPrivilegesLoaded(false);
         return "/admin/users/user_privileges?faces-redirect=true";
     }
 
@@ -877,6 +877,16 @@ public class WebUserController implements Serializable {
         getUserDepartmentController().setSelectedUser(selected);
         getUserDepartmentController().setItems(getUserDepartmentController().fillWebUserDepartments(selected));
         return "/admin/users/user_department?faces-redirect=true";
+    }
+    
+    public String navigateToManageRoutes() {
+        if (selected == null) {
+            JsfUtil.addErrorMessage("Please select a user");
+            return "";
+        }
+        getUserDepartmentController().setSelectedUser(selected);
+        getUserDepartmentController().setItems(getUserDepartmentController().fillWebUserDepartments(selected));
+        return "/admin/users/user_routes?faces-redirect=true";
     }
 
     public String toManageDashboards() {

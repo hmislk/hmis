@@ -207,7 +207,7 @@
                         </div>
                     </nav>
                   
-                    <p:staticMessage severity="error" summary="ERROR" detail="This function is currently unavailable due to maintenance. Please refrain from using it until further notice." style="width: 100%; font-size: 2em;"/>
+<!--                    <p:staticMessage severity="error" summary="ERROR" detail="This function is currently unavailable due to maintenance. Please refrain from using it until further notice." style="width: 100%; font-size: 2em;"/>-->
 
                 </div>
                 <div>
@@ -224,7 +224,7 @@
                                                 <h6>Select Speciality</h6>
                                             </div>
                                             <div>
-                                                <p:watermark for="acSpeciality" value="Select Speciality" ></p:watermark>
+                                                
                                                 <div>
                                                     <p:selectOneMenu class="w-100" id="acSpeciality" value="#{patientPortalController.selectedSpeciality}">
                                                         <f:selectItem itemLabel="Select One"/>
@@ -240,7 +240,7 @@
                                                 <h6>Select Doctor</h6>
                                             </div>
                                             <div>
-                                                <p:watermark for="scStaff" value="Select Doctor" ></p:watermark>
+                                                
                                                 <div>
                                                     <p:selectOneMenu filter="true" class="w-100" id="scStaff"  value="#{patientPortalController.selectedConsultant}">
                                                         <f:selectItem itemLabel="Select One"/>
