@@ -54,8 +54,6 @@ import javax.persistence.TemporalType;
 import org.joda.time.DateTime;
 import org.joda.time.Days;
 import org.primefaces.event.RowEditEvent;
-import org.primefaces.model.chart.CartesianChartModel;
-import org.primefaces.model.chart.LineChartSeries;
 
 @Named
 @SessionScoped
@@ -117,7 +115,7 @@ public class ReorderController implements Serializable {
     Item item;
     Department historyDept;
 
-    private CartesianChartModel dateModel;
+//    private CartesianChartModel dateModel;
 
     public String navigateReorderManagement() {
         return "/pharmacy/reorder_management?faces-redirect=true";
@@ -205,9 +203,9 @@ public class ReorderController implements Serializable {
         }
     }
 
-    public CartesianChartModel getDateModel() {
-        return dateModel;
-    }
+//    public CartesianChartModel getDateModel() {
+//        return dateModel;
+//    }
 
     public void createDailyItemSummery() {
         createDailyItemSummery(item, historyDept, fromDate, toDate);
@@ -220,64 +218,64 @@ public class ReorderController implements Serializable {
     }
 
     public void createDailyItemSummery(Item item, Department dept, Date fromDate, Date toDate) {
-        dateModel = new CartesianChartModel();
-        List<ItemTransactionSummeryRow> rows;
-
-        LineChartSeries series1 = new LineChartSeries();
-        series1.setLabel("Stock Average");
-        rows = findDailyStockAverage(item, dept, fromDate, toDate);
-        for (ItemTransactionSummeryRow r : rows) {
-            DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
-            series1.set(df.format(r.getDate()), r.getQuantity());
-        }
-        dateModel.addSeries(series1);
-
-        LineChartSeries series2 = new LineChartSeries();
-        series2.setLabel("Sales");
-        rows = findDailySale(item, dept, fromDate, toDate);
-        for (ItemTransactionSummeryRow r : rows) {
-            DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
-            series2.set(df.format(r.getDate()), r.getQuantity());
-        }
-        dateModel.addSeries(series2);
-
-        LineChartSeries series3 = new LineChartSeries();
-        series3.setLabel("Purchase/Good Receive");
-        rows = findDailyPurchase(item, dept, fromDate, toDate);
-        for (ItemTransactionSummeryRow r : rows) {
-            DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
-            series3.set(df.format(r.getDate()), r.getQuantity());
-        }
-        dateModel.addSeries(series3);
-
-        LineChartSeries series4 = new LineChartSeries();
-        series4.setLabel("Transfer Issue");
-        rows = findDailyTransferOut(item, dept, fromDate, toDate);
-        for (ItemTransactionSummeryRow r : rows) {
-            DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
-            series4.set(df.format(r.getDate()), r.getQuantity());
-        }
-        dateModel.addSeries(series4);
-
-        LineChartSeries series5 = new LineChartSeries();
-        series5.setLabel("Transfer Receive");
-        rows = findDailyTransferIn(item, dept, fromDate, toDate);
-        for (ItemTransactionSummeryRow r : rows) {
-            DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
-            series5.set(df.format(r.getDate()), r.getQuantity());
-        }
-        dateModel.addSeries(series5);
-
-//        dateModel.setTitle("Item Transactions");
-//        dateModel.setZoom(true);
-//        dateModel.setLegendPlacement(LegendPlacement.INSIDE);
-//        dateModel.setLegendPosition("ne");
-//        dateModel.getAxis(AxisType.Y).setLabel("Stock");
-//        DateAxis axis = new DateAxis("Dates");
-//        axis.setTickAngle(-50);
-////        axis.setMax("2014-02-01");
-//        axis.setTickFormat("%b %#d, %y");
-//        dateModel.getAxes().put(AxisType.X, axis);
+//        dateModel = new CartesianChartModel();
+//        List<ItemTransactionSummeryRow> rows;
+//
+//        LineChartSeries series1 = new LineChartSeries();
+//        series1.setLabel("Stock Average");
+//        rows = findDailyStockAverage(item, dept, fromDate, toDate);
+//        for (ItemTransactionSummeryRow r : rows) {
+//            DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+//            series1.set(df.format(r.getDate()), r.getQuantity());
+//        }
+//        dateModel.addSeries(series1);
+//
+//        LineChartSeries series2 = new LineChartSeries();
+//        series2.setLabel("Sales");
+//        rows = findDailySale(item, dept, fromDate, toDate);
+//        for (ItemTransactionSummeryRow r : rows) {
+//            DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+//            series2.set(df.format(r.getDate()), r.getQuantity());
+//        }
+//        dateModel.addSeries(series2);
+//
+//        LineChartSeries series3 = new LineChartSeries();
+//        series3.setLabel("Purchase/Good Receive");
+//        rows = findDailyPurchase(item, dept, fromDate, toDate);
+//        for (ItemTransactionSummeryRow r : rows) {
+//            DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+//            series3.set(df.format(r.getDate()), r.getQuantity());
+//        }
+//        dateModel.addSeries(series3);
+//
+//        LineChartSeries series4 = new LineChartSeries();
+//        series4.setLabel("Transfer Issue");
+//        rows = findDailyTransferOut(item, dept, fromDate, toDate);
+//        for (ItemTransactionSummeryRow r : rows) {
+//            DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+//            series4.set(df.format(r.getDate()), r.getQuantity());
+//        }
+//        dateModel.addSeries(series4);
+//
+//        LineChartSeries series5 = new LineChartSeries();
+//        series5.setLabel("Transfer Receive");
+//        rows = findDailyTransferIn(item, dept, fromDate, toDate);
+//        for (ItemTransactionSummeryRow r : rows) {
+//            DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+//            series5.set(df.format(r.getDate()), r.getQuantity());
+//        }
+//        dateModel.addSeries(series5);
+//
+////        dateModel.setTitle("Item Transactions");
+////        dateModel.setZoom(true);
+////        dateModel.setLegendPlacement(LegendPlacement.INSIDE);
+////        dateModel.setLegendPosition("ne");
+////        dateModel.getAxis(AxisType.Y).setLabel("Stock");
+////        DateAxis axis = new DateAxis("Dates");
+////        axis.setTickAngle(-50);
+//////        axis.setMax("2014-02-01");
+////        axis.setTickFormat("%b %#d, %y");
+////        dateModel.getAxes().put(AxisType.X, axis);
     }
 
     public DepartmentListMethod getDepartmentListMethod() {

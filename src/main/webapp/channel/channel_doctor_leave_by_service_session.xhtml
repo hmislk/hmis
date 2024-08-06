@@ -75,8 +75,7 @@
                                             listener="#{serviceSessionLeaveController.fillLeaveItems}" 
                                             />
                                 </p:calendar>
-                                <p:watermark for="date" value="Date" />
-                            </td>
+                                                            </td>
                         </tr>
                         <tr>
                             <td>
@@ -179,8 +178,7 @@
                         <tr>
                             <td>
                                 <p:inputText id="inComment" value="#{serviceSessionLeaveController.current.deactivateComment}" />
-                                <p:watermark for="inComment" value="Comment" />
-                                <p:commandButton ajax="false" value="Add" action="#{serviceSessionLeaveController.addLeaveForServiceSession()}" />
+                                                                <p:commandButton ajax="false" value="Add" action="#{serviceSessionLeaveController.addLeaveForServiceSession()}" />
                             </td>
                         </tr>
                     </table>
@@ -233,8 +231,7 @@
                             <p:outputLabel value="Leave Remove Comment" />
                         </f:facet>
                         <p:inputText id="inComment" value="#{d.retireComments}" disabled="#{d.retired eq true}" />
-                        <p:watermark for="inComment" value="Leave Remove Comment" />
-                    </p:column>
+                                            </p:column>
                     <p:column>
                         <f:facet name="header" >
                             <p:outputLabel value="Remove" />

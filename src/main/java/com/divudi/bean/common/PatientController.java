@@ -1121,6 +1121,15 @@ public class PatientController implements Serializable, ControllerWithPatient {
         createNewPatientDepositRefund();
         return "/payments/patient/send?faces-redirect=true;";
     }
+    
+    public String navigateToPatientDepositRefundFromOPDBill(Patient patient) {
+        current = patient;
+        bill = new Bill();
+        paymentMethodData = null;
+        printPreview = false;
+        return "/payments/patient/send?faces-redirect=true;";
+    }
+    
 
     public void makeNull() {
         current = null;
