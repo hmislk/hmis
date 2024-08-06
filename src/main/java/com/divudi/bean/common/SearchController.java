@@ -7162,13 +7162,12 @@ public class SearchController implements Serializable {
     }
 
     public void searchOpdProfessionalPaymentBillFees() {
-        Date startTime = new Date();
         List<BillTypeAtomic> billTypesAtomics = new ArrayList<>();
         billTypesAtomics.add(BillTypeAtomic.OPD_PROFESSIONAL_PAYMENT_BILL);
         billTypesAtomics.add(BillTypeAtomic.OPD_PROFESSIONAL_PAYMENT_BILL_RETURN);
         billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES);
         billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES_RETURN);
-        createTableByKeywordForBillFees(billTypesAtomics, institution, department, null, null, null, null);
+        createTableByKeywordForBillFees(billTypesAtomics, institution, department, null, null, null, null, category);
 
     }
 
@@ -7660,13 +7659,23 @@ public class SearchController implements Serializable {
         bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
+    
+    public void createTableByKeywordForBillFees(List<BillTypeAtomic> billTypesAtomics,
+            Institution ins, Department dep,
+            Institution fromIns,
+            Department fromDep,
+            Institution toIns,
+            Department toDep){
+        createTableByKeywordForBillFees(billTypesAtomics, ins, dep, fromIns, fromDep, toIns, toDep, null);
+    }
 
     public void createTableByKeywordForBillFees(List<BillTypeAtomic> billTypesAtomics,
             Institution ins, Department dep,
             Institution fromIns,
             Department fromDep,
             Institution toIns,
-            Department toDep) {
+            Department toDep,
+            Category cat) {
 
         String sql;
         Map temMap = new HashMap();
@@ -7707,9 +7716,9 @@ public class SearchController implements Serializable {
             temMap.put("toins", toIns);
         }
 
-        if(category!=null){
+        if(cat!=null){
             sql +=" and bf.referenceBillFee.billItem.bill.category=:rbfcc ";
-            temMap.put("rbfcc", category);
+            temMap.put("rbfcc", cat);
         }
         
         if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
