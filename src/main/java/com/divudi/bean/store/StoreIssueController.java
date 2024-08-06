@@ -38,6 +38,7 @@ import com.divudi.facade.PharmaceuticalBillItemFacade;
 import com.divudi.facade.StockFacade;
 import com.divudi.facade.StockHistoryFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.BillTypeAtomic;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -414,6 +415,8 @@ public class StoreIssueController implements Serializable {
         getPreBill().setBillTime(new Date());
         getPreBill().setFromDepartment(getSessionController().getLoggedUser().getDepartment());
         getPreBill().setFromInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
+        getPreBill().setBillType(BillType.StoreIssue);
+        getPreBill().setBillTypeAtomic(BillTypeAtomic.STORE_ORDER);
 
         if (getPreBill().getId() == null) {
             getBillFacade().create(getPreBill());
@@ -542,7 +545,7 @@ public class StoreIssueController implements Serializable {
         }
         
         getPreBill().setPaidAmount(getPreBill().getTotal());
-        //   ////System.out.println("getPreBill().getPaidAmount() = " + getPreBill().getPaidAmount());
+        
         List<BillItem> tmpBillItems = getPreBill().getBillItems();
         getPreBill().setBillItems(null);
 
@@ -973,7 +976,6 @@ public class StoreIssueController implements Serializable {
         if (preBill == null) {
             preBill = new PreBill();
             preBill.setBillType(BillType.StoreIssue);
-            //   preBill.setPaymentScheme(getPaymentSchemeController().getItems().get(0));
         }
         return preBill;
     }
