@@ -2375,6 +2375,11 @@ public class SearchController implements Serializable {
             sql += " and  ((b.department.name) like :dep )";
             m.put("dep", "%" + getSearchKeyword().getDepartment().trim().toUpperCase() + "%");
         }
+        
+        if (getSearchKeyword().getToDepartment() != null && !getSearchKeyword().getToDepartment().trim().equals("")) {
+            sql += " and  ((b.toDepartment.name) like :dep )";
+            m.put("dep", "%" + getSearchKeyword().getToDepartment().trim().toUpperCase() + "%");
+        }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
             sql += " and  ((b.netTotal) like :netTotal )";
@@ -3429,9 +3434,14 @@ public class SearchController implements Serializable {
                 + " and bi.bill.billType=:bType "
                 + " and bi.createdAt between :fromDate and :toDate ";
 
-        if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
-            sql += " and  ((bi.bill.toDepartment.name) like :deptName )";
-            m.put("deptName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
+        if (getSearchKeyword().getToDepartment()!= null && !getSearchKeyword().getToDepartment().trim().equals("")) {
+            sql += " and  ((bi.bill.toDepartment.name) like :todept )";
+            m.put("todept", "%" + getSearchKeyword().getToDepartment().trim().toUpperCase() + "%");
+        }
+        
+        if (getSearchKeyword().getFromDepartment()!= null && !getSearchKeyword().getFromDepartment().trim().equals("")) {
+            sql += " and  ((bi.bill.fromDepartment.name) like :fromdept )";
+            m.put("fromdept", "%" + getSearchKeyword().getFromDepartment().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
