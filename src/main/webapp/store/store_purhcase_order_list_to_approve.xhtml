@@ -63,6 +63,8 @@
                             class="w-100 ui-button-warning my-2">
                         </p:commandButton>
 
+                        <h:outputLabel value="Request No"/>
+                        <p:inputText autocomplete="off" value="#{searchController.searchKeyword.requestNo}" class="w-100"/>
                         <h:outputLabel value="Distributor"/>
                         <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.toInstitution}" class="w-100"/>
                         <h:outputLabel value="Requested User"/>
@@ -82,23 +84,23 @@
                     <div class="col-10">
                         <p:dataTable id="tbl" value="#{searchController.bills}" var="b">
 
-                            <p:column headerText="Requested at"  > 
+                            <p:column headerText="Request No" >      
                                 <h:commandLink action="store_reprint_order_request" >
-                                    <h:outputLabel value="#{b.createdAt}" >
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                    </h:outputLabel>
+                                    <h:outputLabel value="#{b.qutationNumber}" ></h:outputLabel>
                                     <f:setPropertyActionListener value="#{b}" target="#{storeBillSearch.bill}"/>
                                 </h:commandLink>
+                            </p:column>
+                            <p:column headerText="Requested at"  > 
+                                <h:outputLabel value="#{b.createdAt}" >
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
+                                </h:outputLabel>
                                 <br/>
                                 <h:panelGroup rendered="#{b.cancelled}" >
-                                    <h:commandLink action="store_reprint_order_request" >
-                                        <h:outputLabel style="color: red;" value="Cancelled at " />
-                                        <h:outputLabel style="color: red;" rendered="#{b.cancelled}"
-                                                       value="#{b.cancelledBill.createdAt}" >
-                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                        </h:outputLabel>
-                                        <f:setPropertyActionListener value="#{b}" target="#{storeBillSearch.bill}"/>
-                                    </h:commandLink>
+                                    <h:outputLabel style="color: red;" value="Cancelled at "/>
+                                    <h:outputLabel style="color: red;" rendered="#{b.cancelled}"
+                                                   value="#{b.cancelledBill.createdAt}" >
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
+                                    </h:outputLabel>
                                 </h:panelGroup>                       
                             </p:column> 
 
@@ -119,26 +121,17 @@
                             </p:column>
 
                             <p:column headerText="Requested Deprtment" > 
-                                <h:commandLink action="store_reprint_order_request" >
-                                    #{b.department.name} 
-                                    <f:setPropertyActionListener value="#{b}" target="#{storeBillSearch.bill}"/>
-                                </h:commandLink>
+                                <h:outputLabel  value="#{b.department.name} "/>
                             </p:column> 
 
                             <p:column headerText="Requested Value" >
-                                <h:commandLink action="store_reprint_order_request" >
-                                    <h:outputLabel  value="#{b.netTotal}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                    <f:setPropertyActionListener value="#{b}" target="#{storeBillSearch.bill}"/>
-                                </h:commandLink>
+                                <h:outputLabel  value="#{b.netTotal}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel> 
                             </p:column>
 
-                            <p:column headerText="Approved Person"  >    
-                                <h:commandLink action="store_reprint_order_request" >
+                            <p:column headerText="Approved Person"  >
                                     <h:outputLabel    value="#{b.referenceBill.creater.webUserPerson.nameWithTitle}"  rendered="#{b.referenceBill.cancelled eq false}" />                        
-                                    <f:setPropertyActionListener value="#{b}" target="#{storeBillSearch.bill}"/>
-                                </h:commandLink>
                             </p:column>
 
                             <p:column headerText="PO Number" >                       
