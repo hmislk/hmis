@@ -251,12 +251,13 @@ public class StorePurchaseOrderRequestController implements Serializable {
     }
 
     public void finalizeBill() {
+        System.out.println("currentBill.getId() = " + currentBill.getId());
         if (currentBill == null) {
             JsfUtil.addErrorMessage("No Bill");
             return;
         }
         if (currentBill.getId() == null) {
-            request();
+            save();
         }
         getCurrentBill().setEditedAt(new Date());
         getCurrentBill().setEditor(sessionController.getLoggedUser());
@@ -267,7 +268,7 @@ public class StorePurchaseOrderRequestController implements Serializable {
         notificationController.createNotification(getCurrentBill());
 
     }
-
+    
     public List<BillItem> generateBillItems(Bill bill) {
         String jpql = "select bi "
                 + " from BillItem bi "
@@ -359,9 +360,8 @@ public class StorePurchaseOrderRequestController implements Serializable {
     }
 
     public void request() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
+        
+        
 
         if (getCurrentBill().getPaymentMethod() == null) {
             JsfUtil.addErrorMessage("Please Select Paymntmethod");
