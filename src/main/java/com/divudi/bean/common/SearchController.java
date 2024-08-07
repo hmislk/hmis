@@ -5,6 +5,7 @@
  */
 package com.divudi.bean.common;
 
+import com.divudi.bean.channel.ChannelSearchController;
 import com.divudi.bean.pharmacy.PharmacyPreSettleController;
 import com.divudi.bean.pharmacy.PharmacySaleBhtController;
 import com.divudi.data.BillNumberSuffix;
@@ -57,6 +58,7 @@ import com.divudi.data.BillFinanceType;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.ServiceType;
 import com.divudi.data.analytics.ReportTemplateType;
+import com.divudi.entity.Category;
 import com.divudi.entity.Payment;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
@@ -154,10 +156,13 @@ public class SearchController implements Serializable {
     OpdBillController opdBillController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    ChannelSearchController channelSearchController;
 
     /**
      * Properties
      */
+    private Category category;
     private ReportTemplateType reportTemplateType;
     private SearchKeyword searchKeyword;
     Date fromDate;
@@ -288,6 +293,22 @@ public class SearchController implements Serializable {
                 pharmacyBillSearch.setBill(bill);
                 navigateTo = "/pharmacy/pharmacy_reprint_bill_sale.xhtml";
                 break;
+            case OPD_PROFESSIONAL_PAYMENT_BILL:
+            case OPD_PROFESSIONAL_PAYMENT_BILL_RETURN:
+            case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES_RETURN:
+            case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES:
+                billSearch.setBill(bill);
+                navigateTo = "/payment_bill_reprint.xhtml?faces-redirect=true;";
+                break;
+            
+            case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_FOR_AGENCIES:
+            case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_FOR_AGENCIES_RETURN:
+            case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_RETURN:
+            case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_SESSION:
+            case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE_RETURN:
+                channelSearchController.setBill(bill);
+                navigateTo = "/channel/channel_payment_bill_reprint.xhtml";
+                break;
             default:
                 return navigateTo;
         }
@@ -343,6 +364,8 @@ public class SearchController implements Serializable {
         return "/analytics/financial_transaction_summary_Department?faces-redirect=true";
     }
 
+    
+    
     public void clearBillList() {
         if (bills == null) {
             return;
@@ -522,6 +545,16 @@ public class SearchController implements Serializable {
 
     public String navigateToSmsList() {
         return "/analytics/sms_list?faces-redirect=true";
+    }
+
+    public String navigateToStaffCreditBillList() {
+        bills = null;
+        return "/analytics/staff_credit_bill_list?faces-redirect=true";
+    }
+
+    public String navigateToGeneralCreditBillList() {
+        bills = null;
+        return "/analytics/general_credit_bill_list?faces-redirect=true";
     }
 
     public String navigateToFailedSmsList() {
@@ -974,8 +1007,7 @@ public class SearchController implements Serializable {
         checkRefundBillItems(patientInvestigations);
 
     }
-    
-    
+
     public void fillCollectingCentreCourierPatientInvestigations() {
         String jpql = "select pi "
                 + " from PatientInvestigation pi "
@@ -990,11 +1022,11 @@ public class SearchController implements Serializable {
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
         temMap.put("dep", getReportKeyWord().getDepartment());
-        
-        if(institution==null){
+
+        if (institution == null) {
             jpql += " and b.collectingCentre in :ccs ";
-             temMap.put("ccs", sessionController.getLoggableCollectingCentres());
-        }else{
+            temMap.put("ccs", sessionController.getLoggableCollectingCentres());
+        } else {
             jpql += " and b.collectingCentre=:cc ";
             temMap.put("cc", sessionController.getLoggableCollectingCentres());
         }
@@ -1018,8 +1050,6 @@ public class SearchController implements Serializable {
             jpql += " and  ((i.name) like :itm )";
             temMap.put("itm", "%" + getSearchKeyword().getItemName().trim().toUpperCase() + "%");
         }
-
-       
 
         jpql += " order by pi.id desc  ";
 //    
@@ -1653,6 +1683,14 @@ public class SearchController implements Serializable {
 
     public void setReportTemplateType(ReportTemplateType reportTemplateType) {
         this.reportTemplateType = reportTemplateType;
+    }
+
+    public Category getCategory() {
+        return category;
+    }
+
+    public void setCategory(Category category) {
+        this.category = category;
     }
 
     public class billsWithbill {
@@ -7005,13 +7043,11 @@ public class SearchController implements Serializable {
     }
 
     public void searchOpdProfessionalPaymentBills() {
-        Date startTime = new Date();
         List<BillTypeAtomic> billTypesAtomics = new ArrayList<>();
-        billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE);
-        billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_FOR_AGENCIES);
-        billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_FOR_AGENCIES_RETURN);
-        billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_RETURN);
-        billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_SESSION);
+        billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES);
+        billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES_RETURN);
+        billTypesAtomics.add(BillTypeAtomic.OPD_PROFESSIONAL_PAYMENT_BILL);
+        billTypesAtomics.add(BillTypeAtomic.OPD_PROFESSIONAL_PAYMENT_BILL_RETURN);
         createTableByKeyword(billTypesAtomics, institution, department, null, null, null, null);
     }
 
@@ -7137,13 +7173,12 @@ public class SearchController implements Serializable {
     }
 
     public void searchOpdProfessionalPaymentBillFees() {
-        Date startTime = new Date();
         List<BillTypeAtomic> billTypesAtomics = new ArrayList<>();
         billTypesAtomics.add(BillTypeAtomic.OPD_PROFESSIONAL_PAYMENT_BILL);
         billTypesAtomics.add(BillTypeAtomic.OPD_PROFESSIONAL_PAYMENT_BILL_RETURN);
         billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES);
         billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES_RETURN);
-        createTableByKeywordForBillFees(billTypesAtomics, institution, department, null, null, null, null);
+        createTableByKeywordForBillFees(billTypesAtomics, institution, department, null, null, null, null, category);
 
     }
 
@@ -7167,17 +7202,20 @@ public class SearchController implements Serializable {
 
     }
 
-    public void createStaffCreditBillList() {
+    public void createGeneralCreditBillList() {
         String jpql;
         Map m = new HashMap();
         List<BillTypeAtomic> btas = new ArrayList<>();
         jpql = "select b from Bill b "
-                + "where b.toStaff is not null "
+                + "where b.creditCompany is not null "
                 + "and b.createdAt between :fromDate and :toDate "
-                + "and b.retired = false "
-                + "and b.cancelled = false "
-                + "and b.refunded = false ";
+                + "and b.retired = false ";
         jpql += " and b.billTypeAtomic in :btas ";
+
+        if (creditCompany != null) {
+            jpql += " and b.creditCompany=:cc ";
+            m.put("cc", creditCompany);
+        }
 
         btas.addAll(BillTypeAtomic.findByServiceType(ServiceType.OPD));
         btas.addAll(BillTypeAtomic.findByServiceType(ServiceType.CHANNELLING));
@@ -7599,13 +7637,23 @@ public class SearchController implements Serializable {
         bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
+    
+    public void createTableByKeywordForBillFees(List<BillTypeAtomic> billTypesAtomics,
+            Institution ins, Department dep,
+            Institution fromIns,
+            Department fromDep,
+            Institution toIns,
+            Department toDep){
+        createTableByKeywordForBillFees(billTypesAtomics, ins, dep, fromIns, fromDep, toIns, toDep, null);
+    }
 
     public void createTableByKeywordForBillFees(List<BillTypeAtomic> billTypesAtomics,
             Institution ins, Department dep,
             Institution fromIns,
             Department fromDep,
             Institution toIns,
-            Department toDep) {
+            Department toDep,
+            Category cat) {
 
         String sql;
         Map temMap = new HashMap();
@@ -7646,6 +7694,11 @@ public class SearchController implements Serializable {
             temMap.put("toins", toIns);
         }
 
+        if(cat!=null){
+            sql +=" and bf.referenceBillFee.billItem.bill.category=:rbfcc ";
+            temMap.put("rbfcc", cat);
+        }
+        
         if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
             sql += " and  ((bf.bill.patient.person.name) like :patientName )";
             temMap.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
@@ -11499,6 +11552,4 @@ public class SearchController implements Serializable {
         this.pharmacyAdjustmentRows = pharmacyAdjustmentRows;
     }
 
-      
-    
 }

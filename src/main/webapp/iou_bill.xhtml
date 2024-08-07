@@ -36,8 +36,7 @@
                                 </p:selectOneMenu>
 
                                 <p:inputText value="#{iouBillController.comment}" id="comment"/>
-                                <p:watermark value="Comment" for="comment"/>
-                            </div>
+                                                            </div>
                             <div>
                                 <h:panelGroup id="creditCard" style="display: #{iouBillController.current.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
                                     <pa:creditCard paymentMethodData="#{iouBillController.paymentMethodData}"/>

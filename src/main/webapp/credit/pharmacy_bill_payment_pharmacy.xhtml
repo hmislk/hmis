@@ -76,8 +76,7 @@
                                     </p:selectOneMenu>
                                 </h:panelGrid>
                                 <p:inputText value="#{billController.comment}" id="comment"/>
-                                <p:watermark value="Comment" for="comment"/>
-
+                                
                                 <h:panelGroup id="creditCard" style="display: #{billController.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
                                     <pa:creditCard paymentMethodData="#{billController.paymentMethodData}"/>
                                 </h:panelGroup>

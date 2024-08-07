@@ -31,11 +31,7 @@
                                                 >
                                 </p:autoComplete>
                             </h:panelGrid>
-                            <p:watermark for="fdate" value="From Date" />
-                            <p:watermark for="tdate" value="To Date" />
-                            <p:watermark for="acSpeciality" value="Speciality" />
-                            <p:watermark for="scStaff" value="Staff / Doctor" />
-                            <h:panelGrid columns="6" class="my-2">
+                                                                                                                                            <h:panelGrid columns="6" class="my-2">
                                 <p:commandButton class="ui-button-warning" icon="fas fa-cogs" ajax="false" value="Process" action="#{searchController.fillDocPayingBill}"   />
                                 <p:commandButton class="ui-button-info mx-2" icon="fas fa-print" value="Print" ajax="false" action="#" >
                                 <p:printer target="gpBillPreview" ></p:printer>

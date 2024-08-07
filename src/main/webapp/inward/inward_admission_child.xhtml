@@ -36,9 +36,7 @@
                         <p:commandButton ajax="false" value="Clear" actionListener="#{admissionController.makeNull}" />
                         <p:defaultCommand target="admt"/>
 
-                        <p:watermark for="bh" value="BHT No"/>
-                        <p:watermark for="cmbDoc" value="Room No"/>
-
+                                                
                     </h:panelGrid>
                 </p:panel>
                 <h:panelGrid columns="1" id="gpDetail">
@@ -130,8 +128,8 @@
                                             pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >                               
                                 </p:calendar>     
 
-                                <p:watermark value="Referring Doctor Speciality" for="acRefDocSpe" ></p:watermark>
-                                <p:watermark value="Referring Doctor" for="acRefDoc" ></p:watermark>
+                                
+                                
 
                                 <h:outputLabel value="Referring Doctor Speciality"/>
                                 <p:autoComplete forceSelection="true" id="acRefDocSpe"
@@ -153,8 +151,8 @@
                                                  >
                                 </p:autoComplete>
 
-                                <p:watermark value="OPD Doctor Speciality" for="acSpeciality" ></p:watermark>
-                                <p:watermark value="OPD Doctor" for="scStaff" ></p:watermark>
+                                
+                                
 
                                 <h:outputLabel  value="OPD Doctor Speciality" ></h:outputLabel>
                                 <p:autoComplete forceSelection="true" 
