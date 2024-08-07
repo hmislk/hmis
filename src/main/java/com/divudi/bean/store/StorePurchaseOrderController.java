@@ -71,6 +71,8 @@ public class StorePurchaseOrderController implements Serializable {
     // List<PharmaceuticalBillItem> pharmaceuticalBillItems;
     //////////
 
+    private BillItem currentBillItem;
+
     private CommonFunctions commonFunctions;
     private LazyDataModel<Bill> searchBills;
 
@@ -96,9 +98,33 @@ public class StorePurchaseOrderController implements Serializable {
         calTotal();
     }
 
-    private int maxResult = 50;
 
-   
+    
+    public void addExtraItem() {
+        if (getCurrentBillItem().getItem() == null) {
+            JsfUtil.addErrorMessage("Please select and item from the list");
+            return;
+        }
+
+        for (BillItem bi : getBillItems()) {
+            if (getCurrentBillItem().getItem().equals(bi.getItem())) {
+                JsfUtil.addErrorMessage("Already added this item");
+                return;
+            }
+        }
+
+        getCurrentBillItem().setSearialNo(getBillItems().size());
+        getCurrentBillItem().getPharmaceuticalBillItem().setPurchaseRateInUnit(getStoreBean().getLastPurchaseRate(getCurrentBillItem().getItem(), getSessionController().getDepartment()));
+        getCurrentBillItem().getPharmaceuticalBillItem().setRetailRateInUnit(getStoreBean().getLastRetailRate(getCurrentBillItem().getItem(), getSessionController().getDepartment()));
+      
+        getBillItems().add(getCurrentBillItem());
+
+        calTotal();
+
+        currentBillItem = null;
+    }
+
+    private int maxResult = 50;
 
     public void clearList() {
         filteredValue = null;
@@ -126,7 +152,7 @@ public class StorePurchaseOrderController implements Serializable {
     public void approve() {
         if (getAprovedBill().getPaymentMethod() == null) {
             JsfUtil.addErrorMessage("Select Paymentmethod");
-            return ;
+            return;
         }
 
         calTotal();
@@ -140,9 +166,8 @@ public class StorePurchaseOrderController implements Serializable {
 
         printPreview = true;
 
-       // return viewRequestedList();
+        // return viewRequestedList();
         //   printPreview = true;
-
     }
 
     public String viewRequestedList() {
@@ -188,7 +213,6 @@ public class StorePurchaseOrderController implements Serializable {
 
 //        getAprovedBill().setDeptId(getBillNumberBean().institutionBillNumberGeneratorWithReference(getRequestedBill().getDepartment(), getAprovedBill(), BillType.StoreOrder, BillNumberSuffix.PO));
 //        getAprovedBill().setInsId(getBillNumberBean().institutionBillNumberGeneratorWithReference(getRequestedBill().getInstitution(), getAprovedBill(), BillType.StoreOrder, BillNumberSuffix.PO));
-        
         getAprovedBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getRequestedBill().getDepartment(), BillType.StoreOrderApprove, BillClassType.BilledBill, BillNumberSuffix.PO));
         getAprovedBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getRequestedBill().getInstitution(), BillType.StoreOrderApprove, BillClassType.BilledBill, BillNumberSuffix.PO));
 
@@ -242,7 +266,7 @@ public class StorePurchaseOrderController implements Serializable {
 
         getBillFacade().edit(getAprovedBill());
     }
-    
+
     public String navigateToPurchaseOrderApproval() {
         printPreview = false;
         return "/store/store_purhcase_order_approving?faces-redirect=true";
@@ -330,7 +354,7 @@ public class StorePurchaseOrderController implements Serializable {
     public void setStoreBean(StoreBean storeBean) {
         this.storeBean = storeBean;
     }
-    
+
     public void calTotal() {
         double tmp = 0;
         int serialNo = 0;
@@ -374,7 +398,6 @@ public class StorePurchaseOrderController implements Serializable {
         this.billsToApprove = billsToApprove;
     }
 
-  
     public boolean getPrintPreview() {
         return printPreview;
     }
@@ -454,5 +477,16 @@ public class StorePurchaseOrderController implements Serializable {
 
     public void setMaxResult(int maxResult) {
         this.maxResult = maxResult;
+    }
+
+    public BillItem getCurrentBillItem() {
+        if(currentBillItem == null){
+            currentBillItem = new BillItem();
+        }
+        return currentBillItem;
+    }
+
+    public void setCurrentBillItem(BillItem currentBillItem) {
+        this.currentBillItem = currentBillItem;
     }
 }
