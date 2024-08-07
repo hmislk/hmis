@@ -23,8 +23,7 @@
                             </p:selectOneMenu>
 
                             <p:inputText value="#{agentPaymentRecieveBillController.comment}" id="comment"/>
-                            <p:watermark value="Comment" for="comment"/>
-
+                            
                             <h:panelGroup id="creditCard" style="display: #{agentPaymentRecieveBillController.current.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
                                 <pa:creditCard paymentMethodData="#{agentPaymentRecieveBillController.paymentMethodData}"/>
                             </h:panelGroup>

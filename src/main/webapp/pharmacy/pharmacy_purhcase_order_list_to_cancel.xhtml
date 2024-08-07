@@ -63,7 +63,7 @@
                                 rowsPerPageTemplate="5,10,15"
                                 selection="#{searchController.selectedBills}"
                                 >
-                                <p:column selectionMode="multiple" ></p:column>
+                                <p:column selectionBox="true" ></p:column>
                                 <p:column headerText="Requested At"  >
                                     <h:commandLink action="pharmacy_reprint_order_request" >
                                         <h:outputLabel value="#{b.createdAt}" >
