@@ -176,35 +176,33 @@
             </div>
 
 
-            <div class="billline">
-                <h:outputLabel value="-----------------------------------------------"   />   
-            </div>
+            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Total Ammount On Pharmacy Token')}">
 
+                <div class="billline">
+                    <h:outputLabel value="-----------------------------------------------"   />
+                </div>
 
+                <div  >
+                    <table style="width: 100%;">
+                        <tr>
+                            <td class="totalsBlock" style="text-align: left; width: 60%;">
+                                <h:outputLabel value="Total" />
+                            </td>
+                            <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 30px;">
+                                <h:outputLabel value="#{cc.attrs.bill.total}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </td>
+                        </tr>
+                    </table>
 
-            <div  >
-                <table style="width: 100%;">
-                    <tr>
-                        <td class="totalsBlock" style="text-align: left; width: 60%;">
-                            <h:outputLabel value="Total" />
-                        </td>
-                        <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 30px;">
-                            <h:outputLabel value="#{cc.attrs.bill.total}" >
-                                <f:convertNumber pattern="#,##0.00" />
-                            </h:outputLabel>
-                        </td>
-                    </tr>
-                </table>
+                </div>
 
-            </div>
+                <div class="billline">
+                    <h:outputLabel value="-----------------------------------------------"   />
+                </div>
 
-            <div class="billline">
-                <h:outputLabel value="-----------------------------------------------"   />                           
-            </div>
-
-
-
-
+            </h:panelGroup>
 
             <div class="footer">
                 <br/>
