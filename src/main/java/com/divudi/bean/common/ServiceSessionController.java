@@ -7,7 +7,6 @@
  * (94) 71 5812399
  */
 package com.divudi.bean.common;
-import com.divudi.entity.Bill;
 import com.divudi.entity.ServiceSession;
 import com.divudi.facade.ServiceSessionFacade;
 import java.io.Serializable;

@@ -163,6 +163,26 @@ public class UserDepartmentController implements Serializable {
         currentDepartment = null;
         
     }
+    
+    
+    public void addRouteForUser() {
+        if (selectedUser == null) {
+            JsfUtil.addSuccessMessage("Select A User");
+            return;
+        }
+        if (currentDepartment == null) {
+            JsfUtil.addSuccessMessage("Select a Route");
+            return;
+        }
+        WebUserDepartment d = new WebUserDepartment();
+        d.setCreatedAt(Calendar.getInstance().getTime());
+        d.setDepartment(currentDepartment);
+        d.setWebUser(selectedUser);
+        getEjbFacade().create(d);
+        items=null;
+        currentDepartment = null;
+        
+    }
 
     public List<WebUserDepartment> fillWebUserDepartments(WebUser wu) {
         List<WebUserDepartment> tis = new ArrayList<>();

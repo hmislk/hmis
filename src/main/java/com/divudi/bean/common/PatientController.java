@@ -25,7 +25,6 @@ import com.divudi.data.HistoryType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.Sex;
 import com.divudi.data.Title;
-import com.divudi.data.clinical.ClinicalFindingValueType;
 import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.data.dataStructure.YearMonthDay;
 import com.divudi.data.hr.ReportKeyWord;
@@ -41,9 +40,7 @@ import com.divudi.entity.Patient;
 import com.divudi.entity.PatientEncounter;
 import com.divudi.entity.Person;
 import com.divudi.entity.Relation;
-import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
-import com.divudi.entity.clinical.ClinicalFindingValue;
 import com.divudi.entity.inward.Admission;
 import com.divudi.entity.lab.PatientInvestigation;
 import com.divudi.entity.lab.PatientSample;
@@ -57,6 +54,7 @@ import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.WebUserFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.BillTypeAtomic;
 import com.divudi.entity.Department;
 import com.divudi.java.CommonFunctions;
 import java.io.ByteArrayInputStream;
@@ -941,6 +939,15 @@ public class PatientController implements Serializable, ControllerWithPatient {
         printPreview = false;
     }
 
+    public void clearDataForPatientRefund() {
+        current = null;
+        paymentMethodData = new PaymentMethodData();
+        bill = new Bill();
+        billItem = new BillItem();
+        billItems = new ArrayList<>();
+        printPreview = false;
+    }
+
     public String navigateToCollectingCenterBillingFromPatientProfile() {
         if (current == null) {
             JsfUtil.addErrorMessage("No patient selected");
@@ -1095,6 +1102,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         billBeanController.setPaymentMethodData(getBill(), getBill().getPaymentMethod(), getPaymentMethodData());
         addToBill();
         saveBillItem();
+        getBill().setBillTypeAtomic(BillTypeAtomic.PATIENT_DEPOSIT);
         billFacade.edit(getBill());
         //TODO: Add Patient Balance History
         if (patient.getRunningBalance() == null) {
@@ -1106,6 +1114,122 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
         JsfUtil.addSuccessMessage("Bill Saved");
         printPreview = true;
+
+    }
+
+    public String navigateToPatientDepositRefund() {
+        createNewPatientDepositRefund();
+        return "/payments/patient/send?faces-redirect=true;";
+    }
+
+    public String navigateToPatientDepositRefundFromOPDBill(Patient patient) {
+        current = patient;
+        bill = new Bill();
+        paymentMethodData = null;
+        printPreview = false;
+        return "/payments/patient/send?faces-redirect=true;";
+    }
+    
+    public void makeNull() {
+        current = null;
+        paymentMethodData = null;
+        printPreview = false;
+    }
+
+    public void createNewPatientDepositRefund() {
+        makeNull();
+        bill = new Bill();
+    }
+
+    public void settlePatientDepositReturn() {
+        if (getPatient().getId() == null) {
+            JsfUtil.addErrorMessage("Please Create Patient Account");
+            return;
+        }
+        if (getBill().getPaymentMethod() == null) {
+            JsfUtil.addErrorMessage("Please select a Payment Method");
+            return;
+        }
+
+        if (!getPatient().getHasAnAccount() || getPatient().getHasAnAccount() == null) {
+            JsfUtil.addErrorMessage("Patient has No Account");
+            return;
+        }
+
+        if (getBill().getNetTotal() <= 0.0) {
+            JsfUtil.addErrorMessage("The Refunded Value is Missing");
+            return;
+        }
+
+        if (getPatient().getRunningBalance() < getBill().getNetTotal()) {
+            JsfUtil.addErrorMessage("The Refunded Value is more than the Current Deposit Value of the Patient");
+            return;
+        }
+
+        if (getBill().getComments().trim().equalsIgnoreCase("")) {
+            JsfUtil.addErrorMessage("Please Add Comment");
+            return;
+        }
+
+        if (paymentSchemeController.checkPaymentMethodError(getBill().getPaymentMethod(), paymentMethodData)) {
+            JsfUtil.addErrorMessage("Please enter all relavent Payment Method Details");
+            return;
+        }
+
+        settleReturnBill(BillType.PatientPaymentRefundBill, HistoryType.PatientDepositReturn, BillNumberSuffix.PDR, current, BillTypeAtomic.PATIENT_DEPOSIT_REFUND);
+        printPreview = true;
+    }
+
+    public void settleReturnBill(BillType billType, HistoryType historyType, BillNumberSuffix billNumberSuffix, Patient patient, BillTypeAtomic billTypeAtomic) {
+        saveBill(billType, billNumberSuffix, patient, billTypeAtomic);
+        billBeanController.setPaymentMethodData(getBill(), getBill().getPaymentMethod(), getPaymentMethodData());
+        addToBill();
+        saveBillItem();
+        billFacade.edit(getBill());
+        //TODO: Add Patient Balance History
+        patient.setRunningBalance(Math.abs(patient.getRunningBalance()) - Math.abs(getBill().getNetTotal()));
+        getFacade().edit(patient);
+
+        JsfUtil.addSuccessMessage("Bill Saved");
+    }
+
+    private void saveBill(BillType billType, BillNumberSuffix billNumberSuffix, Patient patient, BillTypeAtomic billTypeAtomic) {
+        getBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), billType, BillClassType.BilledBill, billNumberSuffix));
+        getBill().setDeptId(getBillNumberBean().departmentBillNumberGenerator(sessionController.getDepartment(), billType, BillClassType.BilledBill, billNumberSuffix));
+        getBill().setBillType(billType);
+
+        getBill().setPatient(patient);
+
+        getBill().setCreatedAt(new Date());
+        getBill().setCreater(sessionController.getLoggedUser());
+        getBill().setBillDate(new Date());
+        getBill().setBillTime(new Date());
+
+        getBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
+        getBill().setInstitution(getSessionController().getLoggedUser().getInstitution());
+
+        getBill().setCreatedAt(new Date());
+        getBill().setCreater(getSessionController().getLoggedUser());
+
+        getBill().setGrantTotal(-getBill().getNetTotal());
+        getBill().setTotal(-getBill().getNetTotal());
+        getBill().setDiscount(0.0);
+        getBill().setDiscountPercent(0);
+        getBill().setBillTypeAtomic(billTypeAtomic);
+
+        if (getBill().getId() == null) {
+            billFacade.create(getBill());
+        } else {
+            billFacade.edit(getBill());
+        }
+    }
+
+    public void pasteCurrentPatientRunningBalance() {
+        if (current != null) {
+            getBill().setNetTotal(current.getRunningBalance());
+        } else {
+            JsfUtil.addErrorMessage("Please Select the Patient");
+        }
 
     }
 
@@ -3500,6 +3624,9 @@ public class PatientController implements Serializable, ControllerWithPatient {
     }
 
     public BillItem getBillItem() {
+        if (billItem == null) {
+            billItem = new BillItem();
+        }
         return billItem;
     }
 

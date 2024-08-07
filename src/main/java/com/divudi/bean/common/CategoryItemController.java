@@ -12,11 +12,9 @@ import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.entity.Category;
 import com.divudi.entity.CategoryItem;
 
-import com.divudi.entity.Institution;
 import com.divudi.facade.CategoryItemFacade;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
