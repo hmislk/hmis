@@ -7100,13 +7100,17 @@ public class SearchController implements Serializable {
         jpql = "select b from Bill b "
                 + "where b.toStaff is not null "
                 + "and b.createdAt between :fromDate and :toDate "
-                + "and b.retired = false ";
+                + "and b.retired = false "
+                + "and b.cancelled = false "
+                + "and b.refunded = false ";
         jpql += " and b.billTypeAtomic in :btas ";
         
         btas.addAll(BillTypeAtomic.findByServiceType(ServiceType.OPD));
         btas.addAll(BillTypeAtomic.findByServiceType(ServiceType.CHANNELLING));
         btas.removeAll(BillTypeAtomic.findByCategory(BillCategory.PAYMENTS));
-
+        btas.removeAll(BillTypeAtomic.findByCategory(BillCategory.CANCELLATION));
+        btas.removeAll(BillTypeAtomic.findByCategory(BillCategory.REFUND));
+        
         jpql += " order by b.createdAt desc";
 
         m.put("fromDate", fromDate);

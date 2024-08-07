@@ -91,6 +91,7 @@ public class PettyCashBillSearch implements Serializable {
     PettyCashBillController pettyCashBillController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+
     @EJB
     EjbApplication ejbApplication;
     private List<BillItem> tempbillItems;
