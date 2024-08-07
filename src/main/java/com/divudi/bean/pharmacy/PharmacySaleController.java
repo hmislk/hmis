@@ -1745,9 +1745,9 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             }
 
         }
-        if (getToken() != null) {
-            getToken().setBill(getPreBill());
-            tokenFacade.edit(getToken());
+        if (getCurrentToken() != null) {
+            getCurrentToken().setBill(getPreBill());
+            tokenFacade.edit(getCurrentToken());
         }
 
         markToken();

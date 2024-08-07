@@ -19,11 +19,9 @@
                 <p:inputText autocomplete="off"   value="#{cc.attrs.paymentMethodData.creditCard.totalValue}" style="width: 7em;" id="txtVal" >
                     <p:ajax process="@this" ></p:ajax>
                 </p:inputText>
-                <p:watermark value="Value" for="txtVal" />
-            </h:panelGroup>
+                            </h:panelGroup>
             
-            <p:watermark value="Value" for="txtVal" />
-
+            
             <p:inputText 
                 autocomplete="off"
                 style="width: 150px"
@@ -36,8 +34,7 @@
                 <p:ajax process="@this" ></p:ajax>
             </p:selectOneMenu>
             <p:inputText value="#{cc.attrs.paymentMethodData.creditCard.comment}" placeholder="Enter Credit Card Comments" ></p:inputText>
-            <p:watermark value="Card No." for="refno" />
-        </div>
+                    </div>
 
     </cc:implementation>
 </html>

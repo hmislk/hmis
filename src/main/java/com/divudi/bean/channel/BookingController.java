@@ -2765,7 +2765,9 @@ public class BookingController implements Serializable, ControllerWithPatient {
             BillType.ChannelCash,
             BillType.ChannelOnCall,
             BillType.ChannelStaff,
-            BillType.ChannelCredit
+            BillType.ChannelCredit,
+            BillType.ChannelResheduleWithOutPayment,
+            BillType.ChannelResheduleWithPayment,
         };
         List<BillType> bts = Arrays.asList(billTypes);
         String sql = "Select bs "

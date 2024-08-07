@@ -628,6 +628,7 @@ public class StoreAdjustmentController implements Serializable {
     public void setYearMonthDay(YearMonthDay yearMonthDay) {
         this.yearMonthDay = yearMonthDay;
     }
+
     private List<Stock> stk;
 
     public void fillSelectStock() {

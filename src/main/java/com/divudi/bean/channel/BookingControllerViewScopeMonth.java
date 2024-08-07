@@ -6276,7 +6276,7 @@ public class BookingControllerViewScopeMonth implements Serializable {
             }
         }
 
-        if (settlePaymentMethod == PaymentMethod.Agent && settleInstitution == null) {
+        if (settlePaymentMethod == PaymentMethod.Agent && institution == null) {
             JsfUtil.addErrorMessage("Please select Agency");
             return true;
         }

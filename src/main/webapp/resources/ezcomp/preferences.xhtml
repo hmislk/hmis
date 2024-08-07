@@ -315,8 +315,7 @@
 
                             <h:outputLabel value="Lab Micro-Biology Font" ></h:outputLabel>
                             <h:inputText id="fontName" value="#{sessionController.currentPreference.microBiologyFont}"/>
-                            <p:watermark for="fontName" value="Eg- Courier New" />
-
+                            
                         </h:panelGrid>
                     </p:panel>
                 </p:tab>
@@ -361,8 +360,7 @@
                             </p:selectOneMenu>
                             <h:outputLabel value="Logo Name"></h:outputLabel>
                             <h:inputText id="imgName" value="#{sessionController.currentPreference.logoName}"/>
-                            <p:watermark for="imgName" value="Eg- /abc.jpg" />
-                            <h:outputLabel value="Bill Proboda" ></h:outputLabel>
+                                                        <h:outputLabel value="Bill Proboda" ></h:outputLabel>
                             <h:selectBooleanCheckbox value="#{sessionController.currentPreference.pharmacyBillPrabodha}" />
                             <h:outputLabel value="Discount Scheme Validation" ></h:outputLabel>
                             <h:selectBooleanCheckbox value="#{sessionController.currentPreference.checkPaymentSchemeValidation}" />
