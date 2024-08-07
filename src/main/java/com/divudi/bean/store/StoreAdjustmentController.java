@@ -664,6 +664,7 @@ public class StoreAdjustmentController implements Serializable {
         this.stk = stk;
     }
 
+
 //    public void fillSelectStock(){
 //        List<Stock> items = new ArrayList<>();
 //        
