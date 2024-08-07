@@ -4,6 +4,7 @@
  */
 package com.divudi.entity.lab;
 
+import com.divudi.data.lab.PatientInvestigationStatus;
 import com.divudi.entity.BillComponent;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.Department;
@@ -17,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import javax.persistence.Entity;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -73,6 +75,16 @@ public class PatientInvestigation implements Serializable {
     private Date sampledAt;
     private Boolean sampleOutside = false;
     private String sampleComments;
+    
+    private Boolean sampleSent = false;
+    @ManyToOne
+    private WebUser sampleSentBy;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date sampleSentAt;
+    private String sampleSentComments;
+    
+    
+    
     @ManyToOne
     private Department sampleDepartment;
     @ManyToOne
@@ -170,6 +182,9 @@ public class PatientInvestigation implements Serializable {
     private Institution outsourcedInstitution;
     @OneToMany(mappedBy="patientInvestigation",fetch = FetchType.EAGER)
     List<PatientReport> patientReports;
+    @Enumerated
+    private PatientInvestigationStatus status;
+    
 
     public List<PatientReport> getPatientReports() {
         if(patientReports == null){
@@ -181,6 +196,7 @@ public class PatientInvestigation implements Serializable {
     public void setPatientReports(List<PatientReport> patientReports) {
         this.patientReports = patientReports;
     }
+    
     
     
     
@@ -217,6 +233,8 @@ public class PatientInvestigation implements Serializable {
     public String toString() {
         return "com.divudi.entity.PatientInvestigation[ id=" + id + " ]";
     }
+    
+    
 
     public Patient getPatient() {
         return patient;
@@ -796,6 +814,46 @@ public class PatientInvestigation implements Serializable {
 
     public void setBarcodeGeneratedBy(WebUser barcodeGeneratedBy) {
         this.barcodeGeneratedBy = barcodeGeneratedBy;
+    }
+
+    public PatientInvestigationStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(PatientInvestigationStatus status) {
+        this.status = status;
+    }
+
+    public Boolean getSampleSent() {
+        return sampleSent;
+    }
+
+    public void setSampleSent(Boolean sampleSent) {
+        this.sampleSent = sampleSent;
+    }
+
+    public WebUser getSampleSentBy() {
+        return sampleSentBy;
+    }
+
+    public void setSampleSentBy(WebUser sampleSentBy) {
+        this.sampleSentBy = sampleSentBy;
+    }
+
+    public Date getSampleSentAt() {
+        return sampleSentAt;
+    }
+
+    public void setSampleSentAt(Date sampleSentAt) {
+        this.sampleSentAt = sampleSentAt;
+    }
+
+    public String getSampleSentComments() {
+        return sampleSentComments;
+    }
+
+    public void setSampleSentComments(String sampleSentComments) {
+        this.sampleSentComments = sampleSentComments;
     }
 
 }

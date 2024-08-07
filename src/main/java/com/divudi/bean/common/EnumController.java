@@ -44,6 +44,7 @@ import com.divudi.data.inward.AdmissionStatus;
 import com.divudi.data.inward.AdmissionTypeEnum;
 import com.divudi.data.inward.InwardChargeType;
 import com.divudi.data.inward.PatientEncounterComponentType;
+import com.divudi.data.lab.PatientInvestigationStatus;
 import com.divudi.data.lab.Priority;
 import com.divudi.entity.PaymentScheme;
 import com.divudi.entity.Person;
@@ -78,6 +79,7 @@ public class EnumController implements Serializable {
     private List<PaymentMethod> paymentMethodsForPatientDeposit;
     private List<PaymentMethod> paymentMethodsForOpdBillCanceling;
     SessionNumberType[] sessionNumberTypes;
+    private List<PatientInvestigationStatus> patientInvestigationStatuses;
 
     @PostConstruct
     public void init() {
@@ -225,6 +227,11 @@ public class EnumController implements Serializable {
     public SessionNumberType[] getSessionNumberTypes() {
         sessionNumberTypes = SessionNumberType.values();
         return sessionNumberTypes;
+    }
+
+    public List<PatientInvestigationStatus> getPatientInvestigationStatuses() {
+        patientInvestigationStatuses = Arrays.asList(PatientInvestigationStatus.values());
+        return patientInvestigationStatuses;
     }
 
     public List<LoginPage> getLoginPages() {
