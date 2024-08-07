@@ -42,20 +42,16 @@
                             </p:autoComplete>
                             <h:outputLabel  value="Category"  ></h:outputLabel>
                             <h:outputLabel value=":" />
-                            <p:autoComplete 
-                                inputStyleClass="w-100"
+                            <p:selectManyCheckbox 
                                 class="mx-4 w-100" 
-                                autocomplete="off" 
-                                value="#{channelReportTemplateController.category}"
-                                completeMethod="#{categoryController.completeServiceCategory}"
-                                var="cat"
-                                itemLabel="#{cat.name}"
-                                itemValue="#{cat}"
+                                value="#{channelReportTemplateController.categories}"
                                 required="true"
                                 requiredMessage="Please select a category"
-                                ></p:autoComplete>
+                                >
+                                <f:selectItems value="#{categoryController.serviceCategories}" var="sc" itemLabel="#{sc.name}" itemValue="#{sc}" ></f:selectItems>
+                            </p:selectManyCheckbox>
                         </h:panelGrid>
-                        
+
                         <h:panelGrid columns="6" class="my-2">
                             <p:commandButton 
                                 class="ui-button-warning mt-2 mb-2" 
@@ -136,6 +132,15 @@
                             <p:column>
                                 <f:facet name="header">
                                     <p:outputLabel value="Paid" />
+                                </f:facet>
+                                <p:outputLabel value="#{a.sessionInstance.paidPatientCount}" />
+                                <f:facet name="footer" >
+                                    <h:outputText value="#{channelReportTemplateController.bundle.long2}" ></h:outputText>
+                                </f:facet>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <p:outputLabel value="Completed" />
                                 </f:facet>
                                 <p:outputLabel value="#{a.sessionInstance.completedPatientCount}" />
                                 <f:facet name="footer" >

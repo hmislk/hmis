@@ -58,8 +58,7 @@
                                 <p:focus  context="acIx"/>
 
                                 <div class="col-7">
-                                    <p:watermark for="acIx" value="Enter first few letters of the service or item to add" />
-                                    <h:panelGroup  rendered="#{opdTabPreBillController.opdItemDepartments ne null}" id="departments">
+                                                                        <h:panelGroup  rendered="#{opdTabPreBillController.opdItemDepartments ne null}" id="departments">
                                         <div class="row" >
                                             <div class="col-md-12" >
                                                 <ui:repeat  value="#{opdTabPreBillController.opdItemDepartments}" var="dept">

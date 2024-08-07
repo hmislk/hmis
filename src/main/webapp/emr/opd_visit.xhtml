@@ -302,8 +302,8 @@
                                                                  id="txtDx" 
                                                                  value="#{patientEncounterController.diagnosisComments}">
                                                 </p:inputTextarea>
-                                                <p:watermark value="Select Diagnosis." for="acDx"></p:watermark>
-                                                <p:watermark value="Write Details about the Diagnosis here and click Dx button or Dx &amp; Rx button." for="txtDx"></p:watermark>
+                                                
+                                                
                                                 <p:tooltip value="Add a Diagnosis" for="btnAddDx" ></p:tooltip>
                                                 <h:panelGroup id="gpDx" >
                                                     <p:dataTable id="tblDx" 
@@ -377,8 +377,8 @@
                                                                  id="txtIx" 
                                                                  value="#{patientEncounterController.encounterInvestigation.lobValue}">
                                                 </p:inputTextarea>
-                                                <p:watermark value="Select an investigation." for="acIx"></p:watermark>
-                                                <p:watermark value="Write Details about the Investigation here and click add investigation button." for="txtIx"></p:watermark>
+                                                
+                                                
                                                 <h:panelGroup id="gpIx" >
                                                     <p:dataTable id="tblIx" 
                                                                  rendered="#{patientEncounterController.encounterInvestigations ne null and patientEncounterController.encounterInvestigations.size() > 0}"
@@ -572,8 +572,8 @@
                                                                  id="txtIxp"
                                                                  value="#{patientEncounterController.encounterInvestigationResult.lobValue}">
                                                 </p:inputTextarea>
-                                                <p:watermark value="Select an investigation." for="acIxp"></p:watermark>
-                                                <p:watermark value="Write Details about the Investigation here and click add investigation button." for="txtIxp"></p:watermark>
+                                                
+                                                
                                                 <h:panelGroup id="gpIxp" >
                                                     <p:dataTable id="tblIxp"
                                                                  rendered="#{patientEncounterController.encounterInvestigationResults ne null and patientEncounterController.encounterInvestigationResults.size() > 0}"
@@ -662,8 +662,8 @@
                                                                  value="#{patientEncounterController.encounterProcedure.lobValue}">
                                                 </p:inputTextarea>
 
-                                                <p:watermark value="Select Procedure." for="acSx"></p:watermark>
-                                                <p:watermark value="Write Details about the Procedure here and click add procedure button." for="txtSx"></p:watermark>
+                                                
+                                                
                                                 <h:panelGroup id="gpSx" >
                                                     <p:dataTable id="tblSx" 
                                                                  rendered="#{patientEncounterController.encounterProcedures ne null and patientEncounterController.encounterProcedures.size() > 0}"
@@ -731,7 +731,7 @@
                                                                  value="#{patientEncounterController.encounterPlanOfAction.lobValue}">
                                                 </p:inputTextarea>
 
-                                                <p:watermark value="Write Details about the Procedure here and click add procedure button." for="txtPa"></p:watermark>
+                                                
 
                                                 <h:panelGroup id="hgPa">
                                                     <p:dataTable id="tblPa" 

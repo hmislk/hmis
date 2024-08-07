@@ -43,6 +43,7 @@ public class StoreDealorController implements Serializable {
     private InstitutionFacade ejbFacade;
     private Institution current;
     private List<Institution> items = null;
+    private int managaeInstitutionIndex = -1;
 
     public List<Institution> completeDealor(String query) {
         List<Institution> suggestions;
@@ -64,7 +65,7 @@ public class StoreDealorController implements Serializable {
         current = new Institution();
         current.setInstitutionType(InstitutionType.StoreDealor);
     }
-
+  
     private void recreateModel() {
         items = null;
     }
@@ -81,6 +82,7 @@ public class StoreDealorController implements Serializable {
             JsfUtil.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
+        current = null;
         //     getItems();
     }
 
@@ -145,6 +147,14 @@ public class StoreDealorController implements Serializable {
             items = getEjbFacade().findByJpql(sql, hm);
         }
         return items;
+    }
+
+    public int getManagaeInstitutionIndex() {
+        return managaeInstitutionIndex;
+    }
+
+    public void setManagaeInstitutionIndex(int managaeInstitutionIndex) {
+        this.managaeInstitutionIndex = managaeInstitutionIndex;
     }
 
     /**
