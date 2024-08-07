@@ -6,14 +6,13 @@
 package com.divudi.entity.hr;
 
 import javax.persistence.Entity;
-import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  *
  * @author Buddhika
  */
 @Entity
-@XmlRootElement
+
 public class StaffLeaveSystem extends StaffLeave {
 
 }

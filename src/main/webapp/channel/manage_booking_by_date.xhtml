@@ -25,10 +25,10 @@
                                 <h:outputText value="Manage Booking"></h:outputText> |
                             </div>
                             <h:outputLabel class="mx-1" value="#{bookingControllerViewScope.selectedSessionInstance.staff.person.nameWithTitle}" ></h:outputLabel>
-                                (<h:outputLabel value="#{bookingControllerViewScope.selectedSessionInstance.staff.speciality.name}" ></h:outputLabel>) -<br />
-                                <h:outputLabel class="mx-1" value="#{bookingControllerViewScope.selectedSessionInstance.originatingSession.name}" ></h:outputLabel>
+                            (<h:outputLabel value="#{bookingControllerViewScope.selectedSessionInstance.staff.speciality.name}" ></h:outputLabel>) -<br />
+                            <h:outputLabel class="mx-1" value="#{bookingControllerViewScope.selectedSessionInstance.originatingSession.name}" ></h:outputLabel>
                         </div>
-                        
+
                         <div class="d-flex gap-2">
                             <p:commandButton 
                                 ajax="false" 
@@ -97,7 +97,7 @@
                                         <ez:bms5x5ChannelBill bill="#{bookingControllerViewScope.selectedBillSession.billItem.bill}"/>
                                     </h:panelGroup>
                                     <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'FiveFivePrintedPaper'}">
-                                        <ez:bms5x5WIthoutHeaderChannelBill controller="#{bookingControllerViewScope}" bill="#{bookingControllerViewScope.selectedBillSession.billItem.bill}"/>
+                                        <ez:bms5x5WIthoutHeaderChannelBill bill="#{bookingControllerViewScope.selectedBillSession.billItem.bill}"/>
                                     </h:panelGroup>
                                 </ui:repeat>
                             </h:panelGroup>
@@ -161,7 +161,7 @@
                    <!--                                <bg:fiveFiveCCBill_CC bill="#{bookingControllerViewScope.printingBill}"/>  -->
                                                     </h:panelGroup>
                                                     <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'FiveFivePrintedPaper'}" >
-                                                        <ez:bms5x5WIthoutHeaderChannelBill controller="#{bookingControllerViewScope}" bill="#{bookingControllerViewScope.selectedBillSession.billItem.bill}"/>
+                                                        <ez:bms5x5WIthoutHeaderChannelBill bill="#{bookingControllerViewScope.selectedBillSession.billItem.bill}"/>
                     <!--                                <bg:fiveFiveCCBill_CC bill="#{bookingControllerViewScope.printingBill}"/>  -->
                                                     </h:panelGroup>
                                                 </ui:repeat>
@@ -297,7 +297,7 @@
                     <!--                                <bg:fiveFiveCCBill_CC bill="#{bookingControllerViewScope.printingBill}"/>  -->
                                                     </h:panelGroup>
                                                     <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'FiveFivePrintedPaper'}" >
-                                                        <ez:bms5x5WIthoutHeaderChannelBill controller="#{bookingControllerViewScope}" bill="#{bookingControllerViewScope.selectedBillSession.billItem.bill}"/>
+                                                        <ez:bms5x5WIthoutHeaderChannelBill bill="#{bookingControllerViewScope.selectedBillSession.billItem.bill}"/>
                     <!--                                <bg:fiveFiveCCBill_CC bill="#{bookingControllerViewScope.printingBill}"/>  -->
                                                     </h:panelGroup>
                                                 </ui:repeat>
@@ -348,8 +348,8 @@
 
                                     </div>
                                     <div class="col-6">
-                                        
-                                        
+
+
                                         <p:panel class="m-1">
                                             <f:facet name="header" >
                                                 <h:outputText styleClass="fa fa-money-bill-wave" /> <!-- FontAwesome Icon -->
@@ -626,7 +626,7 @@
                                                     </p:column>
                                                 </p:row>
                                             </f:facet>
-                                           
+
 
                                             <h:panelGroup style="display: flex; flex-direction: column; align-items: start;" id="totalsPanel">
 
@@ -1230,7 +1230,7 @@
                                     <!--                                <bg:fiveFiveCCBill_CC bill="#{bookingControllerViewScope.printingBill}"/>  -->
                                                                     </h:panelGroup>
                                                                     <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'FiveFivePrintedPaper'}" >
-                                                                        <ez:bms5x5WIthoutHeaderChannelBill controller="#{bookingControllerViewScope}" bill="#{bookingControllerViewScope.selectedBillSession.billItem.bill}"/>
+                                                                        <ez:bms5x5WIthoutHeaderChannelBill bill="#{bookingControllerViewScope.selectedBillSession.billItem.bill}"/>
                                     <!--                                <bg:fiveFiveCCBill_CC bill="#{bookingControllerViewScope.printingBill}"/>  -->
                                                                     </h:panelGroup>
                                                                 </ui:repeat>
@@ -1248,22 +1248,30 @@
                         <p:tab title="Cancel" id="cancel"  disabled="#{!webUserController.hasPrivilege('ChannelBookingCancel')}">                                                         
 
                             <h:panelGroup rendered="#{!bookingControllerViewScope.printPreviewC}" >
-                                <h:panelGroup rendered="#{bookingControllerViewScope.selectedBillSession.billItem.bill.paymentMethod eq 'Agent'}" >
-                                    <p:outputLabel value="Re-payment Method"/>
-                                    <p:selectOneMenu  id="cmbCancellPs" value="#{bookingControllerViewScope.cancelPaymentMethod}">
-                                        <f:selectItem itemLabel="Select Cancel Payment Method" ></f:selectItem>
-                                        <f:selectItems value="#{enumController.paymentMethodsForChannelAgentSettle}"/>
-                                    </p:selectOneMenu>
-                                </h:panelGroup>
-
+                                #{bookingControllerViewScope.selectedBillSession.billItem.bill.paymentMethod}
                                 <h:panelGroup>
                                     <ch:bill_fees bill="#{bookingControllerViewScope.selectedBillSession.billItem.bill}" />
                                 </h:panelGroup>
 
-                                <p:commandButton value="Cancel Booking"  class="my-2 ui-button-danger" icon="fas fa-cancel"
-                                                 disabled="#{bookingControllerViewScope.selectedBillSession.bill.refunded==true
-                                                             or bookingControllerViewScope.selectedBillSession.bill.cancelled==true}"
-                                                 onclick="PF('confirmationDialog').show();"/>
+                                <div class="d-flex gap-4 mt-2">
+                                    <div class="d-flex gap-2">
+                                        <p:outputLabel value="Re-payment Method" class="mt-2"/>
+                                        <p:selectOneMenu  id="cmbCancellPs" value="#{bookingControllerViewScope.cancelPaymentMethod}">
+                                            <f:selectItem itemLabel="Select Cancel Payment Method" ></f:selectItem>
+                                            <f:selectItems value="#{enumController.paymentMethodsForChannel}"/>
+                                        </p:selectOneMenu>
+                                    </div>
+                                    <p:commandButton 
+                                        value="Cancel Booking"  
+                                        class="ui-button-danger" 
+                                        icon="fas fa-cancel"
+                                        disabled="#{bookingControllerViewScope.selectedBillSession.bill.refunded==true
+                                                    or bookingControllerViewScope.selectedBillSession.bill.cancelled==true}"
+                                        onclick="PF('confirmationDialog').show();">
+                                    </p:commandButton>
+                                </div>
+
+
                             </h:panelGroup>
                             <h:panelGroup rendered="#{bookingControllerViewScope.printPreviewC}" >
                                 <div class="d-flex justify-content-between">
@@ -1310,7 +1318,7 @@
            <!--                                <bg:fiveFiveCCBill_CC bill="#{bookingControllerViewScope.printingBill}"/>  -->
                                             </h:panelGroup>
                                             <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'FiveFivePrintedPaper'}" >
-                                                <ez:bms5x5WIthoutHeaderChannelBill controller="#{bookingControllerViewScope}" bill="#{bookingControllerViewScope.selectedBillSession.billItem.bill}"/>
+                                                <ez:bms5x5WIthoutHeaderChannelBill bill="#{bookingControllerViewScope.selectedBillSession.billItem.bill}"/>
             <!--                                <bg:fiveFiveCCBill_CC bill="#{bookingControllerViewScope.printingBill}"/>  -->
                                             </h:panelGroup>
                                         </ui:repeat>
@@ -1335,6 +1343,8 @@
                                         itemLabel="#{option}" 
                                         itemValue="#{option}"/>
                                 </p:selectOneMenu>
+
+
 
                                 <f:facet name="footer">
                                     <p:commandButton
@@ -1412,8 +1422,13 @@
                                             var="option" 
                                             itemLabel="#{option}" 
                                             itemValue="#{option}"/>
+                                    </p:selectOneMenu>                                    
+                                    <p:selectOneMenu class="py-2 mx-2 w-50" id="RefundPs" value="#{bookingControllerViewScope.refundPaymentMethod}">
+                                        <f:selectItem itemLabel="Select Cancel Payment Method" ></f:selectItem>
+                                        <f:selectItems value="#{enumController.paymentMethodsForChannel}"/>
                                     </p:selectOneMenu>
-                                    <p:commandButton id="btnIdRefund" value="Refund Booking" class="ui-button-warning my-2 mx-2" icon="fas fa-reply" ajax="false"
+
+                                    <p:commandButton id="btnIdRefund" value="Refund Booking" class="ui-button-warning" icon="fas fa-reply" ajax="false"
                                                      disabled="#{bookingControllerViewScope.billSession.bill.refunded==true
                                                                  or bookingControllerViewScope.billSession.bill.cancelled==true or bookingControllerViewScope.disableRefund==true}"
                                                      action="#{bookingControllerViewScope.channelBookingRefund()}">

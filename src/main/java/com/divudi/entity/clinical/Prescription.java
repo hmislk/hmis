@@ -12,7 +12,6 @@ import com.divudi.entity.Item;
 import com.divudi.entity.Patient;
 import com.divudi.entity.PatientEncounter;
 import com.divudi.entity.WebUser;
-import com.divudi.entity.pharmacy.FrequencyUnit;
 import com.divudi.entity.pharmacy.MeasurementUnit;
 import java.io.Serializable;
 import java.text.DecimalFormat;
