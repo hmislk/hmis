@@ -59,7 +59,7 @@ public class SmsManagerEjb {
     UserPreferenceFacade userPreferenceFacade;
     @EJB
     SmsFacade smsFacade;
-    @EJB 
+    @EJB
     private SessionInstanceFacade sessionInstanceFacade;
     @EJB
     private ChannelBean channelBean;
@@ -68,14 +68,16 @@ public class SmsManagerEjb {
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     private SessionController sessionController;
-    
+
+    private static boolean doNotSendAnySms = false;
+
     // Schedule sendSmsToDoctorsBeforeSession to run every 30 minutes
     @SuppressWarnings("unused")
     @Schedule(second = "0", minute = "*/30", hour = "*", persistent = false)
     public void sendSmsToDoctorsBeforeSessionTimer() {
-        if(configOptionApplicationController.getBooleanValueByKey("Send SMS for Doctor Reminder")){
-            //sendSmsToDoctorsBeforeSession();
-        }     
+        if (doNotSendAnySms) {
+            return;
+        }
         if (configOptionApplicationController.getBooleanValueByKey("Send SMS for Doctor Reminder")) {
             if (configOptionApplicationController.getBooleanValueByKey("Check & Send SMS for Doctor Reminder")) {
                 sendSmsToDoctorsBeforeSessionWithChecks();
@@ -85,122 +87,82 @@ public class SmsManagerEjb {
         }
     }
 
-//    @SuppressWarnings("unused")
-//    @Schedule(second = "19", minute = "*/5", hour = "*", persistent = false)
-//    public void myTimer() {
-//        sendSmsAwaitingToSendInDatabase();
-//    }
-
-//    private void sendSmsAwaitingToSendInDatabase() {
-//        String j = "Select e from Sms e where e.pending=true and e.retired=false and e.createdAt>:d";
-//        Map m = new HashMap();
-//        Calendar c = Calendar.getInstance();
-//        c.set(Calendar.HOUR_OF_DAY, 0);
-//        m.put("d", c.getTime());
-//        List<Sms> smses = getSmsFacade().findByJpql(j, m, TemporalType.DATE);
-//        for (Sms e : smses) {
-//            e.setSentSuccessfully(Boolean.TRUE);
-//            e.setPending(false);
-//            getSmsFacade().edit(e);
-//            Boolean sent = sendSms(e);
-//            e.setSentAt(new Date());
-//            e.setPending(false);
-//            getSmsFacade().edit(e);
-//        }
-//    }
-    
     private void sendSmsToDoctorsBeforeSessionWithChecks() {
-        // Define fromDate as the start of today
-        Date fromDate = CommonFunctions.getStartOfDay();
-
-        // Define toDate as the end of today
-        Date toDate = CommonFunctions.getEndOfDay();
-
-        // Fetch all session instances for today
-        List<SessionInstance> sessions = channelBean.listSessionInstances(fromDate, toDate, null, null, null);
-
-        // Define fromTime as the current time
-        Date fromTime = new Date();
-        Calendar calf = Calendar.getInstance();
-        calf.setTime(fromTime);
-        calf.add(Calendar.MINUTE, 30);
-        Date fromTime1 = calf.getTime();
-
-        // Calculate toTime as 60 minutes from fromTime
-        Calendar cal = Calendar.getInstance();
-        cal.setTime(fromTime);
-        cal.add(Calendar.MINUTE, 60);
-        Date toTime = cal.getTime();
-
-        // Filter sessions that start within the next 60 minutes
-        List<SessionInstance> upcomingSessions = sessions.stream()
-                .filter(session -> {
-                    Date sessionStartDateTime = getSessionStartDateTime(session); // Combine session date and time
-                    return sessionStartDateTime != null && sessionStartDateTime.after(fromTime1) && sessionStartDateTime.before(toTime);
-                })
-                .collect(Collectors.toList());
-        // Iterate over the filtered sessions and send SMS to doctor
-        for (SessionInstance s : upcomingSessions) {
-            if (s.getBookedPatientCount() != null) {
-                if (!s.isCancelled() && s.getBookedPatientCount() > 0) {
-                    boolean isSmsSentBefore = checkSmsToDoctors(s);
-                    if (!isSmsSentBefore) {
-                        sendSmsToDoctors(s);
-                    }
-                }
-            }
+        if (doNotSendAnySms) {
+            return;
         }
-    }
-
-    public void sendSmsToDoctorsBeforeSession() {
-        
-         // Define fromDate as the start of today
         Date fromDate = CommonFunctions.getStartOfDay();
-
-        // Define toDate as the end of today
         Date toDate = CommonFunctions.getEndOfDay();
-
-        // Fetch all session instances for today
         List<SessionInstance> sessions = channelBean.listSessionInstances(fromDate, toDate, null, null, null);
 
-        // Define fromTime as the current time
         Date fromTime = new Date();
         Calendar calf = Calendar.getInstance();
         calf.setTime(fromTime);
         calf.add(Calendar.MINUTE, 30);
         Date fromTime1 = calf.getTime();
 
-        // Calculate toTime as 60 minutes from fromTime
         Calendar cal = Calendar.getInstance();
         cal.setTime(fromTime);
         cal.add(Calendar.MINUTE, 60);
         Date toTime = cal.getTime();
 
-        // Filter sessions that start within the next 60 minutes
         List<SessionInstance> upcomingSessions = sessions.stream()
                 .filter(session -> {
-                    Date sessionStartDateTime = getSessionStartDateTime(session); // Combine session date and time
+                    Date sessionStartDateTime = getSessionStartDateTime(session);
                     return sessionStartDateTime != null && sessionStartDateTime.after(fromTime1) && sessionStartDateTime.before(toTime);
                 })
                 .collect(Collectors.toList());
-        // Iterate over the filtered sessions and send SMS to doctors
+
         for (SessionInstance s : upcomingSessions) {
-            if(s.getBookedPatientCount() != null){
-                if(!s.isCancelled() && s.getBookedPatientCount() > 0){
+            if (s.getBookedPatientCount() != null && !s.isCancelled() && s.getBookedPatientCount() > 0) {
+                boolean isSmsSentBefore = checkSmsToDoctors(s);
+                if (!isSmsSentBefore) {
                     sendSmsToDoctors(s);
                 }
             }
         }
     }
 
+    public void sendSmsToDoctorsBeforeSession() {
+        if (doNotSendAnySms) {
+            return;
+        }
+        Date fromDate = CommonFunctions.getStartOfDay();
+        Date toDate = CommonFunctions.getEndOfDay();
+        List<SessionInstance> sessions = channelBean.listSessionInstances(fromDate, toDate, null, null, null);
+
+        Date fromTime = new Date();
+        Calendar calf = Calendar.getInstance();
+        calf.setTime(fromTime);
+        calf.add(Calendar.MINUTE, 30);
+        Date fromTime1 = calf.getTime();
+
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(fromTime);
+        cal.add(Calendar.MINUTE, 60);
+        Date toTime = cal.getTime();
+
+        List<SessionInstance> upcomingSessions = sessions.stream()
+                .filter(session -> {
+                    Date sessionStartDateTime = getSessionStartDateTime(session);
+                    return sessionStartDateTime != null && sessionStartDateTime.after(fromTime1) && sessionStartDateTime.before(toTime);
+                })
+                .collect(Collectors.toList());
+
+        for (SessionInstance s : upcomingSessions) {
+            if (s.getBookedPatientCount() != null && !s.isCancelled() && s.getBookedPatientCount() > 0) {
+                sendSmsToDoctors(s);
+            }
+        }
+    }
+
     private Date getSessionStartDateTime(SessionInstance session) {
         Calendar sessionDateTimeCal = Calendar.getInstance();
-        sessionDateTimeCal.setTime(session.getSessionDate()); // Assuming session has a getSessionDate method
+        sessionDateTimeCal.setTime(session.getSessionDate());
 
         Calendar sessionTimeCal = Calendar.getInstance();
-        sessionTimeCal.setTime(session.getSessionTime()); // Assuming session has a getSessionTime method
+        sessionTimeCal.setTime(session.getSessionTime());
 
-        // Combine session date and time
         sessionDateTimeCal.set(Calendar.HOUR_OF_DAY, sessionTimeCal.get(Calendar.HOUR_OF_DAY));
         sessionDateTimeCal.set(Calendar.MINUTE, sessionTimeCal.get(Calendar.MINUTE));
         sessionDateTimeCal.set(Calendar.SECOND, sessionTimeCal.get(Calendar.SECOND));
@@ -209,24 +171,29 @@ public class SmsManagerEjb {
     }
 
     private void sendSmsToDoctors(SessionInstance session) {
+        if (doNotSendAnySms) {
+            return;
+        }
         Sms e = new Sms();
-            e.setCreatedAt(new Date());
-            if(session.getStaff().getPerson().getMobile() == null || session.getStaff().getPerson().getMobile().isEmpty()){
-               e.setReceipientNumber(session.getStaff().getPerson().getPhone());
-            }else{
-               e.setReceipientNumber(session.getStaff().getPerson().getMobile()); 
-            }
-            e.setSendingMessage(createDoctorRemiderSms(session));
-            e.setPending(false);
-            e.setSmsType(MessageType.ChannelDoctorReminder);
-            getSmsFacade().create(e);
-            Boolean sent = sendSms(e);
-            e.setSentSuccessfully(sent);
-            getSmsFacade().edit(e);
-        
+        e.setCreatedAt(new Date());
+        if (session.getStaff().getPerson().getMobile() == null || session.getStaff().getPerson().getMobile().isEmpty()) {
+            e.setReceipientNumber(session.getStaff().getPerson().getPhone());
+        } else {
+            e.setReceipientNumber(session.getStaff().getPerson().getMobile());
+        }
+        e.setSendingMessage(createDoctorRemiderSms(session));
+        e.setPending(false);
+        e.setSmsType(MessageType.ChannelDoctorReminder);
+        getSmsFacade().create(e);
+        Boolean sent = sendSms(e);
+        e.setSentSuccessfully(sent);
+        getSmsFacade().edit(e);
     }
-    
+
     private boolean checkSmsToDoctors(SessionInstance session) {
+        if (doNotSendAnySms) {
+            return true;
+        }
         List<Sms> sentSmsList = new ArrayList<>();
         Sms ec = new Sms();
         ec.setCreatedAt(new Date());
@@ -257,7 +224,7 @@ public class SmsManagerEjb {
         sentSmsList = smsFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
         return !sentSmsList.isEmpty();
     }
-    
+
     private String createDoctorRemiderSms(SessionInstance s) {
         String template = configOptionApplicationController.getLongTextValueByKey("Template for SMS sent on Doctor Reminder");
         if (template == null || template.isEmpty()) {
@@ -265,9 +232,9 @@ public class SmsManagerEjb {
         }
         return createSmsForCDoctorRemider(s, template);
     }
-    
+
     public String createSmsForCDoctorRemider(SessionInstance si, String template) {
-        if(si == null){
+        if (si == null) {
             return "";
         }
         String s;
@@ -276,7 +243,7 @@ public class SmsManagerEjb {
         String doc = si.getStaff().getPerson().getNameWithTitle();
         String booked = si.getBookedPatientCount().toString();
         String paid = si.getPaidPatientCount().toString();
-        
+
         String insName = si.getInstitution().getName();
 
         s = template.replace("{doctor}", doc)
@@ -290,6 +257,9 @@ public class SmsManagerEjb {
     }
 
     public String executePost(String targetURL, Map<String, String> parameters) {
+        if (doNotSendAnySms) {
+            return null;
+        }
         HttpURLConnection connection = null;
         StringBuilder urlParameters = new StringBuilder();
 
@@ -304,7 +274,7 @@ public class SmsManagerEjb {
                     Logger.getLogger(SmsManagerEjb.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
-            urlParameters.setLength(urlParameters.length() - 1); // Remove the last "&"
+            urlParameters.setLength(urlParameters.length() - 1);
             targetURL += "?" + urlParameters.toString();
         }
 
@@ -337,8 +307,10 @@ public class SmsManagerEjb {
         }
     }
 
-    // Modified by Dr M H B Ariyaratne with assistance from ChatGPT from OpenAI
     public String executePost(String targetURL, JSONObject jsonPayload, String accessToken) {
+        if (doNotSendAnySms) {
+            return null;
+        }
         HttpURLConnection connection = null;
         try {
             URL url = new URL(targetURL);
@@ -373,110 +345,14 @@ public class SmsManagerEjb {
         }
     }
 
-//    public String sendSmsByApplicationPreferenceReturnString(String number, String message, UserPreference pf) {
-//        if (null == pf.getSmsAuthenticationType()) {
-//            return "This authentication is NOT supported to send SMS yet.";
-//        } else {
-//            switch (pf.getSmsAuthenticationType()) {
-//                case NONE:
-//                    return sendSmsByApplicationPreferenceNoAuthenticationReturnString(number, message, pf);
-//                case OAUTH2:
-//                    return sendSmsByApplicationPreferenceNoAuthenticationReturnString(number, message, pf);
-//                default:
-//                    return "This authentication is NOT supported to send SMS yet.";
-//            }
-//        }
-//    }
-//    // Modified by Dr M H B Ariyaratne with assistance from ChatGPT from OpenAI
-//    public boolean sendSmsByApplicationPreferenceOauth2(String number, String message, UserPreference pf) {
-//        try {
-//            // Prepare the JSON payload
-//            JSONObject jsonPayload = new JSONObject();
-//            jsonPayload.put("campaignName", "Test campaign");
-//            jsonPayload.put("mask", "Test");
-//            jsonPayload.put("numbers", number);
-//            jsonPayload.put("content", message);
-//
-//            // Prepare the HTTP request
-//            URL url = new URL(pf.getSmsUrl());
-//            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-//            conn.setRequestMethod("POST");
-//            conn.setRequestProperty("Content-Type", "application/json");
-//            conn.setRequestProperty("Accept", "*/*");
-//            conn.setRequestProperty("X-API-VERSION", "v1");
-////            conn.setRequestProperty("Authorization", "Bearer " + pf.getAccessToken());
-//
-//            // Send the JSON payload
-//            try ( OutputStream os = conn.getOutputStream()) {
-//                byte[] input = jsonPayload.toString().getBytes("utf-8");
-//                os.write(input, 0, input.length);
-//            }
-//
-//            // Read the response
-//            try ( BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), "utf-8"))) {
-//                StringBuilder response = new StringBuilder();
-//                String responseLine;
-//                while ((responseLine = br.readLine()) != null) {
-//                    response.append(responseLine.trim());
-//                }
-//                System.out.println(response.toString());
-//            }
-//
-//            return true;
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            return false;
-//        }
-//    }
-//
-//    public SmsSentResponse sendSmsByApplicationPreferenceNoAuthentication(String number, String message, UserPreference pf) {
-//        Map<String, String> m = new HashMap();
-//        SmsSentResponse r = new SmsSentResponse();
-//        m.put(pf.getSmsUsernameParameterName(), pf.getSmsUsername());
-//        m.put(pf.getSmsPasswordParameterName(), pf.getSmsPassword());
-//        if (pf.getSmsUserAliasParameterName() != null && !pf.getSmsUserAliasParameterName().trim().equals("")) {
-//            m.put(pf.getSmsUserAliasParameterName(), pf.getSmsUserAlias());
-//        }
-//        m.put(pf.getSmsPhoneNumberParameterName(), number);
-//        m.put(pf.getSmsMessageParameterName(), message);
-//
-//        String res = executePost(pf.getSmsUrl(), m);
-//        System.out.println(res);
-//        if (res == null) {
-//            r.setSentSuccefully(false);
-//            r.setReceivedMessage(res);
-//            return r;
-//        } else if (res.toUpperCase().contains("OK")) {
-//            r.setSentSuccefully(true);
-//            r.setReceivedMessage(res);
-//            return r;
-//        } else {
-//            r.setSentSuccefully(false);
-//            r.setReceivedMessage(res);
-//            return r;
-//        }
-//
-//    }
-//
-//    public String sendSmsByApplicationPreferenceNoAuthenticationReturnString(String number, String message, UserPreference pf) {
-//        Map<String, String> m = new HashMap();
-//        m.put(pf.getSmsUsernameParameterName(), pf.getSmsUsername());
-//        m.put(pf.getSmsPasswordParameterName(), pf.getSmsPassword());
-//        if (pf.getSmsUserAliasParameterName() != null && !pf.getSmsUserAliasParameterName().trim().equals("")) {
-//            m.put(pf.getSmsUserAliasParameterName(), pf.getSmsUserAlias());
-//        }
-//        m.put(pf.getSmsPhoneNumberParameterName(), number);
-//        m.put(pf.getSmsMessageParameterName(), message);
-//
-//        String res = executePost(pf.getSmsUrl(), m);
-//        System.out.println(res);
-//        return res;
-//    }
     public SmsFacade getSmsFacade() {
         return smsFacade;
     }
 
     public boolean sendSms(Sms sms) {
+        if (doNotSendAnySms) {
+            return false;
+        }
         boolean sendSmsWithOAuth2 = configOptionApplicationController.getBooleanValueByKey("SMS Sent Using OAuth 2.0 Supported SMS Gateway", false);
         boolean sendSmsWithBasicAuthentication = configOptionApplicationController.getBooleanValueByKey("SMS Sent Using Basic Authentication Supported SMS Gateway", false);
         if (sendSmsWithOAuth2) {
@@ -488,9 +364,10 @@ public class SmsManagerEjb {
     }
 
     public boolean sendSmsByBasicAuthentication(Sms sms) {
-        Map<String, String> m = new HashMap();
-        SmsSentResponse r = new SmsSentResponse();
-        // Define variables for each parameter name and value from the configuration controller
+        if (doNotSendAnySms) {
+            return false;
+        }
+        Map<String, String> m = new HashMap<>();
         String smsUsernameParameter = configOptionApplicationController.getShortTextValueByKey("SMS Gateway with Basic Authentication - Username parameter");
         String smsUsername = configOptionApplicationController.getShortTextValueByKey("SMS Gateway with Basic Authentication - Username");
 
@@ -501,12 +378,9 @@ public class SmsManagerEjb {
         String smsUserAlias = configOptionApplicationController.getShortTextValueByKey("SMS Gateway with Basic Authentication - User Alias");
 
         String smsPhoneNumberParameter = configOptionApplicationController.getShortTextValueByKey("SMS Gateway with Basic Authentication - Phone Number parameter");
-
         String smsMessageParameter = configOptionApplicationController.getShortTextValueByKey("SMS Gateway with Basic Authentication - Message parameter");
-
         String smsUrl = configOptionApplicationController.getShortTextValueByKey("SMS Gateway with Basic Authentication - URL");
 
-// Populate the map with parameter names and values
         m.put(smsUsernameParameter, smsUsername);
         m.put(smsPasswordParameter, smsPassword);
         if (smsUserAliasParameter != null && !smsUserAliasParameter.trim().equals("")) {
@@ -515,7 +389,6 @@ public class SmsManagerEjb {
         m.put(smsPhoneNumberParameter, sms.getReceipientNumber());
         m.put(smsMessageParameter, sms.getSendingMessage());
 
-// Execute the HTTP POST request with the SMS data
         String res = executePost(smsUrl, m);
 
         if (res == null) {
@@ -534,98 +407,79 @@ public class SmsManagerEjb {
             saveSms(sms);
             return false;
         }
-
     }
 
-    // Modified by Dr M H B Ariyaratne with assistance from ChatGPT from OpenAI
     public boolean sendSmsByOauth2(Sms sms) {
-    System.out.println("sendSmsByOauth2 called");
-    System.out.println("sms = " + sms);
-    if (sms == null) {
-        System.out.println("sms is null");
-        return false;
-    }
-    try {
-        // Prepare the JSON payload
-        JSONObject jsonPayload = new JSONObject();
-        jsonPayload.put(configOptionApplicationController.getShortTextValueByKey("OAuth2 SMS Gateway - Parameter 1 Name", "campaignName"), configOptionApplicationController.getShortTextValueByKey("OAuth2 SMS Gateway - Parameter 1 Value", "Test"));
-        jsonPayload.put(configOptionApplicationController.getShortTextValueByKey("OAuth2 SMS Gateway - Parameter 2 Name", "mask"), configOptionApplicationController.getShortTextValueByKey("OAuth2 SMS Gateway - Parameter 2 Value", "Test"));
-        jsonPayload.put(configOptionApplicationController.getShortTextValueByKey("OAuth2 SMS Gateway - Parameter Name for SMS Numbers", "numbers"), sms.getReceipientNumber());
-        jsonPayload.put(configOptionApplicationController.getShortTextValueByKey("OAuth2 SMS Gateway - Parameter Name for SMS Text", "content"), sms.getSendingMessage());
-        
-        System.out.println("JSON payload: " + jsonPayload.toString(4));
-
-        String loginUrl = configOptionApplicationController.getShortTextValueByKey("OAuth2 SMS Gateway - Login URL", "https://bsms.hutch.lk/api/login");
-        String refreshTokenUrl = configOptionApplicationController.getShortTextValueByKey("OAuth2 SMS Gateway - Refresh Token URL", "https://bsms.hutch.lk/api/login/api/token/accessToken");
-        String smsGatewayUrl = configOptionApplicationController.getShortTextValueByKey("OAuth2 SMS Gateway - URL", "https://bsms.hutch.lk/api/login/api/sendsms");
-        String userName = configOptionApplicationController.getShortTextValueByKey("OAuth2 SMS Gateway - Username");
-        String password = configOptionApplicationController.getShortTextValueByKey("OAuth2 SMS Gateway - Password");
-        URL url = new URL(smsGatewayUrl);
-
-        String accessToken = configOptionApplicationController.getShortTextValueByKey("OAuth2 SMS Gateway - Access Token");
-        if (accessToken == null || accessToken.trim().equals("")) {
-            accessToken = getNewAccessToken(userName, password, loginUrl);
+        if (doNotSendAnySms) {
+            return false;
         }
-        
-        System.out.println("Access token: " + accessToken);
+        try {
+            JSONObject jsonPayload = new JSONObject();
+            jsonPayload.put(configOptionApplicationController.getShortTextValueByKey("OAuth2 SMS Gateway - Parameter 1 Name", "campaignName"), configOptionApplicationController.getShortTextValueByKey("OAuth2 SMS Gateway - Parameter 1 Value", "Test"));
+            jsonPayload.put(configOptionApplicationController.getShortTextValueByKey("OAuth2 SMS Gateway - Parameter 2 Name", "mask"), configOptionApplicationController.getShortTextValueByKey("OAuth2 SMS Gateway - Parameter 2 Value", "Test"));
+            jsonPayload.put(configOptionApplicationController.getShortTextValueByKey("OAuth2 SMS Gateway - Parameter Name for SMS Numbers", "numbers"), sms.getReceipientNumber());
+            jsonPayload.put(configOptionApplicationController.getShortTextValueByKey("OAuth2 SMS Gateway - Parameter Name for SMS Text", "content"), sms.getSendingMessage());
 
-        long expiresIn = getExpiryFromJWT(accessToken) - Instant.now().getEpochSecond();
-        if (expiresIn < 3) { // Example: Check if less than an hour remains
-            System.out.println("Access token about to expire, refreshing...");
-            accessToken = getAccessToken(loginUrl, accessToken, accessToken, loginUrl, refreshTokenUrl);
-            configOptionApplicationController.saveShortTextOption("OAuth2 SMS Gateway - Access Token", accessToken);
-        }
+            String loginUrl = configOptionApplicationController.getShortTextValueByKey("OAuth2 SMS Gateway - Login URL", "https://bsms.hutch.lk/api/login");
+            String refreshTokenUrl = configOptionApplicationController.getShortTextValueByKey("OAuth2 SMS Gateway - Refresh Token URL", "https://bsms.hutch.lk/api/login/api/token/accessToken");
+            String smsGatewayUrl = configOptionApplicationController.getShortTextValueByKey("OAuth2 SMS Gateway - URL", "https://bsms.hutch.lk/api/login/api/sendsms");
+            String userName = configOptionApplicationController.getShortTextValueByKey("OAuth2 SMS Gateway - Username");
+            String password = configOptionApplicationController.getShortTextValueByKey("OAuth2 SMS Gateway - Password");
+            URL url = new URL(smsGatewayUrl);
 
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        conn.setRequestMethod("POST");
-        conn.setRequestProperty("Content-Type", "application/json");
-        conn.setRequestProperty("Accept", "*/*");
-        conn.setRequestProperty("X-API-VERSION", "v1");
-        conn.setRequestProperty("Authorization", "Bearer " + accessToken);
-        conn.setDoOutput(true); // This line enables output to the connection
-
-        System.out.println("Sending HTTP request to " + smsGatewayUrl);
-
-        try (OutputStream os = conn.getOutputStream()) {
-            byte[] input = jsonPayload.toString().getBytes("utf-8");
-            os.write(input, 0, input.length);
-            System.out.println("HTTP request payload sent");
-        }
-
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), "utf-8"))) {
-            StringBuilder response = new StringBuilder();
-            String responseLine;
-            while ((responseLine = br.readLine()) != null) {
-                response.append(responseLine.trim());
+            String accessToken = configOptionApplicationController.getShortTextValueByKey("OAuth2 SMS Gateway - Access Token");
+            if (accessToken == null || accessToken.trim().equals("")) {
+                accessToken = getNewAccessToken(userName, password, loginUrl);
             }
-            sms.setReceivedMessage(response.toString());
-            System.out.println("HTTP response received: " + response.toString());
-        } catch (IOException e) {
-            System.out.println("IOException during HTTP response reading: " + e.getMessage());
-            InputStream errorStream = conn.getErrorStream();
-            if (errorStream != null) {
-                try (BufferedReader br = new BufferedReader(new InputStreamReader(errorStream, "utf-8"))) {
-                    StringBuilder response = new StringBuilder();
-                    String responseLine;
-                    while ((responseLine = br.readLine()) != null) {
-                        response.append(responseLine.trim());
+
+            long expiresIn = getExpiryFromJWT(accessToken) - Instant.now().getEpochSecond();
+            if (expiresIn < 3) {
+                accessToken = getAccessToken(loginUrl, accessToken, accessToken, loginUrl, refreshTokenUrl);
+                configOptionApplicationController.saveShortTextOption("OAuth2 SMS Gateway - Access Token", accessToken);
+            }
+
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Content-Type", "application/json");
+            conn.setRequestProperty("Accept", "*/*");
+            conn.setRequestProperty("X-API-VERSION", "v1");
+            conn.setRequestProperty("Authorization", "Bearer " + accessToken);
+            conn.setDoOutput(true);
+
+            try (OutputStream os = conn.getOutputStream()) {
+                byte[] input = jsonPayload.toString().getBytes("utf-8");
+                os.write(input, 0, input.length);
+            }
+
+            try (BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), "utf-8"))) {
+                StringBuilder response = new StringBuilder();
+                String responseLine;
+                while ((responseLine = br.readLine()) != null) {
+                    response.append(responseLine.trim());
+                }
+                sms.setReceivedMessage(response.toString());
+            } catch (IOException e) {
+                InputStream errorStream = conn.getErrorStream();
+                if (errorStream != null) {
+                    try (BufferedReader br = new BufferedReader(new InputStreamReader(errorStream, "utf-8"))) {
+                        StringBuilder response = new StringBuilder();
+                        String responseLine;
+                        while ((responseLine = br.readLine()) != null) {
+                            response.append(responseLine.trim());
+                        }
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
                     }
-                    System.out.println("HTTP error response: " + response.toString());
-                } catch (IOException ex) {
-                    ex.printStackTrace();
                 }
             }
+            saveSms(sms);
+            return true;
+        } catch (Exception e) {
+            sms.setReceivedMessage(sms.getReceivedMessage() + e.getMessage());
+            saveSms(sms);
+            return false;
         }
-        saveSms(sms);
-        return true;
-    } catch (Exception e) {
-        System.out.println("Exception caught: " + e.getMessage());
-        sms.setReceivedMessage(sms.getReceivedMessage() + e.getMessage());
-        saveSms(sms);
-        return false;
     }
-}
-
 
     public void saveSms(Sms savingSms) {
         if (savingSms == null) {
@@ -705,7 +559,6 @@ public class SmsManagerEjb {
                 return responseJson.getString("accessToken");
             }
         } else {
-// Handle HTTP error codes appropriately (e.g., retry or log)
             return null;
         }
     }
@@ -719,7 +572,7 @@ public class SmsManagerEjb {
             return jsonBody.getLong("exp");
         } catch (Exception e) {
             e.printStackTrace();
-            return Long.MIN_VALUE; // Indicates an error in parsing
+            return Long.MIN_VALUE;
         }
     }
 
@@ -738,5 +591,4 @@ public class SmsManagerEjb {
     public void setSessionController(SessionController sessionController) {
         this.sessionController = sessionController;
     }
-
 }
