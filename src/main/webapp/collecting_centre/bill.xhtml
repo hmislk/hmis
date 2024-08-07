@@ -307,6 +307,7 @@
                                         ajax="false" 
                                         onclick="if (!confirm('Are you sure you want to Settle This Bill ?'))
                                                         return false;"
+
                                         class="ui-button-success ">
                                     </p:commandButton>
                                     <p:commandButton 
@@ -346,22 +347,28 @@
 
 
                                 </f:facet>
-                                
+
+                                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Collecting Centre Billing Requires Referance Numbers', true)}" >
+                                    <div class="row">
+                                        <div class="col-md-3">
+                                            <p:outputLabel value="Reference No" class="mr-4"></p:outputLabel>
+                                        </div>
+                                        <div class="col-md-9">
+                                            <p:selectOneMenu
+                                                filter="true"
+                                                filterMatchMode="contains"
+                                                value="#{collectingCentreBillController.referralId}" 
+                                                class="w-100 mb-1">
+                                                <f:selectItem itemLabel="Select" itemValue="" /> <!-- Default empty selection -->
+                                                <f:selectItems value="#{collectingCentreBillController.referralIds}" var="refId"
+                                                               itemLabel="#{refId}" itemValue="#{refId}" />
+                                            </p:selectOneMenu>
+                                        </div>
+                                    </div>
+                                </h:panelGroup>
+
+
                                 <div class="row">
-                                    <div class="col-md-3">
-                                        <p:outputLabel value="Reference No" class="mr-4"></p:outputLabel>
-                                    </div>
-                                    <div class="col-md-9">
-                                        <p:selectOneMenu
-                                            filter="true"
-                                            filterMatchMode="contains"
-                                            value="#{collectingCentreBillController.referralId}" 
-                                            class="w-100 mb-1">
-                                            <f:selectItem itemLabel="Select" itemValue="" /> <!-- Default empty selection -->
-                                            <f:selectItems value="#{collectingCentreBillController.referralIds}" var="refId"
-                                                           itemLabel="#{refId}" itemValue="#{refId}" />
-                                        </p:selectOneMenu>
-                                    </div>
                                     <div class="col-md-3">
                                         <h:outputLabel id="ballance" value="Balance" class="my-1"  />
                                     </div>
@@ -395,35 +402,38 @@
                                         </h:outputLabel>
                                     </div>
                                 </div>
-                                
-                                <h:panelGrid columns="2" class="w-100 ">
-                                    <p:dataTable 
-                                        class="mt-2"
-                                        emptyMessage="No Book"  
-                                        id="tblAgentBooks" 
-                                        value="#{collectingCentreBillController.bookSummeryRows}" 
-                                        var="a" 
-                                        styleClass="noBorder summeryBorder">
-                                        <p:column>
-                                            <f:facet name="header">
-                                                <p:outputLabel value="Book Number" />
-                                            </f:facet>
-                                            <p:outputLabel value="#{a.bookName}" >
-                                                <f:convertNumber pattern="00000" />
-                                            </p:outputLabel>
-                                        </p:column>
 
-                                        <p:column>
-                                            <f:facet name="header">
-                                                <p:outputLabel value="Number Of Leaves" />
-                                            </f:facet>
-                                            <p:outputLabel value="#{a.bookNumber}" >
-                                            </p:outputLabel>
-                                        </p:column>
-                                    </p:dataTable>
+                                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Collecting Centre Billing Requires Referance Numbers', true)}" >
 
-                                </h:panelGrid>
+                                    <h:panelGrid columns="2" class="w-100 ">
+                                        <p:dataTable 
+                                            class="mt-2"
+                                            emptyMessage="No Book"  
+                                            id="tblAgentBooks" 
+                                            value="#{collectingCentreBillController.bookSummeryRows}" 
+                                            var="a" 
+                                            styleClass="noBorder summeryBorder">
+                                            <p:column>
+                                                <f:facet name="header">
+                                                    <p:outputLabel value="Book Number" />
+                                                </f:facet>
+                                                <p:outputLabel value="#{a.bookName}" >
+                                                    <f:convertNumber pattern="00000" />
+                                                </p:outputLabel>
+                                            </p:column>
 
+                                            <p:column>
+                                                <f:facet name="header">
+                                                    <p:outputLabel value="Number Of Leaves" />
+                                                </f:facet>
+                                                <p:outputLabel value="#{a.bookNumber}" >
+                                                </p:outputLabel>
+                                            </p:column>
+                                        </p:dataTable>
+
+                                    </h:panelGrid>
+
+                                </h:panelGroup>
                             </p:panel>
 
 
@@ -625,13 +635,13 @@
                                                 <bi:posCCBill_CC bill="#{pp}" duplicate="false"/>                        
                                             </ui:repeat>
                                         </h:panelGroup>
-                                        
+
                                         <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaper'}" >
                                             <ui:repeat value="#{collectingCentreBillController.bills}" var="pp">
                                                 <bi:fiveFiveCCBill_CC bill="#{pp}" duplicate="false"/>                        
                                             </ui:repeat>
                                         </h:panelGroup>
-                                        
+
                                     </h:panelGroup>
 
                                 </p:panel>
@@ -659,7 +669,7 @@
                                                 <bi:posCCBill_Patient bill="#{pp}" duplicate="false"/>                        
                                             </ui:repeat>
                                         </h:panelGroup>
-                                        
+
                                         <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaper'}" >
                                             <ui:repeat value="#{collectingCentreBillController.bills}" var="pp">
                                                 <bi:fiveFiveCCBill_Patient bill="#{pp}" duplicate="false"/>                        

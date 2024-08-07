@@ -16,7 +16,6 @@ import com.divudi.entity.Fee;
 import com.divudi.entity.Item;
 import com.divudi.entity.ItemFee;
 import com.divudi.entity.ServiceSession;
-import com.divudi.entity.SessionNumberGenerator;
 import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
 import com.divudi.facade.DepartmentFacade;

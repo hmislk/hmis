@@ -10,9 +10,7 @@ package com.divudi.bean.channel;
 
 import com.divudi.bean.common.*;
 import com.divudi.entity.BillSession;
-import com.divudi.entity.channel.SessionInstance;
 import com.divudi.facade.BillSessionFacade;
-import com.divudi.facade.SessionInstanceFacade;
 import java.io.Serializable;
 import java.util.List;
 import javax.ejb.EJB;
