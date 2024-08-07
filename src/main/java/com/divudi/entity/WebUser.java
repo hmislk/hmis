@@ -23,8 +23,6 @@ import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
-import javax.xml.bind.annotation.XmlRootElement;
-import org.checkerframework.common.value.qual.EnumVal;
 
 /**
  *
@@ -32,7 +30,7 @@ import org.checkerframework.common.value.qual.EnumVal;
  * Consultant (Health Informatics)
  */
 @Entity
-@XmlRootElement
+
 public class WebUser implements Serializable {
 
     static final long serialVersionUID = 1L;

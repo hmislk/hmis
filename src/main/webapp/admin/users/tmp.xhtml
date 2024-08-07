@@ -7,64 +7,24 @@
       xmlns:p="http://primefaces.org/ui">
 
     <h:body>
-
-        <ui:repeat value="#{opdBillController.billFeeBundleEntrys}" var="billFeeBundleEntry">
-            <tr>
-                <td>
-                    <h:panelGrid columns="1" >
-                        <p:outputLabel value="#{billFeeBundleEntry.selectedBillFee.fee.item.name}" />
-                        <p:outputLabel value="#{billFeeBundleEntry.selectedBillFee.fee.name}" />
-                        <p:outputLabel value="#{billFeeBundleEntry.selectedBillFee.fee.feeType.label}" />
-                    </h:panelGrid>
-
-
-                    <table >
-                        <ui:repeat 
-                            id="repeatAvailableFees"
-                            value="#{billFeeBundleEntry.availableBillFees}" 
-                            var="availableFee">
-                            <tr>
-                                <td>
-                                    <h:outputLabel value="#{availableFee.staff.person.nameWithTitle}" ></h:outputLabel>
-                                    <h:outputLabel value="&nbsp;(" ></h:outputLabel>
-                                    <p:commandLink id="btnReplaceFee"
-                                                   process="btnReplaceFee"
-                                                   action="#{opdBillController.changeTheSelectedFeeFromFeeBundle(availableFee.fee)}"
-                                                   update="@form">
-                                        <h:outputText value="#{availableFee.fee.fee}">
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputText>
-                                    </p:commandLink>
-                                    <h:outputLabel value=")" ></h:outputLabel>
-                                </td>
-                            </tr>
-
-                        </ui:repeat>
-                    </table>
-
-
-                </td>
-
-                <td>
-                    <h:panelGroup id="gpFeeBundleStaff"  >
-
-                      
-                    </h:panelGroup>
-                </td>
-
-                <td>
-                    <p:outputLabel id="lblFeeBundleFeeValue" value="#{billFeeBundleEntry.selectedBillFee.fee.fee}" >
-                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                    </p:outputLabel>
-                </td>
-
-
-
-            </tr>
-
-
-        </ui:repeat>
-
-
+        <h:form id="form">
+            <p:selectOneMenu 
+                id="cmbDepartment"
+                placeholder="Department"
+                value="#{userPrivilageController.department}" 
+                class="w-100"
+                required="true"
+                requiredMessage="Please select a department"
+                filter="true">
+                <f:selectItem itemLabel="Select Department" />
+                <f:selectItems 
+                    value="#{userPrivilageController.departments}"
+                    var="d"
+                    itemLabel="#{d.name}"
+                    itemValue="#{d}" />
+                <p:ajax event="change" process="@this" update="tmp" />
+            </p:selectOneMenu>
+            <h:outputText id="tmp" value="#{userPrivilageController.department.name}" style="font-weight: bold;" />
+        </h:form>
     </h:body>
 </html>

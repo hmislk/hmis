@@ -20,7 +20,6 @@ import com.divudi.bean.common.DepartmentController;
 import com.divudi.bean.common.DoctorController;
 import com.divudi.bean.common.DoctorSpecialityController;
 import com.divudi.bean.common.EnumController;
-import com.divudi.bean.common.FeeController;
 import com.divudi.bean.common.InstitutionController;
 import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.ItemFeeController;
@@ -54,7 +53,6 @@ import com.divudi.entity.Category;
 import com.divudi.entity.Consultant;
 import com.divudi.entity.Department;
 import com.divudi.entity.DoctorSpeciality;
-import com.divudi.entity.Fee;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.ItemFee;
@@ -85,9 +83,7 @@ import com.divudi.data.SymanticHyrachi;
 import com.divudi.data.SymanticType;
 import com.divudi.entity.Doctor;
 import com.divudi.entity.inward.InwardService;
-import com.divudi.facade.FeeFacade;
 import com.divudi.java.CommonFunctions;
-import com.mysql.cj.jdbc.interceptors.SessionAssociationInterceptor;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import javax.inject.Named;
@@ -3307,9 +3303,7 @@ public class DataUploadController implements Serializable {
             itemFeeFacade.create(fee);
 
         }
-
         return itemFees;
-
     }
 
     private List<Department> readDepartmentFromExcel(InputStream inputStream) throws IOException {

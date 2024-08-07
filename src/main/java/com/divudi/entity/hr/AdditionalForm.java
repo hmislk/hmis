@@ -7,10 +7,9 @@
 package com.divudi.entity.hr;
 
 import javax.persistence.Entity;
-import javax.xml.bind.annotation.XmlRootElement;
 
 @Entity
-@XmlRootElement
+
 public class AdditionalForm extends HrForm  {
     
   
