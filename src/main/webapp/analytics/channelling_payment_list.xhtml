@@ -177,10 +177,12 @@
                                 </div>
                             </p:column>
 
-
-
-
-
+                            <p:column  headerText="Actions" 
+                                       width="100"  >                              
+                                <p:commandButton value="View" ajax="false" 
+                                                 action="#{searchController.navigateTobill(bill)}">
+                                </p:commandButton>
+                            </p:column>
 
 
                         </p:dataTable>

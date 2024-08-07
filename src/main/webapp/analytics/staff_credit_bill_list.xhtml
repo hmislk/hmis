@@ -29,12 +29,44 @@
                             <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="toDate" value="#{searchController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
                             </p:calendar>
 
+                            <h:outputLabel value="Staff"/>
+                            <p:autoComplete  
+                                minQueryLength="2"
+                                forceSelection="true" 
+                                value="#{searchController.staff}" 
+                                id="creditStaff"
+                                completeMethod="#{staffController.completeStaff}" 
+                                var="mys" 
+                                class="w-100"
+                                placeholder="Staff (Type at least 4 letters to search)"
+                                inputStyleClass="form-control"
+                                itemLabel="#{mys.person.name}" 
+                                itemValue="#{mys}"
+                                size="10">
+                                <p:column headerText="Name" style="padding: 2px;">
+                                    <h:outputText value="#{mys.person.nameWithTitle}" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="EPF" style="padding: 2px;">
+                                    <h:outputText value="#{mys.epfNo}" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Credit Entitlement" style="padding: 2px;">
+                                    <h:outputText value="#{mys.creditLimitQualified}" >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputText>
+                                </p:column>
+                                <p:column  headerText="Credit Utilized" style="padding: 2px;">
+                                    <h:outputText value="#{mys.currentCreditValue}" >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputText>
+                                </p:column>
+                            </p:autoComplete>
+
                         </h:panelGrid>
                         <h:panelGrid columns="2" class="my-2" >
                             <p:commandButton class="ui-button-warning" icon="fas fa-magnifying-glass" id="btnSearch" ajax="false" value="Search" 
                                              action="#{searchController.createStaffCreditBillList()}"/>
                             <p:commandButton class="ui-button-success mx-2" icon="fas fa-file-excel" id="btnExcel" ajax="false" value="Excel" >
-                                <p:dataExporter fileName="Chanelling Professional Payments by Patient" type="xls" target="tblBills" ></p:dataExporter>
+                                <p:dataExporter fileName="Staff Credit Bill List" type="xls" target="tblBills" ></p:dataExporter>
                             </p:commandButton>
                         </h:panelGrid>
 
@@ -58,28 +90,44 @@
                                 <p:outputLabel value="#{b.toStaff.person.nameWithTitle}" />
                             </p:column>
 
-                            <p:column headerText="Bill ID" width="8em" style="text-align: left;" >
+                            <p:column headerText="Patient Name" width="8em" style="text-align: left;" >
+                                <p:outputLabel value="#{b.patient.person.nameWithTitle}" />
+                            </p:column>
+
+                            <p:column headerText="Bill Date" width="4em" style="text-align: left;" >
+                                <p:outputLabel value="#{b.billDate}" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
+                                </p:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Bill Time" width="4em" style="text-align: left;" >
+                                <p:outputLabel value="#{b.billTime}" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortTimeFormat}" ></f:convertDateTime>
+                                </p:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Bill ID" width="4em" style="text-align: left;" >
                                 <p:outputLabel value="#{b.id}" />
                             </p:column>
 
-                            <p:column headerText="Bill Type" width="8em" style="text-align: left;" >
-                                <p:outputLabel value="#{b.billTypeAtomic}" />
+                            <p:column headerText="Bill Type" width="10em" style="text-align: left;" >
+                                <p:outputLabel value="#{b.billTypeAtomic.label}" />
                             </p:column>
 
 
-                            <p:column headerText="Total" width="8em" style="text-align: left;" >
+                            <p:column headerText="Total" width="6em" style="text-align: left;" >
                                 <p:outputLabel value="#{b.total}" >
                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                 </p:outputLabel>
                             </p:column>
 
-                            <p:column headerText="Discount" width="8em" style="text-align: left;" >
+                            <p:column headerText="Discount" width="6em" style="text-align: left;" >
                                 <p:outputLabel value="#{b.discount}" >
                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                 </p:outputLabel>
                             </p:column>
 
-                            <p:column headerText="Net" width="8em" style="text-align: left;" >
+                            <p:column headerText="Net" width="6em" style="text-align: left;" >
                                 <p:outputLabel value="#{b.netTotal}" >
                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                 </p:outputLabel>

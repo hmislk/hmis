@@ -13,9 +13,7 @@ import com.divudi.entity.Institution;
 import com.divudi.entity.Patient;
 import com.divudi.entity.Person;
 import com.divudi.entity.PreBill;
-import com.divudi.entity.Staff;
 import com.divudi.entity.Token;
-import com.divudi.entity.WebUser;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.TokenFacade;
@@ -360,10 +358,10 @@ public class TokenController implements Serializable, ControllerWithPatient {
             JsfUtil.addErrorMessage("Wrong Token");
             return "";
         }
-        if (getPatient().getId() == null) {
-            JsfUtil.addErrorMessage("Please select a patient");
-            return "";
-        } else if (getPatient().getPerson().getName() == null) {
+//        if (getPatient().getId() == null) {
+//            JsfUtil.addErrorMessage("Please select a patient");
+//            return "";
+        if (getPatient().getPerson().getName() == null) {
             JsfUtil.addErrorMessage("Please select a patient");
             return "";
         } else if (getPatient().getPerson().getName().trim().equals("")) {

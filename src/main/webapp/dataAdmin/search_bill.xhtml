@@ -16,33 +16,58 @@
                             <h:outputLabel value="Search Any Bills" class="mx-2"/>
                         </f:facet>
 
-                        <div class="d-flex justify-content-between mb-2">
-                            <div class="d-flex gap-3">
-                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.insId}" placeholder="Bill No(Ins ID)"/>
+                      
+                            <p:panelGrid columns="3" styleClass="ui-grid ui-grid-responsive" columnClasses="col-4,col-4,col-4">
+                                <!-- First Row -->
+                                <h:outputLabel for="insId" value="Bill No (Ins ID)" />
+                                <p:inputText id="insId" autocomplete="off" value="#{searchController.searchKeyword.insId}" />
+                                <p:commandButton id="btnSearchInsId" ajax="false" value="Search by Ins ID"
+                                                 action="#{searchController.searchByInsId()}"
+                                                 icon="fa fa-search" styleClass="ui-button-primary" />
 
-                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.deptId}" placeholder="Bill No(Dept ID)"/>
+                                <!-- Second Row -->
+                                <h:outputLabel for="deptId" value="Bill No (Dept ID)" />
+                                <p:inputText id="deptId" autocomplete="off" value="#{searchController.searchKeyword.deptId}" />
+                                <p:commandButton id="btnSearchDeptId" ajax="false" value="Search by Dept ID"
+                                                 action="#{searchController.searchByDeptId()}"
+                                                 icon="fa fa-search" styleClass="ui-button-primary" />
 
-                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.bhtNo}" placeholder="BHT No" />
+                                <!-- Third Row -->
+                                <h:outputLabel for="bhtNo" value="BHT No" />
+                                <p:inputText id="bhtNo" autocomplete="off" value="#{searchController.searchKeyword.bhtNo}" />
+                                <p:commandButton id="btnSearchBhtNo" ajax="false" value="Search by BHT No"
+                                                 action="#{searchController.searchByBhtNo()}"
+                                                 icon="fa fa-search" styleClass="ui-button-primary" />
 
-                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.refBillNo}" placeholder="Bill ID" /> 
-                            </div>
-                            <div >
-                                <p:commandButton 
-                                    id="btnSearch" ajax="false" value="Search" 
-                                    action="#{searchController.createSearchBill()}"
-                                    icon="fa fa-search"
-                                    class="mx-2 ui-button-primary"/>
-                                <p:commandButton 
-                                    value="Download Excel" 
-                                    ajax="false" 
-                                    class="ui-button-success" 
-                                    icon="fa fa-file-excel">
-                                    <p:dataExporter target="tblBills" fileName="bills" type="xlsx" ></p:dataExporter>
-                                </p:commandButton>
-                            </div>
-                        </div>
+                                <!-- Fourth Row -->
+                                <h:outputLabel for="refBillNo" value="Bill ID" />
+                                <p:inputText id="refBillNo" autocomplete="off" value="#{searchController.searchKeyword.refBillNo}" />
+                                <p:commandButton id="btnSearchRefBillNo" ajax="false" value="Search by Bill ID"
+                                                 action="#{searchController.searchByRefBillNo()}"
+                                                 icon="fa fa-search" styleClass="ui-button-primary" />
 
-                        <p:defaultCommand target="btnSearch" />
+                                <!-- Fifth Row -->
+                                <h:outputLabel for="searchAny" value="Search from Any" />
+                                <!-- Empty column for alignment -->
+                                <h:outputLabel value="" />
+                                <p:commandButton id="btnSearchAny" ajax="false" value="Search"
+                                                 action="#{searchController.createSearchBill()}"
+                                                 icon="fa fa-search" styleClass="ui-button-primary" />
+                            </p:panelGrid>
+                       
+
+
+                        <p:commandButton 
+                            value="Download Excel" 
+                            ajax="false" 
+                            class="ui-button-success" 
+                            icon="fa fa-file-excel">
+                            <p:dataExporter target="tblBills" fileName="bills" type="xlsx" ></p:dataExporter>
+                        </p:commandButton>
+
+
+
+
 
                         <p:dataTable 
                             rowIndexVar="i" 
@@ -193,7 +218,7 @@
                                 <p:commandButton 
                                     id="viewBill"
                                     icon="fa fa-fw fa-file-invoice-dollar"
-                                    action="/bill_summery" 
+                                    action="bill_summery" 
                                     ajax="false">
                                     <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}" />
                                 </p:commandButton>

@@ -107,13 +107,19 @@
                                     <p:outputLabel value="Speciality" />
                                 </f:facet>
                                 <p:outputLabel value="#{a.sessionInstance.originatingSession.staff.speciality.name}" />
-r
+                                r
                             </p:column>
                             <p:column width="8em">
                                 <f:facet name="header">
                                     <p:outputLabel value="Session" />
                                 </f:facet>
                                 <p:outputLabel value="#{a.sessionInstance.originatingSession.name}" />
+                            </p:column>
+                            <p:column width="8em">
+                                <f:facet name="header">
+                                    <p:outputLabel value="Category" />
+                                </f:facet>
+                                <p:outputLabel value="#{a.sessionInstance.originatingSession.category.name}" />
                             </p:column>
                             <p:column width="4em">
                                 <f:facet name="header">
@@ -124,11 +130,20 @@ r
                                     <h:outputText value="#{channelReportTemplateController.bundle.long1}"></h:outputText>
                                 </f:facet>
                             </p:column>
-                            <p:column width="4em">
+                            <p:column>
                                 <f:facet name="header">
                                     <p:outputLabel value="Paid" />
                                 </f:facet>
-                                <p:outputLabel value="#{a.sessionInstance.completedPatientCount}" />
+                                <p:outputLabel value="#{a.long2}" />
+                                <f:facet name="footer">
+                                    <h:outputText value="#{channelReportTemplateController.bundle.long2}" />
+                                </f:facet>
+                            </p:column>
+                            <p:column width="4em">
+                                <f:facet name="header">
+                                    <p:outputLabel value="Completed" />
+                                </f:facet>
+                                <p:outputLabel value="#{a.long3}" />
                                 <f:facet name="footer" >
                                     <h:outputText value="#{channelReportTemplateController.bundle.long3}" ></h:outputText>
                                 </f:facet>
