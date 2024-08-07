@@ -2423,7 +2423,13 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                 JsfUtil.addErrorMessage("Patient has not account. Can't proceed with Patient Deposits");
                 return true;
             }
-            double creditLimitAbsolute = Math.abs(getPatient().getCreditLimit());
+             double creditLimitAbsolute = 0.0;
+            if(getPatient().getCreditLimit()==null){
+                creditLimitAbsolute = 0.0;
+            }else{
+                creditLimitAbsolute = Math.abs(getPatient().getCreditLimit());
+            }
+            
             double runningBalance;
             if (getPatient().getRunningBalance() != null) {
                 runningBalance = getPatient().getRunningBalance();
