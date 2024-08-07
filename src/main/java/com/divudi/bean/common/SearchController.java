@@ -1015,8 +1015,7 @@ public class SearchController implements Serializable {
                 + " join pi.billItem.bill b "
                 + " join b.patient.person p "
                 + " where "
-                + " b.createdAt between :fromDate and :toDate  "
-                + " and pi.investigation.department=:dep ";
+                + " b.createdAt between :fromDate and :toDate  ";
 
         Map temMap = new HashMap();
         temMap.put("toDate", getToDate());
@@ -1028,7 +1027,7 @@ public class SearchController implements Serializable {
             temMap.put("ccs", sessionController.getLoggableCollectingCentres());
         } else {
             jpql += " and b.collectingCentre=:cc ";
-            temMap.put("cc", sessionController.getLoggableCollectingCentres());
+            temMap.put("cc", institution);
         }
 
         if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
@@ -4166,6 +4165,12 @@ public class SearchController implements Serializable {
 
     private String createKeySql(HashMap tmp) {
         String sql = "";
+        
+        if (getSearchKeyword().getRequestNo()!= null && !getSearchKeyword().getRequestNo().trim().equals("")) {
+            sql += " and  ((b.qutationNumber) like :qutNo )";
+            tmp.put("qutNo", "%" + getSearchKeyword().getRequestNo().trim().toUpperCase() + "%");
+        }
+
         if (getSearchKeyword().getToInstitution() != null && !getSearchKeyword().getToInstitution().trim().equals("")) {
             sql += " and  ((b.toInstitution.name) like :toIns )";
             tmp.put("toIns", "%" + getSearchKeyword().getToInstitution().trim().toUpperCase() + "%");
