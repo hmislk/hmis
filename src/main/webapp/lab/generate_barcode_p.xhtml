@@ -221,6 +221,11 @@
                                                             #{psc.patientSample.patient.person.id}&nbsp;&nbsp;
                                                         </span>
                                                     </h:panelGroup>
+                                                     <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Bill Type (IP/OP/CC) in Sample Stickers')}">
+                                                        <span class="patient-id">
+                                                            #{psc.patientSample.bill.ipOpOrCc}&nbsp;&nbsp;
+                                                        </span>
+                                                    </h:panelGroup>
                                                     <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Barcode Generated Time in Sample Stickers')}">
                                                         <span class="patient-id">
                                                             <h:outputLabel value="#{psc.patientSample.barcodeGeneratedAt}" >
