@@ -10,7 +10,6 @@ package com.divudi.bean.channel;
 import com.divudi.bean.common.*;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.entity.Area;
-import com.divudi.entity.Institution;
 import com.divudi.entity.channel.PatientSessionInstanceActivity;
 import com.divudi.facade.AreaFacade;
 import java.io.Serializable;

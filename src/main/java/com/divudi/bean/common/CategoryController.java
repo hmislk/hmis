@@ -23,7 +23,6 @@ import com.divudi.entity.pharmacy.PharmaceuticalItemCategory;
 import com.divudi.facade.CategoryFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.SymanticHyrachi;
-import com.divudi.data.SymanticType;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;

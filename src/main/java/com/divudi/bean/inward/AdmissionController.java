@@ -40,7 +40,6 @@ import com.divudi.facade.PatientRoomFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.RoomFacade;
 import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.bean.opd.OpdBillController;
 import com.divudi.bean.pharmacy.PharmacyRequestForBhtController;
 import com.divudi.data.clinical.ClinicalFindingValueType;
 import com.divudi.entity.Staff;

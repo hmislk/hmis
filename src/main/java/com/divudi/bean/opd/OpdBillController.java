@@ -16,7 +16,6 @@ import com.divudi.data.MessageType;
 import com.divudi.data.OpdBillingStrategy;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.Sex;
-import com.divudi.data.SmsSentResponse;
 import com.divudi.data.Title;
 import com.divudi.data.dataStructure.BillListWithTotals;
 import com.divudi.data.dataStructure.ComponentDetail;
