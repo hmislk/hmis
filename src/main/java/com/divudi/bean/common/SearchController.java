@@ -2567,7 +2567,6 @@ public class SearchController implements Serializable {
         m.put("fd", getFromDate());
         m.put("td", getToDate());
         m.put("ins", getSessionController().getInstitution());
-        m.put("dep", getSessionController().getDepartment());
         String sql;
 
         sql = "Select b from Bill b "
@@ -2576,9 +2575,18 @@ public class SearchController implements Serializable {
                 + " and b.createdAt between :fd and :td "
                 + " and b.billType=:bt"
                 + " and b.institution=:ins "
-                + " and b.department=:dep "
                 + " and type(b)=:class ";
 
+        if (webUserController.hasPrivilege("StoreAdministration")) {
+            if (getSearchKeyword().getDepartment() != null && !getSearchKeyword().getDepartment().trim().equals("")) {
+                sql += " and  ((b.department.name) like :dep )";
+                m.put("dep", "%" + getSearchKeyword().getDepartment().trim().toUpperCase() + "%");
+            }
+        } else {
+            sql += "and b.department=:dep ";
+            m.put("dep", getSessionController().getDepartment());
+
+        }
         if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
             sql += " and  ((b.patientEncounter.patient.person.name) like :patientName )";
             m.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
@@ -7198,39 +7206,6 @@ public class SearchController implements Serializable {
         createCCBillTableByKeyword(BillType.CollectingCentreBill, null, null);
         //checkLabReportsApproved(bills);
 
-    }
-
-    public void createStaffCreditBillList() {
-        String jpql;
-        Map m = new HashMap();
-        List<BillTypeAtomic> btas = new ArrayList<>();
-        jpql = "select b from Bill b "
-                + "where b.toStaff is not null "
-                + "and b.createdAt between :fromDate and :toDate "
-                + "and b.retired = false "
-                + "and b.cancelled = false "
-                + "and b.refunded = false ";
-        jpql += " and b.billTypeAtomic in :btas ";
-        if (staff != null) {
-            jpql += " and b.toStaff=:staff ";
-            m.put("staff", staff);
-        }
-
-        btas.addAll(BillTypeAtomic.findByServiceType(ServiceType.OPD));
-        btas.addAll(BillTypeAtomic.findByServiceType(ServiceType.CHANNELLING));
-        btas.removeAll(BillTypeAtomic.findByCategory(BillCategory.PAYMENTS));
-
-        jpql += " order by b.createdAt desc";
-
-        m.put("fromDate", fromDate);
-        m.put("toDate", toDate);
-        m.put("btas", btas);
-
-        System.out.println("m = " + m);
-        System.out.println("jpql = " + jpql);
-
-        bills = getBillFacade().findByJpql(jpql, m, TemporalType.TIMESTAMP);
-        System.out.println("bills = " + bills);
     }
 
     public void createGeneralCreditBillList() {
