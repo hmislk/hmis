@@ -89,6 +89,7 @@ public class PettyCashBillSearch implements Serializable {
     private WebUserController webUserController;
     @Inject
     PettyCashBillController pettyCashBillController;
+
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
     @EJB

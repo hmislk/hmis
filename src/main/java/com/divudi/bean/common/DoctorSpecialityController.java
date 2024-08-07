@@ -9,7 +9,6 @@
 package com.divudi.bean.common;
 
 import com.divudi.entity.DoctorSpeciality;
-import com.divudi.entity.Vocabulary;
 import com.divudi.facade.DoctorSpecialityFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import java.io.Serializable;

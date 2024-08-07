@@ -10,11 +10,9 @@ package com.divudi.bean.common;
 
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.Title;
-import com.divudi.entity.Consultant;
 import com.divudi.entity.Doctor;
 import com.divudi.entity.Person;
 import com.divudi.entity.Speciality;
-import com.divudi.entity.Vocabulary;
 import com.divudi.facade.DoctorFacade;
 import com.divudi.facade.PersonFacade;
 import java.io.Serializable;

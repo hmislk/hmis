@@ -14,7 +14,6 @@ import com.divudi.bean.common.UploadController;
 import com.divudi.data.InvestigationItemType;
 import com.divudi.data.ReportItemType;
 import com.divudi.entity.Category;
-import com.divudi.entity.Upload;
 import com.divudi.entity.lab.CommonReportItem;
 import com.divudi.entity.lab.ReportFormat;
 import com.divudi.entity.lab.ReportItem;
