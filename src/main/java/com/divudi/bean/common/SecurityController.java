@@ -14,7 +14,6 @@ import org.jasypt.util.password.BasicPasswordEncryptor;
 import org.jasypt.util.text.BasicTextEncryptor;
 import java.security.SecureRandom;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 
 /**

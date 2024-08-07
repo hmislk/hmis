@@ -9,7 +9,6 @@ import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.pharmacy.PharmacyBillSearch;
 import com.divudi.bean.pharmacy.PharmacyPreSettleController;
 import com.divudi.bean.pharmacy.PharmacySaleController;
-import com.divudi.data.PaymentMethod;
 import com.divudi.data.TokenCount;
 import com.divudi.data.TokenType;
 import com.divudi.ejb.BillNumberGenerator;

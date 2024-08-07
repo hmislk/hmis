@@ -8,10 +8,8 @@
  */
 package com.divudi.bean.lab;
 
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 
-import com.divudi.entity.Category;
 import com.divudi.entity.lab.Sample;
 import com.divudi.facade.SampleFacade;
 import com.divudi.bean.common.util.JsfUtil;

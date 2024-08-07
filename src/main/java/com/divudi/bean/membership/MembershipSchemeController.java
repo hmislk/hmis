@@ -11,13 +11,11 @@ package com.divudi.bean.membership;
 import com.divudi.bean.common.SessionController;
 
 import com.divudi.entity.Institution;
-import com.divudi.entity.Patient;
 import com.divudi.entity.membership.MembershipScheme;
 import com.divudi.facade.MembershipSchemeFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;

@@ -159,14 +159,31 @@ public class DepartmentController implements Serializable {
         items = getFacade().findByJpql(j);
     }
 
-    public List<Department> getInstitutionDepatrments(Institution ins) {
+    public List<Department> getInstitutionDepartments(Institution ins) {
+        List<Department> deps;
+        if (ins == null) {
+            deps = new ArrayList<>();
+        } else {
+            Map<String, Object> m = new HashMap<>();
+            m.put("ins", ins);
+            String jpql = "Select d From Department d "
+                    + " where d.retired=false "
+                    + " and d.institution=:ins "
+                    + " and TYPE(d) <> Route "
+                    + " order by d.name";
+            deps = getFacade().findByJpql(jpql, m);
+        }
+        return deps;
+    }
+
+    public List<Department> getInstitutionRoutes(Institution ins) {
         List<Department> deps;
         if (ins == null) {
             deps = new ArrayList<>();
         } else {
             Map m = new HashMap();
             m.put("ins", ins);
-            String sql = "Select d From Department d "
+            String sql = "Select d From Route d "
                     + " where d.retired=false "
                     + " and d.institution=:ins "
                     + " order by d.name";
@@ -188,7 +205,7 @@ public class DepartmentController implements Serializable {
         String jpql = "SELECT d "
                 + " FROM Department d "
                 + " where d.retired=:ret "
-                + " and d.institution=:ins"
+                + " and d.institution=:ins "
                 + " order by d.name";
         currentInsDepartments = getFacade().findByJpql(jpql, m);
         if (currentInsDepartments == null) {
@@ -508,6 +525,10 @@ public class DepartmentController implements Serializable {
 
     public List<Department> getInstitutionDepatrments(DepartmentType departmentType) {
         return getInstitutionDepatrments(null, true, departmentType);
+    }
+    
+    public List<Department> getInstitutionDepatrments(Institution ins) {
+        return getInstitutionDepatrments(ins, true, null);
     }
 
     public List<Department> getDepartments(String jpql, Map m) {

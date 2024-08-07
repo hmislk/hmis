@@ -7,7 +7,6 @@ package com.divudi.bean.common;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Logins;
-import com.divudi.entity.clinical.ClinicalEntity;
 import com.divudi.facade.LoginsFacade;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
