@@ -11,7 +11,6 @@ package com.divudi.bean.lab;
 
 import com.divudi.bean.common.SessionController;
 
-import com.divudi.entity.Category;
 import com.divudi.entity.lab.InvestigationCategory;
 import com.divudi.entity.lab.Machine;
 import com.divudi.facade.InvestigationCategoryFacade;
