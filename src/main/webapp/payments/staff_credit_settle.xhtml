@@ -90,8 +90,7 @@
                                     <p:inputText value="#{staffPaymentBillController.current.netTotal}"/>
 
                                     <p:inputText value="#{staffPaymentBillController.current.comments}" id="comment"/>
-                                    <p:watermark value="Comment" for="comment"/>
-                                </div>
+                                                                    </div>
                                 <div class="d-flex gap-2"> 
                                     <h:panelGroup id="creditCard" style="display: #{staffPaymentBillController.current.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
                                         <pa:creditCard paymentMethodData="#{staffPaymentBillController.staffPaymentMethodData}" valueRequired="false"/>

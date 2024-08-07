@@ -128,6 +128,7 @@ public class ChannelReportTemplateController implements Serializable {
     Date date;
     Institution institution;
     private Category category;
+    private List<Category> categories;
     WebUser webUser;
     Staff staff;
     ChannelBillTotals billTotals;
@@ -620,9 +621,9 @@ public class ChannelReportTemplateController implements Serializable {
             j += " and si.institution=:ins ";
         }
 
-        if (category != null) {
-            m.put("cat", category);
-            j += " and si.originatingSession.category=:cat ";
+        if (categories != null && !categories.isEmpty()) {
+            m.put("cats", categories);
+            j += " and si.originatingSession.category in :cats ";
         }
 
         m.put("fd", fromDate);
@@ -5998,6 +5999,14 @@ public class ChannelReportTemplateController implements Serializable {
         this.category = category;
     }
 
+    public List<Category> getCategories() {
+        return categories;
+    }
+
+    public void setCategories(List<Category> categories) {
+        this.categories = categories;
+    }
+
     public class DocPage {
 
         List<AvalabelChannelDoctorRow> table1;
@@ -7514,4 +7523,6 @@ public class ChannelReportTemplateController implements Serializable {
         this.doctorDayChannelCounts = doctorDayChannelCounts;
     }
 
+    
+    
 }
