@@ -992,11 +992,11 @@ public class SearchController implements Serializable {
         temMap.put("dep", getReportKeyWord().getDepartment());
         
         if(institution==null){
-            jpql += " b.collectingCentre in :ccs ";
+            jpql += " and b.collectingCentre in :ccs ";
              temMap.put("ccs", sessionController.getLoggableCollectingCentres());
         }else{
-            jpql += " b.collectingCentre=:cc ";
-            temMap.put("ccs", sessionController.getLoggableCollectingCentres());
+            jpql += " and b.collectingCentre=:cc ";
+            temMap.put("cc", sessionController.getLoggableCollectingCentres());
         }
 
         if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {

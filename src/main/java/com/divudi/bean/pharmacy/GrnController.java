@@ -1078,12 +1078,15 @@ public class GrnController implements Serializable {
     }
 
     public void checkQty(BillItem bi) {
+
         if (bi.getTmpQty() < 0.0) {
             bi.setTmpQty(0.0);
         }
+
         if (bi.getTmpFreeQty() < 0.0) {
             bi.setTmpFreeQty(0.0);
         }
+
         onEdit(bi);
     }
 
@@ -1091,21 +1094,11 @@ public class GrnController implements Serializable {
         setBatch(tmp);
         double remains = getPharmacyCalculation().getRemainingQty(tmp.getPharmaceuticalBillItem());
 
-//        System.err.println("1 " + tmp.getTmpQty());
-//        System.err.println("2 " + tmp.getQty());
-//        System.err.println("3 " + tmp.getPharmaceuticalBillItem().getQty());
-//        System.err.println("4 " + tmp.getPharmaceuticalBillItem().getQtyInUnit());
-//System.out.println("remains = " + remains);
-//        System.out.println("tmp.getPharmaceuticalBillItem().getQtyInUnit() = " + tmp.getPharmaceuticalBillItem().getQtyInUnit());
+
         if (remains < tmp.getPharmaceuticalBillItem().getQtyInUnit()) {
             tmp.setTmpQty(remains);
             JsfUtil.addErrorMessage("You cant Change Qty than Remaining qty");
         }
-//        System.out.println("tmp.getPreviousRecieveQtyInUnit() = " + tmp.getPreviousRecieveQtyInUnit());
-//        if(tmp.getPreviousRecieveQtyInUnit() < tmp.getPharmaceuticalBillItem().getQtyInUnit()){
-//            tmp.setTmpQty(tmp.getPreviousRecieveQtyInUnit());
-//            JsfUtil.addErrorMessage("You cant Order Qty than Remaining qty to recieve");
-//        }
 
         if (tmp.getPharmaceuticalBillItem().getPurchaseRate() > tmp.getPharmaceuticalBillItem().getRetailRate()) {
             tmp.getPharmaceuticalBillItem().setRetailRate(getRetailPrice(tmp.getPharmaceuticalBillItem().getBillItem()));
@@ -1119,8 +1112,6 @@ public class GrnController implements Serializable {
                 //    return;
             }
         }
-//        manually set Wholesale Rate**************
-//        tmp.getPharmaceuticalBillItem().setWholesaleRate((tmp.getPharmaceuticalBillItem().getPurchaseRate() * 1.08)* (tmp.getPharmaceuticalBillItem().getQtyInUnit())/(tmp.getPharmaceuticalBillItem().getQtyInUnit() + tmp.getPharmaceuticalBillItem().getFreeQtyInUnit())  );
 
         calGrossTotal();
         calDifference();
@@ -1133,21 +1124,6 @@ public class GrnController implements Serializable {
 
     }
 
-//    private List<Item> getSuggession(Item item) {
-//        List<Item> suggessions = new ArrayList<>();
-//
-//        if (item instanceof Amp) {
-//            suggessions = getPharmacyBillBean().findItem((Amp) item, suggessions);
-//        } else if (item instanceof Ampp) {
-//            suggessions = getPharmacyBillBean().findItem((Ampp) item, suggessions);
-//        } else if (item instanceof Vmp) {
-//            suggessions = getPharmacyBillBean().findItem((Vmp) item, suggessions);
-//        } else if (item instanceof Vmpp) {
-//            suggessions = getPharmacyBillBean().findItem((Vmpp) item, suggessions);
-//        }
-//
-//        return suggessions;
-//    }
     public void calGrossTotal() {
         double tmp = 0.0;
         int serialNo = 0;
