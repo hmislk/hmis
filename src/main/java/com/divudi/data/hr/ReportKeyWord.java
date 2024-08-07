@@ -31,7 +31,6 @@ import com.divudi.entity.inward.AdmissionType;
 import com.divudi.entity.membership.MembershipScheme;
 import com.divudi.java.CommonFunctions;
 import java.util.Date;
-import javax.inject.Inject;
 import javax.persistence.Transient;
 
 /**

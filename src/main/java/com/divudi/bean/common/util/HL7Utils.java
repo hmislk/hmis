@@ -1,28 +1,14 @@
 package com.divudi.bean.common.util;
 
 import ca.uhn.hl7v2.DefaultHapiContext;
-import ca.uhn.hl7v2.HL7Exception;
 import ca.uhn.hl7v2.HapiContext;
-import ca.uhn.hl7v2.model.Message;
-import ca.uhn.hl7v2.parser.Parser;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import ca.uhn.hl7v2.HL7Exception;
 import ca.uhn.hl7v2.model.Message;
-import ca.uhn.hl7v2.model.v25.datatype.CX;
-import ca.uhn.hl7v2.model.v25.datatype.XPN;
-import ca.uhn.hl7v2.model.v25.group.OUL_R22_ORDER;
-import ca.uhn.hl7v2.model.v25.group.OUL_R22_RESULT;
-import ca.uhn.hl7v2.model.v25.group.OUL_R22_SPECIMEN;
-import ca.uhn.hl7v2.model.v25.message.OUL_R22;
-import ca.uhn.hl7v2.model.v25.segment.*;
 import ca.uhn.hl7v2.parser.Parser;
-import ca.uhn.hl7v2.parser.PipeParser;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  *

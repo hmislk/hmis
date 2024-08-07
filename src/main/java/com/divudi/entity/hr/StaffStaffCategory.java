@@ -14,14 +14,13 @@ import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
-import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  *
  * @author safrin
  */
 @Entity
-@XmlRootElement
+
 public class StaffStaffCategory implements Serializable {
 
     @ManyToOne
