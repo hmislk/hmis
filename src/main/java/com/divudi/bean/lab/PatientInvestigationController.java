@@ -51,9 +51,11 @@ import com.divudi.facade.ReportItemFacade;
 import com.divudi.facade.SmsFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.lab.BillBarcode;
+import com.divudi.data.lab.PatientInvestigationStatus;
 import com.divudi.data.lab.PatientInvestigationWrapper;
 import com.divudi.data.lab.PatientSampleWrapper;
 import com.divudi.data.lab.SampleTubeLabel;
+import com.divudi.data.lab.SearchDateType;
 import com.divudi.entity.Institution;
 import com.divudi.entity.WebUser;
 import com.divudi.java.CommonFunctions;
@@ -166,6 +168,9 @@ public class PatientInvestigationController implements Serializable {
 
     private Department department;
 
+    private SearchDateType searchDateType;
+    private PatientInvestigationStatus patientInvestigationStatus;
+    
     @Temporal(TemporalType.TIME)
     private Date fromDate;
     Date toDate;
@@ -1134,6 +1139,9 @@ public class PatientInvestigationController implements Serializable {
         return "/lab/patient_investigations_to_collect?faces-redirect=true";
     }
 
+    
+    
+    
     public String navigateToGenerateBarcodes() {
         boolean searchInvestigationsForLoggedInstitution = configOptionApplicationController.getBooleanValueByKey("For Lab Sample Barcode Generation, Search by Ordered Institution", false);
         if (searchInvestigationsForLoggedInstitution) {
@@ -2322,6 +2330,22 @@ public class PatientInvestigationController implements Serializable {
 
     public void setPeformingDepartment(Department peformingDepartment) {
         this.peformingDepartment = peformingDepartment;
+    }
+
+    public SearchDateType getSearchDateType() {
+        return searchDateType;
+    }
+
+    public void setSearchDateType(SearchDateType searchDateType) {
+        this.searchDateType = searchDateType;
+    }
+
+    public PatientInvestigationStatus getPatientInvestigationStatus() {
+        return patientInvestigationStatus;
+    }
+
+    public void setPatientInvestigationStatus(PatientInvestigationStatus patientInvestigationStatus) {
+        this.patientInvestigationStatus = patientInvestigationStatus;
     }
 
     /**

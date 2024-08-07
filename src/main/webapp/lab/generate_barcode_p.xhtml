@@ -26,6 +26,13 @@
                             <div class="col-2" >
                                 <h:panelGrid columns="1" class="w-100 p-0 m-0 b-0">
 
+                                    <h:outputLabel class="w-100 mt-2" value="Date Range for"/>
+                                    <p:selectOneMenu value="#{patientInvestigationController.searchDateType}" >
+                                        <f:selectItems value="#{enumController.searchDateTypes}" 
+                                                       var="st" 
+                                            itemValue="#{st}" itemLabel="#{st.label}"></f:selectItems>
+                                    </p:selectOneMenu>
+
                                     <h:outputLabel class="w-100 mt-2" value="From Date"/>
                                     <p:datePicker
                                         id="fromDate" 
@@ -42,6 +49,15 @@
                                         navigator="true" 
                                         pattern="dd MMMM yy - hh:mm a">
                                     </p:calendar>
+
+                                    <h:outputLabel class="w-100 m-2" value="Status"/>
+                                    <p:selectOneMenu value="#{patientInvestigationController.patientInvestigationStatus}" >
+                                        <f:selectItems 
+                                            value="#{enumController.patientInvestigationStatuses}" 
+                                            var="pis" 
+                                            itemValue="#{pis}" itemLabel="#{pis.label}"></f:selectItems>
+                                    </p:selectOneMenu>
+
                                     <h:outputLabel class="w-100 m-2" value="Ordered Institution"/>
                                     <p:autoComplete 
                                         class="w-100 m-2"
@@ -69,7 +85,7 @@
                                         </p:selectOneMenu>
                                     </h:panelGroup>
 
-                               
+
                                     <p:commandButton 
                                         class="w-100 m-2" 
                                         id="btnSearchBills" 
@@ -146,7 +162,7 @@
                                     rowsPerPageTemplate="10,25,50"
                                     >
 
-                                    <p:column selectionMode="multiple" width="30">
+                                    <p:column selectionBox="true" width="30">
                                     </p:column>
 
                                     <p:column headerText="Bill Dept ID" width="100">

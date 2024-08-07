@@ -46,6 +46,7 @@ import com.divudi.data.inward.InwardChargeType;
 import com.divudi.data.inward.PatientEncounterComponentType;
 import com.divudi.data.lab.PatientInvestigationStatus;
 import com.divudi.data.lab.Priority;
+import com.divudi.data.lab.SearchDateType;
 import com.divudi.entity.PaymentScheme;
 import com.divudi.entity.Person;
 import java.io.Serializable;
@@ -190,6 +191,10 @@ public class EnumController implements Serializable {
                 paymentMethodsForPharmacyBilling.add(pm);
             }
         }
+    }
+
+    public List<SearchDateType> getSearchDateTypes() {
+        return Arrays.asList(SearchDateType.values());
     }
 
     public List<String> getEnumValues(String enumClassName) {
