@@ -3291,6 +3291,7 @@ public class DataUploadController implements Serializable {
                 categoryFacade.edit(category);
             }
 
+
             ItemFee fee = new ItemFee();
             fee.setCreatedAt(new Date());
             fee.setCreater(sessionController.getLoggedUser());
@@ -3300,8 +3301,7 @@ public class DataUploadController implements Serializable {
             fee.setFee(price);
             fee.setInstitution(institution);
             fee.setDepartment(department);
-            itemFeeFacade.create(fee);
-
+            itemFeeFacade.create(fee);      
         }
         return itemFees;
     }
