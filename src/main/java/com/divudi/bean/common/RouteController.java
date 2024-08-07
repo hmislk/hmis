@@ -8,8 +8,6 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.data.InstitutionType;
-import com.divudi.entity.Institution;
 import com.divudi.entity.Route;
 import com.divudi.facade.RouteFacade;
 import com.divudi.bean.common.util.JsfUtil;

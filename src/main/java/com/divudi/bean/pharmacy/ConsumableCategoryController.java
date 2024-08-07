@@ -5,7 +5,6 @@ import com.divudi.facade.ConsumableCategoryFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.common.util.JsfUtil.PersistAction;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,7 +18,6 @@ import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Named;
-import javax.persistence.TemporalType;
 
 @Named("consumableCategoryController")
 @SessionScoped
