@@ -10,8 +10,6 @@ import com.divudi.bean.common.BillController;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ConfigOptionController;
-import com.divudi.bean.common.ControllerWithMultiplePayments;
-import com.divudi.bean.common.ControllerWithPatientViewScope;
 import com.divudi.bean.common.DoctorSpecialityController;
 import com.divudi.bean.common.ItemForItemController;
 import com.divudi.bean.common.PriceMatrixController;
@@ -30,7 +28,6 @@ import com.divudi.data.PersonInstitutionType;
 import com.divudi.data.channel.ChannelScheduleEvent;
 import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.ejb.BillNumberGenerator;
-import com.divudi.ejb.ChannelBean;
 import com.divudi.ejb.ServiceSessionBean;
 import com.divudi.ejb.SmsManagerEjb;
 import com.divudi.entity.AgentHistory;
@@ -79,7 +76,6 @@ import static com.divudi.data.PaymentMethod.OnlineSettlement;
 import com.divudi.data.dataStructure.ComponentDetail;
 import com.divudi.ejb.StaffBean;
 import com.divudi.entity.Doctor;
-import com.divudi.entity.Fee;
 import com.divudi.entity.Payment;
 import com.divudi.entity.UserPreference;
 import com.divudi.entity.channel.AgentReferenceBook;
@@ -429,9 +425,9 @@ public class BookingControllerViewScopeMonth implements Serializable {
             return;
         }
 
-        Bill printingBill = createBillForChannelReshedule(selectedBillSession);
+        Bill printingBill = createBillForChannelReshedule(selectedBillSession);        
         BillItem savingBillItem = createSessionItemForReshedule(printingBill);
-        if (printingBill.getBillTypeAtomic().getBillFinanceType() == BillFinanceType.CASH_IN) {
+        if (printingBill.getBillType() == BillType.ChannelResheduleWithPayment) {
             createPayment(printingBill, paymentMethod);
         }
 
@@ -445,6 +441,38 @@ public class BookingControllerViewScopeMonth implements Serializable {
         newBillSession.setSessionDate(getSelectedSessionInstanceForRechedule().getSessionDate());
         newBillSession.setSessionTime(getSelectedSessionInstanceForRechedule().getSessionTime());
         newBillSession.setStaff(getSelectedSessionInstanceForRechedule().getStaff());
+        
+        printingBill.setSingleBillSession(newBillSession);
+        printingBill.setSingleBillItem(savingBillItem);
+        printingBill.getSingleBillItem().setItem(savingBillItem.getItem());
+        
+        newBillSession.setBill(printingBill);
+        
+        PriceMatrix priceMatrix;
+        List<BillFee> savingBillFees = new ArrayList<>();
+
+        priceMatrix = priceMatrixController.fetchChannellingMemberShipDiscount(paymentMethod, paymentScheme, selectedSessionInstance.getOriginatingSession().getCategory());
+        System.out.println("priceMatrix = " + priceMatrix);
+
+        List<BillFee> savingBillFeesFromSession = createBillFeeForSessions(printingBill, savingBillItem, true, priceMatrix);
+        
+
+        if (savingBillFeesFromSession != null) {
+            savingBillFees.addAll(savingBillFeesFromSession);
+        }
+        
+        savingBillItem.setHospitalFee(billBeanController.calFeeValue(FeeType.OwnInstitution, savingBillItem));
+        savingBillItem.setStaffFee(billBeanController.calFeeValue(FeeType.Staff, savingBillItem));
+        savingBillItem.setBillSession(newBillSession);
+        getBillSessionFacade().edit(newBillSession);
+        printingBill.setHospitalFee(billBeanController.calFeeValue(FeeType.OwnInstitution, printingBill));
+        printingBill.setStaffFee(billBeanController.calFeeValue(FeeType.Staff, printingBill));
+        printingBill.setSingleBillItem(savingBillItem);
+        printingBill.setSingleBillSession(newBillSession);
+        printingBill.setBillFees(savingBillFees);
+        
+        calculateBillTotalsFromBillFees(printingBill, savingBillFees);
+        
         List<Integer> lastSessionReservedNumbers = CommonFunctions.convertStringToIntegerList(getSelectedSessionInstance().getOriginatingSession().getReserveNumbers());
         List<Integer> reservedNumbers = CommonFunctions.convertStringToIntegerList(getSelectedSessionInstanceForRechedule().getOriginatingSession().getReserveNumbers());
 
@@ -6248,7 +6276,7 @@ public class BookingControllerViewScopeMonth implements Serializable {
             }
         }
 
-        if (settlePaymentMethod == PaymentMethod.Agent && settleInstitution == null) {
+        if (settlePaymentMethod == PaymentMethod.Agent && institution == null) {
             JsfUtil.addErrorMessage("Please select Agency");
             return true;
         }

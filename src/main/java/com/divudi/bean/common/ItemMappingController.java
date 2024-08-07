@@ -8,7 +8,6 @@ import com.divudi.entity.ItemMapping;
 import com.divudi.facade.ItemFacade;
 import com.divudi.facade.ItemMappingFacade;
 import com.divudi.bean.common.util.JsfUtil;
-import com.google.common.collect.HashBiMap;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;

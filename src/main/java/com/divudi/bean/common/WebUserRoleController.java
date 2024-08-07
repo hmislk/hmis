@@ -11,7 +11,6 @@ package com.divudi.bean.common;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.entity.WebUserRole;
 import com.divudi.facade.WebUserRoleFacade;
-import com.google.common.collect.HashBiMap;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;

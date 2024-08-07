@@ -50,7 +50,7 @@
                                         <div class="d-flex align-items-center w-100">
                                             <p:inputText id="txtFilter" class="w-100" value="#{bookingControllerViewScope.sessionInstanceFilter}" placeholder="Search">
                                                 <p:ajax event="keyup" process="@this" update="groupFilteredSessions gdManageBookings panelBookingDetails" 
-                                                        listener="#{bookingControllerViewScope.filterSessionInstancesNew}"></p:ajax>
+                                                        listener="#{bookingControllerViewScope.filterSessionInstances()}"></p:ajax>
                                             </p:inputText>
 
                                         </div>

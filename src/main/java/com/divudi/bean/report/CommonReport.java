@@ -36,7 +36,6 @@ import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.InstitutionFacade;
 import com.divudi.facade.PriceMatrixFacade;
 import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.InstitutionType;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;

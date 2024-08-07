@@ -13,7 +13,6 @@ import com.divudi.bean.common.SessionController;
 
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
-import com.divudi.data.DepartmentType;
 import com.divudi.data.inward.SurgeryBillType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.bean.common.util.JsfUtil;
