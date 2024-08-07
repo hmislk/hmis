@@ -3307,9 +3307,7 @@ public class DataUploadController implements Serializable {
             itemFeeFacade.create(fee);
 
         }
-
         return itemFees;
-
     }
 
     private List<Department> readDepartmentFromExcel(InputStream inputStream) throws IOException {
