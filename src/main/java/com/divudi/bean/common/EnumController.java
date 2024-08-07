@@ -126,6 +126,16 @@ public class EnumController implements Serializable {
             }
         }
     }
+    
+    public void fillPaymentMethodsForOpdBillCanceling() {
+        paymentMethodsForOpdBillCanceling = new ArrayList<>();
+        for (PaymentMethod pm : PaymentMethod.values()) {
+            boolean include = configOptionApplicationController.getBooleanValueByKey(pm.getLabel() + " is available for OPD Bill Canceling", true);
+            if (include) {
+                paymentMethodsForOpdBillCanceling.add(pm);
+            }
+        }
+    }
 
     public void fillPaymentMethodsForPackageBilling() {
         paymentMethodsForOpdBilling = new ArrayList<>();
@@ -853,7 +863,7 @@ public class EnumController implements Serializable {
     public void setPaymentMethodsForStaffCreditSettle(List<PaymentMethod> paymentMethodsForStaffCreditSettle) {
         this.paymentMethodsForStaffCreditSettle = paymentMethodsForStaffCreditSettle;
     }
-
+  
     public List<PaymentMethod> getPaymentMethodsForPatientDepositRefund() {
         paymentMethodsForPatientDepositRefund = new ArrayList<>();
         for (PaymentMethod pm : PaymentMethod.values()) {
