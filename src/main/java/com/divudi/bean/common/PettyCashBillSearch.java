@@ -323,7 +323,6 @@ public class PettyCashBillSearch implements Serializable {
     public void cancelBill() {
         Date current= new Date();
         Date midNight=getMidnight();
-        System.out.println("current.before(midNight) = " + current.before(midNight));
         if (configOptionApplicationController.getBooleanValueByKey("Enable PettyCash bill cancellation restriction after midnight")) {
             if (!current.before(midNight)) {
                 JsfUtil.addErrorMessage("Bill cancellation is not allowed after midnight.");
