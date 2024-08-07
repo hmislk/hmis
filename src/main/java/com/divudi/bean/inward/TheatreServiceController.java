@@ -14,7 +14,6 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.FeeType;
 import com.divudi.data.SessionNumberType;
-import com.divudi.data.dataStructure.ServiceFee;
 import com.divudi.data.inward.InwardChargeType;
 import com.divudi.entity.Department;
 import com.divudi.entity.Item;

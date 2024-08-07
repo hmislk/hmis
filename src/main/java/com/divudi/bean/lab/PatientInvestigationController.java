@@ -13,7 +13,6 @@ import com.divudi.data.InvestigationItemType;
 import com.divudi.data.InvestigationReportType;
 import com.divudi.data.ItemType;
 import com.divudi.data.MessageType;
-import com.divudi.data.SmsSentResponse;
 import com.divudi.data.lab.Dimension;
 import com.divudi.data.lab.DimensionTestResult;
 import com.divudi.data.lab.SampleRequestType;

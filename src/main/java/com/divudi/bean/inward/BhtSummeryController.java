@@ -56,7 +56,6 @@ import com.divudi.entity.inward.PatientRoom;
 import com.divudi.entity.inward.TimedItem;
 import com.divudi.entity.inward.TimedItemFee;
 import com.divudi.entity.membership.InwardMemberShipDiscount;
-import com.divudi.entity.membership.MembershipScheme;
 import com.divudi.facade.AdmissionTypeFacade;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;

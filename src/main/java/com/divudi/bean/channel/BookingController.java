@@ -72,13 +72,11 @@ import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillFinanceType;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.OptionScope;
-import com.divudi.data.SmsSentResponse;
 import com.divudi.data.dataStructure.ComponentDetail;
 import com.divudi.entity.Fee;
 import com.divudi.entity.Payment;
 import com.divudi.entity.channel.AppointmentActivity;
 import com.divudi.entity.channel.SessionInstanceActivity;
-import com.divudi.entity.lab.ItemForItem;
 import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.SessionInstanceFacade;
 import com.divudi.java.CommonFunctions;
@@ -2767,7 +2765,9 @@ public class BookingController implements Serializable, ControllerWithPatient {
             BillType.ChannelCash,
             BillType.ChannelOnCall,
             BillType.ChannelStaff,
-            BillType.ChannelCredit
+            BillType.ChannelCredit,
+            BillType.ChannelResheduleWithOutPayment,
+            BillType.ChannelResheduleWithPayment,
         };
         List<BillType> bts = Arrays.asList(billTypes);
         String sql = "Select bs "

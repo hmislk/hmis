@@ -7,14 +7,13 @@ package com.divudi.entity.hr;
 import com.divudi.data.hr.PaysheetComponentType;
 import java.io.Serializable;
 import javax.persistence.Entity;
-import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  *
  * @author Buddhika
  */
 @Entity
-@XmlRootElement
+
 public class BasicSalary extends PaysheetComponent implements Serializable {
 
     private static final long serialVersionUID = 1L;
