@@ -14,9 +14,6 @@
         <ui:composition template="/resources/template/template.xhtml">
 
             <ui:define name="content">
-
-
-
                 <h:form id="bill" >
                     <p:growl id="panelError" />
                     <p:commandButton id="nullButton2" value="No Action" action="#" style="display: none;" ></p:commandButton>
@@ -71,9 +68,10 @@
                                         <h:outputLabel value="Comment"/>
                                         <p:inputTextarea class="w-100" value="#{storeIssueController.preBill.comments}" id="comment"/>
 
-                                                                                                                                                            </h:panelGrid>
-
-
+                                        <p:watermark value="Request Number" for="req"/>
+                                        <p:watermark value="Issuing Department" for="acDept"/>
+                                        <p:watermark value="Comment" for="comment"/>
+                                    </h:panelGrid>
                                     <p:commandButton  
                                         accesskey="s" 
                                         value="Issue" 
@@ -277,23 +275,18 @@
                             </div>
                         </div>
                     </p:panel>
-
-
                 </h:form>
 
                 <h:form>
-
-
                     <p:panel  rendered="#{storeIssueController.billPreview}" >
-
-
-
-
                         <p:commandButton id="nullButton3" value="No Action" action="#" style="display: none;" ></p:commandButton>
                         <p:defaultCommand  target="btnPrint" />  
 
                         <div class="nonPrintBlock" >
-                            <p:commandButton accesskey="p" id="btnPrint" value="Print" 
+                            <p:commandButton
+                                             accesskey="p" 
+                                             id="btnPrint" 
+                                             value="Print" 
                                              icon="fas fa-print"
                                              ajax="false"
                                              class="ui-button-info" action="#" >
@@ -307,24 +300,15 @@
                                 ajax="false" action="/store/store_issue"
                                 actionListener="#{storeIssueController.resetAll()}" >
                             </p:commandButton>
-
                         </div>
                         <div >
                             <h:panelGroup   id="gpBillPreview"> 
                                 <st:issue bill="#{storeIssueController.printBill}"></st:issue>
                             </h:panelGroup>
                         </div>
-
-
-
                     </p:panel>
-
-
-
                 </h:form>
-
             </ui:define>
-
         </ui:composition>
 
     </h:body>
