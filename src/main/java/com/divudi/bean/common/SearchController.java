@@ -4166,6 +4166,12 @@ public class SearchController implements Serializable {
 
     private String createKeySql(HashMap tmp) {
         String sql = "";
+        
+        if (getSearchKeyword().getRequestNo()!= null && !getSearchKeyword().getRequestNo().trim().equals("")) {
+            sql += " and  ((b.qutationNumber) like :qutNo )";
+            tmp.put("qutNo", "%" + getSearchKeyword().getRequestNo().trim().toUpperCase() + "%");
+        }
+
         if (getSearchKeyword().getToInstitution() != null && !getSearchKeyword().getToInstitution().trim().equals("")) {
             sql += " and  ((b.toInstitution.name) like :toIns )";
             tmp.put("toIns", "%" + getSearchKeyword().getToInstitution().trim().toUpperCase() + "%");
