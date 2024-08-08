@@ -46,9 +46,6 @@ import ca.uhn.hl7v2.parser.Parser;
 
 import com.divudi.data.InvestigationItemValueType;
 import com.divudi.data.lab.SysMex;
-import com.divudi.data.lab.SysMexOld;
-import com.divudi.data.lab.SysMexAdf1;
-import com.divudi.data.lab.SysMexAdf2;
 import com.divudi.data.lab.SysMexTypeA;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;

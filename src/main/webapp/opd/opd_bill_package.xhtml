@@ -421,7 +421,6 @@
                                                 <h:outputText styleClass="fa-solid fa-circle-plus" />
                                                 <h:outputText value="Add New Items" class="mx-4"></h:outputText>
                                             </f:facet>
-
                                             <p:selectOneListbox 
                                                 id="advanced" 
                                                 value="#{billPackageController.currentBillItem.item}"
@@ -625,6 +624,8 @@
                                                             ajax="false"
                                                             icon="fa fa-check"
                                                             action="#{billPackageController.settleBill()}" 
+                                                            onclick="if (!confirm('Are you sure you want to Settle This Bill ?'))
+                                                        return false;"
                                                             class="ui-button-success mx-1"
                                                             >
                                                         </p:commandButton>

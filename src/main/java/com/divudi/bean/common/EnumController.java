@@ -74,9 +74,9 @@ public class EnumController implements Serializable {
     List<PaymentMethod> paymentMethodsForChannelSettling;
     List<PaymentMethod> paymentMethodsForPharmacyBilling;
     private List<PaymentMethod> paymentMethodsForPatientDepositRefund;
-
-    private List<PaymentMethod> paymentMethodsForPatientDeposit;
     private List<PaymentMethod> paymentMethodsForStaffCreditSettle;
+    private List<PaymentMethod> paymentMethodsForPatientDeposit;
+    private List<PaymentMethod> paymentMethodsForOpdBillCanceling;
     SessionNumberType[] sessionNumberTypes;
 
     @PostConstruct
@@ -123,6 +123,16 @@ public class EnumController implements Serializable {
             boolean include = configOptionApplicationController.getBooleanValueByKey(pm.getLabel() + " is available for OPD Billing", true);
             if (include) {
                 paymentMethodsForOpdBilling.add(pm);
+            }
+        }
+    }
+    
+    public void fillPaymentMethodsForOpdBillCanceling() {
+        paymentMethodsForOpdBillCanceling = new ArrayList<>();
+        for (PaymentMethod pm : PaymentMethod.values()) {
+            boolean include = configOptionApplicationController.getBooleanValueByKey(pm.getLabel() + " is available for OPD Bill Canceling", true);
+            if (include) {
+                paymentMethodsForOpdBillCanceling.add(pm);
             }
         }
     }
@@ -853,7 +863,7 @@ public class EnumController implements Serializable {
     public void setPaymentMethodsForStaffCreditSettle(List<PaymentMethod> paymentMethodsForStaffCreditSettle) {
         this.paymentMethodsForStaffCreditSettle = paymentMethodsForStaffCreditSettle;
     }
-
+  
     public List<PaymentMethod> getPaymentMethodsForPatientDepositRefund() {
         paymentMethodsForPatientDepositRefund = new ArrayList<>();
         for (PaymentMethod pm : PaymentMethod.values()) {
@@ -867,6 +877,21 @@ public class EnumController implements Serializable {
 
     public void setPaymentMethodsForPatientDepositRefund(List<PaymentMethod> paymentMethodsForPatientDepositRefund) {
         this.paymentMethodsForPatientDepositRefund = paymentMethodsForPatientDepositRefund;
+    }
+
+    public List<PaymentMethod> getPaymentMethodsForOpdBillCanceling() {
+        paymentMethodsForOpdBillCanceling = new ArrayList<>();
+        for (PaymentMethod pm : PaymentMethod.values()) {
+            boolean include = configOptionApplicationController.getBooleanValueByKey(pm.getLabel() + " is available for OPD Bill Cancel", true);
+            if (include) {
+                paymentMethodsForOpdBillCanceling.add(pm);
+            }
+        }
+        return paymentMethodsForOpdBillCanceling;
+    }
+
+    public void setPaymentMethodsForOpdBillCanceling(List<PaymentMethod> paymentMethodsForOpdBillCanceling) {
+        this.paymentMethodsForOpdBillCanceling = paymentMethodsForOpdBillCanceling;
     }
 
 }

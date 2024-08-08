@@ -23,7 +23,6 @@ import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillTypeAtomic;
-import com.divudi.entity.BillFee;
 import com.divudi.entity.Payment;
 import com.divudi.entity.RefundBill;
 import com.divudi.facade.PaymentFacade;

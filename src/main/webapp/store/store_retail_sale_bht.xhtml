@@ -103,7 +103,7 @@
                                                     <p:outputLabel value="Add Items" class="mx-2" ></p:outputLabel>
                                                 </f:facet>
                                                 <div class="d-flex justify-content-between">
-                                                    <div>
+                                                    <div class="d-flex gap-2">
                                                         <p:autoComplete 
                                                             accesskey="i"   
                                                             forceSelection="true"  
@@ -111,25 +111,28 @@
                                                             value="#{storeSaleBhtController.stock}" 
                                                             completeMethod="#{storeSaleBhtController.completeAvailableStocksStore}" 
                                                             var="i" 
+                                                            style="width: 400px;"
+                                                            inputStyleClass="form-control"
+                                                            maxResults="25"
+                                                            scrollHeight="600"
                                                             itemLabel="#{i.itemBatch.item.name}" 
                                                             itemValue="#{i}" 
-                                                            placeholder="Medicines/Devices"
+                                                            placeholder="Store Item / Devices"
                                                             >
-                                                            
-                                                            <p:column headerText="Item">
+                                                            <p:column headerText="Item" style="padding:6px; width: 500px;">
                                                                 <h:outputLabel value="#{i.itemBatch.item.name}" ></h:outputLabel>
                                                             </p:column>
-                                                            <p:column headerText="Code">
+                                                            <p:column headerText="Code" style="padding:6px; width: 100px;">
                                                                 <h:outputLabel value="#{i.itemBatch.item.code}" ></h:outputLabel>
                                                             </p:column>
-                                                            <p:column headerText="Stocks"> 
-                                                                <h:outputLabel value="#{i.stock}" >
-                                                                    <f:convertNumber pattern="#,###.0" ></f:convertNumber>
+                                                            <p:column headerText="Stocks" style="padding:6px; width: 80px;"> 
+                                                                <h:outputLabel value="#{i.stock}" style="text-align: right;" class="w-100">
+                                                                    <f:convertNumber pattern="#,###" ></f:convertNumber>
                                                                 </h:outputLabel>
                                                             </p:column>
-                                                            <p:column headerText="Expiry">
+                                                            <p:column headerText="Expiry" style="padding:6px; width: 130px;">
                                                                 <h:outputLabel value="#{i.itemBatch.dateOfExpire}" >
-                                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
+                                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
                                                                 </h:outputLabel>
                                                             </p:column>
                                                             <p:ajax event="focus" process="acStock" ></p:ajax>
@@ -141,9 +144,9 @@
                                                             autocomplete="off"  
                                                             accesskey="q"   
                                                             id="txtQty" 
+                                                            style="width: 150px;"
                                                             value="#{storeSaleBhtController.qty}" 
                                                             placeholder="Quantity"
-                                                            class="mx-5"
                                                             >
                                                             <p:ajax event="keyup"  listener="#{storeSaleBhtController.calculateBillItemListner}" process="acStock txtQty"></p:ajax>
                                                             <p:ajax event="blur"  listener="#{storeSaleBhtController.calculateBillItemListner}" process="acStock txtQty"></p:ajax>

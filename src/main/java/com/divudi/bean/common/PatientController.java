@@ -25,7 +25,6 @@ import com.divudi.data.HistoryType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.Sex;
 import com.divudi.data.Title;
-import com.divudi.data.clinical.ClinicalFindingValueType;
 import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.data.dataStructure.YearMonthDay;
 import com.divudi.data.hr.ReportKeyWord;
@@ -41,9 +40,7 @@ import com.divudi.entity.Patient;
 import com.divudi.entity.PatientEncounter;
 import com.divudi.entity.Person;
 import com.divudi.entity.Relation;
-import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
-import com.divudi.entity.clinical.ClinicalFindingValue;
 import com.divudi.entity.inward.Admission;
 import com.divudi.entity.lab.PatientInvestigation;
 import com.divudi.entity.lab.PatientSample;
@@ -1124,7 +1121,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         createNewPatientDepositRefund();
         return "/payments/patient/send?faces-redirect=true;";
     }
-    
+  
     public String navigateToPatientDepositRefundFromOPDBill(Patient patient) {
         current = patient;
         bill = new Bill();
@@ -1133,7 +1130,6 @@ public class PatientController implements Serializable, ControllerWithPatient {
         return "/payments/patient/send?faces-redirect=true;";
     }
     
-
     public void makeNull() {
         current = null;
         paymentMethodData = null;

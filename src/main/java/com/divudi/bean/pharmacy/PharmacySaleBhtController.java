@@ -37,7 +37,6 @@ import com.divudi.entity.Patient;
 import com.divudi.entity.PatientEncounter;
 import com.divudi.entity.PreBill;
 import com.divudi.entity.PriceMatrix;
-import com.divudi.entity.UserNotification;
 import com.divudi.entity.pharmacy.Amp;
 import com.divudi.entity.pharmacy.Ampp;
 import com.divudi.entity.pharmacy.PharmaceuticalBillItem;

@@ -109,8 +109,7 @@
                                     <div class="row">
                                         <p:focus  context="acIx"/>
                                         <div class="col-md-10">
-                                            <p:watermark for="acIx" value="Enter first few letters of the service or item to add" />
-
+                                            
                                             <p:selectOneListbox 
                                                 filter="true"
                                                 filterMatchMode="contains"
@@ -312,9 +311,6 @@
                                     </div>
                                 </p:panel>
 
-
-
-
                             </div>
                             <div class="col-md-6" >
 
@@ -332,6 +328,8 @@
                                                     ajax="false"
                                                     icon="fa fa-check"              
                                                     action="#{opdPreBillController.settleBill}" 
+                                                    onclick="if (!confirm('Are you sure you want to Settle This Bill ?'))
+                                                        return false;"
                                                     class="ui-button-success"
                                                     >
                                                 </p:commandButton>
