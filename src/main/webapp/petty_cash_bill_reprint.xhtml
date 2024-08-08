@@ -30,7 +30,7 @@
                                 </p:commandButton>
                             </h:panelGroup>
 
-                            <h:panelGroup rendered="#{webUserController.hasPrivilege('PettyCashBillCancellation')}" >
+                            <h:panelGroup rendered="#{webUserController.hasPrivilege('PettyCashBillCancellationApprove')}" >
                                 <p:commandButton ajax="false" value="Approve" action="#{pettyCashBillController.pettyCashCancelBillApprove}" disabled="#{pettyCashBillSearch.bill.approveAt ne null}">                           
                                 </p:commandButton>
                             </h:panelGroup>
