@@ -342,6 +342,7 @@ public class UserPrivilageController implements Serializable {
         TreeNode paymentRefundNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.PaymentBillRefund, "Payment Refund"), paymentNode);
         TreeNode paymentReactivationNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.PaymentBillReactivation, "Payment Reactivation"), paymentNode);
         TreeNode changeCreditLimit = new DefaultTreeNode(new PrivilegeHolder(Privileges.ChangeCreditLimitInCC, "Change Credit Limit in Collecting Centre"), paymentNode);
+        TreeNode approvePettyCashBillCancellationNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.PettyCashBillCancellation, "Petty Cash Bill Cancellation Approve"), paymentNode);
 
         TreeNode reportsNode = new DefaultTreeNode(new PrivilegeHolder(null, "Reports"), allNode);
         TreeNode reportsMenuNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.Reports, "Reports Menu"), reportsNode);

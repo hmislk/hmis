@@ -53,6 +53,8 @@ public class PettyCashBillController implements Serializable {
     CommonController commonController;
     @Inject
     BillController billController;
+    @Inject
+    WebUserController webUserController;
     private Bill current;
     private boolean printPreview = false;
     @EJB
@@ -75,6 +77,18 @@ public class PettyCashBillController implements Serializable {
     private boolean printPriview;
     private List<Bill> billList;
     
+    
+    public void pettyCashCancelBillApprove(){
+        if (current==null) {
+            JsfUtil.addErrorMessage("Approved Bill Error");
+        }
+        Bill b=current.getReferenceBill();
+        b.setApproveAt(new Date());
+        b.setApproveUser(sessionController.getLoggedUser());
+        System.out.println("current = " + b);
+        billController.save(b);
+    }
+    
     public String NavigatePettyAndIouReprint(){
         if (current.getBillType()==BillType.PettyCash) {
             return "petty_cash_bill_reprint";
@@ -82,6 +96,10 @@ public class PettyCashBillController implements Serializable {
         if (current.getBillType()==BillType.IouIssue) {
             return "iou_bill_reprint";
         }
+        if (current.getBillType()==BillType.PettyCashCancelApprove) {
+            return "petty_cash_bill_reprint";
+        }
+        
         return "";
     }
 

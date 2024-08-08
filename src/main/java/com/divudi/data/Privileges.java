@@ -151,6 +151,7 @@ public enum Privileges {
     PaymentBillCancel,
     PaymentBillRefund,
     PaymentBillReactivation,
+    PettyCashBillCancellation,
     ReportsSearchCashCardOwn,
     ReportsSearchCreditOwn,
     ReportsItemOwn,
