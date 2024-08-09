@@ -8,6 +8,7 @@ package com.divudi.ws.channel;
 import com.divudi.bean.channel.AgentReferenceBookController;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.CommonController;
+import com.divudi.bean.common.ConsultantController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
@@ -26,6 +27,7 @@ import com.divudi.entity.BillItem;
 import com.divudi.entity.BillSession;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
+import com.divudi.entity.Consultant;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.ItemFee;
@@ -66,17 +68,20 @@ import javax.ws.rs.Produces;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.persistence.TemporalType;
+import javax.ws.rs.POST;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 /**
  * REST Web Service
  *
- * @author Archmage-Dushan
+ * @author Dr M H Buddhika Ariyaratne
  */
-@Path("api")
+@Path("channel")
 @RequestScoped
-public class Api {
+public class ChannelApi {
 
     @Context
     private UriInfo context;
@@ -104,7 +109,6 @@ public class Api {
     @EJB
     private PersonFacade personFacade;
 
-    
     private CommonFunctions commonFunctions;
     @EJB
     private ChannelBean channelBean;
@@ -121,38 +125,150 @@ public class Api {
     private CommonController commonController;
     @Inject
     AgentReferenceBookController AgentReferenceBookController;
+    @Inject
+    ConsultantController consultantController;
 
     /**
      * Creates a new instance of Api
      */
-    public Api() {
+    public ChannelApi() {
     }
 
-    /**
-     * Retrieves representation of an instance of com.divudi.ws.channel.Api
-     *
-     * @return an instance of java.lang.String
-     */
-    @GET
-    @Path("/json")
-    @Produces("application/json")
-    public String getJson() {
+    @POST
+    @Path("/specializations")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getSpecializations(String requestBody) {
+        JSONObject requestJson = new JSONObject(requestBody);
+        String type = requestJson.getString("type");
+        String bookingChannel = requestJson.getString("bookingChannel");
+
+        List<Object[]> specializations = specilityList();
+        Map<String, String> specialityMap = new HashMap<>();
+
+        for (Object[] spec : specializations) {
+            specialityMap.put(String.valueOf(spec[0]), String.valueOf(spec[1]));
+        }
+
+        JSONObject data = new JSONObject();
+        data.put("specialityMap", specialityMap);
+
+        JSONObject response = new JSONObject();
+        response.put("code", "202");
+        response.put("message", "Accepted");
+        response.put("data", data);
+
+        return Response.status(Response.Status.ACCEPTED).entity(response.toString()).build();
+    }
+
+    @POST
+    @Path("/hospitals")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response getHospitalList(Map<String, String> requestBody) {
+        // Extract the type and bookingChannel from the request body
+        String type = requestBody.get("type");
+        String bookingChannel = requestBody.get("bookingChannel");
+
+        // You can use these variables (type and bookingChannel) if needed
+        // For this example, let's assume they are used to filter or log, etc.
+        // But in this implementation, we just call the hospitalList method
+        List<Object[]> hospitals = hospitalList();
+
+        // Prepare the response data
+        Map<String, String> hosMap = new HashMap<>();
+        for (Object[] hospital : hospitals) {
+            hosMap.put((String) hospital[2], (String) hospital[1]); // code -> name
+        }
+
+        Map<String, Object> responseData = new HashMap<>();
+        responseData.put("hosMap", hosMap);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("code", "202");
+        response.put("message", "Accepted");
+        response.put("data", responseData);
+        response.put("detailMessage", "Success");
+
+        // Return the response
+        return Response.status(Response.Status.ACCEPTED).entity(response).build();
+    }
+
+    @POST
+    @Path("/doctorAvailability")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getDoctorList(Map<String, Object> requestBody) {
+        // Extract parameters from the request body
+        String type = (String) requestBody.get("type");
+        String bookingChannel = (String) requestBody.get("bookingChannel");
+        String hosID = (String) requestBody.get("hosID");
+        String specID = (String) requestBody.get("specID");
+        String date = (String) requestBody.get("date");
+        String name = (String) requestBody.get("name");
+        Integer page = (Integer) requestBody.get("page");
+        Integer offset = (Integer) requestBody.get("offset");
+
+        // Call a method to get the list of doctors based on the search criteria
+        // List<Object[]> doctors = doctorList(type, bookingChannel, hosID, specID, date, name, page, offset);
+        // Prepare the resultMap to hold doctor details
+        Map<String, Object> resultMap = new HashMap<>();
+        for (Consultant doctor : consultantController.getItems()) {
+             Map<String, String> doctorDetails = new HashMap<>();
+             doctorDetails.put("AppDay", (String) new Date().toString());
+             doctorDetails.put("HosTown", (String) doctor.getInstitution().getAddress());
+             doctorDetails.put("SpecName", (String) doctor.getSpeciality().getName());
+             doctorDetails.put("HosName", (String) doctor.getInstitution().getName());
+             doctorDetails.put("SpecializationId", doctor.getSpeciality().getId().toString());
+             doctorDetails.put("HosCode", (String) doctor.getInstitution().getCode());
+             doctorDetails.put("AppDate", (String) doctor.getCreatedAt().toString());
+             doctorDetails.put("DoctorNotes", (String) doctor.getDescription());
+             doctorDetails.put("DocName", (String) doctor.getPerson().getNameWithTitle());
+             doctorDetails.put("DoctorNo", (String) doctor.getId().toString());
+             resultMap.put((String) doctor.getId().toString(), doctorDetails);
+        }
+        // Construct the response JSON
+        Map<String, Object> responseData = new HashMap<>();
+        responseData.put("resultMap", resultMap);
+
+        Map<String, Object> responsePage = new HashMap<>();
+        responsePage.put("pageNo", page);
+        responsePage.put("offset", offset);
+        responsePage.put("pages", 1); // Adjust this based on actual pagination logic
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("code", "202");
+        response.put("message", "Accepted");
+        response.put("data", responseData);
+        response.put("detailMessage", "Success");
+        response.put("page", responsePage);
+
+        // Return the response
+        return Response.status(Response.Status.ACCEPTED).entity(response).build();
+    }
+
+
+
+@GET
+@Path("/json")
+@Produces("application/json")
+public String getJson() {
         //TODO return proper representation object
         return "<html><h:body><h1>Hello, World!!</h:body></h1></html>";
     }
 
     @GET
-    @Path("/json2")
-    @Produces("text/html")
-    public String getJson2() {
+@Path("/json2")
+@Produces("text/html")
+public String getJson2() {
         //TODO return proper representation object
         return "<html><h:body><h1>Hello, World 2!!</h:body></h1></html>";
     }
 
     @GET
-    @Path("/doctors")
-    @Produces("application/json")
-    public String getDoctors() {
+@Path("/doctors")
+@Produces("application/json")
+public String getDoctors() {
         List<Object[]> consultants = doctorsListAll();
         JSONArray array = new JSONArray();
         JSONObject jSONObjectOut = new JSONObject();
@@ -180,9 +296,9 @@ public class Api {
 
 //    /sessions/DR0001
     @GET
-    @Path("/doctors/{doc_code}")
-    @Produces("application/json")
-    public String getDoctor(@PathParam("doc_code") String doc_code) {
+@Path("/doctors/{doc_code}")
+@Produces("application/json")
+public String getDoctor(@PathParam("doc_code") String doc_code) {
         JSONArray array = new JSONArray();
         JSONObject jSONObjectOut = new JSONObject();
         try {
@@ -223,9 +339,9 @@ public class Api {
 //    }
 //    /sessions/DR0001
     @GET
-    @Path("/sessions/{doc_code}")
-    @Produces("application/json")
-    public String getSessions(@PathParam("doc_code") String doc_code) {
+@Path("/sessions/{doc_code}")
+@Produces("application/json")
+public String getSessions(@PathParam("doc_code") String doc_code) {
         JSONObject object = new JSONObject();
         JSONArray array = new JSONArray();
         JSONArray array1 = new JSONArray();
@@ -341,9 +457,9 @@ public class Api {
 
 //    /makeBooking/Dushan/0788044212/1/******/DR0001/20385287/451
     @GET
-    @Path("/makeBooking/{name}/{phone}/{hospital_id}/{session_id}/{doc_code}/{agent_id}/{agent_reference_no}")
-    @Produces("application/json")
-    public String makeBooking(@PathParam("name") String name, @PathParam("phone") String phone,
+@Path("/makeBooking/{name}/{phone}/{hospital_id}/{session_id}/{doc_code}/{agent_id}/{agent_reference_no}")
+@Produces("application/json")
+public String makeBooking(@PathParam("name") String name, @PathParam("phone") String phone,
             @PathParam("hospital_id") String hospital_id, @PathParam("session_id") String session_id, @PathParam("doc_code") String doc_code,
             @PathParam("agent_id") String agent_id, @PathParam("agent_reference_no") String agent_reference_no) {
         JSONArray bill = new JSONArray();
@@ -354,7 +470,7 @@ public class Api {
         Long ss_id = Long.parseLong(session_id);
         Long a_id = Long.parseLong(agent_id);
 //        Long ar_no = Long.parseLong(agent_reference_no);
-        
+
         try {
 
             String s = fetchErrors(name, phone, doc_code, ss_id, a_id, agent_reference_no, "0");
@@ -406,9 +522,9 @@ public class Api {
 
 //    /makeBooking/Dushan/0788044212/1/******/DR0001/20385287/451/1
     @GET
-    @Path("/makeBooking/{name}/{phone}/{hospital_id}/{session_id}/{doc_code}/{agent_id}/{agent_reference_no}/{foriegn}")
-    @Produces("application/json")
-    public String makeBooking(@PathParam("name") String name, @PathParam("phone") String phone,
+@Path("/makeBooking/{name}/{phone}/{hospital_id}/{session_id}/{doc_code}/{agent_id}/{agent_reference_no}/{foriegn}")
+@Produces("application/json")
+public String makeBooking(@PathParam("name") String name, @PathParam("phone") String phone,
             @PathParam("hospital_id") String hospital_id, @PathParam("session_id") String session_id, @PathParam("doc_code") String doc_code,
             @PathParam("agent_id") String agent_id, @PathParam("agent_reference_no") String agent_reference_no,
             @PathParam("foriegn") String st_foriegn) {
@@ -485,12 +601,12 @@ public class Api {
 //        outputJsonObj.put("output", output);
 //    }
     @GET
-    @Path("/bookings/{bill_id}")
-    @Produces("application/json")
-    public String getBookings(@PathParam("bill_id") String bill_id) {
+@Path("/bookings/{bill_id}")
+@Produces("application/json")
+public String getBookings(@PathParam("bill_id") String bill_id) {
 //        /bookings/20058204
         //        /bookings/20058204
-                JSONObject jSONObjectOut = new JSONObject();
+        JSONObject jSONObjectOut = new JSONObject();
         JSONArray bill = new JSONArray();
         try {
             long b_id = Long.parseLong(bill_id);
@@ -516,12 +632,12 @@ public class Api {
 
 //    /bookings/20385287/2017-11-22/2017-11-22
     @GET
-    @Path("/bookings/{agent_id}/{from_date}/{to_date}")
-    @Produces("application/json")
-    public String getAllBookings(@PathParam("agent_id") String agent_id, @PathParam("from_date") String from_date, @PathParam("to_date") String to_date) {
+@Path("/bookings/{agent_id}/{from_date}/{to_date}")
+@Produces("application/json")
+public String getAllBookings(@PathParam("agent_id") String agent_id, @PathParam("from_date") String from_date, @PathParam("to_date") String to_date) {
 //        /bookings/20058554/2016-08-01/2016-08-15
         //        /bookings/20058554/2016-08-01/2016-08-15
-                JSONObject jSONObjectOut = new JSONObject();
+        JSONObject jSONObjectOut = new JSONObject();
         JSONArray bill = new JSONArray();
         try {
             long b_id = Long.parseLong(agent_id);
@@ -548,9 +664,9 @@ public class Api {
     }
 
     @GET
-    @Path("/specility/")
-    @Produces("application/json")
-    public String getAllSpecilities() {
+@Path("/specility/")
+@Produces("application/json")
+public String getAllSpecilities() {
         List<Object[]> specilities = specilityList();
         JSONArray array = new JSONArray();
         JSONObject jSONObjectOut = new JSONObject();
@@ -561,25 +677,18 @@ public class Api {
                 jSONObject.put("Spec_name", con[1]);
                 array.put(jSONObject);
             }
-//            jSONObjectOut.put("specilities", array);
-//            jSONObjectOut.put("error", "0");
-//            jSONObjectOut.put("error_description", "");
 
         } else {
-//            jSONObjectOut.put("specilities", array);
-//            jSONObjectOut.put("error", "1");
-//            jSONObjectOut.put("error_description", "No Data.");
         }
 
         String json = array.toString();
-//        String json = jSONObjectOut.toString();
         return json;
     }
 
     @GET
-    @Path("/docs/")
-    @Produces("application/json")
-    public String getAllDoctors() {
+@Path("/docs/")
+@Produces("application/json")
+public String getAllDoctors() {
         List<Object[]> consultants = doctorsList(null, null);
         JSONArray array = new JSONArray();
         if (!consultants.isEmpty()) {
@@ -608,9 +717,9 @@ public class Api {
 
 //    /doc/1745
     @GET
-    @Path("/doc/{spec_id}/")
-    @Produces("application/json")
-    public String getDoctorsSelectedSpecility(@PathParam("spec_id") String spec_id) {
+@Path("/doc/{spec_id}/")
+@Produces("application/json")
+public String getDoctorsSelectedSpecility(@PathParam("spec_id") String spec_id) {
         long sp_id = Long.parseLong(spec_id);
         List<Object[]> consultants = doctorsList(null, sp_id);
         JSONArray array = new JSONArray();
@@ -640,9 +749,9 @@ public class Api {
     }
 
     @GET
-    @Path("/ses/{doc_code}")
-    @Produces("application/json")
-    public String getDocSessions(@PathParam("doc_code") String doc_code) {
+@Path("/ses/{doc_code}")
+@Produces("application/json")
+public String getDocSessions(@PathParam("doc_code") String doc_code) {
         JSONObject object = new JSONObject();
         JSONArray array = new JSONArray();
         JSONArray array1 = new JSONArray();
@@ -688,9 +797,9 @@ public class Api {
     }
 
     @GET
-    @Path("/apps/{ses_id}/")
-    @Produces("application/json")
-    public String getBillSessions(@PathParam("ses_id") String ses_id) {
+@Path("/apps/{ses_id}/")
+@Produces("application/json")
+public String getBillSessions(@PathParam("ses_id") String ses_id) {
         long sp_id = Long.parseLong(ses_id);
         List<BillSession> billSessions = fillBillSessions(sp_id);
         JSONArray array = new JSONArray();
@@ -766,8 +875,7 @@ public class Api {
 //        //// // System.out.println("consultants.size() = " + consultants.size());
         return consultants;
     }
-    
-    
+
     public List<Object[]> doctorsListAll() {
 
         List<Object[]> consultants = new ArrayList<>();
@@ -780,7 +888,7 @@ public class Api {
                 + " pi.staff.code from PersonInstitution pi ";
 
         sql += " order by pi.staff.speciality.name,pi.staff.person.name ";
-        
+
         consultants = getStaffFacade().findAggregates(sql);
         return consultants;
     }
@@ -800,7 +908,11 @@ public class Api {
                 //                + " and bs.sessionDate= :ssDate "
                 + " order by bs.serialNo ";
         m.put("bt", bts);
-        m.put("class", BilledBill.class);
+        m
+
+.put("class", BilledBill.class  
+
+);
 //        hh.put("ssDate", getSelectedServiceSession().getSessionDate());
         m.put("ss", ses_id);
 
@@ -841,10 +953,13 @@ public class Api {
         sql += " order by s.sessionDate,s.startingTime ";
 
         m.put("doc_code", doc_code);
-        m.put("class", ServiceSession.class);
+        m
+
+.put("class", ServiceSession.class  
+
+);
 
         sessions = getStaffFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
-
 
         return sessions;
     }
@@ -872,7 +987,11 @@ public class Api {
         sql += " order by s.sessionDate,s.startingTime ";
 
         m.put("doc_code", doc_code);
-        m.put("class", ServiceSession.class);
+        m
+
+.put("class", ServiceSession.class  
+
+);
 
         sessions = getServiceSessionFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
@@ -946,7 +1065,11 @@ public class Api {
         sql += " order by s.sessionDate,s.startingTime ";
 
         m.put("doc_code", doc_code);
-        m.put("class", ServiceSession.class);
+        m
+
+.put("class", ServiceSession.class  
+
+);
 
         sessions = getServiceSessionFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
@@ -1696,23 +1819,35 @@ public class Api {
     }
 
     public List<Object[]> specilityList() {
-
-        List<Object[]> specilities = new ArrayList<>();
-        String sql;
-        Map m = new HashMap();
-
-        sql = " select c.id,c.name "
+        List<Object[]> specilities;
+        String jpql;
+        Map params = new HashMap();
+        jpql = " select c.id,c.name "
                 + " from DoctorSpeciality c "
-                + " where c.retired=false "
+                + " where c.retired=:ret "
                 + " order by c.name";
-
-        specilities = getStaffFacade().findAggregates(sql);
-
-//        //// // System.out.println("m = " + m);
-//        //// // System.out.println("sql = " + sql);
-//        //// // System.out.println("consultants.size() = " + specilities.size());
+        params.put("ret", false);
+        specilities = getStaffFacade().findAggregates(jpql, params);
         return specilities;
     }
+
+    public List<Object[]> hospitalList() {
+        List<Object[]> hospitals;
+        String jpql;
+        Map params = new HashMap();
+        jpql = " select c.id, c.name, c.code, c.address  "
+                + " from Institution c "
+                + " where c.retired=:ret "
+                + " order by c.name";
+        params.put("ret", false);
+        hospitals = getInstitutionFacade().findAggregates(jpql, params);
+        return hospitals;
+    }
+    
+    
+    
+    
+    
 
     private boolean checkAgentRefNo(long agent_ref, Institution institution) {
         if (getAgentReferenceBookController().agentReferenceNumberIsAlredyUsed(Long.toString(agent_ref), institution, BillType.ChannelAgent, PaymentMethod.Agent)) {
@@ -1731,14 +1866,14 @@ public class Api {
     }
 
     /**
-     * PUT method for updating or creating an instance of Api
+     * PUT method for updating or creating an instance of ChannelApi
      *
      * @param content representation for the resource
      * @return an HTTP response with content of the updated or created resource.
      */
     @PUT
-    @Consumes("application/json")
-    public void putJson(String content) {
+@Consumes("application/json")
+public void putJson(String content) {
     }
 
     public StaffFacade getStaffFacade() {
