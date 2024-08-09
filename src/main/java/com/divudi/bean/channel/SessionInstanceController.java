@@ -9,11 +9,19 @@
 package com.divudi.bean.channel;
 
 import com.divudi.bean.common.*;
+import com.divudi.entity.Doctor;
+import com.divudi.entity.Institution;
+import com.divudi.entity.Speciality;
+import com.divudi.entity.Staff;
 import com.divudi.entity.channel.SessionInstance;
 import com.divudi.facade.SessionInstanceFacade;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -22,6 +30,7 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.persistence.TemporalType;
 
 /**
  *
@@ -59,6 +68,39 @@ public class SessionInstanceController implements Serializable {
     }
 
     public SessionInstanceController() {
+    }
+    
+     public List<SessionInstance>  findSessionInstance(Institution institution ,Speciality speciality, Doctor consultant,  Date fromDate, Date toDate) {
+        List<SessionInstance> sessionInstances;
+        Date currentDate = new Date();
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(currentDate);
+        calendar.add(Calendar.DAY_OF_MONTH, 2);
+        Map<String, Object> m = new HashMap<>();
+        StringBuilder jpql = new StringBuilder("select i from "
+                + " SessionInstance i "
+                + " where i.retired=:ret "
+                + " and i.originatingSession.excludeFromPatientPortal=:epp "
+                + " and i.sessionDate BETWEEN :fd AND :td ");
+        if (consultant != null) {
+            jpql.append(" and i.originatingSession.staff=:os");
+            m.put("os", consultant);
+        }
+        if (institution != null) {
+            jpql.append(" and i.originatingSession.institution=:ins");
+            m.put("ins", institution);
+        }
+        if (speciality != null) {
+            jpql.append(" and i.originatingSession.staff.speciality in :spe ");
+            m.put("spe", speciality);
+        }
+        m.put("ret", false);
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        sessionInstances = ejbFacade.findByJpql(jpql.toString(), m, TemporalType.DATE);
+       return sessionInstances;
+        
+        
     }
 
     public SessionInstanceFacade getFacade() {
