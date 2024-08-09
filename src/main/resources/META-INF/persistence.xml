@@ -9,6 +9,7 @@
       <property name="eclipselink.logging.parameters" value="false"/>
     </properties>
   </persistence-unit>
+  
   <persistence-unit name="hmisAuditPU" transaction-type="JTA">
     <jta-data-source>jdbc/ruhunuDemoAudit</jta-data-source>
     <class>com.divudi.entity.AuditEvent</class>

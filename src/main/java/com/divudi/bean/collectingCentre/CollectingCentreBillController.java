@@ -823,6 +823,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
             }
             b.setBillItems(list);
             b.setBillTotal(b.getNetTotal());
+            b.setIpOpOrCc("CC");
             getBillFacade().edit(b);
             getBillBean().calculateBillItems(b, getLstBillEntries());
             b.setBalance(0.0);

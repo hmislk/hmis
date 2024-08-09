@@ -628,7 +628,7 @@ public class StoreAdjustmentController implements Serializable {
     public void setYearMonthDay(YearMonthDay yearMonthDay) {
         this.yearMonthDay = yearMonthDay;
     }
-
+  
     private List<Stock> stk;
 
     public void fillSelectStock() {
@@ -664,7 +664,6 @@ public class StoreAdjustmentController implements Serializable {
         this.stk = stk;
     }
 
-
 //    public void fillSelectStock() {
 //        List<Stock> items = new ArrayList<>();
 //        if (stock == null) {
@@ -697,7 +696,6 @@ public class StoreAdjustmentController implements Serializable {
 //    public void setStk(List<Stock> stk) {
 //        this.stk = stk;
 //    }
-
 
 //    public void fillSelectStock(){
 //        List<Stock> items = new ArrayList<>();

@@ -3,12 +3,11 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.divudi</groupId>
 
-
     <artifactId>ruhunu-dev</artifactId>
     <version>3.0.0</version>
     <packaging>war</packaging>
     <name>ruhunu-dev</name>
-
+    
     <properties>
         <endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -175,7 +174,7 @@
         <dependency>
             <groupId>org.primefaces</groupId>
             <artifactId>primefaces</artifactId>
-            <version>12.0.0</version>
+            <version>14.0.2</version>
             <type>jar</type>
         </dependency>
 
@@ -327,9 +326,7 @@
                 <version>3.8.1</version>
                 <configuration>
                     <release>8</release> <!-- Compile with Java 8 compatibility -->
-
                     <debug>false</debug>
-
                 </configuration>
             </plugin>
 
