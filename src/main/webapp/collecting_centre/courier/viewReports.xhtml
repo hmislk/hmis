@@ -50,10 +50,12 @@
                                         </p:datePicker>
                                         <h:outputLabel 
                                             class="form-label"
-                                            value="Department*"/>
+                                            value="Collecting Centre*"/>
                                         <p:selectOneMenu 
                                             value="#{searchController.institution}" 
                                             filter="true"
+                                            style="max-width: 100%;"
+                                            class="w-100"
                                             filterMatchMode="true">
                                             <f:selectItem itemLabel="All" ></f:selectItem>
                                             <f:selectItems 
@@ -64,13 +66,14 @@
                                             </f:selectItems>
                                         </p:selectOneMenu>
 
-                                        <h:commandLink 
+                                        <p:commandButton
                                             id="btnSearch0" 
+                                            icon="fa fa-search"
+                                            ajax="false"
+                                            value="Search"
                                             action="#{searchController.fillCollectingCentreCourierPatientInvestigations()}" 
                                             styleClass="mt-2 btn btn-success">
-                                            <h:outputText value="Selected Department Only" />
-                                            <i class="fa fa-search" style="margin-left: 5px;"></i>
-                                        </h:commandLink>
+                                        </p:commandButton>
 
                                         <h:outputLabel 
                                             class="form-label"
@@ -102,7 +105,6 @@
 
 
                                     </div>
-
 
                                 </div>
                                 <div class="col-md-10" >

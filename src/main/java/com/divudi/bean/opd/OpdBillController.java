@@ -1750,6 +1750,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             }
             newSingleBill.setBillItems(list);
             newSingleBill.setBillTotal(newSingleBill.getNetTotal());
+            newSingleBill.setIpOpOrCc("OP");
             getBillFacade().edit(newSingleBill);
             getBillBean().calculateBillItems(newSingleBill, getLstBillEntries());
             if (getSessionController().getApplicationPreference().isPartialPaymentOfOpdBillsAllowed()) {
@@ -1995,6 +1996,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         newBatchBill.setFromInstitution(sessionController.getInstitution());
         newBatchBill.setFromDepartment(sessionController.getDepartment());
         newBatchBill.setPatient(patient);
+        newBatchBill.setIpOpOrCc("OP");
         newBatchBill.setInsId(
                 getBillNumberGenerator().institutionBillNumberGenerator(
                         getSessionController().getInstitution(),
@@ -2096,7 +2098,9 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
         newBill.setCreditCompany(creditCompany);
         newBill.setCollectingCentre(collectingCentre);
+        newBill.setIpOpOrCc("OP");
         newBill.setComments(comment);
+        
 
         getBillBean().setPaymentMethodData(newBill, paymentMethod, getPaymentMethodData());
 
@@ -2178,6 +2182,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         newBill.setCreditCompany(creditCompany);
         newBill.setCollectingCentre(collectingCentre);
         newBill.setComments(comment);
+        newBill.setIpOpOrCc("OP");
 
         getBillBean().setPaymentMethodData(newBill, paymentMethod, getPaymentMethodData());
 
