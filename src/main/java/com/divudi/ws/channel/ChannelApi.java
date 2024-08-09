@@ -66,17 +66,19 @@ import javax.ws.rs.Produces;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.persistence.TemporalType;
+import javax.ws.rs.POST;
+import javax.ws.rs.core.MediaType;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 /**
  * REST Web Service
  *
- * @author Archmage-Dushan
+ * @author Dushan
  */
 @Path("api")
 @RequestScoped
-public class Api {
+public class ChannelApi {
 
     @Context
     private UriInfo context;
@@ -104,7 +106,6 @@ public class Api {
     @EJB
     private PersonFacade personFacade;
 
-    
     private CommonFunctions commonFunctions;
     @EJB
     private ChannelBean channelBean;
@@ -125,11 +126,38 @@ public class Api {
     /**
      * Creates a new instance of Api
      */
-    public Api() {
+    public ChannelApi() {
+    }
+
+    @POST
+    @Path("/specializations")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public String getSpecializations(String requestBody) {
+        JSONObject requestJson = new JSONObject(requestBody);
+        String type = requestJson.getString("type");
+        String bookingChannel = requestJson.getString("bookingChannel");
+
+        List<Object[]> specializations =  specilityList();
+        Map<String, String> specialityMap = new HashMap<>();
+
+        for (Object[] spec : specializations) {
+            specialityMap.put(String.valueOf(spec[0]), String.valueOf(spec[1]));
+        }
+
+        JSONObject data = new JSONObject();
+        data.put("specialityMap", specialityMap);
+
+        JSONObject response = new JSONObject();
+        response.put("code", "202");
+        response.put("message", "Accepted");
+        response.put("data", data);
+
+        return response.toString();
     }
 
     /**
-     * Retrieves representation of an instance of com.divudi.ws.channel.Api
+     * Retrieves representation of an instance of com.divudi.ws.channel.ChannelApi
      *
      * @return an instance of java.lang.String
      */
@@ -354,7 +382,7 @@ public class Api {
         Long ss_id = Long.parseLong(session_id);
         Long a_id = Long.parseLong(agent_id);
 //        Long ar_no = Long.parseLong(agent_reference_no);
-        
+
         try {
 
             String s = fetchErrors(name, phone, doc_code, ss_id, a_id, agent_reference_no, "0");
@@ -490,7 +518,7 @@ public class Api {
     public String getBookings(@PathParam("bill_id") String bill_id) {
 //        /bookings/20058204
         //        /bookings/20058204
-                JSONObject jSONObjectOut = new JSONObject();
+        JSONObject jSONObjectOut = new JSONObject();
         JSONArray bill = new JSONArray();
         try {
             long b_id = Long.parseLong(bill_id);
@@ -521,7 +549,7 @@ public class Api {
     public String getAllBookings(@PathParam("agent_id") String agent_id, @PathParam("from_date") String from_date, @PathParam("to_date") String to_date) {
 //        /bookings/20058554/2016-08-01/2016-08-15
         //        /bookings/20058554/2016-08-01/2016-08-15
-                JSONObject jSONObjectOut = new JSONObject();
+        JSONObject jSONObjectOut = new JSONObject();
         JSONArray bill = new JSONArray();
         try {
             long b_id = Long.parseLong(agent_id);
@@ -561,18 +589,11 @@ public class Api {
                 jSONObject.put("Spec_name", con[1]);
                 array.put(jSONObject);
             }
-//            jSONObjectOut.put("specilities", array);
-//            jSONObjectOut.put("error", "0");
-//            jSONObjectOut.put("error_description", "");
 
         } else {
-//            jSONObjectOut.put("specilities", array);
-//            jSONObjectOut.put("error", "1");
-//            jSONObjectOut.put("error_description", "No Data.");
         }
 
         String json = array.toString();
-//        String json = jSONObjectOut.toString();
         return json;
     }
 
@@ -766,8 +787,7 @@ public class Api {
 //        //// // System.out.println("consultants.size() = " + consultants.size());
         return consultants;
     }
-    
-    
+
     public List<Object[]> doctorsListAll() {
 
         List<Object[]> consultants = new ArrayList<>();
@@ -780,7 +800,7 @@ public class Api {
                 + " pi.staff.code from PersonInstitution pi ";
 
         sql += " order by pi.staff.speciality.name,pi.staff.person.name ";
-        
+
         consultants = getStaffFacade().findAggregates(sql);
         return consultants;
     }
@@ -844,7 +864,6 @@ public class Api {
         m.put("class", ServiceSession.class);
 
         sessions = getStaffFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
-
 
         return sessions;
     }
@@ -1731,7 +1750,7 @@ public class Api {
     }
 
     /**
-     * PUT method for updating or creating an instance of Api
+     * PUT method for updating or creating an instance of ChannelApi
      *
      * @param content representation for the resource
      * @return an HTTP response with content of the updated or created resource.
