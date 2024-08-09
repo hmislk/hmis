@@ -21,7 +21,6 @@ import com.divudi.data.PersonInstitutionType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.ChannelBean;
 
-import com.divudi.ejb.FinalVariables;
 import com.divudi.ejb.ServiceSessionBean;
 import com.divudi.entity.AgentHistory;
 import com.divudi.entity.Bill;
@@ -122,8 +121,6 @@ public class ChannelApi {
     private BillNumberGenerator billNumberBean;
     @EJB
     private ServiceSessionBean serviceSessionBean;
-    @EJB
-    FinalVariables finalVariables;
 
     @Inject
     private BillBeanController billBeanController;
