@@ -80,7 +80,6 @@ public class SessionInstanceController implements Serializable {
         StringBuilder jpql = new StringBuilder("select i from "
                 + " SessionInstance i "
                 + " where i.retired=:ret "
-                + " and i.originatingSession.excludeFromPatientPortal=:epp "
                 + " and i.sessionDate BETWEEN :fd AND :td ");
         if (consultant != null) {
             jpql.append(" and i.originatingSession.staff=:os");

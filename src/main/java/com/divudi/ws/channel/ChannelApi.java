@@ -290,10 +290,15 @@ public class ChannelApi {
         String specID = (String) requestBody.get("specID");
         String dateStr = (String) requestBody.get("date");
         String name = (String) requestBody.get("name");
-        Integer page = (Integer) requestBody.get("page");
-        Integer offset = (Integer) requestBody.get("offset");
+//        Integer page = (Integer) requestBody.get("page");
+//        Integer offset = (Integer) requestBody.get("offset");
+        Long hosId;
+        try {
 
-        Long hosId = Long.valueOf(hosIdStr);
+            hosId = Long.valueOf(hosIdStr);
+        } catch (Exception e) {
+            hosId = null;
+        }
         Institution hospital = institutionController.findInstitution(hosId);
         Speciality speciality = specialityController.findSpeciality(specID);
         Consultant consultant = consultantController.getConsultantByName(name);
@@ -324,7 +329,7 @@ public class ChannelApi {
             doctorDetails.put("AppDate", si.getSessionDate().toString());
             doctorDetails.put("DocName", si.getOriginatingSession().getStaff().getPerson().getNameWithTitle());
             doctorDetails.put("DoctorNo", si.getId().toString());
-
+            doctorDetails.put("SessionStart", si.getOriginatingSession().getSessionTime().toString());
             resultMap.put(si.getId().toString(), doctorDetails);
         }
 
@@ -333,8 +338,8 @@ public class ChannelApi {
         responseData.put("resultMap", resultMap);
 
         Map<String, Object> responsePage = new HashMap<>();
-        responsePage.put("pageNo", page);
-        responsePage.put("offset", offset);
+//        responsePage.put("pageNo", page);
+//        responsePage.put("offset", offset);
         responsePage.put("pages", 1); // Adjust this based on actual pagination logic
 
         Map<String, Object> response = new HashMap<>();
