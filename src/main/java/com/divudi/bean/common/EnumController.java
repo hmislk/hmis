@@ -221,8 +221,9 @@ public class EnumController implements Serializable {
         return null; // Return null if no match is found
     }
 
-    public Priority[] getPriorities() {
-        return Priority.values();
+    
+     public List<Priority> getPriorities() {
+        return Arrays.asList(Priority.values());
     }
 
     public Dashboard[] getDashboardTypes() {

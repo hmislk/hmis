@@ -845,6 +845,7 @@
                         <p:menuitem  ajax="false" action="/store/store_purchase?faces-redirect=true"  value="Direct Purchase" 
                                      rendered="#{webUserController.hasPrivilege('StorePurchasePurchase')}" 
                                      actionListener="#{storePurchaseController.makeNull()}" ></p:menuitem>
+                        <p:menuitem ajax="false" action="/store/store_direct_purchase_return?faces-redirect=true"  value="Direct Purchase Return" actionListener="#{searchController.makeListNull()}" rendered="#{webUserController.hasPrivilege('StorePurchaseGRNReturn')}"></p:menuitem>
                     </p:submenu>
                     <p:submenu label="Transfer" rendered="#{webUserController.hasPrivilege('StoreTransfer')}">
                         <p:menuitem  ajax="false" action="/store/store_transfer_request?faces-redirect=true"  value="Request" actionListener="#{storeTransferRequestController.recreate}" rendered="#{webUserController.hasPrivilege('StoreTransferRequest')}" ></p:menuitem>
