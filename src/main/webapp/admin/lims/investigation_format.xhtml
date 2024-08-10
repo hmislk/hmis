@@ -346,16 +346,8 @@
                                                         required="true"
                                                         value="#{investigationItemController.current.ixItemType}">
                                                         <f:selectItem itemLabel="Please select" />
-                                                        <f:selectItem  itemLabel="Label" itemValue="Label" />
-                                                        <f:selectItem itemLabel="Value" itemValue="Value" />
-                                                        <f:selectItem itemLabel="Calculation" itemValue="Calculation" />
-                                                        <f:selectItem itemLabel="Flag" itemValue="Flag"/>
-                                                        <f:selectItem itemLabel="List" itemValue="List"/>
-                                                        <f:selectItem itemLabel="MeasurementUnit" itemValue="Measurement Unit"/>
-                                                        <f:selectItem itemLabel="Dynamic Label" itemValue="Dynamic Label" />
-                                                        <f:selectItem itemLabel="Investigation" itemValue="Investigation"/>
-                                                        <f:selectItem itemLabel="Template" itemValue="Template" />
-                                                        <f:selectItem itemLabel="Antibiotic" itemValue="Antibiotic List" />
+                                                        <f:selectItems value="#{enumController.investigationItemTypes}" var="iit" itemLabel="#{iit}" itemValue="#{iit}" >
+                                                        </f:selectItems>
                                                     </p:selectOneMenu>
 
                                                     <h:outputText value="Value Type"/>
