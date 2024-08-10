@@ -263,6 +263,11 @@ public class SearchController implements Serializable {
     private int managePaymentIndex = -1;
 
     private boolean duplicateBillView;
+    
+    public String navigateToPettyCashBillApprove(){
+        createPettyApproveTable();
+        return "/petty_cash_bill_to_approve?faces-redirect=true";
+    }
 
     public String navigateTobill(Bill bill) {
         String navigateTo = "";
@@ -10630,6 +10635,24 @@ public class SearchController implements Serializable {
 
         //System.err.println("Sql " + sql);
         bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 50);
+
+    }
+    
+    public void createPettyApproveTable() {
+        List<BillType> billTypes = new ArrayList<>();
+        billTypes.add(BillType.PettyCashCancelApprove);
+
+        bills = null;
+        String sql;
+        Map temMap = new HashMap();
+        System.out.println("getFromDate() = " + getFromDate());
+        System.out.println("getToDate() = " + getToDate());
+        sql = "select b from Bill b where b.billType IN :billTypes and b.createdAt between :fromDate and :toDate and b.retired=false";
+        System.out.println("sql = " + sql);
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+        temMap.put("billTypes", billTypes);
+        bills = getBillFacade().findByJpql(sql, temMap);
 
     }
 

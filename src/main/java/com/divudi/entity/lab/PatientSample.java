@@ -5,6 +5,7 @@
  */
 package com.divudi.entity.lab;
 
+import com.divudi.data.lab.PatientInvestigationStatus;
 import com.divudi.data.lab.SampleRequestType;
 import com.divudi.entity.Bill;
 import com.divudi.entity.Department;
@@ -131,6 +132,8 @@ public class PatientSample implements Serializable {
 
     @ManyToOne
     private Institution sampleReceivedAtLabInstitution;
+     @Enumerated
+    private PatientInvestigationStatus status;
 
     //Cancellation
     private Boolean cancelled = false;
@@ -164,6 +167,8 @@ public class PatientSample implements Serializable {
         return formatted;
     }
 
+    
+    
     @Override
     public int hashCode() {
         int hash = 0;
@@ -635,6 +640,14 @@ public class PatientSample implements Serializable {
 
     public void setSampleReceivedAtLabInstitution(Institution sampleReceivedAtLabInstitution) {
         this.sampleReceivedAtLabInstitution = sampleReceivedAtLabInstitution;
+    }
+
+    public PatientInvestigationStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(PatientInvestigationStatus status) {
+        this.status = status;
     }
 
 }
