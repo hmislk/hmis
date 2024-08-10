@@ -59,10 +59,10 @@ import javax.persistence.Transient;
 @DiscriminatorColumn(name = "DTYPE")
 public class Item implements Serializable, Comparable<Item> {
 
-    @OneToMany(mappedBy = "item", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "item", fetch = FetchType.EAGER)
     List<InvestigationItem> reportItems;
 
-    @OneToMany(mappedBy = "item", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "item", fetch = FetchType.EAGER)
     List<WorksheetItem> worksheetItems;
 
     @OneToMany(mappedBy = "item", fetch = FetchType.EAGER)
@@ -194,6 +194,8 @@ public class Item implements Serializable, Comparable<Item> {
     Date effectiveFrom;
     @Temporal(javax.persistence.TemporalType.DATE)
     private Date effectiveTo;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date expiryDate;
     private boolean scanFee;
     double profitMargin;
 
@@ -1406,6 +1408,14 @@ public class Item implements Serializable, Comparable<Item> {
 
     public void setForGender(String forGender) {
         this.forGender = forGender;
+    }
+
+    public Date getExpiryDate() {
+        return expiryDate;
+    }
+
+    public void setExpiryDate(Date expiryDate) {
+        this.expiryDate = expiryDate;
     }
 
     static class ReportItemComparator implements Comparator<ReportItem> {

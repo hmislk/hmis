@@ -63,7 +63,7 @@
                                 <p:dataTable id="tbl" value="#{investigationItemController.items}" var="ii"
                                              rowKey="#{ii.id}" selection="#{investigationItemController.selectedItems}">
 
-                                    <p:column selectionMode="multiple" ></p:column>
+                                    <p:column selectionBox="true" ></p:column>
                                     <p:column headerText="ID"  >
                                         <p:outputLabel value="#{ii.item.id}" ></p:outputLabel>
                                     </p:column>

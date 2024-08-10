@@ -44,7 +44,9 @@ import com.divudi.data.inward.AdmissionStatus;
 import com.divudi.data.inward.AdmissionTypeEnum;
 import com.divudi.data.inward.InwardChargeType;
 import com.divudi.data.inward.PatientEncounterComponentType;
+import com.divudi.data.lab.PatientInvestigationStatus;
 import com.divudi.data.lab.Priority;
+import com.divudi.data.lab.SearchDateType;
 import com.divudi.entity.PaymentScheme;
 import com.divudi.entity.Person;
 import java.io.Serializable;
@@ -73,9 +75,12 @@ public class EnumController implements Serializable {
     List<PaymentMethod> paymentMethodsForChanneling;
     List<PaymentMethod> paymentMethodsForChannelSettling;
     List<PaymentMethod> paymentMethodsForPharmacyBilling;
-    private List<PaymentMethod> paymentMethodsForPatientDeposit;
+    private List<PaymentMethod> paymentMethodsForPatientDepositRefund;
     private List<PaymentMethod> paymentMethodsForStaffCreditSettle;
+    private List<PaymentMethod> paymentMethodsForPatientDeposit;
+    private List<PaymentMethod> paymentMethodsForOpdBillCanceling;
     SessionNumberType[] sessionNumberTypes;
+    private List<PatientInvestigationStatus> patientInvestigationStatuses;
 
     @PostConstruct
     public void init() {
@@ -141,8 +146,8 @@ public class EnumController implements Serializable {
         }
         return paymentMethodsForChanneling;
     }
-    
-     public List<PaymentMethod> getPaymentMethodsForChannelSettling() {
+
+    public List<PaymentMethod> getPaymentMethodsForChannelSettling() {
         if (paymentMethodsForChannelSettling == null) {
             fillPaymentMethodsForChannelSettling();
         }
@@ -188,6 +193,10 @@ public class EnumController implements Serializable {
         }
     }
 
+    public List<SearchDateType> getSearchDateTypes() {
+        return Arrays.asList(SearchDateType.values());
+    }
+
     public List<String> getEnumValues(String enumClassName) {
         try {
             Class<?> enumClass = Class.forName(enumClassName);
@@ -212,8 +221,9 @@ public class EnumController implements Serializable {
         return null; // Return null if no match is found
     }
 
-    public Priority[] getPriorities() {
-        return Priority.values();
+    
+     public List<Priority> getPriorities() {
+        return Arrays.asList(Priority.values());
     }
 
     public Dashboard[] getDashboardTypes() {
@@ -223,6 +233,11 @@ public class EnumController implements Serializable {
     public SessionNumberType[] getSessionNumberTypes() {
         sessionNumberTypes = SessionNumberType.values();
         return sessionNumberTypes;
+    }
+
+    public List<PatientInvestigationStatus> getPatientInvestigationStatuses() {
+        patientInvestigationStatuses = Arrays.asList(PatientInvestigationStatus.values());
+        return patientInvestigationStatuses;
     }
 
     public List<LoginPage> getLoginPages() {
@@ -850,6 +865,36 @@ public class EnumController implements Serializable {
 
     public void setPaymentMethodsForStaffCreditSettle(List<PaymentMethod> paymentMethodsForStaffCreditSettle) {
         this.paymentMethodsForStaffCreditSettle = paymentMethodsForStaffCreditSettle;
+    }
+
+    public List<PaymentMethod> getPaymentMethodsForPatientDepositRefund() {
+        paymentMethodsForPatientDepositRefund = new ArrayList<>();
+        for (PaymentMethod pm : PaymentMethod.values()) {
+            boolean include = configOptionApplicationController.getBooleanValueByKey(pm.getLabel() + " is available for Patient Deposit Return", true);
+            if (include) {
+                paymentMethodsForPatientDepositRefund.add(pm);
+            }
+        }
+        return paymentMethodsForPatientDepositRefund;
+    }
+
+    public void setPaymentMethodsForPatientDepositRefund(List<PaymentMethod> paymentMethodsForPatientDepositRefund) {
+        this.paymentMethodsForPatientDepositRefund = paymentMethodsForPatientDepositRefund;
+    }
+
+    public List<PaymentMethod> getPaymentMethodsForOpdBillCanceling() {
+        paymentMethodsForOpdBillCanceling = new ArrayList<>();
+        for (PaymentMethod pm : PaymentMethod.values()) {
+            boolean include = configOptionApplicationController.getBooleanValueByKey(pm.getLabel() + " is available for OPD Bill Cancel", true);
+            if (include) {
+                paymentMethodsForOpdBillCanceling.add(pm);
+            }
+        }
+        return paymentMethodsForOpdBillCanceling;
+    }
+
+    public void setPaymentMethodsForOpdBillCanceling(List<PaymentMethod> paymentMethodsForOpdBillCanceling) {
+        this.paymentMethodsForOpdBillCanceling = paymentMethodsForOpdBillCanceling;
     }
 
 }

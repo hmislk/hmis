@@ -55,6 +55,18 @@
                                         <p:commandButton  class="w-100" ajax="false" action="/petty_cash_bill?faces-redirect=true" value="Petty Cash Payment" actionListener="#{pettyCashBillController.prepareNewBill()}" />
                                         <p:commandButton  class="w-100" ajax="false" action="/petty_cash_bill_search_own?faces-redirect=true" actionListener="#{searchController.makeListNull}"  value="Petty Cash Bill Search"/>
                                         <p:commandButton  class="w-100" ajax="false" action="/iou_bill?faces-redirect=true" value="Petty Cash (IOU)"/>
+                                        <p:commandButton  class="w-100" ajax="false" action="#{searchController.navigateToPettyCashBillApprove}" value="Petty Cash cancel bill aprrove"/>
+                                    </div>
+
+                                </p:tab>
+                                <p:tab title="Patient Deposit" >
+                                    <div class="d-grid gap-2">
+                                        <p:commandButton  
+                                            class="w-100" 
+                                            ajax="false" 
+                                            action="#{patientController.navigateToPatientDepositRefund()}" 
+                                            value="Return Patient Deposit">
+                                        </p:commandButton>
                                     </div>
 
                                 </p:tab>

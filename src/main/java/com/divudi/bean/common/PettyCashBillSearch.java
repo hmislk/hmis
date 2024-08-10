@@ -45,6 +45,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import org.joda.time.LocalTime;
 import org.primefaces.model.LazyDataModel;
 
 /**
@@ -88,6 +89,10 @@ public class PettyCashBillSearch implements Serializable {
     private WebUserController webUserController;
     @Inject
     PettyCashBillController pettyCashBillController;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    BillController billController;
     @EJB
     EjbApplication ejbApplication;
     private List<BillItem> tempbillItems;
@@ -98,6 +103,27 @@ public class PettyCashBillSearch implements Serializable {
     private String comment;
     WebUser user;
     private SearchKeyword searchKeyword;
+
+    
+    public String navigateToPettyCashCancel() {
+        return "petty_cash_bill_cancel";
+        
+    }
+   
+    
+    
+    public void sendToApprovePettyCashBillCancellation() {
+        System.out.println("bill = " + bill);
+        Bill b = new Bill();
+        b.setCreatedAt(new Date());
+        b.setCreater(webUserController.getCurrent());
+        b.setInstitution(webUserController.getInstitution());
+        b.setDepartment(webUserController.getDepartment());
+        b.setBillType(BillType.PettyCashCancelApprove);
+        b.setReferenceBill(bill);
+        billController.save(b);
+        JsfUtil.addSuccessMessage("Send To Approve");
+    }
 
     public WebUser getUser() {
         return user;
@@ -306,7 +332,26 @@ public class PettyCashBillSearch implements Serializable {
         this.cashTransactionBean = cashTransactionBean;
     }
 
+    public static Date getMidnight() {
+        Calendar calendar = Calendar.getInstance();
+        // Reset the time to midnight
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        return calendar.getTime();
+    }
+
     public void cancelBill() {
+        Date current = new Date();
+        Date midNight = getMidnight();
+        if (configOptionApplicationController.getBooleanValueByKey("Enable PettyCash bill cancellation restriction after midnight")) {
+            if (current.before(midNight)) {
+                JsfUtil.addErrorMessage("Bill cancellation is not allowed after midnight.");
+                return;
+            }
+        }
+
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
             if (errorCheck()) {
                 return;

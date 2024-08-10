@@ -67,7 +67,7 @@
                     <div class="col-7 float-left" >
 
                         <p:panel id="gpDetail" class="w-100 no-border" header="Package Details">
-
+                            value="#{packageNameController.current.id}" 
                             <div class="row">
                                 <div class="col-3">
                                     <h:outputText id="lblName" value="Name" class="mt-2"></h:outputText>
@@ -84,6 +84,25 @@
 
                             <div class="row mt-2">
                                 <div class="col-3">
+                                    <h:outputText value="Expiry Date" class="mt-2"></h:outputText>
+                                </div>
+                                <div class="col-7">
+                                    <p:datePicker 
+                                        value="#{packageNameController.current.expiryDate}" 
+                                        id="dpExp"
+                                        pattern="dd/MMM/yyyy - hh:mm:ss a" 
+                                        styleClass="form-control w-100"
+                                        showTime="true"
+                                        showButtonBar="true"
+                                        timeInput="true"
+                                        class="w-100" 
+                                        inputStyleClass="w-100" >                               
+                                    </p:datePicker>
+                                </div>
+                            </div>
+
+                            <div class="row mt-2">
+                                <div class="col-3">
                                     <h:outputText value="For Whom (Gender)" class="mt-2"></h:outputText>
                                 </div>
                                 <div class="col-7">
@@ -91,7 +110,7 @@
                                         id="cmbSex"
                                         value="#{packageNameController.current.forGender}"
                                         class="w-100">
-                                         <f:selectItem itemLabel="Select"  />
+                                        <f:selectItem itemLabel="Select"  />
                                         <f:selectItem itemLabel="Both"  itemValue="Both"/>
                                         <f:selectItem itemLabel="Male" itemValue="Male"/>
                                         <f:selectItem itemLabel="Female" itemValue="Female"/>

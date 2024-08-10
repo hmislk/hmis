@@ -8,6 +8,7 @@
 package com.divudi.bean.common;
 
 import com.divudi.bean.channel.BookingController;
+import com.divudi.bean.collectingCentre.CourierController;
 import com.divudi.bean.pharmacy.PharmacySaleController;
 import com.divudi.data.InstitutionType;
 import com.divudi.data.Privileges;
@@ -55,10 +56,6 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.servlet.http.HttpSessionEvent;
 import javax.servlet.http.HttpSessionListener;
-import org.primefaces.model.DashboardColumn;
-import org.primefaces.model.DashboardModel;
-import org.primefaces.model.DefaultDashboardColumn;
-import org.primefaces.model.DefaultDashboardModel;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ComponentSystemEvent;
 import javax.servlet.http.HttpServletRequest;
@@ -123,6 +120,8 @@ public class SessionController implements Serializable, HttpSessionListener {
     BookingController bookingController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    CourierController courierController;
     /**
      * Properties
      */
@@ -156,7 +155,7 @@ public class SessionController implements Serializable, HttpSessionListener {
     String phoneNo;
     UserPreference currentPreference;
     Bill bill;
-    private DashboardModel dashboardModel;
+//    private DashboardModel dashboardModel;
     String loginRequestResponse;
     private Boolean firstLogin;
 
@@ -1156,32 +1155,32 @@ public class SessionController implements Serializable, HttpSessionListener {
     }
 
     public void loadDashboards() {
-        dashboardModel = new DefaultDashboardModel();
-        DashboardColumn column1 = new DefaultDashboardColumn();
-        DashboardColumn column2 = new DefaultDashboardColumn();
-        DashboardColumn column3 = new DefaultDashboardColumn();
-
-        int i = 0;
-
-        for (WebUserDashboard d : getDashboards()) {
-            int n = i % 3;
-            switch (n) {
-                case 1:
-                    column1.addWidget(d.getDashboard().toString());
-                    break;
-                case 2:
-                    column2.addWidget(d.getDashboard().toString());
-                    break;
-                case 0:
-                    column3.addWidget(d.getDashboard().toString());
-                    break;
-            }
-            i++;
-        }
-
-        dashboardModel.addColumn(column1);
-        dashboardModel.addColumn(column2);
-        dashboardModel.addColumn(column3);
+//        dashboardModel = new DefaultDashboardModel();
+//        DashboardColumn column1 = new DefaultDashboardColumn();
+//        DashboardColumn column2 = new DefaultDashboardColumn();
+//        DashboardColumn column3 = new DefaultDashboardColumn();
+//
+//        int i = 0;
+//
+//        for (WebUserDashboard d : getDashboards()) {
+//            int n = i % 3;
+//            switch (n) {
+//                case 1:
+//                    column1.addWidget(d.getDashboard().toString());
+//                    break;
+//                case 2:
+//                    column2.addWidget(d.getDashboard().toString());
+//                    break;
+//                case 0:
+//                    column3.addWidget(d.getDashboard().toString());
+//                    break;
+//            }
+//            i++;
+//        }
+//
+//        dashboardModel.addColumn(column1);
+//        dashboardModel.addColumn(column2);
+//        dashboardModel.addColumn(column3);
     }
 
     public String selectDepartment() {
@@ -1277,6 +1276,8 @@ public class SessionController implements Serializable, HttpSessionListener {
                 return opdTokenController.navigateToManageOpdTokensCalled();
             case PHARMACY_TOKEN_DISPLAY:
                 return tokenController.navigateToManagePharmacyTokensCalled();
+            case COURIER_LANDING_PAGE:
+                return courierController.navigateToCourierIndex();
             case HOME:
             default:
                 return "/home?faces-redirect=true";
@@ -1976,13 +1977,13 @@ public class SessionController implements Serializable, HttpSessionListener {
         this.bill = bill;
     }
 
-    public DashboardModel getDashboardModel() {
-        return dashboardModel;
-    }
-
-    public void setDashboardModel(DashboardModel dashboardModel) {
-        this.dashboardModel = dashboardModel;
-    }
+//    public DashboardModel getDashboardModel() {
+//        return dashboardModel;
+//    }
+//
+//    public void setDashboardModel(DashboardModel dashboardModel) {
+//        this.dashboardModel = dashboardModel;
+//    }
 
     public DepartmentFacade getDepartmentFacade() {
         return departmentFacade;

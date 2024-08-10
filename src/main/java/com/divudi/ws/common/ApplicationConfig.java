@@ -36,7 +36,7 @@ public class ApplicationConfig extends Application {
      * If required, comment out calling this method in getClasses().
      */
     private void addRestResourceClasses(Set<Class<?>> resources) {
-        resources.add(com.divudi.ws.channel.Api.class);
+        resources.add(com.divudi.ws.channel.ChannelApi.class);
         resources.add(com.divudi.ws.common.ApiMembership.class);
         resources.add(com.divudi.ws.common.ConfigResource.class);
         resources.add(com.divudi.ws.fhir.Fhir.class);
@@ -46,6 +46,8 @@ public class ApplicationConfig extends Application {
         resources.add(com.divudi.ws.inward.ApiInward.class);
         resources.add(com.divudi.ws.lims.Lims.class);
         resources.add(com.divudi.ws.lims.LimsMiddlewareController.class);
+        resources.add(com.divudi.ws.lims.MiddlewareController.class);
+        
     }
     
 }

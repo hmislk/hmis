@@ -200,6 +200,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     private PaymentMethod paymentMethod;
     private Patient patient;
     private Doctor referredBy;
+    private String referredByName;
     private Institution referredByInstitution;
     private String referralId;
     private Institution creditCompany;
@@ -295,6 +296,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     private String localNumber;
     
     private String refNo;
+    private double remainAmount;
 
     /**
      *
@@ -1749,6 +1751,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             }
             newSingleBill.setBillItems(list);
             newSingleBill.setBillTotal(newSingleBill.getNetTotal());
+            newSingleBill.setIpOpOrCc("OP");
             getBillFacade().edit(newSingleBill);
             getBillBean().calculateBillItems(newSingleBill, getLstBillEntries());
             if (getSessionController().getApplicationPreference().isPartialPaymentOfOpdBillsAllowed()) {
@@ -1994,6 +1997,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         newBatchBill.setFromInstitution(sessionController.getInstitution());
         newBatchBill.setFromDepartment(sessionController.getDepartment());
         newBatchBill.setPatient(patient);
+        newBatchBill.setIpOpOrCc("OP");
         newBatchBill.setInsId(
                 getBillNumberGenerator().institutionBillNumberGenerator(
                         getSessionController().getInstitution(),
@@ -2095,7 +2099,9 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
         newBill.setCreditCompany(creditCompany);
         newBill.setCollectingCentre(collectingCentre);
+        newBill.setIpOpOrCc("OP");
         newBill.setComments(comment);
+        
 
         getBillBean().setPaymentMethodData(newBill, paymentMethod, getPaymentMethodData());
 
@@ -2177,6 +2183,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         newBill.setCreditCompany(creditCompany);
         newBill.setCollectingCentre(collectingCentre);
         newBill.setComments(comment);
+        newBill.setIpOpOrCc("OP");
 
         getBillBean().setPaymentMethodData(newBill, paymentMethod, getPaymentMethodData());
 
@@ -2252,36 +2259,50 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getStaffCredit().getTotalValue();
 
             }
+             remainAmount=total- multiplePaymentMethodTotalValue;
             return total - multiplePaymentMethodTotalValue;
+           
         }
+        remainAmount=total;
         return total;
     }
 
     public void recieveRemainAmountAutomatically() {
-        double remainAmount = calculatRemainForMultiplePaymentTotal();
+        //double remainAmount = calculatRemainForMultiplePaymentTotal();
         if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
             int arrSize = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().size();
             ComponentDetail pm = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().get(arrSize - 1);
-            if (pm.getPaymentMethod() == PaymentMethod.Cash) {
-                pm.getPaymentMethodData().getCash().setTotalValue(remainAmount);
-            } else if (pm.getPaymentMethod() == PaymentMethod.Card) {
-                pm.getPaymentMethodData().getCreditCard().setTotalValue(remainAmount);
-            } else if (pm.getPaymentMethod() == PaymentMethod.Cheque) {
-                pm.getPaymentMethodData().getCheque().setTotalValue(remainAmount);
-            } else if (pm.getPaymentMethod() == PaymentMethod.Slip) {
-                pm.getPaymentMethodData().getSlip().setTotalValue(remainAmount);
-            } else if (pm.getPaymentMethod() == PaymentMethod.ewallet) {
-                pm.getPaymentMethodData().getEwallet().setTotalValue(remainAmount);
-            } else if (pm.getPaymentMethod() == PaymentMethod.PatientDeposit) {
-                if (patient != null) {
-                    pm.getPaymentMethodData().getPatient_deposit().setPatient(patient);
-                }
-                pm.getPaymentMethodData().getPatient_deposit().setTotalValue(remainAmount);
-            } else if (pm.getPaymentMethod() == PaymentMethod.Credit) {
-                pm.getPaymentMethodData().getCredit().setTotalValue(remainAmount);
-            } else if (pm.getPaymentMethod() == PaymentMethod.Staff) {
-                pm.getPaymentMethodData().getStaffCredit().setTotalValue(remainAmount);
+             switch (pm.getPaymentMethod()) {
+        case Cash:
+            pm.getPaymentMethodData().getCash().setTotalValue(remainAmount);
+            break;
+        case Card:
+            pm.getPaymentMethodData().getCreditCard().setTotalValue(remainAmount);
+            break;
+        case Cheque:
+            pm.getPaymentMethodData().getCheque().setTotalValue(remainAmount);
+            break;
+        case Slip:
+            pm.getPaymentMethodData().getSlip().setTotalValue(remainAmount);
+            break;
+        case ewallet:
+            pm.getPaymentMethodData().getEwallet().setTotalValue(remainAmount);
+            break;
+        case PatientDeposit:
+            if (patient != null) {
+                pm.getPaymentMethodData().getPatient_deposit().setPatient(patient);
             }
+            pm.getPaymentMethodData().getPatient_deposit().setTotalValue(remainAmount);
+            break;
+        case Credit:
+            pm.getPaymentMethodData().getCredit().setTotalValue(remainAmount);
+            break;
+        case Staff:
+            pm.getPaymentMethodData().getStaffCredit().setTotalValue(remainAmount);
+            break;
+        default:
+            throw new IllegalArgumentException("Unexpected value: " + pm.getPaymentMethod());
+    }
 
         }
     }
@@ -2408,7 +2429,13 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                 JsfUtil.addErrorMessage("Patient has not account. Can't proceed with Patient Deposits");
                 return true;
             }
-            double creditLimitAbsolute = Math.abs(getPatient().getCreditLimit());
+             double creditLimitAbsolute = 0.0;
+            if(getPatient().getCreditLimit()==null){
+                creditLimitAbsolute = 0.0;
+            }else{
+                creditLimitAbsolute = Math.abs(getPatient().getCreditLimit());
+            }
+            
             double runningBalance;
             if (getPatient().getRunningBalance() != null) {
                 runningBalance = getPatient().getRunningBalance();
@@ -4190,5 +4217,23 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     public void setRefNo(String refNo) {
         this.refNo = refNo;
     }
+
+    public double getRemainAmount() {
+        return remainAmount;
+    }
+
+    public void setRemainAmount(double remainAmount) {
+        this.remainAmount = remainAmount;
+    }
+
+    public String getReferredByName() {
+        return referredByName;
+    }
+
+    public void setReferredByName(String referredByName) {
+        this.referredByName = referredByName;
+    }
+    
+    
 
 }

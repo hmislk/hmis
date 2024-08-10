@@ -114,6 +114,15 @@
 
 
                             <p:column 
+                                headerText="Speciality" 
+                                sortBy="#{bill.toStaff.speciality.name}"
+                                filterBy="#{bill.toStaff.speciality.name}"
+                                filterMatchMode="contains"
+                                style="text-align: left;">
+                                <h:outputLabel value="#{bill.toStaff.speciality.name}" />
+                            </p:column>
+                            
+                            <p:column 
                                 headerText="Staff" 
                                 sortBy="#{bill.staff.person.name}"
                                 filterBy="#{bill.staff.person.name}"

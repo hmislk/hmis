@@ -177,7 +177,6 @@ public class Bill implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     private Institution paymentSchemeInstitution;
     @ManyToOne(fetch = FetchType.LAZY)
-    @Deprecated //Use fromInstitution
     private Institution collectingCentre;
     @ManyToOne(fetch = FetchType.LAZY)
     private Institution institution;
@@ -820,6 +819,7 @@ public class Bill implements Serializable {
         vat = bill.getVat();
         vatPlusNetTotal = bill.getVatPlusNetTotal();
         sessionId = bill.getSessionId();
+        ipOpOrCc=bill.getIpOpOrCc();
         //      referenceBill=bill.getReferenceBill();
     }
 
