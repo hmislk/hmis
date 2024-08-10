@@ -336,7 +336,7 @@
                                             <p:tab title="Item Details"   class="w-100">
                                                 <h:panelGrid columns="1"  class="w-100">
 
-                                                    <h:outputText value="Name" />
+                                                    <h:outputText value="Name #{investigationItemController.current.id}" />
                                                     <p:inputText class="w-100" autocomplete="off" id="lblIiName" value="#{investigationItemController.current.name}" />
 
                                                     <h:outputText value="Type"/>
