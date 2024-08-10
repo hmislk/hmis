@@ -1,18 +1,29 @@
-/*
- * Open Hospital Management Information System
- * Dr M H B Ariyaratne
- * buddhika.ari@gmail.com
- */
 package com.divudi.data.lab;
 
 /**
- *
- * @author buddhika_ari
+ * Enum representing different priority levels.
+ * 
+ * Author: Dr M H B Ariyaratne
  */
 public enum Priority {
-    Stat,
-    Asap,
-    Routeine,
-    Delayed,
-    Other,
+    Stat("Stat"),
+    Asap("Asap"),
+    Routeine("Routeine"),
+    DELAYED("Delayed"),
+    OTHER("Other");
+
+    private final String label;
+
+    Priority(String label) {
+        this.label = label;
+    }
+
+    public String getLabel() {
+        return label;
+    }
+
+    @Override
+    public String toString() {
+        return label;
+    }
 }
