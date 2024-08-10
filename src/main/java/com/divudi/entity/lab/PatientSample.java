@@ -36,6 +36,7 @@ public class PatientSample implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
+    private Long sampleId;
     @ManyToOne
     private Patient patient;
     @ManyToOne
@@ -154,6 +155,9 @@ public class PatientSample implements Serializable {
     private Date retiredAt;
     private String retireComments;
 
+    
+    
+    
     public Long getId() {
         return id;
     }
@@ -162,6 +166,9 @@ public class PatientSample implements Serializable {
         this.id = id;
     }
 
+    
+    
+    
     public String getIdStr() {
         String formatted = id + "";
         return formatted;
@@ -648,6 +655,14 @@ public class PatientSample implements Serializable {
 
     public void setStatus(PatientInvestigationStatus status) {
         this.status = status;
+    }
+
+    public Long getSampleId() {
+        return sampleId;
+    }
+
+    public void setSampleId(Long sampleId) {
+        this.sampleId = sampleId;
     }
 
 }
