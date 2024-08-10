@@ -3,11 +3,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp"
-      xmlns:p="http://primefaces.org/ui"
+      xmlns:p="http://primefaces.org/ui" 
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
-
+    <h:head><!-- comment -->
+    </h:head>
     <h:body>
+
 
         <ui:composition template="/admin/lims/index.xhtml">
 
@@ -329,97 +331,57 @@
                                     </diV>
 
                                     <h:panelGrid id="pDetails" class="w-100">
+
                                         <p:accordionPanel class="mt-2">
-                                            <p:tab title="Item Details"  class="w-100">
-                                                <p:panelGrid >
+                                            <p:tab title="Item Details"   class="w-100">
+                                                <h:panelGrid columns="1"  class="w-100">
 
-                                                    <div class="row">
-                                                        <div class="col-3">
-                                                            <h:outputText value="Name"   />
-                                                        </div>
-                                                        <div class="col-9">
-                                                            <p:inputText class="w-100" autocomplete="off" id="lblIiName" value="#{investigationItemController.current.name}" >
-                                                            </p:inputText>
-                                                        </div>
-                                                    </div>
+                                                    <h:outputText value="Name" />
+                                                    <p:inputText class="w-100" autocomplete="off" id="lblIiName" value="#{investigationItemController.current.name}" />
 
-                                                    <div class="row my-1">
-                                                        <div class="col-3">
-                                                            <h:outputText value="Type"/>
-                                                        </div>
-                                                        <div class="col-9">
-                                                            <p:selectOneMenu  class="w-100" id="cmbItemType" value="#{investigationItemController.current.ixItemType}" >
-                                                                <f:selectItem itemLabel="Please select" />
-                                                                <f:selectItem itemLabel="Label" itemValue="Label"/>
-                                                                <f:selectItem itemLabel="Value" itemValue="Value"/>
-                                                                <f:selectItem itemLabel="Calculation" itemValue="Calculation"/>
-                                                                <f:selectItem itemLabel="Flag" itemValue="Flag"/>
-                                                                <f:selectItem itemLabel="List" itemValue="List"/>
-                                                                <f:selectItem itemLabel="Dynamic Label" itemValue="DynamicLabel"/>
-                                                                <f:selectItem itemLabel="Investigation" itemValue="Investigation"/>
-                                                                <f:selectItem itemLabel="Template" itemValue="Template"/>
-                                                                <f:selectItem itemLabel="Antibiotic" itemValue="AntibioticList"/>
-                                                            </p:selectOneMenu>
-                                                        </div>
-                                                    </div>
+                                                    <h:outputText value="Type"/>
+                                                    <p:selectOneMenu 
+                                                        class="w-100" 
+                                                        id="cmbItemType" 
+                                                        required="true"
+                                                        value="#{investigationItemController.current.ixItemType}">
+                                                        <f:selectItem itemLabel="Please select" />
+                                                        <f:selectItem  itemLabel="Label" itemValue="Label" />
+                                                        <f:selectItem itemLabel="Value" itemValue="Value" />
+                                                        <f:selectItem itemLabel="Calculation" itemValue="Calculation" />
+                                                        <f:selectItem itemLabel="Flag" itemValue="Flag"/>
+                                                        <f:selectItem itemLabel="List" itemValue="List"/>
+                                                        <f:selectItem itemLabel="MeasurementUnit" itemValue="Measurement Unit"/>
+                                                        <f:selectItem itemLabel="Dynamic Label" itemValue="Dynamic Label" />
+                                                        <f:selectItem itemLabel="Investigation" itemValue="Investigation"/>
+                                                        <f:selectItem itemLabel="Template" itemValue="Template" />
+                                                        <f:selectItem itemLabel="Antibiotic" itemValue="Antibiotic List" />
+                                                    </p:selectOneMenu>
 
-                                                    <div class="row">
-                                                        <div class="col-3">
-                                                            <h:outputText value="Value Type"/>
-                                                        </div>
-                                                        <div class="col-9">
-                                                            <p:selectOneMenu class="w-100" id="cmbValueType" value="#{investigationItemController.current.ixItemValueType}"  >
-                                                                <f:selectItem itemLabel="Please select" />
-                                                                <f:selectItems value="#{enumController.investigationItemValueTypes}" ></f:selectItems>
-                                                            </p:selectOneMenu>
-                                                        </div>
-                                                    </div>
+                                                    <h:outputText value="Value Type"/>
+                                                    <p:selectOneMenu 
+                                                        class="w-100" 
+                                                        id="cmbValueType" 
+                                                        required="true"
+                                                        value="#{investigationItemController.current.ixItemValueType}">
+                                                        <f:selectItem itemLabel="Please select" />
+                                                        <f:selectItems value="#{enumController.investigationItemValueTypes}" />
+                                                    </p:selectOneMenu>
 
-                                                    <div class="row mt-1">
-                                                        <div class="col-3">
-                                                            <p:outputLabel value="Contents" ></p:outputLabel>
-                                                            <p:commandLink 
-                                                                value="Editor" 
-                                                                onclick="PF('dlgContents').show();"  >
-                                                            </p:commandLink>
-                                                        </div>
-                                                        <div class="col-9">
-                                                            <p:dialog 
-                                                                widgetVar="dlgContents" 
-                                                                id="dlgContents" 
-                                                                modal="1" >
-                                                                <p:commandButton 
-                                                                    process="lblIiText" 
-                                                                    update="txtContents" 
-                                                                    value="Save" 
-                                                                    oncomplete="PF('dlgContents').hide()" 
-                                                                    >
+                                                    <p:outputLabel value="Contents" />
+                                                    <p:commandLink value="Editor" onclick="PF('dlgContents').show();" />
 
-                                                                </p:commandButton>
-                                                                <p:textEditor   
-                                                                    height="600" 
-                                                                    id="lblIiText"  
-                                                                    secure='false' 
-                                                                    value="#{investigationItemController.current.htmltext}" >
+                                                    <p:dialog widgetVar="dlgContents" id="dlgContents" modal="1">
+                                                        <p:commandButton process="lblIiText" update="txtContents" value="Save" oncomplete="PF('dlgContents').hide()" />
+                                                        <p:textEditor height="600" id="lblIiText" secure='false' value="#{investigationItemController.current.htmltext}" />
+                                                    </p:dialog>
 
-                                                                </p:textEditor >
+                                                    <p:inputTextarea id="txtContents" scrollHeight="60" autoResize="false" class="w-100" value="#{investigationItemController.current.htmltext}">
+                                                        <p:ajax event="blur" process="txtContents" update="dlgContents" />
+                                                    </p:inputTextarea>
 
-                                                            </p:dialog>
+                                                </h:panelGrid>
 
-                                                            <p:inputTextarea 
-                                                                id="txtContents" 
-                                                                scrollHeight="60"
-                                                                autoResize="false" 
-                                                                class="w-100"
-                                                                value="#{investigationItemController.current.htmltext}" >
-                                                                <p:ajax event="blur" process="txtContents" update="dlgContents" ></p:ajax>
-                                                            </p:inputTextarea>
-                                                        </div>
-                                                    </div>
-
-                                                    <p:row ></p:row>
-
-                                                </p:panelGrid>
                                             </p:tab>
 
                                             <p:tab title="Positioning" >
@@ -571,6 +533,23 @@
                                                     <h:outputText value="Result Code"/>
                                                     <h:outputLabel value=" : " style="width: 30px; text-align: center"/>
                                                     <p:inputText class="w-100" value="#{investigationItemController.current.resultCode}" ></p:inputText>
+
+                                                    <h:outputText value="Value Code System"/>
+                                                    <h:outputLabel value=" : " style="width: 30px; text-align: center"/>
+                                                    <p:inputText class="w-100" value="#{investigationItemController.current.valueCodeSystem}" ></p:inputText>
+
+                                                    <h:outputText value="Value Code"/>
+                                                    <h:outputLabel value=" : " style="width: 30px; text-align: center"/>
+                                                    <p:inputText class="w-100" value="#{investigationItemController.current.valueCode}" ></p:inputText>
+
+                                                    <h:outputText value="Unit Code System"/>
+                                                    <h:outputLabel value=" : " style="width: 30px; text-align: center"/>
+                                                    <p:inputText class="w-100" value="#{investigationItemController.current.valueUnitCodeSystem}" ></p:inputText>
+
+                                                    <h:outputText value="Unit Code"/>
+                                                    <h:outputLabel value=" : " style="width: 30px; text-align: center"/>
+                                                    <p:inputText class="w-100" value="#{investigationItemController.current.valueUnitCode}" ></p:inputText>
+
 
                                                     <p:outputLabel value="Sample" ></p:outputLabel>
                                                     <h:outputLabel value=" : " style="width: 30px; text-align: center"/>
@@ -745,7 +724,7 @@
                                                                 render="gpIi :#{p:resolveFirstComponentWithId('pDetails',view).clientId} moveFocus "/>
                                                     </h:inputText>
 
-                                                    
+
 
 
                                                     <h:inputHidden id="keyCode" binding="#{keyCode}" 
@@ -762,8 +741,8 @@
 
                     </p:panel>
                 </h:form>
-                
-                
+
+
                 <h1>#{investigationItemController.currentInvestigation.reportFormat}</h1>
 
                 <div class="row mb-3">

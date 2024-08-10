@@ -5,6 +5,7 @@
  */
 package com.divudi.ws.lims;
 
+import ca.uhn.fhir.context.FhirContext;
 import com.divudi.bean.common.SecurityController;
 import com.divudi.entity.WebUser;
 import com.divudi.facade.BillFacade;
@@ -43,6 +44,9 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 import ca.uhn.hl7v2.parser.Parser;
+import com.divudi.bean.common.DepartmentController;
+import com.divudi.bean.common.DepartmentMachineController;
+import com.divudi.bean.lab.MachineController;
 
 import com.divudi.data.InvestigationItemValueType;
 import com.divudi.data.lab.SysMex;
@@ -51,8 +55,10 @@ import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.Patient;
+import com.divudi.entity.lab.DepartmentMachine;
 import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.InvestigationItemValueFlag;
+import com.divudi.entity.lab.Machine;
 import com.divudi.entity.lab.PatientInvestigation;
 import com.divudi.entity.lab.PatientReport;
 import com.divudi.entity.lab.PatientReportItemValue;
@@ -72,6 +78,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.inject.Inject;
+import javax.ws.rs.GET;
 
 /**
  * REST Web Service
@@ -104,14 +112,213 @@ public class LimsMiddlewareController {
     @EJB
     InvestigationItemValueFlagFacade iivfFacade;
 
+    @Inject
+    DepartmentMachineController departmentMachineController;
+    @Inject
+    DepartmentController departmentController;
+    @Inject
+    MachineController machineController;
+
     private WebUser loggedUser;
     private Department loggedDepartment;
     private Institution loggedInstitution;
+
+    private FhirContext fhirContext = FhirContext.forR4();
 
     /**
      * Creates a new instance of LIMS
      */
     public LimsMiddlewareController() {
+    }
+
+    @GET
+    @Path("/test")
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response testEndpoint() {
+        return Response.ok("Hello, the path is correct!").build();
+    }
+
+    @POST
+    @Path("/observation")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response receiveObservation(String observationJson) {
+        try {
+            // Parse the incoming JSON string to a JSONObject
+            JSONObject observation = new JSONObject(observationJson);
+
+            // Process the Observation JSON object
+            return processD10Observation(observation);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("Failed to process Observation").build();
+        }
+    }
+
+    private Response processD10Observation(JSONObject observation) {
+        // Extract relevant fields from the JSON object using the exact names as sent by the client
+        String sampleId = observation.optString("sampleId");
+        String analyzerName = observation.optString("analyzerName");
+        String analyzerId = observation.optString("analyzerId");
+        String departmentId = observation.optString("departmentId");
+        String departmentAnalyzerId = observation.optString("departmentAnalyzerId");
+        String observationValueCodingSystem = observation.optString("observationValueCodingSystem");
+        String observationValueCode = observation.optString("observationValueCode");
+        String observationUnitCodingSystem = observation.optString("observationUnitCodingSystem");
+        String observationUnitCode = observation.optString("observationUnitCode");
+        String observationValueStr = observation.optString("observationValue");
+        Double observationValueDbl = null;
+        String issuedDate = observation.optString("issuedDate");
+        String password = observation.optString("password");
+        String username = observation.optString("username");
+
+        try {
+            observationValueDbl = Double.valueOf(observationValueStr);
+        } catch (NumberFormatException e) {
+            System.out.println("e = " + e);
+        }
+
+        // Log the extracted values for debugging or further processing
+        System.out.println("sampleId: " + sampleId);
+        System.out.println("analyzerName: " + analyzerName);
+        System.out.println("analyzerId: " + analyzerId);
+        System.out.println("departmentId: " + departmentId);
+        System.out.println("departmentAnalyzerId: " + departmentAnalyzerId);
+        System.out.println("observationValueCodingSystem: " + observationValueCodingSystem);
+        System.out.println("observationValueCode: " + observationValueCode);
+        System.out.println("observationUnitCodingSystem: " + observationUnitCodingSystem);
+        System.out.println("observationUnitCode: " + observationUnitCode);
+        System.out.println("observationValue: " + observationValueStr);
+        System.out.println("issuedDate: " + issuedDate);
+
+        Long sampleIdLong;
+        Machine analyzer;
+        DepartmentMachine departmentAnalyzer;
+        Department department;
+        WebUser wu;
+        boolean resultAdded = false;
+
+        wu = findRequestSendingUser(username, password);
+        if (wu == null) {
+            System.out.println("Cannot find the user: " + wu);
+            return Response.status(Response.Status.UNAUTHORIZED)
+                    .entity("User is not found for ID: " + username)
+                    .build();
+        }
+
+        try {
+            sampleIdLong = Long.valueOf(sampleId);
+        } catch (Exception e) {
+            System.out.println("Cannot convert sample ID to Long: " + sampleId);
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("Invalid sample ID: " + sampleId)
+                    .build();
+        }
+
+        department = departmentController.findDepartment(departmentId);
+        if (department == null) {
+            System.out.println("Cannot find the department: " + departmentId);
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity("Department not found for ID: " + departmentId)
+                    .build();
+        }
+
+        analyzer = machineController.findMachine(analyzerId);
+        if (analyzer == null) {
+            System.out.println("Cannot find the machine (analyzer): " + analyzerId);
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity("Machine (analyzer) not found for ID: " + analyzerId)
+                    .build();
+        }
+
+        departmentAnalyzer = departmentMachineController.findDepartmentMachine(departmentAnalyzerId);
+        if (departmentAnalyzer == null) {
+            departmentAnalyzer = departmentMachineController.findDepartmentMachine(department, analyzer, true);
+        }
+
+        PatientSample ps = patientSampleFromId(sampleIdLong);
+        if (ps == null) {
+            System.out.println("Cannot find the patient sample: " + sampleId);
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity("Patient sample not found for ID: " + sampleId)
+                    .build();
+        }
+
+        List<PatientSampleComponant> pscs = getPatientSampleComponents(ps);
+        if (pscs == null) {
+            System.out.println("Invalid Sample Components. Please inform developers. Resend results for sample ID: " + sampleIdLong);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("Invalid sample components for sample ID: " + sampleIdLong)
+                    .build();
+        }
+
+        List<PatientInvestigation> ptixs = getPatientInvestigations(pscs);
+        if (ptixs == null || ptixs.isEmpty()) {
+            System.out.println("Invalid Patient Investigations. Please inform developers. Resend results for sample ID: " + sampleIdLong);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("Invalid patient investigations for sample ID: " + sampleIdLong)
+                    .build();
+        }
+
+        for (PatientInvestigation pi : ptixs) {
+            List<PatientReport> prs = new ArrayList<>();
+            if (pi.getInvestigation().getMachine().equals(analyzer)) {
+                PatientReport tpr;
+                tpr = getUnsavedPatientReport(pi);
+                if (tpr == null) {
+                    tpr = createNewPatientReport(pi, pi.getInvestigation(), departmentAnalyzer, wu);
+                }
+                prs.add(tpr);
+            }
+            if (prs.isEmpty()) {
+                List<Item> temItems = getItemsForParentItem(pi.getInvestigation());
+                for (Item ti : temItems) {
+                    if (ti instanceof Investigation) {
+                        Investigation tix = (Investigation) ti;
+                        if (tix.getMachine().equals(analyzer)) {
+                            PatientReport tprs;
+                            tprs = getUnsavedPatientReport(pi);
+                            if (tprs == null) {
+                                tprs = createNewPatientReport(pi, tix);
+                            }
+                            prs.add(tprs);
+                        }
+                    }
+                }
+            }
+
+            for (PatientReport tpr : prs) {
+                for (PatientReportItemValue priv : tpr.getPatientReportItemValues()) {
+                    if (priv.getInvestigationItem() != null) {
+                        if (priv.getCodeSystem().equals(observationValueCodingSystem)) {
+                            if (priv.getCodeSystemCode().equals(observationValueCode)) {
+                                priv.setStrValue(observationValueStr);
+                                priv.setDoubleValue(observationValueDbl);
+                                resultAdded = true;
+                            }
+                        }
+                    }
+                }
+                tpr.setAutomated(true);
+                tpr.setAutomatedAt(new Date());
+                tpr.setAutomatedAnalyzer(analyzer);
+                tpr.setAutomatedDepartment(department);
+                tpr.setAutomatedInstitution(department.getInstitution());
+                tpr.setAutomatedUser(wu);
+                prFacade.edit(tpr);
+            }
+        }
+
+        if (resultAdded) {
+            return Response.status(Response.Status.CREATED)
+                    .entity("Results Added Successfully for Sample ID : " + sampleIdLong)
+                    .build();
+        } else {
+            return Response.status(Response.Status.EXPECTATION_FAILED)
+                    .entity("Results Could NOT be Added for Sample ID : " + sampleIdLong)
+                    .build();
+        }
     }
 
     @POST
@@ -255,7 +462,6 @@ public class LimsMiddlewareController {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response limsProcessAnalyzerMessage(String requestBody, @HeaderParam("Authorization") String authorizationHeader) {
-
 
         try {
             JSONObject requestJson = new JSONObject(requestBody);
@@ -965,6 +1171,34 @@ public class LimsMiddlewareController {
         return r;
     }
 
+    public PatientReport createNewPatientReport(PatientInvestigation pi, Investigation ix, DepartmentMachine deptAnalyzer, WebUser u) {
+        PatientReport r = null;
+        if (pi != null && pi.getId() != null && ix != null) {
+            r = new PatientReport();
+            r.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            r.setCreater(loggedUser);
+            r.setItem(ix);
+            r.setDataEntryDepartment(loggedDepartment);
+            r.setDataEntryInstitution(loggedInstitution);
+            r.setAutomated(Boolean.TRUE);
+            r.setAutomatedAnalyzer(deptAnalyzer.getMachine());
+            r.setAutomatedAt(new Date());
+            r.setAutomatedDepartment(deptAnalyzer.getDepartment());
+            r.setAutomatedInstitution(deptAnalyzer.getDepartment().getInstitution());
+            r.setAutomatedUser(u);
+            if (r.getTransInvestigation() != null) {
+                r.setReportFormat(r.getTransInvestigation().getReportFormat());
+            }
+            prFacade.create(r);
+            r.setPatientInvestigation(pi);
+            addPatientReportItemValuesForReport(r);
+            prFacade.edit(r);
+        } else {
+            JsfUtil.addErrorMessage("No ptIx or Ix selected to add");
+        }
+        return r;
+    }
+
     public Double getDefaultDoubleValue(InvestigationItem item, Patient patient) {
         //TODO: Create Logic
         return 0.0;
@@ -1102,6 +1336,18 @@ public class LimsMiddlewareController {
                 + " and (r.approved = :a or r.approved is null) "
                 + " order by r.id desc";
 
+        Map m = new HashMap();
+        m.put("pi", pi);
+        m.put("a", false);
+        PatientReport r = prFacade.findFirstByJpql(j, m);
+        return r;
+    }
+
+    public PatientReport getUnsavedPatientReport(PatientInvestigation pi) {
+        String j = "select r from PatientReport r "
+                + " where r.patientInvestigation = :pi "
+                + " and (r.dataEntered = :a or r.dataEntered is null) "
+                + " order by r.id desc";
         Map m = new HashMap();
         m.put("pi", pi);
         m.put("a", false);
