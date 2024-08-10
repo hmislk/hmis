@@ -21,6 +21,7 @@
                         <p:dataTable var="option" 
                                      value="#{configOptionController.options}" id="optionsTable"
                                      paginator="true" rows="10" 
+                                     rowKey="#{option.id}"
                                      paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                      rowsPerPageTemplate="5,10,15"
                                      selection="#{configOptionController.option}"
