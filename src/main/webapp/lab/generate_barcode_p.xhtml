@@ -23,168 +23,171 @@
 
                     <div class="container-fluid" >
                         <div class="row" >
-                            <div class="col-2" >
-                                <div class="row" >
-                                    <div class="col-12 p-1" >
-                                        <h:commandButton class="my-2" id="btnSearchPtix1" action="#{patientInvestigationController.searchPatientInvestigations}" title="Search Patient Investigations" rendered="false" value="Check" styleClass="ui-button-success"/>
-                                        <p:commandButton class="my-2" id="btnSearchBills" ajax="false" action="#{patientInvestigationController.searchBills()}" title="Search Bills" icon="fa fa-search" styleClass="ui-button-info"/>
-                                        <p:commandButton class="my-2" id="btnSearchPtix" ajax="false" action="#{patientInvestigationController.searchPatientInvestigations}" title="Search Patient Investigations" icon="fa fa-user-md" styleClass="ui-button-success"/>
-                                        <p:commandButton class="my-2" id="btnSearchPtSamples" ajax="false" action="#{patientInvestigationController.searchPatientSamples()}" title="Search Patient Samples" icon="fa fa-vial" styleClass="ui-button-warning"/>
-                                        <p:commandButton class="my-2" id="btnSearchSamples" ajax="false" action="#{patientInvestigationController.listBillsToGenerateBarcodes()}" title="Search Bills to Generate Barcodes" icon="fa fa-barcode" styleClass="ui-button-danger"/>
-                                    </div>
-                                </div>
-                                <h:panelGrid columns="1" class="w-100 p-0 m-0 b-0">
-                                    <h:outputLabel class="w-100 mt-2" value="Date Range for"/>
-                                    <p:selectOneMenu filter="true" filterMatchMode="contains" class="w-100 mb-2" value="#{patientInvestigationController.searchDateType}">
-                                        <f:selectItems value="#{enumController.searchDateTypes}" var="st" itemValue="#{st}" itemLabel="#{st.label}"/>
+
+
+                            <div class="col" style="min-width: 15em;">
+                                <h:outputLabel class="w-100" value="Date Range for"/>
+                                <p:selectOneMenu filter="true" filterMatchMode="contains" class="w-100" value="#{patientInvestigationController.searchDateType}">
+                                    <f:selectItems value="#{enumController.searchDateTypes}" var="st" itemValue="#{st}" itemLabel="#{st.label}"/>
+                                </p:selectOneMenu>
+                            </div>
+
+                            <div class="col" style="min-width: 15em;">
+                                <h:outputLabel class="w-100" value="From Date"/>
+                                <p:datePicker inputStyleClass="w-100" id="fromDate" showTime="true" value="#{patientInvestigationController.fromDate}" class="w-100" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                            </div>
+
+                            <div class="col" style="min-width: 15em;">
+                                <h:outputLabel class="w-100" value="To Date"/>
+                                <p:datePicker id="toDate" inputStyleClass="w-100" showTime="true" value="#{patientInvestigationController.toDate}" class="w-100" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                            </div>
+
+                            <div class="col" style="min-width: 15em;">
+                                <h:outputLabel class="w-100" value="Status"/>
+                                <p:selectOneMenu filter="true" filterMatchMode="contains" class="w-100" style="max-width:100%;" value="#{patientInvestigationController.patientInvestigationStatus}">
+                                    <f:selectItem itemLabel="Any" />
+                                    <f:selectItems value="#{enumController.patientInvestigationStatuses}" var="pis" itemValue="#{pis}" itemLabel="#{pis.label}"/>
+                                </p:selectOneMenu>
+                            </div>
+
+                            <div class="col" style="min-width: 15em;">
+                                <h:outputLabel class="w-100" value="Referring Doctor"/>
+                                <p:autoComplete inputStyleClass="w-100" inputStyle="max-width:100%;" class="w-100" id="acReferringDoctor" value="#{patientInvestigationController.referringDoctor}" completeMethod="#{doctorController.completeDoctor}" var="rd" itemLabel="#{rd.name}" itemValue="#{rd}"/>
+                            </div>
+
+                            <div class="col" style="min-width: 15em;">
+                                <h:outputLabel class="w-100" value="External Doctor"/>
+                                <p:inputText class="w-100" value="#{patientInvestigationController.externalDoctor}"/>
+                            </div>
+
+                            <div class="col" style="min-width: 15em;">
+                                <h:outputLabel class="w-100" value="Equipment"/>
+                                <p:selectOneMenu filter="true" filterMatchMode="contains" class="w-100" value="#{patientInvestigationController.equipment}">
+                                    <f:selectItem itemLabel="Any" />
+                                    <f:selectItems value="#{machineController.items}" var="e" itemLabel="#{e.name}" itemValue="#{e}"/>
+                                </p:selectOneMenu>
+                            </div>
+
+                            <div class="col" style="min-width: 15em;">
+                                <h:outputLabel class="w-100" value="Investigation"/>
+                                <p:autoComplete widgetVar="aPt" id="acPt" forceSelection="true" converter="ixcon" value="#{patientInvestigationController.investigation}" completeMethod="#{investigationController.completeInvest}" var="apt" itemLabel="#{apt.name}" inputStyleClass="w-100" itemValue="#{apt}" class="w-100" size="10" style="max-width: 100%;">
+                                    <p:column>
+                                        #{apt.name}
+                                    </p:column>
+                                    <p:column>
+                                        #{apt.code}
+                                    </p:column>
+                                    <p:column>
+                                        #{apt.fullName}
+                                    </p:column>
+                                    <p:column>
+                                        #{apt.department.name}
+                                    </p:column>
+                                    <f:ajax listener="#{investigationValidatorComponentController.listItemValidator()}" render="invalcom" event="itemSelect" execute="acPt"></f:ajax>
+                                </p:autoComplete> 
+                            </div>
+
+                            <div class="col" style="min-width: 15em;">
+                                <h:outputLabel class="w-100" value="Type"/>
+                                <p:selectOneMenu class="w-100" value="#{patientInvestigationController.type}">
+                                    <f:selectItem itemLabel="Any"/>
+                                    <f:selectItem itemValue="OP" itemLabel="Out Patients (OP)"/>
+                                    <f:selectItem itemValue="IP" itemLabel="In Patients (IP)"/>
+                                    <f:selectItem itemValue="CC" itemLabel="Collecting Centre (CC)"/>
+                                </p:selectOneMenu>
+                            </div>
+
+                            <div class="col" style="min-width: 15em;">
+                                <h:outputLabel class="w-100" value="Sample Id"/>
+                                <p:inputText class="w-100" value="#{patientInvestigationController.sampleId}"/>
+                            </div>
+
+                            <div class="col" style="min-width: 15em;">
+                                <h:outputLabel class="w-100" value="Patient Name"/>
+                                <p:inputText class="w-100" value="#{patientInvestigationController.patientName}"/>
+                            </div>
+
+                            <div class="col" style="min-width: 15em;">
+                                <h:outputLabel class="w-100" value="Specimen"/>
+                                <p:selectOneMenu class="w-100" value="#{patientInvestigationController.specimen}">
+                                    <f:selectItem itemLabel="Any" />
+                                    <f:selectItems value="#{sampleController.items}" var="s" itemLabel="#{s.name}" itemValue="#{s}"/>
+                                </p:selectOneMenu>
+                            </div>
+
+                            <div class="col" style="min-width: 15em;">
+                                <h:outputLabel class="w-100" value="Priority"/>
+                                <p:selectOneMenu class="w-100" value="#{patientInvestigationController.priority}">
+                                    <f:selectItem itemLabel="Any" />
+                                    <f:selectItems value="#{enumController.priorities}" var="p" itemLabel="#{p.label}" itemValue="#{p}"/>
+                                </p:selectOneMenu>
+                            </div>
+
+                            <div class="col" style="min-width: 15em;">
+                                <h:outputLabel class="w-100" value="By Route"/>
+                                <p:selectOneMenu filter="true" filterMatchMode="contains" class="w-100" value="#{patientInvestigationController.route}">
+                                    <f:selectItem itemLabel="Any" />
+                                    <f:selectItems value="#{routeController.items}" var="r" itemLabel="#{r.name}" itemValue="#{r}"/>
+                                </p:selectOneMenu>
+                            </div>
+
+                            <div class="col" style="min-width: 15em;">
+                                <h:outputLabel class="w-100" value="By Collection Center"/>
+                                <p:autoComplete class="w-100" id="acCollectionCenter" value="#{patientInvestigationController.collectionCenter}" completeMethod="#{collectingCentreController.completeCollecting}" var="cc" itemLabel="#{cc.name}" itemValue="#{cc}"/>
+                            </div>
+
+                            <div class="col" style="min-width: 15em;">
+                                <h:outputLabel class="w-100" value="Ordered Institution"/>
+                                <p:autoComplete class="w-100" id="acOins" value="#{patientInvestigationController.orderedInstitution}" inputStyleClass="w-100"
+                                                completeMethod="#{institutionController.completeIns}" var="oi" itemLabel="#{oi.name}" itemValue="#{oi}">
+                                    <p:ajax process="acOins" update="gpOdept" ></p:ajax>
+                                </p:autoComplete>
+                            </div>
+
+                            <div class="col" style="min-width: 15em;">
+                                <h:outputLabel class="w-100" value="Ordered Department"/>
+                                <h:panelGroup id="gpOdept">
+                                    <p:selectOneMenu value="#{patientInvestigationController.orderedDepartment}" class="w-100" style="max-width: 100%">
+                                        <f:selectItem itemLabel="Any"></f:selectItem>
+                                        <f:selectItems value="#{departmentController.getInstitutionDepartments(patientInvestigationController.orderedInstitution)}" var="odpt" itemLabel="#{odpt.name}" itemValue="#{odpt}"></f:selectItems>
                                     </p:selectOneMenu>
+                                </h:panelGroup>
+                            </div>
 
-                                    <h:outputLabel class="w-100" value="From Date"/>
-                                    <p:datePicker
-                                        inputStyleClass="w-100"
-                                        id="fromDate" showTime="true" value="#{patientInvestigationController.fromDate}" class="w-100 mb-2" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                            <div class="col align-center" style="height: 100%;">
+                                <p:commandButton class="m-2" id="btnSearchPtix1" action="#{patientInvestigationController.searchPatientInvestigations}" title="Search Patient Investigations" rendered="false" value="Check" styleClass="ui-button-success"/>
 
-                                    <h:outputLabel class="w-100" value="To Date"/>
-                                    <p:datePicker 
-                                        id="toDate" 
-                                        inputStyleClass="w-100"
-                                        showTime="true" value="#{patientInvestigationController.toDate}" class="w-100 mb-2" pattern="dd MMMM yy - hh:mm a"/>
+                                <p:commandButton class="m-2" id="btnSearchBills" ajax="false" action="#{patientInvestigationController.searchBills()}" title="Search Bills" icon="fa fa-search" styleClass="ui-button-info"/>
 
-                                    <h:outputLabel class="w-100" value="Status"/>
-                                    <p:selectOneMenu filter="true" filterMatchMode="contains" class="w-100 mt-2" style="max-width:100%;" value="#{patientInvestigationController.patientInvestigationStatus}">
-                                        <f:selectItem  itemLabel="Any" />
-                                        <f:selectItems value="#{enumController.patientInvestigationStatuses}" var="pis" itemValue="#{pis}" itemLabel="#{pis.label}"/>
-                                    </p:selectOneMenu>
+                                <p:commandButton class="m-2" id="btnSearchPtix" ajax="false" action="#{patientInvestigationController.searchPatientInvestigations}" title="Search Patient Investigations" icon="fa fa-user-md" styleClass="ui-button-success"/>
 
-                                    <h:outputLabel class="w-100 mt-2" value="Referring Doctor"/>
-                                    <p:autoComplete 
-                                        inputStyleClass="w-100"
-                                        inputStyle="max-width:100%;"
-                                        class="w-100 mb-2" id="acReferringDoctor" 
-                                        value="#{patientInvestigationController.referringDoctor}" completeMethod="#{doctorController.completeDoctor}" var="rd" itemLabel="#{rd.name}" itemValue="#{rd}"/>
+                                <p:commandButton class="m-2" id="btnSearchPtSamples" ajax="false" action="#{patientInvestigationController.searchPatientSamples()}" title="Search Patient Samples" icon="fa fa-vial" styleClass="ui-button-warning"/>
 
-                                    <h:outputLabel class="w-100 mt-2" value="External Doctor"/>
-                                    <p:inputText class="w-100 mb-2" value="#{patientInvestigationController.externalDoctor}"/>
+                                <p:commandButton class="m-2 p-1" id="btnSearchSamples" ajax="false" action="#{patientInvestigationController.listBillsToGenerateBarcodes()}" title="Search Bills to Generate Barcodes" icon="fa fa-barcode" styleClass="ui-button-danger"/>
+                            </div>
 
-                                    <h:outputLabel class="w-100 mt-2" value="Equipment"/>
-                                    <p:selectOneMenu 
-                                        filter="true"
-                                        filterMatchMode="contains"
-                                        class="w-100 mb-2" value="#{patientInvestigationController.equipment}">
-                                        <f:selectItem  itemLabel="Any" />
-                                        <f:selectItems value="#{machineController.items}" var="e" itemLabel="#{e.name}" itemValue="#{e}"/>
-                                    </p:selectOneMenu>
+                            <div class="col" >
+                                <p:commandButton 
+                                    rendered="#{patientInvestigationController.listingEntity eq 'PATIENT_INVESTIGATIONS'}"
+                                    class="w-100 m-2" id="btnGeneraBarcodes" 
+                                    ajax="false" action="#{patientInvestigationController.generateBarcodesForSelectedPatientInvestigations()}" value="Generate Barcodes" icon="fa fa-barcode" styleClass="btn btn-success"/>
 
+                                <p:commandButton 
+                                    rendered="#{patientInvestigationController.listingEntity eq 'PATIENT_INVESTIGATIONS'}"
+                                    class="w-100 m-2" id="btnCollectSamples" 
+                                    ajax="false" action="#{patientInvestigationController.generateBarcodesForSelectedPatientInvestigations()}" value="Generate Barcodes" icon="fa fa-barcode" styleClass="btn btn-success"/>
 
-                                    <h:outputLabel class="w-100 mt-2" value="Investigation"/>
-                                    <p:autoComplete widgetVar="aPt" id="acPt" forceSelection="true" converter="ixcon"
-                                                    value="#{patientInvestigationController.investigation}" 
-                                                    completeMethod="#{investigationController.completeInvest}" 
-                                                    var="apt" itemLabel="#{apt.name}" 
-                                                    inputStyleClass="w-100"
-                                                    itemValue="#{apt}" 
-                                                    class="w-100 mb-2"
-                                                    size="10"
-                                                    style="max-width: 100%;">
-                                        <p:column>
-                                            #{apt.name}
-                                        </p:column>
-                                        <p:column>
-                                            #{apt.code}
-                                        </p:column>
-                                        <p:column>
-                                            #{apt.fullName}
-                                        </p:column>
-                                        <p:column>
-                                            #{apt.department.name}
-                                        </p:column>
-                                        <f:ajax listener="#{investigationValidatorComponentController.listItemValidator()}" render="invalcom" event="itemSelect" execute="acPt"></f:ajax>
-                                    </p:autoComplete> 
-
-
-                                    <h:outputLabel class="w-100 mt-2" value="Type"/>
-                                    <p:selectOneMenu class="w-100 mb-2" value="#{patientInvestigationController.type}">
-                                        <f:selectItem itemLabel="Any"/>
-                                        <f:selectItem itemValue="OP" itemLabel="Out Patients (OP)"/>
-                                        <f:selectItem itemValue="IP" itemLabel="In Patients (IP)"/>
-                                        <f:selectItem itemValue="CC" itemLabel="Collecting Centre (CC)"/>
-                                    </p:selectOneMenu>
-
-
-                                    <h:outputLabel class="w-100 mt-2" value="Sample Id"/>
-                                    <p:inputText class="w-100 mb-2" value="#{patientInvestigationController.sampleId}"/>
-
-                                    <h:outputLabel class="w-100 mt-2" value="Patient Name"/>
-                                    <p:inputText class="w-100 mb-2" value="#{patientInvestigationController.patientName}"/>
-
-                                    <h:outputLabel class="w-100 mt-2" value="Specimen"/>
-                                    <p:selectOneMenu class="w-100 mb-2" value="#{patientInvestigationController.specimen}">
-                                        <f:selectItem  itemLabel="Any" />
-                                        <f:selectItems value="#{sampleController.items}" var="s" itemLabel="#{s.name}" itemValue="#{s}"/>
-                                    </p:selectOneMenu>
-
-                                    <h:outputLabel class="w-100 mt-2" value="Priority"/>
-                                    <p:selectOneMenu class="w-100 mb-2" value="#{patientInvestigationController.priority}">
-                                        <f:selectItem  itemLabel="Any" />
-                                        <f:selectItems value="#{enumController.priorities}" var="p" itemLabel="#{p.label}" itemValue="#{p}"/>
-                                    </p:selectOneMenu>
-
-                                    <h:outputLabel class="w-100 mt-2" value="By Route"/>
-                                    <p:selectOneMenu filter="true" filterMatchMode="contains" class="w-100 mb-2" value="#{patientInvestigationController.route}">
-                                        <f:selectItem  itemLabel="Any" />
-                                        <f:selectItems value="#{routeController.items}" var="r" itemLabel="#{r.name}" itemValue="#{r}"/>
-                                    </p:selectOneMenu>
-
-                                    <h:outputLabel class="w-100 mt-2" value="By Collection Center"/>
-                                    <p:autoComplete class="w-100 mb-2" id="acCollectionCenter" 
-                                                    value="#{patientInvestigationController.collectionCenter}" 
-                                                    completeMethod="#{collectingCentreController.completeCollecting}" var="cc" itemLabel="#{cc.name}" itemValue="#{cc}"/>
-
-
-                                    <h:outputLabel class="w-100 mt-2" value="Ordered Institution"/>
-                                    <p:autoComplete class="w-100 mb-2" id="acOins" 
-                                                    value="#{patientInvestigationController.orderedInstitution}" 
-                                                    completeMethod="#{institutionController.completeIns}" var="oi" itemLabel="#{oi.name}" itemValue="#{oi}">
-                                        <p:ajax process="acOins" update="gpOdept" ></p:ajax>
-                                    </p:autoComplete>
-
-                                    <h:outputLabel class="w-100 mt-2" value="Ordered Department"/>
-                                    <h:panelGroup  id="gpOdept" >
-                                        <p:selectOneMenu value="#{patientInvestigationController.orderedDepartment}" >
-                                            <f:selectItem itemLabel="Any" ></f:selectItem>
-                                            <f:selectItems 
-                                                value="#{departmentController.getInstitutionDepartments(patientInvestigationController.orderedInstitution)}" 
-                                                var="odpt" 
-                                                itemLabel="#{odpt.name}" 
-                                                itemValue="#{odpt}" >
-                                            </f:selectItems>
-                                        </p:selectOneMenu>
-                                    </h:panelGroup>
-
-
-                                    <p:commandButton class="w-100 m-2" id="btnListToGenera" ajax="false" actionListener="#{patientInvestigationController.listBillsToGenerateBarcodes()}" value="List to Generate" icon="fa fa-list-alt" styleClass="btn btn-secondary"/>
-                                    <p:commandButton class="w-100 m-2" id="btnListGenerated" ajax="false" actionListener="#{patientInvestigationController.listBillsWithGeneratedBarcodes()}" value="List Generated" icon="fa fa-check-square" styleClass="btn btn-secondary"/>
-
-                                </h:panelGrid>
 
                             </div>
+
+                        </div>
+
+
+                        <div class="row" >
+
                             <div class="col-10" >
 
-                                <div class="row" >
-                                    <div class="col-12" >
-                                        <p:commandButton 
-                                            rendered="#{patientInvestigationController.listingEntity eq 'PATIENT_INVESTIGATIONS'}"
-                                            class="w-100 m-2" id="btnGeneraBarcodes" 
-                                            ajax="false" action="#{patientInvestigationController.generateBarcodesForSelectedPatientInvestigations()}" value="Generate Barcodes" icon="fa fa-barcode" styleClass="btn btn-success"/>
-
-                                        <p:commandButton 
-                                            rendered="#{patientInvestigationController.listingEntity eq 'PATIENT_INVESTIGATIONS'}"
-                                            class="w-100 m-2" id="btnCollectSamples" 
-                                            ajax="false" action="#{patientInvestigationController.generateBarcodesForSelectedPatientInvestigations()}" value="Generate Barcodes" icon="fa fa-barcode" styleClass="btn btn-success"/>
-
-
-                                    </div>
-                                </div>
+                                
 
                                 <h:panelGroup rendered="#{patientInvestigationController.listingEntity eq 'PATIENT_INVESTIGATIONS'}" >
 
