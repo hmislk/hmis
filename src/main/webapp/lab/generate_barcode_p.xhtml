@@ -155,15 +155,16 @@
                             </div>
 
                             <div class="col align-center" style="height: 100%;">
-                                <p:commandButton class="m-2" id="btnSearchPtix1" action="#{patientInvestigationController.searchPatientInvestigations}" title="Search Patient Investigations" rendered="false" value="Check" styleClass="ui-button-success"/>
+                                <p:outputLabel value="Search" ></p:outputLabel>
 
-                                <p:commandButton class="m-2" id="btnSearchBills" ajax="false" action="#{patientInvestigationController.searchBills()}" title="Search Bills" icon="fa fa-search" styleClass="ui-button-info"/>
+                                <div  >
+                                    <p:commandButton  id="btnSearchPtix1" action="#{patientInvestigationController.searchPatientInvestigations}" title="Search Patient Investigations" rendered="false" value="Check" styleClass="ui-button-success"/>
+                                    <p:commandButton id="btnSearchBills" ajax="false" action="#{patientInvestigationController.searchBills()}" title="Search Bills" icon="fa fa-search" styleClass="ui-button-info"/>
+                                    <p:commandButton id="btnSearchPtix" ajax="false" action="#{patientInvestigationController.searchPatientInvestigations}" title="Search Patient Investigations" icon="fa fa-user-md" styleClass="ui-button-success"/>
+                                    <p:commandButton id="btnSearchPtSamples" ajax="false" action="#{patientInvestigationController.searchPatientSamples()}" title="Search Patient Samples" icon="fa fa-vial" styleClass="m-2 ui-button-warning"/>
+                                    <p:commandButton id="btnSearchSamples" ajax="false" action="#{patientInvestigationController.listBillsToGenerateBarcodes()}" title="Search Bills to Generate Barcodes" icon="fa fa-barcode" styleClass="mx-2 ui-button-danger"/>
+                                </div>
 
-                                <p:commandButton class="m-2" id="btnSearchPtix" ajax="false" action="#{patientInvestigationController.searchPatientInvestigations}" title="Search Patient Investigations" icon="fa fa-user-md" styleClass="ui-button-success"/>
-
-                                <p:commandButton class="m-2" id="btnSearchPtSamples" ajax="false" action="#{patientInvestigationController.searchPatientSamples()}" title="Search Patient Samples" icon="fa fa-vial" styleClass="ui-button-warning"/>
-
-                                <p:commandButton class="m-2 p-1" id="btnSearchSamples" ajax="false" action="#{patientInvestigationController.listBillsToGenerateBarcodes()}" title="Search Bills to Generate Barcodes" icon="fa fa-barcode" styleClass="ui-button-danger"/>
                             </div>
 
                             <div class="col" >
@@ -187,7 +188,7 @@
 
                             <div class="col-10" >
 
-                                
+
 
                                 <h:panelGroup rendered="#{patientInvestigationController.listingEntity eq 'PATIENT_INVESTIGATIONS'}" >
 
