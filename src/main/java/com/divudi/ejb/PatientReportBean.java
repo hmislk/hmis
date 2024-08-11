@@ -132,8 +132,14 @@ public class PatientReportBean {
     }
 
     public String getDefaultMemoValue(InvestigationItem item, Patient patient) {
-        //TODO: Create Logic
-        return "";
+        String defaultValue = "";
+        if(item==null){
+            return defaultValue;
+        }
+        if(item.getHtmltext()!=null){
+            defaultValue=item.getHtmltext();
+        }
+        return defaultValue;
     }
 
     public byte[] getDefaultImageValue(InvestigationItem item, Patient patient) {
