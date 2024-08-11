@@ -195,13 +195,14 @@
                                         paginator="true"
                                         rowKey="#{smpIx.id}"
                                         paginatorPosition="bottom"
+                                        selectionMode="multiple"
                                         selection="#{patientInvestigationController.selectedItems}"
                                         rows="10"
                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                         rowsPerPageTemplate="10,25,50"
                                         >
 
-                                        <p:column selectionBox="true" width="1em">
+                                        <p:column selectionBox="true" width="2em">
                                         </p:column>
 
                                         <p:column headerText="Bill Number" width="6em">
