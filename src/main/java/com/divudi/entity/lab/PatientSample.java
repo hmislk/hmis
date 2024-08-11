@@ -6,6 +6,7 @@
 package com.divudi.entity.lab;
 
 import com.divudi.data.lab.PatientInvestigationStatus;
+import com.divudi.data.lab.Priority;
 import com.divudi.data.lab.SampleRequestType;
 import com.divudi.entity.Bill;
 import com.divudi.entity.Department;
@@ -27,7 +28,8 @@ import javax.persistence.Temporal;
 
 /**
  *
- * @author buddhika_ari
+ * @author buddhika.ari@gmail.com
+ * 
  */
 @Entity
 public class PatientSample implements Serializable {
@@ -84,6 +86,9 @@ public class PatientSample implements Serializable {
     private WebUser sampleSentBy;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date sampleSentAt;
+    
+    @Enumerated
+    private Priority priority;
     
     //Sent To Analyzer
     private Boolean readyTosentToAnalyzer;
@@ -720,6 +725,14 @@ public class PatientSample implements Serializable {
 
     public void setDepartment(Department department) {
         this.department = department;
+    }
+
+    public Priority getPriority() {
+        return priority;
+    }
+
+    public void setPriority(Priority priority) {
+        this.priority = priority;
     }
 
 }

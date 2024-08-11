@@ -91,6 +91,7 @@
                                          rowKey="#{im.id}"
                                          selection="#{itemMappingController.selectedItemMappings}"
                                          var="im"
+                                         selectionMode="multiple"
                                          paginator="true" paginatorPosition="both"
                                          paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                          currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
@@ -104,7 +105,7 @@
                                         ajax="false"
                                         action="#{itemMappingController.removeSelectedItemMappingForInstitution()}"></p:commandButton>
                                 </f:facet>
-                                <p:column selectionMode="multiple" width="15"></p:column>
+                                <p:column selectionBox="true" width="15"></p:column>
                                 <p:column headerText="Name"  sortBy="#{im.item.name}" filterBy="#{pasindu.item.name}" filterMatchMode="contains">
                                     <h:outputText value="#{im.item.name}" ></h:outputText>
                                 </p:column>

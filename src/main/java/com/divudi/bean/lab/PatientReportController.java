@@ -1065,6 +1065,13 @@ public class PatientReportController implements Serializable {
         currentPatientReport.setDataEntryDepartment(getSessionController().getLoggedUser().getDepartment());
         currentPatientReport.setDataEntryInstitution(getSessionController().getLoggedUser().getInstitution());
         currentPatientReport.setDataEntryUser(getSessionController().getLoggedUser());
+        
+//        boolean hadHtml=false;
+//        for(PatientReportItemValue priv: currentPatientReport.getPatientReportItemValues()){
+//            if(priv.getInvestigationItem().getIxItemType()==InvestigationItemType.Html){
+//                hadHtml=true;
+//            }
+//        }
 
         getFacade().edit(currentPatientReport);
         getPiFacade().edit(currentPtIx);
