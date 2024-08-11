@@ -1065,18 +1065,81 @@ public class PatientReportController implements Serializable {
         currentPatientReport.setDataEntryDepartment(getSessionController().getLoggedUser().getDepartment());
         currentPatientReport.setDataEntryInstitution(getSessionController().getLoggedUser().getInstitution());
         currentPatientReport.setDataEntryUser(getSessionController().getLoggedUser());
-        
-//        boolean hadHtml=false;
-//        for(PatientReportItemValue priv: currentPatientReport.getPatientReportItemValues()){
-//            if(priv.getInvestigationItem().getIxItemType()==InvestigationItemType.Html){
-//                hadHtml=true;
-//            }
-//        }
+
+        Investigation currentInvestigation = (Investigation) currentPatientReport.getItem();
+        if (currentInvestigation == null || currentPatientReport == null) {
+            return; // Handle the case where the investigation or report is null
+        }
+
+        List<InvestigationItem> htmlComponentsWithPlaceHoldersList = new ArrayList<>();
+        if (currentInvestigation.getReportType() == InvestigationReportType.HtmlTemplate) {
+            for (InvestigationItem ixi : currentInvestigation.getReportItems()) {
+                if (ixi != null && ixi.getIxItemType() == InvestigationItemType.Html) {
+                    htmlComponentsWithPlaceHoldersList.add(ixi);
+                }
+            }
+        }
+
+        for (InvestigationItem htmlComponentWithPlaceholders : htmlComponentsWithPlaceHoldersList) {
+            List<String> placeholders = extractPlaceholders(htmlComponentWithPlaceholders.getHtmltext());
+
+            for (String placeholder : placeholders) {
+                for (PatientReportItemValue priv : currentPatientReport.getPatientReportItemValues()) {
+                    if (priv == null || priv.getInvestigationItem() == null) {
+                        continue; // Skip null values to avoid null pointer exceptions
+                    }
+
+                    String valueToReplacePlaceholder = null;
+                    if (placeholder.equals(priv.getInvestigationItem().getName())) {
+                        switch (priv.getInvestigationItem().getIxItemValueType()) {
+                            case Varchar:
+                                valueToReplacePlaceholder = priv.getStrValue();
+                                break;
+                            case Double:
+                                Double dbl = priv.getDoubleValue();
+                                if (dbl != null) {
+                                    String formatString = priv.getInvestigationItem().getFormatString() != null ? priv.getInvestigationItem().getFormatString() : "";
+                                    String suffix = priv.getInvestigationItem().getFormatSuffix() != null ? priv.getInvestigationItem().getFormatSuffix() : "";
+                                    String prefix = priv.getInvestigationItem().getFormatPrefix() != null ? priv.getInvestigationItem().getFormatPrefix() : "";
+                                    valueToReplacePlaceholder = prefix + String.format(formatString, dbl) + suffix;
+                                }
+                                break;
+                            case Memo:
+                                valueToReplacePlaceholder = priv.getLobValue();
+                                break;
+                            default:
+                                valueToReplacePlaceholder = ""; // Handle other types if necessary
+                                break;
+                        }
+
+                        if (valueToReplacePlaceholder != null) {
+                            // Replace the placeholder in the HTML content with the actual value
+                            htmlComponentWithPlaceholders.setHtmltext(
+                                    htmlComponentWithPlaceholders.getHtmltext().replace("{" + placeholder + "}", valueToReplacePlaceholder)
+                            );
+                        }
+                    }
+                }
+            }
+        }
 
         getFacade().edit(currentPatientReport);
         getPiFacade().edit(currentPtIx);
 
         //JsfUtil.addSuccessMessage("Saved");
+    }
+
+    // Utility method to extract placeholders from HTML content
+    private List<String> extractPlaceholders(String htmlContent) {
+        List<String> placeholders = new ArrayList<>();
+        if (htmlContent != null) {
+            Pattern pattern = Pattern.compile("\\{(.*?)\\}");
+            Matcher matcher = pattern.matcher(htmlContent);
+            while (matcher.find()) {
+                placeholders.add(matcher.group(1));
+            }
+        }
+        return placeholders;
     }
 
     public String emailMessageBody(PatientReport r) {
@@ -1829,7 +1892,7 @@ public class PatientReportController implements Serializable {
         getFacade().edit(currentPatientReport);
 
     }
-    
+
     public void printPatientLabReport() {
         if (currentPatientReport == null) {
             JsfUtil.addErrorMessage("Nothing to approve");
@@ -1848,7 +1911,7 @@ public class PatientReportController implements Serializable {
         currentPatientReport.setPrintingInstitution(getSessionController().getLoggedUser().getInstitution());
         currentPatientReport.setPrintingUser(getSessionController().getLoggedUser());
         currentPatientReport.setPrinted(true);
-        
+
         getFacade().edit(currentPatientReport);
     }
 
