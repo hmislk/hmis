@@ -146,7 +146,7 @@ public class PatientReportBean {
         Investigation temIx = (Investigation) ptReport.getItem();
         for (ReportItem ii : temIx.getReportItems()) {
             PatientReportItemValue val = null;
-            if ((ii.getIxItemType() == InvestigationItemType.Value || ii.getIxItemType() == InvestigationItemType.Calculation || ii.getIxItemType() == InvestigationItemType.Flag || ii.getIxItemType() == InvestigationItemType.Template) && ii.isRetired() == false) {
+            if ((ii.getIxItemType() == InvestigationItemType.Value || ii.getIxItemType() == InvestigationItemType.Calculation || ii.getIxItemType() == InvestigationItemType.Flag || ii.getIxItemType() == InvestigationItemType.Html || ii.getIxItemType() == InvestigationItemType.Template) && ii.isRetired() == false) {
                 if (ptReport.getId() == null || ptReport.getId() == 0) {
 
                     val = new PatientReportItemValue();
