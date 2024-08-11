@@ -1529,22 +1529,16 @@ public class PatientInvestigationController implements Serializable {
                 params.put("td", getToDate());
                 break;
             case REPORT_AUTHORIZED:
-                jpql += " AND i.approveAt BETWEEN :fd AND :td ";
-                params.put("fd", getFromDate());
-                params.put("td", getToDate());
                 break;
             case REPORT_PRINTED:
-                jpql += " AND i.printingAt BETWEEN :fd AND :td ";
-                params.put("fd", getFromDate());
-                params.put("td", getToDate());
                 break;
             case SAMPLE_ACCEPTED_DATE:
-                jpql += " AND i.sampleAcceptedAt BETWEEN :fd AND :td ";
+                jpql += " AND ps.sampleReceivedAtLabDate BETWEEN :fd AND :td ";
                 params.put("fd", getFromDate());
                 params.put("td", getToDate());
                 break;
             case SAMPLE_COLLECTED_DATE:
-                jpql += " AND i.sampleCollectedAt BETWEEN :fd AND :td ";
+                jpql += " AND ps.sampleCollectedAt BETWEEN :fd AND :td ";
                 params.put("fd", getFromDate());
                 params.put("td", getToDate());
                 break;
@@ -1558,6 +1552,7 @@ public class PatientInvestigationController implements Serializable {
                 params.put("fd", getFromDate());
                 params.put("td", getToDate());
                 break;
+            
         }
 
         if (orderedInstitution != null) {
@@ -1571,12 +1566,12 @@ public class PatientInvestigationController implements Serializable {
         }
 
         if (peformingInstitution != null) {
-            jpql += " AND i.performInstitution = :peformingInstitution ";
+            jpql += " AND ps.institution = :peformingInstitution ";
             params.put("peformingInstitution", getPeformingInstitution());
         }
 
         if (peformingDepartment != null) {
-            jpql += " AND i.performDepartment = :peformingDepartment ";
+            jpql += " AND ps.department = :peformingDepartment ";
             params.put("peformingDepartment", getPeformingDepartment());
         }
 
@@ -1596,51 +1591,48 @@ public class PatientInvestigationController implements Serializable {
         }
 
         if (specimen != null) {
-            jpql += " AND i.investigation.sample = :specimen ";
+            jpql += " AND i.sample = :specimen ";
             params.put("specimen", getSpecimen());
         }
 
         if (patientName != null && !patientName.trim().isEmpty()) {
-            jpql += " AND i.billItem.bill.patient.person.name LIKE :patientName ";
+            jpql += " AND b.patient.person.name LIKE :patientName ";
             params.put("patientName", "%" + getPatientName().trim() + "%");
         }
 
         if (type != null && !type.trim().isEmpty()) {
-            jpql += " AND i.billItem.bill.ipOpOrCC = :type ";
+            jpql += " AND b.ipOpOrCC = :type ";
             params.put("type", getType().trim());
         }
 
         if (externalDoctor != null && !externalDoctor.trim().isEmpty()) {
-            jpql += " AND i.billItem.bill.referredByName = :externalDoctor ";
+            jpql += " AND b.referredByName = :externalDoctor ";
             params.put("externalDoctor", getExternalDoctor().trim());
         }
 
         if (equipment != null) {
-            jpql += " AND i.investigation.machine = :equipment ";
-            params.put("equipment", getEquipment());
+            
         }
 
         if (referringDoctor != null) {
-            jpql += " AND i.billItem.bill.referringDoctor = :referringDoctor ";
+            jpql += " AND b.referringDoctor = :referringDoctor ";
             params.put("referringDoctor", getReferringDoctor());
         }
 
         if (investigation != null) {
-            jpql += " AND i.investigation = :investigation ";
-            params.put("investigation", getInvestigation());
+            
         }
 
         if (department != null) {
-            jpql += " AND i.billItem.bill.toDepartment = :department ";
+            jpql += " AND ps.department = :department ";
             params.put("department", getDepartment());
         }
 
         if (patientInvestigationStatus != null) {
-            jpql += " AND i.status = :patientInvestigationStatus ";
-            params.put("patientInvestigationStatus", getPatientInvestigationStatus());
+            
         }
 
-        jpql += " ORDER BY i.id DESC";
+        jpql += " ORDER BY ps.id DESC";
 
         params.put("ret", false);
 
