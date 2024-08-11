@@ -1158,7 +1158,7 @@ public class PatientReportController implements Serializable {
             }
         }
 
-        // Replace placeholders in the template with values from the map
+        // Replace placeholders in the template with values from the map, or make them blank if no value is found
         String updatedHtmlText = templateItem.getHtmltext();
         for (String placeholder : placeholders) {
             String replacementValue = replacementMap.get(placeholder);
@@ -1166,11 +1166,13 @@ public class PatientReportController implements Serializable {
                 updatedHtmlText = updatedHtmlText.replace("{" + placeholder + "}", replacementValue);
                 System.out.println("Replaced {" + placeholder + "} with " + replacementValue);
             } else {
-                System.out.println("No replacement found for placeholder {" + placeholder + "}");
+                // Replace with an empty string if no replacement value is found
+                updatedHtmlText = updatedHtmlText.replace("{" + placeholder + "}", "");
+                System.out.println("Replaced {" + placeholder + "} with an empty string.");
             }
         }
 
-        // Save the updated HTML text back to the patient-specific report item
+// Save the updated HTML text back to the patient-specific report item
         for (PatientReportItemValue privHtml : currentPatientReport.getPatientReportItemValues()) {
             System.out.println("privHtml = " + privHtml);
 
