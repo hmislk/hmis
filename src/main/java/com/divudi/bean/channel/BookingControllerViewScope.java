@@ -339,6 +339,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     private boolean listCompleted;
     private boolean listAll;
     private boolean sessionInstanceStartedEdited;
+    
+    boolean billingStarted=false;
 
     public void sessionReschedule() {
         if (getSelectedSessionInstanceForRechedule() == null) {
@@ -3087,15 +3089,25 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public void addNormalChannelBooking() {
+        if(billingStarted){
+            return;
+        }
+        billingStarted=true;
         if (selectedSessionInstance == null) {
             JsfUtil.addErrorMessage("Please select a Session");
+            billingStarted=false;
             return;
         }
         addChannelBooking(false);
         fillBillSessions();
+        billingStarted=false;
     }
 
     public void addReservedChannelBooking() {
+         if(billingStarted){
+            return;
+        }
+        billingStarted=true;
         if (selectedSessionInstance == null) {
             JsfUtil.addErrorMessage("Please select a Session Instance");
             return;
@@ -3103,6 +3115,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         boolean reservedBooking = true;
         addChannelBooking(reservedBooking);
         fillBillSessions();
+        billingStarted=false;
     }
 
     public void addChannelBooking(boolean reservedBooking) {
