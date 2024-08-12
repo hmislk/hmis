@@ -39,17 +39,6 @@ public class PatientReport implements Serializable {
     @OneToMany(mappedBy = "patientReport", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<PatientReportItemValue> patientReportItemValues;
 
-//    @Transient
-//    private List<PatientReportItemValue> patientReportItemOfValueType;
-//
-//    @Transient
-//    private List<PatientReportItemValue> patientReportItemOfFlagType;
-//
-//    @Transient
-//    private List<PatientReportItemValue> patientReportItemOfCalculationType;
-//
-//    @Transient
-//    private List<PatientReportItemValue> patientReportItemOfDynamicLabelType;
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -322,10 +311,6 @@ public class PatientReport implements Serializable {
                 Collections.sort(patientReportItemValues, new PatientReportItemValueComparator());
             } catch (Exception e) {
             }
-//            patientReportItemOfCalculationType = null;
-//            patientReportItemOfDynamicLabelType = null;
-//            patientReportItemOfFlagType = null;
-//            patientReportItemOfValueType = null;
             filteredAndSorted = true;
         }
     }
@@ -337,16 +322,11 @@ public class PatientReport implements Serializable {
                     Collections.sort(patientReportItemValues, new PatientReportItemValueComparator());
                 } catch (Exception e) {
                 }
-//                patientReportItemOfCalculationType = null;
-//                patientReportItemOfDynamicLabelType = null;
-//                patientReportItemOfFlagType = null;
-//                patientReportItemOfValueType = null;
                 filteredAndSorted = true;
             }
         } else {
             patientReportItemValues = new ArrayList<>();
         }
-//        //System.out.println("patientReportItemValues = " + patientReportItemValues.size());
         return patientReportItemValues;
     }
 

@@ -67,6 +67,9 @@ public class Investigation extends Item implements Serializable {
     InvestigationReportType reportType;
 
     public InvestigationReportType getReportType() {
+        if (reportType == null) {
+            reportType = InvestigationReportType.General;
+        }
         return reportType;
     }
 
