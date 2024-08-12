@@ -62,12 +62,13 @@
                         <p:dataTable  value="#{staffController.staffWithCode}" 
                                       var="s" scrollable="true"
                                       filteredValue="#{staffController.filteredStaff}" 
-                                      scrollHeight="300"                               
+                                      scrollHeight="300"  
+                                      selectionMode="multiple"
                                       rowKey="#{s.id}" 
                                       selection="#{staffController.selectedList}"
                                       rowIndexVar="i">
 
-                            <p:column  selectionMode="multiple" >                            
+                            <p:column >                            
                             </p:column>
 
                             <p:column >
@@ -149,13 +150,14 @@
                                       var="i"  editable="true"
                                       rowStyleClass="#{i.exist eq true ? 'exist':null}"
                                       selection="#{staffPaySheetComponentAllPerformanceAllowanceController.selectedStaffComponent}" 
-                                      rowKey="#{i.id}" rowIndexVar="a"  >
+                                      rowKey="#{i.id}" rowIndexVar="a" 
+                                      selectionMode="multiple">
                             <f:facet name="header">
                                 <h:outputLabel value="Performance Allowance Value"/>
                             </f:facet>
                             <p:ajax event="rowEdit" listener="#{staffPaySheetComponentAllPerformanceAllowanceController.onEdit}" />  
 
-                            <p:column  selectionMode="multiple" styleClass="noPrintButton">                            
+                            <p:column   styleClass="noPrintButton">                            
                             </p:column>
                             
                             <p:column headerText="No">
