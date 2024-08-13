@@ -1,0 +1,42 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui">
+
+    <body>
+
+        <ui:composition template="/admin/staff/admin_manage_staff_index.xhtml">
+
+            <ui:define name="subcontent">
+                <h:form>
+                    <p:dataTable value="#{staffController.staff}" var="s"  rowKey="#{s.id}" rows="10" paginator="true" >
+                        <p:column headerText="Name" >
+                            <h:outputText value="#{s.person.name}" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="Type" >
+                            <h:outputText value="#{s.staffCategory.name}" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="Type" >
+                            <h:outputText value="#{s.speciality.name}" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="EPF No" >
+                            <h:outputText value="#{s.epfNo}" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="EPF No" >
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Edit" 
+                                action="#{staffController.navigateToManageStaff(s)}" ></p:commandButton>
+                        </p:column>
+
+                    </p:dataTable>
+                </h:form>
+
+            </ui:define>
+
+        </ui:composition>
+
+    </body>
+</html>

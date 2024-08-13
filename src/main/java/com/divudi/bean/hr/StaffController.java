@@ -108,6 +108,7 @@ public class StaffController implements Serializable {
     private List<Staff> filteredStaff;
     private Staff selectedStaff;
     private Staff current;
+    private Person currentPerson;
     List<Staff> staffWithCode;
     private List<Staff> items = null;
     String selectText = "";
@@ -131,6 +132,60 @@ public class StaffController implements Serializable {
         }
         itemsToRemove = null;
         items = null;
+    }
+
+    public String navigateToListStaff() {
+        fillItems();
+        return "/admin/staff/staff_list?faces-redirect=true;";
+    }
+
+    public String navigateToManageStaff(Staff staff) {
+        if (staff == null) {
+            JsfUtil.addErrorMessage("Nothing Selected");
+            return "";
+        }
+        current = staff;
+        if (current.getPerson() == null) {
+            JsfUtil.addErrorMessage("No Person. New Person Added");
+            currentPerson = new Person();
+            current.setPerson(currentPerson);
+        }
+        return "/admin/staff/staff?faces-redirect=true;";
+    }
+
+    public String navigateToAddNewStaff() {
+        current = new Staff();
+        currentPerson = new Person();
+        current.setPerson(currentPerson);
+        return "/admin/staff/staff?faces-redirect=true;";
+    }
+    
+    public void saveCurrentStaff(){
+        if(current==null){
+            JsfUtil.addErrorMessage("No Staff");
+            return ;
+        }
+        if(current.getPerson()==null){
+              JsfUtil.addErrorMessage("No Person");
+            return ;
+        }
+        if(current.getPerson().getId()!=null){
+            personFacade.edit(current.getPerson());
+        }else{
+            current.getPerson().setCreatedAt(new Date());
+            current.getPerson().setCreater(sessionController.getLoggedUser());
+            personFacade.edit(current.getPerson());
+        }
+        if(current.getId()!=null){
+            ejbFacade.edit(current);
+            JsfUtil.addSuccessMessage("Updated");
+        }else{
+            current.setCreater(sessionController.getLoggedUser());
+            current.setCreatedAt(new Date());
+            ejbFacade.create(current);
+            JsfUtil.addSuccessMessage("Saved");
+        }
+        
     }
 
     public void deleteStaff() {
@@ -1135,10 +1190,7 @@ public class StaffController implements Serializable {
             current.setDateLeft(tempRetireDate);
         }
 
-
         getCurrent().chageCodeToInteger();
-
-        
 
         current.getName();
         current.getPerson().getName();
@@ -1186,9 +1238,8 @@ public class StaffController implements Serializable {
         getItems();
         fillSelectedItemsWithAllStaff();
     }
-    
-    
-       public void saveStaff() {
+
+    public void saveStaff() {
         if (current == null) {
             JsfUtil.addErrorMessage("Nothing to save");
             return;
@@ -1580,6 +1631,14 @@ public class StaffController implements Serializable {
 
     public void setStaff(List<Staff> staff) {
         this.staff = staff;
+    }
+
+    public Person getCurrentPerson() {
+        return currentPerson;
+    }
+
+    public void setCurrentPerson(Person currentPerson) {
+        this.currentPerson = currentPerson;
     }
 
     /**
