@@ -585,8 +585,10 @@ public class BookingControllerViewScopeMonth implements Serializable {
         bill.setDeptId(deptId);
         bill.setInsId(deptId);
 
-        bill.setPaidAmount(getSelectedSessionInstanceForRechedule().getOriginatingSession().getTotal());
-        bill.setPaidAt(new Date());
+        if (bill.getBillTypeAtomic() == BillTypeAtomic.CHANNEL_RESHEDULE_WITH_PAYMENT) {
+            bill.setPaidAmount(getSelectedSessionInstanceForRechedule().getOriginatingSession().getTotal());
+            bill.setPaidAt(new Date());
+        }
 
         bill.setBillDate(new Date());
         bill.setBillTime(new Date());

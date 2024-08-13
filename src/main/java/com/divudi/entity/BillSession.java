@@ -124,6 +124,11 @@ public class BillSession implements Serializable {
     ChannelFee hospitalFee;
     @Transient
     ChannelFee agentFee;
+    @OneToOne(fetch = FetchType.LAZY)
+    BillSession rescheduledFromBillSession;
+    @OneToOne(fetch = FetchType.LAZY)
+    BillSession rescheduledToBillSession;
+
     private boolean reservedBooking=false;
     private boolean recheduledSession=false;
 
@@ -554,8 +559,22 @@ public class BillSession implements Serializable {
     public void setRecheduledSession(boolean recheduledSession) {
         this.recheduledSession = recheduledSession;
     }
-    
-    
-    
 
+    public BillSession getRescheduledFromBillSession() {
+        return rescheduledFromBillSession;
+    }
+
+    public BillSession setRescheduledFromBillSession(BillSession rescheduledFromBillSession) {
+        this.rescheduledFromBillSession = rescheduledFromBillSession;
+        return this;
+    }
+
+    public BillSession getRescheduledToBillSession() {
+        return rescheduledToBillSession;
+    }
+
+    public BillSession setRescheduledToBillSession(BillSession rescheduledToBillSession) {
+        this.rescheduledToBillSession = rescheduledToBillSession;
+        return this;
+    }
 }
