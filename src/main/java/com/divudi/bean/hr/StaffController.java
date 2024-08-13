@@ -1184,6 +1184,7 @@ public class StaffController implements Serializable {
 
         recreateModel();
         getItems();
+        fillSelectedItemsWithAllStaff();
     }
     
     
