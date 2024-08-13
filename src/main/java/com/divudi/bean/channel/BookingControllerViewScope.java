@@ -371,7 +371,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             JsfUtil.addErrorMessage("Cannot reschedule: This bill session has been Alrady Recheduled To Another Session !");
         }
 
-        if (selectedBillSession.getReferenceBillSession() == null) {
+        if (selectedBillSession.getReferenceBillSession() == null) {    // TODO: can remove after ReferenceBillSession is deprecated
             createBillSessionForReschedule(selectedBillSession, getSelectedSessionInstanceForRechedule());
             JsfUtil.addSuccessMessage("Reschedule Successfully");
             sendSmsOnChannelBookingReschedule();
@@ -439,7 +439,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         newBillSession.copy(bs);
         newBillSession.setBill(printingBill);
         newBillSession.setBillItem(savingBillItem);
-        newBillSession.setReferenceBillSession(bs);
+        newBillSession.setRescheduledFromBillSession(bs);
         newBillSession.setCreatedAt(new Date());
         newBillSession.setCreater(getSessionController().getLoggedUser());
         newBillSession.setSessionInstance(getSelectedSessionInstanceForRechedule());
@@ -468,7 +468,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         savingBillItem.setHospitalFee(billBeanController.calFeeValue(FeeType.OwnInstitution, savingBillItem));
         savingBillItem.setStaffFee(billBeanController.calFeeValue(FeeType.Staff, savingBillItem));
         savingBillItem.setBillSession(newBillSession);
-        getBillSessionFacade().edit(newBillSession);
         printingBill.setHospitalFee(billBeanController.calFeeValue(FeeType.OwnInstitution, printingBill));
         printingBill.setStaffFee(billBeanController.calFeeValue(FeeType.Staff, printingBill));
         printingBill.setSingleBillItem(savingBillItem);
@@ -511,7 +510,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         }
         getBillSessionFacade().create(newBillSession);
         bs.setRecheduledSession(true);
-        bs.setReferenceBillSession(newBillSession);
+        bs.setRescheduledToBillSession(newBillSession);
         getBillSessionFacade().edit(bs);
         newBillSessionForSMS = newBillSession;
         System.out.println("newBillSessionForSMS = " + newBillSessionForSMS);
@@ -591,8 +590,10 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         bill.setDeptId(deptId);
         bill.setInsId(deptId);
 
-        bill.setPaidAmount(bs.getBill().getPaidAmount());
-        bill.setPaidAt(new Date());
+        if (bill.getBillTypeAtomic() == BillTypeAtomic.CHANNEL_RESHEDULE_WITH_PAYMENT) {
+            bill.setPaidAmount(getSelectedSessionInstanceForRechedule().getOriginatingSession().getTotal());
+            bill.setPaidAt(new Date());
+        }
 
         bill.setBillDate(new Date());
         bill.setBillTime(new Date());
@@ -1046,14 +1047,14 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         cal.setTime(getFromDate());
         cal.add(Calendar.DATE, 1);
         toDate = cal.getTime();
-        listAllSesionInstances();
-        filterSessionInstances();
+        listAndFilterSessionInstances();
+//        filterSessionInstances();
     }
 
     public void addToDayToToDate() {
         toDate = new Date();
-        listAllSesionInstances();
-        filterSessionInstances();
+        listAndFilterSessionInstances();
+//        filterSessionInstances();
     }
 
     public void addTwoDays() {
@@ -1061,8 +1062,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         cal.setTime(getFromDate());
         cal.add(Calendar.DATE, 2);
         toDate = cal.getTime();
-        listAllSesionInstances();
-        filterSessionInstances();
+        listAndFilterSessionInstances();
+//        filterSessionInstances();
     }
 
     public void addSevenDays() {
@@ -1070,8 +1071,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         cal.setTime(getFromDate());
         cal.add(Calendar.DATE, 7);
         toDate = cal.getTime();
-        listAllSesionInstances();
-        filterSessionInstances();
+        listAndFilterSessionInstances();
+//        filterSessionInstances();
     }
 
     public void addMonth() {
@@ -1079,8 +1080,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         cal.setTime(getFromDate());
         cal.add(Calendar.MONTH, 1);
         toDate = cal.getTime();
-        listAllSesionInstances();
-        filterSessionInstances();
+        listAndFilterSessionInstances();
+//        filterSessionInstances();
     }
 
     public void addMonthNew() {
@@ -1168,6 +1169,15 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         listCancelled = false;
         listOngoing = false;
         listCompleted = true;
+        listAndFilterSessionInstances();
+    }
+
+    public void listCancelled() {
+        listAll = false;
+        listPending = false;
+        listCancelled = true;
+        listOngoing = false;
+        listCompleted = false;
         listAndFilterSessionInstances();
     }
 
@@ -1582,7 +1592,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
         needToFillSessionInstances = viewScopeDataTransferController.getNeedToFillSessionInstances();
         if (needToFillSessionInstances == null || needToFillSessionInstances != false) {
-            listAllSesionInstances();
+            listAndFilterSessionInstances();
         }
 
         selectedSessionInstance = viewScopeDataTransferController.getSelectedSessionInstance();
@@ -1632,7 +1642,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             if (financialTransactionController.getNonClosedShiftStartFundBill() != null) {
                 fromDate = new Date();
                 toDate = new Date();
-//                listAllSesionInstances();
+//                listAndFilterSessionInstances();
                 prepareForNewChannellingBill();
                 return "/channel/channel_booking_by_date?faces-redirect=true";
             } else {
@@ -1642,7 +1652,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         } else {
             fromDate = new Date();
             toDate = new Date();
-//            listAllSesionInstances();
+//            listAndFilterSessionInstances();
 //            prepareForNewChannellingBill();
             return "/channel/channel_booking_by_date?faces-redirect=true";
         }
@@ -1746,16 +1756,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     public String navigateToChannelQueueFromConsultantRoom() {
         sessionInstances = channelBean.listTodaysSesionInstances();
         return "/channel/channel_queue?faces-redirect=true";
-    }
-
-    public void listAllSesionInstances() {
-        sessionInstances = channelBean.listSessionInstances(fromDate, toDate, null, null, null);
-        if (configOptionApplicationController.getBooleanValueByKey("Calculate All Patient Count When Loading Channel Booking By Dates")) {
-            for (SessionInstance s : sessionInstances) {
-                fillBillSessions(s);
-            }
-        }
-        filterSessionInstances();
     }
 
     public void listOngoingSesionInstances() {
