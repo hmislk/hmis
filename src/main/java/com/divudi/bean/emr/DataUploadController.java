@@ -234,6 +234,7 @@ public class DataUploadController implements Serializable {
     private List<Consultant> consultantsToSave;
     private List<Institution> creditCompanies;
     private List<Route> routes;
+    private List<Category>feeListTypes;
 
     private List<Doctor> doctorsTosave;
     private List<Staff> staffToSave;
@@ -269,6 +270,17 @@ public class DataUploadController implements Serializable {
         if (file != null) {
             try ( InputStream inputStream = file.getInputStream()) {
                 areas = readAreasFromExcel(inputStream);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+    
+     public void uploadFeeListTypes() {
+        feeListTypes = new ArrayList<>();
+        if (file != null) {
+            try ( InputStream inputStream = file.getInputStream()) {
+                feeListTypes = readFeeListTypesFromExcel(inputStream);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -398,6 +410,8 @@ public class DataUploadController implements Serializable {
     public String toUploadVmps() {
         return "/pharmacy/admin/upload_vmps?faces-redirect=true";
     }
+    
+    
 
     public void uploadPatients() {
         List<Patient> patients;
@@ -593,6 +607,47 @@ public class DataUploadController implements Serializable {
             }
         }
         pollActive = false;
+    }
+    
+    public List<Category> readFeeListTypesFromExcel(InputStream inputStream)throws IOException {
+        List<Category> feeListTypes = new ArrayList<>();
+         Workbook workbook = new XSSFWorkbook(inputStream);
+        Sheet sheet = workbook.getSheetAt(0);
+        Iterator<Row> rowIterator = sheet.rowIterator();
+        
+         if (rowIterator.hasNext()) {
+            rowIterator.next();
+        }
+         
+         Category category;
+         
+         while (rowIterator.hasNext()) {
+          Row row = rowIterator.next();
+            
+            
+            String feeListName = null;
+            String description=null;
+
+            Cell feeListNameCell = row.getCell(0);
+            if (feeListNameCell != null && feeListNameCell.getCellType() == CellType.STRING) {
+                feeListName = feeListNameCell.getStringCellValue();
+            }
+            
+            
+             if (feeListName != null || !feeListName.trim().equals("")) {
+                 category=categoryController.findCategoryByName(feeListName);
+                 category= new Category();
+                 category.setName(feeListName);
+                 category.setSymanticType(SymanticHyrachi.Fee_List_Type);
+                 category.setCreatedAt(new Date());
+                 category.setCreater(sessionController.getCurrent());
+                 categoryController.save(category);
+                 feeListTypes.add(category);
+             }
+ 
+         }
+         JsfUtil.addSuccessMessage("FeeList Types Uploaded");
+         return feeListTypes;
     }
 
     private List<Consultant> readConsultantsFromExcel(InputStream inputStream) throws IOException {
@@ -3636,6 +3691,8 @@ if (retiredCell != null) {
             }
         }
     }
+    
+
 
     public void uploadInvestigations() {
         List<Investigation> investigations;
@@ -5599,6 +5656,14 @@ if (retiredCell != null) {
 
     public void setRoutes(List<Route> routes) {
         this.routes = routes;
+    }
+
+    public List<Category> getFeeListTypes() {
+        return feeListTypes;
+    }
+
+    public void setFeeListTypes(List<Category> feeListTypes) {
+        this.feeListTypes = feeListTypes;
     }
 
 }
