@@ -448,6 +448,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         newBillSession.setSessionDate(getSelectedSessionInstanceForRechedule().getSessionDate());
         newBillSession.setSessionTime(getSelectedSessionInstanceForRechedule().getSessionTime());
         newBillSession.setStaff(getSelectedSessionInstanceForRechedule().getStaff());
+        newBillSession.setSerialNo(0);
+        getBillSessionFacade().create(newBillSession);
 
         printingBill.setSingleBillSession(newBillSession);
         printingBill.setSingleBillItem(savingBillItem);
@@ -470,6 +472,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         savingBillItem.setHospitalFee(billBeanController.calFeeValue(FeeType.OwnInstitution, savingBillItem));
         savingBillItem.setStaffFee(billBeanController.calFeeValue(FeeType.Staff, savingBillItem));
         savingBillItem.setBillSession(newBillSession);
+        getBillItemFacade().edit(savingBillItem);
         printingBill.setHospitalFee(billBeanController.calFeeValue(FeeType.OwnInstitution, printingBill));
         printingBill.setStaffFee(billBeanController.calFeeValue(FeeType.Staff, printingBill));
         printingBill.setSingleBillItem(savingBillItem);
@@ -510,7 +513,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             newBillSession.setSerialNo(1);
             System.out.println("count serial number= " + bs.getSerialNo());
         }
-        getBillSessionFacade().create(newBillSession);
+        getBillSessionFacade().edit(newBillSession);
         bs.setRecheduledSession(true);
         bs.setRescheduledToBillSession(newBillSession);
         getBillSessionFacade().edit(bs);
