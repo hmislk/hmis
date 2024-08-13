@@ -628,7 +628,7 @@ public class StoreAdjustmentController implements Serializable {
     public void setYearMonthDay(YearMonthDay yearMonthDay) {
         this.yearMonthDay = yearMonthDay;
     }
-
+  
     private List<Stock> stk;
 
     public void fillSelectStock() {
@@ -664,6 +664,38 @@ public class StoreAdjustmentController implements Serializable {
         this.stk = stk;
     }
 
+//    public void fillSelectStock() {
+//        List<Stock> items = new ArrayList<>();
+//        if (stock == null) {
+//            stk = items;
+//            return;
+//        }
+//        String sql;
+//        Map<String, Object> m = new HashMap<>();
+//
+//        sql = "select i "
+//                + " from Stock i "
+//                + " where i.department=:d "
+//                + " and i.itemBatch.item.code=:stationary "
+//                + " order by i.stock desc";
+//
+//        m.put("d", sessionController.getDepartment());
+//        m.put("stationary", stock.getItemBatch().getItem().getCode());  // Assuming stk contains the item
+//
+//        items = getStockFacade().findByJpql(sql, m);
+//
+//        if (items != null) {
+//            stk = items;
+//        }
+//    }
+//
+//    public List<Stock> getStk() {
+//        return stk;
+//    }
+//
+//    public void setStk(List<Stock> stk) {
+//        this.stk = stk;
+//    }
 
 //    public void fillSelectStock(){
 //        List<Stock> items = new ArrayList<>();

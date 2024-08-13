@@ -803,6 +803,7 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
             }
 
             b.setBillItems(list);
+            b.setIpOpOrCc("OP");
 
             getBillFacade().edit(b);
             getBillBean().calculateBillItems(b, getLstBillEntries());
@@ -822,14 +823,14 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
         saveBillItemSessions();
         JsfUtil.addSuccessMessage("Bill Saved");
         checkBillValues();
-        
+
         if (getToken() != null) {
             if (getToken().getBill() == null) {
                 getToken().setBill(batchBill);
                 tokenFacade.edit(getToken());
                 markToken(batchBill);
-            }else{
-                Token t=new Token();
+            } else {
+                Token t = new Token();
                 t.setPatient(getToken().getPatient());
                 t.setBill(batchBill);
                 t.setTokenNumber(getToken().getTokenNumber());
@@ -837,9 +838,9 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
                 getToken().setReferaToken(t);
                 tokenFacade.edit(t);
             }
-                
-            }
-        
+
+        }
+
         printPreview = true;
 
         return "/opd/opd_pre_bill?faces-redirect=true";
@@ -956,6 +957,7 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
 
         newlyCreatingBatchBillPre.setNetTotal(tmpBatchBillTotalOfNetTotals);
         newlyCreatingBatchBillPre.setDiscount(tmpBatchBillTotalOfDiscounts);
+        newlyCreatingBatchBillPre.setIpOpOrCc("OP");
         newlyCreatingBatchBillPre.setTotal(tmpBatchBillTotalOfGrossTotals);
         getBillFacade().edit(newlyCreatingBatchBillPre);
 
@@ -1013,7 +1015,7 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
         updatingPreBill.setReferredByInstitution(referredByInstitution);
         //updatingPreBill.setCreditCompany(creditCompany);
         updatingPreBill.setComments(comment);
-
+        updatingPreBill.setIpOpOrCc("OP");
         //getBillBean().setPaymentMethodData(updatingPreBill, paymentMethod, getPaymentMethodData());
 
         updatingPreBill.setBillDate(new Date());
@@ -1021,7 +1023,6 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
         updatingPreBill.setPatient(getPatient());
 
 //        updatingPreBill.setMembershipScheme(membershipSchemeController.fetchPatientMembershipScheme(getPatient(), getSessionController().getApplicationPreference().isMembershipExpires()));
-
         //updatingPreBill.setPaymentScheme(getPaymentScheme());
         //updatingPreBill.setPaymentMethod(paymentMethod);
         updatingPreBill.setCreatedAt(new Date());
@@ -1138,7 +1139,6 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
 //            JsfUtil.addErrorMessage("Select Payment Method.");
 //            return true;
 //        }
-
 //        if (getPaymentSchemeController().errorCheckPaymentMethod(paymentMethod, getPaymentMethodData())) {
 //            return true;
 //        }
@@ -1162,7 +1162,6 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
 //            JsfUtil.addErrorMessage("Check Payment method");
 //            return true;
 //        }
-
         return false;
     }
 
@@ -1386,7 +1385,7 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
         double billDiscount = 0.0;
         double billGross = 0.0;
         double billNet = 0.0;
-       
+
         for (BillEntry be : getLstBillEntries()) {
             //////// // System.out.println("bill item entry");
             double entryGross = 0.0;

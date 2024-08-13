@@ -820,6 +820,7 @@ public class Bill implements Serializable {
         vat = bill.getVat();
         vatPlusNetTotal = bill.getVatPlusNetTotal();
         sessionId = bill.getSessionId();
+        ipOpOrCc=bill.getIpOpOrCc();
         //      referenceBill=bill.getReferenceBill();
     }
 
