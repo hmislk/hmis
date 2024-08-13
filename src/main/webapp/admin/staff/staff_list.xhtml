@@ -11,27 +11,47 @@
 
             <ui:define name="subcontent">
                 <h:form>
-                    <p:dataTable value="#{staffController.staff}" var="s"  rowKey="#{s.id}" rows="10" paginator="true" >
-                        <p:column headerText="Name" >
-                            <h:outputText value="#{s.person.name}" ></h:outputText>
+                    <p:commandButton value="Dwonload" ajax="false" >
+                        <p:dataExporter fileName="staff_list" target="tbl" type="xlsx" ></p:dataExporter>
+                    </p:commandButton>
+
+                    <p:dataTable
+                        id="tbl"
+                        value="#{staffController.staff}" var="s" rowKey="#{s.id}" rows="10" paginator="true" 
+                        sortBy="#{s.person.name}" filterBy="#{s.person.name}" 
+                        widgetVar="staffTable">
+
+                        <!-- Name Column with Filter and Sort -->
+                        <p:column headerText="Name" sortBy="#{s.person.name}" filterBy="#{s.person.name}" filterMatchMode="contains">
+                            <h:outputText value="#{s.person.name}" />
                         </p:column>
-                        <p:column headerText="Type" >
-                            <h:outputText value="#{s.staffCategory.name}" ></h:outputText>
+
+                        <!-- Type Column (Staff Category) with Filter and Sort -->
+                        <p:column headerText="Staff Category" sortBy="#{s.staffCategory.name}" filterBy="#{s.staffCategory.name}" filterMatchMode="contains">
+                            <h:outputText value="#{s.staffCategory.name}" />
                         </p:column>
-                        <p:column headerText="Type" >
-                            <h:outputText value="#{s.speciality.name}" ></h:outputText>
+
+                        <!-- Speciality Column with Filter and Sort -->
+                        <p:column headerText="Speciality" sortBy="#{s.speciality.name}" filterBy="#{s.speciality.name}" filterMatchMode="contains">
+                            <h:outputText value="#{s.speciality.name}" />
                         </p:column>
-                        <p:column headerText="EPF No" >
-                            <h:outputText value="#{s.epfNo}" ></h:outputText>
+
+                        <!-- EPF No Column with Filter and Sort -->
+                        <p:column headerText="EPF No" sortBy="#{s.epfNo}" filterBy="#{s.epfNo}" filterMatchMode="contains">
+                            <h:outputText value="#{s.epfNo}" />
                         </p:column>
-                        <p:column headerText="EPF No" >
+
+                        <!-- Action Column (Edit Button) -->
+                        <p:column headerText="Actions" exportable="false">
                             <p:commandButton 
                                 ajax="false" 
                                 value="Edit" 
-                                action="#{staffController.navigateToManageStaff(s)}" ></p:commandButton>
+                                action="#{staffController.navigateToManageStaff(s)}" 
+                                icon="fa fa-pencil" />
                         </p:column>
 
                     </p:dataTable>
+
                 </h:form>
 
             </ui:define>

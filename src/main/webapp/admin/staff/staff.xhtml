@@ -89,17 +89,16 @@
                                     <p:inputText  class="form-control" value="#{staffController.current.code}"></p:inputText>
 
                                     <p:outputLabel value="Designation"></p:outputLabel>
-
                                     <p:autoComplete   forceSelection="true" id="designation"
                                                       value="#{staffController.current.designation}" 
                                                       completeMethod="#{designationController.completeDesignation}" 
                                                       var="mys" 
                                                       itemLabel="#{mys.name}" 
                                                       itemValue="#{mys}"
-                                                      class="m-2 w-100" 
+                                                      class="form-control" 
                                                       inputStyleClass="w-100">               
                                     </p:autoComplete> 
-                                   
+
 
                                     <p:outputLabel value="Staff Category"></p:outputLabel>
                                     <p:autoComplete   forceSelection="true" id="scat"
@@ -108,75 +107,91 @@
                                                       var="des" 
                                                       itemLabel="#{des.name}" 
                                                       itemValue="#{des}"
-                                                      class="m-2 w-100" 
+                                                      class="form-control" 
                                                       inputStyleClass="w-100">               
                                     </p:autoComplete> 
-                                    
+
 
                                     <p:outputLabel value="Order Number"></p:outputLabel>
-                                    <p:inputText value="#{staffController.current.orderNo}" type="number"></p:inputText>
+                                    <p:inputText  class="form-control" value="#{staffController.current.orderNo}" type="number"></p:inputText>
 
                                     <p:outputLabel value="Description"></p:outputLabel>
-                                    <p:inputTextarea value="#{staffController.current.description}"></p:inputTextarea>
+                                    <p:inputTextarea  class="form-control" value="#{staffController.current.description}"></p:inputTextarea>
 
                                     <p:outputLabel value="Speciality"></p:outputLabel>
-                                    <p:selectOneMenu value="#{staffController.current.speciality}">
+                                    <p:selectOneMenu class="form-control"  value="#{staffController.current.speciality}">
                                         <f:selectItem itemLabel="Please select a speciality"/>
                                         <f:selectItems value="#{specialityController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
                                     </p:selectOneMenu>
 
                                     <p:outputLabel value="Institution"></p:outputLabel>
-                                    <p:selectOneMenu value="#{staffController.current.institution}">
-                                        <!-- Add <f:selectItems> here -->
-                                    </p:selectOneMenu>
+                                    <p:autoComplete 
+                                        forceSelection="true"
+                                        value="#{staffController.current.institution}"
+                                        completeMethod="#{institutionController.completeIns}" id="ins2"
+                                        var="ix" 
+                                        itemLabel="#{ix.name}" 
+                                        itemValue="#{ix}" 
+                                        class="w-100" 
+                                        inputStyleClass="w-100"
+                                        style="width: 500px;">
+                                        <p:ajax event="itemSelect" process="@this" update="somDept" />
+                                    </p:autoComplete>
+
 
                                     <p:outputLabel value="Department"></p:outputLabel>
-                                    <p:selectOneMenu value="#{staffController.current.department}">
-                                        <!-- Add <f:selectItems> here -->
+                                    <p:selectOneMenu 
+                                        id="somDept" 
+                                        filter="true"
+                                        filterMatchMode="contains"
+                                        value="#{staffController.current.department}"
+                                        class="w-100">
+                                        <f:selectItem  itemLabel="Please select a Department"/>
+                                        <f:selectItems 
+                                            value="#{departmentController.getInsDepartments(staffController.current.institution)}" 
+                                            var="d" 
+                                            itemLabel="#{d.name}" itemValue="#{d}" 
+                                            />
                                     </p:selectOneMenu>
 
                                     <p:outputLabel value="Staff Code"></p:outputLabel>
-                                    <p:inputText value="#{staffController.current.staffCode}"></p:inputText>
+                                    <p:inputText class="form-control" value="#{staffController.current.staffCode}"></p:inputText>
 
-                                    <p:outputLabel value="Bank Branch"></p:outputLabel>
-                                    <p:selectOneMenu value="#{staffController.current.bankBranch}">
-                                        <!-- Add <f:selectItems> here -->
+                                    <p:outputLabel value="Bank"></p:outputLabel>
+                                    <p:selectOneMenu  class="form-control"  id="lstSelect" value="#{staffController.current.bankBranch}" style="min-width: 223px">
+                                        <f:selectItems  value="#{bankController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
                                     </p:selectOneMenu>
 
-                                    <p:outputLabel value="EPF Bank Branch"></p:outputLabel>
-                                    <p:selectOneMenu value="#{staffController.current.epfBankBranch}">
-                                        <!-- Add <f:selectItems> here -->
-                                    </p:selectOneMenu>
 
                                     <p:outputLabel value="EPF Account No"></p:outputLabel>
-                                    <p:inputText value="#{staffController.current.epfAccountNo}"></p:inputText>
+                                    <p:inputText  class="form-control"  value="#{staffController.current.epfAccountNo}"></p:inputText>
 
                                     <p:outputLabel value="Account No"></p:outputLabel>
-                                    <p:inputText value="#{staffController.current.accountNo}"></p:inputText>
+                                    <p:inputText  class="form-control" value="#{staffController.current.accountNo}"></p:inputText>
 
                                     <p:outputLabel value="EPF No"></p:outputLabel>
-                                    <p:inputText value="#{staffController.current.epfNo}"></p:inputText>
+                                    <p:inputText  class="form-control" value="#{staffController.current.epfNo}"></p:inputText>
 
                                     <p:outputLabel value="AC No"></p:outputLabel>
-                                    <p:inputText value="#{staffController.current.acNo}"></p:inputText>
+                                    <p:inputText  class="form-control" value="#{staffController.current.acNo}"></p:inputText>
 
                                     <p:outputLabel value="Credit Limit Qualified"></p:outputLabel>
-                                    <p:inputText value="#{staffController.current.creditLimitQualified}" type="number"></p:inputText>
+                                    <p:inputText  class="form-control" value="#{staffController.current.creditLimitQualified}" type="number"></p:inputText>
 
                                     <p:outputLabel value="Current Credit Value"></p:outputLabel>
-                                    <p:inputText value="#{staffController.current.currentCreditValue}" type="number"></p:inputText>
+                                    <p:inputText  class="form-control" value="#{staffController.current.currentCreditValue}" type="number"></p:inputText>
 
                                     <p:outputLabel value="Annual Welfare Qualified"></p:outputLabel>
-                                    <p:inputText value="#{staffController.current.annualWelfareQualified}" type="number"></p:inputText>
+                                    <p:inputText  class="form-control" value="#{staffController.current.annualWelfareQualified}" type="number"></p:inputText>
 
                                     <p:outputLabel value="Annual Welfare Utilized"></p:outputLabel>
-                                    <p:inputText value="#{staffController.current.annualWelfareUtilized}" type="number"></p:inputText>
+                                    <p:inputText  class="form-control" value="#{staffController.current.annualWelfareUtilized}" type="number"></p:inputText>
 
                                     <p:outputLabel value="Working Time for Overtime per Week"></p:outputLabel>
-                                    <p:inputText value="#{staffController.current.workingTimeForOverTimePerWeek}" type="number"></p:inputText>
+                                    <p:inputText  class="form-control" value="#{staffController.current.workingTimeForOverTimePerWeek}" type="number"></p:inputText>
 
                                     <p:outputLabel value="Working Time for No Pay per Week"></p:outputLabel>
-                                    <p:inputText value="#{staffController.current.workingTimeForNoPayPerWeek}" type="number"></p:inputText>
+                                    <p:inputText  class="form-control" value="#{staffController.current.workingTimeForNoPayPerWeek}" type="number"></p:inputText>
 
                                     <p:outputLabel value="Allowed Late In Leave"></p:outputLabel>
                                     <p:selectBooleanCheckbox value="#{staffController.current.allowedLateInLeave}"></p:selectBooleanCheckbox>
