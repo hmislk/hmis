@@ -10,8 +10,8 @@ package com.divudi.data;
  * @author Buddhika
  */
 public enum InvestigationReportType {
-
     General,
     Microbiology,
     PathologyOrHaematology,
+    HtmlTemplate,
 }

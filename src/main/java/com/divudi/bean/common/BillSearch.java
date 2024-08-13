@@ -99,7 +99,6 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
-import kotlin.collections.ArrayDeque;
 import org.apache.commons.beanutils.BeanUtils;
 import org.primefaces.event.RowEditEvent;
 import org.primefaces.model.LazyDataModel;
@@ -1717,7 +1716,7 @@ public class BillSearch implements Serializable {
             billController.saveBillItem(bi);
         }
 
-        List<Bill> refundBills = new ArrayDeque<>();
+        List<Bill> refundBills = new ArrayList<>();
         refundBills.addAll(bill.getRefundBills());
         refundBills.add(rb);
 

@@ -172,6 +172,25 @@ public class SpecialityController implements Serializable {
         }
         return ds;
     }
+    
+    public Speciality findSpeciality(String idString) {
+        Long id;
+        try{
+            id = Long.valueOf(idString);
+        }catch(NumberFormatException e){
+            return null;
+        }
+        String j;
+        j = "select s "
+                + " from Speciality s "
+                + " where s.retired=:ret "
+                + " and s.id=:id";
+        Map m = new HashMap();
+        m.put("ret", false);
+        m.put("id", id);
+        Speciality ds = getFacade().findFirstByJpql(j, m);
+        return ds;
+    }
 
     public List<Speciality> getSelectedItems() {
         if (selectText.trim().equals("")) {

@@ -84,9 +84,10 @@
                             <p:dataTable value="#{staffSalaryController.items}" var="i" 
                                          rowStyleClass="#{i.exist eq true ? 'exist':null}" 
                                          rowKey="#{i.id}"
+                                         selectionMode="multiple"
                                          selection="#{staffSalaryController.getSelectedStaffSalaryList}">
 
-                                <p:column  selectionMode="multiple" >                            
+                                <p:column   >                            
                                 </p:column>
 
                                 <p:column headerText="From">

@@ -20,6 +20,7 @@ public enum InvestigationItemType {
     Antibiotic,
     Image,
     Html,
+    MeasurementUnit,
     @Deprecated
     List,
     @Deprecated
