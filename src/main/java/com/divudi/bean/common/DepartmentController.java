@@ -526,7 +526,7 @@ public class DepartmentController implements Serializable {
     public List<Department> getInstitutionDepatrments(DepartmentType departmentType) {
         return getInstitutionDepatrments(null, true, departmentType);
     }
-    
+
     public List<Department> getInstitutionDepatrments(Institution ins) {
         return getInstitutionDepatrments(ins, true, null);
     }
@@ -693,6 +693,19 @@ public class DepartmentController implements Serializable {
     }
 
     public Department findDepartment(Long id) {
+        return getFacade().find(id);
+    }
+
+    public Department findDepartment(String strId) {
+        if (strId == null) {
+            return null;
+        }
+        Long id;
+        try {
+            id = Long.valueOf(strId);
+        } catch (Exception e) {
+            return null;
+        }
         return getFacade().find(id);
     }
 

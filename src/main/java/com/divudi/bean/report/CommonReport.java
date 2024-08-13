@@ -97,6 +97,7 @@ public class CommonReport implements Serializable {
      */
     List<BillFee> billFees;
     List<Bill> referralBills;
+    List<Bill> referralDoctorBills;
     List<BillItem> referralBillItems;
 
     List<Bill> pharmacyCashBilledBills;
@@ -5656,6 +5657,24 @@ public class CommonReport implements Serializable {
 
         
     }
+    
+    public void fillDoctorReferralBills() {
+        Date startTime = new Date();
+        String jpql;
+        Map m = new HashMap();
+
+        jpql = "select b from Bill b "
+                + "where b.retired=false ";
+
+        jpql += " and b.referredBy is not null ";
+
+        jpql += "and b.createdAt between :fd and :td "
+                + " order by b.id";
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        referralDoctorBills = getBillFacade().findByJpql(jpql, m, TemporalType.TIMESTAMP);
+        System.out.println("referralDoctorBills = " + referralDoctorBills);
+    }
 
     public void fillInstitutionReferralBillItems() {
         Date startTime = new Date();
@@ -7021,6 +7040,14 @@ public class CommonReport implements Serializable {
 
     public void setDepartmentId(String departmentId) {
         this.departmentId = departmentId;
+    }
+
+    public List<Bill> getReferralDoctorBills() {
+        return referralDoctorBills;
+    }
+
+    public void setReferralDoctorBills(List<Bill> referralDoctorBills) {
+        this.referralDoctorBills = referralDoctorBills;
     }
 
     public class CollectingCenteRow {
