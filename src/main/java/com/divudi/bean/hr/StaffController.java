@@ -1200,7 +1200,6 @@ public class StaffController implements Serializable {
         updateStaffEmployment();
 
         recreateModel();
-        getItems();
         fillSelectedItemsWithAllStaff();
     }
 
