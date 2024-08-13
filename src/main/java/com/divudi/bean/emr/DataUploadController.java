@@ -233,6 +233,7 @@ public class DataUploadController implements Serializable {
     List<Department> departmentsSaved;
     private List<Consultant> consultantsToSave;
     private List<Institution> creditCompanies;
+    private List<Route> routes;
 
     private List<Doctor> doctorsTosave;
     private List<Staff> staffToSave;
@@ -243,6 +244,10 @@ public class DataUploadController implements Serializable {
     private List<ClinicalEntity> surgeries;
     private List<ClinicalEntity> surgeriesToSave;
     private List<ClinicalEntity> surgeriesToSkiped;
+    
+    public String navigateToRouteUpload(){
+        return "/admin/institutions/route_upload?faces-redirect=true";
+    }
 
     public String navigateToCollectingCenterUpload() {
         uploadComplete = false;
@@ -256,7 +261,7 @@ public class DataUploadController implements Serializable {
     
     public String navigateToSupplierUpload() {
         uploadComplete = false;
-        return "/admin/institutions/supplier_upload?faces-redirect=true";
+        return "/admin/institutions/route_upload?faces-redirect=true";
     }
 
     public void uploadPatientAreas() {
@@ -2799,6 +2804,23 @@ if (retiredCell != null) {
         uploadComplete = true;
         JsfUtil.addSuccessMessage("Successfully Uploaded");
     }
+    
+    public void uploadRoutes() {
+        routes = new ArrayList<>();
+        if (file != null) {
+            try ( InputStream inputStream = file.getInputStream()) {
+                System.out.println("inputStream = " + inputStream);
+                routes = readRoutesFromExcel(inputStream);
+            } catch (IOException e) {
+                e.printStackTrace();
+                uploadComplete = false;
+                JsfUtil.addErrorMessage("Error in Uploading. " + e.getMessage());
+            }
+        }
+        uploadComplete = true;
+        JsfUtil.addSuccessMessage("Successfully Uploaded");
+    }
+    
 
     public void uploadDepartments() {
         departments = new ArrayList<>();
@@ -2824,6 +2846,54 @@ if (retiredCell != null) {
                 e.printStackTrace();
             }
         }
+    }
+    
+    private List<Route> readRoutesFromExcel(InputStream inputStream) throws IOException{
+        Workbook workbook = new XSSFWorkbook(inputStream);
+        Sheet sheet = workbook.getSheetAt(0);
+        Iterator<Row> rowIterator = sheet.rowIterator();
+
+        List<Route> routes = new ArrayList<>();
+        Institution institution;
+
+        // Assuming the first row contains headers, skip it
+        if (rowIterator.hasNext()) {
+            rowIterator.next();
+        }
+        
+        while (rowIterator.hasNext()) {
+            Row row = rowIterator.next();
+            Route route = null;
+            String name = null;
+            String institutionName=null;
+            
+            Cell nameCell = row.getCell(0);
+            if (nameCell != null && nameCell.getCellType() == CellType.STRING) {
+                name = nameCell.getStringCellValue();
+            }
+            
+            Cell institutionCell = row.getCell(1);
+            if (institutionCell != null && institutionCell.getCellType() == CellType.STRING) {
+                institutionName = institutionCell.getStringCellValue();
+            }
+            if (institutionName == null || institutionName.trim().equals("")) {
+                institution=sessionController.getInstitution();
+            }
+            institution=institutionController.findAndSaveInstitutionByName(institutionName);
+
+            Route r = routeController.findRouteByName(name);
+            if(r==null){
+                r = new Route();
+                r.setName(name);
+                r.setInstitution(institution);
+                r.setCreatedAt(new Date());
+                r.setCreater(sessionController.getLoggedUser());
+                routeController.save(r);
+            }
+        }
+
+        return routes;
+        
     }
 
     private List<Institution> readCollectingCentresFromExcel(InputStream inputStream) throws IOException {
@@ -5521,6 +5591,14 @@ if (retiredCell != null) {
 
     public void setTemplateForsupplierCentreUpload(StreamedContent templateForsupplierCentreUpload) {
         this.templateForsupplierUpload = templateForsupplierCentreUpload;
+    }
+
+    public List<Route> getRoutes() {
+        return routes;
+    }
+
+    public void setRoutes(List<Route> routes) {
+        this.routes = routes;
     }
 
 }
