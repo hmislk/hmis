@@ -12,6 +12,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
@@ -445,6 +446,24 @@ public abstract class AbstractFacade<T> {
 
         }
         return qry.getResultList();
+    }
+
+    public List<Object[]> findObjectsArrayByNativeQuery(String sql, Map<String, Object> parameters, List<Long> ids) {
+        // Construct the IN clause dynamically
+        String inClause = ids.stream()
+                .map(id -> "?")
+                .collect(Collectors.joining(", "));
+        sql = sql.replace(":ids", inClause);
+
+        Query query = getEntityManager().createNativeQuery(sql);
+        int index = 1;
+        for (Map.Entry<String, Object> entry : parameters.entrySet()) {
+            query.setParameter(index++, entry.getValue());
+        }
+        for (Long id : ids) {
+            query.setParameter(index++, id);
+        }
+        return query.getResultList();
     }
 
     public List<Object[]> findObjectsArrayByJpql(String jpql, Map<String, Object> parameters, TemporalType tt) {
