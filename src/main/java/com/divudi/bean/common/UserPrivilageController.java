@@ -775,7 +775,9 @@ public class UserPrivilageController implements Serializable {
         List<PrivilegeHolder> privileges = new ArrayList<>();
         if (selectedNodes != null) {
             for (TreeNode node : selectedNodes) {
+                System.out.println(node.getData().getClass().getName());
                 PrivilegeHolder ph = (PrivilegeHolder) node.getData();
+                
                 privileges.add(ph);
             }
         }
