@@ -897,9 +897,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
     public void listSessionInstancesByDate() {
         sessionInstances = channelBean.listSessionInstancesByDate(fromDate, null, null, null);
         if (configOptionApplicationController.getBooleanValueByKey("Load Past Patient Data")) {
-            for (SessionInstance s : sessionInstances) {
-                bookingControllerViewScope.fillBillSessions(s);
-            }
+            bookingControllerViewScope.fillBillSessions(sessionInstances);
         }
     }
 
