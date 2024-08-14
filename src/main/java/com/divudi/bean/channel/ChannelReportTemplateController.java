@@ -713,7 +713,12 @@ public class ChannelReportTemplateController implements Serializable {
             m.put("ins", institution);
             j += " and si.institution=:ins ";
         }
+        
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        
         sessionInstances = sessionInstanceFacade.findByJpql(j, m);
+        System.out.println("sessionInstance = " + sessionInstances);
         for (SessionInstance si : sessionInstances) {
             fillBillSessions(si);
         }
