@@ -5672,6 +5672,118 @@ public class CommonReport implements Serializable {
         String reportName = "OPD Referral Summary by Bill - From " + formattedFromDate + " to " + formattedToDate;
         bundle.setName(reportName);
     }
+    
+    public void fillChannellingReferralBillSummary() {
+        // Map to hold query parameters
+        Map<String, Object> m = new HashMap<>();
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("bts", BillTypeAtomic.findByServiceType(ServiceType.CHANNELLING));
+
+        // First Query: For referredBy condition
+        String jpql1 = "select new com.divudi.data.ReportTemplateRow("
+                + "rf, count(b), sum(b.netTotal))"
+                + " from Bill b "
+                + " left join b.referredBy rf "
+                + " where b.retired=false "
+                + " and rf is not null "
+                + " and b.createdAt between :fd and :td "
+                + " and b.billTypeAtomic in :bts "
+                + " group by rf";
+
+        // Second Query: For referredByInstitution condition
+        String jpql2 = "select new com.divudi.data.ReportTemplateRow("
+                + "ri, count(b), sum(b.netTotal))"
+                + " from Bill b "
+                + " left join b.referredByInstitution ri "
+                + " where b.retired=false "
+                + " and ri is not null "
+                + " and b.createdAt between :fd and :td "
+                + " and b.billTypeAtomic in :bts "
+                + " group by ri";
+
+        // Execute both queries separately
+        List<ReportTemplateRow> rtrsByReferredBy = (List<ReportTemplateRow>) billFacade.findLightsByJpql(jpql1, m);
+        List<ReportTemplateRow> rtrsByReferredByInstitution = (List<ReportTemplateRow>) billFacade.findLightsByJpql(jpql2, m);
+
+        // Combine results into a single bundle
+        bundle = new ReportTemplateRowBundle();
+        List<ReportTemplateRow> combinedResults = new ArrayList<>();
+
+        // Add results from the first query (Staff-based)
+        combinedResults.addAll(rtrsByReferredBy);
+
+        // Add results from the second query (Institution-based)
+        combinedResults.addAll(rtrsByReferredByInstitution);
+
+        // Set the combined results in the bundle
+        bundle.setReportTemplateRows(combinedResults);
+
+        // Format the report name with fromDate and toDate
+        String dateFormat = sessionController.getApplicationPreference().getLongDateFormat();
+        SimpleDateFormat sdf = new SimpleDateFormat(dateFormat);
+        String formattedFromDate = sdf.format(fromDate);
+        String formattedToDate = sdf.format(toDate);
+
+        String reportName = "Channelling Referral Summary by Bill - From " + formattedFromDate + " to " + formattedToDate;
+        bundle.setName(reportName);
+    }
+    
+    public void fillInpatientReferralBillSummary() {
+        // Map to hold query parameters
+        Map<String, Object> m = new HashMap<>();
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("bts", BillTypeAtomic.findByServiceType(ServiceType.INWARD));
+
+        // First Query: For referredBy condition
+        String jpql1 = "select new com.divudi.data.ReportTemplateRow("
+                + "rf, count(b), sum(b.netTotal))"
+                + " from Bill b "
+                + " left join b.referredBy rf "
+                + " where b.retired=false "
+                + " and rf is not null "
+                + " and b.createdAt between :fd and :td "
+                + " and b.billTypeAtomic in :bts "
+                + " group by rf";
+
+        // Second Query: For referredByInstitution condition
+        String jpql2 = "select new com.divudi.data.ReportTemplateRow("
+                + "ri, count(b), sum(b.netTotal))"
+                + " from Bill b "
+                + " left join b.referredByInstitution ri "
+                + " where b.retired=false "
+                + " and ri is not null "
+                + " and b.createdAt between :fd and :td "
+                + " and b.billTypeAtomic in :bts "
+                + " group by ri";
+
+        // Execute both queries separately
+        List<ReportTemplateRow> rtrsByReferredBy = (List<ReportTemplateRow>) billFacade.findLightsByJpql(jpql1, m);
+        List<ReportTemplateRow> rtrsByReferredByInstitution = (List<ReportTemplateRow>) billFacade.findLightsByJpql(jpql2, m);
+
+        // Combine results into a single bundle
+        bundle = new ReportTemplateRowBundle();
+        List<ReportTemplateRow> combinedResults = new ArrayList<>();
+
+        // Add results from the first query (Staff-based)
+        combinedResults.addAll(rtrsByReferredBy);
+
+        // Add results from the second query (Institution-based)
+        combinedResults.addAll(rtrsByReferredByInstitution);
+
+        // Set the combined results in the bundle
+        bundle.setReportTemplateRows(combinedResults);
+
+        // Format the report name with fromDate and toDate
+        String dateFormat = sessionController.getApplicationPreference().getLongDateFormat();
+        SimpleDateFormat sdf = new SimpleDateFormat(dateFormat);
+        String formattedFromDate = sdf.format(fromDate);
+        String formattedToDate = sdf.format(toDate);
+
+        String reportName = "OPD Referral Summary by Bill - From " + formattedFromDate + " to " + formattedToDate;
+        bundle.setName(reportName);
+    }
 
     public void fillDoctorReferralBills() {
         Date startTime = new Date();
