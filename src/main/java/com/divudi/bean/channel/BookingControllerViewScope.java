@@ -1188,11 +1188,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     public void addBillSessionData() {
         if (configOptionApplicationController.getBooleanValueByKey("Calculate All Patient Count When Loading Channel Booking By Dates")) {
-            if (sessionInstances != null) {
-                if (sessionInstances.size() < 21) {
-                    for (SessionInstance s : sessionInstances) {
-                        fillBillSessions(s);
-                    }
+            if (sessionInstancesFiltered != null) {
+                for (SessionInstance s : sessionInstances) {
+                    fillBillSessions(s);
                 }
             }
         }
@@ -1274,6 +1272,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         }
     }
 
+    @Deprecated
     public void filterSessionInstances() {
         if (sessionInstanceFilter == null || sessionInstanceFilter.trim().isEmpty()) {
             if (sessionInstances != null) {
@@ -1742,42 +1741,50 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         return sessionController.getDepartmentPreference();
     }
 
+    @Deprecated
     public String navigateToChannelBookingByDate() {
         fillBillSessions();
         prepareForNewChannellingBill();
         return null;
     }
 
+    @Deprecated
     public String navigateToChannelQueueFromMenu() {
         sessionInstances = channelBean.listTodaysSesionInstances();
         return "/channel/channel_queue?faces-redirect=true";
     }
 
+    @Deprecated
     public String navigateToChannelDisplayFromMenu() {
         sessionInstances = channelBean.listTodaysSessionInstances(true, false, false);
         return "/channel/channel_display?faces-redirect=true";
     }
 
+    @Deprecated
     public String navigateToChannelQueueFromConsultantRoom() {
         sessionInstances = channelBean.listTodaysSesionInstances();
         return "/channel/channel_queue?faces-redirect=true";
     }
 
+    @Deprecated
     public void listOngoingSesionInstances() {
         sessionInstances = channelBean.listSessionInstances(fromDate, toDate, true, null, null);
         filterSessionInstances();
     }
 
+    @Deprecated
     public void listCompletedSesionInstances() {
         sessionInstances = channelBean.listSessionInstances(fromDate, toDate, null, true, null);
         filterSessionInstances();
     }
 
+    @Deprecated
     public void listPendingSesionInstances() {
         sessionInstances = channelBean.listSessionInstances(fromDate, toDate, null, null, true);
         filterSessionInstances();
     }
 
+    @Deprecated
     public void listCancelledSesionInstances() {
         sessionInstances = channelBean.listSessionInstances(fromDate, toDate, null, null, null, true);
         filterSessionInstances();
@@ -2840,6 +2847,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         return navigateBackToBookingsFromSessionInstance();
     }
 
+    @Deprecated
     public String startNewChannelBookingFormSelectingConsultant() {
         resetToStartFromSelectingConsultant();
         generateSessions();
@@ -6089,6 +6097,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         selectedBillSession = null;
     }
 
+    @Deprecated
     public void listnerStaffRowSelect() {
         getSelectedConsultants();
         setSelectedServiceSession(null);
@@ -6096,6 +6105,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         serviceSessionLeaveController.setCurrentStaff(staff);
     }
 
+    @Deprecated
     public void listnerSessionRowSelect() {
         if (sessionInstances == null) {
             selectedServiceSession = null;
@@ -7725,6 +7735,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         return sessionInstancesFiltered;
     }
 
+    @Deprecated
     public List<SessionInstance> getSortedSessionInstances() {
 
         if (oldSessionInstancesFiltered == null) {
