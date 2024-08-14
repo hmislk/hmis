@@ -6,6 +6,7 @@
 package com.divudi.entity.lab;
 
 import com.divudi.data.lab.PatientInvestigationStatus;
+import com.divudi.data.lab.Priority;
 import com.divudi.data.lab.SampleRequestType;
 import com.divudi.entity.Bill;
 import com.divudi.entity.Department;
@@ -27,7 +28,8 @@ import javax.persistence.Temporal;
 
 /**
  *
- * @author buddhika_ari
+ * @author buddhika.ari@gmail.com
+ * 
  */
 @Entity
 public class PatientSample implements Serializable {
@@ -37,6 +39,13 @@ public class PatientSample implements Serializable {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private Long sampleId;
+    
+    @ManyToOne
+    private Institution institution;
+    @ManyToOne
+    private Department department;
+    
+    
     @ManyToOne
     private Patient patient;
     @ManyToOne
@@ -70,6 +79,17 @@ public class PatientSample implements Serializable {
     private Department sampleCollectedDepartment;
     @ManyToOne
     private Institution sampleCollectedInstitution;
+    //Sample Received at Lab
+    //Sample Sent to Lab
+    private Boolean sampleSent = false;
+    @ManyToOne
+    private WebUser sampleSentBy;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date sampleSentAt;
+    
+    @Enumerated
+    private Priority priority;
+    
     //Sent To Analyzer
     private Boolean readyTosentToAnalyzer;
     @Enumerated(EnumType.STRING)
@@ -124,7 +144,7 @@ public class PatientSample implements Serializable {
     private WebUser sampleReceiverAtLab;
 
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-    private Date sampleReceivedAtLabDate;
+    private Date sampleReceivedAtLabAt;
 
     private String sampleReceivedAtLabComments;
 
@@ -360,6 +380,8 @@ public class PatientSample implements Serializable {
     public void setCancellInstitution(Institution cancellInstitution) {
         this.cancellInstitution = cancellInstitution;
     }
+    
+    
 
     public Bill getBill() {
         return bill;
@@ -617,12 +639,12 @@ public class PatientSample implements Serializable {
         this.sampleReceiverAtLab = sampleReceiverAtLab;
     }
 
-    public Date getSampleReceivedAtLabDate() {
-        return sampleReceivedAtLabDate;
+    public Date getSampleReceivedAtLabAt() {
+        return sampleReceivedAtLabAt;
     }
 
-    public void setSampleReceivedAtLabDate(Date sampleReceivedAtLabDate) {
-        this.sampleReceivedAtLabDate = sampleReceivedAtLabDate;
+    public void setSampleReceivedAtLabAt(Date sampleReceivedAtLabAt) {
+        this.sampleReceivedAtLabAt = sampleReceivedAtLabAt;
     }
 
     public String getSampleReceivedAtLabComments() {
@@ -663,6 +685,54 @@ public class PatientSample implements Serializable {
 
     public void setSampleId(Long sampleId) {
         this.sampleId = sampleId;
+    }
+
+    public Boolean getSampleSent() {
+        return sampleSent;
+    }
+
+    public void setSampleSent(Boolean sampleSent) {
+        this.sampleSent = sampleSent;
+    }
+
+    public WebUser getSampleSentBy() {
+        return sampleSentBy;
+    }
+
+    public void setSampleSentBy(WebUser sampleSentBy) {
+        this.sampleSentBy = sampleSentBy;
+    }
+
+    public Date getSampleSentAt() {
+        return sampleSentAt;
+    }
+
+    public void setSampleSentAt(Date sampleSentAt) {
+        this.sampleSentAt = sampleSentAt;
+    }
+
+    public Institution getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
+    }
+
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
+    }
+
+    public Priority getPriority() {
+        return priority;
+    }
+
+    public void setPriority(Priority priority) {
+        this.priority = priority;
     }
 
 }
