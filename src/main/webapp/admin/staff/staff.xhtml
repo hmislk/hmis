@@ -71,7 +71,7 @@
                                     <p:inputText  class="form-control" value="#{staffController.current.person.lastName}"></p:inputText>
 
                                     <p:outputLabel value="Date of Birth"></p:outputLabel>
-                                    <p:calendar  class="form-control" value="#{staffController.current.person.dob}" pattern="dd/MM/yyyy" ></p:calendar>
+                                    <p:calendar navigator="true"  class="form-control" value="#{staffController.current.person.dob}" pattern="#{sessionController.applicationPreference.longDateFormat}" ></p:calendar>
 
                                 </h:panelGrid>
                             </p:tab>
