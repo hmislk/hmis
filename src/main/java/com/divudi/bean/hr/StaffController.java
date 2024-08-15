@@ -1644,9 +1644,6 @@ public class StaffController implements Serializable {
     /**
      * Converters
      */
-    /**
-     *
-     */
     @FacesConverter(forClass = Staff.class)
     public static class StaffControllerConverter implements Converter {
 
@@ -1689,7 +1686,7 @@ public class StaffController implements Serializable {
                 return getStringKey(o.getId());
             } else {
                 throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + StaffController.class.getName());
+                        + object.getClass().getName() + "; expected type: " + Staff.class.getName());
             }
         }
     }
