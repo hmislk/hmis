@@ -194,13 +194,13 @@
                                 <p:outputLabel value="Actions"></p:outputLabel>
                                 <div>
                                     <!-- Generate Barcodes -->
-                                    <p:commandButton disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_INVESTIGATIONS'}"
+                                    <p:commandButton rendered="#{patientInvestigationController.listingEntity eq 'PATIENT_INVESTIGATIONS'}"
                                                      id="btnGeneraBarcodes"
                                                      ajax="false" action="#{patientInvestigationController.generateBarcodesForSelectedPatientInvestigations()}"
                                                      title="Generate Barcodes" icon="fas fa-barcode" styleClass="m-1 ui-button-success"/>
 
                                     <!-- Generate Barcodes -->
-                                    <p:commandButton disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_INVESTIGATIONS'}"
+                                    <p:commandButton rendered="#{patientInvestigationController.listingEntity eq 'BILLS'}"
                                                      id="btnGeneraBarcodesBills"
                                                      ajax="false" action="#{patientInvestigationController.generateBarcodesForSelectedBills()}"
                                                      title="Generate Barcodes" icon="fas fa-barcode" styleClass="m-1 ui-button-success"/>
@@ -229,6 +229,10 @@
 
                         <div class="row" >
                             <div class="col-12" >
+
+
+
+
                                 <h:panelGroup rendered="#{patientInvestigationController.listingEntity eq 'PATIENT_INVESTIGATIONS'}" >
 
                                     <p:dataTable  
@@ -245,8 +249,8 @@
                                         rowsPerPageTemplate="10,25,50"
                                         >
 
-                                        
-                                        
+
+
                                         <p:column selectionBox="true" width="2em">
                                         </p:column>
 
@@ -515,7 +519,7 @@
                                     </p:dataTable>
 
                                 </h:panelGroup>
-                                
+
                                 <h:panelGroup rendered="#{patientInvestigationController.listingEntity eq 'BILLS'}" >
 
                                     <p:dataTable  
@@ -577,6 +581,7 @@
                                     </p:dataTable>
 
                                 </h:panelGroup>
+
                                 <h:panelGroup rendered="#{patientInvestigationController.listingEntity eq 'BILL_BARCODES'}">
                                     <p:commandButton ajax="false" value="Print">
                                         <p:printer target="batchBarcode"></p:printer>
@@ -650,6 +655,271 @@
                                             </ui:repeat>
                                         </ui:repeat>
                                     </h:panelGroup> 
+                                </h:panelGroup>
+
+
+                                <h:panelGroup rendered="#{patientInvestigationController.listingEntity eq 'PATIENT_SAMPLES'}">
+
+                                    <p:dataTable value="#{patientInvestigationController.patientSamples}" var="ps" >
+                                        <p:column headerText="Sample ID">
+                                            <p:outputLabel value="#{ps.id}" ></p:outputLabel>
+                                        </p:column>
+                                        <p:column headerText="Sample Number">
+                                            <p:outputLabel value="#{ps.sampleId}" ></p:outputLabel>
+                                        </p:column>
+                                        <p:column headerText="Details">
+                                            <p:panel header="Details" collapsed="true" toggleable="true" >
+                                                <!-- Basic Details PanelGrid -->
+                                                <p:panelGrid columns="2" styleClass="basic-details-grid">
+                                                    <h:outputText value="ID" />
+                                                    <h:outputText value="#{ps.id}" />
+
+                                                    <h:outputText value="Sample ID" />
+                                                    <h:outputText value="#{ps.sampleId}" />
+
+                                                    <h:outputText value="Institution" />
+                                                    <h:outputText value="#{ps.institution.name}" />
+
+                                                    <h:outputText value="Department" />
+                                                    <h:outputText value="#{ps.department.name}" />
+
+                                                    <h:outputText value="Patient" />
+                                                    <h:outputText value="#{ps.patient.name}" />
+
+                                                    <h:outputText value="Patient Investigation" />
+                                                    <h:outputText value="#{ps.patientInvestigation.name}" />
+
+                                                    <h:outputText value="Bill Amount" />
+                                                    <h:outputText value="#{ps.bill.amount}" />
+                                                </p:panelGrid>
+
+                                                <!-- Barcode Generation PanelGrid -->
+                                                <p:panelGrid columns="2" styleClass="barcode-generation-grid" headerClass="section-header">
+                                                    <h:outputText value="Barcode Generation Details" />
+                                                    <h:outputText value=""/>
+
+                                                    <h:outputText value="Barcode Generated" />
+                                                    <h:outputText value="#{ps.barcodeGenerated ? 'Yes' : 'No'}" />
+
+                                                    <h:outputText value="Barcode Generated At" />
+                                                    <h:outputText value="#{ps.barcodeGeneratedAt}">
+                                                        <f:convertDateTime pattern="yyyy-MM-dd HH:mm:ss" />
+                                                    </h:outputText>
+
+                                                    <h:outputText value="Barcode Generated By" />
+                                                    <h:outputText value="#{ps.barcodeGenerator.webUserPerson.nameWithTitle}" />
+
+                                                    <h:outputText value="Barcode Generated Department" />
+                                                    <h:outputText value="#{ps.barcodeGeneratedDepartment.name}" />
+
+                                                    <h:outputText value="Barcode Generated Institution" />
+                                                    <h:outputText value="#{ps.barcodeGeneratedInstitution.name}" />
+                                                </p:panelGrid>
+
+                                                <!-- Sample Collection Details PanelGrid -->
+                                                <p:panelGrid columns="2" styleClass="collection-details-grid" headerClass="section-header">
+                                                    <h:outputText value="Sample Collection Details" />
+                                                    <h:outputText value=""/>
+
+                                                    <h:outputText value="Sample Collected" />
+                                                    <h:outputText value="#{ps.sampleCollected ? 'Yes' : 'No'}" />
+
+                                                    <h:outputText value="Collected By" />
+                                                    <h:outputText value="#{ps.sampleCollecter.webUserPerson.nameWithTitle}" />
+
+                                                    <h:outputText value="Collected At" />
+                                                    <h:outputText value="#{ps.sampleCollectedAt}">
+                                                        <f:convertDateTime pattern="yyyy-MM-dd HH:mm:ss" />
+                                                    </h:outputText>
+
+                                                    <h:outputText value="Collected Department" />
+                                                    <h:outputText value="#{ps.sampleCollectedDepartment.name}" />
+
+                                                    <h:outputText value="Collected Institution" />
+                                                    <h:outputText value="#{ps.sampleCollectedInstitution.name}" />
+
+                                                    <h:outputText value="Collected Outside" />
+                                                    <h:outputText value="#{ps.sampleCollectedOutside ? 'Yes' : 'No'}" />
+
+                                                    <h:outputText value="Collection Comments" />
+                                                    <h:outputText value="#{ps.sampleCollectionComments}" />
+                                                </p:panelGrid>
+
+                                                <!-- Sent to Lab Details PanelGrid -->
+                                                <p:panelGrid columns="2" styleClass="sent-to-lab-grid" headerClass="section-header">
+                                                    <h:outputText value="Sent to Lab Details" />
+                                                    <h:outputText value=""/>
+
+                                                    <h:outputText value="Sample Sent" />
+                                                    <h:outputText value="#{ps.sampleSent ? 'Yes' : 'No'}" />
+
+                                                    <h:outputText value="Sent By" />
+                                                    <h:outputText value="#{ps.sampleSentBy.webUserPerson.nameWithTitle}" />
+
+                                                    <h:outputText value="Sent At" />
+                                                    <h:outputText value="#{ps.sampleSentAt}">
+                                                        <f:convertDateTime pattern="yyyy-MM-dd HH:mm:ss" />
+                                                    </h:outputText>
+                                                </p:panelGrid>
+
+                                                <!-- Sample Received at Lab PanelGrid -->
+                                                <p:panelGrid columns="2" styleClass="sample-received-grid" headerClass="section-header">
+                                                    <h:outputText value="Sample Received at Lab Details" />
+                                                    <h:outputText value=""/>
+
+                                                    <h:outputText value="Sample Received at Lab" />
+                                                    <h:outputText value="#{ps.sampleReceivedAtLab ? 'Yes' : 'No'}" />
+
+                                                    <h:outputText value="Received By" />
+                                                    <h:outputText value="#{ps.sampleReceiverAtLab.webUserPerson.nameWithTitle}" />
+
+                                                    <h:outputText value="Received At" />
+                                                    <h:outputText value="#{ps.sampleReceivedAtLabAt}">
+                                                        <f:convertDateTime pattern="yyyy-MM-dd HH:mm:ss" />
+                                                    </h:outputText>
+
+                                                    <h:outputText value="Received Department" />
+                                                    <h:outputText value="#{ps.sampleReceivedAtLabDepartment.name}" />
+
+                                                    <h:outputText value="Received Institution" />
+                                                    <h:outputText value="#{ps.sampleReceivedAtLabInstitution.name}" />
+
+                                                    <h:outputText value="Received Comments" />
+                                                    <h:outputText value="#{ps.sampleReceivedAtLabComments}" />
+                                                </p:panelGrid>
+
+                                                <!-- Sent to Analyzer Details PanelGrid -->
+                                                <p:panelGrid columns="2" styleClass="sent-to-analyzer-grid" headerClass="section-header">
+                                                    <h:outputText value="Sent to Analyzer Details" />
+                                                    <h:outputText value=""/>
+
+                                                    <h:outputText value="Ready to Send to Analyzer" />
+                                                    <h:outputText value="#{ps.readyTosentToAnalyzer ? 'Yes' : 'No'}" />
+
+                                                    <h:outputText value="Sent to Analyzer" />
+                                                    <h:outputText value="#{ps.sentToAnalyzer ? 'Yes' : 'No'}" />
+
+                                                    <h:outputText value="Sent to Analyzer By" />
+                                                    <h:outputText value="#{ps.sentToAnalyzerBy.webUserPerson.nameWithTitle}" />
+
+                                                    <h:outputText value="Sent to Analyzer At" />
+                                                    <h:outputText value="#{ps.sentToAnalyzerAt}">
+                                                        <f:convertDateTime pattern="yyyy-MM-dd HH:mm:ss" />
+                                                    </h:outputText>
+
+                                                    <h:outputText value="Analyzer Department" />
+                                                    <h:outputText value="#{ps.sentToAnalyzerDepartment.name}" />
+
+                                                    <h:outputText value="Analyzer Institution" />
+                                                    <h:outputText value="#{ps.sentToAnalyzerInstitution.name}" />
+
+                                                    <h:outputText value="Analyzer Comments" />
+                                                    <h:outputText value="#{ps.sentToAnalyzerComments}" />
+                                                </p:panelGrid>
+
+                                                <!-- Received from Analyzer Details PanelGrid -->
+                                                <p:panelGrid columns="2" styleClass="received-from-analyzer-grid" headerClass="section-header">
+                                                    <h:outputText value="Received from Analyzer Details" />
+                                                    <h:outputText value=""/>
+
+                                                    <h:outputText value="Received from Analyzer" />
+                                                    <h:outputText value="#{ps.receivedFromAnalyzer ? 'Yes' : 'No'}" />
+
+                                                    <h:outputText value="Received from Analyzer By" />
+                                                    <h:outputText value="#{ps.receivedFromAnalyzerBy.webUserPerson.nameWithTitle}" />
+
+                                                    <h:outputText value="Received from Analyzer At" />
+                                                    <h:outputText value="#{ps.receivedFromAnalyzerAt}">
+                                                        <f:convertDateTime pattern="yyyy-MM-dd HH:mm:ss" />
+                                                    </h:outputText>
+
+                                                    <h:outputText value="Received Analyzer Department" />
+                                                    <h:outputText value="#{ps.receivedFromAnalyzerDepartment.name}" />
+
+                                                    <h:outputText value="Received Analyzer Institution" />
+                                                    <h:outputText value="#{ps.receivedFromAnalyzerInstitution.name}" />
+
+                                                    <h:outputText value="Received Analyzer Comments" />
+                                                    <h:outputText value="#{ps.receivedFromAnalyzerComments}" />
+                                                </p:panelGrid>
+
+                                                <!-- Final Status PanelGrid -->
+                                                <p:panelGrid columns="2" styleClass="final-status-grid" headerClass="section-header">
+                                                    <h:outputText value="Final Status" />
+                                                    <h:outputText value=""/>
+
+                                                    <h:outputText value="Priority" />
+                                                    <h:outputText value="#{ps.priority}" />
+
+                                                    <h:outputText value="Investigation Component" />
+                                                    <h:outputText value="#{ps.investigationComponant.name}" />
+
+                                                    <h:outputText value="Test" />
+                                                    <h:outputText value="#{ps.test.name}" />
+
+                                                    <h:outputText value="Tube" />
+                                                    <h:outputText value="#{ps.tube.name}" />
+
+                                                    <h:outputText value="Machine" />
+                                                    <h:outputText value="#{ps.machine.name}" />
+
+                                                    <h:outputText value="Status" />
+                                                    <h:outputText value="#{ps.status}" />
+                                                </p:panelGrid>
+
+                                                <!-- Cancellation Details PanelGrid -->
+                                                <p:panelGrid columns="2" styleClass="cancellation-grid" headerClass="section-header">
+                                                    <h:outputText value="Cancellation Details" />
+                                                    <h:outputText value=""/>
+
+                                                    <h:outputText value="Cancelled" />
+                                                    <h:outputText value="#{ps.cancelled ? 'Yes' : 'No'}" />
+
+                                                    <h:outputText value="Cancelled By" />
+                                                    <h:outputText value="#{ps.cancelledUser.webUserPerson.nameWithTitle}" />
+
+                                                    <h:outputText value="Cancelled At" />
+                                                    <h:outputText value="#{ps.cancelledAt}">
+                                                        <f:convertDateTime pattern="yyyy-MM-dd HH:mm:ss" />
+                                                    </h:outputText>
+
+                                                    <h:outputText value="Cancellation Department" />
+                                                    <h:outputText value="#{ps.cancellDepartment.name}" />
+
+                                                    <h:outputText value="Cancellation Institution" />
+                                                    <h:outputText value="#{ps.cancellInstitution.name}" />
+
+                                                    <h:outputText value="Cancellation Comments" />
+                                                    <h:outputText value="#{ps.cancellComments}" />
+                                                </p:panelGrid>
+
+                                                <!-- Retiring Details PanelGrid -->
+                                                <p:panelGrid columns="2" styleClass="retiring-grid" headerClass="section-header">
+                                                    <h:outputText value="Retiring Details" />
+                                                    <h:outputText value=""/>
+
+                                                    <h:outputText value="Retired" />
+                                                    <h:outputText value="#{ps.retired ? 'Yes' : 'No'}" />
+
+                                                    <h:outputText value="Retired By" />
+                                                    <h:outputText value="#{ps.retirer.webUserPerson.nameWithTitle}" />
+
+                                                    <h:outputText value="Retired At" />
+                                                    <h:outputText value="#{ps.retiredAt}">
+                                                        <f:convertDateTime pattern="yyyy-MM-dd HH:mm:ss" />
+                                                    </h:outputText>
+
+                                                    <h:outputText value="Retirement Comments" />
+                                                    <h:outputText value="#{ps.retireComments}" />
+                                                </p:panelGrid>
+
+                                            </p:panel>
+
+                                            <p:outputLabel value="#{ps.sampleId}" ></p:outputLabel>
+                                        </p:column>
+
+                                    </p:dataTable>
+
                                 </h:panelGroup>
 
                             </div>

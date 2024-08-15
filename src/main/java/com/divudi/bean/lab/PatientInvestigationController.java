@@ -1213,17 +1213,21 @@ public class PatientInvestigationController implements Serializable {
     public void generateBarcodesForSelectedBills() {
         System.out.println("generateBarcodesForSelectedBills");
         System.out.println("selectedBillBarcodes = " + selectedBillBarcodes);
-        if (selectedBillBarcodes == null) {
+        selectedBillBarcodes = new ArrayList<>();
+        billBarcodes = new ArrayList<>();
+        if (selectedBills == null) {
             JsfUtil.addErrorMessage("No Bills Seelcted");
             return;
         }
-        if (selectedBillBarcodes.isEmpty()) {
+        if (selectedBills.isEmpty()) {
             JsfUtil.addErrorMessage("No Bills Seelcted");
             return;
         }
-        for (BillBarcode bb : selectedBillBarcodes) {
-            System.out.println("bb = " + bb);
-            List<Bill> bs = billBeanController.findValidBillsForSampleCollection(bb.getBill());
+        listingEntity = ListingEntity.BILL_BARCODES;
+        for (Bill b : selectedBills) {
+            BillBarcode bb = new BillBarcode(b);
+            System.out.println("bb = " + b);
+            List<Bill> bs = billBeanController.findValidBillsForSampleCollection(b);
             System.out.println("bs = " + bs);
             List<PatientSampleWrapper> psws = new ArrayList<>();
             List<PatientSample> pss = prepareSampleCollectionByBillsForPhlebotomyRoom(bs, sessionController.getLoggedUser());
@@ -1243,8 +1247,9 @@ public class PatientInvestigationController implements Serializable {
             }
             System.out.println("psws = " + psws);
             bb.setPatientSampleWrappers(psws);
+            billBarcodes.add(bb);
         }
-
+        selectedBillBarcodes = billBarcodes;
     }
 
     public void generateBarcodesForSelectedPatientInvestigations() {
@@ -1257,7 +1262,8 @@ public class PatientInvestigationController implements Serializable {
             return;
         }
         listingEntity = ListingEntity.BILL_BARCODES;
-
+        billBarcodes = new ArrayList<>();
+        selectedBillBarcodes = new ArrayList<>();
         Map<Bill, BillBarcode> billBarcodeMap = new HashMap<>();
 
         for (PatientInvestigation pi : selectedItems) {
@@ -1281,6 +1287,8 @@ public class PatientInvestigationController implements Serializable {
             prepareSampleCollectionByBillsForPhlebotomyRoom(bb);
             System.out.println("bb = " + bb.getPatientSampleWrappers());
         }
+
+        billBarcodes = selectedBillBarcodes;
 
     }
 
