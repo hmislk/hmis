@@ -633,6 +633,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
         bill.setPaidAmount(bs.getBill().getPaidAmount());
         bill.setPaidAt(bs.getBill().getPaidAt());
+        bill.setPaidBill(bs.getBill().getPaidBill());
 
         bill.setBillDate(new Date());
         bill.setBillTime(new Date());
