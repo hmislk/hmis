@@ -3320,6 +3320,7 @@ public class ChannelReportController implements Serializable {
                 + " and type(bs.bill)=:class "
                 + " and bs.bill.billType in :tbs "
                 + " and bs.sessionInstance=:si"
+                + " and bs.rescheduledToBillSession is null "   // not scheduled
                 + " order by bs.serialNo";
         HashMap hh = new HashMap();
         hh.put("class", BilledBill.class);
@@ -3343,6 +3344,7 @@ public class ChannelReportController implements Serializable {
                     + " where bs.retired=false "
                     + " and bs.bill.billType in :tbs "
                     + " and bs.sessionInstance=:si"
+                    + " and bs.rescheduledToBillSession is null "   // not scheduled
                     + " and bs.sessionDate= :ssDate"
                     + " order by bs.serialNo";
             HashMap hh = new HashMap();
