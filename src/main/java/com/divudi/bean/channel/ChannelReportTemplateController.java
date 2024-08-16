@@ -733,38 +733,45 @@ public class ChannelReportTemplateController implements Serializable {
     }
 
     public void processAndfillDailySessionCounts() {
+        System.out.println("Starting processAndfillDailySessionCounts...");
+
         String j;
         Map<String, Object> m = new HashMap<>();
         rows = new ArrayList<>();
 
-        // JPQL query
+        System.out.println("Preparing JPQL query...");
         j = "select new com.divudi.data.ReportTemplateRow(si) "
                 + " from SessionInstance si "
                 + " where si.retired=false "
                 + " and si.sessionDate between :fd and :td ";
 
         if (institution != null) {
+            System.out.println("Institution is not null: " + institution);
             m.put("ins", institution);
             j += " and si.institution=:ins ";
+        } else {
+            System.out.println("Institution is null.");
         }
 
-        // Check for null dates before proceeding
         if (fromDate == null || toDate == null) {
-            // Handle error or set default dates
+            System.out.println("fromDate or toDate is null. Exiting method.");
             return;  // or throw an appropriate exception
         }
 
+        System.out.println("Setting date parameters: fromDate = " + fromDate + ", toDate = " + toDate);
         m.put("fd", fromDate);
         m.put("td", toDate);
 
-        // Retrieve list of report rows, ensure the list itself is not null
+        System.out.println("Executing query...");
         List<ReportTemplateRow> rs = (List<ReportTemplateRow>) billFacade.findLightsByJpql(j, m, TemporalType.DATE);
+
         if (rs == null || rs.isEmpty()) {
-            // Handle empty or null result set
+            System.out.println("No results found.");
             return;
+        } else {
+            System.out.println("Results found: " + rs.size());
         }
 
-        // Initialize counters
         Long long1 = 0L;
         Long long2 = 0L;
         Long long3 = 0L;
@@ -772,30 +779,45 @@ public class ChannelReportTemplateController implements Serializable {
         Long long5 = 0L;
         Long long6 = 0L;
 
-        // Iterate through results with null checks
+        System.out.println("Processing result rows...");
         for (ReportTemplateRow r : rs) {
-            if (r == null || r.getSessionInstance() == null) {
-                continue;  // Skip null or invalid entries
+            if (r == null) {
+                System.out.println("Encountered null ReportTemplateRow. Skipping...");
+                continue;
             }
 
             SessionInstance si = r.getSessionInstance();
-
-            // Safeguard against null values in `SessionInstance`
-            if (si != null) {
-                fillBillSessions(si);  // Make sure fillBillSessions() can handle null fields inside `si`
-
-                // Safely increment counters
-                long1 += si.getBookedPatientCount() != null ? si.getBookedPatientCount() : 0;
-                long2 += si.getPaidPatientCount() != null ? si.getPaidPatientCount() : 0;
-                long3 += si.getCompletedPatientCount() != null ? si.getCompletedPatientCount() : 0;
-                long4 += si.getCancelPatientCount() != null ? si.getCancelPatientCount() : 0;
-                long5 += si.getRefundedPatientCount() != null ? si.getRefundedPatientCount() : 0;
-                long6 += si.getRemainingPatientCount() != null ? si.getRemainingPatientCount() : 0;
+            if (si == null) {
+                System.out.println("SessionInstance is null. Skipping...");
+                continue;
             }
+
+            System.out.println("Processing SessionInstance: " + si);
+            fillBillSessions(si);  // Make sure fillBillSessions() can handle null fields inside `si`
+
+            long bookedCount = si.getBookedPatientCount() != null ? si.getBookedPatientCount() : 0;
+            long paidCount = si.getPaidPatientCount() != null ? si.getPaidPatientCount() : 0;
+            long completedCount = si.getCompletedPatientCount() != null ? si.getCompletedPatientCount() : 0;
+            long cancelCount = si.getCancelPatientCount() != null ? si.getCancelPatientCount() : 0;
+            long refundedCount = si.getRefundedPatientCount() != null ? si.getRefundedPatientCount() : 0;
+            long remainingCount = si.getRemainingPatientCount() != null ? si.getRemainingPatientCount() : 0;
+
+            System.out.println("Booked: " + bookedCount + ", Paid: " + paidCount + ", Completed: " + completedCount
+                    + ", Cancelled: " + cancelCount + ", Refunded: " + refundedCount + ", Remaining: " + remainingCount);
+
+            long1 += bookedCount;
+            long2 += paidCount;
+            long3 += completedCount;
+            long4 += cancelCount;
+            long5 += refundedCount;
+            long6 += remainingCount;
         }
 
-        // Ensure bundle is not null before setting values
+        System.out.println("Final counts: long1=" + long1 + ", long2=" + long2 + ", long3=" + long3
+                + ", long4=" + long4 + ", long5=" + long5 + ", long6=" + long6);
+
         if (bundle != null) {
+            System.out.println("Setting values in bundle...");
             bundle.setReportTemplateRows(rs);
             bundle.setLong1(long1);
             bundle.setLong2(long2);
@@ -804,8 +826,10 @@ public class ChannelReportTemplateController implements Serializable {
             bundle.setLong5(long5);
             bundle.setLong6(long6);
         } else {
-            // Handle null bundle (e.g., log an error or throw an exception)
+            System.out.println("Bundle is null.");
         }
+
+        System.out.println("Completed processAndfillDailySessionCounts.");
     }
 
     public void fillCategorySessionCounts() {
