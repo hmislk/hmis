@@ -77,7 +77,7 @@
 
                             <h:panelGrid columns="1" class="w-100 p-2 m-2 b-1">
                                 <p:commandButton 
-                                    class="w-100 m-2" 
+                                    class="m-2" 
                                     id="btnListToGenera" 
                                     ajax="false" 
                                     actionListener="#{patientInvestigationController.listBillsToGenerateBarcodes()}" 
@@ -85,7 +85,7 @@
                                     icon="fa fa-list-alt"> <!-- Example FontAwesome icon for listing -->
                                 </p:commandButton>
                                 <p:commandButton 
-                                    class="w-100 m-2" 
+                                    class="m-2" 
                                     id="btnListGenerated" 
                                     ajax="false" 
                                     actionListener="#{patientInvestigationController.listBillsWithGeneratedBarcodes()}" 
@@ -93,7 +93,7 @@
                                     icon="fa fa-check-square"> <!-- Example FontAwesome icon for generated lists -->
                                 </p:commandButton>
                                 <p:commandButton 
-                                    class="w-100 m-2" 
+                                    class="m-2" 
                                     id="btnGeneraBarcodes" 
                                     ajax="false" 
                                     actionListener="#{patientInvestigationController.generateBarcodesForSelectedBills()}" 
