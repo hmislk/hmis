@@ -59,10 +59,11 @@
                                      rowKey="#{sv.id}" selection="#{serviceController.itemsToRemove}" 
                                      rows="10"
                                      paginator="true"
+                                     selectionMode="multiple"
                                      paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                      rowsPerPageTemplate="5,10,{ShowAll|'All'}"
                                      >
-                            <p:column id="colSelect"  selectionMode="multiple" >
+                            <p:column id="colSelect" selectionBox="true"  >
                             </p:column>
                             <p:column headerText="Item Code" filterMatchMode="contains" filterBy="#{sv.code}" 
                                       style="font-weight:normal ;color: black;text-align: left;" >

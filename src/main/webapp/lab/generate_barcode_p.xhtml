@@ -6,10 +6,8 @@
       xmlns="http://www.w3.org/1999/xhtml"
       xmlns:p="http://primefaces.org/ui"
       xmlns:opd="http://xmlns.jcp.org/jsf/composite/ezcomp/opd">
-    <ui:composition 
-        template="/lab/sample_index.xhtml">
-
-        <ui:define name="subcontent">
+    <ui:composition template="/resources/template/template.xhtml">
+        <ui:define name="content">
             <h:head>
                 <style>
                     #{configOptionApplicationController.getLongTextValueByKey('CSS for Sample Container Sticker')}
@@ -22,264 +20,652 @@
 
             <h:panelGroup rendered="#{webUserController.hasPrivilege('LabSampleCollecting')}" >
                 <h:form>        
-                    <p:panel >
-                        <f:facet name="header">
-                            <h:outputLabel class="mt-2" value="To Collect"/>
-                        </f:facet>
 
-                        <h:panelGrid columns="2" class="w-100 p-2 m-2">
-                            <h:panelGrid columns="2" class="w-100 p-2 m-2 b-1">
-                                <h:outputLabel class="w-100 m-2" value="From Date"/>
-                                <p:calendar 
-                                    id="fromDate" 
-                                    value="#{patientInvestigationController.fromDate}" 
-                                    navigator="true" 
-                                    class="w-100 m-2"
-                                    pattern="dd MMMM yy - hh:mm a">
-                                </p:calendar>
-                                <h:outputLabel class="w-100 m-2" value="To Date"/>
-                                <p:calendar 
-                                    class="w-100 m-2"
-                                    id="toDate" 
-                                    value="#{patientInvestigationController.toDate}" 
-                                    navigator="true" 
-                                    pattern="dd MMMM yy - hh:mm a">
-                                </p:calendar>
-                                <h:outputLabel class="w-100 m-2" value="Ordered Institution"/>
-                                <p:autoComplete 
-                                    class="w-100 m-2"
-                                    id="acIns" 
-                                    value="#{patientInvestigationController.orderedInstitution}" 
-                                    completeMethod="#{institutionController.completeIns}"
-                                    var="i"
-                                    itemLabel="#{i.name}"
-                                    itemValue="#{i}"
-                                    >
-                                    <p:ajax event="itemSelect" process="acIns" update="cmdOd" ></p:ajax>
+                    <div class="container-fluid" >
+                        <div class="row" >
+
+
+                            <div class="col" style="min-width: 15em;">
+                                <h:outputLabel class="w-100" value="Date Range for"/>
+                                <p:selectOneMenu filter="true" filterMatchMode="contains" class="w-100" value="#{patientInvestigationController.searchDateType}">
+                                    <f:selectItems value="#{enumController.searchDateTypes}" var="st" itemValue="#{st}" itemLabel="#{st.label}"/>
+                                </p:selectOneMenu>
+                            </div>
+
+                            <div class="col" style="min-width: 15em;">
+                                <h:outputLabel class="w-100" value="From Date"/>
+                                <p:datePicker inputStyleClass="w-100" id="fromDate" showTime="true" value="#{patientInvestigationController.fromDate}" class="w-100" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                            </div>
+
+                            <div class="col" style="min-width: 15em;">
+                                <h:outputLabel class="w-100" value="To Date"/>
+                                <p:datePicker id="toDate" inputStyleClass="w-100" showTime="true" value="#{patientInvestigationController.toDate}" class="w-100" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                            </div>
+
+                            <div class="col" style="min-width: 15em;">
+                                <h:outputLabel class="w-100" value="Status"/>
+                                <p:selectOneMenu filter="true" filterMatchMode="contains" class="w-100" style="max-width:100%;" value="#{patientInvestigationController.patientInvestigationStatus}">
+                                    <f:selectItem itemLabel="Any" />
+                                    <f:selectItems value="#{enumController.patientInvestigationStatuses}" var="pis" itemValue="#{pis}" itemLabel="#{pis.label}"/>
+                                </p:selectOneMenu>
+                            </div>
+
+                            <div class="col" style="min-width: 15em;">
+                                <h:outputLabel class="w-100" value="Referring Doctor"/>
+                                <p:autoComplete inputStyleClass="w-100" inputStyle="max-width:100%;" class="w-100" id="acReferringDoctor" value="#{patientInvestigationController.referringDoctor}" completeMethod="#{doctorController.completeDoctor}" var="rd" itemLabel="#{rd.name}" itemValue="#{rd}"/>
+                            </div>
+
+                            <div class="col" style="min-width: 15em;">
+                                <h:outputLabel class="w-100" value="External Doctor"/>
+                                <p:inputText class="w-100" value="#{patientInvestigationController.externalDoctor}"/>
+                            </div>
+
+                            <div class="col" style="min-width: 15em;">
+                                <h:outputLabel class="w-100" value="Equipment"/>
+                                <p:selectOneMenu filter="true" filterMatchMode="contains" class="w-100" value="#{patientInvestigationController.equipment}">
+                                    <f:selectItem itemLabel="Any" />
+                                    <f:selectItems value="#{machineController.items}" var="e" itemLabel="#{e.name}" itemValue="#{e}"/>
+                                </p:selectOneMenu>
+                            </div>
+
+                            <div class="col" style="min-width: 15em;">
+                                <h:outputLabel class="w-100" value="Investigation"/>
+                                <p:autoComplete widgetVar="aPt" id="acPt" forceSelection="true" converter="ixcon" value="#{patientInvestigationController.investigation}" completeMethod="#{investigationController.completeInvest}" var="apt" itemLabel="#{apt.name}" inputStyleClass="w-100" itemValue="#{apt}" class="w-100" size="10" style="max-width: 100%;">
+                                    <p:column>
+                                        #{apt.name}
+                                    </p:column>
+                                    <p:column>
+                                        #{apt.code}
+                                    </p:column>
+                                    <p:column>
+                                        #{apt.fullName}
+                                    </p:column>
+                                    <p:column>
+                                        #{apt.department.name}
+                                    </p:column>
+                                    <f:ajax listener="#{investigationValidatorComponentController.listItemValidator()}" render="invalcom" event="itemSelect" execute="acPt"></f:ajax>
+                                </p:autoComplete> 
+                            </div>
+
+                            <div class="col" style="min-width: 15em;">
+                                <h:outputLabel class="w-100" value="Type"/>
+                                <p:selectOneMenu class="w-100" value="#{patientInvestigationController.type}">
+                                    <f:selectItem itemLabel="Any"/>
+                                    <f:selectItem itemValue="OP" itemLabel="Out Patients (OP)"/>
+                                    <f:selectItem itemValue="IP" itemLabel="In Patients (IP)"/>
+                                    <f:selectItem itemValue="CC" itemLabel="Collecting Centre (CC)"/>
+                                </p:selectOneMenu>
+                            </div>
+
+                            <div class="col" style="min-width: 15em;">
+                                <h:outputLabel class="w-100" value="Sample Id"/>
+                                <p:inputText class="w-100" value="#{patientInvestigationController.sampleId}"/>
+                            </div>
+
+                            <div class="col" style="min-width: 15em;">
+                                <h:outputLabel class="w-100" value="Patient Name"/>
+                                <p:inputText class="w-100" value="#{patientInvestigationController.patientName}"/>
+                            </div>
+
+                            <div class="col" style="min-width: 15em;">
+                                <h:outputLabel class="w-100" value="Specimen"/>
+                                <p:selectOneMenu class="w-100" value="#{patientInvestigationController.specimen}">
+                                    <f:selectItem itemLabel="Any" />
+                                    <f:selectItems value="#{sampleController.items}" var="s" itemLabel="#{s.name}" itemValue="#{s}"/>
+                                </p:selectOneMenu>
+                            </div>
+
+                            <div class="col" style="min-width: 15em;">
+                                <h:outputLabel class="w-100" value="Priority"/>
+                                <p:selectOneMenu class="w-100" value="#{patientInvestigationController.priority}">
+                                    <f:selectItem itemLabel="Any" />
+                                    <f:selectItems value="#{enumController.priorities}" var="p" itemLabel="#{p.label}" itemValue="#{p}"/>
+                                </p:selectOneMenu>
+                            </div>
+
+                            <div class="col" style="min-width: 15em;">
+                                <h:outputLabel class="w-100" value="By Route"/>
+                                <p:selectOneMenu filter="true" filterMatchMode="contains" class="w-100" value="#{patientInvestigationController.route}">
+                                    <f:selectItem itemLabel="Any" />
+                                    <f:selectItems value="#{routeController.items}" var="r" itemLabel="#{r.name}" itemValue="#{r}"/>
+                                </p:selectOneMenu>
+                            </div>
+
+                            <div class="col" style="min-width: 15em;">
+                                <h:outputLabel class="w-100" value="By Collection Center"/>
+                                <p:autoComplete class="w-100" id="acCollectionCenter" value="#{patientInvestigationController.collectionCenter}" completeMethod="#{collectingCentreController.completeCollecting}" var="cc" itemLabel="#{cc.name}" itemValue="#{cc}"/>
+                            </div>
+
+                            <div class="col" style="min-width: 15em;">
+                                <h:outputLabel class="w-100" value="Ordered Institution"/>
+                                <p:autoComplete class="w-100" id="acOins" value="#{patientInvestigationController.orderedInstitution}" inputStyleClass="w-100"
+                                                completeMethod="#{institutionController.completeIns}" var="oi" itemLabel="#{oi.name}" itemValue="#{oi}">
+                                    <p:ajax process="acOins" update="gpOdept" ></p:ajax>
                                 </p:autoComplete>
-                                <h:outputLabel class="w-100 m-2" value="Ordered Institution"/>
-                                <h:panelGroup id="cmdOd" >
-                                    <p:selectOneMenu
-                                        rendered="#{patientInvestigationController.orderedInstitution ne null}"
-                                        filter="true"
-                                        filterMatchMode="contains"
-                                        value="#{patientInvestigationController.orderedDepartment}" >
-                                        <f:selectItems 
-                                            value="#{departmentController.getInstitutionDepatrments(patientInvestigationController.orderedInstitution)}"
-                                            var="d"
-                                            itemLabel="#{d.name}"
-                                            itemValue="#{d}"></f:selectItems>
+                            </div>
+
+                            <div class="col" style="min-width: 15em;">
+                                <h:outputLabel class="w-100" value="Ordered Department"/>
+                                <h:panelGroup id="gpOdept">
+                                    <p:selectOneMenu value="#{patientInvestigationController.orderedDepartment}" class="w-100" style="max-width: 100%">
+                                        <f:selectItem itemLabel="Any"></f:selectItem>
+                                        <f:selectItems value="#{departmentController.getInstitutionDepartments(patientInvestigationController.orderedInstitution)}" var="odpt" itemLabel="#{odpt.name}" itemValue="#{odpt}"></f:selectItems>
                                     </p:selectOneMenu>
                                 </h:panelGroup>
+                            </div>
+
+                            <div class="col" style="min-width: 15em;">
+                                <h:outputLabel class="w-100" value="Performing Institution"/>
+                                <p:autoComplete class="w-100" id="acPIns" value="#{patientInvestigationController.performingInstitution}" inputStyleClass="w-100"
+                                                completeMethod="#{institutionController.completeIns}" var="pi" itemLabel="#{pi.name}" itemValue="#{pi}">
+                                    <p:ajax process="acPIns" update="gpPDept"></p:ajax>
+                                </p:autoComplete>
+                            </div>
+
+                            <div class="col" style="min-width: 15em;">
+                                <h:outputLabel class="w-100" value="Performing Department"/>
+                                <h:panelGroup id="gpPDept">
+                                    <p:selectOneMenu value="#{patientInvestigationController.performingDepartment}" class="w-100" style="max-width: 100%">
+                                        <f:selectItem itemLabel="Any"></f:selectItem>
+                                        <f:selectItems value="#{departmentController.getInstitutionDepartments(patientInvestigationController.performingInstitution)}" var="pdpt" itemLabel="#{pdpt.name}" itemValue="#{pdpt}"></f:selectItems>
+                                    </p:selectOneMenu>
+                                </h:panelGroup>
+                            </div>
 
 
-                            </h:panelGrid>
+                            <div class="col" style="height: 100%;">
+                                <p:outputLabel value="Search"></p:outputLabel>
+                                <div>
+                                    <!-- Search Bills -->
+                                    <p:commandButton id="btnSearchBills" ajax="false" action="#{patientInvestigationController.searchBills}" title="Search Bills" icon="fas fa-file-invoice-dollar" styleClass="m-1 ui-button-info"/>
 
-                            <h:panelGrid columns="1" class="w-100 p-2 m-2 b-1">
-                                <p:commandButton 
-                                    class="m-2" 
-                                    id="btnListToGenera" 
-                                    ajax="false" 
-                                    actionListener="#{patientInvestigationController.listBillsToGenerateBarcodes()}" 
-                                    value="List to Generate"
-                                    icon="fa fa-list-alt"> <!-- Example FontAwesome icon for listing -->
-                                </p:commandButton>
-                                <p:commandButton 
-                                    class="m-2" 
-                                    id="btnListGenerated" 
-                                    ajax="false" 
-                                    actionListener="#{patientInvestigationController.listBillsWithGeneratedBarcodes()}" 
-                                    value="List Generated"
-                                    icon="fa fa-check-square"> <!-- Example FontAwesome icon for generated lists -->
-                                </p:commandButton>
-                                <p:commandButton 
-                                    class="m-2" 
-                                    id="btnGeneraBarcodes" 
-                                    ajax="false" 
-                                    actionListener="#{patientInvestigationController.generateBarcodesForSelectedBills()}" 
-                                    value="Generate Barcodes"
-                                    icon="fa fa-barcode"> <!-- Example FontAwesome icon for barcode generation -->
-                                </p:commandButton>
-                            </h:panelGrid>
+                                    <!-- Search Patient Investigations -->
+                                    <p:commandButton id="btnSearchPtix" ajax="false" action="#{patientInvestigationController.searchPatientInvestigations}" title="Search Patient Investigations" icon="fas fa-notes-medical" styleClass="m-1 ui-button-success"/>
+
+                                    <!-- Search Patient Samples -->
+                                    <p:commandButton id="btnSearchPtSamples" ajax="false" action="#{patientInvestigationController.searchPatientSamples()}" title="Search Patient Samples" icon="fas fa-microscope" styleClass="m-1 ui-button-warning"/>
+
+                                    <!-- Search Bills to Generate Barcodes -->
+                                    <p:commandButton id="btnSearchSamples" ajax="false" action="#{patientInvestigationController.listBillsToGenerateBarcodes()}" title="Search Bills to Generate Barcodes" icon="fas fa-qrcode" styleClass="m-1 ui-button-danger"/>
+                                </div>
+                            </div>
+
+                            <div class="col">
+                                <p:outputLabel value="Actions"></p:outputLabel>
+                                <div>
+                                    <!-- Generate Barcodes -->
+                                    <p:commandButton disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_INVESTIGATIONS'}"
+                                                     id="btnGeneraBarcodes"
+                                                     ajax="false" action="#{patientInvestigationController.generateBarcodesForSelectedPatientInvestigations()}"
+                                                     title="Generate Barcodes" icon="fas fa-barcode" styleClass="m-1 ui-button-success"/>
+
+                                    <!-- Generate Barcodes -->
+                                    <p:commandButton disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_INVESTIGATIONS'}"
+                                                     id="btnGeneraBarcodesBills"
+                                                     ajax="false" action="#{patientInvestigationController.generateBarcodesForSelectedBills()}"
+                                                     title="Generate Barcodes" icon="fas fa-barcode" styleClass="m-1 ui-button-success"/>
+
+                                    <!-- Collect Samples -->
+                                    <p:commandButton disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
+                                                     id="btnCollectSamples"
+                                                     ajax="false" action="#{patientInvestigationController.generateBarcodesForSelectedPatientInvestigations()}"
+                                                     title="Collect Samples" icon="fas fa-hand-holding-medical" styleClass="m-1 ui-button-primary"/>
+
+                                    <!-- Sent to Lab -->
+                                    <p:commandButton disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
+                                                     id="btnSentToLab"
+                                                     ajax="false" action="#{patientInvestigationController.generateBarcodesForSelectedPatientInvestigations()}"
+                                                     title="Sent to Lab" icon="fas fa-vials" styleClass="m-1 ui-button-warning"/>
+                                </div>
+                            </div>
+                            <div class="col" style="height: 100%;">
+                            </div>
+                            <div class="col" style="height: 100%;">
+                            </div>
+                            <div class="col" style="height: 100%;">
+                            </div>
+                        </div>
 
 
-                        </h:panelGrid>
+                        <div class="row" >
+                            <div class="col-12" >
+                                <h:panelGroup rendered="#{patientInvestigationController.listingEntity eq 'PATIENT_INVESTIGATIONS'}" >
 
+                                    <p:dataTable  
+                                        class="w-100"
+                                        value="#{patientInvestigationController.items}" 
+                                        var="smpIx" 
+                                        paginator="true"
+                                        rowKey="#{smpIx.id}"
+                                        paginatorPosition="bottom"
+                                        selectionMode="multiple"
+                                        selection="#{patientInvestigationController.selectedItems}"
+                                        rows="10"
+                                        paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                        rowsPerPageTemplate="10,25,50"
+                                        >
 
-                        <p:dataTable  
-                            id="sample" 
-                            class="w-100"
-                            value="#{patientInvestigationController.billBarcodes}" 
-                            var="smpIx" 
-                            paginator="true"
-                            rowKey="#{smpIx.uuid}"
-                            paginatorPosition="bottom"
-                            selection="#{patientInvestigationController.selectedBillBarcodes}"
-                            rows="10"
-                            paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                            rowsPerPageTemplate="10,25,50"
-                            >
+                                        
+                                        
+                                        <p:column selectionBox="true" width="2em">
+                                        </p:column>
 
-                            <p:column selectionMode="multiple" width="30">
-                            </p:column>
-
-                            <p:column headerText="Bill Dept ID" width="100">
-                                <p:commandLink 
-                                    ajax="false" 
-                                    class="m-2"
-                                    value="#{smpIx.bill.deptId}" 
-                                    action="#{billSearch.navigateToViewOpdBill()}">
-                                    <f:setPropertyActionListener value="#{smpIx.bill}" target="#{billSearch.bill}"/>
-                                </p:commandLink>
-                            </p:column>
-
-                            <p:column headerText="Patient" >
-                                <h:outputLabel value="#{smpIx.bill.patient.person.nameWithTitle}" 
-                                               class="#{smpIx.bill.cancelled or smpIx.bill.refunded ? 'text-danger':''}"/>
-                            </p:column>
-
-                            <p:column headerText="Investigations" >
-                                <ui:repeat value="#{smpIx.patientInvestigationWrappers}" var="piw" >
-                                    <h:outputLabel value="#{piw.patientInvestigation.billItem.item.name}"/>
-                                </ui:repeat>
-                            </p:column>
-
-                            <p:column headerText="Samples">
-                                <ui:repeat value="#{smpIx.patientSampleWrappers}" var="psw">
-                                    <p:panel id="samplePanelList" toggleable="true" collapsed="true">
-                                        <f:facet name="header" >
+                                        <p:column headerText="Bill Number" width="6em">
                                             <p:commandLink 
-                                                class="m-1 ml-5"
-                                                value="#{psw.patientSample.id}" 
                                                 ajax="false" 
-                                                action="#{patientSampleController.navigateToViewPatientSample(psw.patientSample)}" >
+                                                class="m-2"
+                                                value="#{smpIx.billItem.bill.deptId}" 
+                                                action="#{billSearch.navigateToViewOpdBill()}">
+                                                <f:setPropertyActionListener value="#{smpIx.billItem.bill}" target="#{billSearch.bill}"/>
                                             </p:commandLink>
-                                        </f:facet>
-                                        <table class="table table-striped">
-                                            <tr>
-                                                <th >
-                                                    <h:outputLabel value="Test" ></h:outputLabel>
-                                                </th>
-                                                <th >
-                                                    <h:outputLabel value="Component" ></h:outputLabel>
-                                                </th>
-                                            </tr>
-                                            <ui:repeat value="#{patientInvestigationController.getPatientSampleComponentsByPatientSample(psw.patientSample)}" var="psc">
-                                                <tr>
-                                                    <td>
-                                                        <h:outputLabel value="#{psc.patientInvestigation.investigation.name}"/>
-                                                    </td>
-                                                    <td>
-                                                        <h:outputLabel value="#{psc.investigationComponant.name}"/>
-                                                    </td>
-                                                </tr>
+                                        </p:column>
+
+                                        <p:column headerText="Patient" width="10em">
+                                            <h:outputLabel value="#{smpIx.billItem.bill.patient.person.nameWithTitle}" />
+                                            <p:spacer width="10" ></p:spacer>
+                                            <h:outputLabel value="(#{smpIx.billItem.bill.ipOpOrCc})" class="ml-5"/>
+                                        </p:column>
+
+                                        <p:column headerText="Investigations" width="10em">
+                                            <h:outputLabel value="#{smpIx.investigation.name}"/>
+                                        </p:column>
+
+                                        <p:column headerText="Status" width="5em">
+                                            <h:outputLabel value="#{smpIx.status}"/>
+                                        </p:column>
+
+
+
+                                        <p:column headerText="Details">
+                                            <h:panelGrid columns="1">
+                                                <h:outputLabel value="Sample Collected" rendered="#{smpIx.sampleCollected}"/>
+                                                <p:panelGrid rendered="#{smpIx.sampleCollected}" columns="2" styleClass="ui-widget-content ui-corner-all" style="display:none">
+                                                    <p:row>
+                                                        <p:column>Time:</p:column>
+                                                        <p:column><h:outputText value="#{smpIx.sampleCollectedAt}" /></p:column>
+                                                    </p:row>
+                                                    <p:row>
+                                                        <p:column>Institution:</p:column>
+                                                        <p:column><h:outputText value="#{smpIx.sampleInstitution.name}" /></p:column>
+                                                    </p:row>
+                                                    <p:row>
+                                                        <p:column>User:</p:column>
+                                                        <p:column><h:outputText value="#{smpIx.sampleCollectedBy.name}" /></p:column>
+                                                    </p:row>
+                                                </p:panelGrid>
+
+                                                <h:outputLabel value="Sample Sent" rendered="#{smpIx.sampleSent}"/>
+                                                <p:panelGrid rendered="#{smpIx.sampleSent}" columns="2" styleClass="ui-widget-content ui-corner-all" style="display:none">
+                                                    <p:row>
+                                                        <p:column>Time:</p:column>
+                                                        <p:column><h:outputText value="#{smpIx.sampleSentAt}" /></p:column>
+                                                    </p:row>
+                                                    <p:row>
+                                                        <p:column>Institution:</p:column>
+                                                        <p:column><h:outputText value="#{smpIx.sampleInstitution.name}" /></p:column>
+                                                    </p:row>
+                                                    <p:row>
+                                                        <p:column>User:</p:column>
+                                                        <p:column><h:outputText value="#{smpIx.sampleSentBy.name}" /></p:column>
+                                                    </p:row>
+                                                </p:panelGrid>
+
+                                                <h:outputLabel value="Sample Received" rendered="#{smpIx.received}"/>
+                                                <p:panelGrid rendered="#{smpIx.received}" columns="2" styleClass="ui-widget-content ui-corner-all" style="display:none">
+                                                    <p:row>
+                                                        <p:column>Time:</p:column>
+                                                        <p:column><h:outputText value="#{smpIx.receivedAt}" /></p:column>
+                                                    </p:row>
+                                                    <p:row>
+                                                        <p:column>Institution:</p:column>
+                                                        <p:column><h:outputText value="#{smpIx.receiveInstitution.name}" /></p:column>
+                                                    </p:row>
+                                                    <p:row>
+                                                        <p:column>User:</p:column>
+                                                        <p:column><h:outputText value="#{smpIx.receivedCollecter.name}" /></p:column>
+                                                    </p:row>
+                                                </p:panelGrid>
+
+                                                <h:outputLabel value="Sample Approved" rendered="#{smpIx.sampleApproved}"/>
+                                                <p:panelGrid rendered="#{smpIx.sampleApproved}" columns="2" styleClass="ui-widget-content ui-corner-all" style="display:none">
+                                                    <p:row>
+                                                        <p:column>Time:</p:column>
+                                                        <p:column><h:outputText value="#{smpIx.sampleApprovedAt}" /></p:column>
+                                                    </p:row>
+                                                    <p:row>
+                                                        <p:column>Institution:</p:column>
+                                                        <p:column><h:outputText value="#{smpIx.sampleInstitution.name}" /></p:column>
+                                                    </p:row>
+                                                    <p:row>
+                                                        <p:column>User:</p:column>
+                                                        <p:column><h:outputText value="#{smpIx.sampleApprovedBy.name}" /></p:column>
+                                                    </p:row>
+                                                </p:panelGrid>
+
+                                                <h:outputLabel value="Sample Generated" rendered="#{smpIx.sampleGenerated}"/>
+                                                <p:panelGrid rendered="#{smpIx.sampleGenerated}" columns="2" styleClass="ui-widget-content ui-corner-all" style="display:none">
+                                                    <p:row>
+                                                        <p:column>Time:</p:column>
+                                                        <p:column><h:outputText value="#{smpIx.sampleGeneratedAt}" /></p:column>
+                                                    </p:row>
+                                                    <p:row>
+                                                        <p:column>Institution:</p:column>
+                                                        <p:column><h:outputText value="#{smpIx.sampleInstitution.name}" /></p:column>
+                                                    </p:row>
+                                                    <p:row>
+                                                        <p:column>User:</p:column>
+                                                        <p:column><h:outputText value="#{smpIx.sampleGeneratedBy.name}" /></p:column>
+                                                    </p:row>
+                                                </p:panelGrid>
+
+                                                <h:outputLabel value="Sample Interfaced" rendered="#{smpIx.sampleInterfaced}"/>
+                                                <p:panelGrid rendered="#{smpIx.sampleInterfaced}" columns="2" styleClass="ui-widget-content ui-corner-all" style="display:none">
+                                                    <p:row>
+                                                        <p:column>Time:</p:column>
+                                                        <p:column><h:outputText value="#{smpIx.sampleInterfacedAt}" /></p:column>
+                                                    </p:row>
+                                                    <p:row>
+                                                        <p:column>Institution:</p:column>
+                                                        <p:column><h:outputText value="#{smpIx.sampleInstitution.name}" /></p:column>
+                                                    </p:row>
+                                                    <p:row>
+                                                        <p:column>User:</p:column>
+                                                        <p:column><h:outputText value="#{smpIx.sampleInterfacedBy.name}" /></p:column>
+                                                    </p:row>
+                                                </p:panelGrid>
+
+                                                <h:outputLabel value="Sample Recollected" rendered="#{smpIx.sampleRecollected}"/>
+                                                <p:panelGrid rendered="#{smpIx.sampleRecollected}" columns="2" styleClass="ui-widget-content ui-corner-all" style="display:none">
+                                                    <p:row>
+                                                        <p:column>Time:</p:column>
+                                                        <p:column><h:outputText value="#{smpIx.sampleRecollectedAt}" /></p:column>
+                                                    </p:row>
+                                                    <p:row>
+                                                        <p:column>Institution:</p:column>
+                                                        <p:column><h:outputText value="#{smpIx.sampleInstitution.name}" /></p:column>
+                                                    </p:row>
+                                                    <p:row>
+                                                        <p:column>User:</p:column>
+                                                        <p:column><h:outputText value="#{smpIx.sampleRecollectedBy.name}" /></p:column>
+                                                    </p:row>
+                                                </p:panelGrid>
+
+                                                <h:outputLabel value="Sample Rejected" rendered="#{smpIx.sampleRejected}"/>
+                                                <p:panelGrid rendered="#{smpIx.sampleRejected}" columns="2" styleClass="ui-widget-content ui-corner-all" style="display:none">
+                                                    <p:row>
+                                                        <p:column>Time:</p:column>
+                                                        <p:column><h:outputText value="#{smpIx.sampleRejectedAt}" /></p:column>
+                                                    </p:row>
+                                                    <p:row>
+                                                        <p:column>Institution:</p:column>
+                                                        <p:column><h:outputText value="#{smpIx.sampleInstitution.name}" /></p:column>
+                                                    </p:row>
+                                                    <p:row>
+                                                        <p:column>User:</p:column>
+                                                        <p:column><h:outputText value="#{smpIx.sampleRejectedBy.name}" /></p:column>
+                                                    </p:row>
+                                                </p:panelGrid>
+
+                                                <h:outputLabel value="Sample Repeated" rendered="#{smpIx.sampleRepeated}"/>
+                                                <p:panelGrid rendered="#{smpIx.sampleRepeated}" columns="2" styleClass="ui-widget-content ui-corner-all" style="display:none">
+                                                    <p:row>
+                                                        <p:column>Time:</p:column>
+                                                        <p:column><h:outputText value="#{smpIx.sampleRepeatedAt}" /></p:column>
+                                                    </p:row>
+                                                    <p:row>
+                                                        <p:column>Institution:</p:column>
+                                                        <p:column><h:outputText value="#{smpIx.sampleInstitution.name}" /></p:column>
+                                                    </p:row>
+                                                    <p:row>
+                                                        <p:column>User:</p:column>
+                                                        <p:column><h:outputText value="#{smpIx.sampleRepeatedBy.name}" /></p:column>
+                                                    </p:row>
+                                                </p:panelGrid>
+
+                                                <h:outputLabel value="Sample Resent" rendered="#{smpIx.sampleResent}"/>
+                                                <p:panelGrid rendered="#{smpIx.sampleResent}" columns="2" styleClass="ui-widget-content ui-corner-all" style="display:none">
+                                                    <p:row>
+                                                        <p:column>Time:</p:column>
+                                                        <p:column><h:outputText value="#{smpIx.sampleResentAt}" /></p:column>
+                                                    </p:row>
+                                                    <p:row>
+                                                        <p:column>Institution:</p:column>
+                                                        <p:column><h:outputText value="#{smpIx.sampleInstitution.name}" /></p:column>
+                                                    </p:row>
+                                                    <p:row>
+                                                        <p:column>User:</p:column>
+                                                        <p:column><h:outputText value="#{smpIx.sampleResentBy.name}" /></p:column>
+                                                    </p:row>
+                                                </p:panelGrid>
+
+                                                <h:outputLabel value="Sample Reverted" rendered="#{smpIx.sampleReverted}"/>
+                                                <p:panelGrid rendered="#{smpIx.sampleReverted}" columns="2" styleClass="ui-widget-content ui-corner-all" style="display:none">
+                                                    <p:row>
+                                                        <p:column>Time:</p:column>
+                                                        <p:column><h:outputText value="#{smpIx.sampleRevertedAt}" /></p:column>
+                                                    </p:row>
+                                                    <p:row>
+                                                        <p:column>Institution:</p:column>
+                                                        <p:column><h:outputText value="#{smpIx.sampleInstitution.name}" /></p:column>
+                                                    </p:row>
+                                                    <p:row>
+                                                        <p:column>User:</p:column>
+                                                        <p:column><h:outputText value="#{smpIx.sampleRevertedBy.name}" /></p:column>
+                                                    </p:row>
+                                                </p:panelGrid>
+
+                                                <h:outputLabel value="Report Printed" rendered="#{smpIx.reportPrinted}"/>
+                                                <p:panelGrid rendered="#{smpIx.reportPrinted}" columns="2" styleClass="ui-widget-content ui-corner-all" style="display:none">
+                                                    <p:row>
+                                                        <p:column>Time:</p:column>
+                                                        <p:column><h:outputText value="#{smpIx.reportPrintedAt}" /></p:column>
+                                                    </p:row>
+                                                    <p:row>
+                                                        <p:column>Institution:</p:column>
+                                                        <p:column><h:outputText value="#{smpIx.printingInstitution.name}" /></p:column>
+                                                    </p:row>
+                                                    <p:row>
+                                                        <p:column>User:</p:column>
+                                                        <p:column><h:outputText value="#{smpIx.reportPrintedBy.name}" /></p:column>
+                                                    </p:row>
+                                                </p:panelGrid>
+
+                                                <h:outputLabel value="Report Handed Over" rendered="#{smpIx.reportHandedOver}"/>
+                                                <p:panelGrid rendered="#{smpIx.reportHandedOver}" columns="2" styleClass="ui-widget-content ui-corner-all" style="display:none">
+                                                    <p:row>
+                                                        <p:column>Time:</p:column>
+                                                        <p:column><h:outputText value="#{smpIx.reportHandedOverAt}" /></p:column>
+                                                    </p:row>
+                                                    <p:row>
+                                                        <p:column>Institution:</p:column>
+                                                        <p:column><h:outputText value="#{smpIx.reportHandedOverBy.name}" /></p:column>
+                                                    </p:row>
+                                                </p:panelGrid>
+
+                                                <h:outputLabel value="Report Reached Collecting Centre" rendered="#{smpIx.reportReachedCollectingCentre}"/>
+                                                <p:panelGrid rendered="#{smpIx.reportReachedCollectingCentre}" columns="2" styleClass="ui-widget-content ui-corner-all" style="display:none">
+                                                    <p:row>
+                                                        <p:column>Time:</p:column>
+                                                        <p:column><h:outputText value="#{smpIx.reportReachedCollectingCentreAt}" /></p:column>
+                                                    </p:row>
+                                                    <p:row>
+                                                        <p:column>User:</p:column>
+                                                        <p:column><h:outputText value="#{smpIx.reportReachedCollectingCentreBy.name}" /></p:column>
+                                                    </p:row>
+                                                </p:panelGrid>
+
+                                                <h:outputLabel value="Report Distributed" rendered="#{smpIx.reportDistributed}"/>
+                                                <p:panelGrid rendered="#{smpIx.reportDistributed}" columns="2" styleClass="ui-widget-content ui-corner-all" style="display:none">
+                                                    <p:row>
+                                                        <p:column>Time:</p:column>
+                                                        <p:column><h:outputText value="#{smpIx.reportDistributedAt}" /></p:column>
+                                                    </p:row>
+                                                    <p:row>
+                                                        <p:column>User:</p:column>
+                                                        <p:column><h:outputText value="#{smpIx.reportDistributedBy.name}" /></p:column>
+                                                    </p:row>
+                                                </p:panelGrid>
+
+                                            </h:panelGrid>
+                                        </p:column>
+
+
+
+
+                                    </p:dataTable>
+
+                                </h:panelGroup>
+                                
+                                <h:panelGroup rendered="#{patientInvestigationController.listingEntity eq 'BILLS'}" >
+
+                                    <p:dataTable  
+                                        class="w-100"
+                                        value="#{patientInvestigationController.bills}" 
+                                        var="b" 
+                                        paginator="true"
+                                        rowKey="#{b.id}"
+                                        paginatorPosition="bottom"
+                                        selectionMode="multiple"
+                                        selection="#{patientInvestigationController.selectedBills}"
+                                        rows="10"
+                                        paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                        rowsPerPageTemplate="10,25,50"
+                                        >
+
+                                        <p:column selectionBox="true" width="2em">
+                                        </p:column>
+
+                                        <p:column headerText="Bill Number" width="6em">
+                                            <p:commandLink 
+                                                ajax="false" 
+                                                class="m-2"
+                                                value="#{b.deptId}" 
+                                                action="#{billSearch.navigateToViewOpdBill()}">
+                                                <f:setPropertyActionListener value="#{b}" target="#{billSearch.bill}"/>
+                                            </p:commandLink>
+                                        </p:column>
+
+                                        <p:column headerText="Patient" width="10em">
+                                            <h:outputLabel value="#{b.patient.person.nameWithTitle}" />
+                                            <p:spacer width="10" ></p:spacer>
+                                            <h:outputLabel value="(#{b.ipOpOrCc})" class="ml-5"/>
+                                        </p:column>
+
+
+                                        <p:column headerText="Ordered Institute" width="10em">
+                                            <h:outputLabel value="#{b.institution.name}"/>
+                                        </p:column>
+
+                                        <p:column headerText="Ordered Department" width="10em">
+                                            <h:outputLabel value="#{b.department.name}"/>
+                                        </p:column>
+
+
+                                        <p:column headerText="Service Institute" width="10em">
+                                            <h:outputLabel value="#{b.toInstitution.name}"/>
+                                        </p:column>
+
+                                        <p:column headerText="Service Department" width="10em">
+                                            <h:outputLabel value="#{b.toDepartment.name}"/>
+                                        </p:column>
+
+                                        <p:column headerText="Colelcting Centre" width="10em">
+                                            <h:outputLabel value="#{b.fromInstitution.name}"/>
+                                            <h:outputLabel value="#{b.collectingCentre.name}"/>
+                                        </p:column>
+
+                                    </p:dataTable>
+
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{patientInvestigationController.listingEntity eq 'BILL_BARCODES'}">
+                                    <p:commandButton ajax="false" value="Print">
+                                        <p:printer target="batchBarcode"></p:printer>
+                                    </p:commandButton>
+                                    <h:panelGroup id="batchBarcode">
+                                        <ui:repeat value="#{patientInvestigationController.selectedBillBarcodes}" var="smpIx">
+                                            <ui:repeat value="#{smpIx.patientSampleWrappers}" var="psc">
+                                                <div class="sticker">
+                                                    <div class="patient-info">
+                                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Sample ID PHN in Sample Stickers', true)}">
+                                                            <span class="sample-id">
+                                                                #{psc.patientSample.idStr}&nbsp;&nbsp;
+                                                            </span>
+                                                        </h:panelGroup>
+                                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Patient Age in Sample Stickers')}">
+                                                            <span class="patient-age">
+                                                                #{psc.patientSample.patient.person.ageAsShortString}&nbsp;&nbsp;
+                                                            </span>
+                                                        </h:panelGroup>
+                                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Patient Sex in Sample Stickers')}">
+                                                            <span class="patient-sex">
+                                                                #{psc.patientSample.patient.person.sex.shortLabel}&nbsp;&nbsp;
+                                                            </span>
+                                                        </h:panelGroup>
+                                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Patient ID in Sample Stickers')}">
+                                                            <span class="patient-id">
+                                                                #{psc.patientSample.patient.person.id}&nbsp;&nbsp;
+                                                            </span>
+                                                        </h:panelGroup>
+                                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Bill Type (IP/OP/CC) in Sample Stickers')}">
+                                                            <span class="patient-id">
+                                                                #{psc.patientSample.bill.ipOpOrCc}&nbsp;&nbsp;
+                                                            </span>
+                                                        </h:panelGroup>
+                                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Barcode Generated Time in Sample Stickers')}">
+                                                            <span class="patient-id">
+                                                                <h:outputLabel value="#{psc.patientSample.barcodeGeneratedAt}">
+                                                                    <f:convertDateTime pattern="#{configOptionApplicationController.getShortTextValueByKey('Date Time Format for Barcode Generated Time in Sample Stickers','d/M/yy-hh:mm')}"></f:convertDateTime>
+                                                                </h:outputLabel>
+                                                                &nbsp;&nbsp;
+                                                            </span>
+                                                        </h:panelGroup>
+                                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Patient PHN in Sample Stickers')}">
+                                                            <span class="patient-phn">
+                                                                #{psc.patientSample.patient.phn}
+                                                            </span>
+                                                        </h:panelGroup>
+                                                        <span class="patient-name">
+                                                            #{psc.patientSample.patient.person.name}&nbsp;&nbsp;
+                                                        </span>
+                                                    </div>
+                                                    <div class="patient-sample-info">
+                                                        <ui:repeat value="#{patientInvestigationController.getPatientSampleComponentsByPatientSample(psc.patientSample)}" var="psw">
+                                                            <span class="sample-component">
+                                                                #{psw.investigationComponant.name} &nbsp;&nbsp;
+                                                            </span>
+                                                        </ui:repeat>
+                                                    </div>
+                                                    <div class="barcode-info">
+                                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Barcode in Sample Stickers')}">
+                                                            <p:barcode value="#{psc.patientSample.idStr}" 
+                                                                       cache="false"
+                                                                       hrp="none"
+                                                                       type="#{configOptionApplicationController.getShortTextValueByKey('Sample Sticker - Barcode Type','code128')}" 
+                                                                       height="#{configOptionApplicationController.getShortTextValueByKey('Sample Sticker - Barcode Height in Pixles','80')}"
+                                                                       width="#{configOptionApplicationController.getShortTextValueByKey('Sample Sticker - Barcode Width in Pixles','300')}"
+                                                                       orientation="0"></p:barcode>
+                                                        </h:panelGroup>
+                                                    </div>
+                                                </div>
                                             </ui:repeat>
-                                        </table>
-                                    </p:panel>
-                                </ui:repeat>
-
-
-
-
-
-
-                            </p:column>
-
-                            <p:column headerText="Printing">
-                                <p:panel id="samplePanelPrint" 
-                                         rendered="#{smpIx.patientSampleWrappers != null and not empty smpIx.patientSampleWrappers}"
-                                         header="Print" 
-                                         toggleable="true" 
-                                         collapsed="true">
-
-                                    <f:facet name="header" >
-                                        <p:commandButton ajax="false" value="Print" >
-                                            <p:printer target="barcode" ></p:printer>
-                                        </p:commandButton>
-                                    </f:facet>
-                                    <h:panelGroup id="barcode">
-                                        <ui:repeat value="#{smpIx.patientSampleWrappers}" var="psc">
-                                            <div class="sticker">
-                                                <div class="patient-info">
-                                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Sample ID PHN in Sample Stickers', true)}">
-                                                        <span class="sample-id">
-                                                            #{psc.patientSample.idStr}&nbsp;&nbsp;
-                                                        </span>
-                                                    </h:panelGroup>
-                                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Patient Age in Sample Stickers')}">
-                                                        <span class="patient-age">
-                                                            #{psc.patientSample.patient.person.ageAsShortString}&nbsp;&nbsp;
-                                                        </span>
-                                                    </h:panelGroup>
-                                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Patient Sex in Sample Stickers')}">
-                                                        <span class="patient-sex">
-                                                            #{psc.patientSample.patient.person.sex.shortLabel}&nbsp;&nbsp;
-                                                        </span>
-                                                    </h:panelGroup>
-                                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Patient ID in Sample Stickers')}">
-                                                        <span class="patient-id">
-                                                            #{psc.patientSample.patient.person.id}&nbsp;&nbsp;
-                                                        </span>
-                                                    </h:panelGroup>
-                                                     <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Bill Type (IP/OP/CC) in Sample Stickers')}">
-                                                        <span class="patient-id">
-                                                            #{psc.patientSample.bill.ipOpOrCc}&nbsp;&nbsp;
-                                                        </span>
-                                                    </h:panelGroup>
-                                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Barcode Generated Time in Sample Stickers')}">
-                                                        <span class="patient-id">
-                                                            <h:outputLabel value="#{psc.patientSample.barcodeGeneratedAt}" >
-                                                                <f:convertDateTime pattern="#{configOptionApplicationController.getShortTextValueByKey('Date Time Format for Barcode Generated Time in Sample Stickers','d/M/yy-hh:mm')}" ></f:convertDateTime>
-                                                            </h:outputLabel>
-                                                            &nbsp;&nbsp;
-                                                        </span>
-                                                    </h:panelGroup>
-                                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Patient PHN in Sample Stickers')}">
-                                                        <span class="patient-phn">
-                                                            #{psc.patientSample.patient.phn}
-                                                        </span>
-                                                    </h:panelGroup>
-                                                    <span class="patient-name">
-                                                        #{psc.patientSample.patient.person.name}&nbsp;&nbsp;
-                                                    </span>
-                                                </div>
-                                                <div class="patient-sample-info">
-                                                    <ui:repeat value="#{patientInvestigationController.getPatientSampleComponentsByPatientSample(psc.patientSample)}" var="psw">
-                                                        <span class="sample-component">
-                                                            #{psw.investigationComponant.name} &nbsp;&nbsp;
-                                                        </span>
-                                                    </ui:repeat>
-                                                </div>
-                                                <div class="barcode-info">
-                                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Barcode in Sample Stickers')}">
-                                                        <p:barcode value="#{psc.patientSample.idStr}" 
-                                                                   cache="false"
-                                                                   hrp="none"
-                                                                   type="#{configOptionApplicationController.getShortTextValueByKey('Sample Sticker - Barcode Type','code128')}" 
-                                                                   height="#{configOptionApplicationController.getShortTextValueByKey('Sample Sticker - Barcode Height in Pixles','80')}"
-                                                                   width="#{configOptionApplicationController.getShortTextValueByKey('Sample Sticker - Barcode Width in Pixles','300')}"
-                                                                   orientation="0" ></p:barcode>
-                                                    </h:panelGroup>
-                                                </div>
-                                            </div>
                                         </ui:repeat>
-                                    </h:panelGroup>
+                                    </h:panelGroup> 
+                                </h:panelGroup>
 
-                                </p:panel>
-                            </p:column>
-
-
-
+                            </div>
+                        </div>
 
 
-
-
-                        </p:dataTable>
+                    </div>
 
 
 
 
-                    </p:panel>
+
+
+
+
+
                 </h:form>
             </h:panelGroup>
         </ui:define>

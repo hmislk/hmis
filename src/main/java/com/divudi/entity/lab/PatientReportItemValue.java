@@ -35,6 +35,8 @@ public class PatientReportItemValue implements Serializable {
     InvestigationItem investigationItem;
     @ManyToOne
     PatientReport patientReport;
+    private String codeSystem;
+    private String codeSystemCode;
     String strValue;
     @Lob
     private String lobValue;
@@ -48,6 +50,8 @@ public class PatientReportItemValue implements Serializable {
     private String value;
     @Transient
     private String displayValue;
+    
+    
 
     public String getStrValue() {
         return strValue;
@@ -217,6 +221,22 @@ public class PatientReportItemValue implements Serializable {
 //        }
 //        return displayValue;
         return getValue();
+    }
+
+    public String getCodeSystem() {
+        return codeSystem;
+    }
+
+    public void setCodeSystem(String codeSystem) {
+        this.codeSystem = codeSystem;
+    }
+
+    public String getCodeSystemCode() {
+        return codeSystemCode;
+    }
+
+    public void setCodeSystemCode(String codeSystemCode) {
+        this.codeSystemCode = codeSystemCode;
     }
 
 }
