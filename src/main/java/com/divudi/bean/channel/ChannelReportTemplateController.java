@@ -642,6 +642,7 @@ public class ChannelReportTemplateController implements Serializable {
         long refundedPatientCount = 0;
         long onCallPatientCount = 0;
         long reservedBookingCount = 0;
+        long paidToDoctorCount = 0;
 
         if (billSessions == null || billSessions.isEmpty()) {
             sessionInstance.setBookedPatientCount(0L);
@@ -685,6 +686,7 @@ public class ChannelReportTemplateController implements Serializable {
                     onCallPatientCount++;
                 }
             }
+
         }
 
         // Set calculated counts to sessionInstance
@@ -695,32 +697,114 @@ public class ChannelReportTemplateController implements Serializable {
         sessionInstance.setRefundedPatientCount(refundedPatientCount);
         sessionInstance.setOnCallPatientCount(onCallPatientCount);
         sessionInstance.setReservedBookingCount(reservedBookingCount);
-
+        sessionInstance.setPaidToDoctorPatientCount(calculateSessionDoneFees(sessionInstance));
         // Assuming remainingPatientCount is calculated as booked - completed
         sessionInstance.setRemainingPatientCount(bookedPatientCount - completedPatientCount);
         sessionInstanceFacade.edit(sessionInstance);
     }
 
+    public Long calculateSessionDoneFees(SessionInstance si) {
+        if (si == null) {
+            JsfUtil.addErrorMessage("Select Specility");
+            return 0l;
+        }
+        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelPaid};
+        List<BillType> bts = Arrays.asList(billTypes);
+        HashMap hm = new HashMap();
+        String sql = " SELECT count(b) "
+                + " FROM BillFee b "
+                + " where type(b.bill)=:class "
+                + " and b.bill.retired=false "
+                + " and b.bill.paidAmount!=0 "
+                + " and b.fee.feeType=:ftp"
+                + " and b.bill.refunded=false "
+                + " and b.bill.cancelled=false "
+                + " and (b.feeValue - b.paidValue) > 0 "
+                + " and b.bill.billType in :bt "
+                + " and b.bill.singleBillSession.sessionInstance=:si"
+                + " and b.bill.singleBillSession.completed=:com";
+        sql += " order by b.bill.singleBillSession.serialNo ";
+        hm.put("si", si);
+        hm.put("bt", bts);
+        hm.put("ftp", FeeType.Staff);
+        hm.put("com", true);
+        hm.put("class", BilledBill.class);
+        return billFeeFacade.findLongByJpql(sql, hm, TemporalType.TIMESTAMP);
+    }
+
     public void processAndfillDailySessionCounts() {
         String j;
-        Map m = new HashMap();
+        Map<String, Object> m = new HashMap<>();
         rows = new ArrayList<>();
-        j = "select si "
+
+        // JPQL query
+        j = "select new com.divudi.data.ReportTemplateRow(si) "
                 + " from SessionInstance si "
                 + " where si.retired=false "
                 + " and si.sessionDate between :fd and :td ";
+
         if (institution != null) {
             m.put("ins", institution);
             j += " and si.institution=:ins ";
         }
-        
+
+        // Check for null dates before proceeding
+        if (fromDate == null || toDate == null) {
+            // Handle error or set default dates
+            return;  // or throw an appropriate exception
+        }
+
         m.put("fd", fromDate);
         m.put("td", toDate);
-        
-        sessionInstances = sessionInstanceFacade.findByJpql(j, m);
-        System.out.println("sessionInstance = " + sessionInstances);
-        for (SessionInstance si : sessionInstances) {
-            fillBillSessions(si);
+
+        // Retrieve list of report rows, ensure the list itself is not null
+        List<ReportTemplateRow> rs = (List<ReportTemplateRow>) billFacade.findLightsByJpql(j, m, TemporalType.DATE);
+        if (rs == null || rs.isEmpty()) {
+            // Handle empty or null result set
+            return;
+        }
+
+        // Initialize counters
+        Long long1 = 0L;
+        Long long2 = 0L;
+        Long long3 = 0L;
+        Long long4 = 0L;
+        Long long5 = 0L;
+        Long long6 = 0L;
+
+        // Iterate through results with null checks
+        for (ReportTemplateRow r : rs) {
+            if (r == null || r.getSessionInstance() == null) {
+                continue;  // Skip null or invalid entries
+            }
+
+            SessionInstance si = r.getSessionInstance();
+
+            // Safeguard against null values in `SessionInstance`
+            if (si != null) {
+                fillBillSessions(si);  // Make sure fillBillSessions() can handle null fields inside `si`
+
+                // Safely increment counters
+                long1 += si.getBookedPatientCount() != null ? si.getBookedPatientCount() : 0;
+                long2 += si.getPaidPatientCount() != null ? si.getPaidPatientCount() : 0;
+                long3 += si.getCompletedPatientCount() != null ? si.getCompletedPatientCount() : 0;
+                long4 += si.getCancelPatientCount() != null ? si.getCancelPatientCount() : 0;
+                long5 += si.getRefundedPatientCount() != null ? si.getRefundedPatientCount() : 0;
+                long6 += si.getRemainingPatientCount() != null ? si.getRemainingPatientCount() : 0;
+            }
+        }
+
+        // Ensure bundle is not null before setting values
+        if (bundle != null) {
+            bundle.setReportTemplateRows(rs);
+            bundle.setLong1(long1);
+            bundle.setLong2(long2);
+            bundle.setLong3(long3);
+            bundle.setLong4(long4);
+            bundle.setLong5(long5);
+            bundle.setLong6(long6);
+        } else {
+            // Handle null bundle (e.g., log an error or throw an exception)
         }
     }
 
