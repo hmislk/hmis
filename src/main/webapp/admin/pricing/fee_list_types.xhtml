@@ -20,7 +20,7 @@
                                         <table class="alignTop">
                                             <tr class="alignTop">
                                                 <td colspan="2" class="alignTop">
-                                                    <p:selectOneListbox id="lstItems" value="#{categoryController.current}" class="w-100">
+                                                    <p:selectOneListbox id="lstItems" filter="true" value="#{categoryController.current}" class="w-100">
                                                         <f:selectItems value="#{categoryController.feeListTypes}"
                                                                        var="r" itemLabel="#{r.name} " itemValue="#{r}" />
                                                         <f:ajax event="change" execute="lstItems" render="panelDetails" />
