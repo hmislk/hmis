@@ -25,13 +25,7 @@
                                              class="ui-button-success"
                                              action="#{dataUploadController.uploadRoutes()}"
                                              ajax="false"/>
-                            <p:commandButton value="Download Template" 
-                                             ajax="false" 
-                                             icon="fas fa-download"
-                                             class="ui-button-warning mx-2"
-                                             onclick="PrimeFaces.monitorDownload(start, stop);" >
-                                <p:fileDownload value="#{dataUploadController.templateForSupplierUpload}" />
-                            </p:commandButton>
+                           
 
                             <p:dialog modal="true" widgetVar="statusDialog" header="Status" draggable="false" closable="false" resizable="false">
                             </p:dialog>
