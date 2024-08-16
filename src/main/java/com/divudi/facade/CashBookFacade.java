@@ -4,7 +4,7 @@
  */
 package com.divudi.facade;
 
-import com.divudi.entity.Area;
+import com.divudi.entity.cashTransaction.CashBook;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -14,7 +14,7 @@ import javax.persistence.PersistenceContext;
  * @author Buddhika
  */
 @Stateless
-public class AreaFacade extends AbstractFacade<Area> {
+public class CashBookFacade extends AbstractFacade<CashBook> {
     @PersistenceContext(unitName = "hmisPU")
     private EntityManager em;
 
@@ -23,8 +23,8 @@ public class AreaFacade extends AbstractFacade<Area> {
         if(em == null){}return em;
     }
 
-    public AreaFacade() {
-        super(Area.class);
+    public CashBookFacade() {
+        super(CashBook.class);
     }
     
 }
