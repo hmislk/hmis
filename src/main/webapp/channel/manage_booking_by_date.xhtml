@@ -362,7 +362,8 @@
                                                         id="pay"
                                                         class="w-100"
                                                         value="#{bookingControllerViewScope.settlePaymentMethod}"
-                                                        >     
+                                                        >
+                                                        <f:selectItem itemLabel="Select Payment Method" ></f:selectItem>
                                                         <f:selectItems 
                                                             value="#{enumController.paymentMethodsForChannelSettling}"  
                                                             var="pm"
@@ -483,7 +484,7 @@
                                                         class="row"
                                                         layout="block"
                                                         rendered="#{bookingControllerViewScope.settlePaymentMethod eq 'Staff_Welfare'}" >
-                                                        <div class="my-1" id="credit">
+                                                        <div class="my-1" id="swf">
                                                             <div class="row mt-1">
                                                                 <div class="col-12">
                                                                     <p:autoComplete
@@ -662,7 +663,7 @@
                                                 <p:outputLabel value="Tenderd Amount" />
                                                 <h:panelGroup class="w-100 my-2" style="font-weight: bolder" >
                                                     <p:inputText id="paid" value="#{bookingControllerViewScope.strTenderedValue}">
-                                                        <p:ajax event="keyup" process=" paid" update="@this"/>
+                                                        <p:ajax event="keyup" process=" paid" update="balance"/>
                                                     </p:inputText>
                                                 </h:panelGroup>
 
