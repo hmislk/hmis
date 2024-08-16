@@ -116,10 +116,11 @@
                                           filteredValue="#{staffController.filteredStaff}" 
                                           scrollHeight="300"                               
                                           rowKey="#{s.id}" 
+                                          selectionMode="multiple"
                                           selection="#{staffController.selectedList}"
                                           rowIndexVar="i">
 
-                                <p:column  selectionMode="multiple" >                            
+                                <p:column   >                            
                                 </p:column>
 
                                 <p:column >
@@ -146,11 +147,11 @@
                                   var="i" scrollHeight="350"  editable="true"
                                   rowStyleClass="#{i.exist eq true ? 'exist':null}"
                                   scrollable="true"  selection="#{staffPaySheetComponentAllController.selectedStaffComponent}" 
-                                  rowKey="#{i.id}"  >
+                                  rowKey="#{i.id}" selectionMode="multiple" >
 
                         <p:ajax event="rowEdit" listener="#{staffPaySheetComponentAllController.onEdit}" />  
 
-                        <p:column  selectionMode="multiple" >                            
+                        <p:column  >                            
                         </p:column>
 
                         <p:column headerText="From" >

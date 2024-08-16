@@ -21,6 +21,7 @@ import static com.divudi.data.PaymentMethod.Slip;
 import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.data.inward.InwardChargeType;
 import com.divudi.data.inward.SurgeryBillType;
+import com.divudi.data.lab.PatientInvestigationStatus;
 import com.divudi.ejb.ServiceSessionBean;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillComponent;
@@ -3386,6 +3387,9 @@ public class BillBeanController implements Serializable {
 
         ptIx.setCreatedAt(Calendar.getInstance().getTime());
         ptIx.setCreater(wu);
+        
+        ptIx.setStatus(PatientInvestigationStatus.ORDERED);
+        
 
         ptIx.setBillItem(e.getBillItem());
         ptIx.setBillComponent(bc);

@@ -136,8 +136,21 @@
                                             </p:column>
 
 
-                                            <p:column headerText="Institution Code" >
+                                            <p:column headerText="Institution Code*" width="30em" >
                                                 <p:outputLabel value="#{bs.bill.creditCompany.institutionCode}"/>
+                                                <p:panel collapsed="false" toggleable="true"  >
+                                                    <h:panelGrid columns="2" >
+                                                        <h:outputLabel value="Bill Session ID" ></h:outputLabel>
+                                                        <h:outputLabel value="#{bs.id}" ></h:outputLabel>
+                                                        <h:outputLabel value="Bill ID" ></h:outputLabel>
+                                                        <h:outputLabel value="#{bs.bill.id}" ></h:outputLabel>
+                                                        <h:outputLabel value="Bill Type" ></h:outputLabel>
+                                                        <h:outputLabel value="#{bs.bill.billType}" ></h:outputLabel>
+                                                        <h:outputLabel value="Bill Type" ></h:outputLabel>
+                                                        <h:outputLabel value="#{bs.bill.billTypeAtomic}" ></h:outputLabel>
+
+                                                    </h:panelGrid>
+                                                </p:panel>
                                             </p:column>
                                             <p:column headerText="Actions">
                                                 <div class="d-flex">

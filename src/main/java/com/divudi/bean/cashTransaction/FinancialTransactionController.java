@@ -428,7 +428,11 @@ public class FinancialTransactionController implements Serializable {
         WebUser paramUser = nonClosedShiftStartFundBill.getCreater();
         Institution paramCreditCompany = null;
         Long paramStartId = nonClosedShiftStartFundBill.getId();
-        Long paramEndId = nonClosedShiftStartFundBill.getReferenceBill().getId();
+        Long paramEndId=null;
+        if(nonClosedShiftStartFundBill.getReferenceBill()!=null){
+            paramEndId = nonClosedShiftStartFundBill.getReferenceBill().getId();
+        }
+        
 
         ReportTemplateRowBundle tmpChannellingBundle = addChannellingByCategories(
                 channelingType,

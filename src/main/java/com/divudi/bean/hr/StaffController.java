@@ -1201,6 +1201,7 @@ public class StaffController implements Serializable {
 
         recreateModel();
         getItems();
+        fillSelectedItemsWithAllStaff();
     }
 
     public void updateFormItem(FormItemValue fi) {

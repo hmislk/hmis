@@ -94,6 +94,7 @@
                                         <h:outputLabel value="Bill Item Details" class="mx-2"></h:outputLabel>
                                     </f:facet>
                                     <p:dataTable id="dtF" rowIndexVar="rowIndex" value="#{billSearch.billItems}" var="b" 
+                                                 selectionMode="multiple"
                                                  rowKey="#{b.id}" selection="#{billSearch.refundingItems}"  >
                                         <p:ajax event="rowSelectCheckbox" listener="#{billSearch.calculateRefundTotal()}" 
                                                 update=":#{p:resolveFirstComponentWithId('txtTotal',view).clientId}" process="colSelect dtF"  />  
@@ -102,7 +103,7 @@
                                         <p:ajax event="toggleSelect" listener="#{billSearch.calculateRefundTotal()}" 
                                                 update=":#{p:resolveFirstComponentWithId('txtTotal',view).clientId}" process="colSelect dtF"  />  
 
-                                        <p:column id="colSelect"   selectionMode="multiple"    >
+                                        <p:column selectionBox="true" id="colSelect"       >
                                         </p:column>
 
                                         <p:column >

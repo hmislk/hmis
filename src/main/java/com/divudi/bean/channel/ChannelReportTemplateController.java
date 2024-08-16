@@ -56,6 +56,7 @@ import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.BillSessionFacade;
 import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.ServiceSessionFacade;
+import com.divudi.facade.SessionInstanceFacade;
 import com.divudi.facade.StaffFacade;
 import com.divudi.facade.WebUserFacade;
 import com.divudi.java.CommonFunctions;
@@ -87,6 +88,7 @@ public class ChannelReportTemplateController implements Serializable {
     private double repayTotalFee;
     private double taxTotal;
     private double total;
+    private List<SessionInstance> sessionInstances;
     ///////
     private List<BillSession> billSessions;
     private List<BillSession> billSessionsBilled;
@@ -194,6 +196,9 @@ public class ChannelReportTemplateController implements Serializable {
     ServiceSessionFacade serviceSessionFacade;
     @EJB
     ArrivalRecordFacade arrivalRecordFacade;
+
+    @EJB
+    SessionInstanceFacade sessionInstanceFacade;
 
     public void clearAll() {
         billedBills = new ArrayList<>();
@@ -603,6 +608,120 @@ public class ChannelReportTemplateController implements Serializable {
             }
         }
 
+    }
+
+    public void fillBillSessions(SessionInstance sessionInstance) {
+        BillType[] billTypes = {
+            BillType.ChannelAgent,
+            BillType.ChannelCash,
+            BillType.ChannelOnCall,
+            BillType.ChannelStaff,
+            BillType.ChannelCredit,
+            BillType.ChannelResheduleWithPayment,
+            BillType.ChannelResheduleWithOutPayment
+        };
+        List<BillType> bts = Arrays.asList(billTypes);
+        String sql = "Select bs "
+                + " From BillSession bs "
+                + " where bs.retired=false"
+                + " and bs.bill.billType in :bts"
+                + " and type(bs.bill)=:class "
+                + " and bs.sessionInstance=:ss "
+                + " order by bs.serialNo ";
+        HashMap<String, Object> hh = new HashMap<>();
+        hh.put("bts", bts);
+        hh.put("class", BilledBill.class);
+        hh.put("ss", sessionInstance);
+        billSessions = getBillSessionFacade().findByJpql(sql, hh, TemporalType.DATE);
+
+        // Initialize counts
+        long bookedPatientCount = 0;
+        long paidPatientCount = 0;
+        long completedPatientCount = 0;
+        long cancelPatientCount = 0;
+        long refundedPatientCount = 0;
+        long onCallPatientCount = 0;
+        long reservedBookingCount = 0;
+
+        if (billSessions == null || billSessions.isEmpty()) {
+            sessionInstance.setBookedPatientCount(0L);
+            sessionInstance.setPaidPatientCount(0L);
+            sessionInstance.setCompletedPatientCount(0L);
+            sessionInstance.setRemainingPatientCount(0L);
+            sessionInstanceFacade.edit(sessionInstance);
+            return;
+        }
+
+        // Loop through billSessions to calculate counts
+        for (BillSession bs : billSessions) {
+            if (bs == null) {
+                continue;
+            }
+
+            bookedPatientCount++; // Always increment if bs is not null
+
+            if (Boolean.TRUE.equals(bs.isReservedBooking())) {
+                reservedBookingCount++;
+            }
+
+            if (Boolean.TRUE.equals(bs.isCompleted())) {
+                completedPatientCount++;
+            }
+
+            if (bs.getPaidBillSession() != null) {
+                paidPatientCount++;
+            }
+
+            if (bs.getBill() != null) {
+                if (Boolean.TRUE.equals(bs.getBill().isCancelled())) {
+                    cancelPatientCount++;
+                }
+
+                if (Boolean.TRUE.equals(bs.getBill().isRefunded())) {
+                    refundedPatientCount++;
+                }
+
+                if (bs.getPaidBillSession() == null && !Boolean.TRUE.equals(bs.getBill().isCancelled())) {
+                    onCallPatientCount++;
+                }
+            }
+        }
+
+        // Set calculated counts to sessionInstance
+        sessionInstance.setBookedPatientCount(bookedPatientCount);
+        sessionInstance.setPaidPatientCount(paidPatientCount);
+        sessionInstance.setCompletedPatientCount(completedPatientCount);
+        sessionInstance.setCancelPatientCount(cancelPatientCount);
+        sessionInstance.setRefundedPatientCount(refundedPatientCount);
+        sessionInstance.setOnCallPatientCount(onCallPatientCount);
+        sessionInstance.setReservedBookingCount(reservedBookingCount);
+
+        // Assuming remainingPatientCount is calculated as booked - completed
+        sessionInstance.setRemainingPatientCount(bookedPatientCount - completedPatientCount);
+        sessionInstanceFacade.edit(sessionInstance);
+    }
+
+    public void processAndfillDailySessionCounts() {
+        String j;
+        Map m = new HashMap();
+        rows = new ArrayList<>();
+        j = "select si "
+                + " from SessionInstance si "
+                + " where si.retired=false "
+                + " and si.sessionDate between :fd and :td ";
+        if (institution != null) {
+            m.put("ins", institution);
+            j += " and si.institution=:ins ";
+        }
+        
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        
+        sessionInstances = sessionInstanceFacade.findByJpql(j, m);
+        System.out.println("sessionInstance = " + sessionInstances);
+        for (SessionInstance si : sessionInstances) {
+            fillBillSessions(si);
+        }
     }
 
     public void fillCategorySessionCounts() {
@@ -6007,6 +6126,14 @@ public class ChannelReportTemplateController implements Serializable {
         this.categories = categories;
     }
 
+    public List<SessionInstance> getSessionInstances() {
+        return sessionInstances;
+    }
+
+    public void setSessionInstances(List<SessionInstance> sessionInstances) {
+        this.sessionInstances = sessionInstances;
+    }
+
     public class DocPage {
 
         List<AvalabelChannelDoctorRow> table1;
@@ -7523,6 +7650,4 @@ public class ChannelReportTemplateController implements Serializable {
         this.doctorDayChannelCounts = doctorDayChannelCounts;
     }
 
-    
-    
 }

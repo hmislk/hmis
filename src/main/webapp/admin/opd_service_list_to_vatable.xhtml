@@ -37,11 +37,12 @@
                         <p:dataTable id="dtF" value="#{serviceController.items}" var="sv" 
                                      rowKey="#{sv.id}" selection="#{serviceController.itemsToRemove}" 
                                      rows="10"
+                                     selectionMode="multiple"
                                      paginator="true"
                                      paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                      rowsPerPageTemplate="5,10,15"
                                      >
-                            <p:column id="colSelect"  selectionMode="multiple" >
+                            <p:column id="colSelect" selectionBox="true"  >
                             </p:column>
 
                             <p:column headerText="Category" 

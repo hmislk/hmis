@@ -1788,7 +1788,7 @@ public class InvestigationItemController implements Serializable {
             return "";
         }
         listInvestigationItem();
-        return "/admin/lims/investigation_format";
+        return "/admin/lims/investigation_format?faces-redirect=true;";
     }
 
     public String toEditInvestigationFormatMultiple() {
@@ -1797,7 +1797,7 @@ public class InvestigationItemController implements Serializable {
             return "";
         }
         listInvestigationItem();
-        return "/admin/lims/investigation_format_multiple";
+        return "/admin/lims/investigation_format_multiple?faces-redirect=true;";
     }
 
     public ReportItemFacade getRiFacade() {
