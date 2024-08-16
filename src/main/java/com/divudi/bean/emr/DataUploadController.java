@@ -710,23 +710,19 @@ public class DataUploadController implements Serializable {
                 forCategoryName = forCategoryCell.getStringCellValue();
             }
             
-            Cell institutionCell = row.getCell(3);
-            if (institutionCell != null && institutionCell.getCellType() == CellType.STRING) {
-                institutionName = forCategoryCell.getStringCellValue();
-            }
             
-            Cell feeCell = row.getCell(4);
+            Cell feeCell = row.getCell(3);
             if (feeCell != null && feeCell.getCellType() == CellType.NUMERIC) {
                 fee = feeCell.getNumericCellValue();
             }
             
-            Cell ffeeCell = row.getCell(5);
+            Cell ffeeCell = row.getCell(4);
             if (ffeeCell != null && ffeeCell.getCellType() == CellType.NUMERIC) {
                 ffee = ffeeCell.getNumericCellValue();
             }
            
             
-            Cell discountAllowedCell = row.getCell(6);
+            Cell discountAllowedCell = row.getCell(5);
             if (discountAllowedCell != null && discountAllowedCell.getCellType() == CellType.STRING) {
                 discountAllowed = discountAllowedCell.getStringCellValue();
             }
@@ -735,13 +731,6 @@ public class DataUploadController implements Serializable {
             }else{
                 disAllowd=false;
             }
-            
-            if (institutionName==null || institutionName.trim().equals("")) {
-                institution=sessionController.getInstitution();
-            }else{
-                institution=institutionController.findAndSaveInstitutionByName(institutionName);
-            }
-            
             
             if (itemName == null || itemCode==null) {
                 JsfUtil.addErrorMessage("Item Name and Item Code cannot be null.");
@@ -772,7 +761,7 @@ public class DataUploadController implements Serializable {
         Itemfee.setForCategory(category);
         Itemfee.setItem(item);
         Itemfee.setFeeType(FeeType.OwnInstitution);
-        Itemfee.setInstitution(institution);
+        Itemfee.setInstitution(item.getInstitution());
         Itemfee.setFee(fee);
         Itemfee.setFfee(ffee);
         Itemfee.setDiscountAllowed(disAllowd);
