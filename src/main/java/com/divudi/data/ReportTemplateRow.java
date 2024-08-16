@@ -10,6 +10,7 @@ import com.divudi.entity.WebUser;
 import com.divudi.entity.channel.SessionInstance;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 /**
  *
@@ -17,6 +18,7 @@ import java.util.List;
  */
 public class ReportTemplateRow {
 
+    private String uuid;
     private String feeName;
     private String categoryName;
     private String toDepartmentName;
@@ -563,6 +565,17 @@ public class ReportTemplateRow {
 
     public void setReferringStaff(Staff referringStaff) {
         this.referringStaff = referringStaff;
+    }
+
+    public String getUuid() {
+        if (uuid == null) {
+            uuid = UUID.randomUUID().toString();
+        }
+        return uuid;
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
     }
 
 }
