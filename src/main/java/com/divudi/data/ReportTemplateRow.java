@@ -11,7 +11,6 @@ import com.divudi.entity.channel.SessionInstance;
 import java.util.Date;
 import java.util.List;
 
-
 /**
  *
  * @author buddhika
@@ -65,11 +64,32 @@ public class ReportTemplateRow {
     private Long endId;
     private SessionInstance sessionInstance;
     private Staff staff;
+    private Institution referringInstitution;
+    private Staff referringStaff;
 
     private List<BillTypeAtomic> btas;
 
     public ReportTemplateRow(SessionInstance sessionInstance) {
         this.sessionInstance = sessionInstance;
+    }
+
+    public ReportTemplateRow(Staff referringStaff, Institution referringInstitution, Long long1, Double rowValue) {
+        this.rowValue = rowValue;
+        this.long1 = long1;
+        this.referringInstitution = referringInstitution;
+        this.referringStaff = referringStaff;
+    }
+
+    public ReportTemplateRow(Staff referringStaff, Long long1, Double rowValue) {
+        this.rowValue = rowValue;
+        this.long1 = long1;
+        this.referringStaff = referringStaff;
+    }
+
+    public ReportTemplateRow(Institution referringInstitution, Long long1, Double rowValue) {
+        this.rowValue = rowValue;
+        this.long1 = long1;
+        this.referringInstitution = referringInstitution;
     }
 
     public ReportTemplateRow(Category c) {
@@ -148,7 +168,6 @@ public class ReportTemplateRow {
     public void setBillSession(BillSession billSession) {
         this.billSession = billSession;
     }
-    
 
     public ReportTemplateRow(String feeName, String categoryName, String toDepartmentName, String itemName, String paymentName, Double rowValue, Long rowCount) {
         this.feeName = feeName;
@@ -529,7 +548,21 @@ public class ReportTemplateRow {
         this.long6 = long6;
         this.staff = staff;
     }
-    
-    
+
+    public Institution getReferringInstitution() {
+        return referringInstitution;
+    }
+
+    public void setReferringInstitution(Institution referringInstitution) {
+        this.referringInstitution = referringInstitution;
+    }
+
+    public Staff getReferringStaff() {
+        return referringStaff;
+    }
+
+    public void setReferringStaff(Staff referringStaff) {
+        this.referringStaff = referringStaff;
+    }
 
 }

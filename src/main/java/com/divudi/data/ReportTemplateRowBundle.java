@@ -51,6 +51,8 @@ public class ReportTemplateRowBundle {
         }
         return reportTemplateRows;
     }
+    
+    
 
     public void setReportTemplateRows(List<ReportTemplateRow> reportTemplateRows) {
         this.reportTemplateRows = reportTemplateRows;

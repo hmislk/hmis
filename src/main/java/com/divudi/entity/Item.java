@@ -119,6 +119,7 @@ public class Item implements Serializable, Comparable<Item> {
     String sname;
     String tname;
     String code;
+    private String codeSystem;
     String barcode;
     private Long lastBarcode;
     String printName;
@@ -1406,6 +1407,8 @@ public class Item implements Serializable, Comparable<Item> {
         return forGender;
     }
 
+    
+    
     public void setForGender(String forGender) {
         this.forGender = forGender;
     }
@@ -1416,6 +1419,14 @@ public class Item implements Serializable, Comparable<Item> {
 
     public void setExpiryDate(Date expiryDate) {
         this.expiryDate = expiryDate;
+    }
+
+    public String getCodeSystem() {
+        return codeSystem;
+    }
+
+    public void setCodeSystem(String codeSystem) {
+        this.codeSystem = codeSystem;
     }
 
     static class ReportItemComparator implements Comparator<ReportItem> {

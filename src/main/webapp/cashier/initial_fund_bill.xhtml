@@ -80,7 +80,7 @@
                                                         <tr>
                                                             <th>Total Value</th>
                                                             <th>
-                                                                <p:inputText id="txtCashPaidValue" value="#{financialTransactionController.currentPayment.paidValue}" readonly="true" />
+                                                                <p:inputText id="txtCashPaidValue" value="#{financialTransactionController.currentPayment.paidValue}"  />
                                                             </th>
                                                         </tr>
                                                         <tr>
@@ -88,7 +88,7 @@
                                                         </tr>
                                                     </thead>
                                                     <tbody>
-                                                        <ui:repeat value="#{configOptionApplicationController.denominations}" var="denomination">
+                                                        <ui:repeat value="#{financialTransactionController.currentPayment.currencyDenominations}" var="denomination">
                                                             <tr>
                                                                 <td>
                                                                     <p:outputLabel value="#{denomination.value}:" class="m-2" />
@@ -207,7 +207,6 @@
                                         <h:outputText value="#{denomination}" />
                                         <br />
                                     </ui:repeat>
-                                    #{bp.currencyDenominationsJson}
                                 </p:column>
 
                                 <p:column headerText="Action" width="20%">

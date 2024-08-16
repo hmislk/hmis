@@ -915,7 +915,12 @@ public class ItemController implements Serializable {
             JsfUtil.addErrorMessage("Select a machine");
             return;
         }
-        String j = "select i from Item i where i.itemType=:t and i.machine=:m and i.retired=:r order by i.code";
+        String j = "select i "
+                + " from Item i "
+                + " where i.itemType=:t "
+                + " and i.machine=:m "
+                + " and i.retired=:r "
+                + " order by i.code";
         Map m = new HashMap();
         m.put("t", ItemType.AnalyzerTest);
         m.put("m", machine);
