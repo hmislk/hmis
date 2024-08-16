@@ -12,7 +12,7 @@
         <div class="container-fluid" >
             <div class="card" >
                 <div class="card-header" >
-                    <h2>Upload Institution Item Fees</h2>
+                    <h2>Upload Fee List Item Fees</h2>
                 </div>
 
                 <div class="card-body" >
@@ -21,7 +21,7 @@
                                       mode="simple"
                                       label="Choose File"/>
                         <p:commandButton value="Upload"
-                                         action="#{dataUploadController.uploadCollectingCentrePriceList()}"
+                                         action="#{dataUploadController.uploadFeeListItemFees}"
                                          ajax="false"/>
 
                     </h:form>
@@ -43,25 +43,24 @@
                                 <td>Item Name</td>
                             </tr>
                             <tr>
-                                <td>B</td>
-                                <td>For Institution</td>
-                            </tr>
-                            <tr>
-                                <td>D</td>
-                                <td>Fee</td>
+                                <td>C</td>
+                                <td>Fee List Type</td>
                             </tr>
                             <tr>
                                 <td>E</td>
-                                <td>Forign fee</td>
+                                <td>Fee</td>
                             </tr>
-                            
+                            <tr>
+                                <td>F</td>
+                                <td>foreign fee</td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
 
-       
+
 
     </ui:define>
 </ui:composition>
