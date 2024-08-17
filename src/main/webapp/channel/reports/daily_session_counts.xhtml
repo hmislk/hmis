@@ -88,18 +88,18 @@
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"  />
                                 </p:outputLabel>
                             </f:facet>
-                            <p:column width="2em">
-                                <f:facet name="header">
-                                    <p:outputLabel value="No" />
-                                </f:facet>
-                                <p:outputLabel value="#{i+1}" />
-                            </p:column>
-                            <p:column width="8em">
+                            <!--                            <p:column width="2em">
+                                                            <f:facet name="header">
+                                                                <p:outputLabel value="No" />
+                                                            </f:facet>
+                                                            <p:outputLabel value="#{i+1}" />
+                                                        </p:column>-->
+                            <p:column width="5em">
                                 <f:facet name="header">
                                     <p:outputLabel value="Date" />
                                 </f:facet>
                                 <p:outputLabel value="#{a.sessionInstance.sessionDate}" >
-                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"  />
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"  />
                                 </p:outputLabel>
                             </p:column>
                             <p:column>
@@ -126,47 +126,47 @@
                                 </f:facet>
                                 <p:outputLabel value="#{a.sessionInstance.originatingSession.category.name}" />
                             </p:column>
-                            <p:column width="4em">
+                            <p:column width="4em" style="text-align: center;">
                                 <f:facet name="header">
                                     <p:outputLabel value="Booked" />
                                 </f:facet>
-                                <p:outputLabel value="#{a.long1}" />
+                                <p:outputLabel value="#{a.sessionInstance.bookedPatientCount}" />
                             </p:column>
-                            <p:column>
+                            <p:column width="4em" style="text-align: center;">
                                 <f:facet name="header">
-                                    <p:outputLabel value="Paiyments Made" />
+                                    <p:outputLabel value="Payments Made" />
                                 </f:facet>
-                                <p:outputLabel value="#{a.long2}" />
+                                <p:outputLabel value="#{a.sessionInstance.paidPatientCount}" />
                             </p:column>
-                            <p:column width="4em">
+                            <p:column width="4em" style="text-align: center;">
                                 <f:facet name="header">
                                     <p:outputLabel value="Marked as Completed" />
                                 </f:facet>
-                                <p:outputLabel value="#{a.long3}" />
+                                <p:outputLabel value="#{a.sessionInstance.completedPatientCount}" />
                             </p:column>
-                            <p:column width="4em">
+                            <p:column width="4em" style="text-align: center;">
                                 <f:facet name="header">
                                     <p:outputLabel value="Cancelled" />
                                 </f:facet>
-                                <p:outputLabel value="#{a.long4}" />
+                                <p:outputLabel value="#{a.sessionInstance.cancelPatientCount}" />
                             </p:column>
-                            <p:column width="4em">
+                            <p:column width="4em" style="text-align: center;">
                                 <f:facet name="header">
                                     <p:outputLabel value="Refunded" />
                                 </f:facet>
-                                <p:outputLabel value="#{a.long5}" />
+                                <p:outputLabel value="#{a.sessionInstance.refundedPatientCount}" />
                             </p:column>
-                            <p:column width="4em">
+                            <p:column width="4em" style="text-align: center;">
+                                <f:facet name="header">
+                                    <p:outputLabel value="Paid to Doctor" />
+                                </f:facet>
+                                <p:outputLabel value="#{a.sessionInstance.paidToDoctorPatientCount}" />
+                            </p:column>
+                            <p:column width="4em" style="text-align: center;">
                                 <f:facet name="header">
                                     <p:outputLabel value="Remaining" />
                                 </f:facet>
-                                <p:outputLabel value="#{a.long6}" />
-                            </p:column>
-                             <p:column width="4em">
-                                <f:facet name="header">
-                                    <p:outputLabel value="Remaining" />
-                                </f:facet>
-                                <p:outputLabel value="#{a.long6}" />
+                                <p:outputLabel value="#{a.sessionInstance.remainingPatientCount}" />
                             </p:column>
                         </p:dataTable>
 
