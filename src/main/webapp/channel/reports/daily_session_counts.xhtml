@@ -77,14 +77,14 @@
                             rows="10">
                             <f:facet name="header">
                                 <p:outputLabel value="Channel Session Counts" />
-                                <p:outputLabel value="#{channelReportTemplateController.institution.name}" />
+                                <p:outputLabel class="mx-2" value="#{channelReportTemplateController.institution.name}" />
                                 <br></br>
                                 <p:outputLabel value="From :" />
-                                <p:outputLabel class="ml-2" value="#{channelReportTemplateController.fromDate}" >
+                                <p:outputLabel class="mx-2" value="#{channelReportTemplateController.fromDate}" >
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"  />
                                 </p:outputLabel>
-                                <p:outputLabel class="ml-5" value="To :" />
-                                <p:outputLabel class="ml-2" value="#{channelReportTemplateController.toDate}" >
+                                <p:outputLabel class="ml-4" value="To :" />
+                                <p:outputLabel class="mx-2" value="#{channelReportTemplateController.toDate}" >
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"  />
                                 </p:outputLabel>
                             </f:facet>
