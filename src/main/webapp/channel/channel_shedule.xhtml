@@ -204,17 +204,26 @@
                                                 </p:selectOneMenu>
                                                 <p:outputLabel value="Start Time"/>                        
                                                 <p:datePicker 
-                                                    pattern="HH:mm"
+                                                    id="dpStartTime"
+                                                    class="w-100" 
+                                                    inputStyleClass="w-100"  
                                                     value="#{channelScheduleController.current.startingTime}" 
-                                                    timeOnly="true">                            
+                                                    pattern="#{sessionController.applicationPreference.shortTimeFormat}" 
+                                                    timeOnly="true"
+                                                    > 
+                                                    <p:ajax event="change" process="dpStartTime" update="dpEndTime" listener="#{channelScheduleController.updateSessionEndTime()}"/>
                                                 </p:datePicker>
 
 
                                                 <p:outputLabel value="End Time"/>                        
-                                                <p:datePicker
+                                                <p:datePicker 
+                                                    class="w-100" 
+                                                    id="dpEndTime"
+                                                    inputStyleClass="w-100"  
                                                     value="#{channelScheduleController.current.endingTime}"
-                                                    pattern="HH:mm"
-                                                    timeOnly="true">                            
+                                                    pattern="#{sessionController.applicationPreference.shortTimeFormat}" 
+                                                    timeOnly="true"> 
+                                                    
                                                 </p:datePicker>
 
                                                 <p:outputLabel value="Max Number"/>
