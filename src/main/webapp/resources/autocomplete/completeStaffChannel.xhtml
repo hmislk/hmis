@@ -18,16 +18,17 @@
             value="#{cc.attrs.value}" 
             completeMethod="#{staffController.completeStaffCodeChannelWithOutResignOrRetierd}" 
             var="mys" 
+            maxResults="20"
             itemLabel="#{mys.person.nameWithTitle}" 
             itemValue="#{mys}"
             styleClass="mediuminput">   
-            <p:column headerText="Name">
+            <p:column headerText="Name" style="padding: 6px;">
                 #{mys.person.name}
             </p:column>
-            <p:column headerText="Code">
+            <p:column headerText="Code" style="padding: 6px;">
                 #{mys.code}
             </p:column>
-            <p:column headerText="EPF No">
+            <p:column headerText="EPF No" style="padding: 6px;">
                 #{mys.epfNo}
             </p:column>
         </p:autoComplete>
