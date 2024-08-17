@@ -1485,7 +1485,15 @@ public class LimsMiddlewareController {
     }
 
     public PatientSample patientSampleFromId(Long id) {
-        return patientSampleFacade.find(id);
+        PatientSample ps = patientSampleFacade.find(id);
+        if(ps!=null){
+            return ps;
+        }
+        String j = "Select ps from PatientSample ps "
+                + " where ps.sampleId=:sid ";
+        Map m = new HashMap<>();
+        m.put("sid", id);
+        return patientSampleFacade.findFirstByJpql(j,m);
     }
 
     public List<PatientSampleComponant> getPatientSampleComponents(PatientSample ps) {
