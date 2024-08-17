@@ -81,8 +81,16 @@
                                     <p:column headerText="OPD Bill No" filterBy="#{bi.paidForBillFee.bill.insId}">
                                         <h:outputLabel value="#{bi.paidForBillFee.bill.insId}" ></h:outputLabel>
                                     </p:column>
+                                    <p:column headerText="Billed At"  >
+                                        <h:outputLabel value="#{bi.paidForBillFee.bill.createdAt}" >
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                        </h:outputLabel>
+                                    </p:column> 
                                     <p:column headerText="Credit Company" filterBy="#{bi.paidForBillFee.bill.creditCompany.name}" >
                                         <h:outputLabel value="#{bi.paidForBillFee.bill.creditCompany.name}" ></h:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Client"  filterBy="#{bi.paidForBillFee.bill.patient.person.name}">
+                                        <h:outputLabel value="#{bi.paidForBillFee.bill.patient.person.name}" ></h:outputLabel>
                                     </p:column>
                                     <p:column headerText="Payment Bill No" filterBy="#{bi.bill.insId}">
                                         <h:outputLabel value="#{bi.bill.insId}" ></h:outputLabel>
@@ -115,11 +123,7 @@
                                             </h:outputLabel>
                                         </h:panelGroup>
                                     </p:column>  
-                                    <p:column headerText="Bill At"  >
-                                        <h:outputLabel value="#{bi.paidForBillFee.bill.createdAt}" >
-                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                        </h:outputLabel>
-                                    </p:column>  
+                                     
                                     <p:column headerText="Paid By" >
 
                                         <h:outputLabel value="#{bi.bill.creater.webUserPerson.name}" >                                      

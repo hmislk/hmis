@@ -290,6 +290,9 @@ public class ChannelBillController implements Serializable {
         b.setSingleBillItem(bi);
         b.setSingleBillSession(bs);
         getBillFacade().edit(b);
+        
+        getBillSession().getBill().setBillPaymentCompletelySettled(true);
+        getBillFacade().edit(getBillSession().getBill());
 
         createPayment(b, settlePaymentMethod);
 
@@ -608,7 +611,7 @@ public class ChannelBillController implements Serializable {
         temp.setBillTime(new Date());
         temp.setCreatedAt(new Date());
         temp.setCreater(getSessionController().getLoggedUser());
-
+        temp.setBillPaymentCompletelySettled(true);
         getBillFacade().create(temp);
 
         return temp;

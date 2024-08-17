@@ -660,15 +660,18 @@
 
                                 <h:panelGroup rendered="#{patientInvestigationController.listingEntity eq 'PATIENT_SAMPLES'}">
 
-                                    <p:dataTable 
-                                        selectionMode="multiple"
-                                        selection="#{patientInvestigationController.sele}"
-                                        value="#{patientInvestigationController.patientSamples}" var="ps" >
-                                        <p:column selectionBox="true" headerText="Sample ID">
+                                    <p:dataTable value="#{patientInvestigationController.patientSamples}" var="ps" >
+                                        <p:column headerText="Sample ID">
                                             <p:outputLabel value="#{ps.id}" ></p:outputLabel>
                                         </p:column>
                                         <p:column headerText="Sample Number">
-                                            <p:outputLabel value="#{ps.sampleId}" ></p:outputLabel>
+                                            <p:inputText id="txtSampleId" value="#{ps.sampleId}" />
+                                            <p:commandButton 
+                                                id="btnUpdateSampleId"
+                                                value="Update" 
+                                                action="#{patientSampleController.savePatientSample(ps)}" 
+                                                process="btnUpdateSampleId txtSampleId" >
+                                            </p:commandButton>
                                         </p:column>
                                         <p:column headerText="Details">
                                             <p:panel header="Details" collapsed="true" toggleable="true" >
@@ -693,7 +696,7 @@
                                                     <h:outputText value="#{ps.patientInvestigation.name}" />
 
                                                     <h:outputText value="Bill Amount" />
-                                                    <h:outputText value="#{ps.bill.deptId}" />
+                                                    <h:outputText value="#{ps.bill.insId}" />
                                                 </p:panelGrid>
 
                                                 <!-- Barcode Generation PanelGrid -->
@@ -917,6 +920,8 @@
                                                 </p:panelGrid>
 
                                             </p:panel>
+
+                                            <p:outputLabel value="#{ps.sampleId}" ></p:outputLabel>
                                         </p:column>
 
                                     </p:dataTable>
