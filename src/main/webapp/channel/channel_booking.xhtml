@@ -289,15 +289,15 @@
                             </p:column>
 
                             <p:column style="width: 20px!important;">
-                                <p:outputLabel class="badge badge-light" value="Credit" rendered="#{bs.bill.paidAmount eq 0}" style="color: red;"/>
-                                <p:outputLabel value="-On Call" rendered="#{bs.bill.paidAmount eq 0 and bs.bill.paymentMethod eq 'OnCall'}" style="color: red;"/>
+                                <p:outputLabel class="badge badge-light" value="Credit" rendered="#{!bs.bill.billPaymentCompletelySettled}" style="color: red;"/>
+                                <p:outputLabel value="-On Call" rendered="#{!bs.bill.billPaymentCompletelySettled and bs.bill.paymentMethod eq 'OnCall'}" style="color: red;"/>
                                 
-                                <p:outputLabel value="Paid" rendered="#{bs.bill.paidAmount ne 0}" style="color: green;"/>
-                                <p:outputLabel value="OnCall" rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'OnCall'}" style="margin-left: 5px; color: green;"/>
-                                <p:outputLabel value="-Card" rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paidBill.paymentMethod eq 'Card' or bs.bill.paidBill.paymentMethod eq 'Card'}" style="color: green;"/>
-                                <p:outputLabel value="-Cash" rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'Cash' or bs.bill.paidBill.paymentMethod eq 'Cash'}" style="color: green;"/>
-                                <p:outputLabel value="-Agent" rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paidBill.paymentMethod eq 'Agent'}"/>
-                                <p:outputLabel value="-Staff" rendered="#{bs.bill.paidAmount eq 0 and bs.bill.paymentMethod eq 'Staff'}" style="color: red;"/>
+                                <p:outputLabel value="Paid" rendered="#{bs.bill.billPaymentCompletelySettled}" style="color: green;"/>
+                                <p:outputLabel value="OnCall" rendered="#{bs.bill.billPaymentCompletelySettled and bs.bill.paymentMethod eq 'OnCall'}" style="margin-left: 5px; color: green;"/>
+                                <p:outputLabel value="-Card" rendered="#{bs.bill.billPaymentCompletelySettled and bs.bill.paidBill.paymentMethod eq 'Card' or bs.bill.paidBill.paymentMethod eq 'Card'}" style="color: green;"/>
+                                <p:outputLabel value="-Cash" rendered="#{bs.bill.billPaymentCompletelySettled and bs.bill.paymentMethod eq 'Cash' or bs.bill.paidBill.paymentMethod eq 'Cash'}" style="color: green;"/>
+                                <p:outputLabel value="-Agent" rendered="#{bs.bill.billPaymentCompletelySettled and bs.bill.paidBill.paymentMethod eq 'Agent'}" style="color: green;"/>
+                                <p:outputLabel value="-Staff" rendered="#{bs.bill.billPaymentCompletelySettled and bs.bill.paymentMethod eq 'Staff'}" style="color: green;"/>
                                 
                                 
                                 <!--<p:outputLabel value="Paid OnCall-Card" rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'OnCall' and bs.bill.paidBill.paymentMethod eq 'Card'}"/>-->
