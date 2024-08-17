@@ -106,13 +106,36 @@
                                                      selectionMode="single"
                                                      styleClass="w-100 fullHeightListbox">
 
-                                            <p:column headerText="Serial No" width="3em">
-                                                <h:outputText value="#{bs.serialNo}" />
+                                            <p:column headerText="Serial No" width="2em">
+                                                <h:outputLabel value="#{bs.serialNoStr}" ></h:outputLabel>
                                             </p:column>
 
-                                            <p:column headerText="Name" >
-                                                <h:outputText value="#{bs.bill.patient.person.nameWithTitle}" /> <br/>
-                                                <h:outputText style="font-size: 0.9em" value="(#{bs.bill.patient.person.smsNumber})" />
+                                            <p:column headerText="Name" width="25em">
+
+                                                <p:panel header="(#{bs.bill.patient.person.smsNumber})" collapsed="true" 
+                                                         toggleOrientation="vertical" toggleable="true"  >
+                                                    <f:facet name="header" >
+                                                        <h:outputText class="mr-5" value="#{bs.bill.patient.person.nameWithTitle}" />
+                                                        <p:spacer width="12" ></p:spacer>
+                                                        <h:outputText class="ml-5" style="font-size: 0.9em" value="(#{bs.bill.patient.person.smsNumber})" />
+                                                    </f:facet>
+
+                                                    <h:panelGrid columns="2" >
+                                                        <h:outputLabel value="Institution Code" ></h:outputLabel>
+                                                        <p:outputLabel value="#{bs.bill.creditCompany.institutionCode}"/>
+                                                        <h:outputLabel value="Bill Session ID" ></h:outputLabel>
+                                                        <h:outputLabel value="#{bs.id}" ></h:outputLabel>
+                                                        <h:outputLabel value="Bill ID" ></h:outputLabel>
+                                                        <h:outputLabel value="#{bs.bill.id}" ></h:outputLabel>
+                                                        <h:outputLabel value="Bill Type" ></h:outputLabel>
+                                                        <h:outputLabel value="#{bs.bill.billType}" ></h:outputLabel>
+                                                        <h:outputLabel value="Bill Type Atomic" ></h:outputLabel>
+                                                        <h:outputLabel value="#{bs.bill.billTypeAtomic}" ></h:outputLabel>
+                                                        <h:outputLabel value="Paid Bill ID" ></h:outputLabel>
+                                                        <h:outputLabel value="#{bs.bill.paidBill}" ></h:outputLabel>
+
+                                                    </h:panelGrid>
+                                                </p:panel>  
                                             </p:column>
 
                                             <p:column rendered="true" headerText="Status">
@@ -135,23 +158,6 @@
                                                 <p:outputLabel value="-Online Payment" rendered="#{bs.bill.paymentMethod eq 'OnlineSettlement'}" style="color: #0062cc;" />
                                             </p:column>
 
-
-                                            <p:column headerText="Institution Code*" width="30em" >
-                                                <p:outputLabel value="#{bs.bill.creditCompany.institutionCode}"/>
-                                                <p:panel collapsed="false" toggleable="true"  >
-                                                    <h:panelGrid columns="2" >
-                                                        <h:outputLabel value="Bill Session ID" ></h:outputLabel>
-                                                        <h:outputLabel value="#{bs.id}" ></h:outputLabel>
-                                                        <h:outputLabel value="Bill ID" ></h:outputLabel>
-                                                        <h:outputLabel value="#{bs.bill.id}" ></h:outputLabel>
-                                                        <h:outputLabel value="Bill Type" ></h:outputLabel>
-                                                        <h:outputLabel value="#{bs.bill.billType}" ></h:outputLabel>
-                                                        <h:outputLabel value="Bill Type" ></h:outputLabel>
-                                                        <h:outputLabel value="#{bs.bill.billTypeAtomic}" ></h:outputLabel>
-
-                                                    </h:panelGrid>
-                                                </p:panel>
-                                            </p:column>
                                             <p:column headerText="Actions">
                                                 <div class="d-flex">
                                                     <p:commandButton 
@@ -655,17 +661,20 @@
 
 
                                                 <p:outputLabel value="Start Time"/>                        
-                                                <p:datePicker class="w-100" inputStyleClass="w-100"  value="#{bookingControllerViewScope.selectedSessionInstance.startingTime}" 
-                                                              pattern="#{sessionController.applicationPreference.shortTimeFormat}" timeOnly="true"
-                                                              timeZone="Asia/Colombo">                            
+                                                <p:datePicker 
+                                                    value="#{bookingControllerViewScope.selectedSessionInstance.startingTime}" 
+                                                    pattern="#{sessionController.applicationPreference.shortTimeFormat}" 
+                                                    timeOnly="true">                            
                                                 </p:datePicker>
 
 
                                                 <p:outputLabel value="End Time"/>                        
-                                                <p:datePicker class="w-100" inputStyleClass="w-100"  value="#{bookingControllerViewScope.selectedSessionInstance.endingTime}"
-                                                              pattern="#{sessionController.applicationPreference.shortTimeFormat}" 
-                                                              timeOnly="true"
-                                                              timeZone="Asia/Colombo">                            
+                                                <p:datePicker 
+                                                    class="w-100" 
+                                                    inputStyleClass="w-100"  
+                                                    value="#{bookingControllerViewScope.selectedSessionInstance.endingTime}"
+                                                    pattern="#{sessionController.applicationPreference.shortTimeFormat}" 
+                                                    timeOnly="true">                            
                                                 </p:datePicker>
 
                                                 <p:outputLabel value="Max Number"/>
