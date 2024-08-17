@@ -5,8 +5,8 @@
     <jta-data-source>jdbc/sethma</jta-data-source>
     <exclude-unlisted-classes>false</exclude-unlisted-classes>
     <properties>
-      <property name="eclipselink.logging.level.sql" value="SEVERE"/>
-      <property name="eclipselink.logging.parameters" value="false"/>
+      <property name="eclipselink.logging.level.sql" value="FINE"/>
+      <property name="eclipselink.logging.parameters" value="true"/>
     </properties>
   </persistence-unit>
   
