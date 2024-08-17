@@ -175,7 +175,6 @@ public class ChannelScheduleController implements Serializable {
         }else{
             duration = 2;
         }
-        System.out.println("duration = " + duration);
         
         if (getCurrent().getStartingTime() == null) {
             getCurrent().setEndingTime(null);
