@@ -3483,6 +3483,7 @@ public class DataUploadController implements Serializable {
             fee.setDepartment(department);
             fee.setFeeType(FeeType.OwnInstitution);
             itemFeeFacade.create(fee);
+            System.out.println("fee = " + fee.getId());
 
         }
         return itemFees;
