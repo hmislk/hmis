@@ -1489,7 +1489,8 @@ public class LimsMiddlewareController {
         if(ps!=null){
             return ps;
         }
-        String j = "Select ps from PatientSample ps "
+        String j = "Select ps "
+                + " from PatientSample ps "
                 + " where ps.sampleId=:sid ";
         Map m = new HashMap<>();
         m.put("sid", id);
