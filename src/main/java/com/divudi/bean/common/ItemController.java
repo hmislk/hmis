@@ -35,6 +35,7 @@ import com.divudi.data.SessionNumberType;
 import com.divudi.data.Sex;
 import com.divudi.entity.UserPreference;
 import com.divudi.facade.DepartmentFacade;
+import com.divudi.facade.InvestigationFacade;
 import com.divudi.facade.ItemMappingFacade;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
@@ -74,6 +75,8 @@ public class ItemController implements Serializable {
     private static final long serialVersionUID = 1L;
     @EJB
     private ItemFacade itemFacade;
+    @EJB
+    private InvestigationFacade investigationFacade;
     @EJB
     private ItemFeeFacade itemFeeFacade;
     @EJB
@@ -708,6 +711,60 @@ public class ItemController implements Serializable {
                 item.setName(name);
                 getFacade().create(item);
             }
+            return item;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+    
+    public Investigation findAndCreateInvestigationByNameAndCode(String name, String code) {
+        try {
+            String jpql;
+            Map m = new HashMap();
+            jpql = "select i "
+                    + " from Investigation i "
+                    + " where i.retired=:ret "
+                    + " and i.code=:code "
+                    + " and i.name=:name";
+            m.put("ret", false);
+            m.put("name", name);
+            m.put("code", code);
+            Investigation item = (Investigation) itemFacade.findFirstByJpql(jpql, m);
+            System.out.println("item = " + item);
+            if (item == null) {
+                item = new Investigation();
+                item.setName(name);
+                item.setCode(code);
+                getFacade().create(item);
+            }
+            System.out.println("findAndCreateItemByNameAndCode (item) = " + item.getId());
+            return item;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+    
+    public Service findAndCreateServiceByNameAndCode(String name, String code) {
+        try {
+            String jpql;
+            Map m = new HashMap();
+            jpql = "select i "
+                    + " from Item i "
+                    + " where i.retired=:ret "
+                    + " and i.code=:code "
+                    + " and i.name=:name";
+            m.put("ret", false);
+            m.put("name", name);
+            m.put("code", code);
+            Service item = (Service) itemFacade.findFirstByJpql(jpql, m);
+            System.out.println("item = " + item);
+            if (item == null) {
+                item = new Service();
+                item.setName(name);
+                item.setCode(code);
+                getFacade().create(item);
+            }
+            System.out.println("findAndCreateItemByNameAndCode (item) = " + item.getId());
             return item;
         } catch (Exception e) {
             return null;
