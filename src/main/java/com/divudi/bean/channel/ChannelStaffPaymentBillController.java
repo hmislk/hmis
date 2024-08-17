@@ -580,7 +580,6 @@ public class ChannelStaffPaymentBillController implements Serializable {
     }
 
     public void calculateSessionDoneFees() {
-        Date startTime = new Date();
         if (getSessionInstance() == null) {
             JsfUtil.addErrorMessage("Select Specility");
             return;
