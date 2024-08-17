@@ -119,7 +119,7 @@
                                         <p:column >
                                             <p:selectOneMenu class="w-75" autoWidth="false" id="cmbPs" value="#{bookingController.paymentMethod}">
                                                 <f:selectItem itemLabel="Select Payment Method" ></f:selectItem>
-                                                <f:selectItems value="#{enumController.paymentMethodsForChannel}"/>
+                                                <f:selectItems value="#{enumController.paymentMethodsForChanneling}"/>
                                                 <f:ajax execute="@this" render="gdManageBookings :#{p:resolveFirstComponentWithId('lblSessionTotal',view).clientId}" event="change" listener="#{bookingController.generateSessions}" />
                                             </p:selectOneMenu>
                                             <h:outputScript>
