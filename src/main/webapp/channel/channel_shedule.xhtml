@@ -204,26 +204,17 @@
                                                 </p:selectOneMenu>
                                                 <p:outputLabel value="Start Time"/>                        
                                                 <p:datePicker 
-                                                    id="dpStartTime"
-                                                    class="w-100" 
-                                                    inputStyleClass="w-100"  
+                                                    pattern="HH:mm"
                                                     value="#{channelScheduleController.current.startingTime}" 
-                                                    pattern="#{sessionController.applicationPreference.shortTimeFormat}" 
-                                                    timeOnly="true"
-                                                    > 
-                                                    <p:ajax event="change" process="dpStartTime" update="dpEndTime" listener="#{channelScheduleController.updateSessionEndTime()}"/>
+                                                    timeOnly="true">                            
                                                 </p:datePicker>
 
 
                                                 <p:outputLabel value="End Time"/>                        
-                                                <p:datePicker 
-                                                    class="w-100" 
-                                                    id="dpEndTime"
-                                                    inputStyleClass="w-100"  
+                                                <p:datePicker
                                                     value="#{channelScheduleController.current.endingTime}"
-                                                    pattern="#{sessionController.applicationPreference.shortTimeFormat}" 
-                                                    timeOnly="true"> 
-                                                    
+                                                    pattern="HH:mm"
+                                                    timeOnly="true">                            
                                                 </p:datePicker>
 
                                                 <p:outputLabel value="Max Number"/>
