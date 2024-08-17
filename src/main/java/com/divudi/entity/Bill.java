@@ -364,7 +364,7 @@ public class Bill implements Serializable {
     
     private String localNumber;
     
-    
+    private boolean billPaymentCompletelySettled;
 
     private void generateBillPrintFromBillTemplate() {
         billPrint = "";
@@ -2237,6 +2237,14 @@ public class Bill implements Serializable {
 
     public void setIpOpOrCc(String ipOpOrCc) {
         this.ipOpOrCc = ipOpOrCc;
+    }
+
+    public boolean isBillPaymentCompletelySettled() {
+        return billPaymentCompletelySettled;
+    }
+
+    public void setBillPaymentCompletelySettled(boolean billPaymentCompletelySettled) {
+        this.billPaymentCompletelySettled = billPaymentCompletelySettled;
     }
     
     
