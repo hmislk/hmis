@@ -7178,6 +7178,17 @@ public class SearchController implements Serializable {
         createTableByKeywordForBillFees(billTypesAtomics, institution, department, null, null, null, null, category);
 
     }
+    
+    public String searchOpdProfessionalPayments() {
+        List<BillTypeAtomic> billTypesAtomics = new ArrayList<>();
+        billTypesAtomics.add(BillTypeAtomic.OPD_PROFESSIONAL_PAYMENT_BILL);
+        billTypesAtomics.add(BillTypeAtomic.OPD_PROFESSIONAL_PAYMENT_BILL_RETURN);
+        billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES);
+        billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES_RETURN);
+        createTableByKeywordForBillFee(billTypesAtomics, institution, department, null, null, null, null, staff);
+        createTableByKeywords(billTypesAtomics, institution, department, null, null, null, null, staff);
+        return "/opd/opd_doctor_payments_done";
+    }
 
     public void listOpdBatcuBills() {
         Date startTime = new Date();
@@ -7666,6 +7677,68 @@ public class SearchController implements Serializable {
 
     }
     
+    public void createTableByKeywords(List<BillTypeAtomic> billTypesAtomics,
+            Institution ins, Department dep,
+            Institution fromIns,
+            Department fromDep,
+            Institution toIns,
+            Department toDep,
+            Staff stf) {
+        bills = null;
+        String sql;
+        Map temMap = new HashMap();
+
+        sql = "select b "
+                + " from Bill b "
+                + " where b.billTypeAtomic in :billTypesAtomics "
+                + " and b.createdAt between :fromDate and :toDate "
+                + " and b.retired=false ";
+
+        if (ins != null) {
+            sql += " and b.institution=:ins ";
+            temMap.put("ins", ins);
+        }
+
+        if (dep != null) {
+            sql += " and b.department=:dep ";
+            temMap.put("dep", dep);
+        }
+
+        if (toDep != null) {
+            sql += " and b.toDepartment=:todep ";
+            temMap.put("todep", toDep);
+        }
+
+        if (fromDep != null) {
+            sql += " and b.fromDepartment=:fromdep ";
+            temMap.put("fromdep", fromDep);
+        }
+
+        if (fromIns != null) {
+            sql += " and b.fromInstitution=:fromins ";
+            temMap.put("fromins", fromIns);
+        }
+
+        if (toIns != null) {
+            sql += " and b.toInstitution=:toins ";
+            temMap.put("toins", toIns);
+        }
+        
+        if (stf != null) {
+            sql += " and b.toStaff=:staff ";
+            temMap.put("staff", stf);
+        }
+
+        sql += " order by b.createdAt desc  ";
+//    
+        temMap.put("billTypesAtomics", billTypesAtomics);
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+
+        bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
+
+    }
+    
     public void createTableByKeywordForBillFees(List<BillTypeAtomic> billTypesAtomics,
             Institution ins, Department dep,
             Institution fromIns,
@@ -7750,6 +7823,78 @@ public class SearchController implements Serializable {
         if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
             sql += " and  ((bf.bill.total) like :total )";
             temMap.put("total", "%" + getSearchKeyword().getTotal().trim().toUpperCase() + "%");
+        }
+
+        sql += " order by bf.bill.createdAt desc  ";
+
+        temMap.put("billTypesAtomics", billTypesAtomics);
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+
+        billFees = getBillFeeFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
+        System.out.println("Bill fees retrieved: " + billFees.size());
+    }
+    
+    public void createTableByKeywordForBillFee(List<BillTypeAtomic> billTypesAtomics,
+            Institution ins, Department dep,
+            Institution fromIns,
+            Department fromDep,
+            Institution toIns,
+            Department toDep,
+            Staff stf){
+        createTableByKeywordBillFee(billTypesAtomics, ins, dep, fromIns, fromDep, toIns, toDep, stf);
+    }
+    
+    public void createTableByKeywordBillFee(List<BillTypeAtomic> billTypesAtomics,
+            Institution ins, Department dep,
+            Institution fromIns,
+            Department fromDep,
+            Institution toIns,
+            Department toDep,
+            Staff stf) {
+
+        String sql;
+        Map temMap = new HashMap();
+
+        sql = "select bf "
+                + " from BillFee bf "
+                + " where bf.bill.billTypeAtomic in :billTypesAtomics "
+                + " and bf.bill.createdAt between :fromDate and :toDate "
+                + " and bf.bill.retired=false ";
+
+        if (ins != null) {
+            sql += " and bf.bill.institution=:ins ";
+            temMap.put("ins", ins);
+        }
+
+        if (dep != null) {
+            sql += " and bf.bill.department=:dep ";
+            temMap.put("dep", dep);
+        }
+
+        if (toDep != null) {
+            sql += " and bf.bill.toDepartment=:todep ";
+            temMap.put("todep", toDep);
+        }
+
+        if (fromDep != null) {
+            sql += " and bf.bill.fromDepartment=:fromdep ";
+            temMap.put("fromdep", fromDep);
+        }
+
+        if (fromIns != null) {
+            sql += " and bf.bill.fromInstitution=:fromins ";
+            temMap.put("fromins", fromIns);
+        }
+
+        if (toIns != null) {
+            sql += " and bf.bill.toInstitution=:toins ";
+            temMap.put("toins", toIns);
+        }
+
+        if (stf != null) {
+            sql += " and bf.bill.toStaff=:staff ";
+            temMap.put("staff", stf);
         }
 
         sql += " order by bf.bill.createdAt desc  ";
