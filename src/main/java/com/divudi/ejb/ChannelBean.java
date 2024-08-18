@@ -568,7 +568,114 @@ public class ChannelBean {
 //
 //        return createdSessions;
 //    }
+    
     public List<SessionInstance> generateSesionInstancesFromServiceSessions(List<ServiceSession> inputSessions, Date d) {
+        int sessionDayCount = 0;
+        List<SessionInstance> sessionInstances = new ArrayList<>();
+        if (inputSessions == null || inputSessions.isEmpty()) {
+            return sessionInstances;
+        }
+
+        for (ServiceSession ss : inputSessions) {
+            Date startDate = new Date();
+            Calendar cToDate = Calendar.getInstance();
+            int numberOfDaysInAdvance;
+            if (ss.getNumberOfDaysForAutomaticInstanceCreation() == null) {
+                numberOfDaysInAdvance = 30;
+            } else {
+                numberOfDaysInAdvance = ss.getNumberOfDaysForAutomaticInstanceCreation();
+            }
+            cToDate.add(Calendar.DATE, numberOfDaysInAdvance);
+            Date endDate = cToDate.getTime();
+
+            Calendar cWorkingDate = Calendar.getInstance();
+            cWorkingDate.setTime(startDate);
+
+            // Reset time components for startDate
+            cWorkingDate.set(Calendar.HOUR_OF_DAY, 0);
+            cWorkingDate.set(Calendar.MINUTE, 0);
+            cWorkingDate.set(Calendar.SECOND, 0);
+            cWorkingDate.set(Calendar.MILLISECOND, 0);
+
+            int rowIndex = 0;
+
+            while (cWorkingDate.getTime().before(endDate) || cWorkingDate.getTime().equals(endDate)) {
+                Date workingDate = cWorkingDate.getTime();
+                boolean eligibleDate = false;
+                // Reset time components for sessionDate
+
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTime(workingDate);
+
+                if (ss.getSessionDate() == null) {
+                    int workingDateWeekday = calendar.get(Calendar.DAY_OF_WEEK);
+                    if (workingDateWeekday == ss.getSessionWeekday()) {
+                        eligibleDate = true;
+                    }
+                } else {
+                    Calendar cSessionDate = Calendar.getInstance();
+                    cSessionDate.setTime(ss.getSessionDate());
+                    cSessionDate.set(Calendar.HOUR_OF_DAY, 0);
+                    cSessionDate.set(Calendar.MINUTE, 0);
+                    cSessionDate.set(Calendar.SECOND, 0);
+                    cSessionDate.set(Calendar.MILLISECOND, 0);
+                    if (cSessionDate.getTime().equals(workingDate)) {
+                        eligibleDate = true;
+                    }
+                }
+
+                if (eligibleDate) {
+                    String jpql = "select i "
+                            + " from SessionInstance i "
+                            + " where i.originatingSession=:os "
+                            + " and i.retired=:ret "
+                            + " and i.sessionDate=:sd";
+
+                    Map m = new HashMap();
+                    m.put("ret", false);
+                    m.put("os", ss);
+                    m.put("sd", workingDate);
+
+                    SessionInstance si = sessionInstanceFacade.findFirstByJpql(jpql, m, TemporalType.DATE);
+
+                    if (si == null) {
+                        si = createSessionInstancesForServiceSession(ss, workingDate);
+                        if (si.getId() == null) {
+                            sessionInstanceFacade.create(si);
+                        } else {
+                            sessionInstanceFacade.edit(si);
+                        }
+                    }
+
+//                    si.setDisplayCount(getBillSessionsCount(si));
+//                    si.setTransDisplayCountWithoutCancelRefund(getBillSessionsCountWithOutCancelRefund(si));
+//                    si.setTransCreditBillCount(getBillSessionsCountCrditBill(si));
+                    si.setStaff(ss.getStaff());
+                    si.setTransRowNumber(rowIndex++);
+
+                    sessionInstances.add(si);
+                }
+
+                cWorkingDate.add(Calendar.DATE, 1); // Increment the date
+            }
+        }
+        Collections.sort(sessionInstances, new Comparator<SessionInstance>() {
+            @Override
+            public int compare(SessionInstance s1, SessionInstance s2) {
+                int dateCompare = s1.getSessionDate().compareTo(s2.getSessionDate());
+                if (dateCompare != 0) {
+                    return dateCompare;
+                } else {
+                    // Assuming ServiceSession has a method to get a navigateToSessionView identifier or name for comparison
+                    return s1.getOriginatingSession().getName().compareTo(s2.getOriginatingSession().getName());
+                }
+            }
+        });
+        return sessionInstances;
+    }
+
+    
+    public List<SessionInstance> generateSesionInstancesFromServiceSessions(List<ServiceSession> inputSessions) {
         int sessionDayCount = 0;
         List<SessionInstance> sessionInstances = new ArrayList<>();
         if (inputSessions == null || inputSessions.isEmpty()) {

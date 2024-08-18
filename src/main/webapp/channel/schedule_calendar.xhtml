@@ -20,16 +20,63 @@
                     </div>
                 </f:facet>
 
-                <div style="margin-left: 8%; margin-right: 8%;">
-                    
+                <div class="d-flex gap-2 mb-3 justify-content-center">
+                    <p:autoComplete
+                        completeMethod="#{specialityController.completeDoctorSpeciality}"
+                        var="r"
+                        value="#{bookingControllerViewScope.speciality}"
+                        class="w-25"
+                        inputStyleClass="w-100"
+                        itemLabel="#{r.name}"
+                        itemValue="#{r}"
+                        placeholder="Select Speciality"
+                        forceSelection="true">
+                        <p:ajax process="@this" update="specialityStaff"/>
+                    </p:autoComplete>
+
+                    <p:autoComplete
+                        id="specialityStaff"
+                        completeMethod="#{bookingControllerViewScope.specialityStaff()}"
+                        var="r"
+                        value="#{bookingControllerViewScope.consultant}"
+                        class="w-25"
+                        inputStyleClass="w-100"
+                        itemLabel="#{r.person.name}"
+                        itemValue="#{r}"
+                        placeholder="Select Consultant"
+                        forceSelection="true">
+                    </p:autoComplete>
+
+                    <p:commandButton 
+                        value="Find Sessions"
+                        icon="fa fa-search"
+                        action="#{bookingControllerViewScope.findSessionsForCalendar()}"
+                        class="ui-button-warning"
+                        >
+                        <p:ajax process="@this" update="schedule test"/>
+                    </p:commandButton>
                 </div>
-                <p:schedule 
-                    id="schedule" 
-                    value="#{bookingControllerViewScope.eventModel}" 
-                    widgetVar="myschedule"
-                    timeZone="#{bookingControllerViewScope.serverTimeZone}" 
-                    clientTimeZone="#{bookingControllerViewScope.serverTimeZone}">
-                </p:schedule>
+                <h:panelGroup id="test">
+                    <ui:repeat value="#{bookingControllerViewScope.channelModel.events}" var="ev" >
+                        <div class="d-flex gap-5">
+                            <h:outputLabel value="#{ev.startDate}" ></h:outputLabel>
+                        <h:outputLabel value="#{ev.endDate}" ></h:outputLabel>
+                        </div>
+                        
+                    </ui:repeat>
+
+                </h:panelGroup>
+
+                <div style="margin-left: 4%; margin-right: 4%;">
+                    <p:schedule 
+                        id="schedule"
+                        value="#{bookingControllerViewScope.channelModel}" 
+                        widgetVar="myschedule"
+                        timeZone="#{bookingControllerViewScope.serverTimeZone}" 
+                        clientTimeZone="#{bookingControllerViewScope.serverTimeZone}">
+                    </p:schedule>
+                </div>
+
 
             </p:panel>
 
