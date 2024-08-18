@@ -19,6 +19,7 @@
                                                 class="w-100"
                                                 ajax="false" 
                                                 value="Base Item Fees"
+                                                icon="fa fa-cog" 
                                                 actionListener="#{viewScopeDataTransferController.makeAdminFeesAsPreviousPage()}"
                                                 action="#{itemFeeManager.navigateToItemFees()}">
                                             </p:commandButton>
@@ -27,14 +28,15 @@
                                                 class="w-100"
                                                 ajax="false" 
                                                 value="Fee Lists"
+                                                icon="fa fa-list" 
                                                 action="#{categoryController.navigateToManageFeeListTypes()}">
                                             </p:commandButton>
 
-                                            
                                             <p:commandButton 
                                                 class="w-100"
                                                 ajax="false" 
                                                 value="Item Fees for Sites"
+                                                icon="fa fa-building" 
                                                 action="#{itemFeeManager.navigateToForSiteItemFees()}">
                                             </p:commandButton>
 
@@ -42,6 +44,7 @@
                                                 class="w-100"
                                                 ajax="false" 
                                                 value="Item Fees for Collecting Centres"
+                                                icon="fa fa-map-marker" 
                                                 action="#{itemFeeManager.navigateToCollectingCentreItemFees()}">
                                             </p:commandButton>
 
@@ -49,8 +52,10 @@
                                                 class="w-100"
                                                 ajax="false" 
                                                 value="Item Fees for Lists"
+                                                icon="fa fa-file-alt" 
                                                 action="#{itemFeeManager.navigateToFeeListFees()}">
                                             </p:commandButton>
+
 
                                             <p:commandButton
                                                 class="w-100"
@@ -86,35 +91,35 @@
                                                 value="Upload Item Fees"
                                                 action="#{itemFeeManager.navigateToUploadItemFees()}">
                                             </p:commandButton>
-                                            
+
                                             <p:commandButton 
                                                 class="w-100"
                                                 ajax="false"
                                                 value="Upload fee list types"
                                                 action="#{itemFeeManager.navigateToUploadFeeListType()}">
                                             </p:commandButton>
-                                            
+
                                             <p:commandButton 
                                                 class="w-100"
                                                 ajax="false"
                                                 value="Upload Institution Item Fees"
                                                 action="#{itemFeeManager.navigateToUploadCollectingCentreFeeList()}">
                                             </p:commandButton>
-                                            
-                                             <p:commandButton 
+
+                                            <p:commandButton 
                                                 class="w-100"
                                                 ajax="false"
                                                 value="Upload fee list Item Fees"
                                                 action="#{itemFeeManager.navigateToUploadFeeListItemFees}">
                                             </p:commandButton>
-                                            
-                                             <p:commandButton 
+
+                                            <p:commandButton 
                                                 class="w-100"
                                                 ajax="false"
                                                 value="Upload Collection Centre Price List"
                                                 action="#{itemFeeManager.navigateToUploadCollectingCentreFeeList()}">
                                             </p:commandButton>
-                                            
+
                                             <p:commandButton 
                                                 class="w-100"
                                                 ajax="false"
@@ -146,14 +151,14 @@
                                                 value="Package Names"
                                                 action="#{packageNameController.navigateToPackageNames()}">
                                             </p:commandButton>
-                                            
+
                                             <p:commandButton 
                                                 class="w-100"
                                                 ajax="false" 
                                                 value="Add Item to Package"
                                                 action="#{packageItemController.navigateToPackageItemList()}">
                                             </p:commandButton>
-                                            
+
                                             <p:commandButton 
                                                 class="w-100"
                                                 ajax="false" 
