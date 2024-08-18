@@ -82,6 +82,7 @@
                                 value="To Add Booking" 
                                 icon="fas fa-plus"
                                 class="ui-button-success"
+                                actionListener="#{bookingController.makeNull()}"
                                 disabled="#{bookingController.selectedSessionInstance.cancelled or bookingController.selectedSessionInstance.completed}"
                                 action="#{bookingController.navigateToAddBooking()}"
                                 />
