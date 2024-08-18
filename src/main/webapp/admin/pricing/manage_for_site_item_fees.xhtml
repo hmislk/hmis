@@ -60,22 +60,26 @@
                                         listener="#{itemFeeManager.fillForSiteFees()}"></p:ajax>
                             </p:autoComplete>
 
-                            <!-- Display Local Fee for the selected Item and Site -->
-                            <p:outputLabel value="Local Fee" />
-                            <p:inputText 
-                                id="localFee" 
-                                value="#{feeValueController.getFeeForLocals(itemFeeManager.item, itemFeeManager.forSite)}" 
-                                class="w-100">
-                                <f:convertNumber pattern="#,##0.00" />
-                            </p:inputText>
 
-                            <!-- Display Foreigner Fee for the selected Item and Site -->
-                            <p:outputLabel value="Foreigner Fee" />
-                            <p:inputText id="foreignerFee" 
-                                         value="#{feeValueController.getFeeForForeigners(itemFeeManager.item, itemFeeManager.forSite)}" 
-                                         class="w-100">
-                                <f:convertNumber pattern="#,##0.00" />
-                            </p:inputText>
+                            <h:panelGroup id="localFee" rendered="#{itemFeeManager.item ne null and itemFeeManager.forSite ne null}" >
+                                <p:outputLabel value="Local Fee" />
+                                <p:inputText 
+                                    value="#{feeValueController.getFeeForLocals(itemFeeManager.item, itemFeeManager.forSite)}" 
+                                    class="w-100">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </p:inputText>
+                            </h:panelGroup>
+
+
+
+                            <h:panelGroup id="foreignerFee"  rendered="#{itemFeeManager.item ne null and itemFeeManager.forSite ne null}" >
+                                <p:outputLabel value="Foreigner Fee" />
+                                <p:inputText 
+                                    value="#{feeValueController.getFeeForForeigners(itemFeeManager.item, itemFeeManager.forSite)}" 
+                                    class="w-100">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </p:inputText>
+                            </h:panelGroup>
 
                         </p:panelGrid>
 
@@ -96,7 +100,7 @@
                             <f:facet name="header" >
                                 <p:outputLabel value="Adding a new Fee" class="mr-5"></p:outputLabel>
                                 <p:commandButton value="Save" 
-                                                 action="#{itemFeeManager.addNewCollectingCentreFee()}" 
+                                                 action="#{itemFeeManager.addNewForSiteFee()}" 
                                                  style="margin-left: 30px;" 
                                                  update="gpFees dlg msg tblFees gpTotals gpTotalsF"
                                                  process="gpDetail @this"

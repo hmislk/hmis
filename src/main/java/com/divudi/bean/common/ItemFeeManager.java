@@ -552,7 +552,7 @@ public class ItemFeeManager implements Serializable {
         itemFee = new ItemFee();
         itemFees = null;
 
-        fillForCollectingCentreFees();
+        fillForSiteFees();
         JsfUtil.addSuccessMessage("New Fee Added for Collecting Centre");
     }
 
