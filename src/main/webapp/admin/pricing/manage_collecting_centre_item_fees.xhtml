@@ -19,16 +19,16 @@
                     <p:panel>
                         <f:facet name="header">
                             <h:outputText styleClass="fa fa-fw fa-money-bill-wave"></h:outputText>
-                            <p:outputLabel class="m-2">Manage Collecting Centre Items Fees</p:outputLabel>
+                            <p:outputLabel class="m-2">Manage For Site Items Fees</p:outputLabel>
 
                         </f:facet>
                         <p:panelGrid columns="2" class="w-100" >
 
-                            <p:outputLabel value="Select Collecting Centre" />
+                            <p:outputLabel value="Select Site" />
                             <p:autoComplete 
-                                value="#{itemFeeManager.collectingCentre}" 
+                                value="#{itemFeeManager.forSite}" 
                                 forceSelection="true" id="acColl"
-                                completeMethod="#{institutionController.completeCollectingCenter}" 
+                                completeMethod="#{institutionController.completeSites}" 
                                 var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" 
                                 maxResults="10"
                                 class="w-100 mb-1"
@@ -36,7 +36,7 @@
                                 <p:ajax event="itemSelect" 
                                         process="@this" 
                                         update="gpFees gpTotals gpTotalsF" 
-                                        listener="#{itemFeeManager.fillForInstitutionFees()}"></p:ajax>
+                                        listener="#{itemFeeManager.fillForSiteFees()}"></p:ajax>
                                 <p:column headerText="Code" style="padding: 6px;">#{vt.institutionCode}</p:column>
                                 <p:column headerText="Name" style="padding: 6px;">#{vt.name}</p:column>
                             </p:autoComplete>
@@ -58,7 +58,7 @@
                                 <p:ajax event="itemSelect" 
                                         process="@this" 
                                         update="gpFees gpTotals gpTotalsF" 
-                                        listener="#{itemFeeManager.fillForInstitutionFees()}"></p:ajax>
+                                        listener="#{itemFeeManager.fillForSiteFees()}"></p:ajax>
                                 <p:column headerText="Type" style="padding: 6px;" >
                                     <p:outputLabel value="#{ix.class.simpleName}" ></p:outputLabel>
                                 </p:column>
@@ -85,7 +85,7 @@
                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                 </p:inputText>
                                 <p:spacer width="10" ></p:spacer>
-                                <p:outputLabel value="For Collecting Centre" ></p:outputLabel>
+                                <p:outputLabel value="For Site Centre" ></p:outputLabel>
                                 <p:inputText id="gpTotalsForeginor" value="#{itemFeeManager.totalItemFee}" class="w-100">
                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                 </p:inputText>

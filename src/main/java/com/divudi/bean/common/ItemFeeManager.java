@@ -47,6 +47,7 @@ public class ItemFeeManager implements Serializable {
     ItemFee itemFee;
     ItemFee removingFee;
     private Institution collectingCentre;
+    private Institution forSite;
     private Category feeListType;
 
     List<ItemFee> itemFees;
@@ -307,6 +308,25 @@ public class ItemFeeManager implements Serializable {
                 .mapToDouble(ItemFee::getFfee)
                 .sum();
     }
+    
+    public void fillForSiteFees() {
+        if (forSite == null) {
+            itemFees = null;
+            totalItemFee = 0.0;
+            totalItemFeeForForeigners = 0.0;
+            return;
+        }
+        itemFees = fillFees(item, forSite);
+        totalItemFee = itemFees.stream()
+                .filter(Objects::nonNull)
+                .mapToDouble(ItemFee::getFee)
+                .sum();
+        totalItemFeeForForeigners = itemFees.stream()
+                .filter(Objects::nonNull)
+                .mapToDouble(ItemFee::getFfee)
+                .sum();
+    }
+    
     
     public void fillForForCategoryFees() {
         if (feeListType == null) {
@@ -654,6 +674,15 @@ public class ItemFeeManager implements Serializable {
     public void setFeeListType(Category feeListType) {
         this.feeListType = feeListType;
     }
+
+    public Institution getForSite() {
+        return forSite;
+    }
+
+    public void setForSite(Institution forSite) {
+        this.forSite = forSite;
+    }
+    
     
     
 
