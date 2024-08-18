@@ -698,7 +698,6 @@ public class ChannelReportTemplateController implements Serializable {
         sessionInstance.setOnCallPatientCount(onCallPatientCount);
         sessionInstance.setReservedBookingCount(reservedBookingCount);
         sessionInstance.setPaidToDoctorPatientCount(calculateSessionDoneFees(sessionInstance));
-        // Assuming remainingPatientCount is calculated as booked - completed
         sessionInstance.setRemainingPatientCount(bookedPatientCount - completedPatientCount);
         sessionInstanceFacade.edit(sessionInstance);
     }
@@ -779,6 +778,7 @@ public class ChannelReportTemplateController implements Serializable {
         Long long4 = 0L;
         Long long5 = 0L;
         Long long6 = 0L;
+        Long long7 = 0L;
 
         System.out.println("Processing result rows...");
         for (ReportTemplateRow r : rs) {
@@ -802,7 +802,7 @@ public class ChannelReportTemplateController implements Serializable {
             long cancelCount = si.getCancelPatientCount() != null ? si.getCancelPatientCount() : 0;
             long refundedCount = si.getRefundedPatientCount() != null ? si.getRefundedPatientCount() : 0;
             long remainingCount = si.getRemainingPatientCount() != null ? si.getRemainingPatientCount() : 0;
-
+            long paidToDoctorCount = si.getPaidToDoctorPatientCount() != null ? si.getPaidToDoctorPatientCount() : 0;
             System.out.println("Booked: " + bookedCount + ", Paid: " + paidCount + ", Completed: " + completedCount
                     + ", Cancelled: " + cancelCount + ", Refunded: " + refundedCount + ", Remaining: " + remainingCount);
 
@@ -812,10 +812,11 @@ public class ChannelReportTemplateController implements Serializable {
             long4 += cancelCount;
             long5 += refundedCount;
             long6 += remainingCount;
+            long7 += paidToDoctorCount;
         }
 
         System.out.println("Final counts: long1=" + long1 + ", long2=" + long2 + ", long3=" + long3
-                + ", long4=" + long4 + ", long5=" + long5 + ", long6=" + long6);
+                + ", long4=" + long4 + ", long5=" + long5 + ", long6=" + long6 + ", long7=" + long7);
 
         if (bundle != null) {
             System.out.println("Setting values in bundle...");
@@ -826,6 +827,7 @@ public class ChannelReportTemplateController implements Serializable {
             bundle.setLong4(long4);
             bundle.setLong5(long5);
             bundle.setLong6(long6);
+            bundle.setLong7(long7);
         } else {
             System.out.println("Bundle is null.");
         }
