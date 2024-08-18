@@ -264,6 +264,7 @@ public class InstitutionController implements Serializable {
     }
     
     public List<Institution> completeSite(String qry) {
+        //Sites
         return completeInstitution(qry, InstitutionType.Site);
     }
 
