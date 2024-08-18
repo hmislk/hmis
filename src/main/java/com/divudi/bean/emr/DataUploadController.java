@@ -1117,14 +1117,11 @@ public class DataUploadController implements Serializable {
             code = row.getCell(3) != null ? row.getCell(3).getStringCellValue() : serviceController.generateShortCode(name);
             item = itemController.findItemByCode(code);
             System.out.println("item = " + item);
-            if (item != null) {
-                itemsSkipped.add(item);
-                continue;
+            if (item == null) {
+                item = createItem(row, code, name, institution, department);
             }
 
             // Create item instance based on itemType (e.g., Investigation, Service)
-            item = createItem(row, code, name, institution, department);
-
             // Process hospital fee
             Cell hospitalFeeTypeCell = row.getCell(11);
             if (hospitalFeeTypeCell != null) {
@@ -1160,15 +1157,19 @@ public class DataUploadController implements Serializable {
                 itemFeeFacade.edit(itf);
             }
 
+            System.out.println("siteName = " + siteName);
             // Set site if provided
             if (siteName != null && !siteName.trim().isEmpty()) {
                 Institution siteInstitution = institutionController.findAndSaveInstitutionByName(siteName);
+                System.out.println("siteInstitution = " + siteInstitution);
                 itf.setForInstitution(siteInstitution);  // Set the site to ItemFee
+                System.out.println("itf = " + itf);
                 if (itf.getId() == null) {
                     itemFeeFacade.create(itf);
                 } else {
                     itemFeeFacade.edit(itf);
                 }
+
                 feeValueController.updateFeeValue(item, siteInstitution, hospitalFee, hospitalFee);
 
             }
