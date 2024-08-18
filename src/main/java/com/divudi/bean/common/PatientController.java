@@ -1716,6 +1716,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
             controller.setPatient(patientSearched);
             controller.setPatientDetailsEditable(false);
             opdBillController.setPaymentMethod(null);
+            
             if (controller.getPatient().getHasAnAccount() != null) {
                 if (patientSearched.getHasAnAccount() && configOptionApplicationController.getBooleanValueByKey("Automatically set the PatientDeposit payment Method if a Deposit is Available", false)) {
                     opdBillController.setPaymentMethod(PaymentMethod.PatientDeposit);
