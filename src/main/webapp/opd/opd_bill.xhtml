@@ -440,11 +440,6 @@
 
                                 </p:panel>
 
-
-
-
-
-
                                 <p:panel class="mt-2" rendered="#{configOptionApplicationController.getBooleanValueByKey('Allow Local Number For Opd Billing')}">
                                     <div class="d-flex">
                                         <p:outputLabel style="width: 150px;" class="mt-2" value="Local Number :"/>
@@ -623,7 +618,7 @@
                                                 action="#{opdBillController.fillDepartmentOpdItems()}"
                                                 rendered="#{webUserController.hasPrivilege('Admin')}"
                                                 process="btnRefreshItemLight"
-                                                update="acIx"
+                                                update="acIx departments"
                                                 />
                                         </div>
                                     </div>
