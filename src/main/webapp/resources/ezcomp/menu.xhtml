@@ -400,7 +400,7 @@
                     <p:submenu label="Sampling">
                         <p:menuitem 
                             ajax="false"
-                            action="#{patientInvestigationController.navigateToPatientSampelIndex()}"
+                            action="#{patientInvestigationController.navigateToGenerateBarcodes()}"
                             value="Phlebotomy Room" 
                             rendered="#{webUserController.hasPrivilege('LabSampleCollecting')}" ></p:menuitem>
                         <p:menuitem ajax="false"  action="/lab/sample_at_lab_index?faces-redirect=true" value="Lab"></p:menuitem>
