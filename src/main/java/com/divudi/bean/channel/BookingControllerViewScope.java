@@ -92,6 +92,7 @@ import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -341,6 +342,22 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     private boolean sessionInstanceStartedEdited;
     
     boolean billingStarted=false;
+    
+    //----------------------------------------------
+    
+    private ScheduleModel channelModel;
+    private String serverTimeZone = ZoneId.systemDefault().toString();
+    
+    public String navigateToScheduleCalendarFromMenu() {
+        return "/channel/schedule_calendar?faces-redirect=true";
+    }
+
+    
+    
+    
+    
+    
+    //----------------------------------------------
 
     public void sessionReschedule() {
         if (getSelectedSessionInstanceForRechedule() == null) {
@@ -8323,6 +8340,22 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     public void setSessionInstanceStartedEdited(boolean sessionInstanceStartedEdited) {
         this.sessionInstanceStartedEdited = sessionInstanceStartedEdited;
+    }
+
+    public ScheduleModel getChannelModel() {
+        return channelModel;
+    }
+
+    public void setChannelModel(ScheduleModel channelModel) {
+        this.channelModel = channelModel;
+    }
+
+    public String getServerTimeZone() {
+        return serverTimeZone;
+    }
+
+    public void setServerTimeZone(String serverTimeZone) {
+        this.serverTimeZone = serverTimeZone;
     }
 
 }
