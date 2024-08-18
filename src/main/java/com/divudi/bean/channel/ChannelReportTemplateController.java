@@ -710,7 +710,7 @@ public class ChannelReportTemplateController implements Serializable {
         BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelPaid};
         List<BillType> bts = Arrays.asList(billTypes);
         HashMap hm = new HashMap();
-        String sql = " SELECT count(b) "
+        String sql = " SELECT count(b.bill) "
                 + " FROM BillFee b "
                 + " WHERE type(b.bill) = :class "
                 + " AND b.bill.retired = false "
@@ -720,7 +720,8 @@ public class ChannelReportTemplateController implements Serializable {
                 + " AND b.bill.cancelled = false "
                 + " AND ABS(ABS(b.feeValue) - ABS(b.paidValue)) < 1 "
                 + " AND b.bill.billType IN :bt "
-                + " AND b.bill.singleBillSession.sessionInstance = :si";
+                + " AND b.bill.singleBillSession.sessionInstance = :si"
+                + " GROUP BY b.bill";
         hm.put("si", si);
         hm.put("bt", bts);
         hm.put("ftp", FeeType.Staff);
