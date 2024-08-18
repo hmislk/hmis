@@ -45,43 +45,46 @@ public class Department implements Serializable {
     String telephone2;
     String fax;
     String email;
+
     @ManyToOne
-    @JsonIgnore
     Institution institution;
+
     @ManyToOne
-    @JsonIgnore
+    private Institution site;
+
+    @ManyToOne
     Department superDepartment;
     @Enumerated(EnumType.STRING)
     DepartmentType departmentType;
     @ManyToOne
-    @JsonIgnore
+
     Department sampleDepartment;
     @ManyToOne
-    @JsonIgnore
+
     Department labDepartment;
 
     @ManyToOne
-    @JsonIgnore
+
     Institution sampleInstitution;
     @ManyToOne
-    @JsonIgnore
+
     Institution labInstitution;
 //     double maxDiscount;
 
     //Created Properties
     @ManyToOne
-    @JsonIgnore
+
     WebUser creater;
-    @JsonIgnore
+
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date createdAt;
     //Retairing properties
-    @JsonIgnore
+
     boolean retired;
-    @JsonIgnore
+
     @ManyToOne
     WebUser retirer;
-    @JsonIgnore
+
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date retiredAt;
     String retireComments;
@@ -90,9 +93,6 @@ public class Department implements Serializable {
     double margin;
     double pharmacyMarginFromPurchaseRate;
 
-    
-    
-    
     public double getPharmacyMarginFromPurchaseRate() {
         return pharmacyMarginFromPurchaseRate;
     }
@@ -355,4 +355,14 @@ public class Department implements Serializable {
     public void setActive(Boolean active) {
         this.active = active;
     }
+
+    public Institution getSite() {
+        return site;
+    }
+
+    public void setSite(Institution site) {
+        this.site = site;
+    }
+    
+    
 }
