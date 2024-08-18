@@ -166,12 +166,32 @@
                                             <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                         </h:outputLabel>
                                     </p:column>
+                                    <p:column headerText="Paid to Doctor" width="6em">
+                                        <h:outputLabel  value="#{bf.paidValue}" >
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputLabel>
+                                    </p:column>
                                     <p:column headerText="Bill Value" width="6em">
                                         <h:outputLabel  value="#{bf.bill.paidAmount}" >
                                             <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                         </h:outputLabel>
                                     </p:column>
 
+                                    <p:column headerText="Bill Type" width="16em">
+                                        <h:outputLabel  value="#{bf.bill.billClass}" >
+                                        </h:outputLabel>
+                                    </p:column>
+                                    
+                                    <p:column headerText="Bill Class Type" width="16em">
+                                        <h:outputLabel  value="#{bf.bill.billType}" >
+                                        </h:outputLabel>
+                                    </p:column>
+                                    
+                                     <p:column headerText="Paid Bill ID" width="16em">
+                                         <h:outputLabel  value="#{bf.bill.paidBill}" >
+                                        </h:outputLabel>
+                                    </p:column>
+                                    
                                     <p:column headerText="Professional Fee Paid" width="6em">
                                         <h:outputLabel  value="#{bf.paidValue}" >
                                             <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
