@@ -717,7 +717,7 @@ public class ChannelReportTemplateController implements Serializable {
                 + " AND b.bill.refunded = false "
                 + " AND b.bill.cancelled = false "
                 + " AND ABS(ABS(b.feeValue) - ABS(b.paidValue)) < 1 "
-//                + " AND b.bill.billType IN :bt "
+                //                + " AND b.bill.billType IN :bt "
                 + " AND b.bill.singleBillSession.sessionInstance = :si";
 
         hm.put("si", si);
@@ -963,6 +963,7 @@ public class ChannelReportTemplateController implements Serializable {
                 + "sum(si.completedPatientCount),"
                 + "sum(si.cancelPatientCount),"
                 + "sum(si.refundedPatientCount),"
+                + "sum(si.paidToDoctorPatientCount),"
                 + "sum(si.remainingPatientCount)"
                 + ") "
                 + " from SessionInstance si "
@@ -989,27 +990,28 @@ public class ChannelReportTemplateController implements Serializable {
         List<ReportTemplateRow> rs = (List<ReportTemplateRow>) billFacade.findLightsByJpql(j, m, TemporalType.DATE);
 
         bundle.setReportTemplateRows(rs);
-        bundle.setLong1(0l);
-        bundle.setLong2(0l);
-        bundle.setLong3(0l);
-        bundle.setLong4(0l);
-        bundle.setLong5(0l);
-        bundle.setLong6(0l);
+        bundle.setLong1(0L);
+        bundle.setLong2(0L);
+        bundle.setLong3(0L);
+        bundle.setLong4(0L);
+        bundle.setLong5(0L);
+        bundle.setLong6(0L);
+        bundle.setLong7(0L);
 
         long idCounter = 1;
 
         for (ReportTemplateRow row : rs) {
             if (row != null) {
                 row.setId(idCounter++);
-                SessionInstance sessionInstance = row.getSessionInstance();
-                if (sessionInstance != null) {
-                    bundle.setLong1(bundle.getLong1() + (row.getLong1() != null ? row.getLong1() : 0));
-                    bundle.setLong2(bundle.getLong2() + (sessionInstance.getPaidPatientCount() != null ? sessionInstance.getPaidPatientCount() : 0));
-                    bundle.setLong3(bundle.getLong3() + (sessionInstance.getCompletedPatientCount() != null ? sessionInstance.getCompletedPatientCount() : 0));
-                    bundle.setLong4(bundle.getLong4() + (sessionInstance.getCancelPatientCount() != null ? sessionInstance.getCancelPatientCount() : 0));
-                    bundle.setLong5(bundle.getLong5() + (sessionInstance.getRefundedPatientCount() != null ? sessionInstance.getRefundedPatientCount() : 0));
-                    bundle.setLong6(bundle.getLong6() + (sessionInstance.getRemainingPatientCount() != null ? sessionInstance.getRemainingPatientCount() : 0));
-                }
+
+                // Directly sum the values from the aggregated query results
+                bundle.setLong1(bundle.getLong1() + (row.getLong1() != null ? row.getLong1() : 0)); // Booked Patient Count
+                bundle.setLong2(bundle.getLong2() + (row.getLong2() != null ? row.getLong2() : 0)); // Paid Patient Count
+                bundle.setLong3(bundle.getLong3() + (row.getLong3() != null ? row.getLong3() : 0)); // Completed Patient Count
+                bundle.setLong4(bundle.getLong4() + (row.getLong4() != null ? row.getLong4() : 0)); // Cancel Patient Count
+                bundle.setLong5(bundle.getLong5() + (row.getLong5() != null ? row.getLong5() : 0)); // Refunded Patient Count
+                bundle.setLong6(bundle.getLong6() + (row.getLong6() != null ? row.getLong6() : 0)); // Paid to Doctor Patient Count
+                bundle.setLong7(bundle.getLong7() + (row.getLong7() != null ? row.getLong7() : 0)); // Remaining Patient Count
             }
         }
 
