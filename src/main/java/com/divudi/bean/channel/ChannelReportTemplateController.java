@@ -713,23 +713,24 @@ public class ChannelReportTemplateController implements Serializable {
         HashMap hm = new HashMap();
         String sql = " SELECT count(b) "
                 + " FROM BillFee b "
-                + " where type(b.bill)=:class "
-                + " and b.bill.retired=false "
-                + " and b.bill.paidAmount!=0 "
-                + " and b.fee.feeType=:ftp"
-                + " and b.bill.refunded=false "
-                + " and b.bill.cancelled=false "
-                + " and (b.feeValue - b.paidValue) > 0 "
-                + " and b.bill.billType in :bt "
-                + " and b.bill.singleBillSession.sessionInstance=:si"
-                + " and b.bill.singleBillSession.completed=:com";
-        sql += " order by b.bill.singleBillSession.serialNo ";
+                + " WHERE type(b.bill) = :class "
+                + " AND b.bill.retired = false "
+                + " AND b.bill.paidAmount != 0 "
+                + " AND b.fee.feeType = :ftp "
+                + " AND b.bill.refunded = false "
+                + " AND b.bill.cancelled = false "
+                + " AND ABS(ABS(b.feeValue) - ABS(b.paidValue)) < 1 "
+                + " AND b.bill.billType IN :bt "
+                + " AND b.bill.singleBillSession.sessionInstance = :si";
         hm.put("si", si);
         hm.put("bt", bts);
         hm.put("ftp", FeeType.Staff);
-        hm.put("com", true);
         hm.put("class", BilledBill.class);
-        return billFeeFacade.findLongByJpql(sql, hm, TemporalType.TIMESTAMP);
+        System.out.println("sql = " + sql);
+        System.out.println("hm = " + hm);
+        Long count = billFeeFacade.findLongByJpql(sql, hm, TemporalType.TIMESTAMP);
+        System.out.println("count = " + count);
+        return count;
     }
 
     public void processAndfillDailySessionCounts() {
