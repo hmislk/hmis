@@ -21,8 +21,13 @@ public class FeeValue implements Serializable {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+    @ManyToOne
+    private Item item;
+    @ManyToOne
     private Institution institution;
+    @ManyToOne
     private Department department;
+    @ManyToOne
     private Category category;
 
     private Double totalValueForLocals;
@@ -75,6 +80,8 @@ public class FeeValue implements Serializable {
     public String toString() {
         return "com.divudi.entity.FeeValue[ id=" + id + " ]";
     }
+    
+    
 
     public Institution getInstitution() {
         return institution;
@@ -162,6 +169,14 @@ public class FeeValue implements Serializable {
 
     public void setRetireComments(String retireComments) {
         this.retireComments = retireComments;
+    }
+
+    public Item getItem() {
+        return item;
+    }
+
+    public void setItem(Item item) {
+        this.item = item;
     }
 
 }

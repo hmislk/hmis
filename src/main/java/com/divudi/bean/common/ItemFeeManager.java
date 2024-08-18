@@ -237,6 +237,14 @@ public class ItemFeeManager implements Serializable {
         return "/admin/pricing/manage_collecting_centre_item_fees?faces-redirect=true";
     }
     
+     public String navigateToForSiteItemFees() {
+        collectingCentre = null;
+        item=null;
+        feeListType=null;
+        fillForInstitutionFees();
+        return "/admin/pricing/manage_for_site_item_fees?faces-redirect=true";
+    }
+    
     public String navigateToFeeListFees() {
         collectingCentre = null;
         item=null;

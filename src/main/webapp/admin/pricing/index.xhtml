@@ -18,7 +18,7 @@
                                             <p:commandButton 
                                                 class="w-100"
                                                 ajax="false" 
-                                                value="Item Fees"
+                                                value="Base Item Fees"
                                                 actionListener="#{viewScopeDataTransferController.makeAdminFeesAsPreviousPage()}"
                                                 action="#{itemFeeManager.navigateToItemFees()}">
                                             </p:commandButton>
@@ -26,28 +26,36 @@
                                             <p:commandButton 
                                                 class="w-100"
                                                 ajax="false" 
-                                                value="Fee List Types"
+                                                value="Fee Lists"
                                                 action="#{categoryController.navigateToManageFeeListTypes()}">
+                                            </p:commandButton>
+
+                                            
+                                            <p:commandButton 
+                                                class="w-100"
+                                                ajax="false" 
+                                                value="Item Fees for Sites"
+                                                action="#{itemFeeManager.navigateToForSiteItemFees()}">
                                             </p:commandButton>
 
                                             <p:commandButton 
                                                 class="w-100"
                                                 ajax="false" 
-                                                value="Collecting Centre Item Fees"
+                                                value="Item Fees for Collecting Centres"
                                                 action="#{itemFeeManager.navigateToCollectingCentreItemFees()}">
                                             </p:commandButton>
 
                                             <p:commandButton 
                                                 class="w-100"
                                                 ajax="false" 
-                                                value="Fee List Item Fees"
+                                                value="Item Fees for Lists"
                                                 action="#{itemFeeManager.navigateToFeeListFees()}">
                                             </p:commandButton>
 
                                             <p:commandButton
                                                 class="w-100"
                                                 ajax="false" 
-                                                value="Item Fees - Multiple"
+                                                value="Manage Base Item Fees - Multiple"
                                                 action="#{itemFeeManager.navigateToItemFeesMultiple()}">
                                             </p:commandButton>
 

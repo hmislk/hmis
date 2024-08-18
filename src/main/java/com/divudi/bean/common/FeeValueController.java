@@ -9,10 +9,13 @@
 package com.divudi.bean.common;
 
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.entity.Category;
+import com.divudi.entity.Department;
 import com.divudi.entity.FeeValue;
+import com.divudi.entity.Institution;
+import com.divudi.entity.Item;
 import com.divudi.facade.FeeValueFacade;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -26,11 +29,6 @@ import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-/**
- *
- * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Consultant
- * (Health Informatics)
- */
 @Named
 @SessionScoped
 public class FeeValueController implements Serializable {
@@ -40,7 +38,6 @@ public class FeeValueController implements Serializable {
     SessionController sessionController;
     @EJB
     private FeeValueFacade ejbFacade;
-    private FeeValue current;
 
     public void save(FeeValue feeValue) {
         if (feeValue == null) {
@@ -55,73 +52,135 @@ public class FeeValueController implements Serializable {
         }
     }
 
-    public void prepareAdd() {
-        current = new FeeValue();
+    public Double getFeeForLocals(Item item, Institution institution) {
+        FeeValue feeValue = getFeeValue(item, institution);
+        return feeValue != null ? feeValue.getTotalValueForLocals() : 0.0;
     }
 
-    public void saveSelected() {
-        if (getCurrent().getId() != null && getCurrent().getId() > 0) {
-            getFacade().edit(current);
-            JsfUtil.addSuccessMessage("Updated Successfully.");
-        } else {
-            current.setCreatedAt(new Date());
-            current.setCreater(getSessionController().getLoggedUser());
-            getFacade().create(current);
-            JsfUtil.addSuccessMessage("Saved Successfully");
+    public Double getFeeForForeigners(Item item, Institution institution) {
+        FeeValue feeValue = getFeeValue(item, institution);
+        return feeValue != null ? feeValue.getTotalValueForLocals() : 0.0;
+    }
+
+    public FeeValue getFeeValue(Item item, Department department) {
+        String jpql = "SELECT f FROM FeeValue f WHERE f.item = :item AND f.department = :department";
+        Map<String, Object> params = new HashMap<>();
+        params.put("item", item);
+        params.put("department", department);
+
+        return getFacade().findFirstByJpql(jpql, params);
+    }
+
+    public FeeValue getFeeValue(Item item, Institution institution) {
+        String jpql = "SELECT f FROM FeeValue f WHERE f.item = :item AND f.institution = :institution";
+        Map<String, Object> params = new HashMap<>();
+        params.put("item", item);
+        params.put("institution", institution);
+
+        return getFacade().findFirstByJpql(jpql, params);
+    }
+
+    public FeeValue getFeeValue(Item item, Category category) {
+        String jpql = "SELECT f FROM FeeValue f WHERE f.item = :item AND f.category = :category";
+        Map<String, Object> params = new HashMap<>();
+        params.put("item", item);
+        params.put("category", category);
+
+        return getFacade().findFirstByJpql(jpql, params);
+    }
+
+    public FeeValue getFeeValue(Item item, Department dept, Institution ins, Category category) {
+        String jpql = "SELECT f FROM FeeValue f WHERE f.item = :item AND f.department = :dept AND f.institution = :ins AND f.category = :category";
+        Map<String, Object> params = new HashMap<>();
+        params.put("item", item);
+        params.put("dept", dept);
+        params.put("ins", ins);
+        params.put("category", category);
+
+        FeeValue fvals = getFacade().findFirstByJpql(jpql, params);
+        if (fvals == null) {
+            fvals = new FeeValue();
+            fvals.setItem(item);
+            fvals.setDepartment(dept);
+            fvals.setInstitution(ins);
+            fvals.setCategory(category);
         }
+        return fvals;
+    }
+
+    public void updateFeeValue(Item item, Department dept, Double feeValueForLocals, Double feeValueForForeigners) {
+        FeeValue feeValue = getFeeValue(item, dept);
+        if (feeValue == null) {
+            feeValue = new FeeValue();
+            feeValue.setItem(item);
+            feeValue.setDepartment(dept);
+            feeValue.setCreatedAt(new Date());
+            feeValue.setCreater(getSessionController().getLoggedUser());
+        }
+        feeValue.setTotalValueForLocals(feeValueForLocals);
+        feeValue.setTotalValueForLocals(feeValueForForeigners);
+        save(feeValue);
+    }
+
+    public void updateFeeValue(Item item, Institution ins, Double feeValueForLocals, Double feeValueForForeigners) {
+        FeeValue feeValue = getFeeValue(item, ins);
+        if (feeValue == null) {
+            feeValue = new FeeValue();
+            feeValue.setItem(item);
+            feeValue.setInstitution(ins);
+            feeValue.setCreatedAt(new Date());
+            feeValue.setCreater(getSessionController().getLoggedUser());
+        }
+        feeValue.setTotalValueForLocals(feeValueForLocals);
+        feeValue.setTotalValueForForeigners(feeValueForForeigners);
+        save(feeValue);
+    }
+
+    public Double getFeeValueForLocals(Item item, Department dept, Institution ins, Category category) {
+        FeeValue feeValue = getFeeValue(item, dept, ins, category);
+        if (feeValue != null) {
+            return feeValue.getTotalValueForLocals(); // Assuming `getFee()` returns the fee for locals
+        }
+        return null; // Or return 0.0 if you prefer to return a default value
+    }
+
+    public Double getFeeValueForForeigners(Item item, Department dept, Institution ins, Category category) {
+        FeeValue feeValue = getFeeValue(item, dept, ins, category);
+        if (feeValue != null) {
+            return feeValue.getTotalValueForForeigners(); // Assuming `getFfee()` returns the fee for foreigners
+        }
+        return null; // Or return 0.0 if you prefer to return a default value
+    }
+
+    public void updateFeeValue(Item item, Category cat, Double feeValueForLocals, Double feeValueForForeigners) {
+        FeeValue feeValue = getFeeValue(item, cat);
+        if (feeValue == null) {
+            feeValue = new FeeValue();
+            feeValue.setItem(item);
+            feeValue.setCategory(cat);
+            feeValue.setCreatedAt(new Date());
+            feeValue.setCreater(getSessionController().getLoggedUser());
+        }
+        feeValue.setTotalValueForLocals(feeValueForLocals);
+        feeValue.setTotalValueForForeigners(feeValueForForeigners);
+        save(feeValue);
     }
 
     public FeeValueFacade getEjbFacade() {
         return ejbFacade;
     }
 
-    public void setEjbFacade(FeeValueFacade ejbFacade) {
-        this.ejbFacade = ejbFacade;
-    }
-
     public SessionController getSessionController() {
         return sessionController;
     }
 
-    public void setSessionController(SessionController sessionController) {
-        this.sessionController = sessionController;
-    }
-
     public FeeValueController() {
-    }
-
-    public FeeValue getCurrent() {
-        if (current == null) {
-            current = new FeeValue();
-        }
-        return current;
-    }
-
-    public void setCurrent(FeeValue current) {
-        this.current = current;
-    }
-
-    public void delete() {
-        if (current != null) {
-            current.setRetired(true);
-            current.setRetiredAt(new Date());
-            current.setRetirer(getSessionController().getLoggedUser());
-            getFacade().edit(current);
-            JsfUtil.addSuccessMessage("Deleted Successfully");
-        } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
-        }
     }
 
     private FeeValueFacade getFacade() {
         return ejbFacade;
     }
 
-    
-
-    /**
-     *
-     */
     @FacesConverter(forClass = FeeValue.class)
     public static class FeeValueConverter implements Converter {
 
@@ -136,15 +195,11 @@ public class FeeValueController implements Serializable {
         }
 
         java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
-            return key;
+            return Long.valueOf(value);
         }
 
         String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
+            return value.toString();
         }
 
         @Override
@@ -156,10 +211,8 @@ public class FeeValueController implements Serializable {
                 FeeValue o = (FeeValue) object;
                 return getStringKey(o.getId());
             } else {
-                throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + FeeValue.class.getName());
+                throw new IllegalArgumentException("object " + object + " is of type " + object.getClass().getName() + "; expected type: " + FeeValue.class.getName());
             }
         }
     }
-
 }
