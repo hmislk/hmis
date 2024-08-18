@@ -14,6 +14,8 @@ import com.divudi.entity.Department;
 import com.divudi.entity.FeeValue;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
+import com.divudi.entity.Service;
+import com.divudi.entity.lab.Investigation;
 import com.divudi.facade.FeeValueFacade;
 import java.io.Serializable;
 import java.util.Date;
@@ -50,6 +52,22 @@ public class FeeValueController implements Serializable {
             feeValue.setCreater(getSessionController().getLoggedUser());
             getFacade().create(feeValue);
         }
+    }
+
+    public Double getFeeForLocals(Service item, Institution institution) {
+        return getFeeForLocals((Item) item, institution);  // Calls the original method for Item
+    }
+
+    public Double getFeeForForeigners(Service item, Institution institution) {
+        return getFeeForForeigners((Item) item, institution);  // Calls the original method for Item
+    }
+
+    public Double getFeeForLocals(Investigation item, Institution institution) {
+        return getFeeForLocals((Item) item, institution);  // Calls the original method for Item
+    }
+
+    public Double getFeeForForeigners(Investigation item, Institution institution) {
+        return getFeeForForeigners((Item) item, institution);  // Calls the original method for Item
     }
 
     public Double getFeeForLocals(Item item, Institution institution) {

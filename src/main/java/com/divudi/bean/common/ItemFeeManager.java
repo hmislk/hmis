@@ -52,6 +52,8 @@ public class ItemFeeManager implements Serializable {
 
     List<ItemFee> itemFees;
 
+    @Inject
+    FeeValueController feeValueController;
     @EJB
     ItemFeeFacade itemFeeFacade;
     @EJB
@@ -72,11 +74,10 @@ public class ItemFeeManager implements Serializable {
 
     private Double totalItemFee;
     private Double totalItemFeeForForeigners;
-    
-     public String navigateToInstitutionItemFeeUpload() {
+
+    public String navigateToInstitutionItemFeeUpload() {
         return "/admin/pricing/institution_item_fee_upload?faces-redirect=true";
     }
-    
 
     public String navigateItemFeeList() {
         return "/admin/pricing/item_fee_list?faces-redirect=true";
@@ -93,15 +94,15 @@ public class ItemFeeManager implements Serializable {
     public String navigateToUploadItemFees() {
         return "/admin/pricing/item_fee_upload?faces-redirect=true";
     }
-    
-    public String navigateToUploadFeeListType(){
+
+    public String navigateToUploadFeeListType() {
         return "/admin/pricing/feelist_type_upload?faces-redirect=true";
     }
-    
-    public String navigateToUploadInstitutionItemFees(){
+
+    public String navigateToUploadInstitutionItemFees() {
         return "/admin/pricing/feelist_item_fees_upload?faces-redirect=true";
     }
-    
+
     public String navigateToUploadCollectingCentreFeeList() {
         return "/admin/pricing/collecting_centre_price_list_upload?faces-redirect=true";
     }
@@ -231,25 +232,25 @@ public class ItemFeeManager implements Serializable {
 
     public String navigateToCollectingCentreItemFees() {
         collectingCentre = null;
-        item=null;
-        feeListType=null;
-        fillForInstitutionFees();
+        item = null;
+        feeListType = null;
+        fillForCollectingCentreFees();
         return "/admin/pricing/manage_collecting_centre_item_fees?faces-redirect=true";
     }
-    
-     public String navigateToForSiteItemFees() {
+
+    public String navigateToForSiteItemFees() {
         collectingCentre = null;
-        item=null;
-        feeListType=null;
-        fillForInstitutionFees();
+        item = null;
+        feeListType = null;
+        fillForCollectingCentreFees();
         return "/admin/pricing/manage_for_site_item_fees?faces-redirect=true";
     }
-    
+
     public String navigateToFeeListFees() {
         collectingCentre = null;
-        item=null;
-        feeListType=null;
-        fillForInstitutionFees();
+        item = null;
+        feeListType = null;
+        fillForCollectingCentreFees();
         return "/admin/pricing/manage_fee_list_item_fees?faces-redirect=true";
     }
 
@@ -299,7 +300,7 @@ public class ItemFeeManager implements Serializable {
         itemFees = fillFees(item);
     }
 
-    public void fillForInstitutionFees() {
+    public void fillForCollectingCentreFees() {
         if (collectingCentre == null) {
             itemFees = null;
             totalItemFee = 0.0;
@@ -315,8 +316,11 @@ public class ItemFeeManager implements Serializable {
                 .filter(Objects::nonNull)
                 .mapToDouble(ItemFee::getFfee)
                 .sum();
+
+        feeValueController.updateFeeValue(item, collectingCentre, totalItemFee, totalItemFeeForForeigners);
+
     }
-    
+
     public void fillForSiteFees() {
         if (forSite == null) {
             itemFees = null;
@@ -333,9 +337,10 @@ public class ItemFeeManager implements Serializable {
                 .filter(Objects::nonNull)
                 .mapToDouble(ItemFee::getFfee)
                 .sum();
+        feeValueController.updateFeeValue(item, forSite, totalItemFee, totalItemFeeForForeigners);
+
     }
-    
-    
+
     public void fillForForCategoryFees() {
         if (feeListType == null) {
             itemFees = null;
@@ -496,10 +501,61 @@ public class ItemFeeManager implements Serializable {
         itemFeeFacade.edit(itemFee);
         itemFee = new ItemFee();
         itemFees = null;
-        fillForInstitutionFees();
+        fillForCollectingCentreFees();
         JsfUtil.addSuccessMessage("New Fee Added for Collecting Centre");
     }
-    
+
+    public void addNewForSiteFee() {
+        if (forSite == null) {
+            JsfUtil.addErrorMessage("Select a Site ?");
+            return;
+        }
+        if (item == null) {
+            JsfUtil.addErrorMessage("Select an Item ?");
+            return;
+        }
+        if (itemFee == null) {
+            JsfUtil.addErrorMessage("Select Item Fee");
+            return;
+        }
+        if (itemFee.getName() == null || itemFee.getName().trim().equals("")) {
+            JsfUtil.addErrorMessage("Please Fill Fee Name");
+            return;
+        }
+
+        if (itemFee.getFeeType() == null) {
+            JsfUtil.addErrorMessage("Please Fill Fee Type");
+            return;
+        }
+
+        if (itemFee.getFeeType() == FeeType.OtherInstitution || itemFee.getFeeType() == FeeType.OwnInstitution || itemFee.getFeeType() == FeeType.Referral) {
+            if (itemFee.getDepartment() == null) {
+                JsfUtil.addErrorMessage("Please Select Department");
+                return;
+            }
+        }
+        if (itemFee.getFee() == 0.00) {
+            JsfUtil.addErrorMessage("Please Enter Local Fee Value");
+            return;
+        }
+
+        if (itemFee.getFfee() == 0.00) {
+            JsfUtil.addErrorMessage("Please Enter Foreign Fee Value");
+            return;
+        }
+        getItemFee().setCreatedAt(new Date());
+        getItemFee().setCreater(sessionController.getLoggedUser());
+        getItemFee().setForInstitution(forSite);
+        itemFeeFacade.create(itemFee);
+        getItemFee().setItem(item);
+        itemFeeFacade.edit(itemFee);
+        itemFee = new ItemFee();
+        itemFees = null;
+
+        fillForCollectingCentreFees();
+        JsfUtil.addSuccessMessage("New Fee Added for Collecting Centre");
+    }
+
     public void addNewFeeForFeeListType() {
         if (feeListType == null) {
             JsfUtil.addErrorMessage("Select Collecting Centre ?");
@@ -690,8 +746,5 @@ public class ItemFeeManager implements Serializable {
     public void setForSite(Institution forSite) {
         this.forSite = forSite;
     }
-    
-    
-    
 
 }

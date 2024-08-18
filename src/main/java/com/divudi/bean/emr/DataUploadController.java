@@ -184,6 +184,8 @@ public class DataUploadController implements Serializable {
     DoctorController doctorController;
     @Inject
     ClinicalEntityController clinicalEntityController;
+    @Inject
+    FeeValueController feeValueController;
 
     @EJB
     PatientFacade patientFacade;
@@ -1149,6 +1151,8 @@ public class DataUploadController implements Serializable {
             if (siteName != null && !siteName.trim().isEmpty()) {
                 Institution siteInstitution = institutionController.findAndSaveInstitutionByName(siteName);
                 itf.setForInstitution(siteInstitution);  // Set the site to ItemFee
+                feeValueController.updateFeeValue(item, siteInstitution, hospitalFee, hospitalFee);
+
             }
 
             itemFeesToSave.add(itf);
