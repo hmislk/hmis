@@ -543,7 +543,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
                 + " and b.fee.feeType=:ftp"
                 + " and b.bill.refunded=false "
                 + " and b.bill.cancelled=false "
-                + " and (b.feeValue - b.paidValue) > 0 "
+                + " and abs(abs(b.feeValue) - abs(b.paidValue)) > 1 "
                 + " and b.bill.billType in :bt "
                 + " and b.bill.singleBillSession.sessionInstance=:si"
                 + " and b.bill.singleBillSession.completed=:com";
