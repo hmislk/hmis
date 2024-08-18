@@ -1115,14 +1115,14 @@ public class DataUploadController implements Serializable {
 
             // Handle code and item lookup
             code = row.getCell(3) != null ? row.getCell(3).getStringCellValue() : serviceController.generateShortCode(name);
-            item = itemController.findItemByName(name, code, department);
+            item = itemController.findItemByCode(code);
             if (item != null) {
                 itemsSkipped.add(item);
                 continue;
             }
 
             // Create item instance based on itemType (e.g., Investigation, Service)
-            item = createItem(row, name, institution, department);
+            item = createItem(row, code, name,  institution, department);
 
             // Process hospital fee
             Cell hospitalFeeTypeCell = row.getCell(11);
@@ -1135,8 +1135,14 @@ public class DataUploadController implements Serializable {
             if (siteCell != null && siteCell.getCellType() == CellType.STRING) {
                 siteName = siteCell.getStringCellValue();
             }
+            
+            if(item.getId()==null){
+                itemFacade.create(item);
+            }else{
+                itemFacade.edit(item);
+            }
 
-            // Create and save the ItemFee object
+            // Create and save the ItemFitemee object
             ItemFee itf = new ItemFee();
             itf.setName(feeName);
             itf.setItem(item);
@@ -1147,6 +1153,11 @@ public class DataUploadController implements Serializable {
             itf.setFfee(hospitalFee);
             itf.setCreatedAt(new Date());
             itf.setCreater(sessionController.getLoggedUser());
+            if(itf.getId()==null){
+                itemFeeFacade.create(itf);
+            }else{
+                itemFeeFacade.edit(itf);
+            }
 
             // Set site if provided
             if (siteName != null && !siteName.trim().isEmpty()) {
@@ -1160,8 +1171,8 @@ public class DataUploadController implements Serializable {
             itemsToSave.add(item);
         }
 
-        itemFacade.batchCreate(itemsToSave, 5000);
-        itemFeeFacade.batchCreate(itemFeesToSave, 10000);
+//        itemFacade.batchCreate(itemsToSave, 5000);
+//        itemFeeFacade.batchCreate(itemFeesToSave, 10000);
 
         return itemsToSave;
     }
@@ -1182,7 +1193,7 @@ public class DataUploadController implements Serializable {
         return hospitalFee == null || hospitalFee < 0 ? 0.0 : hospitalFee;
     }
 
-    private Item createItem(Row row, String name, Institution institution, Department department) {
+    private Item createItem(Row row, String code, String name, Institution institution, Department department) {
         String itemType = row.getCell(9) != null ? row.getCell(9).getStringCellValue() : "Investigation";
         Item item = null;
 
@@ -1199,6 +1210,7 @@ public class DataUploadController implements Serializable {
 
         if (item != null) {
             item.setName(name);
+            item.setCode(code);
             item.setInstitution(institution);
             item.setDepartment(department);
             item.setCreater(sessionController.getLoggedUser());
