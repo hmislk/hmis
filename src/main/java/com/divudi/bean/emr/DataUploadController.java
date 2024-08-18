@@ -1116,6 +1116,7 @@ public class DataUploadController implements Serializable {
             // Handle code and item lookup
             code = row.getCell(3) != null ? row.getCell(3).getStringCellValue() : serviceController.generateShortCode(name);
             item = itemController.findItemByCode(code);
+            System.out.println("item = " + item);
             if (item != null) {
                 itemsSkipped.add(item);
                 continue;
@@ -1194,9 +1195,10 @@ public class DataUploadController implements Serializable {
     }
 
     private Item createItem(Row row, String code, String name, Institution institution, Department department) {
+        System.out.println("createItem = " );
         String itemType = row.getCell(9) != null ? row.getCell(9).getStringCellValue() : "Investigation";
         Item item = null;
-
+        System.out.println("itemType = " + itemType);
         if (itemType.equals("Service")) {
             item = new Service();
         } else if (itemType.equals("Investigation")) {
