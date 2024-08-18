@@ -54,6 +54,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -63,6 +64,7 @@ import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
+import static org.apache.commons.lang3.StringUtils.isNumeric;
 import org.primefaces.model.DefaultScheduleModel;
 import org.primefaces.model.ScheduleModel;
 
@@ -163,6 +165,25 @@ public class ChannelScheduleController implements Serializable {
         }
         generateSessions(stf);
 
+    }
+
+    public void updateSessionEndTime() {
+        String sessionDuration = configOptionApplicationController.getShortTextValueByKey("Default Channel Session Duration","2");
+        int duration = 0;
+        if(isNumeric(sessionDuration)){
+            duration = Integer.parseInt(sessionDuration);
+        }else{
+            duration = 2;
+        }
+        
+        if (getCurrent().getStartingTime() == null) {
+            getCurrent().setEndingTime(null);
+        } else {
+            Calendar e = Calendar.getInstance();
+            e.setTime(getCurrent().getStartingTime());
+            e.add(Calendar.HOUR, duration);
+            getCurrent().setEndingTime(e.getTime());
+        }
     }
 
     public void generateSessions(Staff st) {

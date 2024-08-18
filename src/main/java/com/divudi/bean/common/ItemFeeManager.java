@@ -97,7 +97,7 @@ public class ItemFeeManager implements Serializable {
         return "/admin/pricing/feelist_type_upload?faces-redirect=true";
     }
     
-    public String navigateToUploadFeeListItemFees(){
+    public String navigateToUploadInstitutionItemFees(){
         return "/admin/pricing/feelist_item_fees_upload?faces-redirect=true";
     }
     
@@ -348,11 +348,9 @@ public class ItemFeeManager implements Serializable {
     }
 
     public List<ItemFee> fillFees(Item i, Institution forInstitution, Category cat) {
-        System.out.println("i = " + i.getId());
         String jpql = "select f from ItemFee f where f.retired=false and f.item=:i";
         Map<String, Object> m = new HashMap<>();
         m.put("i", i);
-        System.out.println("forInstitution = " + forInstitution.getId());
         if (forInstitution != null) {
             jpql += " and f.forInstitution=:ins";
             m.put("ins", forInstitution);

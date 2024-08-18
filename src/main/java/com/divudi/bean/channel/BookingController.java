@@ -10,6 +10,7 @@ import com.divudi.bean.common.BillController;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ConfigOptionController;
+import com.divudi.bean.common.ControllerWithMultiplePayments;
 import com.divudi.bean.common.ControllerWithPatient;
 import com.divudi.bean.common.DoctorSpecialityController;
 import com.divudi.bean.common.ItemForItemController;
@@ -72,8 +73,16 @@ import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillFinanceType;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.OptionScope;
+import static com.divudi.data.PaymentMethod.Card;
+import static com.divudi.data.PaymentMethod.Cash;
+import static com.divudi.data.PaymentMethod.Cheque;
+import static com.divudi.data.PaymentMethod.Credit;
+import static com.divudi.data.PaymentMethod.OnlineSettlement;
+import static com.divudi.data.PaymentMethod.PatientDeposit;
+import static com.divudi.data.PaymentMethod.Slip;
 import static com.divudi.data.PaymentMethod.Staff;
 import static com.divudi.data.PaymentMethod.Staff_Welfare;
+import static com.divudi.data.PaymentMethod.ewallet;
 import com.divudi.data.dataStructure.ComponentDetail;
 import com.divudi.entity.Fee;
 import com.divudi.entity.Payment;
@@ -110,7 +119,7 @@ import org.primefaces.model.ScheduleModel;
  */
 @Named
 @SessionScoped
-public class BookingController implements Serializable, ControllerWithPatient {
+public class BookingController implements Serializable, ControllerWithPatient, ControllerWithMultiplePayments {
 
     /**
      * EJBs
@@ -267,6 +276,10 @@ public class BookingController implements Serializable, ControllerWithPatient {
     private List<SessionInstance> sessionInstancesToday;
     private String sessionInstanceFilter;
     private List<SessionInstance> sessionInstancesFiltered;
+    private double tenderedAmount = 0.0;
+    private double balance = 0.0;
+    private double total;
+    private double remainAmount;
 
     public void filterSessionInstances() {
         sessionInstancesToday = getSessionInstances();
@@ -339,6 +352,71 @@ public class BookingController implements Serializable, ControllerWithPatient {
             selectedSessionInstance = sessionInstancesFiltered.get(0);
             sessionInstanceSelected();
         }
+    }
+
+    public double calculatRemainForMultiplePaymentTotal() {
+        total = getFeeTotalForSelectedBill();
+        if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
+            double multiplePaymentMethodTotalValue = 0.0;
+            for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCash().getTotalValue();
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCreditCard().getTotalValue();
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCheque().getTotalValue();
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getEwallet().getTotalValue();
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getSlip().getTotalValue();
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getStaffCredit().getTotalValue();
+
+            }
+            remainAmount = total - multiplePaymentMethodTotalValue;
+            return total - multiplePaymentMethodTotalValue;
+
+        }
+        remainAmount = total;
+        return total;
+    }
+
+    public void recieveRemainAmountAutomatically() {
+        //double remainAmount = calculatRemainForMultiplePaymentTotal();
+        if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
+            int arrSize = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().size();
+            ComponentDetail pm = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().get(arrSize - 1);
+            switch (pm.getPaymentMethod()) {
+                case Cash:
+                    pm.getPaymentMethodData().getCash().setTotalValue(remainAmount);
+                    break;
+                case Card:
+                    pm.getPaymentMethodData().getCreditCard().setTotalValue(remainAmount);
+                    break;
+                case Cheque:
+                    pm.getPaymentMethodData().getCheque().setTotalValue(remainAmount);
+                    break;
+                case Slip:
+                    pm.getPaymentMethodData().getSlip().setTotalValue(remainAmount);
+                    break;
+                case ewallet:
+                    pm.getPaymentMethodData().getEwallet().setTotalValue(remainAmount);
+                    break;
+                case PatientDeposit:
+                    if (patient != null) {
+                        pm.getPaymentMethodData().getPatient_deposit().setPatient(patient);
+                    }
+                    pm.getPaymentMethodData().getPatient_deposit().setTotalValue(remainAmount);
+                    break;
+                case Credit:
+                    pm.getPaymentMethodData().getCredit().setTotalValue(remainAmount);
+                    break;
+                case Staff:
+                    pm.getPaymentMethodData().getStaffCredit().setTotalValue(remainAmount);
+                    break;
+                default:
+                    throw new IllegalArgumentException("Unexpected value: " + pm.getPaymentMethod());
+            }
+        }
+    }
+
+    public void calculateBalance() {
+        balance = getTenderedAmount() - getFeeTotalForSelectedBill();
     }
 
     public void sessionInstanceSelected() {
@@ -719,7 +797,6 @@ public class BookingController implements Serializable, ControllerWithPatient {
     }
 
     // ALREADY DEFIENED in line 629
-    
 //    public void sendChannellingStatusUpdateNotificationSms(BillSession methodBillSession) {
 //        if (methodBillSession == null) {
 //            JsfUtil.addErrorMessage("Nothing to send");
@@ -782,6 +859,14 @@ public class BookingController implements Serializable, ControllerWithPatient {
 //                + url;
 //        return b;
 //    }
+    public void makeNull() {
+        institution = null;
+        paymentMethod = null;
+        paymentMethodData = null;
+        agentRefNo = null;
+        tenderedAmount = 0.0;
+        balance = 0.0;
+    }
 
     public String navigateToAddBooking() {
         if (staff == null) {
@@ -2767,8 +2852,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
             BillType.ChannelStaff,
             BillType.ChannelCredit,
             BillType.ChannelResheduleWithOutPayment,
-            BillType.ChannelResheduleWithPayment,
-        };
+            BillType.ChannelResheduleWithPayment,};
         List<BillType> bts = Arrays.asList(billTypes);
         String sql = "Select bs "
                 + " From BillSession bs "
@@ -3082,7 +3166,8 @@ public class BookingController implements Serializable, ControllerWithPatient {
             savingBill.setBalance(0.0);
             savingBillSession.setPaidBillSession(savingBillSession);
         } else if (savingBill.getBillType() == BillType.ChannelCash) {
-            savingBill.setBalance(0.0);
+            savingBill.setTenderedAmount(tenderedAmount);
+            savingBill.setBalance(balance);
             savingBillSession.setPaidBillSession(savingBillSession);
         } else if (savingBill.getBillType() == BillType.ChannelOnCall) {
             savingBill.setBalance(savingBill.getNetTotal());
@@ -3675,10 +3760,15 @@ public class BookingController implements Serializable, ControllerWithPatient {
                 bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT_ONLINE);
                 bill.setBillPaymentCompletelySettled(true);
                 break;
+            case MultiplePaymentMethods:
+                bill.setBillType(BillType.ChannelCash);
+                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
+                bill.setBillPaymentCompletelySettled(true);
+                break;
         }
 
         String deptId = generateBillNumberDeptId(bill);
-
+        
         if (deptId.equals("")) {
             return null;
         }
@@ -3718,7 +3808,6 @@ public class BookingController implements Serializable, ControllerWithPatient {
         BillType billType = null;
         String deptId = null;
         if (bill instanceof BilledBill) {
-
             billClassType = BillClassType.BilledBill;
             if (bill.getBillType() == BillType.ChannelOnCall || bill.getBillType() == BillType.ChannelStaff) {
                 billType = bill.getBillType();
@@ -3745,7 +3834,6 @@ public class BookingController implements Serializable, ControllerWithPatient {
             billClassType = BillClassType.RefundBill;
             deptId = billNumberBean.departmentBillNumberGenerator(getSessionController().getInstitution(), getSessionController().getDepartment(), bts, billClassType, suffix);
         }
-
         return deptId;
     }
 
@@ -4587,6 +4675,38 @@ public class BookingController implements Serializable, ControllerWithPatient {
 
     public void setSessionInstancesFiltered(List<SessionInstance> sessionInstancesFiltered) {
         this.sessionInstancesFiltered = sessionInstancesFiltered;
+    }
+
+    public double getBalance() {
+        return balance;
+    }
+
+    public void setBalance(double balance) {
+        this.balance = balance;
+    }
+
+    public double getTenderedAmount() {
+        return tenderedAmount;
+    }
+
+    public void setTenderedAmount(double tenderedAmount) {
+        this.tenderedAmount = tenderedAmount;
+    }
+
+    public double getTotal() {
+        return total;
+    }
+
+    public void setTotal(double total) {
+        this.total = total;
+    }
+
+    public double getRemainAmount() {
+        return remainAmount;
+    }
+
+    public void setRemainAmount(double remainAmount) {
+        this.remainAmount = remainAmount;
     }
 
 }
