@@ -6,7 +6,7 @@
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:ch="http://java.sun.com/jsf/composite/channel"
-                xmlns:pa="http://java.sun.com/jsf/composite/paymentMethod"
+                xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
                 xmlns:au="http://java.sun.com/jsf/composite/autocomplete"
                 xmlns:bg="http://xmlns.jcp.org/jsf/composite/bill/cc_bill"
                 xmlns:pat="http://java.sun.com/jsf/composite/patient"
@@ -107,7 +107,7 @@
                                 </div>
 
                                 <div class="row mt-2">
-                                    <div class="col-4"><p:outputLabel value="Payment Method"/></div>
+                                    <div class="col-4 mt-2"><p:outputLabel value="Payment Method"/></div>
                                     <div class="col-8">
                                         <p:selectOneMenu class="w-100" autoWidth="false" id="cmbPs" value="#{bookingController.paymentMethod}">
                                             <f:selectItem itemLabel="Select Payment Method" ></f:selectItem>
@@ -298,6 +298,14 @@
                                                 value="#{bookingController.paymentMethodData.cheque.date}" 
                                                 pattern="dd MMMM yyyy"
                                                 />
+                                        </div>
+                                    </div>
+                                </h:panelGroup>
+                                
+                                <h:panelGroup rendered="#{bookingController.paymentMethod eq 'MultiplePaymentMethods'}">
+                                    <div class="row mt-3">
+                                        <div class="col-12 d-flex gap-2">
+                                            <pa:multiple_payment_methods controller="#{bookingController}" paymentMethods="#{enumController.paymentMethodsForChannelSettling}" class="w-100"/>
                                         </div>
                                     </div>
                                 </h:panelGroup>
