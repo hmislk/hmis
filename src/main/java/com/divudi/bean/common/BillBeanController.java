@@ -3619,6 +3619,10 @@ public class BillBeanController implements Serializable {
     public List<BillFee> billFeefromBillItem(BillItem billItem) {
         return baseBillFeefromBillItem(billItem);
     }
+    
+    public List<BillFee> BillFeefromBillItemByForInstitution(BillItem billItem) {
+        return forInstitutionBillFeefromBillItem(billItem,sessionController.getInstitution());
+    }
 
     public List<BillFee> billFeefromBillItem(BillItem billItem, Institution forInstitution, Category forCategory) {
         List<BillFee> billFees = billFeefromBillItem(billItem, forInstitution);
