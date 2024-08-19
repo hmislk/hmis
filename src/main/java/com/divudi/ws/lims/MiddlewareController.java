@@ -54,7 +54,7 @@ public class MiddlewareController {
 
             // Logic to create a PatientDataBundle based on the QueryRecord
             PatientDataBundle pdb = new PatientDataBundle();
-            List<String> testNames = Arrays.asList("HDL", "RF2");
+            List<String> testNames = Arrays.asList("HDL", "RF2", "GLU");
             OrderRecord or = new OrderRecord(0, queryRecord.getSampleId(), testNames, "S", new Date(), "testInformation");
             pdb.getOrderRecords().add(or);
             PatientRecord pr = new PatientRecord(0, "1010101", "111111", "Buddhika Ariyaratne", "M H B", "Male", "Sinhalese", null, "Galle", "0715812399", "Dr Niluka");

@@ -161,6 +161,19 @@ public class FeeValueController implements Serializable {
         }
         return null; // Or return 0.0 if you prefer to return a default value
     }
+    
+    
+    public Double getFeeValueForLocalsByItemIdForLoggedSite(Long id) {
+        String jpql = "SELECT f.totalValueForLocals "
+                + " FROM FeeValue f "
+                + " WHERE f.item.id = :id "
+                + " AND f.institution = :institution";
+        Map<String, Object> params = new HashMap<>();
+        params.put("id", id);
+        params.put("institution", sessionController.getDepartment().getSite());
+        return getFacade().findDoubleByJpql(jpql, params);
+    }
+    
 
     public Double getFeeValueForForeigners(Item item, Department dept, Institution ins, Category category) {
         FeeValue feeValue = getFeeValue(item, dept, ins, category);

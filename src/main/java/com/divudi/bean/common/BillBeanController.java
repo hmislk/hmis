@@ -3617,11 +3617,12 @@ public class BillBeanController implements Serializable {
     }
 
     public List<BillFee> billFeefromBillItem(BillItem billItem) {
+        System.out.println("billFeefromBillItem - billItem = " + billItem);
         return baseBillFeefromBillItem(billItem);
     }
-    
+
     public List<BillFee> BillFeefromBillItemByForInstitution(BillItem billItem) {
-        return forInstitutionBillFeefromBillItem(billItem,sessionController.getInstitution());
+        return forInstitutionBillFeefromBillItem(billItem, sessionController.getInstitution());
     }
 
     public List<BillFee> billFeefromBillItem(BillItem billItem, Institution forInstitution, Category forCategory) {
@@ -3912,6 +3913,7 @@ public class BillBeanController implements Serializable {
     }
 
     public List<BillFee> baseBillFeefromBillItem(BillItem billItem) {
+        System.out.println("baseBillFeefromBillItem");
         List<BillFee> t = new ArrayList<>();
         BillFee f;
         String jpql;
@@ -3991,6 +3993,7 @@ public class BillBeanController implements Serializable {
 
             List<ItemFee> itemFee = getItemFeeFacade().findByJpql(jpql, params);
             for (Fee i : itemFee) {
+                System.out.println("i = " + i);
                 f = new BillFee();
                 f.setFee(i);
                 f.setFeeValue(i.getFee() * billItem.getQty());
@@ -4039,6 +4042,9 @@ public class BillBeanController implements Serializable {
     }
 
     public List<BillFee> forInstitutionBillFeefromBillItem(BillItem billItem, Institution forIns) {
+        System.out.println("forInstitutionBillFeefromBillItem");
+        System.out.println("forIns = " + forIns);
+        System.out.println("billItem = " + billItem);
         List<BillFee> t = new ArrayList<>();
         BillFee f;
         String jpql;
@@ -4115,9 +4121,11 @@ public class BillBeanController implements Serializable {
                     + " and f.forInstitution=:forIns ";
             params.put("ret", false);
             params.put("item", billItem.getItem());
-             params.put("forIns", forIns);
-
+            params.put("forIns", forIns);
+            System.out.println("params = " + params);
+            System.out.println("jpql = " + jpql);
             List<ItemFee> itemFee = getItemFeeFacade().findByJpql(jpql, params);
+            System.out.println("itemFee = " + itemFee);
             for (Fee i : itemFee) {
                 f = new BillFee();
                 f.setFee(i);
