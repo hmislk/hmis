@@ -66,6 +66,8 @@ import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.InstitutionType;
+import com.divudi.entity.Fee;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -210,6 +212,8 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     private List<ItemLight> opdItems;
     private List<AgentReferenceBook> agentReferenceBooks;
     private List<CollectingCenterBookSummeryRow> bookSummeryRows;
+    private double collectingCentrePrecentage;
+    private List<BillFee> billFeesForCollectingCenters;
 
     public List<AgentReferenceBook> getAgentReferenceBooks() {
         return agentReferenceBooks;
@@ -1275,7 +1279,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         BillEntry addingEntry = new BillEntry();
         addingEntry.setBillItem(bi);
         addingEntry.setLstBillComponents(getBillBean().billComponentsFromBillItem(bi));
-        addingEntry.setLstBillFees(getBillBean().billFeefromBillItem(bi, collectingCentre, collectingCentre.getFeeListType()));
+        addingEntry.setLstBillFees(getBillBean().billFeefromBillItemForCollectingCenter(bi, collectingCentre));
         addingEntry.setLstBillSessions(getBillBean().billSessionsfromBillItem(bi));
         getLstBillEntries().add(addingEntry);
         bi.setRate(getBillBean().billItemRate(addingEntry));
@@ -1290,6 +1294,25 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         }
         clearBillItemValues();
         JsfUtil.addSuccessMessage("Item Added");
+    }
+
+    public void createBillFeeForCollectingCenterPrecentage(BillItem bi, Double netTotal) {
+        System.out.println("netTotal = " + netTotal);
+        double total = 0.0;
+        collectingCentrePrecentage = collectingCentre.getPercentage();
+
+        if (collectingCentrePrecentage != 0.0) {
+            System.out.println("collectingCentrePrecentage = " + collectingCentrePrecentage);
+            total = netTotal * collectingCentrePrecentage / 100;
+            System.out.println("total = " + total);
+            BillFee bf = new BillFee();
+            bf.setBillItem(bi);
+            bf.setFeeValue(total);
+            bf.setInstitution(collectingCentre);
+            bf.setCreatedAt(new Date());
+            bf.setCreater(sessionController.getCurrent());
+        }
+
     }
 
     public void clearBillItemValues() {
@@ -1352,6 +1375,10 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     MembershipSchemeController membershipSchemeController;
 
     public void calTotals() {
+        double hospitalFee = 0.0;
+        double collectingcCenterFee = 0.0;
+        double staffFee = 0.0;
+        double otherFee = 0.0;
 
         double billDiscount = 0.0;
         double billGross = 0.0;
@@ -1372,10 +1399,23 @@ public class CollectingCentreBillController implements Serializable, ControllerW
                 entryNet += bf.getFeeValue();
                 entryDis += bf.getFeeDiscount();
                 entryVat += bf.getFeeVat();
+                System.out.println("bf.getInstitution().getInstitutionType() = " + bf.getInstitution().getInstitutionType());
+                if (bf.getInstitution().getInstitutionType() == InstitutionType.CollectingCentre) {
+                    collectingcCenterFee += bf.getFeeValue();
+                } else if (bf.getStaff() != null) {
+                    staffFee += bf.getFeeValue();
+                } else if (bf.getInstitution().getInstitutionType() == InstitutionType.Company) {
+                    hospitalFee += bf.getFeeValue();
+                }else{
+                    otherFee+=bf.getFeeValue();
+                }
                 //////// // System.out.println("fee net is " + bf.getFeeValue());
 
             }
-
+            bi.setCollectingCentreFee(collectingcCenterFee);
+            bi.setHospitalFee(hospitalFee);
+            bi.setStaffFee(staffFee);
+            bi.setOtherFee(otherFee);
             bi.setDiscount(entryDis);
             bi.setGrossValue(entryGross);
             bi.setNetValue(entryNet);
@@ -2240,6 +2280,22 @@ public class CollectingCentreBillController implements Serializable, ControllerW
 
     public void setBookSummeryRows(List<CollectingCenterBookSummeryRow> bookSummeryRows) {
         this.bookSummeryRows = bookSummeryRows;
+    }
+
+    public double getCollectingCentrePrecentage() {
+        return collectingCentrePrecentage;
+    }
+
+    public void setCollectingCentrePrecentage(double collectingCentrePrecentage) {
+        this.collectingCentrePrecentage = collectingCentrePrecentage;
+    }
+
+    public List<BillFee> getBillFeesForCollectingCenters() {
+        return billFeesForCollectingCenters;
+    }
+
+    public void setBillFeesForCollectingCenters(List<BillFee> billFeesForCollectingCenters) {
+        this.billFeesForCollectingCenters = billFeesForCollectingCenters;
     }
 
     public class CollectingCenterBookSummeryRow {
