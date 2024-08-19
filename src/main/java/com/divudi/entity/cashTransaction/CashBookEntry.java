@@ -4,10 +4,11 @@
  */
 package com.divudi.entity.cashTransaction;
 
+import com.divudi.entity.Bill;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
+import com.divudi.entity.Payment;
 import com.divudi.entity.WebUser;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Entity;
@@ -19,16 +20,21 @@ import javax.persistence.Temporal;
 
 /**
  *
- * @author Lawan Chaamindu
+ * @author Buddhika
  */
 @Entity
-public class CashBook implements Serializable {
+public class CashBookEntry implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    private String Name;
+    
+    private String name;
+    private Bill bill;
+    private Payment payment;
+    private CashBook cashBook;
+    
     private Institution institution;
     private Institution site;
     private Department department;
@@ -71,10 +77,10 @@ public class CashBook implements Serializable {
     @Override
     public boolean equals(Object object) {
         // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof CashBook)) {
+        if (!(object instanceof CashBookEntry)) {
             return false;
         }
-        CashBook other = (CashBook) object;
+        CashBookEntry other = (CashBookEntry) object;
         if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
             return false;
         }
@@ -83,15 +89,39 @@ public class CashBook implements Serializable {
 
     @Override
     public String toString() {
-        return "com.divudi.entity.cashTransaction.CashBook[ id=" + id + " ]";
+        return "com.divudi.entity.cashTransaction.CashBookEntry[ id=" + id + " ]";
     }
 
     public String getName() {
-        return Name;
+        return name;
     }
 
-    public void setName(String Name) {
-        this.Name = Name;
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public Bill getBill() {
+        return bill;
+    }
+
+    public void setBill(Bill bill) {
+        this.bill = bill;
+    }
+
+    public Payment getPayment() {
+        return payment;
+    }
+
+    public void setPayment(Payment payment) {
+        this.payment = payment;
+    }
+
+    public CashBook getCashBook() {
+        return cashBook;
+    }
+
+    public void setCashBook(CashBook cashBook) {
+        this.cashBook = cashBook;
     }
 
     public Institution getInstitution() {
