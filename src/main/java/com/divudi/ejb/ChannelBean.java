@@ -568,7 +568,6 @@ public class ChannelBean {
 //
 //        return createdSessions;
 //    }
-    
     public List<SessionInstance> generateSesionInstancesFromServiceSessions(List<ServiceSession> inputSessions, Date d) {
         int sessionDayCount = 0;
         List<SessionInstance> sessionInstances = new ArrayList<>();
@@ -674,7 +673,6 @@ public class ChannelBean {
         return sessionInstances;
     }
 
-    
     public List<SessionInstance> generateSesionInstancesFromServiceSessions(List<ServiceSession> inputSessions) {
         int sessionDayCount = 0;
         List<SessionInstance> sessionInstances = new ArrayList<>();
@@ -715,9 +713,12 @@ public class ChannelBean {
 
                 if (ss.getSessionDate() == null) {
                     int workingDateWeekday = calendar.get(Calendar.DAY_OF_WEEK);
-                    if (workingDateWeekday == ss.getSessionWeekday()) {
-                        eligibleDate = true;
+                    if (ss.getSessionWeekday() != null) {
+                        if (workingDateWeekday == ss.getSessionWeekday()) {
+                            eligibleDate = true;
+                        }
                     }
+
                 } else {
                     Calendar cSessionDate = Calendar.getInstance();
                     cSessionDate.setTime(ss.getSessionDate());
@@ -765,6 +766,7 @@ public class ChannelBean {
                 cWorkingDate.add(Calendar.DATE, 1); // Increment the date
             }
         }
+        System.out.println("sessionInstances = " + sessionInstances.size());
         Collections.sort(sessionInstances, new Comparator<SessionInstance>() {
             @Override
             public int compare(SessionInstance s1, SessionInstance s2) {
@@ -784,7 +786,7 @@ public class ChannelBean {
         return listTodaysSessionInstances(null, null, null);
     }
 
-     public List<SessionInstance> listTodaysSessionInstances(Boolean ongoing, Boolean completed, Boolean pending) {
+    public List<SessionInstance> listTodaysSessionInstances(Boolean ongoing, Boolean completed, Boolean pending) {
         List<SessionInstance> sessionInstances = new ArrayList<>();
         StringBuilder jpql = new StringBuilder("select i from SessionInstance i where i.retired=:ret and i.sessionDate=:sd");
 
@@ -827,64 +829,64 @@ public class ChannelBean {
         return sessionInstances;
     }
 
-public List<SessionInstance> listSessionInstancesByDate(Date sessionDate, Boolean ongoing, Boolean completed, Boolean pending) {
-    List<SessionInstance> sessionInstances = new ArrayList<>();
-    StringBuilder jpql = new StringBuilder("select i from SessionInstance i where i.retired=:ret and i.sessionDate between :startOfDay and :endOfDay");
+    public List<SessionInstance> listSessionInstancesByDate(Date sessionDate, Boolean ongoing, Boolean completed, Boolean pending) {
+        List<SessionInstance> sessionInstances = new ArrayList<>();
+        StringBuilder jpql = new StringBuilder("select i from SessionInstance i where i.retired=:ret and i.sessionDate between :startOfDay and :endOfDay");
 
-    // Initializing the parameters map
-    Calendar cal = Calendar.getInstance();
-    cal.setTime(sessionDate);
-    cal.set(Calendar.HOUR_OF_DAY, 0);
-    cal.set(Calendar.MINUTE, 0);
-    cal.set(Calendar.SECOND, 0);
-    cal.set(Calendar.MILLISECOND, 0);
-    Date startOfDay = cal.getTime();
+        // Initializing the parameters map
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(sessionDate);
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        Date startOfDay = cal.getTime();
 
-    cal.set(Calendar.HOUR_OF_DAY, 23);
-    cal.set(Calendar.MINUTE, 59);
-    cal.set(Calendar.SECOND, 59);
-    cal.set(Calendar.MILLISECOND, 999);
-    Date endOfDay = cal.getTime();
+        cal.set(Calendar.HOUR_OF_DAY, 23);
+        cal.set(Calendar.MINUTE, 59);
+        cal.set(Calendar.SECOND, 59);
+        cal.set(Calendar.MILLISECOND, 999);
+        Date endOfDay = cal.getTime();
 
-    Map<String, Object> params = new HashMap<>();
-    params.put("ret", false);
-    params.put("startOfDay", startOfDay);
-    params.put("endOfDay", endOfDay);
+        Map<String, Object> params = new HashMap<>();
+        params.put("ret", false);
+        params.put("startOfDay", startOfDay);
+        params.put("endOfDay", endOfDay);
 
-    // Dynamically appending conditions based on parameters
-    List<String> conditions = new ArrayList<>();
-    if (ongoing != null && ongoing) {
-        conditions.add("(i.started = true and i.completed = false)");
-    }
-    if (completed != null && completed) {
-        conditions.add("i.completed = true");
-    }
-    if (pending != null && pending) {
-        conditions.add("(i.started = false and i.completed = false)");
-    }
-
-    // Adding the conditions to the JPQL query
-    if (!conditions.isEmpty()) {
-        jpql.append(" and (").append(String.join(" or ", conditions)).append(")");
-    }
-
-    // Fetching the session instances based on the constructed JPQL query and parameters
-    sessionInstances = sessionInstanceFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
-
-    // Sorting logic remains unchanged
-    Collections.sort(sessionInstances, new Comparator<SessionInstance>() {
-        @Override
-        public int compare(SessionInstance s1, SessionInstance s2) {
-            int dateCompare = s1.getSessionDate().compareTo(s2.getSessionDate());
-            if (dateCompare != 0) {
-                return dateCompare;
-            } else {
-                return s1.getOriginatingSession().getName().compareTo(s2.getOriginatingSession().getName());
-            }
+        // Dynamically appending conditions based on parameters
+        List<String> conditions = new ArrayList<>();
+        if (ongoing != null && ongoing) {
+            conditions.add("(i.started = true and i.completed = false)");
         }
-    });
-    return sessionInstances;
-}
+        if (completed != null && completed) {
+            conditions.add("i.completed = true");
+        }
+        if (pending != null && pending) {
+            conditions.add("(i.started = false and i.completed = false)");
+        }
+
+        // Adding the conditions to the JPQL query
+        if (!conditions.isEmpty()) {
+            jpql.append(" and (").append(String.join(" or ", conditions)).append(")");
+        }
+
+        // Fetching the session instances based on the constructed JPQL query and parameters
+        sessionInstances = sessionInstanceFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+        // Sorting logic remains unchanged
+        Collections.sort(sessionInstances, new Comparator<SessionInstance>() {
+            @Override
+            public int compare(SessionInstance s1, SessionInstance s2) {
+                int dateCompare = s1.getSessionDate().compareTo(s2.getSessionDate());
+                if (dateCompare != 0) {
+                    return dateCompare;
+                } else {
+                    return s1.getOriginatingSession().getName().compareTo(s2.getOriginatingSession().getName());
+                }
+            }
+        });
+        return sessionInstances;
+    }
 
     public List<SessionInstance> listSessionInstances(Date fromDate, Date toDate, Boolean ongoing, Boolean completed, Boolean pending) {
         return listSessionInstances(fromDate, toDate, ongoing, completed, pending, null);
@@ -933,8 +935,8 @@ public List<SessionInstance> listSessionInstancesByDate(Date sessionDate, Boolea
         if (!conditions.isEmpty()) {
             jpql.append(" and (").append(String.join(" or ", conditions)).append(")");
         }
-        
-         // Adding sorting to JPQL with custom order
+
+        // Adding sorting to JPQL with custom order
         jpql.append(" order by case when i.completed = true then 1 else 0 end, i.completed asc, i.started desc, i.sessionDate asc, i.startingTime asc");
 
         sessionInstances = sessionInstanceFacade.findByJpql(jpql.toString(), params, TemporalType.DATE);
@@ -988,7 +990,6 @@ public List<SessionInstance> listSessionInstancesByDate(Date sessionDate, Boolea
 //                return name1.compareTo(name2);
 //            }
 //        });
-
         return sessionInstances;
     }
 

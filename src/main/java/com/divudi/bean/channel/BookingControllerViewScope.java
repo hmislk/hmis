@@ -90,9 +90,12 @@ import com.divudi.facade.AgentReferenceBookFacade;
 import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.SessionInstanceFacade;
 import com.divudi.java.CommonFunctions;
+import com.divudi.data.channel.ChannelScheduleEvent;
+import com.divudi.data.channel.SessionInstanceEvent;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -106,6 +109,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
+import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
@@ -113,8 +117,11 @@ import javax.inject.Named;
 import javax.persistence.TemporalType;
 import org.primefaces.event.RowEditEvent;
 import org.primefaces.event.SelectEvent;
+import org.primefaces.event.schedule.ScheduleEntryMoveEvent;
+import org.primefaces.event.schedule.ScheduleEntryResizeEvent;
 import org.primefaces.model.DefaultScheduleEvent;
 import org.primefaces.model.DefaultScheduleModel;
+import org.primefaces.model.ScheduleEvent;
 import org.primefaces.model.ScheduleModel;
 
 /**
@@ -351,6 +358,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     private Staff consultant;
     private ScheduleModel channelModel;
     private String serverTimeZone = ZoneId.systemDefault().toString();
+    private List<ServiceSession> selectedServiceSessions;
+    private ScheduleEvent<?> sEvent = new DefaultScheduleEvent<>();
 
     public void makeNull() {
         consultant = null;
@@ -376,6 +385,40 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         System.out.println("Sessions Calendar OK");
     }
 
+    /**
+     *
+     * @param selectEvent
+     */
+    public void onEventSelectCal(SelectEvent<ScheduleEvent<?>> selectEvent) {
+        sEvent = selectEvent.getObject();
+    }
+
+    public void onDateSelect(SelectEvent<LocalDateTime> selectEvent) {
+        System.out.println("onDateSelect Start");
+        event = (ChannelScheduleEvent) DefaultScheduleEvent.builder()
+                .startDate(selectEvent.getObject())
+                .endDate(selectEvent.getObject().plusHours(1))
+                .build();
+    }
+
+    public void onEventMove(ScheduleEntryMoveEvent event) {
+        FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "Event moved",
+                "Delta:" + event.getDeltaAsDuration());
+
+        addMessage(message);
+    }
+
+    public void onEventResize(ScheduleEntryResizeEvent event) {
+        FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "Event resized",
+                "Start-Delta:" + event.getDeltaStartAsDuration() + ", End-Delta: " + event.getDeltaEndAsDuration());
+
+        addMessage(message);
+    }
+
+    private void addMessage(FacesMessage message) {
+        FacesContext.getCurrentInstance().addMessage(null, message);
+    }
+
     public void findSessions() {
         System.out.println("findSessions Start");
         if (getSpeciality() == null) {
@@ -383,13 +426,17 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             return;
         }
         sessionInstances = new ArrayList<>();
+        selectedServiceSessions = new ArrayList<>();
         String jpql;
         Map params = new HashMap();
 
         jpql = "Select s From ServiceSession s "
                 + " where s.retired=false "
                 + " and s.originatingSession is null"
-                + " and type(s)=:class ";
+                + " and type(s)=:class "
+                + " and s.staff.speciality=:speciality";
+
+        params.put("speciality", getSpeciality());
 
         params.put("class", ServiceSession.class);
 
@@ -409,7 +456,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             params.put("ins", sessionController.getInstitution());
         }
         jpql += " order by s.sessionWeekday";
-        List<ServiceSession> selectedServiceSessions = getServiceSessionFacade().findByJpql(jpql, params);
+        selectedServiceSessions = getServiceSessionFacade().findByJpql(jpql, params);
         System.out.println("selectedServiceSessions = " + selectedServiceSessions.size());
         calculateFee(selectedServiceSessions, channelBillController.getPaymentMethod());
 
@@ -448,14 +495,18 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             edt.set(Calendar.HOUR, et.get(Calendar.HOUR));
             edt.set(Calendar.MINUTE, et.get(Calendar.MINUTE));
 
-            DefaultScheduleEvent<?> event = DefaultScheduleEvent.builder()
-                    .title(si.getName())
+            DefaultScheduleEvent event = new DefaultScheduleEvent<SessionInstance>().builder()
+                    .title(si.getName()+" - " + si.getStaff().getPerson().getName())
+                    .borderColor("#27AE60")
+                    .backgroundColor("#BDE8CA")
                     .startDate(CommonFunctions.convertDateToLocalDateTime(sdt.getTime()))
                     .endDate(CommonFunctions.convertDateToLocalDateTime(edt.getTime()))
-                    .description("Test")
+                    .data(si)
                     .build();
+
             channelModel.addEvent(event);
             System.out.println(si.getName() + " Add");
+            System.out.println("channelModel = " + channelModel.getEventCount());
         }
         System.out.println("channelModel = " + channelModel);
     }
@@ -8467,6 +8518,22 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     public void setConsultant(Staff consultant) {
         this.consultant = consultant;
+    }
+
+    public List<ServiceSession> getSelectedServiceSessions() {
+        return selectedServiceSessions;
+    }
+
+    public void setSelectedServiceSessions(List<ServiceSession> selectedServiceSessions) {
+        this.selectedServiceSessions = selectedServiceSessions;
+    }
+
+    public ScheduleEvent<?> getsEvent() {
+        return sEvent;
+    }
+
+    public void setsEvent(ScheduleEvent<?> sEvent) {
+        this.sEvent = sEvent;
     }
 
 }
