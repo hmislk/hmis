@@ -13,6 +13,7 @@ import com.divudi.entity.WebUser;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Entity;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -38,7 +39,7 @@ public class CashBookEntry implements Serializable {
     private Payment payment;
     @ManyToOne
     private CashBook cashBook;
-    @ManyToOne
+    @Enumerated
     private PaymentMethod paymentMethod;
     private Double entryValue;
     private Double institutionBalance;
@@ -51,6 +52,7 @@ public class CashBookEntry implements Serializable {
     private Institution site;
     @ManyToOne
     private Department department;
+    
     
     //Created Properties
     @ManyToOne
