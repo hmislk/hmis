@@ -12,7 +12,7 @@
         <div class="container-fluid" >
             <div class="card" >
                 <div class="card-header" >
-                    <h2>Upload Fee List Type</h2>
+                    <h2>Upload Collecting Centre Price List</h2>
                 </div>
 
                 <div class="card-body" >
@@ -21,7 +21,7 @@
                                       mode="simple"
                                       label="Choose File"/>
                         <p:commandButton value="Upload"
-                                         action="#{dataUploadController.uploadFeeListTypes()}"
+                                         action="#{dataUploadController.uploadInstitutionItemFees()}"
                                          ajax="false"/>
 
                     </h:form>
@@ -36,13 +36,29 @@
                         <tbody>
                             <tr>
                                 <td>A</td>
-                                <td>Name</td>
+                                <td>Item Code</td>
                             </tr>
                             <tr>
                                 <td>B</td>
-                                <td>Description</td>
+                                <td>Item Name</td>
                             </tr>
-                           
+                            <tr>
+                                <td>C</td>
+                                <td>For Institution</td>
+                            </tr>
+                            <tr>
+                                <td>D</td>
+                                <td>Fee</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>G</td>
+                                <td>Institution</td>
+                            </tr>
+                            <tr>
+                                <td>H</td>
+                                <td>Department</td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>

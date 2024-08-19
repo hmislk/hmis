@@ -665,7 +665,13 @@
                                             <p:outputLabel value="#{ps.id}" ></p:outputLabel>
                                         </p:column>
                                         <p:column headerText="Sample Number">
-                                            <p:outputLabel value="#{ps.sampleId}" ></p:outputLabel>
+                                            <p:inputText id="txtSampleId" value="#{ps.sampleId}" />
+                                            <p:commandButton 
+                                                id="btnUpdateSampleId"
+                                                value="Update" 
+                                                action="#{patientSampleController.savePatientSample(ps)}" 
+                                                process="btnUpdateSampleId txtSampleId" >
+                                            </p:commandButton>
                                         </p:column>
                                         <p:column headerText="Details">
                                             <p:panel header="Details" collapsed="true" toggleable="true" >
@@ -684,17 +690,17 @@
                                                     <h:outputText value="#{ps.department.name}" />
 
                                                     <h:outputText value="Patient" />
-                                                    <h:outputText value="#{ps.patient.name}" />
+                                                    <h:outputText value="#{ps.patient.person.nameWithTitle}" />
 
                                                     <h:outputText value="Patient Investigation" />
                                                     <h:outputText value="#{ps.patientInvestigation.name}" />
 
                                                     <h:outputText value="Bill Amount" />
-                                                    <h:outputText value="#{ps.bill.amount}" />
+                                                    <h:outputText value="#{ps.bill.insId}" />
                                                 </p:panelGrid>
 
                                                 <!-- Barcode Generation PanelGrid -->
-                                                <p:panelGrid columns="2" styleClass="barcode-generation-grid" headerClass="section-header">
+                                                <p:panelGrid columns="2" styleClass="barcode-generation-grid" >
                                                     <h:outputText value="Barcode Generation Details" />
                                                     <h:outputText value=""/>
 
@@ -717,7 +723,7 @@
                                                 </p:panelGrid>
 
                                                 <!-- Sample Collection Details PanelGrid -->
-                                                <p:panelGrid columns="2" styleClass="collection-details-grid" headerClass="section-header">
+                                                <p:panelGrid columns="2" styleClass="collection-details-grid" >
                                                     <h:outputText value="Sample Collection Details" />
                                                     <h:outputText value=""/>
 
@@ -746,7 +752,7 @@
                                                 </p:panelGrid>
 
                                                 <!-- Sent to Lab Details PanelGrid -->
-                                                <p:panelGrid columns="2" styleClass="sent-to-lab-grid" headerClass="section-header">
+                                                <p:panelGrid columns="2" styleClass="sent-to-lab-grid" >
                                                     <h:outputText value="Sent to Lab Details" />
                                                     <h:outputText value=""/>
 
@@ -763,7 +769,7 @@
                                                 </p:panelGrid>
 
                                                 <!-- Sample Received at Lab PanelGrid -->
-                                                <p:panelGrid columns="2" styleClass="sample-received-grid" headerClass="section-header">
+                                                <p:panelGrid columns="2" styleClass="sample-received-grid" >
                                                     <h:outputText value="Sample Received at Lab Details" />
                                                     <h:outputText value=""/>
 
@@ -789,7 +795,7 @@
                                                 </p:panelGrid>
 
                                                 <!-- Sent to Analyzer Details PanelGrid -->
-                                                <p:panelGrid columns="2" styleClass="sent-to-analyzer-grid" headerClass="section-header">
+                                                <p:panelGrid columns="2" styleClass="sent-to-analyzer-grid" >
                                                     <h:outputText value="Sent to Analyzer Details" />
                                                     <h:outputText value=""/>
 
@@ -818,7 +824,7 @@
                                                 </p:panelGrid>
 
                                                 <!-- Received from Analyzer Details PanelGrid -->
-                                                <p:panelGrid columns="2" styleClass="received-from-analyzer-grid" headerClass="section-header">
+                                                <p:panelGrid columns="2" styleClass="received-from-analyzer-grid" >
                                                     <h:outputText value="Received from Analyzer Details" />
                                                     <h:outputText value=""/>
 
@@ -844,7 +850,7 @@
                                                 </p:panelGrid>
 
                                                 <!-- Final Status PanelGrid -->
-                                                <p:panelGrid columns="2" styleClass="final-status-grid" headerClass="section-header">
+                                                <p:panelGrid columns="2" styleClass="final-status-grid" >
                                                     <h:outputText value="Final Status" />
                                                     <h:outputText value=""/>
 
@@ -868,7 +874,7 @@
                                                 </p:panelGrid>
 
                                                 <!-- Cancellation Details PanelGrid -->
-                                                <p:panelGrid columns="2" styleClass="cancellation-grid" headerClass="section-header">
+                                                <p:panelGrid columns="2" styleClass="cancellation-grid" >
                                                     <h:outputText value="Cancellation Details" />
                                                     <h:outputText value=""/>
 
@@ -894,7 +900,7 @@
                                                 </p:panelGrid>
 
                                                 <!-- Retiring Details PanelGrid -->
-                                                <p:panelGrid columns="2" styleClass="retiring-grid" headerClass="section-header">
+                                                <p:panelGrid columns="2" styleClass="retiring-grid" >
                                                     <h:outputText value="Retiring Details" />
                                                     <h:outputText value=""/>
 
