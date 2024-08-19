@@ -118,7 +118,7 @@
                             <td><h:outputLabel value="Date Of Birth"></h:outputLabel></td>
                             <td><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
                             <td><h:outputLabel value="#{cc.attrs.admission.patient.person.dob}" >
-                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                                 </h:outputLabel></td>
                         </tr>
                         <tr>
