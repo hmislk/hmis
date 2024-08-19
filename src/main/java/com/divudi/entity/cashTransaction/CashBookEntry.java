@@ -4,6 +4,7 @@
  */
 package com.divudi.entity.cashTransaction;
 
+import com.divudi.data.PaymentMethod;
 import com.divudi.entity.Bill;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
@@ -31,12 +32,24 @@ public class CashBookEntry implements Serializable {
     private Long id;
     
     private String name;
+    @ManyToOne
     private Bill bill;
+    @ManyToOne
     private Payment payment;
+    @ManyToOne
     private CashBook cashBook;
+    @ManyToOne
+    private PaymentMethod paymentMethod;
+    private Double entryValue;
+    private Double institutionBalance;
+    private Double departmentBalance;
+    private Double siteBalance;
     
+    @ManyToOne
     private Institution institution;
+    @ManyToOne
     private Institution site;
+    @ManyToOne
     private Department department;
     
     //Created Properties
@@ -210,6 +223,46 @@ public class CashBookEntry implements Serializable {
 
     public void setEditedAt(Date editedAt) {
         this.editedAt = editedAt;
+    }
+
+    public PaymentMethod getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+
+    public Double getEntryValue() {
+        return entryValue;
+    }
+
+    public void setEntryValue(Double entryValue) {
+        this.entryValue = entryValue;
+    }
+
+    public Double getInstitutionBalance() {
+        return institutionBalance;
+    }
+
+    public void setInstitutionBalance(Double institutionBalance) {
+        this.institutionBalance = institutionBalance;
+    }
+
+    public Double getDepartmentBalance() {
+        return departmentBalance;
+    }
+
+    public void setDepartmentBalance(Double departmentBalance) {
+        this.departmentBalance = departmentBalance;
+    }
+
+    public Double getSiteBalance() {
+        return siteBalance;
+    }
+
+    public void setSiteBalance(Double siteBalance) {
+        this.siteBalance = siteBalance;
     }
     
 }

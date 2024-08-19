@@ -29,8 +29,11 @@ public class CashBook implements Serializable {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private String Name;
+    @ManyToOne
     private Institution institution;
+    @ManyToOne
     private Institution site;
+    @ManyToOne
     private Department department;
     
     //Created Properties
