@@ -581,23 +581,6 @@ public class ItemController implements Serializable {
         m.put("ret", false);
         m.put("code", code);
         Item item = getFacade().findFirstByJpql(jpql, m);
-        if (item == null) {
-            jpql = "select i "
-                    + " from Item i "
-                    + " where i.code=:code";
-            m = new HashMap();
-            m.put("code", code);
-            item = getFacade().findFirstByJpql(jpql, m);
-            if (item != null) {
-                item.setRetired(false);
-                getFacade().edit(item);
-            } else {
-                item = new Item();
-                item.setName(code);
-                item.setCode(code);
-                getFacade().create(item);
-            }
-        }
         return item;
     }
 
