@@ -351,7 +351,7 @@ public class ChannelSessionWizard implements Serializable {
 
     public String onFlowProcess(FlowEvent event) {
 
-        String phase = event.getPhaseId().getName();
+        
 
         switch (event.getNewStep()) {
             case "speciality":
