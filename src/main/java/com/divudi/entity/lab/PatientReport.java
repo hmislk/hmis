@@ -71,6 +71,20 @@ public class PatientReport implements Serializable {
     private Date retiredAt;
     private String retireComments;
     //DataEntry
+    private Boolean automated = false;
+    @ManyToOne
+    private WebUser automatedUser;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date automatedAt;
+    @ManyToOne
+    private Department automatedDepartment;
+    @ManyToOne
+    private Institution automatedInstitution;
+    @ManyToOne
+    private Machine automatedAnalyzer;
+    @ManyToOne
+    private DepartmentMachine automatedDepartmentAnalyzer;
+    //DataEntry
     private Boolean dataEntered = false;
     @ManyToOne
     private WebUser dataEntryUser;
@@ -725,6 +739,64 @@ public class PatientReport implements Serializable {
         this.qrCodeContentsLink = qrCodeContentsLink;
     }
 
+    public Machine getAutomatedAnalyzer() {
+        return automatedAnalyzer;
+    }
+
+    public void setAutomatedAnalyzer(Machine automatedAnalyzer) {
+        this.automatedAnalyzer = automatedAnalyzer;
+    }
+
+    public DepartmentMachine getAutomatedDepartmentAnalyzer() {
+        return automatedDepartmentAnalyzer;
+    }
+
+    public void setAutomatedDepartmentAnalyzer(DepartmentMachine automatedDepartmentAnalyzer) {
+        this.automatedDepartmentAnalyzer = automatedDepartmentAnalyzer;
+    }
+
+    public Boolean getAutomated() {
+        return automated;
+    }
+
+    public void setAutomated(Boolean automated) {
+        this.automated = automated;
+    }
+
+    public WebUser getAutomatedUser() {
+        return automatedUser;
+    }
+
+    public void setAutomatedUser(WebUser automatedUser) {
+        this.automatedUser = automatedUser;
+    }
+
+    public Date getAutomatedAt() {
+        return automatedAt;
+    }
+
+    public void setAutomatedAt(Date automatedAt) {
+        this.automatedAt = automatedAt;
+    }
+
+    public Department getAutomatedDepartment() {
+        return automatedDepartment;
+    }
+
+    public void setAutomatedDepartment(Department automatedDepartment) {
+        this.automatedDepartment = automatedDepartment;
+    }
+
+    public Institution getAutomatedInstitution() {
+        return automatedInstitution;
+    }
+
+    public void setAutomatedInstitution(Institution automatedInstitution) {
+        this.automatedInstitution = automatedInstitution;
+    }
+
+    
+    
     static class PatientReportItemValueComparator implements Comparator<PatientReportItemValue> {
 
         @Override
