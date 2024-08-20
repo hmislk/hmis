@@ -1,0 +1,101 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                template="/resources/template/template_for_patient_portal.xhtml"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:p="http://primefaces.org/ui">
+
+    <ui:define name="content">
+        <h:form id="paymentForm">
+            <div class="row">
+                <nav class="navbar sticky-top navbar-expand-lg navbar-dark bg-dark p-0">
+                    <div class="d-flex justify-content-between align-items-center w-100">
+                        <a class="navbar-brand ml-4 mx-2 p-4"><h3>#{sessionController.institution.name}</h3></a>
+                        <p:commandButton value="Logout" class="ui-button-danger m-4" icon="fas fa-right-from-bracket" ajax="false" action="#{patientPortalController.reset}" rendered="#{patientPortalController.otpVerify}"></p:commandButton>
+                    </div>
+                </nav>
+            </div>
+
+            <div class="d-flex justify-content-center align-items-center mt-5">
+                <div style="max-width: 800px"  class="card w-100 shadow p-4">
+                    <h3 class="my-4">Patient Details</h3>
+                    <div style="display: flex; flex-direction: column;">
+                        <div class="d-flex justify-content-between">
+                            <p>Name: </p>
+                            <p style="font-weight: bolder">#{patientPortalController.patient.person.nameWithTitle}</p>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <p>Address: </p>
+                            <p style="font-weight: bolder">#{patientPortalController.patient.person.address}</p>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <p>Phone Number: </p>
+                            <p style="font-weight: bolder">#{patientPortalController.patient.person.phone}</p>
+                        </div>
+                    </div>
+
+                    <h3 class="my-4">Doctor and Session Details</h3>
+                    <div>
+                        <div class="d-flex justify-content-between">
+                            <p>Doctor: </p>
+                            <p style="font-weight: bolder">#{patientPortalController.selectedSessionInstance.staff.person.nameWithTitle}</p>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <p>Speciality: </p>
+                            <p style="font-weight: bolder">#{patientPortalController.selectedSessionInstance.staff.speciality.name}</p>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <p>Session: </p>
+                            <p style="font-weight: bolder">#{patientPortalController.selectedSessionInstance.name}</p>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <p>Session Date: </p>
+                            <p style="font-weight: bolder">#{patientPortalController.selectedSessionInstance.sessionDate}</p>
+                        </div>
+                    </div>
+
+                    <!-- Add more session details as needed -->
+
+                    <h3 class="my-4">Payment Information</h3>
+                    <div class="d-flex justify-content-between">
+                        <p>Total Amount: </p>
+                        <p style="font-weight: bolder">#{patientPortalController.selectedSessionInstance.originatingSession.total}</p>
+                    </div>
+                    <div class="mt-3 mb-3">
+                        <p:selectBooleanCheckbox class="mr-4" id="termsCheckbox" onchange="enablePayButton(this);"/>  I have read and agree to the <a href="#">terms and conditions</a> and <a href="#">privacy policy</a>.
+                    </div>
+                    <button type="button" id="payButton" onclick="startPayment();" class="btn btn-primary w-100" disabled="true">Pay Now</button>
+                    <div class="mt-3">
+                        <div class="d-flex align-items-center gap-2" >
+                            <i class="fas fa-lock" style="color: green;"></i>
+                            <h:outputLabel class="ml-4" value=" Secure Payment With" style="color: green;" />
+                        </div>
+                    <p:graphicImage library="image" name="PaymentGatewayFooter.jpg" />
+                </div>
+                </div>               
+            </div>
+        </h:form>
+
+        <script src="https://cbcmpgs.gateway.mastercard.com/checkout/version/61/checkout.js"></script>
+        <script type="text/javascript">
+                        function startPayment() {
+                            Checkout.configure({
+                                session: {id: '#{paymentGatewayController.sessionId}'},
+                                interaction: {
+                                    merchant: {
+                                        name: "Sethma Hospital",
+                                        address: {line1: 'Test address'}
+                                    }
+                                }
+                            });
+                            Checkout.showPaymentPage();  // Or Checkout.showLightbox();
+                        }
+        </script>
+        <script type="text/javascript">
+            function enablePayButton(checkbox) {
+                var payButton = document.getElementById('payButton');
+                payButton.disabled = !checkbox.checked;
+            }
+        </script>
+    </ui:define>
+</ui:composition>

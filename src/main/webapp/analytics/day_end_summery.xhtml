@@ -1,0 +1,326 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+
+        <ui:composition template="/analytics/index.xhtml">
+
+
+            <ui:define name="report">
+                <h:form>
+
+                    <p:panelGrid columns="2" >
+
+                        <p:outputLabel value="From" ></p:outputLabel>
+                        <p:calendar 
+                            value="#{financialTransactionController.fromDate}"
+                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
+
+                        <h:outputLabel value="To" ></h:outputLabel>
+                        <p:calendar 
+                            value="#{financialTransactionController.toDate}" 
+                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
+
+                        <h:outputLabel value="User"/>
+                        <p:selectOneMenu class="w-100 mx-4" filter="true" value="#{searchController.webUser}" id="acIx">
+                            <f:selectItem itemLabel="Select a user"/>
+                            <f:selectItems value="#{webUserController.items}" var="st" itemLabel="#{st.name}" itemValue="#{st}"/>
+                        </p:selectOneMenu>
+
+                        <h:commandButton action="#{financialTransactionController.processDayEndSummary()}" value="Process" ></h:commandButton>
+
+                    </p:panelGrid>
+
+                    <table class="table table-striped">
+                        <thead class="thead-dark">
+                            <tr class="table-primary">
+                                <th>Category</th>
+                                <th>In</th>
+                                <th>Out</th>
+                                <th>Net Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <p:commandLink 
+                                        value="Cash" 
+                                        action="#{financialTransactionController.navigateToCashierSummaryBreakdownFromShiftClosingForCash()}" 
+                                        ></p:commandLink>
+                                </td>
+                                <td>
+                                    <h:outputText value="#{financialTransactionController.financialReportByPayments.collectedCash}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </td>
+                                <td>
+                                    <h:outputText value="#{financialTransactionController.financialReportByPayments.refundedCash}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </td>
+                                <td>
+                                    <h:outputText value="#{financialTransactionController.financialReportByPayments.netCashTotal}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <p:commandLink 
+                                        value="Card" 
+                                        action="#{financialTransactionController.navigateToCashierSummaryBreakdownFromShiftClosingForCard()}" 
+                                        ></p:commandLink>
+                                </td>
+                                <td>
+                                    <h:outputText value="#{financialTransactionController.financialReportByPayments.collectedCreditCard}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </td>
+                                <td>
+                                    <h:outputText value="#{financialTransactionController.financialReportByPayments.refundedCreditCard}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </td>
+                                <td>
+                                    <h:outputText value="#{financialTransactionController.financialReportByPayments.netCreditCardTotal}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <p:commandLink 
+                                        value="Voucher" 
+                                        action="#{financialTransactionController.navigateToCashierSummaryBreakdownFromShiftClosingForAllExceptCashCardVaucher()}" 
+                                        ></p:commandLink>
+                                </td>
+                                <td>
+                                    <h:outputText value="#{financialTransactionController.financialReportByPayments.collectedVoucher}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </td>
+                                <td>
+                                    <h:outputText value="#{financialTransactionController.financialReportByPayments.refundedVoucher}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </td>
+                                <td>
+                                    <h:outputText value="#{financialTransactionController.financialReportByPayments.netVoucherTotal}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <p:commandLink 
+                                        value="Other" 
+                                        action="#{financialTransactionController.navigateToCashierSummaryBreakdownFromShiftClosingForAllExceptCashCardVaucher()}" 
+                                        ></p:commandLink>
+                                </td>
+                                <td>
+                                    <h:outputText value="#{financialTransactionController.financialReportByPayments.collectedOtherNonCredit}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </td>
+                                <td>
+                                    <h:outputText value="#{financialTransactionController.financialReportByPayments.refundedOtherNonCredit}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </td>
+                                <td>
+                                    <h:outputText value="#{financialTransactionController.financialReportByPayments.netOtherNonCreditTotal}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Float Start Funds</td>
+                                <td>
+                                    <h:outputText value="#{financialTransactionController.financialReportByPayments.shiftStartFunds}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </td>
+                                <td></td> <!-- Assuming no refunded column for My-Safe -->
+                                <td>
+                                    <h:outputText value="#{financialTransactionController.financialReportByPayments.shiftStartFunds}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </td> <!-- Assuming My-Safe equals net for floats -->
+                            </tr>
+                            <tr>
+                                <td>Float Collected &nbsp; Handovers</td>
+                                <td>
+                                    <h:outputText value="#{financialTransactionController.financialReportByPayments.floatReceived}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </td>
+                                <td>
+                                    <h:outputText value="#{financialTransactionController.financialReportByPayments.floatHandover}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </td> <!-- Assuming no refunded column for floats -->
+                                <td>
+                                    <h:outputText value="#{financialTransactionController.financialReportByPayments.floatReceived - financialTransactionController.financialReportByPayments.floatHandover}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </td> <!-- Assuming collected equals net for floats -->
+                            </tr>
+                            <tr>
+                                <td>Bank Transaction</td>
+                                <td>
+                                    <h:outputText value="#{financialTransactionController.financialReportByPayments.bankWithdrawals}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </td>
+                                <td>
+                                    <h:outputText value="#{financialTransactionController.financialReportByPayments.bankDeposits}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </td> <!-- Assuming no refunded column for bank withdrawals -->
+                                <td>
+                                    <h:outputText value="#{financialTransactionController.financialReportByPayments.bankWithdrawals - financialTransactionController.financialReportByPayments.bankDeposits}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </td> <!-- Assuming withdrawals equals net -->
+                            </tr>
+                            <h:panelGroup rendered="false" >
+                                <tr>
+                                    <td>Cash In / Outs</td>
+                                    <td>
+                                        <h:outputText value="#{financialTransactionController.financialReportByPayments.cashCollectedTransferIn}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </td>
+                                    <td>
+                                        <h:outputText value="#{financialTransactionController.financialReportByPayments.cashGivenOutTransferOut}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </td> <!-- Assuming no refunded column for cash given out -->
+                                    <td>
+                                        <h:outputText value="#{financialTransactionController.financialReportByPayments.cashCollectedTransferIn - financialTransactionController.financialReportByPayments.cashGivenOutTransferOut}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </td> <!-- Assuming cash given out equals net -->
+                                </tr>
+                            </h:panelGroup>
+                            <tr class="table-primary"> 
+                                <td>Total</td>
+                                <td colspan="2"></td>
+                                <td>
+                                    <h:outputText value="#{financialTransactionController.financialReportByPayments.total}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <p:commandButton value="Download Excel" ajax="false">
+                        <p:dataExporter target="tblPaymentSummary" type="xlsx" fileName="payment_summary" ></p:dataExporter>
+                    </p:commandButton>
+
+                    <p:dataTable id="tblPaymentSummary" value="#{financialTransactionController.paymentSummaryBundle.reportTemplateRows}" var="r"  styleClass="ui-datatable-striped">
+                        <p:column headerText="Service Type">
+                            <h:outputText value="#{r.serviceType != null ? r.serviceType.label : ''}" />
+                        </p:column>
+                        <p:column headerText="Bill Type">
+                            <h:outputText value="#{r.billTypeAtomic != null ? r.billTypeAtomic.label : ''}" />
+                        </p:column>
+                        <p:column headerText="Category">
+                            <h:outputText value="#{r.category != null ? r.category.name : ''}" />
+                        </p:column>
+                        <p:column headerText="Credit Company">
+                            <h:outputText value="#{r.creditCompany != null ? r.creditCompany.name : ''}" />
+                        </p:column>
+                        <p:column headerText="To Department">
+                            <h:outputText value="#{r.toDepartment != null ? r.toDepartment.name : ''}" />
+                        </p:column>
+                        <p:column headerText="Row Value">
+                            <h:outputText value="#{r.rowValue}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                        </p:column>
+                    </p:dataTable>
+
+
+
+                    <h:panelGroup rendered="false" layout="block" class="w-100" style="overflow-x: scroll;">
+                        <p:commandButton value="Export to excel" >
+                            <p:dataExporter type="xlsx" target="tblPayments" fileName="exportedData"/>
+                        </p:commandButton>
+                        <p:dataTable 
+                            id="tblPayments" 
+                            value="#{financialTransactionController.paymentsFromShiftSratToNow}" 
+                            var="bp" 
+                            paginator="true"
+                            paginatorPosition="bottom"
+                            rows="5"
+                            style="width:150em;"
+                            rowKey="#{bp.id}"
+                            paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                            currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
+                            rowsPerPageTemplate="5,10,20,50,100">
+                            <p:column headerText="Payment ID" >
+                                <p:inputText value="#{bp.id}" ></p:inputText>
+                            </p:column>
+                            <p:column headerText="Time" >
+                                <h:outputText value="#{bp.createdAt}" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" ></f:convertDateTime>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Payment Method" >
+                                <p:inputText value="#{bp.paymentMethod}" ></p:inputText>
+                            </p:column>
+                            <p:column headerText="Bill ID" >
+                                <p:inputText value="#{bp.bill.id}" ></p:inputText>
+                            </p:column>
+                            <p:column headerText="Bill Type" >
+                                <p:inputText value="#{bp.bill.billType}" ></p:inputText>
+                            </p:column>
+
+                            <p:column headerText="Bill Class" >
+                                <p:inputText value="#{bp.bill.billClass}" ></p:inputText>
+                            </p:column>
+                            <p:column headerText="Bill Type Atomic" >
+                                <p:inputText value="#{bp.bill.billTypeAtomic}" ></p:inputText>
+                            </p:column>
+                            <p:column headerText="Bill Type Atomic Cash Type" >
+                                <h:outputText value="#{bp.bill.billTypeAtomic.billFinanceType}" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Payment Method">
+                                <h:outputText value="#{bp.bill.paymentMethod}" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Patient">
+                                <h:outputText value="#{bp.bill.patient.person.nameWithTitle}" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Value" >
+                                <p:inputText value="#{bp.paidValue}" />
+                            </p:column>
+                            <p:column headerText="Action" >
+                                <p:commandButton 
+                                    class="ui-button-success"
+                                    icon=" fa-solid fa-eye"
+                                    value="View Bill" 
+                                    ajax="false"
+                                    action="#{billSearch.navigateViewBillByBillTypeAtomic()}"
+                                    >
+                                    <f:setPropertyActionListener value="#{bp.bill}" target="#{billSearch.bill}"/>
+                                </p:commandButton>
+                            </p:column>
+                        </p:dataTable>
+                    </h:panelGroup>
+
+
+                </h:form>
+
+
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

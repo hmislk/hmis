@@ -1,59 +1,55 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
-                template="/resources/template/template.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/reportInstitution/report_own.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://java.sun.com/jsf/core"
-                xmlns:ca="http://java.sun.com/jsf/composite/cashSummery"
-                xmlns:pe="http://primefaces.org/ui/extensions">
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ca="http://xmlns.jcp.org/jsf/composite/cashSummery"
+                >
 
-    <ui:define name="content">
-        <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
+    <ui:define name="subcontent">
+<!--        <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>-->
         <h:form>
             <p:panel>
                 <f:facet name="header" >                
                     <h:outputLabel value="OPD And Pharmacy Staff Welfare Bills"/>
                 </f:facet>
-                <h:panelGrid columns="2">
+                <h:panelGrid columns="2" class="my-2">
                     <h:outputLabel value="From Date"/>
-                    <p:calendar id="frmDate" value="#{serviceSummery.fromDate}" navigator="true"  pattern="dd MMMM yyyy  HH:mm:ss" >
+                    <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="frmDate" value="#{serviceSummery.fromDate}" pattern="dd MMMM yyyy  HH:mm:ss" >
                     </p:calendar>
 
                     <h:outputLabel value="To Date"/>
-                    <p:calendar id="toDate" value="#{serviceSummery.toDate}" navigator="true" pattern="dd MMMM yyyy  HH:mm:ss" >
+                    <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="toDate" value="#{serviceSummery.toDate}" pattern="dd MMMM yyyy  HH:mm:ss" >
                     </p:calendar>
                 </h:panelGrid>
-            </p:panel>
-            <p:panel id="panelPrint"  styleClass=" summeryBorder">
-                <p:panelGrid columns="4">
-                    <p:commandButton id="btnRefresh" value="Refresh" ajax="false" 
-                                     styleClass="noPrintButton" style="float: right;" 
+                <h:panelGrid columns="6" class="my-2" >
+                    <p:commandButton id="btnRefresh" value="Process" ajax="false" 
+                                     class="ui-button-warning" icon="fas fa-cogs"
                                      action="#{serviceSummery.opdPharmacyStaffWelfarebills}"/>
                     <p:defaultCommand target="btnRefresh"/>
 
                     <p:commandButton ajax="false" value="Print"  
-                                     styleClass="noPrintButton" style="float: right;" >
+                                     class="ui-button-info mx-2" icon="fas fa-print" >
                         <p:printer target="panelPrint" />
                     </p:commandButton>
 
-                    <p:commandButton value="Excel2" ajax="false" style="float: right;" styleClass="noPrintButton" >
-                        <pe:exporter type="xlsx" target="opd" fileName="Service_Summery"  />
+                    <p:commandButton value="Excel" ajax="false" class="ui-button-success" icon="fas fa-file-excel" >
+                        <p:dataExporter type="xlsx" target="opd" fileName="Service_Summery"  />
                     </p:commandButton>
-                </p:panelGrid>
-
-                <p:spacer height="30"/>
-
+                </h:panelGrid>
+                <p:panel id="panelPrint"  styleClass="summeryBorder">
                 <p:dataTable id="opd" rowIndexVar="i" 
                              rowStyleClass="#{b.billType eq 'OpdBill' ?'greenText':''}"
                              value="#{serviceSummery.bills}" var="b">                   
                     <f:facet name="header">
                         <h:outputLabel value="Staff Welfare Bills" />
-                        <h:outputLabel value="&emsp;&emsp;From " style="white-space:pre-line;"/>
+                        <h:outputLabel value="&emsp;&emsp;From : &nbsp;" style="white-space:pre-line;"/>
                         <h:outputLabel value="#{serviceSummery.fromDate}">
                             <f:convertDateTime  pattern="dd MMMM yyyy  hh:mm:ss a" />
                         </h:outputLabel>
-                        <h:outputLabel value="&emsp;&emsp;To "/> 
+                        <h:outputLabel value="&emsp;&emsp;To : &nbsp;"/> 
                         <h:outputLabel value="#{serviceSummery.toDate}">
                             <f:convertDateTime  pattern="dd MMMM yyyy  hh:mm:ss a" />
                         </h:outputLabel>
@@ -106,7 +102,7 @@
                             <p:outputLabel value="Date"/>
                         </f:facet>
                         <h:outputLabel value="#{b.createdAt}">
-                            <f:convertDateTime pattern="dd MMMM yyyy"/>
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                         </h:outputLabel>
                     </p:column>
                     <p:column headerText="Total Amount" style="text-align: right">
@@ -156,6 +152,7 @@
 
 
             </p:panel>
+                </p:panel>
         </h:form>
 
     </ui:define>

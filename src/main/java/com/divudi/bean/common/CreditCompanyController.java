@@ -1,13 +1,13 @@
 /*
- * MSc(Biomedical Informatics) Project
+ * Open Hospital Management Information System
  *
- * Development and Implementation of a Web-based Combined Data Repository of
- Genealogical, Clinical, Laboratory and Genetic Data
- * and
- * a Set of Related Tools
+ * Dr M H B Ariyaratne
+ * Acting Consultant (Health Informatics)
+ * (94) 71 5812399
+ * (94) 71 5812399
  */
 package com.divudi.bean.common;
-
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.InstitutionType;
 import com.divudi.entity.Category;
 import com.divudi.entity.Institution;
@@ -26,8 +26,8 @@ import javax.inject.Named;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- * Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
+ * Acting Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -48,17 +48,38 @@ public class CreditCompanyController implements Serializable {
 
     private List<Institution> items = null;
     List<Institution> institutions;
+    private List<Institution> creditCompany;
     String selectText = "";
 
+    public Institution findCreditCompanyByName(String name) {
+        if (name == null) {
+            return null;
+        }
+        if (name.trim().equals("")) {
+            return null;
+        }
+        String jpql = "select c "
+                + " from Institution c "
+                + " where c.retired=:ret "
+                + " and c.institutionType=:t "
+                + " and c.name=:n";
+        Map m = new HashMap<>();
+        m.put("ret", false);
+        m.put("t", InstitutionType.CreditCompany);
+        m.put("n", name);
+        return getFacade().findFirstByJpql(jpql, m);
+    }
+    
+    
     public List<Institution> completeCredit(String query) {
         List<Institution> suggestions;
         String sql;
         if (query == null) {
             suggestions = new ArrayList<>();
         } else {
-            sql = "select p from Institution p where p.retired=false and p.institutionType=com.divudi.data.InstitutionType.CreditCompany and upper(p.name) like '%" + query.toUpperCase() + "%' order by p.name";
-            //////System.out.println(sql);
-            suggestions = getFacade().findBySQL(sql);
+            sql = "select p from Institution p where p.retired=false and p.institutionType=com.divudi.data.InstitutionType.CreditCompany and (p.name) like '%" + query.toUpperCase() + "%' order by p.name";
+            //////// // System.out.println(sql);
+            suggestions = getFacade().findByJpql(sql);
         }
         return suggestions;
     }
@@ -66,11 +87,11 @@ public class CreditCompanyController implements Serializable {
     public List<Institution> getCreditCompanies() {
         String sql;
         sql = "select p from Institution p where p.retired=false and p.institutionType=com.divudi.data.InstitutionType.CreditCompany order by p.name";
-        return getFacade().findBySQL(sql);
+        return getFacade().findByJpql(sql);
     }
 
     public List<Institution> getSelectedItems() {
-        selectedItems = getFacade().findBySQL("select c from Institution c where c.retired=false and i.institutionType = com.divudi.data.InstitutionType.CreditCompany  and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+        selectedItems = getFacade().findByJpql("select c from Institution c where c.retired=false and i.institutionType = com.divudi.data.InstitutionType.CreditCompany  and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
     }
 
@@ -119,15 +140,30 @@ public class CreditCompanyController implements Serializable {
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            UtilityController.addSuccessMessage("Saved Successfully");
+            JsfUtil.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
         getItems();
+    }
+    
+    public void save(Institution cc) {
+        if (cc == null) {
+            return;
+        }
+        if (cc.getId() != null) {
+            getFacade().edit(cc);
+            JsfUtil.addSuccessMessage("Updated Successfully.");
+        } else {
+            cc.setCreatedAt(new Date());
+            cc.setCreater(getSessionController().getLoggedUser());
+            getFacade().create(cc);
+            JsfUtil.addSuccessMessage("Saved Successfully");
+        }
     }
 
     public void fillCreditCompany() {
@@ -137,9 +173,9 @@ public class CreditCompanyController implements Serializable {
 
         String sql = "select i from Institution i "
                 + "where i.retired=false ";
-        institutions = getEjbFacade().findBySQL(sql);
+        institutions = getEjbFacade().findByJpql(sql);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Check Entered Data/Credit Company/credit card companies(/faces/dataAdmin/credit_companies.xhtml)");
+        
     }
 
     public void fillInstitutions() {
@@ -155,7 +191,7 @@ public class CreditCompanyController implements Serializable {
             m.put("insT", institutionType);
         }
         
-        institutions = getEjbFacade().findBySQL(sql,m);
+        institutions = getEjbFacade().findByJpql(sql,m);
 
     }
 
@@ -201,9 +237,9 @@ public class CreditCompanyController implements Serializable {
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
@@ -218,7 +254,7 @@ public class CreditCompanyController implements Serializable {
     public List<Institution> getItems() {
         if (items == null) {
             String sql = "SELECT i FROM Institution i where i.retired=false and i.institutionType = com.divudi.data.InstitutionType.CreditCompany order by i.name";
-            items = getEjbFacade().findBySQL(sql);
+            items = getEjbFacade().findByJpql(sql);
         }
         return items;
     }
@@ -237,6 +273,24 @@ public class CreditCompanyController implements Serializable {
 
     public void setInstitutionType(InstitutionType institutionType) {
         this.institutionType = institutionType;
+    }
+
+    public List<Institution> getCreditCompany() {
+        if (creditCompany == null) {
+            String sql = "select p from Institution p where p.retired=false and "
+                   + "p.institutionType = :institutionType "
+                   + "order by p.name";
+
+            Map<String, Object> m = new HashMap<>();
+            m.put("institutionType", InstitutionType.CreditCompany);
+
+            creditCompany = getFacade().findByJpql(sql, m);
+        }
+    return creditCompany;
+    }
+
+    public void setCreditCompany(List<Institution> creditCompany) {
+        this.creditCompany = creditCompany;
     }
 
     /**

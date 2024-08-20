@@ -1,12 +1,12 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:ph="http://java.sun.com/jsf/composite/pharmacy"
-      xmlns:pa="http://java.sun.com/jsf/composite/paymentMethod">
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ph="http://xmlns.jcp.org/jsf/composite/pharmacy"
+      xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod">
 
     <h:body>
 
@@ -43,7 +43,7 @@
                             <p:commandButton ajax= "false"  
                                              value="Settle and Accept Payment" 
                                              id="settle"
-                                             onclick="onSubmitButton();"
+                                             
                                              action="#{opdPreSettleController.settle()}" />
 
                             <p:commandButton ajax="false" value="Back To Search"
@@ -90,7 +90,7 @@
                                         <h:outputLabel id="netTotal" value="#{opdPreSettleController.billedBill.netTotal}" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
-                                        <h:outputLabel value="paid Amount" ></h:outputLabel>
+                                        <h:outputLabel value="Paid Amount" ></h:outputLabel>
                                         <h:outputLabel id="netPaid" value="#{opdPreSettleController.billedBill.cashPaid}" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
@@ -113,7 +113,7 @@
                                     </p:column>
                                     <p:column  headerText="Bill Raised At">
                                         <h:outputLabel value="#{rb.createdAt}" >
-                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </h:outputLabel>
                                     </p:column>
 
@@ -147,7 +147,7 @@
                                             <h:outputLabel style="color: red;" value="Cancelled at " />
                                             <h:outputLabel style="color: red;" rendered="#{rb.cancelled}"
                                                            value="#{rb.cancelledBill.createdAt}" >
-                                                <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                             </h:outputLabel>
                                             <h:outputLabel style="color: red;" value=" by " />
                                             <h:outputLabel style="color: red;" rendered="#{rb.cancelled}"
@@ -158,7 +158,7 @@
                                             <h:outputLabel style="color: red;" value="Refunded at " />
                                             <h:outputLabel style="color: red;" rendered="#{rb.refunded}"
                                                            value="#{rb.referenceBill.createdAt}" >
-                                                <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                             </h:outputLabel>
                                         </h:panelGroup> 
                                     </p:column> 

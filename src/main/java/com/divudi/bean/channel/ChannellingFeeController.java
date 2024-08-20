@@ -1,22 +1,21 @@
 /*
- * MSc(Biomedical Informatics) Project
+ * Open Hospital Management Information System
  *
- * Development and Implementation of a Web-based Combined Data Repository of
- Genealogical, Clinical, Laboratory and Genetic Data
- * and
- * a Set of Related Tools
+ * Dr M H B Ariyaratne
+ * Acting Consultant (Health Informatics)
+ * (94) 71 5812399
+ * (94) 71 5812399
  */
 package com.divudi.bean.channel;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.data.FeeType;
 import com.divudi.entity.Department;
 import com.divudi.entity.Fee;
 import com.divudi.entity.Item;
 import com.divudi.entity.ItemFee;
 import com.divudi.entity.ServiceSession;
-import com.divudi.entity.SessionNumberGenerator;
 import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
 import com.divudi.facade.DepartmentFacade;
@@ -25,7 +24,7 @@ import com.divudi.facade.ItemFeeFacade;
 import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.SessionNumberGeneratorFacade;
 import com.divudi.facade.StaffFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -39,8 +38,8 @@ import javax.inject.Named;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- * Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
+ * Acting Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -105,14 +104,14 @@ public class ChannellingFeeController implements Serializable {
         }
     }
 
-    public SessionNumberGenerator saveSessionNumber() {
-        SessionNumberGenerator sessionNumberGenerator = new SessionNumberGenerator();
-        sessionNumberGenerator.setSpeciality(speciality);
-        sessionNumberGenerator.setStaff(doctor);
-        sessionNumberGenerator.setName(doctor.getPerson().getName() + " " + serviceSession.getOriginatingSession().getName());
-        sessionNumberGeneratorFacade.create(sessionNumberGenerator);
-        return sessionNumberGenerator;
-    }
+//    public SessionNumberGenerator saveSessionNumber() {
+//        SessionNumberGenerator sessionNumberGenerator = new SessionNumberGenerator();
+//        sessionNumberGenerator.setSpeciality(speciality);
+//        sessionNumberGenerator.setStaff(doctor);
+//        sessionNumberGenerator.setName(doctor.getPerson().getName() + " " + serviceSession.getOriginatingSession().getName());
+//        sessionNumberGeneratorFacade.create(sessionNumberGenerator);
+//        return sessionNumberGenerator;
+//    }
 
     public void createAllFeesForServiceSession() {
         createAllFeesForServiceSessionWithoutScanning();
@@ -186,7 +185,7 @@ public class ChannellingFeeController implements Serializable {
             String sql = "Select d From Department d where d.retired=false and d.institution=:ins order by d.name";
             Map m = new HashMap();
             m.put("ins", getFee().getInstitution());
-            departments = getDepartmentFacade().findBySQL(sql, m);
+            departments = getDepartmentFacade().findByJpql(sql, m);
         }
         return departments;
     }
@@ -199,12 +198,12 @@ public class ChannellingFeeController implements Serializable {
             Map m = new HashMap();
             m.put("qry", "%" + query.toUpperCase() + "%");
             if (getFee().getSpeciality() == null) {
-                sql = "select p from Staff p where p.retired=false and (upper(p.person.name) like :qry or upper(p.code) like :qry ) order by p.person.name";
+                sql = "select p from Staff p where p.retired=false and ((p.person.name) like :qry or (p.code) like :qry ) order by p.person.name";
             } else {
-                sql = "select p from Staff p where p.speciality=:spe and p.retired=false and (upper(p.person.name) like :qry or  upper(p.code) like :qry) order by p.person.name";
+                sql = "select p from Staff p where p.speciality=:spe and p.retired=false and ((p.person.name) like :qry or  (p.code) like :qry) order by p.person.name";
                 m.put("spe", getFee().getSpeciality());
             }
-            staffSuggestions = getStaffFacade().findBySQL(sql, m);
+            staffSuggestions = getStaffFacade().findByJpql(sql, m);
 
         }
         return staffSuggestions;
@@ -220,28 +219,28 @@ public class ChannellingFeeController implements Serializable {
             if (speciality == null) {
                 sql = "select p from Staff p "
                         + " where p.retired=false "
-                        + " and (upper(p.person.name) like :qry "
-                        + " or upper(p.code) like :qry ) "
+                        + " and ((p.person.name) like :qry "
+                        + " or (p.code) like :qry ) "
                         + " order by p.person.name";
             } else {
                 sql = "select p from Staff p "
                         + " where p.speciality=:spe "
                         + " and p.retired=false "
-                        + " and (upper(p.person.name) like :qry "
-                        + " or  upper(p.code) like :qry) "
+                        + " and ((p.person.name) like :qry "
+                        + " or  (p.code) like :qry) "
                         + " order by p.person.name";
                 m.put("spe", speciality);
             }
-            doctors = getStaffFacade().findBySQL(sql, m);
+            doctors = getStaffFacade().findByJpql(sql, m);
         }
         return doctors;
     }
 
-    public void prepareAdd() {
-        ////System.out.println("prepairing to add");
-        fee = new ItemFee();
-        ////System.out.println("fee = " + fee);
-    }
+//    public void prepareAdd() {
+//        ////// // System.out.println("prepairing to add");
+//        fee = new ItemFee();
+//        ////// // System.out.println("fee = " + fee);
+//    }
 
     public void fillSessions() {
         String sql;
@@ -251,7 +250,7 @@ public class ChannellingFeeController implements Serializable {
                 + " and s.staff=:doc "
                 + " order by s.sessionWeekday, s.sessionAt";
         m.put("doc", doctor);
-        sessions = getServiceSessionFacade().findBySQL(sql, m);
+        sessions = getServiceSessionFacade().findByJpql(sql, m);
     }
 
     public void fillFees() {
@@ -262,16 +261,16 @@ public class ChannellingFeeController implements Serializable {
                 + " f.item=:ses "
                 + " order by f.id";
         m.put("ses", session);
-        fees = getItemFeeFacade().findBySQL(sql, m);
+        fees = getItemFeeFacade().findByJpql(sql, m);
     }
 
     public void saveCharge() {
         if (session == null) {
-            UtilityController.addErrorMessage("Please select a session");
+            JsfUtil.addErrorMessage("Please select a session");
             return;
         }
         if (fee == null) {
-            UtilityController.addErrorMessage("Please select a fee");
+            JsfUtil.addErrorMessage("Please select a fee");
             return;
         }
         fee.setItem(session);
@@ -279,10 +278,10 @@ public class ChannellingFeeController implements Serializable {
             fee.setCreatedAt(new Date());
             fee.setCreater(getSessionController().getLoggedUser());
             getItemFeeFacade().create(fee);
-            UtilityController.addSuccessMessage("Fee Added");
+            JsfUtil.addSuccessMessage("Fee Added");
         } else {
             getItemFeeFacade().edit(fee);
-            UtilityController.addSuccessMessage("Fee Saved");
+            JsfUtil.addSuccessMessage("Fee Saved");
         }
         fillFees();
         session.setTotal(calTot());
@@ -307,9 +306,9 @@ public class ChannellingFeeController implements Serializable {
             removingFee.setRetiredAt(new Date());
             removingFee.setRetirer(getSessionController().getLoggedUser());
             getItemFeeFacade().edit(removingFee);
-            UtilityController.addSuccessMessage("Deleted Successfull");
+            JsfUtil.addSuccessMessage("Deleted Successfull");
         } else {
-            UtilityController.addSuccessMessage("Nothing To Delete");
+            JsfUtil.addSuccessMessage("Nothing To Delete");
         }
         fillFees();
         session.setTotal(calTot());

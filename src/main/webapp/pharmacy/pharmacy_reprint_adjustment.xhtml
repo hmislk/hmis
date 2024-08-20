@@ -1,11 +1,11 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:ph="http://java.sun.com/jsf/composite/pharmacy">
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ph="http://xmlns.jcp.org/jsf/composite/pharmacy">
 
     <h:body>
 
@@ -16,48 +16,42 @@
 
                     <p:panel  >
                         <f:facet name="header" >
-                            <h:outputLabel value="Pharmacy Adjustment Reprint" ></h:outputLabel>
-                            <hr/>
+                            <h:outputLabel value="Pharmacy Adjustment Reprint" class="mt-2"></h:outputLabel>
+                            <p:commandButton 
+                                icon="fa fa-print"
+                                class="ui-button-info"
+                                value="Reprint"
+                                style="float: right;"
+                                ajax="false" >
+                                <p:printer target="gpBillPreview" ></p:printer>
+                            </p:commandButton>
                         </f:facet>
+
+                        <h:panelGroup id="gpBillPreview" class="d-flex justify-content-center">
+                            
+                            <h:panelGroup rendered="#{pharmacyBillSearch.bill.billType eq 'PharmacyAdjustmentDepartmentStock' }" >
+                                <ph:adjustmentBill bill="#{pharmacyBillSearch.bill}" />
+                            </h:panelGroup>
+                         
+                            <h:panelGroup rendered="#{pharmacyBillSearch.bill.billType eq 'PharmacyAdjustmentPurchaseRate' }" >
+                                <ph:adjustmentBill_purchase_price bill="#{pharmacyBillSearch.bill}" />
+                            </h:panelGroup>
+                            
+                            <h:panelGroup rendered="#{pharmacyBillSearch.bill.billType eq 'PharmacyAdjustmentSaleRate' }" >
+                                <ph:adjustmentBill_sale_price bill="#{pharmacyBillSearch.bill}" />
+                            </h:panelGroup>
+                            
+                            <h:panelGroup rendered="#{pharmacyBillSearch.bill.billType eq 'PharmacyAdjustmentExpiryDate' }" >
+                                <ph:adjustmentBill_expiry_date bill="#{pharmacyBillSearch.bill}" />
+                            </h:panelGroup>
+                            
+                            <h:panelGroup rendered="#{pharmacyBillSearch.bill.billType eq 'PharmacyAdjustmentWholeSaleRate' }" >
+                                <ph:adjustmentBill_wholesale_price bill="#{pharmacyBillSearch.bill}" />
+                            </h:panelGroup>
+
+                        </h:panelGroup>
+
                     </p:panel>
-                    <h:panelGroup >
-                        <p:commandButton value="Reprint Qty Adjust" ajax="false" >
-                            <p:printer target="gpBillPreview1" ></p:printer>
-                        </p:commandButton>
-                        <h:panelGroup id="gpBillPreview1" >
-                            <ph:adjustmentBill bill="#{pharmacyBillSearch.bill}" />
-                        </h:panelGroup>
-                    </h:panelGroup>                 
-                    <h:panelGroup >
-                        <p:commandButton value="Reprint Purchase Adjust" ajax="false" >
-                            <p:printer target="gpBillPreview2" ></p:printer>
-                        </p:commandButton>
-                        <h:panelGroup id="gpBillPreview2" >
-                            <ph:adjustmentBill_purchase_price bill="#{pharmacyBillSearch.bill}" />
-                        </h:panelGroup>
-                    </h:panelGroup>
-
-                    <h:panelGroup >
-                        <p:commandButton value="Reprint Retail Rate" ajax="false" >
-                            <p:printer target="gpBillPreview3" ></p:printer>
-                        </p:commandButton>
-                        <h:panelGroup id="gpBillPreview3" >
-                            <ph:adjustmentBill_sale_price bill="#{pharmacyBillSearch.bill}" />
-
-                        </h:panelGroup>
-
-                    </h:panelGroup>
-                    <h:panelGroup >
-                        <p:commandButton value="Reprint Retail Rate" ajax="false" >
-                            <p:printer target="gpBillPreview4" ></p:printer>
-                        </p:commandButton>
-                        <h:panelGroup id="gpBillPreview4" >
-                            <ph:adjustmentBill_expiry_date bill="#{pharmacyBillSearch.bill}" />
-
-                        </h:panelGroup>
-
-                    </h:panelGroup>
-
 
                 </h:form>
             </ui:define>

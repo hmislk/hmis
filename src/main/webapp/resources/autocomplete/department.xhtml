@@ -1,8 +1,8 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:cc="http://java.sun.com/jsf/composite"
-      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui">
 
     <!-- INTERFACE -->
@@ -16,7 +16,8 @@
                         var="dept" itemLabel="#{dept.name}"
                         itemValue="#{dept}" forceSelection="true" 
                         value="#{cc.attrs.value}" 
-                        converter="departmentConverter" id="department">
+                         id="department"
+                         class="w-100 mx-4" inputStyleClass="w-100">
             <p:column headerText="Department">
                 <h:outputLabel value="#{dept.name}"/>
             </p:column>
@@ -24,6 +25,5 @@
                 <h:outputLabel value="#{dept.institution.name}"/>
             </p:column>
         </p:autoComplete>
-        <p:watermark for="department" value="Department"/>
-    </cc:implementation>
+            </cc:implementation>
 </html>

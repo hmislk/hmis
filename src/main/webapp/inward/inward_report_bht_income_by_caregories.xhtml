@@ -1,17 +1,17 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
-      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:pe="http://primefaces.org/ui/extensions">
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      >
 
     <h:body>
 
-        <ui:composition template="/resources/template/template.xhtml">
+        <ui:composition template="/inward/inward_reports.xhtml">
 
-            <ui:define name="content">
+            <ui:define name="subcontent">
                 <h:form >
                     <p:panel >
                         <f:facet name="header" >
@@ -19,21 +19,21 @@
                         </f:facet>
                         <h:panelGrid columns="2" >
                             <h:outputLabel value="From  " ></h:outputLabel>
-                            <p:calendar value="#{inwardReportController1.fromDate}" pattern="dd MMMM yyyy hh:mm:ss a" ></p:calendar>
+                            <p:calendar class="w-100 mx-4" inputStyleClass="w-100" value="#{inwardReportController1.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                             <h:outputLabel value="To  " ></h:outputLabel>
-                            <p:calendar value="#{inwardReportController1.toDate}" pattern="dd MMMM yyyy hh:mm:ss a" ></p:calendar>
+                            <p:calendar class="w-100 mx-4" inputStyleClass="w-100" value="#{inwardReportController1.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                             <h:outputLabel value="Admission Type  " ></h:outputLabel>
-                            <p:selectOneMenu  id="lstAdmissionType"   value="#{inwardReportController1.admissionType}" >
+                            <p:selectOneMenu class="w-100 mx-4"  id="lstAdmissionType"   value="#{inwardReportController1.admissionType}" >
                                 <f:selectItem itemLabel="All Admission Types"/>
                                 <f:selectItems  value="#{admissionTypeController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}"></f:selectItems>
                             </p:selectOneMenu>
                             <h:outputLabel value="BHT Type  " ></h:outputLabel>
-                            <p:selectOneMenu   id="cmbBhtType" value="#{inwardReportController1.paymentMethod}"  >
+                            <p:selectOneMenu  class="w-100 mx-4"  id="cmbBhtType" value="#{inwardReportController1.paymentMethod}"  >
                                 <f:selectItem itemLabel="All BHT Types" />                           
                                 <f:selectItems value="#{enumController.paymentMethodForAdmission}" />
                             </p:selectOneMenu>
                             <h:outputLabel value="Credit Company  " ></h:outputLabel>
-                            <p:selectOneMenu  id="lstCc"   value="#{inwardReportController1.institution}" >
+                            <p:selectOneMenu class="w-100 mx-4"  id="lstCc"   value="#{inwardReportController1.institution}" >
                                 <f:selectItem itemLabel="All Credit Companies"/>
                                 <f:selectItems  value="#{creditCompanyController.creditCompanies}" var="cc" 
                                                 itemValue="#{cc}" itemLabel="#{cc.name}"></f:selectItems>
@@ -42,15 +42,15 @@
 
 
                         </h:panelGrid>
-                        <h:panelGrid columns="4">
-                            <p:commandButton ajax="false" value="Process" action="#{inwardReportController1.process()}" onclick="onSubmitButton();"  ></p:commandButton>
+                        <h:panelGrid columns="4" class="my-2">
+                            <p:commandButton class="ui-button-warning" icon="fas fa-cogs" ajax="false" value="Process" action="#{inwardReportController1.process()}"   ></p:commandButton>
 
-                            <p:commandButton ajax="false" value="Process Doctor Payment" action="#{inwardReportController1.createDoctorPaymentInward()}" onclick="onSubmitButton();"  ></p:commandButton>
+                            <p:commandButton class="ui-button-warning" icon="fas fa-cogs" ajax="false" value="Process Doctor Payment" action="#{inwardReportController1.createDoctorPaymentInward()}"   ></p:commandButton>
 
-                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
-                                <pe:exporter type="xlsx" target="tb1,tb2,tb3,tb4,tb5,tb6,tbl7,tbl8" fileName="bht_income_by_categories"  />
+                            <p:commandButton class="ui-button-success" icon="fas fa-file-excel" ajax="false" value="Excel" >
+                                <p:dataExporter type="xlsx" target="tb1,tb2,tb3,tb4,tb5,tb6,tbl7,tbl8" fileName="bht_income_by_categories"  />
                             </p:commandButton>
-                            <p:commandButton value="Print" ajax="false" action="#" >
+                            <p:commandButton value="Print" ajax="false" action="#" class="ui-button-info" icon="fas fa-print" >
                                 <p:printer target="gpBillPreview"></p:printer>
                             </p:commandButton>
 
@@ -63,11 +63,11 @@
                                     <h:outputLabel value="Income by Categories Report"/><br></br>
                                     <h:outputLabel value="From - "/>
                                     <p:outputLabel value="#{inwardReportController1.fromDate}">
-                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                     </p:outputLabel>
                                     <h:outputLabel value=" - To - "/>
                                     <h:outputLabel value="#{inwardReportController1.toDate}">
-                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                     </h:outputLabel><br></br>
                                     <h:panelGrid rendered="#{inwardReportController1.admissionType ne null}">
                                         <h:outputLabel value="#{inwardReportController1.admissionType.name}"/>
@@ -160,6 +160,7 @@
                                     <p:commandButton ajax="false" value="View Detail"
                                                      style="float: right;"
                                                      action="report_income_room" 
+                                                     icon="far fa-file-alt"
                                                      actionListener="#{inwardReportController1.processPatientRooms()}"/>
                                 </f:facet>
                                 <p:column headerText="Charge Name">
@@ -327,6 +328,7 @@
                                     <p:commandButton ajax="false" value="View Detail"
                                                      style="float: right;"
                                                      action="inward_charge" 
+                                                     icon="far fa-file-alt"
                                                      actionListener="#{inwardReportController1.processInwardCharges()}"/>
                                 </f:facet>
                                 <p:column headerText="Charge Name">

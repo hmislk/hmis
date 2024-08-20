@@ -1,0 +1,131 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/reports/index.xhtml">
+            <ui:define name="subcontent">
+
+                <h:form >
+                    <p:panel header="Collection Center Receipt Report" >
+                        <h:panelGrid columns="5" >
+                            <p:outputLabel value="From Date" >
+                            </p:outputLabel>
+                            <p:datePicker value="#{reportController.fromDate}" 
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
+                            <p:spacer width="20"></p:spacer>
+                            <p:outputLabel value="To Date" >
+                            </p:outputLabel>
+                            <p:datePicker value="#{reportController.toDate}"
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
+
+                            <p:outputLabel value="Institution/Branch" >
+                            </p:outputLabel>
+                            <p:selectOneMenu 
+                                id="cmdInstitution"
+                                value="#{reportController.institution}"
+                                filter="true"
+                                >
+                                <f:selectItem itemLabel="All"></f:selectItem>
+                                <f:selectItems value="#{institutionController.items}"
+                                               var="i"
+                                               itemLabel="#{i.name}"
+                                               itemValue="#{i}"></f:selectItems>
+
+                            </p:selectOneMenu>
+
+                            <p:spacer></p:spacer>
+
+                            <p:outputLabel value="Collecting Center Name"></p:outputLabel>
+                            <p:selectOneMenu value="#{reportController.ccName}">
+                                <f:selectItems value="#{collectingCentreController.items}"
+                                               var="i"
+                                               itemLabel="#{i.name}"
+                                               itemValue="#{i}" ></f:selectItems>
+                            </p:selectOneMenu>
+
+
+
+                            <p:outputLabel value="Patient Status"></p:outputLabel>
+                            <p:selectOneMenu value="null"
+                                             filter="true"
+                                             filterMatchMode="contains">
+                                <f:selectItem itemLabel="Select status" ></f:selectItem>
+<!--                                <f:selectItems value="#{b}"
+                                               var="r"
+                                               itemLabel="#{r.name}"
+                                               itemValue="#{r}"
+                                              />-->
+                            </p:selectOneMenu>
+
+
+                            <p:spacer width="20"></p:spacer><!-- comment -->
+                            <p:spacer width="20"></p:spacer>
+                            <p:spacer width="20"></p:spacer>
+                            <p:commandButton ajax="false" value="Process" action="null" >
+                            </p:commandButton>
+
+                        </h:panelGrid>
+
+                        <h:panelGrid columns="2">
+                            <h:outputLabel value="Institution/Branch :  "/>
+                            <h:outputLabel value="#{reportController.institution}"  >
+
+                            </h:outputLabel>
+                            <h:outputLabel value="From Date :  "/>
+                            <h:outputLabel value="#{reportController.fromDate}"  >
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                            </h:outputLabel>
+
+                            <h:outputLabel value="To Date :  "/>
+                            <h:outputLabel value="#{reportController.toDate}"  >
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                            </h:outputLabel>
+
+
+                        </h:panelGrid>
+
+
+                        <p:dataTable value="null" var="c">
+                            <p:column headerText="S. No" >
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Bill No" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Bill At" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Billed By" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Payment Method" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Agent Code" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Agent Name" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Amount" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Comments" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                        </p:dataTable>
+
+                    </p:panel>
+
+                </h:form>
+
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

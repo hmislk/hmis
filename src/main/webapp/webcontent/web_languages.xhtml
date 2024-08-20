@@ -1,0 +1,58 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+
+        <ui:composition template="./index.xhtml">
+
+            <ui:define name="contents">
+
+                <h:form >
+                    <p:panel >
+                    <f:facet name="header" >
+                        <h:outputLabel value="List Languages"></h:outputLabel>
+                    </f:facet>
+                    <p:dataTable class="table table-striped " value="#{webLanguageController.items}" var="u" >
+                        <p:column headerText="Name" >
+                            <h:outputText value="#{u.name}" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="Code" >
+                            <h:outputText value="#{u.code}" ></h:outputText>
+                        </p:column><!-- comment -->
+                        <p:column headerText="Order No" >
+                            <h:outputText value="#{u.orderNo}" ></h:outputText>
+                        </p:column><!-- comment -->
+                        <p:column headerText="Actions" >
+                            <p:commandButton 
+                                icon="fas fa-pencil"
+                                class="ui-button-success"
+                                action="#{webLanguageController.toEditWebLanguage()}" >
+                                <f:setPropertyActionListener value="#{u}" target="#{webLanguageController.selected}" >
+                                </f:setPropertyActionListener>
+                            </p:commandButton>
+                            <p:commandButton 
+                                icon="fas fa-trash"
+                                class="ui-button-danger mx-2"
+                                action="#{webLanguageController.toDeleteWebLanguage()}"
+                                             onclick="if (!confirm('Are you sure you want to delete this record?')) return false;"
+                                             >
+                                <f:setPropertyActionListener value="#{u}" target="#{webLanguageController.selected}" >
+                                </f:setPropertyActionListener>
+                            </p:commandButton>
+                        </p:column>
+                    </p:dataTable >
+                    </p:panel>
+                </h:form>
+
+
+            </ui:define>
+
+        </ui:composition>
+
+    </h:body>
+</html>

@@ -1,20 +1,19 @@
 /*
- * MSc(Biomedical Informatics) Project
+ * Open Hospital Management Information System
  *
- * Development and Implementation of a Web-based Combined Data Repository of
- Genealogical, Clinical, Laboratory and Genetic Data
- * and
- * a Set of Related Tools
+ * Dr M H B Ariyaratne
+ * Acting Consultant (Health Informatics)
+ * (94) 71 5812399
+ * (94) 71 5812399
  */
 package com.divudi.bean.store;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.InstitutionType;
 import com.divudi.entity.Institution;
 import com.divudi.facade.InstitutionFacade;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -30,8 +29,8 @@ import javax.inject.Named;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- * Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
+ * Acting Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -44,6 +43,7 @@ public class StoreDealorController implements Serializable {
     private InstitutionFacade ejbFacade;
     private Institution current;
     private List<Institution> items = null;
+    private int managaeInstitutionIndex = -1;
 
     public List<Institution> completeDealor(String query) {
         List<Institution> suggestions;
@@ -51,12 +51,12 @@ public class StoreDealorController implements Serializable {
         Map m = new HashMap();
 
         sql = "select c from Institution c where c.retired=false and "
-                + " c.institutionType =:t and upper(c.name) like :q order by c.name";
-        //////System.out.println(sql);
+                + " c.institutionType =:t and (c.name) like :q order by c.name";
+        //////// // System.out.println(sql);
         m.put("t", InstitutionType.StoreDealor);
         m.put("q", "%" + query.toUpperCase() + "%");
-        suggestions = getEjbFacade().findBySQL(sql, m, 10);
-        //////System.out.println("suggestions = " + suggestions);
+        suggestions = getEjbFacade().findByJpql(sql, m, 10);
+        //////// // System.out.println("suggestions = " + suggestions);
 
         return suggestions;
     }
@@ -65,7 +65,7 @@ public class StoreDealorController implements Serializable {
         current = new Institution();
         current.setInstitutionType(InstitutionType.StoreDealor);
     }
-
+  
     private void recreateModel() {
         items = null;
     }
@@ -74,14 +74,15 @@ public class StoreDealorController implements Serializable {
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            UtilityController.addSuccessMessage("Saved Successfully");
+            JsfUtil.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
+        current = null;
         //     getItems();
     }
 
@@ -123,9 +124,9 @@ public class StoreDealorController implements Serializable {
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         //      getItems();
@@ -143,9 +144,17 @@ public class StoreDealorController implements Serializable {
                     + " order by i.name";
             HashMap hm = new HashMap();
             hm.put("tp", InstitutionType.StoreDealor);
-            items = getEjbFacade().findBySQL(sql, hm);
+            items = getEjbFacade().findByJpql(sql, hm);
         }
         return items;
+    }
+
+    public int getManagaeInstitutionIndex() {
+        return managaeInstitutionIndex;
+    }
+
+    public void setManagaeInstitutionIndex(int managaeInstitutionIndex) {
+        this.managaeInstitutionIndex = managaeInstitutionIndex;
     }
 
     /**

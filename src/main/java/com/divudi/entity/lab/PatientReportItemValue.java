@@ -1,12 +1,13 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+* Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.entity.lab;
 
 import com.divudi.entity.Patient;
 import com.divudi.entity.PatientEncounter;
 import java.io.Serializable;
+import java.text.DecimalFormat;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -45,11 +46,10 @@ public class PatientReportItemValue implements Serializable {
 
     @Transient
     private String value;
+    @Transient
+    private String displayValue;
 
     public String getStrValue() {
-        if (strValue != null) {
-            strValue = strValue.trim();
-        }
         return strValue;
     }
 
@@ -98,7 +98,7 @@ public class PatientReportItemValue implements Serializable {
     }
 
     public Patient getPatient() {
-        //////System.out.println("");
+        //////// // System.out.println("");
         return patient;
     }
 
@@ -164,24 +164,59 @@ public class PatientReportItemValue implements Serializable {
     }
 
     public String getValue() {
+        if (this.investigationItem == null || this.investigationItem.ixItemValueType == null) {
+            System.out.println("Investigation item or item value type is null");
+            return "";
+        }
+
+        String value = "";
+        String formatString = this.investigationItem.formatString;
+//        System.out.println("Format string: " + formatString);
+
+//        System.out.println("this.investigationItem.ixItemValueType = " + this.investigationItem.ixItemValueType);
+
         switch (this.investigationItem.ixItemValueType) {
             case Double:
             case Long:
-                if (this.doubleValue == null) {
-                    value = "";
+                if (this.doubleValue != null) {
+//                    System.out.println("Double value before formatting: " + this.doubleValue);
+                    if (formatString != null) {
+                        DecimalFormat decimalFormat = new DecimalFormat(formatString);
+                        value = decimalFormat.format(this.doubleValue);
+                    } else {
+                        value = Double.toString(this.doubleValue);
+                    }
+//                    System.out.println("Double value after formatting: " + value);
                 } else {
-                    value = Double.toString(this.doubleValue);
+//                    System.out.println("Double value is null");
                 }
                 break;
             case Varchar:
                 value = this.strValue;
+//                System.out.println("Varchar value: " + value);
                 break;
             case Memo:
                 value = this.lobValue;
+//                System.out.println("Memo value: " + value);
                 break;
             default:
                 value = this.investigationItem.ixItemValueType.toString();
+                System.out.println("Default value: " + value);
+                break;
         }
+
+//        System.out.println("Final value: " + value);
         return value;
     }
+
+    public String getDisplayValue() {
+//        if (this.strValue != null && !this.strValue.trim().equals("")) {
+//            displayValue = this.strValue;
+//        } else {
+//            displayValue = getValue();
+//        }
+//        return displayValue;
+        return getValue();
+    }
+
 }

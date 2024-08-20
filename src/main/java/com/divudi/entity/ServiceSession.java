@@ -1,6 +1,6 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+* Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.entity;
 
@@ -10,7 +10,8 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import javax.persistence.Entity;
-import javax.persistence.Inheritance;
+import javax.persistence.FetchType;
+import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
@@ -21,7 +22,6 @@ import javax.persistence.Transient;
  * @author Buddhika
  */
 @Entity
-@Inheritance
 public class ServiceSession extends Item implements Serializable {
 
     @Transient
@@ -53,24 +53,26 @@ public class ServiceSession extends Item implements Serializable {
     Date startingTime;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date endingTime;
+    
+    private Integer numberOfDaysForAutomaticInstanceCreation;
 
     boolean refundable = false;
     int displayCount;
     double displayPercent;
     double duration;
     int roomNo;
-    int durationIncrementCount = 1;
-    boolean showAppointmentCount = true;
-    boolean oncallBookingsAllowed = true;
-    long advanceAppointmentPeriod = 10;
-    int advanceAPpointmentPeriodUnit = Calendar.DATE;
-    boolean showAppointmentTime = true;
+//    int durationIncrementCount = 1;
+//    boolean showAppointmentCount = true;
+//    boolean oncallBookingsAllowed = true;
+//    long advanceAppointmentPeriod = 10;
+//    int advanceAPpointmentPeriodUnit = Calendar.DATE;
+//    boolean showAppointmentTime = true;
 
     //Deactivate Properties(Doctor Leave)
     boolean deactivated;
     String deactivateComment;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     ServiceSession originatingSession;
     @Transient
     int transDisplayCountWithoutCancelRefund;
@@ -83,6 +85,21 @@ public class ServiceSession extends Item implements Serializable {
     Boolean arival;
     @Transient
     boolean serviceSessionCreateForOriginatingSession=false;
+
+    //new Adittions
+    private int recervedNumbers;
+    private boolean paidAppointmentsOnly;
+    private boolean excludeFromPatientPortal;
+    private boolean canChangePatient;
+
+    @Lob
+    private String activities;
+    @Lob
+    private String actions;
+    @Lob
+    private String notificationRoles;
+    @Lob
+    private String dataEntryForms;
 
     public SessionNumberGenerator getSessionNumberGenerator() {
         return sessionNumberGenerator;
@@ -251,8 +268,6 @@ public class ServiceSession extends Item implements Serializable {
     public Date getTransStartTime() {
         Calendar st = Calendar.getInstance();
         Calendar start = Calendar.getInstance();
-//        //System.out.println("sessionAt = " + sessionAt);
-//        //System.out.println("startingTime = " + startingTime);
         if (sessionAt == null || startingTime == null) {
             return null;
         }
@@ -268,7 +283,7 @@ public class ServiceSession extends Item implements Serializable {
     public Date getTransEndTime() {
         Calendar st = Calendar.getInstance();
         Calendar ending = Calendar.getInstance();
-//        //System.out.println("sessionAt = " + sessionAt);
+//        //// // System.out.println("sessionAt = " + sessionAt);
         if (sessionAt == null || getEndingTime() == null) {
             return null;
         }
@@ -430,5 +445,83 @@ public class ServiceSession extends Item implements Serializable {
     public void setServiceSessionCreateForOriginatingSession(boolean serviceSessionCreateForOriginatingSession) {
         this.serviceSessionCreateForOriginatingSession = serviceSessionCreateForOriginatingSession;
     }
+
+    public Integer getNumberOfDaysForAutomaticInstanceCreation() {
+        return numberOfDaysForAutomaticInstanceCreation;
+    }
+
+    public void setNumberOfDaysForAutomaticInstanceCreation(Integer numberOfDaysForAutomaticInstanceCreation) {
+        this.numberOfDaysForAutomaticInstanceCreation = numberOfDaysForAutomaticInstanceCreation;
+    }
+
+    public int getRecervedNumbers() {
+        return recervedNumbers;
+    }
+
+    public void setRecervedNumbers(int recervedNumbers) {
+        this.recervedNumbers = recervedNumbers;
+    }
+
+    public boolean isPaidAppointmentsOnly() {
+        return paidAppointmentsOnly;
+    }
+
+    public void setPaidAppointmentsOnly(boolean paidAppointmentsOnly) {
+        this.paidAppointmentsOnly = paidAppointmentsOnly;
+    }
+
+    public boolean isCanChangePatient() {
+        return canChangePatient;
+    }
+
+    public void setCanChangePatient(boolean canChangePatient) {
+        this.canChangePatient = canChangePatient;
+    }
+
+    public String getActivities() {
+        return activities;
+    }
+
+    public void setActivities(String activities) {
+        this.activities = activities;
+    }
+
+    public String getActions() {
+        return actions;
+    }
+
+    public void setActions(String actions) {
+        this.actions = actions;
+    }
+
+    public String getNotificationRoles() {
+        return notificationRoles;
+    }
+
+    public void setNotificationRoles(String notificationRoles) {
+        this.notificationRoles = notificationRoles;
+    }
+
+    public String getDataEntryForms() {
+        return dataEntryForms;
+    }
+
+    public void setDataEntryForms(String dataEntryForms) {
+        this.dataEntryForms = dataEntryForms;
+    }
+
+    public boolean isExcludeFromPatientPortal() {
+        return excludeFromPatientPortal;
+    }
+
+    public void setExcludeFromPatientPortal(boolean excludeFromPatientPortal) {
+        this.excludeFromPatientPortal = excludeFromPatientPortal;
+    }
+
+   
+    
+    
+    
+    
 
 }

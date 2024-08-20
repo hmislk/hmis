@@ -1,0 +1,117 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/reports/index.xhtml">
+            <ui:define name="subcontent">
+
+                <h:form >
+                    <div class="container">
+                    <p:panel header="Collection Center Balance Report" >
+<!--                        <div class="row mb-2">
+                            <div class="col-md-2">
+                                <p:outputLabel value="From Date" >
+                                </p:outputLabel>
+                            </div>
+                            <div class="col-md-4">
+                                <p:datePicker value="#{reportController.fromDate}" 
+                                              style=" max-width: 100%; overflow-x: auto; "
+                                              class="w-100"
+                                              pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
+                            </div>
+
+                            <div class="col-md-2">
+                                <p:outputLabel value="To Date" >
+                                </p:outputLabel>
+                            </div>
+                            <div class="col-md-4">
+                                <p:datePicker value="#{reportController.toDate}"
+                                              style=" max-width: 100%; overflow-x: auto; "
+                                              class="w-100"
+                                              pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
+                            </div>
+                        </div>-->
+
+                        <div class="row mb-2">
+
+                            <div class="col-md-3">
+                                <p:outputLabel value="Collection Center Name"></p:outputLabel>
+                            </div>
+                            <div class="col-md-4">
+                                <p:selectOneMenu value="#{reportController.collectingCentre}">
+                                    <f:selectItems var="r" itemLabel="#{r.name}" value="#{collectingCentreController.items}" itemValue="#{r}"/>
+                                </p:selectOneMenu>
+                            </div>
+                        </div>
+
+                        <div class="row mb-2">
+                            <div class="col-md-2">
+                                <p:commandButton ajax="false" value="Process" action="#{reportController.processCollectionCenterBalance}" >
+                                </p:commandButton>
+                            </div>
+                        </div>
+                        
+
+                        <h:panelGrid columns="2">
+                            <h:outputLabel value="From Date :  "/>
+                            <h:outputLabel value="#{reportController.fromDate}"  >
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                            </h:outputLabel>
+
+                            <h:outputLabel value="To Date :  "/>
+                            <h:outputLabel value="#{reportController.toDate}"  >
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                            </h:outputLabel>
+
+                            <h:outputLabel value="Collection Center Name :  "/>
+                            <h:outputLabel value="#{reportController.collectingCentre}"  >
+
+                            </h:outputLabel>
+                        </h:panelGrid>
+
+                        <p:spacer height="5"></p:spacer>
+
+                        <p:dataTable value="#{reportController.collectionCenters}" var="c">
+                            <p:column headerText="S. No" >
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="CC Name" >
+                                <h:outputText value="#{c.name}" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="CC Route" >
+                                <h:outputText value="#{c.route.name}" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="CC Phone No" >
+                                <h:outputText value="#{c.phone}" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="CC Credit Limit" >
+                                <h:outputText value="#{c.maxCreditLimit}" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Max Credit Limit" >
+                                <h:outputText value="#{c.maxCreditLimit}" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="CC Balance" >
+                                <h:outputText value="#{c.ballance}" ></h:outputText>
+                            </p:column>
+
+                        </p:dataTable>
+
+                        <p:spacer height="5"></p:spacer>
+
+
+
+                    </p:panel>
+                    </div>
+
+                </h:form>
+
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

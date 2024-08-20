@@ -1,15 +1,15 @@
 /*
- * MSc(Biomedical Informatics) Project
+ * Open Hospital Management Information System
  *
- * Development and Implementation of a Web-based Combined Data Repository of
- Genealogical, Clinical, Laboratory and Genetic Data
- * and
- * a Set of Related Tools
+ * Dr M H B Ariyaratne
+ * Acting Consultant (Health Informatics)
+ * (94) 71 5812399
+ * (94) 71 5812399
  */
 package com.divudi.bean.inward;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.inward.RoomFacility;
 import com.divudi.entity.inward.AdmissionType;
 import com.divudi.entity.inward.RoomFacilityCharge;
@@ -32,8 +32,8 @@ import javax.inject.Named;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- * Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
+ * Acting Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -66,9 +66,10 @@ public class RoomFacilityChargeController implements Serializable {
 //                    + " FROM PatientRoom pr"
 //                    + " WHERE pr.retired=false "
 //                    + " AND pr.discharged=true )"
-//                    + " AND upper(rm.name) LIKE :q"
+//                    + " AND (rm.name) LIKE :q"
 //                    + " ORDER BY rm.name";
     public List<RoomFacilityCharge> completeRoom(String query) {
+        
         List<RoomFacilityCharge> suggestions;
         String sql;
         HashMap hm = new HashMap();
@@ -85,10 +86,10 @@ public class RoomFacilityChargeController implements Serializable {
                     + " FROM PatientRoom pr"
                     + " WHERE pr.retired=false "
                     + " AND pr.discharged=false)"
-                    + " AND upper(rm.name) LIKE :q"
+                    + " AND (rm.name) LIKE :q"
                     + " ORDER BY rm.name";
             hm.put("q", "%" + query.toUpperCase() + "%");
-            suggestions = getFacade().findBySQL(sql, hm);
+            suggestions = getFacade().findByJpql(sql, hm);
         }
         return suggestions;
     }
@@ -104,10 +105,10 @@ public class RoomFacilityChargeController implements Serializable {
             sql = "SELECT rm FROM "
                     + " RoomFacilityCharge rm "
                     + " WHERE rm.retired=false "
-                    + " AND upper(rm.name) LIKE :q"
+                    + " AND (rm.name) LIKE :q"
                     + " ORDER BY rm.name";
             hm.put("q", "%" + query.toUpperCase() + "%");
-            suggestions = getFacade().findBySQL(sql, hm);
+            suggestions = getFacade().findByJpql(sql, hm);
         }
         return suggestions;
     }
@@ -132,12 +133,12 @@ public class RoomFacilityChargeController implements Serializable {
 //                    + " RoomFacilityCharge p "
 //                    + " where p.retired=false"
 //                    + " and (p.room.filled=false or p.room=:rm) "
-//                    + " and upper(p.name) like :q"
+//                    + " and (p.name) like :q"
 //                    + " order by p.name";
 //            
 //            hm.put("rm", getCurrent().getRoom());
 //            hm.put("q", "%" + query.toUpperCase() + "%");
-//            suggestions = getFacade().findBySQL(sql, hm);
+//            suggestions = getFacade().findByJpql(sql, hm);
 //        } else {
 //            suggestions = completeRoom(query);
 //        }
@@ -145,8 +146,8 @@ public class RoomFacilityChargeController implements Serializable {
 //        return suggestions;
 //    }
     public List<RoomFacilityCharge> getSelectedItems() {
-        selectedItems = getFacade().findBySQL("select c from RoomFacilityCharge c "
-                + "where c.retired=false  and upper(c.name)"
+        selectedItems = getFacade().findByJpql("select c from RoomFacilityCharge c "
+                + "where c.retired=false  and (c.name)"
                 + " like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
     }
@@ -188,12 +189,12 @@ public class RoomFacilityChargeController implements Serializable {
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            UtilityController.addSuccessMessage("Saved Successfully");
+            JsfUtil.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
         getItems();
@@ -201,25 +202,25 @@ public class RoomFacilityChargeController implements Serializable {
 
     public void fillRoomFacilityCharge() {
         String sql = "SELECT i FROM RoomFacilityCharge i where i.retired=false ";
-        roomFacilityCharges = getEjbFacade().findBySQL(sql);
+        roomFacilityCharges = getEjbFacade().findByJpql(sql);
     }
 
     public void updateRoomFacilityCharge(RoomFacilityCharge r) {
 
-        ////System.out.println("r = " + r);
-        ////System.out.println("r1 = " + r.getRoomCharge());
-        ////System.out.println("r1 = " + r.getAdminstrationCharge());
-        ////System.out.println("r1 = " + r.getMedicalCareCharge());
-        ////System.out.println("r1 = " + r.getLinenCharge());
+        ////// // System.out.println("r = " + r);
+        ////// // System.out.println("r1 = " + r.getRoomCharge());
+        ////// // System.out.println("r1 = " + r.getAdminstrationCharge());
+        ////// // System.out.println("r1 = " + r.getMedicalCareCharge());
+        ////// // System.out.println("r1 = " + r.getLinenCharge());
         getTimedItemFeeFacade().edit(r.getTimedItemFee());
         getFacade().edit(r);
-        UtilityController.addSuccessMessage("Updated");
+        JsfUtil.addSuccessMessage("Updated");
 //        fillRoomFacilityCharge();
     }
 
     public void updateAllCharges() {
         String sql = "SELECT i FROM RoomFacilityCharge i where i.retired=false ";
-        roomFacilityCharges = getEjbFacade().findBySQL(sql);
+        roomFacilityCharges = getEjbFacade().findByJpql(sql);
         for (RoomFacilityCharge r : roomFacilityCharges) {
             r.setAdminstrationCharge(adminstrationCharge);
             r.setMedicalCareCharge(medicalCareCharge);
@@ -230,7 +231,7 @@ public class RoomFacilityChargeController implements Serializable {
             r.setLinenCharge(linenCharge);
             getFacade().edit(r);
         }
-        UtilityController.addSuccessMessage("Sucessfully Uptate All Room Charges");
+        JsfUtil.addSuccessMessage("Sucessfully Uptate All Room Charges");
     }
 
     public void setSelectText(String selectText) {
@@ -277,9 +278,9 @@ public class RoomFacilityChargeController implements Serializable {
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
@@ -295,7 +296,7 @@ public class RoomFacilityChargeController implements Serializable {
     public List<RoomFacilityCharge> getItems() {
         if (items == null) {
             String sql = "SELECT i FROM RoomFacilityCharge i where i.retired=false ";
-            items = getEjbFacade().findBySQL(sql);
+            items = getEjbFacade().findByJpql(sql);
         }
         return items;
     }

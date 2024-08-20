@@ -1,7 +1,6 @@
-
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.data;
 
@@ -9,7 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- *
  * @author Buddhika
  */
 public enum BillType {
@@ -21,6 +19,7 @@ public enum BillType {
     ChannelCreditFlow(null),
     OpdBathcBill,
     OpdBathcBillPre,
+    OpdProfessionalFeePayment,
     SurgeryBill,
     LabBill,
     CollectingCentreBill,
@@ -41,15 +40,22 @@ public enum BillType {
     AdmissionBill,
     CashRecieveBill,
     PettyCash,
+    PettyCashReturn,
+    IouIssue,
+    IouReturn,
     AgentPaymentReceiveBill,
     AgentCreditNoteBill,
     AgentDebitNoteBill,
+    PatientPaymentReceiveBill,
+    PatientPaymentRefundBill,
+    PatientPaymentCanceldBill,
     CollectingCentrePaymentReceiveBill,
     CollectingCentreCreditNoteBill,
     CollectingCentreDebitNoteBill,
     @Deprecated
     PharmacyBill, //Cash In
     PharmacySale,
+    PharmacySaleWithoutStock,
     PharmacyWholeSale,
     @Deprecated
     SandryGrn,
@@ -62,7 +68,7 @@ public enum BillType {
     StoreBhtIssue,
     StoreBhtPre,
     StoreIssue,
-    //    @Deprecated Piumi requested issue 60 
+    //    @Deprecated Piumi requested issue 60
     StoreTransferIssue,
     StoreTransferReceive,
     StoreTransferRequest,
@@ -83,6 +89,14 @@ public enum BillType {
     PharmacyTransferReceive,
     PharmacyDirectReceive,
     PharmacyAdjustment,
+    PharmacyAdjustmentDepartmentStock,
+    PharmacyAdjustmentDepartmentSingleStock,
+    PharmacyAdjustmentStaffStock,
+    PharmacyAdjustmentSaleRate,
+    PharmacyAdjustmentWholeSaleRate,
+    PharmacyAdjustmentPurchaseRate,
+    PharmacyAdjustmentExpiryDate,
+    PharmacyAddtoStock,
     DrawerAdjustment,
     PharmacyMajorAdjustment,
     ChannelCash(ChannelCashFlow),
@@ -90,6 +104,8 @@ public enum BillType {
     ChannelAgent(ChannelCashFlow),
     ChannelOnCall(ChannelCreditFlow),
     ChannelStaff(ChannelCreditFlow),
+    ChannelResheduleWithOutPayment(ChannelCreditFlow),
+    ChannelResheduleWithPayment(ChannelCashFlow),
     //    @Deprecated need to payment bills for separately
     ChannelProPayment,
     ChannelAgencyPayment,
@@ -130,7 +146,22 @@ public enum BillType {
     // channel Session sperate X-ray scan or channel
     Channel,
     XrayScan,
-    
+    // Cash Handling and Transfer Processes
+    ShiftStartFundBill, // For handling initial funds, be it cash, cheque, or electronic funds, at the beginning of a cashier's shift
+    ShiftEndFundBill, // For summarising and finalising all transaction types, balances, and notes at the end of a cashier's shift
+    FundTransferBill, // For transferring the total balance from one shift to another
+    FundTransferReceivedBill, // For receiving the transferred balance from one shift to another
+    DepositFundBill, // For processing deposits of all payment types into the bank by the main or bulk cashier
+    WithdrawalFundBill, // For handling withdrawal transactions from the bank for operational purposes
+    @Deprecated
+    TransactionHandoverBill, // For handling the handover of all transaction types at the end of a cashier's shift
+    @Deprecated
+    TransactionVerificationBill, // For the incoming cashier to verify all transaction types
+    @Deprecated
+    FinancialReconciliationBill, // For reconciling all types of recorded transactions against actual bank statements and balances
+    @Deprecated
+    FinancialAuditingBill, // For broader auditing purposes, ensuring compliance with policies and regulatory requirements
+    StaffCreditSettle
     ;
 
     public String getLabel() {
@@ -159,15 +190,17 @@ public enum BillType {
                 return "Good Receive Note";
             case PharmacyGrnReturn:
                 return "Good Receive Note Return";
+            case PharmacyReturnWithoutTraising:
+                return "Pharmacy Return Without Traising";
             case PharmacyPurchaseBill:
-                return "Pharmacy Purchase";
+                return "Pharmacy Direct Purchase";
             case PurchaseReturn:
                 return "Pharmacy Purchase Return";
             case PharmacySale:
                 return "Pharmacy Sale Bill";
 
             case PharmacyPre:
-                return "Pharmacy Sale Bill (Pre)";
+                return "Pharmacy Sale Bill for Cashier";
             case PharmacyAdjustment:
                 return "Pharmacy Adjustment";
             case GrnPayment:
@@ -225,7 +258,7 @@ public enum BillType {
             case OpdBathcBill:
                 return "OPD Accepet Payment";
             case CollectingCentrePaymentReceiveBill:
-                return "Collecting Centre Payment";
+                return "Collecting Centre Payment Receive";
             case ChannelProPayment:
                 return "Channel Professional Payment Bill";
             case ChannelIncomeBill:
@@ -236,10 +269,29 @@ public enum BillType {
                 return "Channel";
             case XrayScan:
                 return "X-Ray and Scan";
-
+            case InwardFinalBill:
+                return "Inward Final Bill";
+            case ShiftStartFundBill:
+                return "Initial Fund Bill";
+            case FundTransferBill:
+                return "Shift Balance Transfer Bill";
+            case TransactionHandoverBill:
+                return "Transaction Handover Bill";
+            case TransactionVerificationBill:
+                return "Transaction Verification Bill";
+            case DepositFundBill:
+                return "Deposit Processing Bill";
+            case WithdrawalFundBill:
+                return "Withdrawal Processing Bill";
+            case FinancialReconciliationBill:
+                return "Financial Reconciliation Bill";
+            case FinancialAuditingBill:
+                return "Financial Auditing Bill";
+            case FundTransferReceivedBill:
+                return "Fund Transfer Received Bill";
+            default:
+                return this.toString();
         }
-
-        return "Other";
     }
 
     private BillType parent = null;
@@ -252,14 +304,14 @@ public enum BillType {
         this.parent = parent;
     }
 
-    private BillType(BillType parent) {
+    BillType(BillType parent) {
         this.parent = parent;
         if (this.parent != null) {
             this.parent.addChild(this);
         }
     }
 
-    private BillType() {
+    BillType() {
     }
 
     private final List<BillType> children = new ArrayList<>();
@@ -297,5 +349,4 @@ public enum BillType {
         }
         return false;
     }
-
 }

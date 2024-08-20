@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:cc="http://java.sun.com/jsf/composite"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
       xmlns:p="http://primefaces.org/ui">
 
     <!-- INTERFACE -->
@@ -14,10 +14,12 @@
         <p:autoComplete   forceSelection="true" id="staff"
                           value="#{cc.attrs.value}" 
                           completeMethod="#{staffController.completeStaffCode}" 
+                          scrollHeight="300" placeholder="Type here to search"
                           var="mys" 
                           itemLabel="#{mys.person.nameWithTitle}" 
                           itemValue="#{mys}"
-                          converter="stfcon"   >   
+                          class="mx-2 w-100" inputStyleClass="w-100"
+                          >   
             <p:column headerText="Name">
                 #{mys.person.name}
             </p:column>
@@ -25,6 +27,5 @@
                 #{mys.code}
             </p:column>
         </p:autoComplete> 
-        <p:watermark for="staff" value="Staff"/>
-    </cc:implementation>
+            </cc:implementation>
 </html>

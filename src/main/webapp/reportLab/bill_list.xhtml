@@ -1,14 +1,14 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core">
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <h:body>
-        <ui:composition template="/resources/template/template.xhtml">
-            <ui:define name="content">
+        <ui:composition template="/reportLab/lab_summeries_index.xhtml">
+            <ui:define name="subcontent">
                 <h:form>
 
 
@@ -19,210 +19,201 @@
                         </f:facet>
 
 
-                        <h:panelGrid columns="2" styleClass="alignTop">
-                            <p:panel header="Search" >
-                                <h:panelGrid columns="2" styleClass="alignTop">
-                                    <h:outputLabel value="From"/>
-                                    <p:calendar id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="dd/MMMM/yyyy hh:mm:ss a" >      
-                                    </p:calendar>
 
-                                    <h:outputLabel value="To"/>
-                                    <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd/MMMM/yyyy hh:mm:ss a" >                                                                              
-                                    </p:calendar>
+                        <h:panelGrid columns="5" class="my-1">
 
-                                    <h:outputLabel value="Bill No"/>
-                                    <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />
+                            <h:outputLabel value="From"/>
+                            <p:calendar id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="dd/MMMM/yyyy hh:mm:ss a" >      
+                            </p:calendar>
+                            <p:spacer width="100"/>
+                            <h:outputLabel value="To"/>
+                            <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd/MMMM/yyyy hh:mm:ss a" >                                                                              
+                            </p:calendar>
 
-                                    <h:outputLabel value="Name"/>
-                                    <p:inputText autocomplete="off" value="#{searchController.searchKeyword.patientName}" />
+                            <h:outputLabel value="Bill No"/>
+                            <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />
+                            <p:spacer/>
+                            <h:outputLabel value="Name"/>
+                            <p:inputText autocomplete="off" value="#{searchController.searchKeyword.patientName}" />
 
+                            <h:outputLabel value="Phone"/>
+                            <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.patientPhone}" />
+                            <p:spacer/>
+                            <h:outputLabel value="Total"/>
+                            <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.total}" />
 
-
-
-                                    <h:outputLabel value="Phone"/>
-                                    <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.patientPhone}" />
-
-                                    <h:outputLabel value="Total"/>
-                                    <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.total}" />
-
-                                    <h:outputLabel value="Net Total"/>
-                                    <p:inputText autocomplete="off" value="#{searchController.searchKeyword.netTotal}"/>
-
-                                    
+                            <h:outputLabel value="Net Total"/>
+                            <p:inputText autocomplete="off" value="#{searchController.searchKeyword.netTotal}"/>
+                            <p:spacer/><p:spacer/><p:spacer/>
 
 
-                                </h:panelGrid>
-
-                                <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createOpdBillSearch}"/>
-                                <p:commandButton id="btnExcel" ajax="false" value="Excel" >
-                                    <p:dataExporter fileName="OPD Bills" type="xls" target="tblBillsExport" ></p:dataExporter>
-                                </p:commandButton>
-                                <p:commandButton id="btnPrint" ajax="false" value="Print" >
-                                    <p:printer target="tblBillsExport" ></p:printer>
-                                </p:commandButton>
-                                <p:defaultCommand target="btnSearch" />
-                            </p:panel>
 
 
-                            <p:dataTable rowIndexVar="i" id="tblBills" value="#{searchController.bills}" 
-                                         var="bill"  
-                                         style="min-width: 100%;"  
-                                         paginator="true" rows="25"
-                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                         rowsPerPageTemplate="5,10,25,50"
-                                         >
-                                <p:column headerText="No" styleClass="alignTop" width="15">
-                                    <h:outputLabel value="#{i+1}"/>
-                                </p:column>
-                                <p:column headerText="Bill No" >                                
-                                    <p:commandLink id="billNo" ajax="false" value="#{bill.insId}" action="#{searchController.viewOPD(bill)}">
-                                        <f:setPropertyActionListener value="#{bill}" target="#{billSearch.billSearch}"/>
-                                    </p:commandLink>
-                                    <p:tooltip for="billNo">
-                                        <p:panel header="Bill Details - Click to View" >
-                                            <p:panelGrid columns="2" >
-                                                <p:outputLabel value="Billed Date" ></p:outputLabel>
-                                                <h:outputLabel value="#{bill.createdAt}" >
-                                                    <f:convertDateTime pattern="dd/MMM/yyyy"/>
-                                                </h:outputLabel>
-
-                                                <p:outputLabel value="Billed Time" ></p:outputLabel>
-                                                <h:outputLabel value="#{bill.createdAt.time}" >
-                                                    <f:convertDateTime pattern="hh:mm:ss a"/>
-                                                </h:outputLabel>
-
-                                                <p:outputLabel value="Billed By" ></p:outputLabel>
-                                                <h:outputLabel value="#{bill.creater.webUserPerson.nameWithTitle}" >
-                                                </h:outputLabel>
-
-                                                <p:outputLabel value="Cancellation" ></p:outputLabel>
-                                                <p:outputLabel rendered="#{!bill.cancelled}" value="Not Cancelled" ></p:outputLabel>
-                                                <h:panelGroup rendered="#{bill.cancelled}" >
-                                                    <h:outputLabel style="color: red;" value="Cancelled at " />
-                                                    <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.createdAt}" >
-                                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
-                                                    </h:outputLabel>
-                                                </h:panelGroup>
-
-                                                <p:outputLabel value="Refunds" ></p:outputLabel>
-                                                <p:outputLabel rendered="#{!bill.refunded}" value="Not Refunded" ></p:outputLabel>
-                                                <h:panelGroup rendered="#{bill.refunded}" >
-                                                    <h:outputLabel style="color: red;" value="Refunded at " />
-                                                    <h:outputLabel style="color: red;" rendered="#{bill.refunded}" value="#{bill.refundedBill.createdAt}" >
-                                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
-                                                    </h:outputLabel>
-                                                </h:panelGroup>
-
-
-                                            </p:panelGrid>
-                                        </p:panel>
-
-                                    </p:tooltip>
-                                </p:column>
-
-                                <p:column headerText="Billed At">
-                                    <p:outputLabel value="#{bill.billDate}" >
-                                        <f:convertDateTime pattern="dd-MM-yy h:m a"></f:convertDateTime>
-                                    </p:outputLabel>
-                                </p:column>
-
-                                <p:column headerText="Bill No" rendered="#{sessionController.loggedPreference.opdBillPaperType eq 'PosPaper' and false}" >                                
-                                    <h:outputLabel   value="#{bill.deptId}"/>
-                                </p:column> 
-                                <p:column headerText="Billed For"  >                                
-                                    <h:outputLabel id="ins" value="#{bill.toDepartment.name}" />
-                                    <p:tooltip for="ins" value="Billed for #{bill.toDepartment.name} of #{bill.toInstitution.name}." />
-                                </p:column>
-                                <p:column headerText="Collecting Centre"  >                                
-                                    <h:outputLabel value="#{bill.collectingCentre.name}" />
-                                </p:column>
-                                <p:column headerText="Billed At"  >                                
-                                    <h:outputLabel value="#{bill.department.name}" />
-                                </p:column>
-                                <p:column headerText="Billed by" >
-                                    <h:outputLabel value="#{bill.creater.webUserPerson.name}" >                                      
-                                    </h:outputLabel>
-                                    <br/>
-                                    <h:panelGroup rendered="#{bill.cancelled}" >
-                                        <h:outputLabel style="color: red;" value="Cancelled By " />
-                                        <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.creater.webUserPerson.name}" >                                       
-                                        </h:outputLabel>
-                                    </h:panelGroup>
-                                    <h:panelGroup rendered="#{bill.refunded}" >
-                                        <h:outputLabel style="color: red;" value="Refunded By " />
-                                        <h:outputLabel style="color: red;" rendered="#{bill.refunded}" value="#{bill.refundedBill.creater.webUserPerson.name}" >
-                                        </h:outputLabel>
-                                    </h:panelGroup>
-                                </p:column>    
-                                <p:column headerText="Client">                               
-                                    <h:panelGroup id="pt">
-                                        <h:commandLink  value="#{bill.patient.person.name}" action="patient" rendered="#{webUserController.hasPrivilege('OpdBillSearchEdit')}">
-                                            <f:setPropertyActionListener value="#{bill.patient.person.nameWithTitle}" target="#{patientController.current}"/>
-                                        </h:commandLink>
-                                        <h:outputLabel value="#{bill.patient.person.name}" rendered="#{!webUserController.hasPrivilege('OpdBillSearchEdit')}">
-                                        </h:outputLabel>
-                                    </h:panelGroup>
-                                    <p:tooltip for="pt">
-                                        <p:panel header="Patient Details" >
-                                            <p:panelGrid columns="2" >
-                                                <p:outputLabel value="Name" ></p:outputLabel>
-                                                <p:outputLabel value="#{bill.patient.person.nameWithTitle}" ></p:outputLabel>
-                                                <p:outputLabel value="Address" ></p:outputLabel>
-                                                <p:outputLabel value="#{bill.patient.person.address}" ></p:outputLabel>
-                                                <p:outputLabel value="ID" ></p:outputLabel>
-                                                <p:outputLabel value="#{bill.patient.phn}" ></p:outputLabel>
-                                                <p:outputLabel value="Phone" ></p:outputLabel>
-                                                <p:outputLabel value="#{bill.patient.person.phone}" ></p:outputLabel>
-                                                <p:outputLabel value="Email" ></p:outputLabel>
-                                                <p:outputLabel value="#{bill.patient.person.email}" ></p:outputLabel>
-                                                <p:outputLabel value="Gender" ></p:outputLabel>
-                                                <p:outputLabel value="#{bill.patient.person.sex}" ></p:outputLabel>
-                                                <p:outputLabel value="Changing Details" ></p:outputLabel>
-                                                <p:outputLabel value="Not Edited" rendered="#{bill.patient.person.editer eq null}"></p:outputLabel>
-                                                <h:panelGroup rendered="#{bill.patient.person.editer ne null}" >
-                                                    <h:outputLabel value="Edited By " />
-                                                    <h:outputLabel rendered="#{bill.patient.person.editer ne null}" value="#{bill.patient.person.editer.webUserPerson.name}" >                                       
-                                                    </h:outputLabel>
-                                                    <h:panelGroup rendered="#{bill.patient.person.editedAt ne null}" >
-                                                        <h:outputLabel value=" on " />
-                                                        <h:outputLabel  rendered="#{bill.patient.person.editedAt ne null}" value="#{bill.patient.person.editedAt}" >
-                                                            <f:convertDateTime pattern="dd/MMM/yyyy"/>
-                                                        </h:outputLabel>
-                                                        <h:outputLabel value=" at " />
-                                                        <h:outputLabel  rendered="#{bill.patient.person.editedAt ne null}" value="#{bill.patient.person.editedAt}" >
-                                                            <f:convertDateTime pattern="hh:mm:ss a"/>
-                                                        </h:outputLabel>
-                                                        <h:outputLabel value="." />
-                                                    </h:panelGroup>
-                                                </h:panelGroup>
-                                            </p:panelGrid>
-                                        </p:panel>
-                                    </p:tooltip>
-                                </p:column>
-                                <p:column headerText="Phone">                              
-                                    <h:outputLabel value="#{bill.patient.person.phone}" />
-                                </p:column>
-                                <p:column headerText="Payment" >                                
-                                    <h:outputLabel value="#{bill.paymentMethod}" /><br/>
-                                    <h:outputLabel value="#{bill.paymentScheme.name}" />
-                                </p:column>
-                                <p:column headerText="Gross Value" styleClass="averageNumericColumn">
-                                    <h:outputLabel value="#{bill.total}" >
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </h:outputLabel>
-                                </p:column>
-                                <p:column headerText="Discount" styleClass="averageNumericColumn">
-                                    <h:outputLabel value="#{bill.discount}" >
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </h:outputLabel>
-                                </p:column>
-                                <p:column headerText="Net Value" styleClass="averageNumericColumn">
-                                    <h:outputLabel value="#{bill.netTotal}" >
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </h:outputLabel>
-                                </p:column>                         
-                            </p:dataTable>
                         </h:panelGrid>
+                        <div class="d-flex">
+
+                            <p:commandButton id="btnSearch" ajax="false" value="Process" 
+                                             icon="fa-solid fa-arrows-rotate"
+                                             class="ui-button-warning" action="#{searchController.createOpdBillSearch}"/>
+                            <p:commandButton id="btnExcel" ajax="false" value="Excel"  icon="fa-solid fa-file-excel"
+                                             class="mx-1 ui-button-success" >
+                                <p:dataExporter fileName="OPD Bills" 
+                                                type="xls" target="tblBillsExport" ></p:dataExporter>
+                            </p:commandButton>
+                            <p:commandButton id="btnPrint" ajax="false" icon="fa-solid fa-print"
+                                             class="mx-1 ui-button-info" value="Print" >
+                                <p:printer target="tblBillsExport" ></p:printer>
+                            </p:commandButton>
+                            <p:defaultCommand target="btnSearch" />
+                        </div>
+
+
+
+                        <p:dataTable rowIndexVar="i" id="tblBills" value="#{searchController.bills}" 
+                                     var="bill"  
+                                     class="w-100"
+                                     rows="10"
+                                     paginator="true" 
+                                     paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
+                                     rowsPerPageTemplate="5,10,{ShowAll|'All'}"
+                                     >
+                            <p:column headerText="No" styleClass="alignTop" width="15">
+                                <h:outputLabel value="#{i+1}"/>
+                            </p:column>
+                            <p:column headerText="Bill No" >                                
+                                <p:commandLink id="billNo" ajax="false" value="#{bill.insId}" action="#{searchController.viewOPD(bill)}">
+                                    <f:setPropertyActionListener value="#{bill}" target="#{billSearch.billSearch}"/>
+                                </p:commandLink>
+                                <p:tooltip for="billNo">
+                                    <p:panel header="Bill Details - Click to View" >
+                                        <p:panelGrid columns="2" >
+                                            <p:outputLabel value="Billed Date" ></p:outputLabel>
+                                            <h:outputLabel value="#{bill.createdAt}" >
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                            </h:outputLabel>
+
+                                            <p:outputLabel value="Billed Time" ></p:outputLabel>
+                                            <h:outputLabel value="#{bill.createdAt.time}" >
+                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
+                                            </h:outputLabel>
+
+                                            <p:outputLabel value="Billed By" ></p:outputLabel>
+                                            <h:outputLabel value="#{bill.creater.webUserPerson.nameWithTitle}" >
+                                            </h:outputLabel>
+
+                                            <p:outputLabel value="Cancellation" ></p:outputLabel>
+                                            <p:outputLabel rendered="#{!bill.cancelled}" value="Not Cancelled" ></p:outputLabel>
+                                            <h:panelGroup rendered="#{bill.cancelled}" >
+                                                <h:outputLabel style="color: red;" value="Cancelled at " />
+                                                <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.createdAt}" >
+                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                </h:outputLabel>
+                                            </h:panelGroup>
+
+                                            <p:outputLabel value="Refunds" ></p:outputLabel>
+                                            <p:outputLabel rendered="#{!bill.refunded}" value="Not Refunded" ></p:outputLabel>
+                                            <h:panelGroup rendered="#{bill.refunded}" >
+                                                <h:outputLabel style="color: red;" value="Refunded at " />
+                                                <h:outputLabel style="color: red;" rendered="#{bill.refunded}" value="#{bill.refundedBill.createdAt}" >
+                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                </h:outputLabel>
+                                            </h:panelGroup>
+
+
+                                        </p:panelGrid>
+                                    </p:panel>
+
+                                </p:tooltip>
+                            </p:column>
+
+                            <p:column headerText="Billed At">
+                                <p:outputLabel value="#{bill.billDate}" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
+                                </p:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Bill No" rendered="#{sessionController.loggedPreference.opdBillPaperType eq 'PosPaper' and false}" >                                
+                                <h:outputLabel   value="#{bill.deptId}"/>
+                            </p:column> 
+                            <p:column headerText="Billed For"  >                                
+                                <h:outputLabel id="ins" value="#{bill.toDepartment.name}" />
+                                <p:tooltip for="ins" value="Billed for #{bill.toDepartment.name} of #{bill.toInstitution.name}." />
+                            </p:column>
+                            <p:column headerText="Collecting Centre"  >                                
+                                <h:outputLabel value="#{bill.collectingCentre.name}" />
+                            </p:column>
+                            <p:column headerText="Billed At"  >                                
+                                <h:outputLabel value="#{bill.department.name}" />
+                            </p:column>
+                            <p:column headerText="Billed by" >
+                                <h:outputLabel value="#{bill.creater.webUserPerson.name}" >                                      
+                                </h:outputLabel>
+                                <br/>
+                                <h:panelGroup rendered="#{bill.cancelled}" >
+                                    <h:outputLabel style="color: red;" value="Cancelled By " />
+                                    <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.creater.webUserPerson.name}" >                                       
+                                    </h:outputLabel>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{bill.refunded}" >
+                                    <h:outputLabel style="color: red;" value="Refunded By " />
+                                    <h:outputLabel style="color: red;" rendered="#{bill.refunded}" value="#{bill.refundedBill.creater.webUserPerson.name}" >
+                                    </h:outputLabel>
+                                </h:panelGroup>
+                            </p:column>    
+                            <p:column headerText="Client">                               
+                                <h:panelGroup id="pt">
+                                    <h:commandLink  value="#{bill.patient.person.name}" action="patient" rendered="#{webUserController.hasPrivilege('OpdBillSearchEdit')}">
+                                        <f:setPropertyActionListener value="#{bill.patient.person.nameWithTitle}" target="#{patientController.current}"/>
+                                    </h:commandLink>
+                                    <h:outputLabel value="#{bill.patient.person.name}" rendered="#{!webUserController.hasPrivilege('OpdBillSearchEdit')}">
+                                    </h:outputLabel>
+                                </h:panelGroup>
+                                <p:tooltip for="pt">
+                                    <p:panel header="Patient Details" >
+                                        <p:panelGrid columns="2" >
+                                            <p:outputLabel value="Name" ></p:outputLabel>
+                                            <p:outputLabel value="#{bill.patient.person.nameWithTitle}" ></p:outputLabel>
+                                            <p:outputLabel value="Address" ></p:outputLabel>
+                                            <p:outputLabel value="#{bill.patient.person.address}" ></p:outputLabel>
+                                            <p:outputLabel value="ID" ></p:outputLabel>
+                                            <p:outputLabel value="#{bill.patient.phn}" ></p:outputLabel>
+                                            <p:outputLabel value="Phone" ></p:outputLabel>
+                                            <p:outputLabel value="#{bill.patient.person.phone}" ></p:outputLabel>
+                                            <p:outputLabel value="Email" ></p:outputLabel>
+                                            <p:outputLabel value="#{bill.patient.person.email}" ></p:outputLabel>
+                                            <p:outputLabel value="Gender" ></p:outputLabel>
+                                            <p:outputLabel value="#{bill.patient.person.sex}" ></p:outputLabel>
+                                            <p:outputLabel value="Changing Details" ></p:outputLabel>
+
+                                        </p:panelGrid>
+                                    </p:panel>
+                                </p:tooltip>
+                            </p:column>
+                            <p:column headerText="Phone">                              
+                                <h:outputLabel value="#{bill.patient.person.phone}" />
+                            </p:column>
+                            <p:column headerText="Payment" >                                
+                                <h:outputLabel value="#{bill.paymentMethod}" /><br/>
+                                <h:outputLabel value="#{bill.paymentScheme.name}" />
+                            </p:column>
+                            <p:column headerText="Gross Value" styleClass="averageNumericColumn">
+                                <h:outputLabel value="#{bill.total}" >
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                            </p:column>
+                            <p:column headerText="Discount" styleClass="averageNumericColumn">
+                                <h:outputLabel value="#{bill.discount}" >
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                            </p:column>
+                            <p:column headerText="Net Value" styleClass="averageNumericColumn">
+                                <h:outputLabel value="#{bill.netTotal}" >
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                            </p:column>                         
+                        </p:dataTable>
+
 
 
                     </p:panel>
@@ -247,7 +238,7 @@
                                 </p:column>
                                 <p:column headerText="Bill Date">
                                     <p:outputLabel value="#{bill1.billDate}" >
-                                        <f:convertDateTime pattern="dd-MM-yy h:m a"></f:convertDateTime>
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
                                     </p:outputLabel>
                                 </p:column>
                                 <p:column headerText="Bill From" >                                

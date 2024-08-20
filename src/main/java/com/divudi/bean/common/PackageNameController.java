@@ -1,11 +1,3 @@
-/*
- * Milk Payment System for Lucky Lanka Milk Processing Company
- *
- * Development and Implementation of Web-based System by ww.divudi.com
- Development and Implementation of Web-based System by ww.divudi.com
- * and
- * a Set of Related Tools
- */
 package com.divudi.bean.common;
 import com.divudi.entity.Item;
 import com.divudi.entity.Packege;
@@ -22,9 +14,10 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
+import com.divudi.bean.common.util.JsfUtil;
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
  Informatics)
  */
 @Named
@@ -51,12 +44,16 @@ public  class PackageNameController implements Serializable {
         } else {
             sql = "select p from Packege p where p.retired=false "
                     + "and (p.inactive=false or p.inactive is null)"
-                    + "and (upper(p.name) like '%" + query.toUpperCase() + "%'or  upper(p.code) like '%" + query.toUpperCase() + "%' ) order by p.name";
-            //////System.out.println(sql);
-            suggestions = getFacade().findBySQL(sql);
+                    + "and ((p.name) like '%" + query.toUpperCase() + "%'or  (p.code) like '%" + query.toUpperCase() + "%' ) order by p.name";
+            //////// // System.out.println(sql);
+            suggestions = getFacade().findByJpql(sql);
         }
         return suggestions;
     }
+     
+     public String navigateToPackageNames(){
+         return "/admin/pricing/package_name?faces-redirect=true";
+     }
     
     /**
      *
@@ -137,7 +134,7 @@ public  class PackageNameController implements Serializable {
     public List<Packege> getItems() {
         String temSql;
         temSql = "SELECT i FROM Packege i where i.retired=false order by i.name";
-        items = getFacade().findBySQL(temSql);
+        items = getFacade().findByJpql(temSql);
         if (items == null) {
             items = new ArrayList<Packege>();
         }
@@ -148,7 +145,7 @@ public  class PackageNameController implements Serializable {
         temSql = "SELECT i FROM Packege i where i.retired=false "
                 + " and (i.inactive=false or i.inactive is null)"
                 + " order by i.name";
-        items = getFacade().findBySQL(temSql);
+        items = getFacade().findByJpql(temSql);
         if (items == null) {
             items = new ArrayList<Packege>();
         }
@@ -163,6 +160,7 @@ public  class PackageNameController implements Serializable {
     private void recreateModel() {
         itemList = null;
         items = null;
+        current = null;
     }
 
     /**
@@ -174,12 +172,12 @@ public  class PackageNameController implements Serializable {
 
             getFacade().edit(current);
 
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            UtilityController.addSuccessMessage("Saved Successfully");
+            JsfUtil.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
         getItems();
@@ -197,9 +195,9 @@ public  class PackageNameController implements Serializable {
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();

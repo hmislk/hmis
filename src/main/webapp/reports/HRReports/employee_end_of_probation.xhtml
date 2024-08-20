@@ -1,0 +1,87 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/reports/index.xhtml">
+            <ui:define name="subcontent">
+                <h:form >
+                    <p:panel header="Employee End of Probation" >
+                        <h:panelGrid columns="2">
+
+                            <p:outputLabel value="Time Range" class="mx-2" >
+                            </p:outputLabel>
+                            <p:selectOneMenu>
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems></f:selectItems>
+                            </p:selectOneMenu>
+                        </h:panelGrid>
+                        
+                        <div class="d-flex align-items-center my-2">
+                            <p:commandButton class="m-2" ajax="false" value="Process" action="null" >
+                            </p:commandButton>
+                            <p:commandButton class="m-2" ajax="false" value="Download"
+                                             action="null">
+                            </p:commandButton>
+                        </div>
+
+                        <p:dataTable id="tbl" value="" 
+                                     paginator="true"
+                                     rows="10">
+                            
+                            <p:column headerText="Code No">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="EPF Code">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Name">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Speciality">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Roster">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Employee Status">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Address">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Sex">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="NIC No">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="DOB">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="DOJ ">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Date of Retired ">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Date of Resign ">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Department ">
+                                <h:outputText value="" />
+                            </p:column>
+                            
+                        </p:dataTable>
+                    </p:panel>
+
+                </h:form>
+
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

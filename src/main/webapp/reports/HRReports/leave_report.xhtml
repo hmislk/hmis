@@ -1,0 +1,145 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/reports/index.xhtml">
+            <ui:define name="subcontent">
+                <h:form >
+                    <p:panel header="Leave Report" >
+                        <p:panelGrid columns="4" class="w-100" >
+                            <p:outputLabel value=" Date From" >
+                            </p:outputLabel>
+                            <p:datePicker value="#{reportController.fromDate}" 
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}"
+                                          class=" w-100" ></p:datePicker>
+                            <p:outputLabel value=" Date To" >
+                            </p:outputLabel>
+                            <p:datePicker value="#{reportController.toDate}"
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}"
+                                          class=""></p:datePicker>
+
+                            <p:outputLabel value="Department" >
+                            </p:outputLabel>
+                            <p:selectOneMenu 
+                                id="cmdFromDepartment"
+                                value="#{reportController.fromDepartment}" 
+                                filter="true"
+                                class="w-100 ">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value="#{departmentController.getInsDepartments(reportController.fromInstitution)}"
+                                               var="d"
+                                               itemLabel="#{d.name}"
+                                               itemValue="#{d}" ></f:selectItems>
+                            </p:selectOneMenu>
+
+
+                            <p:outputLabel value="Employee" >
+                            </p:outputLabel>
+                            <p:selectOneMenu value="" filter="true" class="w-100 ">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value=""
+                                               var="i"
+                                               itemLabel=""
+                                               itemValue=""
+                                               ></f:selectItems>
+                            </p:selectOneMenu>
+
+
+                            <p:outputLabel value="Staff Category " >
+                            </p:outputLabel>
+                            <p:selectOneMenu value="" filter="true"  class="w-100 " >
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value=""
+                                               var="i"
+                                               itemLabel=""
+                                               itemValue=""
+                                               ></f:selectItems>
+                            </p:selectOneMenu>
+
+                            <p:outputLabel value="Staff Designation " >
+                            </p:outputLabel>
+                            <p:selectOneMenu value="" filter="true"  class="w-100 " >
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value=""
+                                               var="i"
+                                               itemLabel=""
+                                               itemValue=""
+                                               ></f:selectItems>
+                            </p:selectOneMenu>
+                        </p:panelGrid>
+                        
+                        <div class="d-flex align-items-center">
+                             <p:commandButton class="m-2" ajax="false" value="Process" action="#{reportController.processLabTestCount()}" >
+                            </p:commandButton>
+                            <p:commandButton class="m-2" ajax="false" value="Download"
+                                             action="#{reportController.downloadLabTestCount}">
+                            </p:commandButton>
+                        </div>
+
+
+                        <p:dataTable id="tbl" value="" 
+                                     paginator="true"
+                                     rows="10">
+                            <p:column headerText="Form No">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Emp No">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Emp Name">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Department Name">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Staff Category">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Staff Designation">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Staff Roster">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="leave type">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Shift Type">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Created Date">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Leave Date">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Leave Qty">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Comments">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Created by">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Nopay For without Attendance">
+                                <h:outputText value="" />
+                            </p:column>
+
+
+                        </p:dataTable>
+
+
+                    </p:panel>
+
+                </h:form>
+
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

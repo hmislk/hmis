@@ -1,0 +1,78 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:a="http://xmlns.jcp.org/jsf/passthrough"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+
+
+        <ui:insert name="web_body">
+            <div class="row" >
+                <div class="col-12" >
+                    <p:imageSwitch effect="fade"  >
+                        <ui:repeat value="#{webContentController.findMultipleWebContent('index_image')}" var="i">
+                            <p:graphicImage class="w-100" style="height: 20rem; overflow: hidden; object-fit: cover;"
+                                            cache="false"  value="#{streamedContentController.imageByUpWebContentId}"  >
+                                <f:param name="id" value="#{i.idStr}" />
+                            </p:graphicImage>
+                        </ui:repeat>
+                    </p:imageSwitch>
+                </div>
+            </div>
+            <div class="row" >
+                <div class="col-4" >
+                    <div class="card m-3 h1" >
+                        <div class="row my-auto" >
+                            <div class="col-2 my-auto" >
+                                <span class="material-symbols-outlined">
+                                    phone_in_talk
+                                </span>
+                            </div>
+                            <div class="col-9 my-auto"  >
+                                <h:outputText escape="true" style="margin: none; border: none; padding: none; margin-bottom: 0px!important;" value="#{webContentController.findSingleText('home_page_phone')}"  ></h:outputText>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="col-4" >
+                    <p:graphicImage class="bi me-2"  height="40" alt="phone_icon"
+                                    cache="false"  value="#{streamedContentController.imageByUpWebContentId}"  >
+                        <f:param name="id" value="#{webContentController.findSingleWebContent('phone_icon').idStr}" />
+                    </p:graphicImage>
+                    <h:outputText class="inline" escape="false" value="#{webContentController.findSingleText('home_page_phone')}" ></h:outputText>
+                </div>
+                <div class="col-4" >
+                    <div class="row " >
+                        <div class="col-2 my-auto" >
+                            <span class="material-symbols-outlined mx-3">
+                                phone_in_talk
+                            </span>
+                        </div>
+                        <div class="col-9 my-auto " >
+                            <span class="material-symbols-outlined">
+                                <h:outputText class="inline" escape="false" value="#{webContentController.findSingleText('home_page_phone')}" ></h:outputText>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </ui:insert>
+
+
+
+
+    </cc:implementation>
+</html>

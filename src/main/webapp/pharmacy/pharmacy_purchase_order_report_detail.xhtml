@@ -1,0 +1,226 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/pharmacy/pharmacy_analytics.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp"
+                >
+
+
+    <ui:define name="subcontent">
+
+        <h:panelGroup rendered="true" >
+            <h:form>
+                <p:panel  styleClass="noBorder summeryBorder" header="Purchase Order Summary">
+                    <h:panelGrid columns="4" class="w-100">
+                        <h:outputLabel value="From Date"/>
+                        <p:calendar id="frmDate" value="#{commonReport.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                        </p:calendar>
+
+                        <h:outputLabel value="To Date"/>
+                        <p:calendar id="toDate" value="#{commonReport.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                        </p:calendar>
+
+                        <h:outputLabel  value="Department"></h:outputLabel>
+                        <p:autoComplete  value="#{commonReport.department}"  
+                                         completeMethod="#{departmentController.completeDept}" var="dept"
+                                         itemValue="#{dept}" itemLabel="#{dept.name}" 
+                                         forceSelection="true" rendered="true"
+                                         requiredMessage="You must select a department" >
+                        </p:autoComplete>
+
+
+                        <h:outputLabel value="Institution"/>
+                        <p:autoComplete  value="#{commonReport.institution}"
+                                         completeMethod="#{institutionController.completeCompany}" 
+                                         forceSelection="true"
+                                         var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" />
+
+                        <h:outputLabel value="PO No"/>
+                        <p:inputText  value="#{commonReport.departmentId}"
+                                      />
+                        <p:defaultCommand target="btnRefresh"/>
+                    </h:panelGrid>
+
+
+
+
+
+                    <h:panelGrid columns="4" class="my-2">
+                        <p:commandButton 
+                            id="btnRefresh" 
+                            ajax="false" 
+                            value="Fill Approved PO" 
+                            icon="fa-solid fa-fill"
+                            class="ui-button-warning"
+                            actionListener="#{commonReport.createPurchaseOrderDetailApprovedTable()}"
+                            style="float: right;" />  
+
+                       <p:commandButton 
+                            ajax="false" 
+                            value="Fill Not Approved PO" 
+                            icon="fa-solid fa-fill"
+                            class="mx-1 ui-button-warning"
+                            actionListener="#{commonReport.createPurchaseOrderDetailNotApprovedTable()}"
+                            style="float: right;" />  
+                       
+                       <p:commandButton  
+                            ajax="false" 
+                            value="Fill All PO" 
+                            icon="fa-solid fa-fill"
+                            class="ui-button-warning"
+                            actionListener="#{commonReport.createPurchaseOrderDetailAllTable()}"
+                            style="float: right;" />  
+
+                        <p:commandButton 
+                            ajax="false" 
+                            value="Print"
+                            icon="fa-solid fa-print"
+                            class="ui-button-info"
+                            style="float: right;" >
+                            <p:printer target="reportPrint"/>
+                        </p:commandButton>  
+                    </h:panelGrid>
+
+                    <p:panel id="reportPrint">
+                        <h:panelGrid columns="2" styleClass="printBlock" >
+
+                            <h:outputLabel value="Purchase Order Detailed Report"/>
+                            <h:outputLabel/>
+                            <h:outputLabel value="Institution "/>
+                            <h:outputLabel value="#{commonReport.department.institution.name}"/>
+                            <h:outputLabel value="Department "/>
+                            <h:outputLabel value="#{commonReport.department.name}"/>
+                            <h:outputLabel value="From" />
+                            <h:outputLabel  value="#{commonReport.fromDate}" >
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                            </h:outputLabel>                          
+                            <h:outputLabel value="To"/>
+                            <h:outputLabel  value="#{commonReport.toDate}" >
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                            </h:outputLabel>
+                        </h:panelGrid>
+
+                        <p:spacer height="5"/>
+                        <p:dataTable 
+                            id="billed"  
+                            value="#{commonReport.bills}"
+                            var="b" 
+                            rendered="#{commonReport.bills ne null}" 
+                            sortBy="#{b.billType}"
+                            rowKey="#{b.id}">
+
+                            <f:facet name="header">  
+                                <h:outputLabel value="From :" />&nbsp;&nbsp;
+                                <h:outputLabel  value="#{commonReport.fromDate}" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                </h:outputLabel>                          
+                                &nbsp;&nbsp;<h:outputLabel value="To :"/>&nbsp;&nbsp;
+                                <h:outputLabel  value="#{commonReport.toDate}" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                </h:outputLabel><br/>
+                            </f:facet>
+
+                            <p:column headerText="PO No" >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="PO No"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b.deptId}"/>
+                                <f:facet name="footer">  
+                                    <h:outputLabel value="Total Cash P. Value"/><br/>
+                                    <h:outputLabel value="Total Credit P. Value"/><br/>
+                                </f:facet> 
+                            </p:column>
+
+
+
+                            <p:column headerText="Created At"  >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Created At"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b.createdAt}" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                </h:outputLabel>
+                                <f:facet name="footer">  
+                                    <h:outputLabel value="#{commonReport.pharmacyCashBilledBillTotals}"/><br/>
+                                    <h:outputLabel value="#{commonReport.pharmacyCreditBilledBillTotals}"/><br/>
+                                </f:facet> 
+                            </p:column>
+
+                            <p:column headerText="Suplier Name"  >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Suplier Name"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b.toInstitution.name}"/>
+
+                            </p:column>
+
+                            <p:column headerText="Institution"  >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Institution"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b.institution.name}"/>
+
+                            </p:column>
+
+
+                            <p:column headerText="Purchase Value Cash" style=" text-align: right"  >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Purchase Value Cash"/>
+                                </f:facet> 
+                                <h:outputLabel rendered="#{b.paymentMethod=='Cash'}" value="#{b.netTotal}" >
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                                <h:outputLabel rendered="#{b.paymentMethod!='Cash'}" value="0.00" />
+                            </p:column>
+
+                            <p:column headerText="Purchase Value Credit" style=" text-align: right" >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Purchase Value Credit"/>
+                                </f:facet> 
+                                <h:outputLabel rendered="#{b.paymentMethod=='Credit'}" value="#{b.netTotal}"  >
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                                <h:outputLabel rendered="#{b.paymentMethod!='Credit'}" value="0.00"/>
+                            </p:column>
+
+                           
+
+                            <p:column headerText="Remark" >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Remark"/>
+                                </f:facet> 
+                                <h:outputLabel value="Cancelled. (#{b.deptId})" rendered="#{b.billClassType=='CancelledBill'}" style="color: red;"></h:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Action" exportable="false" >
+                                <p:commandButton 
+                                    id="view"
+                                    ajax="false"
+                                    value="View"
+                                    class="ui-button-warning"
+                                    action="pharmacy_reprint_po" 
+                                    disabled="#{b.referenceBill.creater eq null or b.referenceBill.referenceBill eq null}">
+                                    <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b.referenceBill}"/>
+                                </p:commandButton>
+                            </p:column>
+
+                        </p:dataTable>
+
+
+                    </p:panel>
+
+
+
+
+
+
+                </p:panel>
+            </h:form>
+        </h:panelGroup>
+    </ui:define>
+
+</ui:composition>

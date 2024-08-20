@@ -1,9 +1,9 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html">
+      xmlns:h="http://xmlns.jcp.org/jsf/html">
 
     <h:body>
 
@@ -13,14 +13,20 @@
                 <h:form>
                     <p:panel header="Clinicals - Administration" >
                         <h:panelGrid columns="1">
-                            <p:commandButton styleClass="linkButton" ajax="false" value="Vocabularies" action="/clinical/clinical_vocabulary" onclick="onSubmitButton();" ></p:commandButton>
-                            <p:commandButton styleClass="linkButton" ajax="false" value="Symptoms" action="/clinical/clinical_symptoms" onclick="onSubmitButton();" ></p:commandButton>
-                            <p:commandButton styleClass="linkButton" ajax="false" value="Signs" action="/clinical/clinical_signs" onclick="onSubmitButton();" ></p:commandButton>
-                            <p:commandButton styleClass="linkButton" ajax="false" value="Diagnosis" action="/clinical/clinical_diagnosis" onclick="onSubmitButton();" ></p:commandButton>
-                            <p:commandButton styleClass="linkButton" ajax="false" value="Investigations" action="/clinical/clinical_investigations" onclick="onSubmitButton();" ></p:commandButton>
-                            <p:commandButton styleClass="linkButton" ajax="false" value="Procedures" action="/clinical/clinical_procedures" onclick="onSubmitButton();" ></p:commandButton>
-                            <p:commandButton styleClass="linkButton" ajax="false" value="Plan of actions" action="/clinical/clinical_plans" onclick="onSubmitButton();" ></p:commandButton>
-                            <p:commandButton styleClass="linkButton" ajax="false" value="Treatements" action="/clinical/clinical_treatment" onclick="onSubmitButton();" ></p:commandButton>
+                            <p:commandButton styleClass="linkButton" ajax="false" value="Vocabularies" action="/clinical/clinical_vocabulary"  ></p:commandButton>
+                            <p:commandButton styleClass="linkButton" ajax="false" value="Symptoms" action="/clinical/clinical_symptoms"  ></p:commandButton>
+                            <p:commandButton styleClass="linkButton" ajax="false" value="Signs" action="/clinical/clinical_signs"  ></p:commandButton>
+                            <p:commandButton styleClass="linkButton" ajax="false" value="Diagnosis" action="/clinical/clinical_diagnosis"  ></p:commandButton>
+                            <p:commandButton styleClass="linkButton" ajax="false" value="Investigations" action="/clinical/clinical_investigations"  ></p:commandButton>
+                            <p:commandButton styleClass="linkButton" ajax="false" value="Procedures" action="/clinical/clinical_procedures"  ></p:commandButton>
+                            <p:commandButton styleClass="linkButton" ajax="false" value="Plan of actions" action="/clinical/clinical_plans"  ></p:commandButton>
+                            <p:commandButton styleClass="linkButton" ajax="false" value="Treatements" action="/clinical/clinical_treatment"  ></p:commandButton>
+                            <hr/><!-- comment -->
+                            <p:commandButton styleClass="linkButton" ajax="false" value="Upload Patients" action="#{dataUploadController.toUploadPatients()}"  ></p:commandButton>
+                            <p:commandButton styleClass="linkButton" ajax="false" value="Upload VTMs" action="#{dataUploadController.toUploadVtms()}"  ></p:commandButton>
+                            <p:commandButton styleClass="linkButton" ajax="false" value="Upload ATMs" action="#{dataUploadController.toUploadAtms()}"  ></p:commandButton>
+                            <p:commandButton styleClass="linkButton" ajax="false" value="Upload VMPs" action="#{dataUploadController.toUploadVmps()}"  ></p:commandButton>
+                            <p:commandButton styleClass="linkButton" ajax="false" value="Upload AMPs" action="#{dataUploadController.toUploadAmps()}"  ></p:commandButton>
 
 
                         </h:panelGrid>

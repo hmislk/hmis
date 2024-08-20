@@ -1,101 +1,142 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:pe="http://primefaces.org/ui/extensions"
-      xmlns:f="http://java.sun.com/jsf/core">
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <h:body>
 
-        <ui:composition template="/resources/template/template.xhtml">
+        <ui:composition template="/pharmacy/pharmacy_analytics.xhtml">
 
-            <ui:define name="content">
+            <ui:define name="subcontent">
                 <h:form>
+
                     <p:panel header="Item List with Suppliers and Latest Rates" >
-                        <p:commandButton ajax="false" value="Excel">
-                            <pe:exporter type="xlsx" target="tblItem" fileName="report_grn_detail"  />
-                        </p:commandButton>
-                        <p:commandButton ajax="false" value="Fill Items"
-                                         action="#{ampController.fillItemsForItemSupplierPrices}"/>
-                        <p:commandButton ajax="false" value="Fill Prices For Items"
-                                         action="#{ampController.fillPricesForItemSupplierPrices}"/>
-                        <p:commandButton ajax="false" value="Fill Suppliers For Items"
-                                         action="#{ampController.fillSuppliersForItemSupplierPrices}"/>
 
-                        <p:panel id="paItems">
-                            <p:dataTable id="tblItem" value="#{ampController.itemSupplierPrices}" var="i"
-                                         rowKey="#{i.id}" 
-                                         rows="100"
-                                         paginator="true"
-                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                         rowsPerPageTemplate="100,250,500,1000"
-                                         >
+                        <div class="row mb-3">
+                            <div class="col-md-12 d-flex justify-content-between">
+                                <div>
+                                    <p:commandButton 
+                                        class="ui-button-warning"
+                                        icon="fa fa-search"
+                                        ajax="false" 
+                                        value="Fill Items"
+                                        action="#{ampController.fillItemsForItemSupplierPrices}">
+                                    </p:commandButton>
 
+                                    <p:commandButton 
+                                        class="ui-button-warning mx-2"
+                                        icon="fa fa-search"
+                                        ajax="false" 
+                                        value="Fill Prices For Items"
+                                        action="#{ampController.fillPricesForItemSupplierPrices}">
+                                    </p:commandButton>
 
+                                    <p:commandButton 
+                                        class="ui-button-warning"
+                                        icon="fa fa-search"
+                                        ajax="false" 
+                                        value="Fill Suppliers For Items"
+                                        action="#{ampController.fillSuppliersForItemSupplierPrices}">
+                                    </p:commandButton> 
+                                </div>
+                                <div>
+                                    <p:commandButton 
+                                        class="ui-button-success"
+                                        icon="fa-solid fa-file-excel"
+                                        style="float: right;"
+                                        ajax="false" 
+                                        value="Excel">
+                                        <p:dataExporter type="xlsx" target="tblItem" fileName="report_grn_detail"  />
+                                    </p:commandButton>
+                                </div>
+                            </div>
+                        </div>
 
-                                <p:column headerText="Item Code" 
-                                          sortBy="#{i.amp.code}"
-                                          filterBy="#{i.amp.code}" filterMatchMode="contains">
-                                    <p:outputLabel value="#{i.amp.code}"></p:outputLabel>
-                                </p:column>
+                        <p:dataTable 
+                            id="tblItem" 
+                            value="#{ampController.itemSupplierPrices}" 
+                            var="i"
+                            rowKey="#{i.id}" 
+                            rows="20"
+                            paginatorPosition="bottom"
+                            paginator="true"
+                            paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                            rowsPerPageTemplate="50,100,250,500,1000"
+                            >
 
-                                <p:column headerText="Item Name" 
-                                          sortBy="#{i.amp.name}" 
-                                          filterBy="#{i.amp.name}" filterMatchMode="contains">
-                                    <p:outputLabel value="#{i.amp.name}"></p:outputLabel>
-                                </p:column>
+                            <p:column 
+                                headerText="Item Code" 
+                                sortBy="#{i.amp.code}"
+                                filterBy="#{i.amp.code}" 
+                                filterMatchMode="contains">
+                                <p:outputLabel value="#{i.amp.code}"></p:outputLabel>
+                            </p:column>
 
-                                <p:column headerText="Generic Code" 
-                                          sortBy="#{i.vmp.name}"
-                                          filterBy="#{i.vmp.name}" filterMatchMode="contains">
-                                    <p:outputLabel value="#{i.vmp.name}"></p:outputLabel>
-                                </p:column>
+                            <p:column 
+                                headerText="Item Name" 
+                                sortBy="#{i.amp.name}" 
+                                filterBy="#{i.amp.name}" 
+                                filterMatchMode="contains">
+                                <p:outputLabel value="#{i.amp.name}"></p:outputLabel>
+                            </p:column>
 
-                                <p:column headerText="Generic Name" 
-                                          sortBy="#{i.vmp.name}"
-                                          filterBy="#{i.vmp.name}" filterMatchMode="contains">
-                                    <p:outputLabel value="#{i.vmp.name}"></p:outputLabel>
-                                </p:column>
+                            <p:column 
+                                headerText="Generic Code" 
+                                sortBy="#{i.vmp.name}"
+                                filterBy="#{i.vmp.name}" 
+                                filterMatchMode="contains">
+                                <p:outputLabel value="#{i.vmp.name}"></p:outputLabel>
+                            </p:column>
 
-                                <p:column headerText="Supplier Code" 
-                                          sortBy="#{i.supplier.institutionCode}"
-                                          filterBy="#{i.supplier.institutionCode}" filterMatchMode="contains">
-                                    <p:outputLabel value="#{i.supplier.institutionCode}"></p:outputLabel>
-                                </p:column>
-                                <p:column headerText="Supplier Name" 
-                                          sortBy="#{i.supplier.name}"
-                                          filterBy="#{i.supplier.name}" filterMatchMode="contains">
-                                    <p:outputLabel value="#{i.supplier.name}"></p:outputLabel>
-                                </p:column>
-                                <p:column headerText="Purchase Price" 
-                                          sortBy="#{i.pp}"
-                                          filterBy="#{i.pp}" filterMatchMode="contains">
-                                    <p:outputLabel value="#{i.pp}">
-                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                    </p:outputLabel>
-                                </p:column>
-                                <p:column headerText="Sale Price" 
-                                          sortBy="#{i.sp}"
-                                          filterBy="#{i.sp}" filterMatchMode="contains">
-                                    <p:outputLabel value="#{i.sp}">
-                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                    </p:outputLabel>
-                                </p:column>
+                            <p:column 
+                                headerText="Generic Name" 
+                                sortBy="#{i.vmp.name}"
+                                filterBy="#{i.vmp.name}" 
+                                filterMatchMode="contains">
+                                <p:outputLabel value="#{i.vmp.name}"></p:outputLabel>
+                            </p:column>
 
-                            </p:dataTable>
-                        </p:panel>
-
+                            <p:column 
+                                headerText="Supplier Code" 
+                                sortBy="#{i.supplier.institutionCode}"
+                                filterBy="#{i.supplier.institutionCode}" 
+                                filterMatchMode="contains">
+                                <p:outputLabel value="#{i.supplier.institutionCode}"></p:outputLabel>
+                            </p:column>
+                            <p:column 
+                                headerText="Supplier Name" 
+                                sortBy="#{i.supplier.name}"
+                                filterBy="#{i.supplier.name}" 
+                                filterMatchMode="contains">
+                                <p:outputLabel value="#{i.supplier.name}"></p:outputLabel>
+                            </p:column>
+                            <p:column 
+                                headerText="Purchase Price" 
+                                sortBy="#{i.pp}"
+                                filterBy="#{i.pp}" 
+                                filterMatchMode="contains">
+                                <p:outputLabel value="#{i.pp}">
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column 
+                                headerText="Sale Price" 
+                                sortBy="#{i.sp}"
+                                filterBy="#{i.sp}" 
+                                filterMatchMode="contains">
+                                <p:outputLabel value="#{i.sp}">
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </p:outputLabel>
+                            </p:column>
+                        </p:dataTable>
 
                     </p:panel>
                 </h:form>
-
-
             </ui:define>
-
-
         </ui:composition>
-
     </h:body>
 </html>

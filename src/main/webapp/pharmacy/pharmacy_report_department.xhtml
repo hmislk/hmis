@@ -1,45 +1,45 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:pe="http://primefaces.org/ui/extensions">
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      >
 
     <h:body>
 
-        <ui:composition template="/resources/template/template.xhtml">
+        <ui:composition template="/pharmacy/pharmacy_analytics.xhtml">
 
-            <ui:define name="content">
+            <ui:define name="subcontent">
                 <h:form id="frm">
 
 
-                    <p:panel header="Stock Report by Batch" >
+                    <p:panel header="Stock Report by Batch To Export" >
 
-                        <h:panelGrid columns="7" >
+                        <h:panelGrid columns="7" class="my-2">
                             <h:outputLabel value="Department" ></h:outputLabel>
-                            <p:autoComplete completeMethod="#{departmentController.completeDept}" 
+                            <p:autoComplete class="w-100 mx-2" inputStyleClass="w-100" completeMethod="#{departmentController.completeDept}" 
                                             var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" 
                                             forceSelection="true" 
                                             value="#{reportsStock.department}" 
-                                            converter="departmentConverter"  >
+                                              >
                             </p:autoComplete>
                             <p:spacer width="10" height="1" ></p:spacer>
-                            <p:commandButton ajax="false" value="Process" actionListener="#{reportsStock.fillDepartmentStocks()}" ></p:commandButton>
-                            <p:commandButton value="PDF" ajax="false" >
-                                <pe:exporter type="pdf" target="tbl" fileName="MessagesAndDetails"  
-                                             datasetPadding="4"/>  
+                            <p:commandButton class="ui-button-warning" icon="fas fa-cogs" ajax="false" value="Process" actionListener="#{reportsStock.fillDepartmentStocks()}" ></p:commandButton>
+                            <p:commandButton class="ui-button-secondary  mx-2" icon="fas fa-file-pdf" value="PDF" ajax="false" >
+                                <p:dataExporter type="pdf" target="tbl" fileName="MessagesAndDetails"  
+                                             />  
                             </p:commandButton>
-                            <p:commandButton value="Excel" ajax="false">
-                                <pe:exporter type="xlsx" target="tbl" fileName="Total_Stock"
-                                             facetBackground="#008000" facetFontSize="15" 
-                                             facetFontColor="#FFFFFF" facetFontStyle="BOLD" cellFontColor="#0000FF" cellFontSize="12"  cellFontStyle="NORMAL" 
-                                             fontName="Courier New" />
+                            <p:commandButton value="Excel" ajax="false" class="ui-button-success" icon="fas fa-file-excel">
+                                <p:dataExporter type="xlsx" target="tbl" fileName="Total_Stock"
+                                               
+                                                   
+                                              />
                             </p:commandButton>
 
 
-                            <p:commandButton value="Print" actionListener="#{reportsStock.prepareForPrint()}" 
+                            <p:commandButton class="ui-button-info  mx-2" icon="fas fa-print" value="Print" actionListener="#{reportsStock.prepareForPrint()}" 
                                              oncomplete="$('#frm\\:print').click()"
                                              update=":frm:tbl"/>
                             <p:commandButton id="print" value="Actual print" style="display: none">

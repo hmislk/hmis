@@ -1,42 +1,42 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:pe="http://primefaces.org/ui/extensions">
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      >
 
     <h:body>
 
-        <ui:composition template="/resources/template/template.xhtml">
+        <ui:composition template="/store/store_reports_index.xhtml">
 
-            <ui:define name="content">
+            <ui:define name="subcontent">
                 <h:form>
 
                     <p:panel header="Before Stock Taking Report" >
-
-                        <h:panelGrid columns="2" >
+                        
+                        <h:panelGrid columns="2" class="my-2" >
                             <h:outputLabel value="Department" ></h:outputLabel>
-                            <p:autoComplete completeMethod="#{departmentController.completeDept}" 
+                            <p:autoComplete class="w-100 mx-4" inputStyleClass="w-100" completeMethod="#{departmentController.completeDept}" 
                                             var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" 
-                                            forceSelection="true" value="#{storeReportsStock.department}" converter="departmentConverter"/>
+                                            forceSelection="true" value="#{storeReportsStock.department}" />
                             
                             <h:outputLabel value="Category" ></h:outputLabel>
-                            <p:autoComplete completeMethod="#{storeItemCategoryController.completeCategory}" var="dept" 
+                            <p:autoComplete class="w-100 mx-4" inputStyleClass="w-100" completeMethod="#{storeItemCategoryController.completeCategory}" var="dept" 
                                             itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{storeReportsStock.category}" >
                             </p:autoComplete>
                         </h:panelGrid>
-                        <h:panelGrid columns="4" >
-                                 <p:spacer width="80" height="1"/>
-                            <p:commandButton ajax="false" value="Process" actionListener="#{storeReportsStock.fillCategoryStocks()}" ></p:commandButton>
-                            <p:commandButton value="Print" ajax="false" >
+                        <h:panelGrid columns="6" class="my-2">
+                            <p:commandButton class="ui-button-warning" icon="fas fa-cogs" ajax="false" value="Process" actionListener="#{storeReportsStock.fillCategoryStocks()}" ></p:commandButton>
+                            <p:commandButton class="ui-button-info mx-2" icon="fas fa-print" value="Print" ajax="false" >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
-                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
-                                <pe:exporter type="xlsx" target="tbl" fileName="Category_report"  />
+                            <p:commandButton class="ui-button-success" icon="fas fa-file-excel" ajax="false" value="Excel">
+                                <p:dataExporter type="xlsx" target="tbl" fileName="Category_report"  />
                             </p:commandButton>  
                         </h:panelGrid>
+
 
                         <h:panelGroup id="gpBillPreview" styleClass="noBorder summeryBorder">
                             <p:dataTable id="tbl" rowStyleClass="#{i.stock eq 0 ?'noDisplayRow' : ''}" value="#{storeReportsStock.stocks}" var="i"  >
@@ -44,7 +44,7 @@
                                     <h:outputLabel value="Before Stock Taking Report in #{storeReportsStock.department.name} "/>                                  
                                     <h:outputLabel value="for #{storeReportsStock.category.name}"/><br/><br/>
                                     <h:outputLabel value="Date : ">
-                                        <p:clock pattern="dd MM yy HH:mm:ss a"/></h:outputLabel>
+                                        <p:clock pattern="#{sessionController.applicationPreference.longDateTimeFormat}" /></h:outputLabel>
                                 </f:facet> 
                                 
                                 <p:column headerText="Item">

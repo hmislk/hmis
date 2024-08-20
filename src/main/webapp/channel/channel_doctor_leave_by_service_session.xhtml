@@ -1,11 +1,11 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/resources/template/template.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://java.sun.com/jsf/core"
-                xmlns:poue="http://primefaces.org/ui/extensions">
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                >
 
     <ui:define name="content">
         <h:form>
@@ -14,7 +14,7 @@
                 <h:panelGrid columns="1"  id="panSpeciality" styleClass="noBorderGrid1">
                     <p:inputText autocomplete="off" id="txtSearch" value="#{doctorSpecialityController.selectText}" style="width: 176px;" placeholder="Specialities" >
                         <f:ajax execute="txtSearch" render="acSpeciality" event="keyup" />
-                        <p:ajax  event="keyup" process="@this" update=":#{p:component('scStaff')}  :#{p:component('tblSessionsOfSelectedConsultant')}" listener="#{bookingController.listnerStaffListForSpecilitySelectedText}"/> 
+                        <p:ajax  event="keyup" process="@this" update=":#{p:resolveFirstComponentWithId('scStaff',view).clientId}  :#{p:resolveFirstComponentWithId('tblSessionsOfSelectedConsultant',view).clientId}" listener="#{bookingController.listnerStaffListForSpecilitySelectedText}"/> 
                     </p:inputText>
                     <p:dataTable  scrollable="true" scrollHeight="280"
                                   id="acSpeciality"
@@ -24,18 +24,18 @@
                                   var="spe" 
                                   selectionMode="single" 
                                   style="height: 300px; width: 200px; padding: 0px; margin: 0px;">
-                        <p:ajax  event="rowSelect" process="@this" update=":#{p:component('scStaff')}  :#{p:component('tblSessionsOfSelectedConsultant')}" listener="#{bookingController.listnerStaffListForRowSelect}"/> 
-                        <p:ajax  event="rowSelect" process="@this" update=":#{p:component('scStaff')}  :#{p:component('tblSessionsOfSelectedConsultant')}" listener="#{bookingController.generateSessions}"/> 
+                        <p:ajax  event="rowSelect" process="@this" update=":#{p:resolveFirstComponentWithId('scStaff',view).clientId}  :#{p:resolveFirstComponentWithId('tblSessionsOfSelectedConsultant',view).clientId}" listener="#{bookingController.listnerStaffListForRowSelect}"/> 
+                        <p:ajax  event="rowSelect" process="@this" update=":#{p:resolveFirstComponentWithId('scStaff',view).clientId}  :#{p:resolveFirstComponentWithId('tblSessionsOfSelectedConsultant',view).clientId}" listener="#{bookingController.generateSessions}"/> 
                         <p:column style="text-wrap: avoid; text-overflow: clip; white-space: nowrap;" >
                             <h:outputText id="lblSpeName" value="#{spe.name}" ></h:outputText>
-                            <p:tooltip for="lblSpeName" value="#{spe.name}"  showDelay="0" hideDelay="0"   ></p:tooltip>
+                            <p:tooltip for="lblSpeName" value="#{spe.name}"  showDelay="0" hideDelay="0"></p:tooltip>
                         </p:column>
                     </p:dataTable>
                 </h:panelGrid>
                 
                 <h:panelGroup id="scStaff" >
                     <p:inputText autocomplete="off" id="txtSearch2" value="#{bookingController.selectTextSpeciality}" style="width: 176px;margin-left: 2px;" placeholder="Consultant" >
-                        <f:ajax  event="keyup" execute="@this" render=":#{p:component('tblCon')} :#{p:component('panSpeciality')}  :#{p:component('tblSessionsOfSelectedConsultant')}" listener="#{bookingController.listnerStaffRowSelect}"/> 
+                        <f:ajax  event="keyup" execute="@this" render=":#{p:resolveFirstComponentWithId('tblCon',view).clientId} :#{p:resolveFirstComponentWithId('panSpeciality',view).clientId}  :#{p:resolveFirstComponentWithId('tblSessionsOfSelectedConsultant',view).clientId}" listener="#{bookingController.listnerStaffRowSelect}"/> 
                     </p:inputText>
                     <p:dataTable id="tblCon"  var="mys" rowKey="#{mys.id}" value="#{bookingController.consultants}"
                                  selection="#{bookingController.staff}" scrollable="true" scrollHeight="280"
@@ -49,7 +49,7 @@
                         </p:column>
                         <p:ajax  event="rowSelect" 
                                  process="@this" 
-                                 update=":#{p:component('tblSessionsOfSelectedConsultant')} :#{p:component('spec')}"  
+                                 update=":#{p:resolveFirstComponentWithId('tblSessionsOfSelectedConsultant',view).clientId} :#{p:resolveFirstComponentWithId('spec',view).clientId}"  
                                  listener="#{serviceSessionLeaveController.fillLeaveItems}"/>
                     </p:dataTable>
 
@@ -67,16 +67,15 @@
                         <tr>
                             <td>
                                 <p:calendar id="date" value="#{bookingController.sessionStartingDate}" navigator="true"
-                                            styleClass="dateTimePicker" pattern="yyyy MMMM dd" >
+                                            styleClass="dateTimePicker" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                                     
                                     <p:ajax event="dateSelect" 
                                             process="@this date" 
-                                            update=":#{p:component('tblSessionsOfSelectedConsultant')} :#{p:component('spec')} :#{p:component('a')} tbl"  
+                                            update=":#{p:resolveFirstComponentWithId('tblSessionsOfSelectedConsultant',view).clientId} :#{p:resolveFirstComponentWithId('spec',view).clientId} :#{p:resolveFirstComponentWithId('a',view).clientId} tbl"  
                                             listener="#{serviceSessionLeaveController.fillLeaveItems}" 
                                             />
                                 </p:calendar>
-                                <p:watermark for="date" value="Date" />
-                            </td>
+                                                            </td>
                         </tr>
                         <tr>
                             <td>
@@ -95,7 +94,7 @@
                             <th>
                                 <p:outputLabel value="Sessions From - " ></p:outputLabel>
                                 <h:outputLabel id="a" value="#{bookingController.sessionStartingDate}" >
-                                    <f:convertDateTime pattern="yyyy MMMM dd" />
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                                 </h:outputLabel>
                             </th>
                         </tr>
@@ -113,11 +112,11 @@
                                         </h:outputText>
                                         <h:outputText value=" &nbsp;&nbsp;" />
                                         <h:outputText value="#{ses.sessionDate}" >
-                                            <f:convertDateTime pattern="MMM/dd/yyyy"/>
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                                         </h:outputText>
                                         <h:outputText value=" &nbsp;&nbsp;" />
                                         <h:outputText value="#{ses.startingTime}" >
-                                            <f:convertDateTime pattern="hh:mm a"/>
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" />
                                         </h:outputText>
                                         <h:outputText value=" &nbsp;&nbsp;" />
                                         <h:outputText value="#{ses.totalFee}" >
@@ -160,12 +159,12 @@
                                     </p:column>
                                     <p:column headerText="Date" style="width: 50px!important; text-align: center;" rendered="#{sessionController.loggedPreference.applicationInstitution ne 'Ruhuna'}">
                                         <h:outputText value="#{ses.sessionDate}">
-                                            <f:convertDateTime pattern="dd MMM"/>
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                                         </h:outputText>
                                     </p:column>
                                     <p:column headerText="Time" style="width: 40px!important; text-align: center;" rendered="#{sessionController.loggedPreference.applicationInstitution ne 'Ruhuna'}">
                                         <h:outputText value="#{ses.startingTime}">
-                                            <f:convertDateTime pattern="hh:mm"/>
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" />
                                         </h:outputText>
                                     </p:column>
                                     <p:column headerText="Fee" style="width: 40px!important; text-align: center;" rendered="#{sessionController.loggedPreference.applicationInstitution ne 'Ruhuna'}">
@@ -179,8 +178,7 @@
                         <tr>
                             <td>
                                 <p:inputText id="inComment" value="#{serviceSessionLeaveController.current.deactivateComment}" />
-                                <p:watermark for="inComment" value="Comment" />
-                                <p:commandButton ajax="false" value="Add" action="#{serviceSessionLeaveController.addLeaveForServiceSession()}" onclick="onSubmitButton();"/>
+                                                                <p:commandButton ajax="false" value="Add" action="#{serviceSessionLeaveController.addLeaveForServiceSession()}" />
                             </td>
                         </tr>
                     </table>
@@ -197,7 +195,7 @@
                         <p:outputLabel value="#{serviceSessionLeaveController.currentStaff.person}" />
                         <p:outputLabel value=" - Leve From - " />
                         <p:outputLabel value="#{bookingController.sessionStartingDate}" >
-                            <f:convertDateTime pattern="yyyy MMMM dd" />
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                         </p:outputLabel>
                     </f:facet>
                     <p:column>
@@ -213,7 +211,7 @@
                             <p:outputLabel value="Leave Session" />
                         </f:facet>
                         <h:outputLabel value="#{d.originatingSession.sessionTime}">
-                            <f:convertDateTime pattern="hh:mm a"/>
+                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" />
                         </h:outputLabel>
                     </p:column>
                     <p:column>
@@ -224,7 +222,7 @@
                     </p:column>
                     <p:column>
                         <f:facet name="header" >
-                            <p:outputLabel value="Leave Creater" />
+                            <p:outputLabel value="Leave Creator" />
                         </f:facet>
                         <h:outputLabel value="#{d.creater.webUserPerson.name}"/>
                     </p:column>
@@ -233,8 +231,7 @@
                             <p:outputLabel value="Leave Remove Comment" />
                         </f:facet>
                         <p:inputText id="inComment" value="#{d.retireComments}" disabled="#{d.retired eq true}" />
-                        <p:watermark for="inComment" value="Leave Remove Comment" />
-                    </p:column>
+                                            </p:column>
                     <p:column>
                         <f:facet name="header" >
                             <p:outputLabel value="Remove" />

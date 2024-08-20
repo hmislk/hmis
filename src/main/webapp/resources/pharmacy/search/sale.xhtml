@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:cc="http://java.sun.com/jsf/composite"
-      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:f="http://java.sun.com/jsf/core">
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <!-- INTERFACE -->
     <cc:interface>
@@ -22,7 +22,12 @@
             <p:inputText autocomplete="off" value="#{searchController.searchKeyword.itemName}"/>
             <p:inputText autocomplete="off" value="#{searchController.searchKeyword.code}"/>
         </h:panelGrid>
-        <p:dataTable rowIndexVar="i"  value="#{searchController.bills}" var="bill"  >
+        
+        <p:commandButton ajax="false" value="Download" >
+            <p:dataExporter target="tbl" type="xlsx" fileName="bill_list" ></p:dataExporter>
+        </p:commandButton>
+        
+        <p:dataTable rowIndexVar="i" id="tbl"  value="#{searchController.bills}" var="bill"  >
             <f:facet name="header">
                 <h:outputLabel value="SALE BILL SEARCH"/>
             </f:facet>

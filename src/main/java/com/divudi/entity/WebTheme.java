@@ -1,8 +1,8 @@
 /*
  * Author : Dr. M H B Ariyaratne
  * 
- * MO(Health Information), Department of Health Services, Southern Province 
- * and
+ * Acting Consultant (Health Informatics)
+ * (94) 71 5812399
  * Email : buddhika.ari@gmail.com
  */
 package com.divudi.entity;
@@ -15,14 +15,13 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.Temporal;
-import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Informatics)
  */
 @Entity
-@XmlRootElement
+
 public class WebTheme implements Serializable {
      static final long serialVersionUID = 1L;
     @Id

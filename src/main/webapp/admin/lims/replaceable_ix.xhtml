@@ -1,0 +1,122 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/admin/lims/index.xhtml">
+            <ui:define name="subcontent">
+                <h:form>
+                    <p:panel>
+                        <f:facet name="header">
+                            <h:outputLabel value="Add Investigations for Investigation" class="mt-2"></h:outputLabel>
+                            <p:commandButton 
+                                value="Back" 
+                                style="float: right;"
+
+                                action="#{investigationController.navigateToManageInvestigation}" 
+                                ajax="false" >
+                            </p:commandButton>
+                        </f:facet>
+
+                        <div class="row">
+                            <div class="col-7">
+                                <p:panel>
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Add" class="mt-2"></h:outputLabel>
+                                        <p:commandButton 
+                                            ajax="false"
+                                            class="ui-button-success"
+                                            style="float: right;"
+                                            icon="fa fa-plus"
+                                            value="Add" 
+                                            action="#{itemForItemController.addItem()}" >
+                                        </p:commandButton>
+                                    </f:facet>
+
+                                    <div class="row">
+                                        <div class="col-3"><h:outputLabel value="Select Parent Ix"  class="mt-2"></h:outputLabel></div>
+                                        <div class="col-6">
+                                            <p:autoComplete 
+                                                widgetVar="aIx" 
+                                                id="cmbPi" 
+                                                forceSelection="true" 
+                                                class="w-100"
+                                                inputStyleClass="form-control"
+                                                value="#{itemForItemController.parentItem}" 
+                                                completeMethod="#{investigationController.completeItem}" 
+                                                var="ix" 
+                                                itemLabel="#{ix.name}" 
+                                                itemValue="#{ix}" 
+                                                size="30">
+                                                <p:ajax event="itemSelect" process="cmbPi" update="lstIfi" />
+                                            </p:autoComplete>
+                                        </div>
+                                    </div>
+
+                                    <div class="row mt-2">
+                                        <div class="col-3"><h:outputLabel value="Select Child Ix" class="mt-2"></h:outputLabel></div>
+                                        <div class="col-6">
+                                            <p:autoComplete 
+                                                widgetVar="aIxC" 
+                                                id="cmbCi" 
+                                                class="w-100"
+                                                inputStyleClass="form-control"
+                                                forceSelection="true" 
+                                                value="#{itemForItemController.childItem}" 
+                                                completeMethod="#{investigationController.completeItem}" 
+                                                var="ixc" 
+                                                itemLabel="#{ixc.name}" 
+                                                itemValue="#{ixc}" 
+                                                size="30"  
+                                                style="width: 400px;">
+                                                <p:ajax event="itemSelect" process="cmbPi" update="lstIfi" />
+                                            </p:autoComplete>
+                                        </div>
+                                    </div>
+                                </p:panel>
+                            </div>
+
+                            <div class="col-5">
+                                <p:panel>
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Added Items" class="mt-2"></h:outputLabel>
+                                        <p:commandButton 
+                                            value="Remove" 
+                                            ajax="false"
+                                            icon="fa-solid fa-trash"
+                                            class="ui-button-danger"
+                                            style="float: right;"
+                                            action="#{itemForItemController.removeItem()}" >
+                                        </p:commandButton>
+                                    </f:facet>
+
+                                    <p:selectOneListbox 
+                                        value="#{itemForItemController.current}" 
+                                        id="lstIfi" 
+
+                                        styleClass="mediuminput" >
+                                        <f:selectItem 
+                                            itemDisabled="true"
+                                            rendered="#{itemForItemController.items eq null}"
+                                            itemLabel="No Items"/>
+                                        <f:selectItems 
+                                            value="#{itemForItemController.items}" 
+                                            var="ifi" 
+                                            itemLabel="#{ifi.childItem.name}" 
+                                            itemValue="#{ifi}" />
+                                    </p:selectOneListbox>
+                                </p:panel>
+                            </div>
+
+                        </div>
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

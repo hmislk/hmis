@@ -1,15 +1,14 @@
 /*
- * MSc(Biomedical Informatics) Project
+ * Open Hospital Management Information System
  *
- * Development and Implementation of a Web-based Combined Data Repository of
- Genealogical, Clinical, Laboratory and Genetic Data
- * and
- * a Set of Related Tools
+ * Dr M H B Ariyaratne
+ * Acting Consultant (Health Informatics)
+ * (94) 71 5812399
+ * (94) 71 5812399
  */
 package com.divudi.bean.collectingCentre;
 
 import com.divudi.bean.channel.AgentReferenceBookController;
-import com.divudi.bean.channel.ChannelBillController;
 import com.divudi.bean.common.*;
 import com.divudi.bean.membership.MembershipSchemeController;
 import com.divudi.bean.membership.PaymentSchemeController;
@@ -18,16 +17,16 @@ import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
 import com.divudi.data.HistoryType;
+import com.divudi.data.ItemLight;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.Sex;
 import com.divudi.data.Title;
-import com.divudi.data.dataStructure.BillListWithTotals;
 import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.data.dataStructure.YearMonthDay;
 import com.divudi.ejb.BillEjb;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.ejb.StaffBean;
 import com.divudi.entity.AgentHistory;
 import com.divudi.entity.Bill;
@@ -43,14 +42,16 @@ import com.divudi.entity.Category;
 import com.divudi.entity.Department;
 import com.divudi.entity.Doctor;
 import com.divudi.entity.Institution;
+import com.divudi.entity.Item;
 import com.divudi.entity.Patient;
 import com.divudi.entity.Payment;
 import com.divudi.entity.PaymentScheme;
-import com.divudi.entity.Person;
 import com.divudi.entity.Staff;
+import com.divudi.entity.UserPreference;
 import com.divudi.entity.WebUser;
+import com.divudi.entity.channel.AgentReferenceBook;
 import com.divudi.facade.AgentHistoryFacade;
-import com.divudi.facade.BatchBillFacade;
+import com.divudi.facade.AgentReferenceBookFacade;
 import com.divudi.facade.BillComponentFacade;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
@@ -64,7 +65,8 @@ import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.PersonFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -72,6 +74,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import javax.ejb.EJB;
@@ -83,12 +86,12 @@ import org.primefaces.event.TabChangeEvent;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- * Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
-public class CollectingCentreBillController implements Serializable {
+public class CollectingCentreBillController implements Serializable, ControllerWithPatient {
 
     /**
      * EJBs
@@ -115,9 +118,19 @@ public class CollectingCentreBillController implements Serializable {
     AgentHistoryFacade agentHistoryFacade;
     @EJB
     ItemFeeFacade itemFeeFacade;
+    @EJB
+    AgentReferenceBookFacade agentReferenceBookFacade;
     /**
      * Controllers
      */
+    @Inject
+    ItemController itemController;
+    @Inject
+    ItemApplicationController itemApplicationController;
+    @Inject
+    ItemMappingController itemMappingController;
+    @Inject
+    ApplicationController applicationController;
     @Inject
     ServiceSessionFunctions serviceSessionBean;
     @Inject
@@ -127,18 +140,21 @@ public class CollectingCentreBillController implements Serializable {
     @Inject
     PaymentSchemeController paymentSchemeController;
     @Inject
+    CollectingCentreBillController collectingCentreBillController;
+    @Inject
     private EnumController enumController;
     @Inject
     DepartmentController departmentController;
-    @Inject
-    ChannelBillController channelBillController;
     @EJB
     StaffBean staffBean;
-    @EJB
-    private BatchBillFacade batchBillFacade;
+    @Inject
+    CategoryController categoryController;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
     /**
      * Properties
      */
+    private ItemLight itemLight;
     List<BillSession> billSessions;
     private static final long serialVersionUID = 1L;
     private boolean printPreview;
@@ -147,11 +163,12 @@ public class CollectingCentreBillController implements Serializable {
     private PaymentScheme paymentScheme;
     private Institution collectingCentre;
     private PaymentMethod paymentMethod = PaymentMethod.Agent;
-    private Patient newPatient;
-    private Patient searchedPatient;
+//    private Patient newPatient;
+    private Patient patient;
     private Doctor referredBy;
     private Institution referredByInstitution;
     String referralId;
+    private List<String> referralIds;
     private Institution creditCompany;
     private Staff staff;
     Staff toStaff;
@@ -181,7 +198,7 @@ public class CollectingCentreBillController implements Serializable {
     Department department;
     Institution institution;
     Category category;
-
+    private boolean patientDetailsEditable;
     //Print Last Bill
     Bill billPrint;
     List<Bill> billsPrint;
@@ -190,6 +207,31 @@ public class CollectingCentreBillController implements Serializable {
     private List<BillItem> lstBillItemsPrint;
     private List<BillEntry> lstBillEntriesPrint;
     BillType billType;
+    private List<ItemLight> opdItems;
+    private List<AgentReferenceBook> agentReferenceBooks;
+    private List<CollectingCenterBookSummeryRow> bookSummeryRows;
+
+    public List<AgentReferenceBook> getAgentReferenceBooks() {
+        return agentReferenceBooks;
+    }
+
+    public void setAgentReferenceBooks(List<AgentReferenceBook> agentReferenceBooks) {
+        this.agentReferenceBooks = agentReferenceBooks;
+    }
+
+    public void selectCollectingCentre() {
+        if (collectingCentre == null) {
+            JsfUtil.addErrorMessage("Please select a collecting centre");
+            return;
+        }
+        fillAvailableAgentReferanceNumbers(collectingCentre);
+        itemController.setCcInstitutionItems(itemController.fillItemsByInstitution(collectingCentre));
+    }
+
+    public void deselectCollectingCentre() {
+        collectingCentre = null;
+        itemController.setCcInstitutionItems(null);
+    }
 
     public BillType getBillType() {
         return billType;
@@ -211,7 +253,7 @@ public class CollectingCentreBillController implements Serializable {
     private PatientInvestigationFacade patientInvestigationFacade;
     @Inject
     private BillBeanController billBean;
-    @EJB
+
     CommonFunctions commonFunctions;
     @EJB
     private PersonFacade personFacade;
@@ -221,8 +263,7 @@ public class CollectingCentreBillController implements Serializable {
     private BillComponentFacade billComponentFacade;
     @EJB
     private BillFeeFacade billFeeFacade;
-    //Temprory Variable
-    private Patient tmpPatient;
+
     List<Bill> bills;
     List<Bill> selectedBills;
     Double grosTotal;
@@ -246,41 +287,38 @@ public class CollectingCentreBillController implements Serializable {
         this.selectedBills = selectedBills;
     }
 
-    public void calculateSelectedBillTotals() {
-        BillListWithTotals bt = billEjb.calculateBillTotals(selectedBills);
-        grosTotal = bt.getGrossTotal();
-        netTotal = bt.getNetTotal();
-        discount = bt.getDiscount();
-        vat = bt.getVat();
-        vatPlusNetTotal = bt.getVat() + bt.getNetTotal();
-    }
-
-    public void clear() {
-        opdBill = new BilledBill();
-        printPreview = false;
-        opdPaymentCredit = 0.0;
-        comment = null;
-        searchController.createTableByKeywordToPayBills();
-    }
-
-    public void clearPharmacy() {
-        opdBill = new BilledBill();
-        printPreview = false;
-        opdPaymentCredit = 0.0;
-        comment = null;
-        searchController.createTablePharmacyCreditToPayBills();
-    }
-
+//    public void calculateSelectedBillTotals() {
+//        BillListWithTotals bt = billEjb.calculateBillTotals(selectedBills);
+//        grosTotal = bt.getGrossTotal();
+//        netTotal = bt.getNetTotal();
+//        discount = bt.getDiscount();
+//        vat = bt.getVat();
+//        vatPlusNetTotal = bt.getVat() + bt.getNetTotal();
+//    }
+//    public void clear() {
+//        opdBill = new BilledBill();
+//        printPreview = false;
+//        opdPaymentCredit = 0.0;
+//        comment = null;
+//        searchController.createTableByKeywordToPayBills();
+//    }
+//    public void clearPharmacy() {
+//        opdBill = new BilledBill();
+//        printPreview = false;
+//        opdPaymentCredit = 0.0;
+//        comment = null;
+//        searchController.createTablePharmacyCreditToPayBills();
+//    }
     public void saveBillOPDCredit() {
 
         BilledBill temp = new BilledBill();
 
         if (opdPaymentCredit == 0) {
-            UtilityController.addErrorMessage("Please Select Correct Paid Amount");
+            JsfUtil.addErrorMessage("Please Select Correct Paid Amount");
             return;
         }
         if (opdPaymentCredit > opdBill.getBalance()) {
-            UtilityController.addErrorMessage("Please Enter Correct Paid Amount");
+            JsfUtil.addErrorMessage("Please Enter Correct Paid Amount");
             return;
         }
 
@@ -319,12 +357,12 @@ public class CollectingCentreBillController implements Serializable {
         Payment p = createPayment(temp, getPaymentMethod());
 
         String sql = "Select bi From BillItem bi where bi.retired=false and bi.bill.id=" + opdBill.getId();
-        List<BillItem> billItems = getBillItemFacade().findBySQL(sql);
+        List<BillItem> billItems = getBillItemFacade().findByJpql(sql);
 
         for (BillItem bi : billItems) {
             sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + bi.getId();
 
-            List<BillFee> billFees = getBillFeeFacade().findBySQL(sql);
+            List<BillFee> billFees = getBillFeeFacade().findByJpql(sql);
 
             calculateBillfeePayments(billFees, p);
         }
@@ -344,11 +382,11 @@ public class CollectingCentreBillController implements Serializable {
         BilledBill temp = new BilledBill();
 
         if (opdPaymentCredit == 0) {
-            UtilityController.addErrorMessage("Please Select Correct Paid Amount");
+            JsfUtil.addErrorMessage("Please Select Correct Paid Amount");
             return;
         }
         if (opdPaymentCredit > (opdBill.getNetTotal() - opdBill.getPaidAmount())) {
-            UtilityController.addErrorMessage("Please Enter Correct Paid Amount");
+            JsfUtil.addErrorMessage("Please Enter Correct Paid Amount");
             return;
         }
 
@@ -356,10 +394,10 @@ public class CollectingCentreBillController implements Serializable {
         temp.setTotal(opdPaymentCredit);
         temp.setPaidAmount(opdPaymentCredit);
         temp.setNetTotal(opdPaymentCredit);
-        ////System.out.println("opdBill.getPaidAmount() = " + opdBill.getPaidAmount());
-        ////System.out.println("opdPaymentCredit = " + opdPaymentCredit);
+        ////// // System.out.println("opdBill.getPaidAmount() = " + opdBill.getPaidAmount());
+        ////// // System.out.println("opdPaymentCredit = " + opdPaymentCredit);
         opdBill.setPaidAmount(opdPaymentCredit + opdBill.getPaidAmount());
-        ////System.out.println("opdBill.getPaidAmount() = " + opdBill.getPaidAmount());
+        ////// // System.out.println("opdBill.getPaidAmount() = " + opdBill.getPaidAmount());
         getBillFacade().edit(opdBill);
 
         temp.setDeptId(getBillNumberGenerator().departmentBillNumberGenerator(getSessionController().getDepartment(), getSessionController().getDepartment(), BillType.CashRecieveBill, BillClassType.BilledBill));
@@ -388,6 +426,11 @@ public class CollectingCentreBillController implements Serializable {
         opdBill = temp;
         printPreview = true;
 
+    }
+
+    @Override
+    public void toggalePatientEditable() {
+        patientDetailsEditable = !patientDetailsEditable;
     }
 
     public BillNumberGenerator getBillNumberGenerator() {
@@ -419,8 +462,8 @@ public class CollectingCentreBillController implements Serializable {
 //        this.recurseCount = recurseCount;
 //    }
     public boolean findByFilter(String property, String value) {
-        String sql = "Select b From Bill b where b.retired=false and upper(b." + property + ") like '%" + value.toUpperCase() + " %'";
-        Bill b = getBillFacade().findFirstBySQL(sql);
+        String sql = "Select b From Bill b where b.retired=false and (b." + property + ") like '%" + value.toUpperCase() + " %'";
+        Bill b = getBillFacade().findFirstByJpql(sql);
         //System.err.println("SQL " + sql);
         //System.err.println("Bill " + b);
         if (b != null) {
@@ -441,9 +484,67 @@ public class CollectingCentreBillController implements Serializable {
         calTotals();
     }
 
-    public void listnerSelectLabBooks() {
-        channelBillController.fetchRecentChannelBooks(collectingCentre);
+    public void fillAvailableAgentReferanceNumbers(Institution ins) {
+        bookSummeryRows = new ArrayList<>();
+        String sql;
+        referralIds = new ArrayList<>();
+        HashMap m = new HashMap();
+        sql = "select a from AgentReferenceBook a "
+                + " where a.retired=false "
+                + " and a.institution=:ins"
+                + " and a.deactivate=false "
+                + " and a.fullyUtilized=false "
+                + " order by a.id ";
+        m.put("ins", ins);
+        agentReferenceBooks = agentReferenceBookFacade.findByJpql(sql, m, 2);
+        // Fetch all used reference numbers for this institution in one query
+        Set<String> usedReferenceNumbers = fetchUsedReferenceNumbers(ins);
 
+        if (agentReferenceBooks.isEmpty()) {
+            ins.setAgentReferenceBooks(null);
+            return;
+        }
+        ins.setAgentReferenceBooks(agentReferenceBooks);
+
+        for (AgentReferenceBook a : agentReferenceBooks) {
+            CollectingCenterBookSummeryRow row = new CollectingCenterBookSummeryRow();
+            row.setBookName(a.getStrbookNumber());
+            row.setBookNumber(0);
+
+            boolean leavesRemain = false;
+            int start = (int) a.getStartingReferenceNumber();
+            int end = (int) a.getEndingReferenceNumber();
+
+            for (int i = start; i <= end; i++) {
+                String bookNo = a.getStrbookNumber();
+                String leafNumber = String.format("%02d", i);
+                String refNo = bookNo + leafNumber;
+
+                if (!usedReferenceNumbers.contains(refNo)) {
+                    leavesRemain = true;
+                    referralIds.add(refNo);
+                    row.setBookNumber(row.getBookNumber() + 1);
+                }
+            }
+            if (!leavesRemain) {
+                a.setFullyUtilized(true);
+                agentReferenceBookFacade.edit(a);
+            } else {
+                bookSummeryRows.add(row);
+            }
+        }
+    }
+
+    public Set<String> fetchUsedReferenceNumbers(Institution ins) {
+        String sql;
+        Set<String> usedRefNumbers = new HashSet<>();
+        Map m = new HashMap();
+        // Adjust this query to fetch only the reference numbers
+        sql = "select b.referenceNumber from Bill b where b.retired=false and b.institution=:ins";
+        m.put("ins", ins);
+        List<String> resultList = billFacade.findString(sql, m);
+        usedRefNumbers.addAll(resultList);
+        return usedRefNumbers;
     }
 
     public String getStrTenderedValue() {
@@ -455,7 +556,7 @@ public class CollectingCentreBillController implements Serializable {
         try {
             cashPaid = Double.parseDouble(strTenderedValue);
         } catch (NumberFormatException e) {
-            //////System.out.println("Error in converting tendered value. \n " + e.getMessage());
+            //////// // System.out.println("Error in converting tendered value. \n " + e.getMessage());
         }
     }
 
@@ -583,23 +684,54 @@ public class CollectingCentreBillController implements Serializable {
         this.commonFunctions = commonFunctions;
     }
 
-    private void savePatient() {
-        switch (getPatientTabId()) {
-            case "tabNewPt":
-                getNewPatient().setCreater(getSessionController().getLoggedUser());
-                getNewPatient().setCreatedAt(new Date());
-                getNewPatient().getPerson().setCreater(getSessionController().getLoggedUser());
-                getNewPatient().getPerson().setCreatedAt(new Date());
-                getPersonFacade().create(getNewPatient().getPerson());
-                getPatientFacade().create(getNewPatient());
-                tmpPatient = getNewPatient();
-                break;
-            case "tabSearchPt":
-                tmpPatient = getSearchedPatient();
-                break;
+    private boolean checkPatientAgeSex() {
+        if (getPatient().getPerson().getName() == null || getPatient().getPerson().getName().trim().equals("") || getPatient().getPerson().getSex() == null || getPatient().getPerson().getDob() == null) {
+            JsfUtil.addErrorMessage("Can not bill without Patient Name, Age or Sex.");
+            return true;
         }
+        return false;
     }
 
+    private void savePatient() {
+        if (getPatient().getId() == null) {
+            getPatient().setPhn(applicationController.createNewPersonalHealthNumber(getSessionController().getInstitution()));
+            getPatient().setCreatedInstitution(getSessionController().getInstitution());
+            getPatient().setCreater(getSessionController().getLoggedUser());
+            getPatient().setCreatedAt(new Date());
+            getPatient().getPerson().setCreater(getSessionController().getLoggedUser());
+            getPatient().getPerson().setCreatedAt(new Date());
+            try {
+                getPersonFacade().create(getPatient().getPerson());
+            } catch (Exception e) {
+                getPersonFacade().edit(getPatient().getPerson());
+            }
+            try {
+                getPatientFacade().create(getPatient());
+            } catch (Exception e) {
+                getPatientFacade().edit(getPatient());
+            }
+        } else {
+            getPatientFacade().edit(getPatient());
+        }
+
+    }
+
+//    private void savePatient() {
+//        switch (getPatientTabId()) {
+//            case "tabNewPt":
+//                getNewPatient().setCreater(getSessionController().getLoggedUser());
+//                getNewPatient().setCreatedAt(new Date());
+//                getNewPatient().getPerson().setCreater(getSessionController().getLoggedUser());
+//                getNewPatient().getPerson().setCreatedAt(new Date());
+//                getPersonFacade().create(getNewPatient().getPerson());
+//                getPatientFacade().create(getNewPatient());
+//                tmpPatient = getNewPatient();
+//                break;
+//            case "tabSearchPt":
+//                tmpPatient = getSearchedPatient();
+//                break;
+//        }
+//    }
     public boolean putToBills() {
         bills = new ArrayList<>();
         Set<Department> billDepts = new HashSet<>();
@@ -628,7 +760,7 @@ public class CollectingCentreBillController implements Serializable {
                 }
             }
 
-            myBill.setReferralNumber(referralId);
+            myBill.setReferenceNumber(referralId);
 
             getBillFacade().edit(myBill);
 
@@ -659,29 +791,27 @@ public class CollectingCentreBillController implements Serializable {
 //            }
 //        }
 //        updateBallance(collectingCentre, 0 - Math.abs(feeTotalExceptCcfs), HistoryType.CollectingCentreBalanceUpdateBill, temBill, referralId);
-
         return true;
     }
 
     public void setPrintigBill() {
-        ////System.out.println("In Print");
+        ////// // System.out.println("In Print");
         billPrint = bill;
         billsPrint = bills;
         lstBillComponentsPrint = lstBillComponents;
         lstBillEntriesPrint = lstBillEntries;
         lstBillFeesPrint = lstBillFees;
         lstBillItemsPrint = lstBillItems;
-        ////System.out.println("Out Print");
+        ////// // System.out.println("Out Print");
     }
 
     public void settleBill() {
         Date startTime = new Date();
-
         if (errorCheck()) {
             return;
         }
         savePatient();
-        if (getBillBean().checkDepartment(getLstBillEntries()) == 1) {
+        if (getBillBean().calculateNumberOfBillsPerOrder(getLstBillEntries()) == 1) {
             BilledBill temp = new BilledBill();
             Bill b = saveBill(lstBillEntries.get(0).getBillItem().getItem().getDepartment(), temp);
             if (b == null) {
@@ -693,11 +823,12 @@ public class CollectingCentreBillController implements Serializable {
             }
             b.setBillItems(list);
             b.setBillTotal(b.getNetTotal());
+            b.setIpOpOrCc("CC");
             getBillFacade().edit(b);
             getBillBean().calculateBillItems(b, getLstBillEntries());
             b.setBalance(0.0);
 //            b.setNetTotal(b.getTransSaleBillTotalMinusDiscount());
-            b.setReferralNumber(referralId);
+            b.setReferenceNumber(referralId);
 
             createPaymentsForBills(b, getLstBillEntries());
 
@@ -711,7 +842,7 @@ public class CollectingCentreBillController implements Serializable {
                 }
             }
 
-            updateBallance(collectingCentre, 0 - Math.abs(feeTotalExceptCcfs), HistoryType.CollectingCentreBilling, b, b.getReferralNumber());
+            updateBallance(collectingCentre, 0 - Math.abs(feeTotalExceptCcfs), HistoryType.CollectingCentreBilling, b, b.getReferenceNumber());
             AgentHistory ah = billSearch.fetchCCHistory(b);
             billSearch.createCollectingCenterfees(b);
             b.setTransCurrentCCBalance(ah.getBeforeBallance() + ah.getTransactionValue());
@@ -725,12 +856,11 @@ public class CollectingCentreBillController implements Serializable {
         saveBatchBill();
         saveBillItemSessions();
 
-        UtilityController.addSuccessMessage("Bill Saved");
+        JsfUtil.addSuccessMessage("Bill Saved");
         setPrintigBill();
         checkBillValues();
         printPreview = true;
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Lab/cc/cc billing(/faces/collecting_centre/bill.xhtml)");
     }
 
     public void updateBallance(Institution ins, double transactionValue, HistoryType historyType, Bill bill, String refNo) {
@@ -740,7 +870,7 @@ public class CollectingCentreBillController implements Serializable {
         agentHistory.setBill(bill);
         agentHistory.setBeforeBallance(ins.getBallance());
         agentHistory.setTransactionValue(transactionValue);
-        agentHistory.setReferenceNo(refNo);
+        agentHistory.setReferenceNumber(refNo);
         agentHistory.setHistoryType(historyType);
         agentHistoryFacade.create(agentHistory);
         ins.setBallance(ins.getBallance() + transactionValue);
@@ -754,13 +884,12 @@ public class CollectingCentreBillController implements Serializable {
         double billItemDiscount = billItemValues[1];
         double billItemNetTotal = billItemValues[2];
 
-        //System.out.println("b.getTotal() = " + b.getTotal());
-        //System.out.println("billItemTotal = " + billItemTotal);
-        //System.out.println("b.getDiscount() = " + b.getDiscount());
-        //System.out.println("billItemDiscount = " + billItemDiscount);
-        //System.out.println("b.getNetTotal() = " + b.getNetTotal());
-        //System.out.println("billItemNetTotal = " + billItemNetTotal);
-
+        //// // System.out.println("b.getTotal() = " + b.getTotal());
+        //// // System.out.println("billItemTotal = " + billItemTotal);
+        //// // System.out.println("b.getDiscount() = " + b.getDiscount());
+        //// // System.out.println("billItemDiscount = " + billItemDiscount);
+        //// // System.out.println("b.getNetTotal() = " + b.getNetTotal());
+        //// // System.out.println("billItemNetTotal = " + billItemNetTotal);
         if (billItemTotal != b.getTotal() || billItemDiscount != b.getDiscount() || billItemNetTotal != b.getNetTotal()) {
             return true;
         }
@@ -770,9 +899,8 @@ public class CollectingCentreBillController implements Serializable {
         double billFeeDiscount = billFeeValues[1];
         double billFeeNetTotal = billFeeValues[2];
 
-        //System.out.println("b.getTotal() = " + b.getTotal());
-        //System.out.println("billFeeTotal = " + billFeeTotal);
-
+        //// // System.out.println("b.getTotal() = " + b.getTotal());
+        //// // System.out.println("billFeeTotal = " + billFeeTotal);
         if (billFeeTotal != b.getTotal() || billFeeDiscount != b.getDiscount() || billFeeNetTotal != b.getNetTotal()) {
             return true;
         }
@@ -811,7 +939,7 @@ public class CollectingCentreBillController implements Serializable {
             b.setBackwardReferenceBill(tmp);
             dbl += b.getNetTotal();
 
-            if (getSessionController().getLoggedPreference().isPartialPaymentOfOpdBillsAllowed()) {
+            if (getSessionController().getApplicationPreference().isPartialPaymentOfOpdBillsAllowed()) {
                 b.setCashPaid(reminingCashPaid);
 
                 if (reminingCashPaid > b.getTransSaleBillTotalMinusDiscount()) {
@@ -851,8 +979,8 @@ public class CollectingCentreBillController implements Serializable {
             getBillSearch().setBill((BilledBill) b);
             getBillSearch().setPaymentMethod(b.getPaymentMethod());
             getBillSearch().setComment("Batch Cancell");
-            //////System.out.println("ggg : " + getBillSearch().getComment());
-            getBillSearch().cancelBill();
+            //////// // System.out.println("ggg : " + getBillSearch().getComment());
+            getBillSearch().cancelOpdBill();
         }
 
         tmp.copy(billedBill);
@@ -863,7 +991,7 @@ public class CollectingCentreBillController implements Serializable {
     }
 
     public void dateChangeListen() {
-        getNewPatient().getPerson().setDob(getCommonFunctions().guessDob(yearMonthDay));
+        getPatient().getPerson().setDob(getCommonFunctions().guessDob(yearMonthDay));
 
     }
 
@@ -880,14 +1008,14 @@ public class CollectingCentreBillController implements Serializable {
         temp.setFromInstitution(temp.getInstitution());
 
         temp.setReferredBy(referredBy);
-        temp.setReferralNumber(referralId);
+        temp.setReferenceNumber(referralId);
         temp.setReferredByInstitution(referredByInstitution);
         temp.setComments(comment);
 
 //        getBillBean().setPaymentMethodData(temp, paymentMethod, getPaymentMethodData());
         temp.setBillDate(new Date());
         temp.setBillTime(new Date());
-        temp.setPatient(tmpPatient);
+        temp.setPatient(getPatient());
 
         temp.setPaymentScheme(getPaymentScheme());
         temp.setPaymentMethod(getPaymentMethod());
@@ -928,20 +1056,20 @@ public class CollectingCentreBillController implements Serializable {
         return insId;
     }
 
-    private boolean institutionReferranceNumberExist(Institution ins) {
+    private boolean collectingCenterReferranceNumberAlreadyUsed(Institution ins) {
         String jpql;
         HashMap m = new HashMap();
         jpql = "Select b from Bill b"
                 + " where b.retired = false "
                 + " and b.billType=:bt "
                 + " and b.institution=:ins "
-                + " and upper(b.referralNumber) =:rid ";
+                + " and (b.referenceNumber) =:rid ";
         m.put("rid", referralId.toUpperCase());
         m.put("bt", BillType.CollectingCentreBill);
         m.put("ins", ins);
-        List<Bill> tempBills = getFacade().findBySQL(jpql, m);
-//        Bill b = getFacade().findFirstBySQL(jpql, m);
-//        //System.out.println(" Error find Number CheckTime 3 = " + new Date());
+        List<Bill> tempBills = getFacade().findByJpql(jpql, m);
+//        Bill b = getFacade().findFirstByJpql(jpql, m);
+//        //// // System.out.println(" Error find Number CheckTime 3 = " + new Date());
         if (tempBills == null || tempBills.isEmpty()) {
             return false;
         }
@@ -952,51 +1080,30 @@ public class CollectingCentreBillController implements Serializable {
     AgentReferenceBookController agentReferenceBookController;
 
     private boolean errorCheck() {
+        if (getPatient().getPerson().getName() == null
+                || getPatient().getPerson().getName().trim().equals("")) {
+            JsfUtil.addErrorMessage("Please select a patient before billing");
+            return true;
+        }
+        if (checkPatientAgeSex()) {
+            return true;
+        }
         if (collectingCentre == null) {
-            UtilityController.addErrorMessage("Please select a collecting centre");
+            JsfUtil.addErrorMessage("Please select a collecting centre");
             return true;
         }
+        boolean collectingCentreBillingRequiresReferanceNumbers = configOptionApplicationController.getBooleanValueByKey("Collecting Centre Billing Requires Referance Numbers", true);
+        boolean collectingCentreBillingRequiresCreditBalanceManagement = configOptionApplicationController.getBooleanValueByKey("Collecting Centre Billing Requires Credit Balance Management", true);
 
-        if (getPatientTabId().equals("tabSearchPt")) {
-            if (getSearchedPatient() == null) {
-                UtilityController.addErrorMessage("Plese Select Patient");
+        if (collectingCentreBillingRequiresReferanceNumbers) {
+            if (referralId == null || referralId.trim().equals("")) {
+                JsfUtil.addErrorMessage("Please enter a referrance number");
                 return true;
             }
-        } else if (getPatientTabId().equals("tabNewPt")) {
-            if (getNewPatient().getPerson().getName() == null
-                    || getNewPatient().getPerson().getName().trim().equals("")) {
-                UtilityController.addErrorMessage("Can not bill without Patient Name");
-                return true;
-            }
-            if (getNewPatient().getPerson().getPhone() == null) {
-                UtilityController.addErrorMessage("Enter a phone number");
-                return true;
-            }
-            if (getNewPatient().getPerson().getSex() == null) {
-                UtilityController.addErrorMessage("Enter the gender");
-                return true;
-            }
-            if (getNewPatient().getPerson().getDob() == null) {
-                UtilityController.addErrorMessage("Enter the age or date of birth");
-                return true;
-            }
-            if (!com.divudi.java.CommonFunctions.checkAgeSex(getNewPatient().getPerson().getDob(), getNewPatient().getPerson().getSex(), getNewPatient().getPerson().getTitle())) {
-                UtilityController.addErrorMessage("Check Title,Age,Sex");
-                return true;
-            }
-
-        }
-
-        if (referralId == null || referralId.trim().equals("")) {
-            JsfUtil.addErrorMessage("Please enter a referrance number");
-            return true;
-        } else if (institutionReferranceNumberExist(collectingCentre)) {
-            JsfUtil.addErrorMessage("Referral number alredy entered");
-            return true;
         }
 
         if (getLstBillEntries().isEmpty()) {
-            UtilityController.addErrorMessage("Add tests");
+            JsfUtil.addErrorMessage("Please Add tests before billing");
             return true;
         }
 
@@ -1007,30 +1114,25 @@ public class CollectingCentreBillController implements Serializable {
             }
         }
 
-        ///not wanted 
-//        if ((collectingCentre.getBallance() - Math.abs(feeTotalExceptCcfs)) < 0 - collectingCentre.getStandardCreditLimit()) {
-//            UtilityController.addErrorMessage("This bill excees the Collecting Centre Limit");
-//            return true;
-//        }
-        if (collectingCentre.getBallance() - feeTotalExceptCcfs < 0 - collectingCentre.getAllowedCredit()) {
-            UtilityController.addErrorMessage("Collecting Centre Ballance is Not Enough");
-            return true;
+        double awailableBalance = Math.abs(collectingCentre.getBallance() + Math.abs(collectingCentre.getAllowedCredit()));
+
+        if (collectingCentreBillingRequiresCreditBalanceManagement) {
+            if (awailableBalance < Math.abs(feeTotalExceptCcfs)) {
+                JsfUtil.addErrorMessage("Collecting Centre Balance is Not Enough");
+                return true;
+            }
         }
 
-        if (agentReferenceBookController.checkAgentReferenceNumber(getReferralId())) {
-            UtilityController.addErrorMessage("Invaild Reference Number.");
-            return true;
-        }
-
-        if (agentReferenceBookController.checkAgentReferenceNumberAlredyExsist(getReferralId(), collectingCentre, BillType.CollectingCentreBill, PaymentMethod.Agent)) {
-            UtilityController.addErrorMessage("This Reference Number is alredy Given.");
-            setReferralId("");
-            return true;
-        }
-
-        if (agentReferenceBookController.checkAgentReferenceNumber(collectingCentre, getReferralId())) {
-            UtilityController.addErrorMessage("This Reference Number is Blocked Or This channel Book is Not Issued.");
-            return true;
+        if (collectingCentreBillingRequiresReferanceNumbers) {
+            if (agentReferenceBookController.agentReferenceNumberIsAlredyUsed(getReferralId(), collectingCentre, BillType.CollectingCentreBill, PaymentMethod.Agent)) {
+                JsfUtil.addErrorMessage("This Reference Number is alredy Used.");
+                setReferralId("");
+                return true;
+            }
+            if (!agentReferenceBookController.numberHasBeenIssuedToTheAgent(collectingCentre, getReferralId())) {
+                JsfUtil.addErrorMessage("This Reference Number is Blocked Or This channel Book is Not Issued.");
+                return true;
+            }
         }
 
         return false;
@@ -1049,15 +1151,15 @@ public class CollectingCentreBillController implements Serializable {
     }
 
     public void fillBillSessions(SelectEvent event) {
-        ////System.out.println("event = " + event);
-        ////System.out.println("this = filling bill sessions");
+        ////// // System.out.println("event = " + event);
+        ////// // System.out.println("this = filling bill sessions");
         if (lastBillItem != null && lastBillItem.getItem() != null) {
             billSessions = getServiceSessionBean().getBillSessions(lastBillItem.getItem(), getSessionDate());
-            ////System.out.println("billSessions = " + billSessions);
-        } else ////System.out.println("billSessions = " + billSessions);
+            ////// // System.out.println("billSessions = " + billSessions);
+        } else ////// // System.out.println("billSessions = " + billSessions);
         {
             if (billSessions == null || !billSessions.isEmpty()) {
-                ////System.out.println("new array");
+                ////// // System.out.println("new array");
                 billSessions = new ArrayList<>();
             }
         }
@@ -1083,58 +1185,111 @@ public class CollectingCentreBillController implements Serializable {
         this.billSessions = billSessions;
     }
 
+    public List<ItemLight> fillOpdItems() {
+        UserPreference up = sessionController.getDepartmentPreference();
+        switch (up.getCcItemListingStrategy()) {
+            case ALL_ITEMS:
+                return itemApplicationController.fillAllItems();
+            case ITEMS_MAPPED_TO_SELECTED_DEPARTMENT:
+            case ITEMS_MAPPED_TO_SELECTED_INSTITUTION:
+                return itemMappingController.fillItemLightByInstitution(collectingCentre);
+            case ITEMS_MAPPED_TO_LOGGED_DEPARTMENT:
+                return itemMappingController.fillItemLightByDepartment(sessionController.getDepartment());
+            case ITEMS_MAPPED_TO_LOGGED_INSTITUTION:
+                return itemMappingController.fillItemLightByInstitution(sessionController.getInstitution());
+            case ITEMS_OF_LOGGED_DEPARTMENT:
+                return itemController.fillItemsByDepartment(sessionController.getDepartment());
+            case ITEMS_OF_LOGGED_INSTITUTION:
+                return itemController.getInstitutionItems();
+            case ITEMS_OF_SELECTED_DEPARTMENT:
+                return itemController.fillItemsByDepartment(departmentController.getDefaultDepatrment(collectingCentre));
+            case ITEMS_OF_SELECTED_INSTITUTIONS:
+                return itemController.fillItemsByInstitution(collectingCentre);
+            default:
+                return itemController.getAllItems();
+        }
+    }
+
+    public ItemLight getItemLight() {
+        if (getCurrentBillItem().getItem() != null) {
+            itemLight = new ItemLight(getCurrentBillItem().getItem());
+        }
+        return itemLight;
+    }
+
+    public void setItemLight(ItemLight itemLight) {
+        this.itemLight = itemLight;
+        if (itemLight != null) {
+            getCurrentBillItem().setItem(itemController.findItem(itemLight.getId()));
+        }
+    }
+
     public void addToBill() {
+        if (collectingCentre == null) {
+            JsfUtil.addErrorMessage("Please Select Collecting Center");
+            return;
+        }
         if (getCurrentBillItem() == null) {
-            UtilityController.addErrorMessage("Nothing to add");
+            JsfUtil.addErrorMessage("Nothing to add");
             return;
         }
         if (getCurrentBillItem().getItem() == null) {
-            UtilityController.addErrorMessage("Please select an Item");
+            JsfUtil.addErrorMessage("Please select an Item");
             return;
         }
         if (getCurrentBillItem().getItem().getTotal() == 0.0) {
-            UtilityController.addErrorMessage("Please corect item fee");
+            JsfUtil.addErrorMessage("Please corect item fee");
             return;
         }
 
+        if (getCurrentBillItem().getItem().getInstitution() == null) {
+            getCurrentBillItem().getItem().setInstitution(collectingCentre);
+            itemController.saveSelected(getCurrentBillItem().getItem());
+        }
+
         if (getCurrentBillItem().getItem().getDepartment() == null) {
-            UtilityController.addErrorMessage("Please set Department to Item");
+            Department dep = departmentController.getDefaultDepatrment(collectingCentre);
+            getCurrentBillItem().getItem().setDepartment(dep);
+            itemController.saveSelected(getCurrentBillItem().getItem());
             return;
         }
 
         if (getCurrentBillItem().getItem().getCategory() == null) {
-            UtilityController.addErrorMessage("Please set Category to Item");
+            Category c = categoryController.findAndCreateCategoryByName("Other");
+            getCurrentBillItem().getItem().setCategory(c);
+            itemController.saveSelected(getCurrentBillItem().getItem());
             return;
         }
 
-        if (collectingCentre == null) {
-            UtilityController.addErrorMessage("Please Select Collecting Center");
-            return;
-        }
-
-        getCurrentBillItem().setSessionDate(sessionDate);
 //        New Session
         //   getCurrentBillItem().setBillSession(getServiceSessionBean().createBillSession(getCurrentBillItem()));
 //        New Session
         //   getCurrentBillItem().setBillSession(getServiceSessionBean().createBillSession(getCurrentBillItem()));
-        lastBillItem = getCurrentBillItem();
+        BillItem bi = new BillItem();
+        bi.copy(getCurrentBillItem());
+        bi.setSessionDate(sessionDate);
+        lastBillItem = bi;
+        if (bi.getQty() == null || bi.getQty() < 1) {
+            bi.setQty(1.0);
+        }
         BillEntry addingEntry = new BillEntry();
-        addingEntry.setBillItem(getCurrentBillItem());
-        addingEntry.setLstBillComponents(getBillBean().billComponentsFromBillItem(getCurrentBillItem()));
-        addingEntry.setLstBillFees(getBillBean().billFeefromBillItem(getCurrentBillItem()));
-        addingEntry.setLstBillSessions(getBillBean().billSessionsfromBillItem(getCurrentBillItem()));
+        addingEntry.setBillItem(bi);
+        addingEntry.setLstBillComponents(getBillBean().billComponentsFromBillItem(bi));
+        addingEntry.setLstBillFees(getBillBean().billFeefromBillItem(bi, collectingCentre, collectingCentre.getFeeListType()));
+        addingEntry.setLstBillSessions(getBillBean().billSessionsfromBillItem(bi));
         getLstBillEntries().add(addingEntry);
-        getCurrentBillItem().setRate(getBillBean().billItemRate(addingEntry));
-        getCurrentBillItem().setQty(1.0);
-        getCurrentBillItem().setNetValue(getCurrentBillItem().getRate() * getCurrentBillItem().getQty()); // Price == Rate as Qty is 1 here
+        bi.setRate(getBillBean().billItemRate(addingEntry));
+        bi.setQty(1.0);
+
+        bi.setNetValue(bi.getRate() * bi.getQty()); // Price == Rate as Qty is 1 here
         calTotals();
 
-        if (getCurrentBillItem().getNetValue() == 0.0) {
-            UtilityController.addErrorMessage("Please enter the rate");
+        if (bi.getNetValue() == 0.0) {
+            JsfUtil.addErrorMessage("Please enter the Fees");
             return;
         }
         clearBillItemValues();
-        //UtilityController.addSuccessMessage("Item Added");
+        JsfUtil.addSuccessMessage("Item Added");
     }
 
     public void clearBillItemValues() {
@@ -1143,8 +1298,7 @@ public class CollectingCentreBillController implements Serializable {
     }
 
     private void clearBillValues() {
-        setNewPatient(null);
-        setSearchedPatient(null);
+        setPatient(null);
         setReferredBy(null);
         setReferredByInstitution(null);
         setReferralId(null);
@@ -1205,7 +1359,7 @@ public class CollectingCentreBillController implements Serializable {
         double billVat = 0.0;
 
         for (BillEntry be : getLstBillEntries()) {
-            //////System.out.println("bill item entry");
+            //////// // System.out.println("bill item entry");
             double entryGross = 0.0;
             double entryDis = 0.0;
             double entryNet = 0.0;
@@ -1218,7 +1372,7 @@ public class CollectingCentreBillController implements Serializable {
                 entryNet += bf.getFeeValue();
                 entryDis += bf.getFeeDiscount();
                 entryVat += bf.getFeeVat();
-                //////System.out.println("fee net is " + bf.getFeeValue());
+                //////// // System.out.println("fee net is " + bf.getFeeValue());
 
             }
 
@@ -1227,10 +1381,10 @@ public class CollectingCentreBillController implements Serializable {
             bi.setNetValue(entryNet);
             bi.setVat(entryVat);
             bi.setVatPlusNetValue(entryVat + entryNet);
-            //////System.out.println("item is " + bi.getItem().getName());
-            //////System.out.println("item gross is " + bi.getGrossValue());
-            //////System.out.println("item net is " + bi.getNetValue());
-            //////System.out.println("item dis is " + bi.getDiscount());
+            //////// // System.out.println("item is " + bi.getItem().getName());
+            //////// // System.out.println("item gross is " + bi.getGrossValue());
+            //////// // System.out.println("item net is " + bi.getNetValue());
+            //////// // System.out.println("item dis is " + bi.getDiscount());
             billGross += bi.getGrossValue();
             billNet += bi.getNetValue();
             billDiscount += bi.getDiscount();
@@ -1271,6 +1425,43 @@ public class CollectingCentreBillController implements Serializable {
         paymentScheme = null;
         paymentMethod = PaymentMethod.Agent;
         collectingCentre = null;
+        opdItems = null;
+    }
+
+    public void prepareNewBillKeepingCollectingCenter() {
+        clearBillItemValues();
+        clearBillValues();
+        setPrintPreview(true);
+        printPreview = false;
+        paymentMethodData = null;
+        paymentScheme = null;
+        paymentMethod = PaymentMethod.Agent;
+    }
+
+    public List<Item> completeOpdItems(String query) {
+        UserPreference up = sessionController.getDepartmentPreference();
+        switch (up.getCcItemListingStrategy()) {
+            case ALL_ITEMS:
+                return itemController.completeServicesPlusInvestigationsAll(query);
+            case ITEMS_MAPPED_TO_LOGGED_DEPARTMENT:
+                return itemMappingController.completeItemByDepartment(query, sessionController.getDepartment());
+            case ITEMS_MAPPED_TO_LOGGED_INSTITUTION:
+                return itemMappingController.completeItemByInstitution(query, sessionController.getInstitution());
+            case ITEMS_MAPPED_TO_SELECTED_DEPARTMENT:
+                return itemMappingController.completeItemByDepartment(query, collectingCentre);
+            case ITEMS_MAPPED_TO_SELECTED_INSTITUTION:
+                return itemMappingController.completeItemByInstitution(query, collectingCentre);
+            case ITEMS_OF_LOGGED_DEPARTMENT:
+                return itemController.completeItemsByDepartment(query, sessionController.getDepartment());
+            case ITEMS_OF_LOGGED_INSTITUTION:
+                return itemController.completeItemsByInstitution(query, sessionController.getInstitution());
+            case ITEMS_OF_SELECTED_DEPARTMENT:
+                return itemController.completeItemsByDepartment(query, collectingCentre);
+            case ITEMS_OF_SELECTED_INSTITUTIONS:
+                return itemController.completeItemsByInstitution(query, collectingCentre);
+            default:
+                throw new AssertionError();
+        }
     }
 
     public void makeNull() {
@@ -1284,16 +1475,16 @@ public class CollectingCentreBillController implements Serializable {
     public void removeBillItem() {
 
         //TODO: Need to add Logic
-        //////System.out.println(getIndex());
+        //////// // System.out.println(getIndex());
         if (getIndex() != null) {
             //  boolean remove;
             BillEntry temp = getLstBillEntries().get(getIndex());
-            //////System.out.println("Removed Item:" + temp.getBillItem().getNetValue());
+            //////// // System.out.println("Removed Item:" + temp.getBillItem().getNetValue());
             recreateList(temp);
             // remove = getLstBillEntries().remove(getIndex());
 
             //  getLstBillEntries().remove(index);
-            ////////System.out.println("Is Removed:" + remove);
+            ////////// // System.out.println("Is Removed:" + remove);
             calTotals();
 
         }
@@ -1305,7 +1496,7 @@ public class CollectingCentreBillController implements Serializable {
         for (BillEntry b : getLstBillEntries()) {
             if (b.getBillItem().getItem() != r.getBillItem().getItem()) {
                 temp.add(b);
-                //////System.out.println(b.getBillItem().getNetValue());
+                //////// // System.out.println(b.getBillItem().getNetValue());
             }
         }
         lstBillEntries = temp;
@@ -1317,7 +1508,7 @@ public class CollectingCentreBillController implements Serializable {
         setPatientTabId(event.getTab().getId());
         if (!getPatientTabId().equals("tabSearchPt")) {
             if (fromOpdEncounter == false) {
-                setSearchedPatient(null);
+                setPatient(null);
             }
         }
         calTotals();
@@ -1326,6 +1517,26 @@ public class CollectingCentreBillController implements Serializable {
     public void createPaymentsForBills(Bill b, List<BillEntry> billEntrys) {
         Payment p = createPayment(b, b.getPaymentMethod());
         createBillFeePaymentsByPaymentsAndBillEntry(p, billEntrys);
+    }
+
+    public String navigateToCollectingCenterBillingromMenu() {
+        prepareNewBill();
+        setPatient(getPatient());
+        return "/collecting_centre/bill?faces-redirect=true";
+    }
+
+    public String navigateToCollectingCenterBillingromCollectingCenterBilling() {
+        prepareNewBillKeepingCollectingCenter();
+        fillAvailableAgentReferanceNumbers(collectingCentre);
+        setPatient(getPatient());
+        return "/collecting_centre/bill?faces-redirect=true";
+    }
+
+    public String navigateToCollectingCenterBillingfromBillPriview() {
+        prepareNewBillKeepingCollectingCenter();
+        fillAvailableAgentReferanceNumbers(collectingCentre);
+        setPatient(getPatient());
+        return "/collecting_centre/bill?faces-redirect=true";
     }
 
     public Payment createPayment(Bill bill, PaymentMethod pm) {
@@ -1361,13 +1572,11 @@ public class CollectingCentreBillController implements Serializable {
 
         for (BillEntry be : billEntrys) {
 
-
-            if ((reminingCashPaid != 0.0) || !getSessionController().getLoggedPreference().isPartialPaymentOfOpdPreBillsAllowed()) {
+            if ((reminingCashPaid != 0.0) || !getSessionController().getApplicationPreference().isPartialPaymentOfOpdPreBillsAllowed()) {
 
                 calculateBillfeePayments(be.getLstBillFees(), p);
 
             }
-
 
         }
 
@@ -1376,19 +1585,17 @@ public class CollectingCentreBillController implements Serializable {
     public void calculateBillfeePayments(List<BillFee> billFees, Payment p) {
         for (BillFee bf : billFees) {
 
-            if (getSessionController().getLoggedPreference().isPartialPaymentOfOpdPreBillsAllowed() || getSessionController().getLoggedPreference().isPartialPaymentOfOpdBillsAllowed()) {
+            if (getSessionController().getApplicationPreference().isPartialPaymentOfOpdPreBillsAllowed() || getSessionController().getApplicationPreference().isPartialPaymentOfOpdBillsAllowed()) {
                 if (Math.abs((bf.getFeeValue() - bf.getSettleValue())) > 0.1) {
                     if (reminingCashPaid >= (bf.getFeeValue() - bf.getSettleValue())) {
-                        System.err.println("in");
-                        //System.out.println("In If reminingCashPaid = " + reminingCashPaid);
-                        //System.out.println("bf.getPaidValue() = " + bf.getSettleValue());
+                        //// // System.out.println("In If reminingCashPaid = " + reminingCashPaid);
+                        //// // System.out.println("bf.getPaidValue() = " + bf.getSettleValue());
                         double d = (bf.getFeeValue() - bf.getSettleValue());
                         bf.setSettleValue(bf.getFeeValue());
                         setBillFeePaymentAndPayment(d, bf, p);
                         getBillFeeFacade().edit(bf);
                         reminingCashPaid -= d;
                     } else {
-                        System.err.println("IN");
                         bf.setSettleValue(bf.getSettleValue() + reminingCashPaid);
                         setBillFeePaymentAndPayment(reminingCashPaid, bf, p);
                         getBillFeeFacade().edit(bf);
@@ -1491,26 +1698,31 @@ public class CollectingCentreBillController implements Serializable {
         this.patientTabId = patientTabId;
     }
 
-    public Patient getNewPatient() {
-        if (newPatient == null) {
-            newPatient = new Patient();
-            Person p = new Person();
-
-            newPatient.setPerson(p);
+//    public Patient getNewPatient() {
+//        if (newPatient == null) {
+//            newPatient = new Patient();
+//            Person p = new Person();
+//
+//            newPatient.setPerson(p);
+//        }
+//        return newPatient;
+//    }
+//
+//    public void setNewPatient(Patient newPatient) {
+//        this.newPatient = newPatient;
+//    }
+    @Override
+    public Patient getPatient() {
+        if (patient == null) {
+            patient = new Patient();
+            patientDetailsEditable = true;
         }
-        return newPatient;
+        return patient;
     }
 
-    public void setNewPatient(Patient newPatient) {
-        this.newPatient = newPatient;
-    }
-
-    public Patient getSearchedPatient() {
-        return searchedPatient;
-    }
-
-    public void setSearchedPatient(Patient searchedPatient) {
-        this.searchedPatient = searchedPatient;
+    @Override
+    public void setPatient(Patient patient) {
+        this.patient = patient;
     }
 
     public Doctor getReferredBy() {
@@ -1714,14 +1926,6 @@ public class CollectingCentreBillController implements Serializable {
         this.billFeeFacade = billFeeFacade;
     }
 
-    private Patient getTmpPatient() {
-        return tmpPatient;
-    }
-
-    public void setTmpPatient(Patient tmpPatient) {
-        this.tmpPatient = tmpPatient;
-    }
-
     public PatientInvestigationFacade getPatientInvestigationFacade() {
         return patientInvestigationFacade;
     }
@@ -1737,14 +1941,6 @@ public class CollectingCentreBillController implements Serializable {
     public void setBillItemFacade(BillItemFacade billItemFacade) {
         this.billItemFacade = billItemFacade;
 
-    }
-
-    public BatchBillFacade getBatchBillFacade() {
-        return batchBillFacade;
-    }
-
-    public void setBatchBillFacade(BatchBillFacade batchBillFacade) {
-        this.batchBillFacade = batchBillFacade;
     }
 
     public BillSearch getBillSearch() {
@@ -1808,13 +2004,13 @@ public class CollectingCentreBillController implements Serializable {
 
         sql = "select p from BilledBill p where p.retired=false and "
                 + "p.cancelled=false and p.refunded=false and p.billType=:btp "
-                + " and (upper(p.patient.person.name)  "
-                + "like :q or upper(p.insId)  "
+                + " and ((p.patient.person.name)  "
+                + "like :q or (p.insId)  "
                 + "like :q) order by p.insId";
-        //////System.out.println(sql);
+        //////// // System.out.println(sql);
         hm.put("q", "%" + query.toUpperCase() + "%");
         hm.put("btp", BillType.InwardAppointmentBill);
-        suggestions = getFacade().findBySQL(sql, hm);
+        suggestions = getFacade().findByJpql(sql, hm);
 
         return suggestions;
 
@@ -1869,6 +2065,13 @@ public class CollectingCentreBillController implements Serializable {
 
     public void setPatientSearchTab(int patientSearchTab) {
         this.patientSearchTab = patientSearchTab;
+    }
+
+    public List<ItemLight> getOpdItems() {
+        if (opdItems == null) {
+            opdItems = fillOpdItems();
+        }
+        return opdItems;
     }
 
     public Bill getBill() {
@@ -2011,6 +2214,55 @@ public class CollectingCentreBillController implements Serializable {
 
     public void setCommonController(CommonController commonController) {
         this.commonController = commonController;
+    }
+
+    public List<String> getReferralIds() {
+        return referralIds;
+    }
+
+    public void setReferralIds(List<String> referralIds) {
+        this.referralIds = referralIds;
+    }
+
+    @Override
+    public boolean isPatientDetailsEditable() {
+        return patientDetailsEditable;
+    }
+
+    @Override
+    public void setPatientDetailsEditable(boolean patientDetailsEditable) {
+        this.patientDetailsEditable = patientDetailsEditable;
+    }
+
+    public List<CollectingCenterBookSummeryRow> getBookSummeryRows() {
+        return bookSummeryRows;
+    }
+
+    public void setBookSummeryRows(List<CollectingCenterBookSummeryRow> bookSummeryRows) {
+        this.bookSummeryRows = bookSummeryRows;
+    }
+
+    public class CollectingCenterBookSummeryRow {
+
+        private String bookName;
+        private Integer bookNumber;
+
+        public String getBookName() {
+            return bookName;
+        }
+
+        public void setBookName(String bookName) {
+            this.bookName = bookName;
+        }
+
+        public Integer getBookNumber() {
+            return bookNumber;
+        }
+
+        public void setBookNumber(Integer bookNumber) {
+            this.bookNumber = bookNumber;
+        }
+
     }
 
 }

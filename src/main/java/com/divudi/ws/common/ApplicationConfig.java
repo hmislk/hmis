@@ -1,7 +1,7 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Open Hospital Management Information System
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.ws.common;
 
@@ -10,7 +10,7 @@ import javax.ws.rs.core.Application;
 
 /**
  *
- * @author Archmage-Dushan
+ * @author Archmage-Dushan - Modified 
  */
 @javax.ws.rs.ApplicationPath("api")
 public class ApplicationConfig extends Application {
@@ -38,8 +38,13 @@ public class ApplicationConfig extends Application {
     private void addRestResourceClasses(Set<Class<?>> resources) {
         resources.add(com.divudi.ws.channel.Api.class);
         resources.add(com.divudi.ws.common.ApiMembership.class);
+        resources.add(com.divudi.ws.fhir.Fhir.class);
+        resources.add(com.divudi.ws.finance.Finance.class);
+        resources.add(com.divudi.ws.finance.Qb.class);
+        resources.add(com.divudi.ws.finance.clinical.Fhir.class);
         resources.add(com.divudi.ws.inward.ApiInward.class);
         resources.add(com.divudi.ws.lims.Lims.class);
+        
     }
     
 }

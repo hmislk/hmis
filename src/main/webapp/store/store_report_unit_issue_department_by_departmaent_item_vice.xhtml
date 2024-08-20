@@ -1,46 +1,46 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:pe="http://primefaces.org/ui/extensions">
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      >
 
     <h:body>
 
-        <ui:composition template="/resources/template/template.xhtml">
+        <ui:composition template="/store/store_reports_index.xhtml">
 
-            <ui:define name="content">
+            <ui:define name="subcontent">
                 <h:form>
 
                     <p:panel header="Unit Issue Report" >
 
-                        <h:panelGrid columns="2" >
+                        <h:panelGrid columns="2" class="my-2" >
                             <h:outputLabel value="Issue From" />
-                            <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" 
+                            <p:autoComplete class="w-100 mx-4" inputStyleClass="w-100" completeMethod="#{departmentController.completeDept}" var="dept" 
                                             itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
-                                            value="#{storeReportsTransfer.fromDepartment}" converter="departmentConverter" >
+                                            value="#{storeReportsTransfer.fromDepartment}"  >
                             </p:autoComplete>
-                            <h:outputLabel value="To" />
-                            <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" 
+                            <h:outputLabel value="Issue To" />
+                            <p:autoComplete class="w-100 mx-4" inputStyleClass="w-100" completeMethod="#{departmentController.completeDept}" var="dept" 
                                             itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
-                                            value="#{storeReportsTransfer.toDepartment}" converter="departmentConverter" >
+                                            value="#{storeReportsTransfer.toDepartment}"  >
                             </p:autoComplete>
 
 
                             <h:outputLabel value="From" />
-                            <p:calendar value="#{storeReportsTransfer.fromDate}" pattern="dd MMMM yyyy HH:mm:ss" ></p:calendar>
+                            <p:calendar class="w-100 mx-4" inputStyleClass="w-100" value="#{storeReportsTransfer.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
 
 
                             <h:outputLabel value="To" />
-                            <p:calendar value="#{storeReportsTransfer.toDate}" pattern="dd MMMM yyyy HH:mm:ss" ></p:calendar>
+                            <p:calendar class="w-100 mx-4" inputStyleClass="w-100" value="#{storeReportsTransfer.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                         </h:panelGrid>
 
-                        <h:panelGrid columns="3">
-                            <p:commandButton ajax="false" value="Fill" action="#{storeReportsTransfer.fillDepartmentIssueByBillItem}" />
+                        <h:panelGrid columns="6" class="my-2">
+                            <p:commandButton class="ui-button-warning" icon="fas fa-fill" ajax="false" value="Fill" action="#{storeReportsTransfer.fillDepartmentIssueByBillItem}" />
 
-                            <p:commandButton value="Print" ajax="false" action="#" >
+                            <p:commandButton class="ui-button-info mx-2" icon="fas fa-print" value="Print" ajax="false" action="#" >
                                 <p:printer target="gpBillPreview" />
                             </p:commandButton>
 
@@ -59,7 +59,7 @@
                                         <f:facet name="header">
                                             <h:outputLabel value= "#{i.department.name}" />
                                             <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
-                                                <pe:exporter subTable="true" type="xlsx" target="tblDep" fileName="Unit_Issue_Report_by_department"  />
+                                                <p:dataExporter  type="xlsx" target="tblDep" fileName="Unit_Issue_Report_by_department"  />
                                             </p:commandButton>  
                                         </f:facet>
 
@@ -121,15 +121,15 @@
 
                                 <f:facet name="header" >
 
-                                    <h:outputLabel value="Unit Issue From "/>
+                                    <h:outputLabel value="Unit Issue From : &nbsp;"/>
                                     <h:outputLabel value="#{storeReportsTransfer.fromDepartment.name}"/> 
-                                    <h:outputLabel value="To"/>
+                                    <h:outputLabel value="&emsp; To :&nbsp;"/>
                                     <h:outputLabel value="#{storeReportsTransfer.toDepartment.name}"/> 
-                                    <h:outputLabel value="From : " style=" white-space:pre-line;"/>
+                                    <h:outputLabel value="&emsp;From :&nbsp; " style=" white-space:pre-line;"/>
                                     <h:outputLabel value="#{storeReportsTransfer.fromDate}">
                                         <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a" ></f:convertDateTime>
                                     </h:outputLabel>
-                                    <h:outputLabel value="&emsp;&emsp;To : "/>
+                                    <h:outputLabel value="&emsp;&emsp;To : &nbsp;"/>
                                     <h:outputLabel value="#{storeReportsTransfer.toDate}">
                                         <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a" ></f:convertDateTime>
                                     </h:outputLabel>

@@ -1,10 +1,10 @@
 /*
- * MSc(Biomedical Informatics) Project
+ * Open Hospital Management Information System
  *
- * Development and Implementation of a Web-based Combined Data Repository of
+ * Dr M H B Ariyaratne
  Genealogical, Clinical, Storeoratory and Genetic Data
- * and
- * a Set of Related Tools
+ * (94) 71 5812399
+ * (94) 71 5812399
  */
 package com.divudi.bean.common;
 import com.divudi.entity.Institution;
@@ -26,10 +26,10 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
-
+import com.divudi.bean.common.util.JsfUtil;
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
  Informatics)
  */
 @Named
@@ -85,12 +85,12 @@ public  class UserPaymentSchemeController implements Serializable {
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getEjbFacade().edit(current);
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getEjbFacade().create(current);
-            UtilityController.addSuccessMessage("Saved Successfully");
+            JsfUtil.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
         getItems();
@@ -129,9 +129,9 @@ public  class UserPaymentSchemeController implements Serializable {
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getEjbFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
@@ -141,11 +141,11 @@ public  class UserPaymentSchemeController implements Serializable {
 
     public void addPaymentSchemeForUser() {
         if (selectedUser == null) {
-            UtilityController.addSuccessMessage("Select A User");
+            JsfUtil.addSuccessMessage("Select A User");
             return;
         }
         if (currentPaymentScheme == null) {
-            UtilityController.addSuccessMessage("Select a PaymentScheme");
+            JsfUtil.addSuccessMessage("Select a PaymentScheme");
             return;
         }
 
@@ -169,12 +169,12 @@ public  class UserPaymentSchemeController implements Serializable {
 
 
         String sql = "SELECT i FROM WebUserPaymentScheme i where i.retired=false and i.webUser.id = " + getSessionController().getLoggedUser().getId();
-        items = getEjbFacade().findBySQL(sql);
-        //////System.out.println("33");
+        items = getEjbFacade().findByJpql(sql);
+        //////// // System.out.println("33");
 
         if (items == null) {
             items = new ArrayList<WebUserPaymentScheme>();
-            //////System.out.println("44");
+            //////// // System.out.println("44");
         }
         return items;
     }
@@ -187,12 +187,12 @@ public  class UserPaymentSchemeController implements Serializable {
         }
 
         String sql = "SELECT i FROM WebUserPaymentScheme i where i.retired=false and i.webUser.id = " + selectedUser.getId();
-        items = getEjbFacade().findBySQL(sql);
-        //////System.out.println("33");
+        items = getEjbFacade().findByJpql(sql);
+        //////// // System.out.println("33");
 
         if (items == null) {
             items = new ArrayList<WebUserPaymentScheme>();
-            //////System.out.println("44");
+            //////// // System.out.println("44");
         }
         return items;
     }
@@ -210,7 +210,7 @@ public  class UserPaymentSchemeController implements Serializable {
     }
 
     public void setSelectedUser(WebUser selectedUser) {
-        //////System.out.println("Setting user");
+        //////// // System.out.println("Setting user");
         items=null;
         this.selectedUser = selectedUser;
         
@@ -222,7 +222,7 @@ public  class UserPaymentSchemeController implements Serializable {
         }
 
         String sql = "SELECT i.department FROM WebUserPaymentScheme i where i.retired=false and i.webUser=" + getSelectedUser() + "order by i.name";
-        selectedUserDeparment = getPaymentSchemeFacade().findBySQL(sql);
+        selectedUserDeparment = getPaymentSchemeFacade().findByJpql(sql);
 
         if (selectedUserDeparment == null) {
             selectedUserDeparment = new ArrayList<PaymentScheme>();
@@ -249,7 +249,7 @@ public  class UserPaymentSchemeController implements Serializable {
         }
 
         String sql = "SELECT i.institution FROM WebUserPaymentScheme i where i.retired=false and i.webUser=" + getSelectedUser() + "order by i.name";
-        selectedInstitutions = getInstitutionFacade().findBySQL(sql);
+        selectedInstitutions = getInstitutionFacade().findByJpql(sql);
 
         if (selectedInstitutions == null) {
             selectedInstitutions = new ArrayList<Institution>();
@@ -273,7 +273,7 @@ public  class UserPaymentSchemeController implements Serializable {
     public List<PaymentScheme> getCurrentInsPaymentSchemes() {
 
         String sql = "SELECT i FROM PaymentScheme i where i.retired=false order by i.name";
-        currentInsPaymentSchemes = getPaymentSchemeFacade().findBySQL(sql);
+        currentInsPaymentSchemes = getPaymentSchemeFacade().findByJpql(sql);
 
         if (currentInsPaymentSchemes == null) {
             currentInsPaymentSchemes = new ArrayList<PaymentScheme>();

@@ -1,14 +1,14 @@
 /*
- * MSc(Biomedical Informatics) Project
+ * Open Hospital Management Information System
  *
- * Development and Implementation of a Web-based Combined Data Repository of
- Genealogical, Clinical, Laboratory and Genetic Data
- * and
- * a Set of Related Tools
+ * Dr M H B Ariyaratne
+ * Acting Consultant (Health Informatics)
+ * (94) 71 5812399
+ * (94) 71 5812399
  */
 package com.divudi.bean.hr;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.entity.hr.HrmVariables;
 import com.divudi.entity.hr.PayeeTaxRange;
 import com.divudi.facade.HrmVariablesFacade;
@@ -26,8 +26,8 @@ import javax.inject.Named;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- * Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
+ * Acting Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -57,12 +57,12 @@ public class HrmVariablesController implements Serializable {
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            UtilityController.addSuccessMessage("Saved Successfully");
+            JsfUtil.addSuccessMessage("Saved Successfully");
         }
 
     }
@@ -91,7 +91,7 @@ public class HrmVariablesController implements Serializable {
                 + " from HrmVariables hv"
                 + " where hv.retired=false ";
 
-        current = ejbFacade.findFirstBySQL(sql);
+        current = ejbFacade.findFirstByJpql(sql);
     }
 
     public HrmVariables getCurrent() {
@@ -117,9 +117,9 @@ public class HrmVariablesController implements Serializable {
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         
         current = null;
@@ -132,17 +132,17 @@ public class HrmVariablesController implements Serializable {
 
     private boolean errorCheck() {
         if (getCurrentPayeeTaxRange().getFromSalary() == 0) {
-            UtilityController.addErrorMessage("Set From Salary");
+            JsfUtil.addErrorMessage("Set From Salary");
             return true;
         }
 
         if (getCurrentPayeeTaxRange().getToSalary() == 0) {
-            UtilityController.addErrorMessage("Set To Salary");
+            JsfUtil.addErrorMessage("Set To Salary");
             return true;
         }
 
         if (getCurrentPayeeTaxRange().getTaxRate() == 0) {
-            UtilityController.addErrorMessage("Set Tax Rate");
+            JsfUtil.addErrorMessage("Set Tax Rate");
             return true;
         }
 
@@ -212,43 +212,4 @@ public class HrmVariablesController implements Serializable {
         }
     }
 
-    @FacesConverter("hrmVariablesCon")
-    public static class HrmVariablesControllerConverter implements Converter {
-
-        @Override
-        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
-                return null;
-            }
-            HrmVariablesController controller = (HrmVariablesController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "hrmVariablesController");
-            return controller.getEjbFacade().find(getKey(value));
-        }
-
-        java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
-            return key;
-        }
-
-        String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
-        }
-
-        @Override
-        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
-            if (object == null) {
-                return null;
-            }
-            if (object instanceof HrmVariables) {
-                HrmVariables o = (HrmVariables) object;
-                return getStringKey(o.getId());
-            } else {
-                throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + HrmVariablesController.class.getName());
-            }
-        }
-    }
 }

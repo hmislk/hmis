@@ -1,0 +1,62 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:prints="http://xmlns.jcp.org/jsf/composite/ezcomp/prints"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+                <h:form>
+
+                    <p:panel style="height: 100vh">
+                        <f:facet name="header">
+                            <i class="fas fa-barcode-scan mt-2"/>
+                            <p:outputLabel value="Bill Scanner" class="mx-2 mt-2"></p:outputLabel>
+                        </f:facet>
+                        <div class="d-flex align-items-center justify-content-center">
+                            <div class="w-25" >
+                                <div class="d-flex justify-content-center align-items-center">
+                                    <img src="https://media.tenor.com/8E3SIU76kHgAAAAM/barcode-scan.gif"/>
+                                </div>
+                                <div>
+                                    <p:inputText 
+                                        id="billID"
+                                        class="w-100"
+                                        value="#{searchController.barcodeIdLong}"
+                                        placeholder="Enter Bill ID or Click here to Scan"
+                                        onfocus="this.select()"
+                                        >
+                                       
+                                    </p:inputText>
+                                    <p:focus id="focusIx" for="billID" />
+                                    <p:defaultCommand target="btnAddbill" />
+                                    <p:focus context="billID"/>
+                                </div>
+                                <div >
+                                    <p:commandButton
+                                        id="btnAddbill"
+                                        style="float: right;"
+                                        value="Search For Settle"
+                                        icon="fa fa-search"
+                                        class="ui-button-warning w-100 my-1"
+                                        ajax="false"
+                                        action="#{searchController.settleBillByBarcode}" >
+                                    </p:commandButton>
+                                </div>
+                            </div>
+                        </div>
+                    </p:panel>
+
+                </h:form>
+
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

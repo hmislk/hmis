@@ -1,7 +1,7 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Open Hospital Management Information System
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.pharmacy;
 
@@ -17,7 +17,9 @@ import com.divudi.entity.Department;
 import com.divudi.entity.Item;
 import com.divudi.entity.PreBill;
 import com.divudi.entity.RefundBill;
+import com.divudi.entity.pharmacy.StockHistory;
 import com.divudi.facade.BillFacade;
+import com.divudi.facade.StockHistoryFacade;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
@@ -36,10 +38,15 @@ public class PharmacyErrorChecking implements Serializable {
 
     @EJB
     PharmacyErrorCheckingEjb ejb;
+    @EJB
+    StockHistoryFacade stockHistoryFacade;
     @Inject
-            CommonController commonController;
+    CommonController commonController;
+    @Inject
+    StockHistoryController stockHistoryController;
 
     List<BillItem> billItems;
+    private List<StockHistory> stockHistories;
     Date fromDate;
     Date toDate;
     Item item;
@@ -71,8 +78,23 @@ public class PharmacyErrorChecking implements Serializable {
 
         billItems = getEjb().allBillItems(item, department);
         calculateTotals4();
+
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Administration/Error checking/error detection(/faces/pharmacy/pharmacy_error_checking.xhtml)");
+    }
+
+    public void processBinCardItems() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
+        billItems = getEjb().allBillItems(item, department);
+        calculateTotals4();
+
+        
+    }
+
+    public void processBinCard() {
+        stockHistories  = stockHistoryController.findStockHistories(fromDate, toDate, null,department, item);
     }
 
     public void listPharmacyMovementByDateRange() {
@@ -81,10 +103,10 @@ public class PharmacyErrorChecking implements Serializable {
 
     public void listPharmacyMovementByDateRangeOnlyStockChange() {
         Date startTime = new Date();
-        
+
         billItems = getEjb().allBillItemsByDateOnlyStock(item, department, fromDate, toDate);
+
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Administration/Error checking/ error detection by date(/faces/pharmacy/pharmacy_error_checking_date.xhtml)");
     }
 
     public void listPharmacyMovementNew() {
@@ -148,7 +170,7 @@ public class PharmacyErrorChecking implements Serializable {
         for (BillItem bi : billItems) {
 
             if (bi.getQty() != bi.getPharmaceuticalBillItem().getQty()) {
-                //////System.out.println("Error in qty " + bi);
+                //////// // System.out.println("Error in qty " + bi);
             }
 
             if (bi.getBill().getCreatedAt() == null) {
@@ -211,7 +233,7 @@ public class PharmacyErrorChecking implements Serializable {
 
             }
 
-            //////System.out.println("calculatedStock = " + calculatedStock + " " + bi.getBill().getBillType() + " " + bi.getBill().getClass() + " " + bi.getId());
+            //////// // System.out.println("calculatedStock = " + calculatedStock + " " + bi.getBill().getBillType() + " " + bi.getBill().getClass() + " " + bi.getId());
 //
             //
             //
@@ -425,6 +447,8 @@ public class PharmacyErrorChecking implements Serializable {
     public void setCalculatedSaleValue(double calculatedSaleValue) {
         this.calculatedSaleValue = calculatedSaleValue;
     }
+    
+    
 
     public double getCalculatedPurchaseValue() {
         return calculatedPurchaseValue;
@@ -482,5 +506,12 @@ public class PharmacyErrorChecking implements Serializable {
         this.commonController = commonController;
     }
 
-    
+    public List<StockHistory> getStockHistories() {
+        return stockHistories;
+    }
+
+    public void setStockHistories(List<StockHistory> stockHistories) {
+        this.stockHistories = stockHistories;
+    }
+
 }

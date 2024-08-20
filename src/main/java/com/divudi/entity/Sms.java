@@ -1,7 +1,7 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Open Hospital Management Information System
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.entity;
 
@@ -36,6 +36,7 @@ public class Sms implements Serializable {
     private PatientInvestigation patientInvestigation;
     @ManyToOne
     private Bill bill;
+ 
     @ManyToOne
     PatientReport patientReport;
     @Lob
@@ -45,6 +46,7 @@ public class Sms implements Serializable {
     String userId;
     String password;
     String sendingUrl;
+    private String otp;
     private String receipientNumber;
     @Enumerated(EnumType.STRING)
     private MessageType smsType;
@@ -276,5 +278,15 @@ public class Sms implements Serializable {
     public void setPending(boolean pending) {
         this.pending = pending;
     }
+
+    public String getOtp() {
+        return otp;
+    }
+
+    public void setOtp(String otp) {
+        this.otp = otp;
+    }
+    
+    
 
 }

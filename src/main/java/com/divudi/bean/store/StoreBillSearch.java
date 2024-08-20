@@ -1,12 +1,12 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.store;
 
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.common.WebUserController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
@@ -14,7 +14,7 @@ import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.ejb.EjbApplication;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillComponent;
@@ -22,7 +22,6 @@ import com.divudi.entity.BillEntry;
 import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.CancelledBill;
-import com.divudi.entity.LazyBill;
 import com.divudi.entity.PaymentScheme;
 import com.divudi.entity.RefundBill;
 import com.divudi.entity.WebUser;
@@ -33,6 +32,7 @@ import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.ItemBatchFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -95,8 +95,7 @@ public class StoreBillSearch implements Serializable {
     private BillFacade billFacade;
     @EJB
     private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
-    ////////////////////
-    @EJB
+    /////////
     private CommonFunctions commonFunctions;
     @EJB
     private BillNumberGenerator billNumberBean;
@@ -147,17 +146,17 @@ public class StoreBillSearch implements Serializable {
 
     private boolean errorCheckForEdit() {
         if (getBill().isCancelled()) {
-            UtilityController.addErrorMessage("Already Cancelled. Can not cancel again");
+            JsfUtil.addErrorMessage("Already Cancelled. Can not cancel again");
             return true;
         }
 
         if (getBill().isRefunded()) {
-            UtilityController.addErrorMessage("Already Returned. Can not cancel.");
+            JsfUtil.addErrorMessage("Already Returned. Can not cancel.");
             return true;
         }
 
         if (getBill().getPaidAmount() != 0.0) {
-            UtilityController.addErrorMessage("Already Credit Company Paid For This Bill. Can not cancel.");
+            JsfUtil.addErrorMessage("Already Credit Company Paid For This Bill. Can not cancel.");
             return true;
         }
 
@@ -219,7 +218,7 @@ public class StoreBillSearch implements Serializable {
         BillFee tmp = (BillFee) event.getObject();
 
         if (tmp.getPaidValue() != 0.0) {
-            UtilityController.addErrorMessage("Already Staff FeePaid");
+            JsfUtil.addErrorMessage("Already Staff FeePaid");
             return;
         }
 
@@ -235,42 +234,12 @@ public class StoreBillSearch implements Serializable {
 
     private LazyDataModel<Bill> lazyBills;
 
-    public void createTable() {
-        lazyBills = null;
-        Map m = new HashMap();
-        m.put("bt", BillType.StoreSale);
-        m.put("fd", getFromDate());
-        m.put("td", getToDate());
-        String sql;
-        sql = "Select b from BilledBill b where b.retired=false and b.createdAt  "
-                + " between :fd and :td and b.billType=:bt order by b.id desc ";
-
-        //     //////System.out.println("sql = " + sql);
-        List<Bill> lst = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
-        lazyBills = new LazyBill(lst);
-    }
-
+   
     public LazyDataModel<Bill> getSearchSaleBills() {
         return lazyBills;
     }
 
-    public void createReturnSaleBills() {
-        lazyBills = null;
-        Map m = new HashMap();
-        m.put("bt", BillType.StoreSale);
-        m.put("fd", getFromDate());
-        m.put("td", getToDate());
-        String sql;
-
-        sql = "Select b from RefundBill b where b.retired=false and"
-                + " b.createdAt between :fd and :td and b.billType=:bt"
-                + " order by b.id desc ";
-
-        List<Bill> lst = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
-        lazyBills = new LazyBill(lst);
-
-    }
-
+  
     public EjbApplication getEjbApplication() {
         return ejbApplication;
     }
@@ -285,7 +254,7 @@ public class StoreBillSearch implements Serializable {
         tempbillItems = null;
         for (BillItem i : getRefundingItems()) {
             if (checkPaidIndividual(i)) {
-                UtilityController.addErrorMessage("Doctor Payment Already Paid So Cant Refund Bill");
+                JsfUtil.addErrorMessage("Doctor Payment Already Paid So Cant Refund Bill");
                 return false;
             }
 
@@ -374,22 +343,22 @@ public class StoreBillSearch implements Serializable {
 
     public String refundBill() {
         if (refundingItems.isEmpty()) {
-            UtilityController.addErrorMessage("There is no item to Refund");
+            JsfUtil.addErrorMessage("There is no item to Refund");
             return "";
 
         }
         if (refundAmount == 0.0) {
-            UtilityController.addErrorMessage("There is no item to Refund");
+            JsfUtil.addErrorMessage("There is no item to Refund");
             return "";
         }
         if (getBill().getComments() == null || getBill().getComments().trim().equals("")) {
-            UtilityController.addErrorMessage("Please enter a comment");
+            JsfUtil.addErrorMessage("Please enter a comment");
             return "";
         }
 
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
             if (getBill().isCancelled()) {
-                UtilityController.addErrorMessage("Already Cancelled. Can not Refund again");
+                JsfUtil.addErrorMessage("Already Cancelled. Can not Refund again");
                 return "";
             }
             if (!calculateRefundTotal()) {
@@ -407,10 +376,10 @@ public class StoreBillSearch implements Serializable {
             getBillFacade().edit(getBill());
 
             printPreview = true;
-            //UtilityController.addSuccessMessage("Refunded");
+            //JsfUtil.addSuccessMessage("Refunded");
 
         } else {
-            UtilityController.addErrorMessage("No Bill to refund");
+            JsfUtil.addErrorMessage("No Bill to refund");
             return "";
         }
         //  recreateModel();
@@ -464,22 +433,22 @@ public class StoreBillSearch implements Serializable {
 
     public String returnBill() {
         if (refundingItems.isEmpty()) {
-            UtilityController.addErrorMessage("There is no item to Refund");
+            JsfUtil.addErrorMessage("There is no item to Refund");
             return "";
 
         }
         if (refundAmount == 0.0) {
-            UtilityController.addErrorMessage("There is no item to Refund");
+            JsfUtil.addErrorMessage("There is no item to Refund");
             return "";
         }
         if (getBill().getComments() == null || getBill().getComments().trim().equals("")) {
-            UtilityController.addErrorMessage("Please enter a comment");
+            JsfUtil.addErrorMessage("Please enter a comment");
             return "";
         }
 
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
             if (getBill().isCancelled()) {
-                UtilityController.addErrorMessage("Already Cancelled. Can not Refund again");
+                JsfUtil.addErrorMessage("Already Cancelled. Can not Refund again");
                 return "";
             }
             if (!calculateRefundTotal()) {
@@ -495,10 +464,10 @@ public class StoreBillSearch implements Serializable {
             getBillFacade().edit(getBill());
 
             printPreview = true;
-            //UtilityController.addSuccessMessage("Refunded");
+            //JsfUtil.addSuccessMessage("Refunded");
 
         } else {
-            UtilityController.addErrorMessage("No Bill to refund");
+            JsfUtil.addErrorMessage("No Bill to refund");
             return "";
         }
         //  recreateModel();
@@ -550,7 +519,7 @@ public class StoreBillSearch implements Serializable {
         double p = 0.0;
         for (BillItem bi : refundingItems) {
             String sql = "select c from BillFee c where c.billItem.id = " + bi.getId();
-            List<BillFee> rbf = getBillFeeFacade().findBySQL(sql);
+            List<BillFee> rbf = getBillFeeFacade().findByJpql(sql);
             for (BillFee bf : rbf) {
 
                 if (bf.getFee().getStaff() == null) {
@@ -584,7 +553,7 @@ public class StoreBillSearch implements Serializable {
             getBillItemFacede().edit(bi);
 
             String sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + bi.getId();
-            List<BillFee> tmp = getBillFeeFacade().findBySQL(sql);
+            List<BillFee> tmp = getBillFeeFacade().findByJpql(sql);
 
             returnBillFee(rb, rbi, tmp);
 
@@ -633,7 +602,7 @@ public class StoreBillSearch implements Serializable {
 
     private boolean checkPaid() {
         String sql = "SELECT bf FROM BillFee bf where bf.retired=false and bf.bill.id=" + getBill().getId();
-        List<BillFee> tempFe = getBillFeeFacade().findBySQL(sql);
+        List<BillFee> tempFe = getBillFeeFacade().findByJpql(sql);
 
         for (BillFee f : tempFe) {
             if (f.getPaidValue() != 0.0) {
@@ -646,7 +615,7 @@ public class StoreBillSearch implements Serializable {
 
     private boolean checkPaidIndividual(BillItem bi) {
         String sql = "SELECT bf FROM BillFee bf where bf.retired=false and bf.billItem.id=" + bi.getId();
-        List<BillFee> tempFe = getBillFeeFacade().findBySQL(sql);
+        List<BillFee> tempFe = getBillFeeFacade().findByJpql(sql);
 
         for (BillFee f : tempFe) {
             if (f.getPaidValue() != 0.0) {
@@ -659,36 +628,36 @@ public class StoreBillSearch implements Serializable {
 
     private boolean errorCheck() {
         if (getBill().isCancelled()) {
-            UtilityController.addErrorMessage("Already Cancelled. Can not cancel again");
+            JsfUtil.addErrorMessage("Already Cancelled. Can not cancel again");
             return true;
         }
 
         if (getBill().isRefunded()) {
-            UtilityController.addErrorMessage("Already Returned. Can not cancel.");
+            JsfUtil.addErrorMessage("Already Returned. Can not cancel.");
             return true;
         }
 
         if (getBill().getPaidAmount() != 0.0) {
-            UtilityController.addErrorMessage("Already Credit Company Paid For This Bill. Can not cancel.");
+            JsfUtil.addErrorMessage("Already Credit Company Paid For This Bill. Can not cancel.");
             return true;
         }
 
         if (checkPaid()) {
-            UtilityController.addErrorMessage("Doctor Payment Already Paid So Cant Cancel Bill");
+            JsfUtil.addErrorMessage("Doctor Payment Already Paid So Cant Cancel Bill");
             return true;
         }
 
         if (checkCollectedReported()) {
-            UtilityController.addErrorMessage("Sample Already collected can't cancel or report already issued");
+            JsfUtil.addErrorMessage("Sample Already collected can't cancel or report already issued");
             return true;
         }
 
         if (getBill().getBillType() != BillType.LabBill && getBill().getPaymentMethod() == null) {
-            UtilityController.addErrorMessage("Please select a payment scheme.");
+            JsfUtil.addErrorMessage("Please select a payment scheme.");
             return true;
         }
         if (getBill().getComments() == null || getBill().getComments().trim().equals("")) {
-            UtilityController.addErrorMessage("Please enter a comment");
+            JsfUtil.addErrorMessage("Please enter a comment");
             return true;
         }
 
@@ -697,33 +666,33 @@ public class StoreBillSearch implements Serializable {
 
     private boolean pharmacyErrorCheck() {
         if (getBill().isCancelled()) {
-            UtilityController.addErrorMessage("Already Cancelled. Can not cancel again");
+            JsfUtil.addErrorMessage("Already Cancelled. Can not cancel again");
             return true;
         }
 
         if (getBill().getBillType() == BillType.StoreOrderApprove) {
             if (checkGrn()) {
-                UtilityController.addErrorMessage("Grn already head been Come u can't bill ");
+                JsfUtil.addErrorMessage("Grn already head been Come u can't bill ");
                 return true;
             }
         }
 
         if (getBill().getBillType() == BillType.StoreGrnBill) {
             if (checkGrnReturn()) {
-                UtilityController.addErrorMessage("Grn had been Returned u can't cancell bill ");
+                JsfUtil.addErrorMessage("Grn had been Returned u can't cancell bill ");
                 return true;
             }
         }
 
         if (getBill().getBillType() == BillType.StoreTransferIssue) {
             if (getBill().checkActiveForwardReference()) {
-                UtilityController.addErrorMessage("Item for this bill already recieve");
+                JsfUtil.addErrorMessage("Item for this bill already recieve");
                 return true;
             }
         }
 
         if (getBill().getComments() == null || getBill().getComments().trim().equals("")) {
-            UtilityController.addErrorMessage("Please enter a comment");
+            JsfUtil.addErrorMessage("Please enter a comment");
             return true;
         }
 
@@ -737,7 +706,7 @@ public class StoreBillSearch implements Serializable {
         HashMap hm = new HashMap();
         hm.put("ref", getBill());
         hm.put("btp", BillType.StoreGrnBill);
-        List<Bill> tmp = getBillFacade().findBySQL(sql, hm);
+        List<Bill> tmp = getBillFacade().findByJpql(sql, hm);
 
         if (!tmp.isEmpty()) {
             return true;
@@ -753,7 +722,7 @@ public class StoreBillSearch implements Serializable {
         HashMap hm = new HashMap();
         hm.put("ref", getBill());
         hm.put("btp", BillType.StoreGrnReturn);
-        List<Bill> tmp = getBillFacade().findBySQL(sql, hm);
+        List<Bill> tmp = getBillFacade().findByJpql(sql, hm);
 
         if (!tmp.isEmpty()) {
             return true;
@@ -1186,12 +1155,12 @@ public class StoreBillSearch implements Serializable {
 
             WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(cb, getSessionController().getLoggedUser());
             getSessionController().setLoggedUser(wb);
-            UtilityController.addSuccessMessage("Cancelled");
+            JsfUtil.addSuccessMessage("Cancelled");
 
             printPreview = true;
 
         } else {
-            UtilityController.addErrorMessage("No Bill to cancel");
+            JsfUtil.addErrorMessage("No Bill to cancel");
         }
     }
 
@@ -1206,7 +1175,7 @@ public class StoreBillSearch implements Serializable {
         }
 
         if (bill.getDepartment().getId() != getSessionController().getDepartment().getId()) {
-            UtilityController.addErrorMessage("Billed Department Is Defferent than Logged Department");
+            JsfUtil.addErrorMessage("Billed Department Is Defferent than Logged Department");
             return true;
         }
 
@@ -1252,12 +1221,12 @@ public class StoreBillSearch implements Serializable {
 //            }
             getCashTransactionBean().saveBillCashOutTransaction(cb, getSessionController().getLoggedUser());
 
-            UtilityController.addSuccessMessage("Cancelled");
+            JsfUtil.addSuccessMessage("Cancelled");
 
             printPreview = true;
 
         } else {
-            UtilityController.addErrorMessage("No Bill to cancel");
+            JsfUtil.addErrorMessage("No Bill to cancel");
         }
     }
 
@@ -1313,7 +1282,7 @@ public class StoreBillSearch implements Serializable {
             }
 
             if (getBill().checkActiveReturnBhtIssueBills()) {
-                UtilityController.addErrorMessage("There some return Bill for this please cancel that bills first");
+                JsfUtil.addErrorMessage("There some return Bill for this please cancel that bills first");
                 return;
             }
 
@@ -1336,12 +1305,12 @@ public class StoreBillSearch implements Serializable {
 //                getBill().getReferenceBill().setReferenceBill(null);
 //                getBillFacade().edit(getBill().getReferenceBill());
 //            }
-            UtilityController.addSuccessMessage("Cancelled");
+            JsfUtil.addSuccessMessage("Cancelled");
 
             printPreview = true;
 
         } else {
-            UtilityController.addErrorMessage("No Bill to cancel");
+            JsfUtil.addErrorMessage("No Bill to cancel");
         }
     }
 
@@ -1366,21 +1335,21 @@ public class StoreBillSearch implements Serializable {
             getBill().setCancelled(true);
             getBill().setCancelledBill(cb);
             getBillFacade().edit(getBill());
-            UtilityController.addSuccessMessage("Cancelled");
+            JsfUtil.addSuccessMessage("Cancelled");
 
             //       //System.err.println("Bill : "+getBill().getBillType());
 //            //System.err.println("Reference Bill : "+getBill().getReferenceBill().getBillType());
             printPreview = true;
 
         } else {
-            UtilityController.addErrorMessage("No Bill to cancel");
+            JsfUtil.addErrorMessage("No Bill to cancel");
         }
     }
 
     public void pharmacyPoRequestCancel() {
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
             if (getBill().getReferenceBill() != null && !getBill().getReferenceBill().isCancelled()) {
-                UtilityController.addErrorMessage("Sorry You cant Cancell Approved Bill");
+                JsfUtil.addErrorMessage("Sorry You cant Cancell Approved Bill");
                 return;
             }
 
@@ -1394,14 +1363,14 @@ public class StoreBillSearch implements Serializable {
             getBill().setCancelled(true);
             getBill().setCancelledBill(cb);
             getBillFacade().edit(getBill());
-            UtilityController.addSuccessMessage("Cancelled");
+            JsfUtil.addSuccessMessage("Cancelled");
 
             //       //System.err.println("Bill : "+getBill().getBillType());
 //            //System.err.println("Reference Bill : "+getBill().getReferenceBill().getBillType());
             printPreview = true;
 
         } else {
-            UtilityController.addErrorMessage("No Bill to cancel");
+            JsfUtil.addErrorMessage("No Bill to cancel");
         }
     }
 
@@ -1455,7 +1424,7 @@ public class StoreBillSearch implements Serializable {
             }
 
             if (getBill().getCheckedBy() != null) {
-                UtilityController.addErrorMessage("Checked Bill. Can not cancel");
+                JsfUtil.addErrorMessage("Checked Bill. Can not cancel");
                 return;
             }
 
@@ -1473,12 +1442,12 @@ public class StoreBillSearch implements Serializable {
             getBill().setCancelled(true);
             getBill().setCancelledBill(cb);
             getBillFacade().edit(getBill());
-            UtilityController.addSuccessMessage("Cancelled");
+            JsfUtil.addSuccessMessage("Cancelled");
 
             printPreview = true;
 
         } else {
-            UtilityController.addErrorMessage("No Bill to cancel");
+            JsfUtil.addErrorMessage("No Bill to cancel");
         }
     }
 
@@ -1513,12 +1482,12 @@ public class StoreBillSearch implements Serializable {
             }
 
             if (checkBillItemStock()) {
-                UtilityController.addErrorMessage("ITems for this GRN Already issued so you can't cancel ");
+                JsfUtil.addErrorMessage("ITems for this GRN Already issued so you can't cancel ");
                 return;
             }
 
             if (getBill().getPaidAmount() != 0) {
-                UtilityController.addErrorMessage("Payments for this GRN Already Given ");
+                JsfUtil.addErrorMessage("Payments for this GRN Already Given ");
                 return;
             }
 
@@ -1530,7 +1499,7 @@ public class StoreBillSearch implements Serializable {
 
             pharmacyCancelBillItemsReduceStock(cb);
 //
-//            List<PharmaceuticalBillItem> tmp = getPharmaceuticalBillItemFacade().findBySQL("Select p from PharmaceuticalBillItem p where p.billItem.bill.id=" + getBill().getId());
+//            List<PharmaceuticalBillItem> tmp = getPharmaceuticalBillItemFacade().findByJpql("Select p from PharmaceuticalBillItem p where p.billItem.bill.id=" + getBill().getId());
 //
 //            for (PharmaceuticalBillItem ph : tmp) {
 //                double qty = ph.getQtyInUnit() + ph.getFreeQtyInUnit();
@@ -1543,12 +1512,12 @@ public class StoreBillSearch implements Serializable {
             getBill().setCancelled(true);
             getBill().setCancelledBill(cb);
             getBillFacade().edit(getBill());
-            UtilityController.addSuccessMessage("Cancelled");
+            JsfUtil.addSuccessMessage("Cancelled");
 
             printPreview = true;
 
         } else {
-            UtilityController.addErrorMessage("No Bill to cancel");
+            JsfUtil.addErrorMessage("No Bill to cancel");
         }
     }
 
@@ -1576,12 +1545,12 @@ public class StoreBillSearch implements Serializable {
 //            getBill().setBackwardReferenceBill(null);
 //            getBill().setForwardReferenceBill(null);
 //            getBillFacade().edit(getBill());
-            UtilityController.addSuccessMessage("Cancelled");
+            JsfUtil.addSuccessMessage("Cancelled");
 
             printPreview = true;
 
         } else {
-            UtilityController.addErrorMessage("No Bill to cancel");
+            JsfUtil.addErrorMessage("No Bill to cancel");
         }
     }
 
@@ -1592,7 +1561,7 @@ public class StoreBillSearch implements Serializable {
             }
 
             if (checkBillItemStock()) {
-                UtilityController.addErrorMessage("Items for this Note Already issued so you can't cancel ");
+                JsfUtil.addErrorMessage("Items for this Note Already issued so you can't cancel ");
                 return;
             }
 
@@ -1608,12 +1577,12 @@ public class StoreBillSearch implements Serializable {
             getBill().setCancelledBill(cb);
             getBillFacade().edit(getBill());
 
-            UtilityController.addSuccessMessage("Cancelled");
+            JsfUtil.addSuccessMessage("Cancelled");
 
             printPreview = true;
 
         } else {
-            UtilityController.addErrorMessage("No Bill to cancel");
+            JsfUtil.addErrorMessage("No Bill to cancel");
         }
     }
 
@@ -1624,12 +1593,12 @@ public class StoreBillSearch implements Serializable {
             }
 
             if (checkBillItemStock()) {
-                UtilityController.addErrorMessage("ITems for this GRN Already issued so you can't cancel ");
+                JsfUtil.addErrorMessage("ITems for this GRN Already issued so you can't cancel ");
                 return;
             }
 
             if (getBill().getPaidAmount() != 0) {
-                UtilityController.addErrorMessage("Payments for this GRN Already Given ");
+                JsfUtil.addErrorMessage("Payments for this GRN Already Given ");
                 return;
             }
 
@@ -1641,7 +1610,7 @@ public class StoreBillSearch implements Serializable {
 
             pharmacyCancelBillItemsReduceStock(cb);
 
-//            //   List<PharmaceuticalBillItem> tmp = getPharmaceuticalBillItemFacade().findBySQL("Select p from PharmaceuticalBillItem p where p.billItem.bill.id=" + getBill().getId());
+//            //   List<PharmaceuticalBillItem> tmp = getPharmaceuticalBillItemFacade().findByJpql("Select p from PharmaceuticalBillItem p where p.billItem.bill.id=" + getBill().getId());
 //            for (BillItem bi : getBill().getBillItems()) {
 //                double qty = bi.getPharmaceuticalBillItem().getQtyInUnit() + bi.getPharmaceuticalBillItem().getFreeQtyInUnit();
 //                getStoreBean().deductFromStock(bi.getPharmaceuticalBillItem().getStock(), qty);
@@ -1652,7 +1621,7 @@ public class StoreBillSearch implements Serializable {
             getBill().setCancelled(true);
             getBill().setCancelledBill(cb);
             getBillFacade().edit(getBill());
-            UtilityController.addSuccessMessage("Cancelled");
+            JsfUtil.addSuccessMessage("Cancelled");
 
             WebUser wb = getCashTransactionBean().saveBillCashInTransaction(cb, getSessionController().getLoggedUser());
             getSessionController().setLoggedUser(wb);
@@ -1660,7 +1629,7 @@ public class StoreBillSearch implements Serializable {
             printPreview = true;
 
         } else {
-            UtilityController.addErrorMessage("No Bill to cancel");
+            JsfUtil.addErrorMessage("No Bill to cancel");
         }
     }
 
@@ -1678,7 +1647,7 @@ public class StoreBillSearch implements Serializable {
 
             pharmacyCancelBillItemsAddStock(cb);
 
-            //        List<PharmaceuticalBillItem> tmp = getPharmaceuticalBillItemFacade().findBySQL("Select p from PharmaceuticalBillItem p where p.billItem.bill.id=" + getBill().getId());
+            //        List<PharmaceuticalBillItem> tmp = getPharmaceuticalBillItemFacade().findByJpql("Select p from PharmaceuticalBillItem p where p.billItem.bill.id=" + getBill().getId());
 //            for (PharmaceuticalBillItem ph : tmp) {
 //                getStoreBean().addToStock(ph.getStock(), ph.getQtyInUnit());
 //
@@ -1688,12 +1657,12 @@ public class StoreBillSearch implements Serializable {
             getBill().setCancelled(true);
             getBill().setCancelledBill(cb);
             getBillFacade().edit(getBill());
-            UtilityController.addSuccessMessage("Cancelled");
+            JsfUtil.addSuccessMessage("Cancelled");
 
             printPreview = true;
 
         } else {
-            UtilityController.addErrorMessage("No Bill to cancel");
+            JsfUtil.addErrorMessage("No Bill to cancel");
         }
     }
 
@@ -1808,23 +1777,7 @@ public class StoreBillSearch implements Serializable {
         return bills;
     }
 
-    public void createPreBillsForReturn() {
-        lazyBills = null;
-        String sql;
-        Map temMap = new HashMap();
-        sql = "select b from PreBill b where b.billType = :billType and b.referenceBill.billType=:refBillType "
-                + " and b.createdAt between :fromDate and :toDate and b.retired=false order by b.id desc ";
-
-        temMap.put("billType", BillType.StorePre);
-        temMap.put("refBillType", BillType.StoreSale);
-        temMap.put("toDate", toDate);
-        temMap.put("fromDate", fromDate);
-
-        List<Bill> lst = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
-        lazyBills = new LazyBill(lst);
-
-    }
-
+  
     public void updatePhIem() {
         if (currentBillItem == null) {
             return;
@@ -1921,7 +1874,7 @@ public class StoreBillSearch implements Serializable {
             temMap.put("toDate", toDate);
             temMap.put("fromDate", fromDate);
 
-            bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+            bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
             //   bills = getBillBean().billsRefundForTheDay(getFromDate(), getToDate(), BillType.PharmacyPre);
 
         }
@@ -1967,7 +1920,7 @@ public class StoreBillSearch implements Serializable {
                 } else {
                     sql = "select b from BilledBill b where b.retired=false and"
                             + " b.id in(Select bt.bill.id From BillItem bt Where bt.referenceBill.billType!=:btp and bt.referenceBill.billType!=:btp2) "
-                            + "and b.billType=:type and b.createdAt between :fromDate and :toDate and (upper(b.staff.person.name) like '%" + txtSearch.toUpperCase() + "%'  or upper(b.staff.person.phone) like '%" + txtSearch.toUpperCase() + "%'  or upper(b.insId) like '%" + txtSearch.toUpperCase() + "%') order by b.id desc  ";
+                            + "and b.billType=:type and b.createdAt between :fromDate and :toDate and ((b.staff.person.name) like '%" + txtSearch.toUpperCase() + "%'  or (b.staff.person.phone) like '%" + txtSearch.toUpperCase() + "%'  or (b.insId) like '%" + txtSearch.toUpperCase() + "%') order by b.id desc  ";
                 }
 
                 temMap.put("toDate", getToDate());
@@ -1975,7 +1928,7 @@ public class StoreBillSearch implements Serializable {
                 temMap.put("type", BillType.PaymentBill);
                 temMap.put("btp", BillType.ChannelPaid);
                 temMap.put("btp2", BillType.ChannelCredit);
-                bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP, 100);
+                bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 100);
 
                 if (bills == null) {
                     bills = new ArrayList<>();
@@ -2001,7 +1954,7 @@ public class StoreBillSearch implements Serializable {
                 temMap.put("type", BillType.PaymentBill);
                 temMap.put("btp", BillType.ChannelPaid);
                 temMap.put("btp2", BillType.ChannelCredit);
-                bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP, 100);
+                bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 100);
 
                 if (bills == null) {
                     bills = new ArrayList<>();
@@ -2100,7 +2053,7 @@ public class StoreBillSearch implements Serializable {
                 + " WHERE b.retired=false "
                 + " and b.bill=:b";
         hm.put("b", getBill());
-        billItems = billItemFacede.findBySQLWithoutCache(sql, hm);
+        billItems = billItemFacede.findByJpqlWithoutCache(sql, hm);
 
     }
 
@@ -2108,7 +2061,7 @@ public class StoreBillSearch implements Serializable {
         List<PharmaceuticalBillItem> tmp = new ArrayList<>();
         if (getBill() != null) {
             String sql = "SELECT b FROM PharmaceuticalBillItem b WHERE b.billItem.retired=false and b.billItem.bill.id=" + getBill().getId();
-            tmp = getPharmaceuticalBillItemFacade().findBySQL(sql);
+            tmp = getPharmaceuticalBillItemFacade().findByJpql(sql);
         }
 
         return tmp;
@@ -2117,7 +2070,7 @@ public class StoreBillSearch implements Serializable {
     public List<BillComponent> getBillComponents() {
         if (getBill() != null) {
             String sql = "SELECT b FROM BillComponent b WHERE b.retired=false and b.bill.id=" + getBill().getId();
-            billComponents = getBillCommponentFacade().findBySQL(sql);
+            billComponents = getBillCommponentFacade().findByJpql(sql);
             if (billComponents == null) {
                 billComponents = new ArrayList<>();
             }
@@ -2129,7 +2082,7 @@ public class StoreBillSearch implements Serializable {
         if (getBill() != null) {
             if (billFees == null || billForRefund == null) {
                 String sql = "SELECT b FROM BillFee b WHERE b.retired=false and b.bill.id=" + getBill().getId();
-                billFees = getBillFeeFacade().findBySQL(sql);
+                billFees = getBillFeeFacade().findByJpql(sql);
             }
         }
 
@@ -2145,7 +2098,7 @@ public class StoreBillSearch implements Serializable {
         String sql = "SELECT b FROM BillFee b WHERE b.retired=false and b.billItem=:b ";
         HashMap hm = new HashMap();
         hm.put("b", bi);
-        List<BillFee> ls = getBillFeeFacade().findBySQL(sql, hm);
+        List<BillFee> ls = getBillFeeFacade().findByJpql(sql, hm);
 
         if (ls == null) {
             ls = new ArrayList<>();
@@ -2158,7 +2111,7 @@ public class StoreBillSearch implements Serializable {
         if (getBill() != null) {
             if (billFees == null) {
                 String sql = "SELECT b FROM BillFee b WHERE b.retired=false and b.bill.id=" + getBill().getId();
-                billFees = getBillFeeFacade().findBySQL(sql);
+                billFees = getBillFeeFacade().findByJpql(sql);
             }
         }
 
@@ -2172,7 +2125,7 @@ public class StoreBillSearch implements Serializable {
     public List<BillFee> getPayingBillFees() {
         if (getBill() != null) {
             String sql = "SELECT b FROM BillFee b WHERE b.retired=false and b.bill.id=" + getBill().getId();
-            billFees = getBillFeeFacade().findBySQL(sql);
+            billFees = getBillFeeFacade().findByJpql(sql);
             if (billFees == null) {
                 billFees = new ArrayList<>();
             }

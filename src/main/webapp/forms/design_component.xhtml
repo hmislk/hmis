@@ -1,0 +1,54 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+
+        <ui:composition template="./index.xhtml">
+
+            <ui:define name="contents">
+
+                <h1>Design Component</h1>
+
+
+                <h:form class="form" >
+
+                    <p:outputLabel value="Name" for="txtName" class="form-label" ></p:outputLabel>
+                    <p:inputText id="txtName" value="#{designComponentController.current.name}" 
+                                 required="true" requiredMessage="Please enter a name" 
+                                 class="form-control">
+                    </p:inputText>
+
+                    <p:outputLabel value="Description" class="form-label"></p:outputLabel>
+                    <p:inputText value="#{designComponentController.current.description}" 
+                                 class="form-control"></p:inputText>
+                    
+                    
+                    <p:outputLabel value="Presentation Type" class="form-label"></p:outputLabel>
+                    <p:selectOneMenu value="#{designComponentController.current.componentPresentationType}" class="form-control">
+                        <f:selectItems value="#{designComponentController.componentPresentationTypes}"/>
+                    </p:selectOneMenu>
+                    
+                    <p:outputLabel value="Data Type" class="form-label"></p:outputLabel>
+                    <p:selectOneMenu value="#{designComponentController.current.componentDataType}" class="form-control">
+                        <f:selectItems value="#{designComponentController.componentDataTypes}"/>
+                    </p:selectOneMenu>
+
+                    <p:commandButton ajax="false" value="Save" action="#{designComponentController.saveDataEntryComponentOfForm()}" >
+                    </p:commandButton>
+
+
+                </h:form>
+
+
+
+            </ui:define>
+
+        </ui:composition>
+
+    </h:body>
+</html>

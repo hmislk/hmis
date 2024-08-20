@@ -1,170 +1,198 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
-      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:bi="http://java.sun.com/jsf/composite/bill"
-      xmlns:pe="http://primefaces.org/ui/extensions">
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill"
+      >
 
     <h:body>
 
-        <ui:composition template="/resources/template/template.xhtml">
+        <ui:composition template="/inward/inward_reports.xhtml">
 
-            <ui:define name="content">
+            <ui:define name="subcontent">
                 <h:form>
                     <p:panel header="Doctor Payment" >
-                        <p:panel>
-                            <h:panelGrid columns="2">
-                                <p:outputLabel value="From" />
-                                <p:calendar id="fdate" pattern="dd MMMM yyyy hh:mm:ss a" value="#{inwardStaffPaymentBillController.fromDate}"></p:calendar>
-                                <p:outputLabel value="To" />
-                                <p:calendar id="tdate" pattern="dd MMMM yyyy hh:mm:ss a" value="#{inwardStaffPaymentBillController.toDate}"></p:calendar>
-                                <h:outputLabel value="Admission Type : " ></h:outputLabel>
-                                <p:selectOneMenu  id="lstAdmissionType"   
-                                                  value="#{inwardStaffPaymentBillController.admissionType}" >
-                                    <f:selectItem itemLabel="All Admission Types"/>
-                                    <f:selectItems  value="#{admissionTypeController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}"></f:selectItems>
-                                </p:selectOneMenu>
-                                <h:outputLabel value="BHT Type : " ></h:outputLabel>
-                                <p:selectOneMenu   id="cmbBhtType" value="#{inwardStaffPaymentBillController.paymentMethod}"  >
-                                    <f:selectItem itemLabel="All BHT Types" />                           
-                                    <f:selectItems value="#{enumController.paymentMethodForAdmission}" />
-                                </p:selectOneMenu>
-                                <h:outputLabel value="Credit Company : " ></h:outputLabel>
-                                <p:selectOneMenu  id="lstCc"   value="#{inwardStaffPaymentBillController.institution}" >
-                                    <f:selectItem itemLabel="All Credit Companies"/>
-                                    <f:selectItems  value="#{creditCompanyController.creditCompanies}" var="cc" 
-                                                    itemValue="#{ccc}" itemLabel="#{ccc.name}"></f:selectItems>
-                                </p:selectOneMenu>
-                                <h:outputLabel  value="Speciality" ></h:outputLabel>
-                                <p:autoComplete style="min-width: 400px!important;" forceSelection="true" value="#{inwardStaffPaymentBillController.speciality}" id="acSpeciality"
-                                                completeMethod="#{specialityController.completeSpeciality}" var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
-                                                converter="specilityCon"   >
-                                </p:autoComplete>
-                                <h:outputLabel  value="Staff / Doctor" ></h:outputLabel>
-                                <p:autoComplete style="width: 400px;" forceSelection="true" value="#{inwardStaffPaymentBillController.currentStaff}" id="scStaff"
-                                                completeMethod="#{staffPaymentBillController.completeStaff}" var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
-                                                converter="stfcon"   >
-                                </p:autoComplete>
-                            </h:panelGrid>
-                            <p:watermark for="fdate" value="From Date" />
-                            <p:watermark for="tdate" value="To Date" />
-                            <p:watermark for="acSpeciality" value="Speciality" />
-                            <p:watermark for="scStaff" value="Staff / Doctor" />
-                        </p:panel>
-                        <p:panelGrid columns="4">
-                            <p:commandButton ajax="false" value="Fill By Paid Date" action="#{inwardStaffPaymentBillController.fillDocPayingBillFeeByCreatedDate}" onclick="onSubmitButton();"  />
-                            <p:commandButton ajax="false" value="Fill By Discharge Date" action="#{inwardStaffPaymentBillController.fillDocPayingBillFeeByDischargeDate}" onclick="onSubmitButton();"  />
-                            <p:commandButton value="Print" ajax="false" action="#" >
+                        <h:panelGrid columns="4" >
+
+                        </h:panelGrid>
+
+                        <div class="row w-100">
+                            <div class="col-6">
+                                <h:panelGrid columns="2">
+                                    <p:outputLabel value="From" />
+                                    <p:calendar id="fdate"
+                                                class="mx-4 w-100"
+                                                inputStyleClass="w-100"
+                                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                                value="#{inwardStaffPaymentBillController.fromDate}"></p:calendar>
+                                    <p:outputLabel value="To" />
+                                    <p:calendar  id="tdate" 
+                                                 class="mx-4 w-100"
+                                                 inputStyleClass="w-100"
+                                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                                 value="#{inwardStaffPaymentBillController.toDate}"></p:calendar>
+                                    <h:outputLabel value="Admission Type " ></h:outputLabel>
+                                    <p:selectOneMenu 
+                                        class="mx-4 w-100" 
+                                        id="lstAdmissionType"
+                                        value="#{inwardStaffPaymentBillController.admissionType}" >
+                                        <f:selectItem itemLabel="All Admission Types"/>
+                                        <f:selectItems  value="#{admissionTypeController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}"></f:selectItems>
+                                    </p:selectOneMenu>
+
+                                    <h:outputLabel value="BHT Type  " ></h:outputLabel>
+                                    <p:selectOneMenu class="mx-4 w-100"  id="cmbBhtType"
+
+                                                     value="#{inwardStaffPaymentBillController.paymentMethod}"  >
+                                        <f:selectItem itemLabel="All BHT Types" />                           
+                                        <f:selectItems value="#{enumController.paymentMethodForAdmission}" />
+                                    </p:selectOneMenu>
+
+                                    <h:outputLabel value="Credit Company  " ></h:outputLabel>
+
+                                    <p:selectOneMenu class="mx-4 w-100" id="lstCc"   value="#{inwardStaffPaymentBillController.institution}" >
+                                        <f:selectItem itemLabel="All Credit Companies"/>
+                                        <f:selectItems  value="#{creditCompanyController.creditCompanies}" var="ccc"
+                                                        itemValue="#{ccc}" itemLabel="#{ccc.name}"></f:selectItems>
+                                    </p:selectOneMenu>
+                                    <h:outputLabel  value="Speciality" ></h:outputLabel>
+                                    <p:autoComplete class="mx-4 w-100" forceSelection="true" value="#{inwardStaffPaymentBillController.speciality}" id="acSpeciality"
+                                                    completeMethod="#{specialityController.completeSpeciality}"
+                                                    inputStyleClass="w-100"
+                                                    var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
+                                                    >
+                                    </p:autoComplete>
+                                    <h:outputLabel  value="Staff / Doctor" ></h:outputLabel>
+                                    <p:autoComplete class="mx-4 w-100" 
+                                                    inputStyleClass="w-100"
+                                                    forceSelection="true" 
+                                                    value="#{inwardStaffPaymentBillController.currentStaff}" 
+                                                    id="scStaff"
+                                                    completeMethod="#{staffPaymentBillController.completeStaff}" 
+                                                    var="mys" itemLabel="#{mys.person.nameWithTitle}" 
+                                                    itemValue="#{mys}"
+                                                    >
+                                    </p:autoComplete>
+                                </h:panelGrid>
+                            </div>
+                        </div>
+
+                        
+
+                        <h:panelGrid columns="4" class="my-4" >
+                            <p:commandButton ajax="false" value="Fill By Paid Date" icon="fas fa-fill" class="ui-button-warning" action="#{inwardStaffPaymentBillController.fillDocPayingBillFeeByCreatedDate}"   />
+                            <p:commandButton ajax="false" value="Fill By Discharge Date" icon="fas fa-fill" class="ui-button-warning" action="#{inwardStaffPaymentBillController.fillDocPayingBillFeeByDischargeDate}"   />
+                            <p:commandButton value="Print" icon="fas fa-print" class="ui-button-info" ajax="false" action="#" >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
 
-                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
-                                <pe:exporter type="xlsx" target="tbl" fileName="doctor_payment_report" />
+                            <p:commandButton ajax="false" value="Excel" icon="fas fa-file-excel" class="ui-button-success"  >
+                                <p:dataExporter type="xlsx" target="tbl" fileName="doctor_payment_report" />
                             </p:commandButton>
 
 
-                        </p:panelGrid>
+                        </h:panelGrid>
                         <p:panel id="gpBillPreview">
-                            <p:panelGrid columns="3" style="width: 100%;">
-                                <p:dataTable id="tbl" value="#{inwardStaffPaymentBillController.billItems1}" var="bf" >
 
+                            <p:dataTable id="tbl" value="#{inwardStaffPaymentBillController.billItems1}" var="bf" >
+
+                                <f:facet name="header">
+
+                                    <h:outputLabel value="Doctor Payment #{inwardStaffPaymentBillController.currentStaff.person}"/>
+                                    <h:outputLabel value=" : "/>
+                                    <h:outputLabel value="#{inwardStaffPaymentBillController.fromDate}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                    </h:outputLabel>
+                                    <h:outputLabel value=" -- "/>
+                                    <h:outputLabel value="#{inwardStaffPaymentBillController.toDate}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                    </h:outputLabel>
+                                </f:facet>
+
+
+                                <!--                                    <p:column headerText="BHT">
+                                                                        <f:facet name="header">
+                                                                            <p:outputLabel value="BHT" />
+                                                                        </f:facet>
+                                                                        <p:outputLabel value="#{bf.paidForBillFee.bill.patientEncounter.bhtNo}" >
+                                                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}"  />
+                                                                        </p:outputLabel>
+                                                                    </p:column>-->
+
+
+
+                                <p:column headerText="Paid By">
                                     <f:facet name="header">
+                                        <p:outputLabel value="Paid By" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{bf.bill.creater.webUserPerson.nameWithTitle}" >
+                                    </p:outputLabel>
+                                </p:column>
 
-                                        <h:outputLabel value="Doctor Payment #{inwardStaffPaymentBillController.currentStaff.person}"/>
-                                        <h:outputLabel value=" : "/>
-                                        <h:outputLabel value="#{inwardStaffPaymentBillController.fromDate}">
-                                            <f:convertDateTime pattern="dd MMMM yyyy"/>
-                                        </h:outputLabel>
-                                        <h:outputLabel value=" -- "/>
-                                        <h:outputLabel value="#{inwardStaffPaymentBillController.toDate}">
-                                            <f:convertDateTime pattern="dd MMMM yyyy"/>
+                                <p:column headerText="Date/Time">
+                                    <f:facet name="header">
+                                        <p:outputLabel value="Date/Time" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{bf.createdAt}" >
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
+                                    </p:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Bill No">
+                                    <f:facet name="header">
+                                        <p:outputLabel value="Bill No" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{bf.bill.insId}" >
+                                    </p:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Paid For">
+                                    <f:facet name="header">
+                                        <p:outputLabel value="Paid For" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{bf.paidForBillFee.bill.insId}" >
+                                    </p:outputLabel>
+                                </p:column>
+
+                                <!--                                    <p:column headerText="Name">
+                                                                        <f:facet name="header">
+                                                                            <p:outputLabel value="Name" />
+                                                                        </f:facet>
+                                                                        <p:outputLabel value="#{bf.paidForBillFee.staff.person.nameWithTitle}" >
+                                                                        </p:outputLabel>
+                                                                    </p:column>
+                                
+                                                                    <p:column headerText="Speciality">
+                                                                        <f:facet name="header">
+                                                                            <p:outputLabel value="Speciality" />
+                                                                        </f:facet>
+                                                                        <p:outputLabel value="#{bf.paidForBillFee.speciality.name}" >
+                                                                        </p:outputLabel>
+                                                                    </p:column>-->
+
+
+                                <p:column headerText="Paid Amount" styleClass="averageNumericColumn">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Paid Amount" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{bf.paidForBillFee.feeValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </p:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{inwardStaffPaymentBillController.totalPaying}">
+                                            <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </f:facet>
 
 
-                                    <!--                                    <p:column headerText="BHT">
-                                                                            <f:facet name="header">
-                                                                                <p:outputLabel value="BHT" />
-                                                                            </f:facet>
-                                                                            <p:outputLabel value="#{bf.paidForBillFee.bill.patientEncounter.bhtNo}" >
-                                                                                <f:convertDateTime pattern="dd MM yyyy" />
-                                                                            </p:outputLabel>
-                                                                        </p:column>-->
+                                </p:column>
 
 
+                            </p:dataTable>
 
-                                    <p:column headerText="Paid By">
-                                        <f:facet name="header">
-                                            <p:outputLabel value="Paid By" />
-                                        </f:facet>
-                                        <p:outputLabel value="#{bf.bill.creater.webUserPerson.nameWithTitle}" >
-                                        </p:outputLabel>
-                                    </p:column>
-
-                                    <p:column headerText="Date/Time">
-                                        <f:facet name="header">
-                                            <p:outputLabel value="Date/Time" />
-                                        </f:facet>
-                                        <p:outputLabel value="#{bf.createdAt}" >
-                                            <f:convertDateTime pattern="dd MM yyyy hh:mm:ss a" />
-                                        </p:outputLabel>
-                                    </p:column>
-
-                                    <p:column headerText="Bill No">
-                                        <f:facet name="header">
-                                            <p:outputLabel value="Bill No" />
-                                        </f:facet>
-                                        <p:outputLabel value="#{bf.bill.insId}" >
-                                        </p:outputLabel>
-                                    </p:column>
-
-                                    <p:column headerText="Paid For">
-                                        <f:facet name="header">
-                                            <p:outputLabel value="Paid For" />
-                                        </f:facet>
-                                        <p:outputLabel value="#{bf.paidForBillFee.bill.insId}" >
-                                        </p:outputLabel>
-                                    </p:column>
-
-                                    <!--                                    <p:column headerText="Name">
-                                                                            <f:facet name="header">
-                                                                                <p:outputLabel value="Name" />
-                                                                            </f:facet>
-                                                                            <p:outputLabel value="#{bf.paidForBillFee.staff.person.nameWithTitle}" >
-                                                                            </p:outputLabel>
-                                                                        </p:column>
-                                    
-                                                                        <p:column headerText="Speciality">
-                                                                            <f:facet name="header">
-                                                                                <p:outputLabel value="Speciality" />
-                                                                            </f:facet>
-                                                                            <p:outputLabel value="#{bf.paidForBillFee.speciality.name}" >
-                                                                            </p:outputLabel>
-                                                                        </p:column>-->
-
-
-                                    <p:column headerText="Paid Amount" styleClass="averageNumericColumn">
-                                        <f:facet name="header">
-                                            <h:outputLabel value="Paid Amount" />
-                                        </f:facet>
-                                        <p:outputLabel value="#{bf.paidForBillFee.feeValue}">
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </p:outputLabel>
-                                        <f:facet name="footer">
-                                            <h:outputLabel value="#{inwardStaffPaymentBillController.totalPaying}">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputLabel>
-                                        </f:facet>
-
-
-                                    </p:column>
-
-
-                                </p:dataTable>
-                            </p:panelGrid>
                         </p:panel>
                     </p:panel>
                 </h:form>

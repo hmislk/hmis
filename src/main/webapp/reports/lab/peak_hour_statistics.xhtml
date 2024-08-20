@@ -1,0 +1,193 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/reports/index.xhtml">
+            <ui:define name="subcontent">
+
+                <h:form >
+
+
+
+                    <p:panel header="Peak Hour Statistic Report" >
+                        <h:panelGrid columns="5" >
+                            <p:outputLabel value="From (Billed) Date" >
+                            </p:outputLabel>
+                            <p:datePicker value="#{reportController.fromDate}" 
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
+                            <p:spacer width="20"></p:spacer>
+                            <p:outputLabel value="To (Billed) Date" >
+                            </p:outputLabel>
+                            <p:datePicker value="#{reportController.toDate}"
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
+
+
+
+                            <p:outputLabel value="Institution/Branch" >
+                            </p:outputLabel>
+                            <p:selectOneMenu 
+                                id="cmdInstitution"
+                                value="#{reportController.institution}"
+                                filter="true"
+                                >
+                                <f:selectItem itemLabel="All"></f:selectItem>
+                                <f:selectItems value="#{institutionController.items}"
+                                               var="i"
+                                               itemLabel="#{i.name}"
+                                               itemValue="#{i}"></f:selectItems>
+                                <p:ajax process="@this" update="cmdDepartment"></p:ajax>
+                            </p:selectOneMenu>
+
+                            <p:spacer></p:spacer>
+
+                            <p:outputLabel value="Laboratary Department">
+                            </p:outputLabel>
+                            <p:selectOneMenu 
+                                id="cmdDepartment"
+                                value="#{reportController.department}" 
+                                filter="true"
+                                >
+                                <f:selectItem itemLabel="All"></f:selectItem>
+                                <f:selectItems value="#{departmentController.listAllDepatrments()}"
+                                               var="d"
+                                               itemLabel="#{d.name}"
+                                               itemValue="#{d}"></f:selectItems>
+                            </p:selectOneMenu>
+
+                            <p:outputLabel value="Visit"></p:outputLabel>
+                            <p:selectOneMenu value="#{reportController.visitType}">
+                                <f:selectItem itemLabel="All visits"/>
+                            </p:selectOneMenu>
+
+                            <p:spacer></p:spacer>
+                            
+                            <p:outputLabel value="Process By"></p:outputLabel>
+                            <p:selectOneMenu value="#{reportController.processBy}">
+                                <f:selectItem itemLabel="Invoice Time"/>
+                            </p:selectOneMenu>
+                            
+                            <p:outputLabel value="Collecting Center Name"></p:outputLabel>
+                            <p:selectOneMenu value="#{reportController.ccName}">
+                                <f:selectItems value="#{collectingCentreController.items}"
+                                               var="i"
+                                               itemLabel="#{i.name}"
+                                               itemValue="#{i}" ></f:selectItems>
+                            </p:selectOneMenu>
+                            
+                            <p:spacer></p:spacer>
+                            
+                            <p:outputLabel value="Collecting Centre Route"></p:outputLabel>
+                            <p:selectOneMenu value="#{reportController.ccRoute}"
+                                             filter="true"
+                                             filterMatchMode="contains">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value="#{routeController.items}"
+                                               var="r"
+                                               itemLabel="#{r.name}"
+                                               itemValue="#{r}"
+                                              />
+                            </p:selectOneMenu>
+                            
+
+                            <p:commandButton ajax="false" value="Process" action="null" >
+                            </p:commandButton>
+
+                        </h:panelGrid>
+                        
+                        <h:panelGrid columns="2">
+                            <h:outputLabel value="From Date :  "/>
+                            <h:outputLabel value="#{reportController.fromDate}"  >
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                            </h:outputLabel>
+                            
+                            <h:outputLabel value="To Date :  "/>
+                            <h:outputLabel value="#{reportController.toDate}"  >
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                            </h:outputLabel>
+                            
+                            <h:outputLabel value="Institution/Branch :  "/>
+                            <h:outputLabel value="#{reportController.institution}"  >
+                                        
+                            </h:outputLabel>
+                        </h:panelGrid>
+
+
+                        <p:dataTable value="null" var="c">
+                            <p:column headerText="Date" >
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="0:00" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="4:00" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="5:00" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="6:00" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="0:00" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="4:00" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="5:00" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="6:00" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="7:00" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="8:00" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="9:00" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="10:00" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="11:00" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="12:00" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="13:00" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="14:00" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="15:00" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="16:00" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="17:00" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            
+
+                        </p:dataTable>
+
+                    </p:panel>
+
+                </h:form>
+
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

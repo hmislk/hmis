@@ -1,11 +1,11 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/resources/template/template.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
-                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
-                xmlns:pe="http://primefaces.org/ui/extensions"
+                
                 xmlns:p="http://primefaces.org/ui">
 
 
@@ -20,9 +20,9 @@
                     <h:outputLabel value="Error Detection" ></h:outputLabel>
                     <h:panelGrid columns="2">
                         <h:outputLabel value="From Date"/>                             
-                        <p:calendar value="#{pharmacyErrorChecking.fromDate}" pattern="dd MM yyyy hh:mm:ss a" placeholder="From Date" ></p:calendar>
+                        <p:calendar value="#{pharmacyErrorChecking.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  placeholder="From Date" ></p:calendar>
                         <h:outputLabel value="To Date " />
-                        <p:calendar value="#{pharmacyErrorChecking.toDate}" pattern="dd MM yyyy hh:mm:ss a" placeholder="To Date" ></p:calendar>
+                        <p:calendar value="#{pharmacyErrorChecking.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  placeholder="To Date" ></p:calendar>
                         <h:outputLabel value="Department"/> 
                         <p:autoComplete id="dep" value="#{pharmacyErrorChecking.department}"  
                                         completeMethod="#{departmentController.completeDept}" var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" 
@@ -53,7 +53,7 @@
                             <p:printer target="panelPrint" />
                         </p:commandButton>
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
-                            <pe:exporter type="xlsx" target="tbl" fileName="Category_report"  />
+                            <p:dataExporter type="xlsx" target="tbl" fileName="Category_report"  />
                         </p:commandButton>
                     </h:panelGrid>
 
@@ -84,11 +84,11 @@
                             <br></br>
                             <p:outputLabel value="From - " />
                             <p:outputLabel value="#{pharmacyErrorChecking.fromDate}" >
-                                <f:convertDateTime pattern="yyyy MM dd hh:mm:ss a" />
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                             </p:outputLabel>
                             <p:outputLabel value=" - To - " />
                             <p:outputLabel value="#{pharmacyErrorChecking.toDate}" >
-                                <f:convertDateTime pattern="yyyy MM dd hh:mm:ss a" />
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                             </p:outputLabel>
                             <br></br>
                             <p:outputLabel value="#{pharmacyErrorChecking.item.name} History" />

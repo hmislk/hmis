@@ -1,0 +1,113 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/admin/items/index.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui">
+
+
+    <ui:define name="item">
+
+        <h:panelGroup >
+            <h:form  >
+                <p:growl />
+                <p:focus id="selectFocus" for="lstSelect"  />
+                <p:focus id="detailFocus" for="txtName"/>
+
+
+
+                <p:panel header="Manage Category Tube" >
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p:defaultCommand target="btnAdd" ></p:defaultCommand>
+                            <p:commandButton id="btnAdd" value="Add" action="#{metadataSuperCategoryController.prepareAdd()}" class=" m-1 ui-button-success w-25"
+                                             process="btnAdd" update="gpDetail lstSelect">
+                               
+                            </p:commandButton>
+                            <p:commandButton id="btnDelete" onclick="if (!confirm('Are you sure you want to delete this record?'))
+                                        return false;" action="#{metadataSuperCategoryController.delete()}"  value="Delete" class=" m-1 ui-button-danger w-25" 
+                                        process="btnDelete" update="gpDetail lstSelect">
+                            </p:commandButton>
+                            <p:selectOneListbox  id="lstSelect" filter="true" class="w-100" value="#{metadataSuperCategoryController.current}">
+                                <f:selectItems  value="#{metadataSuperCategoryController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
+                                <p:ajax update="gpDetail" process="lstSelect" >
+                                </p:ajax>
+                            </p:selectOneListbox>
+                        </div>
+                        <div class="col-md-6">
+                            <p:panelGrid id="gpDetail" columns="1">
+                                <h:panelGrid id="gpDetailText" columns="2">
+                                    <h:outputText id="lblName" value="Name" ></h:outputText>
+                                    <h:inputText autocomplete="off" id="txtName" value="#{metadataSuperCategoryController.current.name}"  style="width: 450px;"></h:inputText>
+
+
+
+                                </h:panelGrid>
+
+                                <p:panel header="New Value" >
+                                    <table >
+                                        <tr>
+                                            <td>
+                                                <h:inputText id="txtNewMetaCatName" value="#{metadataSuperCategoryController.catName}" ></h:inputText>
+                                                
+                                            </td>
+                                            <td>
+
+                                                <p:commandButton id="btnAddNewCat"
+                                                                 ajax="false"
+                                                                 process="btnAddNewCat txtNewMetaCatName" 
+                                                                 value="Add New Value"
+                                                                 update="repeatSubCats txtNewMetaCatName"
+                                                                 action="#{metadataSuperCategoryController.addCatName()}" 
+                                                                 ></p:commandButton>
+
+                                            </td>
+                                        </tr>
+                                    </table>
+                                    <table >
+                                        <tr>
+                                            <th>
+                                                Already Added Values
+                                            </th>
+                                        </tr>
+                                        <tr>
+                                            <td >
+
+                                                <table >
+                                                    <ui:repeat id="repeatSubCats" value="#{metadataSuperCategoryController.metadatingaCategories}" var="mdc" >
+                                                        <tr>
+                                                            <tr>
+                                                                <td>
+                                                                    <h:inputText id="txtMdcName" value="#{mdc.name}" >
+                                                                        <f:ajax listener="#{metadataSuperCategoryController.editMetadataCategory(mdc)}" event="blur" 
+                                                                                execute="@this" 
+                                                                                ></f:ajax>
+                                                                    </h:inputText>
+                                                                </td>
+
+                                                            </tr>
+                                                        </tr>
+                                                    </ui:repeat>
+                                                </table>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </p:panel>
+
+                            </p:panelGrid>
+                            <p:commandButton id="btnSave" value="Save" action="#{metadataSuperCategoryController.saveSelected()}" class=" m-1 ui-button-warning w-25" process="btnSave gpDetail" update="lstSelect">
+                                   
+                                </p:commandButton>
+                        </div>
+                    </div>
+
+                </p:panel>
+            </h:form>
+
+        </h:panelGroup>
+
+    </ui:define>
+
+</ui:composition>

@@ -1,51 +1,53 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:pe="http://primefaces.org/ui/extensions">
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      >
 
     <h:body>
-        <ui:composition template="/resources/template/template.xhtml">
-            <ui:define name="content">
+        <ui:composition template="/inward/inward_reports.xhtml">
+            <ui:define name="subcontent">
                 <h:form><p:panel>
                         <f:facet name="header">
                             <h:outputLabel value="INWARD CREDIT DUE"/>
-
-                            <h:panelGrid columns="2">
+                        </f:facet>
+                        <h:panelGrid columns="2" class="my-2">
                                 <h:outputLabel value="From Date"/>
-                                <p:calendar id="fromDate" value="#{creditCompanyDueController.fromDate}" navigator="true" pattern="dd MMMM yyyy hh mm ss a" >
+                                <p:calendar class="mx-4 w-100" inputStyleClass="w-100" id="fromDate" value="#{creditCompanyDueController.fromDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                                     <f:ajax event="dateSelect" execute="toDate @this"  render="lst"/>
                                 </p:calendar>
-                                <h:outputLabel value="To Date"/>
-                                <p:calendar id="toDate" value="#{creditCompanyDueController.toDate}" navigator="true" pattern="dd MMMM yyyy hh mm ss a" >
+                                <h:outputLabel value="To Date &emsp;"/>
+                                <p:calendar class="mx-4 w-100" inputStyleClass="w-100" id="toDate" value="#{creditCompanyDueController.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                                     <f:ajax event="dateSelect" execute="@this fromDate"  render="lst"/>
                                 </p:calendar>
-                                <h:outputLabel value="With Out Due Update"/>
-                                <p:selectBooleanCheckbox value="#{creditCompanyDueController.withOutDueUpdate}" />
+                                <h:outputLabel value="With Out Due Update &emsp;"/>
+                                <p:selectBooleanCheckbox class="mx-4 w-100" value="#{creditCompanyDueController.withOutDueUpdate}" />
                                 <p:spacer width="100" height="1"/>                                
                             </h:panelGrid>
-                            <p:commandButton ajax="false" value="Process DUE" action="#{creditCompanyDueController.createInwardCreditDue()}" onclick="onSubmitButton();"/>
-                            <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" >
+                        <h:panelGrid columns="6" class="my-2">
+                            <p:commandButton class="ui-button-warning" icon="fas fa-cogs" ajax="false" value="Proces" action="#{creditCompanyDueController.createInwardCreditDue()}" />
+                            <p:commandButton class="ui-button-info mx-2" icon="fas fa-print" ajax="false" value="Print"  >
                                 <p:printer target="lst"  />
                             </p:commandButton>
 
-                            <p:commandButton actionListener="#{creditCompanyDueController.createInwardCreditDue()}" ajax="false" value="Excel" styleClass="noPrintButton" >
-                                <pe:exporter type="xlsx" target="lst" fileName="Due Search(Credit Company)" subTable="true" />
+                            <p:commandButton class="ui-button-success" icon="fas fa-file-excel" actionListener="#{creditCompanyDueController.createInwardCreditDue()}" ajax="false" value="Excel"  >
+                                <p:dataExporter type="xlsx" target="lst" fileName="Due Search(Credit Company)"  />
                             </p:commandButton> 
-                        </f:facet>
+                        </h:panelGrid>
                         <p:dataTable id="lst" value="#{creditCompanyDueController.institutionEncounters}" var="i">
                             <f:facet name="header">
                                 <h:outputLabel value="Due Search(Credit Company)"/>
-                                <h:outputLabel value=" From : " style="white-space: pre-line"/>
+                                <br />
+                                <h:outputLabel value=" From :&emsp;" style="white-space: pre-line"/>
                                 <h:outputLabel value="#{creditCompanyDueController.fromDate}">
-                                    <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
-                                <h:outputLabel value="&emsp;&emsp;To :"/>
+                                <h:outputLabel value="&emsp;&emsp;To :&emsp;"/>
                                 <h:outputLabel value="#{creditCompanyDueController.toDate}">
-                                    <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                             </f:facet>
                             <p:columnGroup type="header">
@@ -75,7 +77,7 @@
                                 </p:column>
                                 <p:column>                              
                                     <h:outputLabel value="#{b.dateOfDischarge}" >
-                                        <f:convertDateTime pattern="YYYY MM dd hh:mm:ss a" />
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                                     </h:outputLabel>                                
                                 </p:column>
                                 <p:column>                               
@@ -225,11 +227,10 @@
                                     </p:column>
                                 </p:row>
                             </p:columnGroup>
-
-                        </p:dataTable>
-                        <f:facet name="footer" >
-                            <h:outputLabel value="Printed By : #{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+                             <f:facet name="footer" >
+                            <h:outputLabel class="my-2" value="Printed By : #{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
                         </f:facet>
+                        </p:dataTable> 
                     </p:panel>
                 </h:form>
             </ui:define>

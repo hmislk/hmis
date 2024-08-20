@@ -1,20 +1,21 @@
 /*
- * MSc(Biomedical Informatics) Project
+ * Open Hospital Management Information System
  *
- * Development and Implementation of a Web-based Combined Data Repository of
- Genealogical, Clinical, Laboratory and Genetic Data
- * and
- * a Set of Related Tools
+ * Dr M H B Ariyaratne
+ * Acting Consultant (Health Informatics)
+ * (94) 71 5812399
+ * (94) 71 5812399
  */
 package com.divudi.bean.hr;
 
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.hr.DayType;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.entity.hr.PhDate;
 import com.divudi.facade.PhDateFacade;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -33,8 +34,8 @@ import javax.persistence.TemporalType;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- * Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
+ * Acting Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -47,7 +48,7 @@ public class PhDateController implements Serializable {
     CommonController commonController;
     @EJB
     private PhDateFacade ejbFacade;
-    @EJB
+
     CommonFunctions commonFunctions;
     private PhDate current;
     private List<PhDate> items = null;
@@ -62,7 +63,7 @@ public class PhDateController implements Serializable {
     public List<PhDate> completePhDate(String qry) {
         List<PhDate> a = null;
         if (qry != null) {
-            a = getFacade().findBySQL("select c from PhDate c where c.retired=false and upper(c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
+            a = getFacade().findByJpql("select c from PhDate c where c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
         }
         if (a == null) {
             a = new ArrayList<>();
@@ -100,9 +101,9 @@ public class PhDateController implements Serializable {
         m.put("fd", frDate);
         m.put("td", toDate);
 
-        phDates = getFacade().findBySQL(sql, m);
+        phDates = getFacade().findByJpql(sql, m);
         
-        commonController.printReportDetails(frDate, toDate, startTime, "HR/Reports/HR holidays/Holiday report(/faces/hr/hr_report_ph_date.xhtml)");
+        
 
     }
 
@@ -113,7 +114,7 @@ public class PhDateController implements Serializable {
         HashMap hm = new HashMap();
         hm.put("dtd", d);
 
-        Object obj = ejbFacade.findFirstObjectBySQL(sql, hm, TemporalType.DATE);
+        Object obj = ejbFacade.findFirstObjectByJpql(sql, hm, TemporalType.DATE);
 
         return obj != null ? (DayType) obj : null;
 
@@ -131,12 +132,12 @@ public class PhDateController implements Serializable {
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            UtilityController.addSuccessMessage("Saved Successfully");
+            JsfUtil.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
         getItems();
@@ -179,9 +180,9 @@ public class PhDateController implements Serializable {
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
@@ -200,7 +201,7 @@ public class PhDateController implements Serializable {
                     + " from PhDate j "
                     + " where j.retired=false "
                     + " order by j.phDate desc";
-            items = getFacade().findBySQL(j);
+            items = getFacade().findByJpql(j);
         }
         return items;
     }

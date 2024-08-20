@@ -1,0 +1,55 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui">
+
+    <h:body>
+
+        <ui:composition template="/emr/reports/index.xhtml">
+
+            <ui:define name="subcontent">
+                <h:form>
+
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between">
+                            <h5 class="card-title">Diagnoses</h5>
+                            <div>
+                                <p:commandButton ajax="false" icon="pi pi-file-excel" title="Export to Excel">
+                                    <p:dataExporter type="xls" target="dxTable" fileName="diagnoses" />
+                                </p:commandButton>
+                            </div>
+                        </div>
+
+                        <div class="card-body">
+                           
+                            <p:dataTable id="dxTable" var="item"
+                                         rendered="#{diagnosisController.items ne null}"
+                                         value="#{diagnosisController.items}" paginator="true" rows="10"
+                                         paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                         rowsPerPageTemplate="5,10,15" styleClass="table table-striped table-bordered">
+
+                                
+                                
+                                <p:column headerText="ID" filterBy="#{item.itemId}" 
+                                          filterMatchMode="contains" sortBy="#{itemId}">
+                                    <h:outputText value="#{item.itemId}" />
+                                </p:column>
+                                <p:column headerText="Name" filterBy="#{item.name}" filterMatchMode="contains" sortBy="#{item.name}">
+                                    <h:outputText value="#{item.name}" />
+                                </p:column>
+
+
+                            </p:dataTable>
+
+                        </div>
+                    </div>
+
+                </h:form>
+            </ui:define>
+
+        </ui:composition>
+
+    </h:body>
+</html>

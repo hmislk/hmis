@@ -1,0 +1,163 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+
+        <ui:composition template="/admin/items/index.xhtml">
+
+            <ui:define name="item">
+
+
+
+                <h:form>
+                    <p:growl id="msg"/>
+                    <p:panel style="height: 100vh">
+                        <f:facet name="header">
+                            <h:outputText value="Items and Services " />
+                        </f:facet>
+
+                        <p:panelGrid columns="3" >
+                            <h:outputText 
+                                value="Institution" ></h:outputText>
+                            <p:autoComplete 
+                                id="cmbIns" 
+                                value="#{itemController.filterInstitution}"
+                                completeMethod="#{institutionController.completeIns}"
+                                var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" >
+                            </p:autoComplete>
+                            <p:commandButton value="Fill Institution Items"
+                                             icon="fas fa-spinner"
+                                             class="ui-button-warning mx-2"
+                                             ajax="false"
+                                             action="#{itemController.fillInstitutionItems()}"
+                                             >
+                            </p:commandButton>
+
+
+                            <h:outputText 
+                                value="Department" ></h:outputText>
+                            <p:autoComplete 
+                                id="cmbDep" 
+                                value="#{itemController.filterDepartment}"
+                                completeMethod="#{departmentController.completeDept}"
+                                var="dep" itemLabel="#{dep.name}" itemValue="#{dep}" >
+                            </p:autoComplete>
+                            <p:commandButton value="Fill Department Items"
+                                             icon="fas fa-spinner"
+                                             class="ui-button-warning mx-2"
+                                             ajax="false"
+                                             action="#{itemController.fillDepartmentItems()}"
+                                             >
+                            </p:commandButton>
+
+
+
+                            <p:commandButton value="Fill Items without Institution"
+                                             icon="fas fa-spinner"
+                                             class="ui-button-warning mx-2"
+                                             ajax="false"
+                                             action="#{itemController.fillItemsWithoutInstitution()}"
+                                             >
+                            </p:commandButton>
+                            <p:commandButton value="Fill Items without Department"
+                                             icon="fas fa-spinner"
+                                             class="ui-button-warning mx-2"
+                                             ajax="false"
+                                             action="#{itemController.fillItemsWithoutDepartment()}"
+                                             >
+                            </p:commandButton>
+
+
+
+
+                            <p:commandButton 
+                                icon="fas fa-download"
+                                class="ui-button-success"
+                                value="Download" 
+                                ajax="false"
+                                >
+                                <p:dataExporter target="tblExport" type="xlsx" fileName="item list" ></p:dataExporter>
+                            </p:commandButton>
+
+
+
+                        </p:panelGrid>
+
+                        <p:dataTable value="#{itemController.filteredItems}" 
+                                     var="item"
+                                     paginator="true"
+                                     rows="10"
+                                     id="tblExport"
+                                     >
+                            <p:column sortBy="#{item.code}" filterBy="#{item.code}" filterMatchMode="contains">
+                                <f:facet name="header">
+                                    <h:outputText value="Service Code"/>
+                                </f:facet>
+                                <h:outputText value="#{item.code}"/>
+                            </p:column>
+                            <p:column sortBy="#{item.name}" filterBy="#{item.name}" filterMatchMode="contains">
+                                <f:facet name="header">
+                                    <h:outputText value="Service Name"/>
+                                </f:facet>
+                                <h:outputText value="#{item.name}"/>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="CC Name"/>
+                                </f:facet>
+                                <h:outputText value="#{itemController.filterInstitution.name}"/>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="CC Code"/>
+                                </f:facet>
+                                <h:outputText value="#{itemController.filterInstitution.code}"/>
+                            </p:column>
+                            <p:column sortBy="#{item.feeName}" filterBy="#{item.feeName}" filterMatchMode="contains" rendered="#{configOptionApplicationController.getBooleanValueByKey('List OPD Items with Item Fees in Manage Items')}">
+                                <f:facet name="header">
+                                    <h:outputText value="Fee Name"/>
+                                </f:facet>
+                                <h:outputText value="#{item.feeName}"/>
+                            </p:column>
+                            <p:column sortBy="#{item.feeValue}" rendered="#{configOptionApplicationController.getBooleanValueByKey('List OPD Items with Item Fees in Manage Items')}">
+                                <f:facet name="header">
+                                    <h:outputText value="Local Fee Value"/>
+                                </f:facet>
+                                <h:outputText value="#{item.feeValue}"/>
+                            </p:column>
+                            <p:column sortBy="#{item.feeValueForeign}" rendered="#{configOptionApplicationController.getBooleanValueByKey('List OPD Items with Item Fees in Manage Items')}">
+                                <f:facet name="header">
+                                    <h:outputText value="Foreign Fee Value"/>
+                                </f:facet>
+                                <h:outputText value="#{item.feeValueForeign}"/>
+                            </p:column>
+
+
+                            <p:column  sortBy="#{item.total}" filterBy="#{item.total}" filterMatchMode="contains">
+                                <f:facet name="header">
+                                    <h:outputText value="Total Local Fee"/>
+                                </f:facet>
+                                <h:outputText value="#{item.total}">
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </h:outputText>
+                            </p:column>
+
+                        </p:dataTable>
+
+                    </p:panel>
+                </h:form>
+
+
+
+
+            </ui:define>
+
+        </ui:composition>
+
+    </h:body>
+</html>

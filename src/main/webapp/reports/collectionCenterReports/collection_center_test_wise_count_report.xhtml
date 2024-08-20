@@ -1,0 +1,115 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/reports/index.xhtml">
+            <ui:define name="subcontent">
+
+                <h:form >
+                    <p:panel header="Collection Center Test Wise Count Report" >
+                        <h:panelGrid columns="5" >
+                            <p:outputLabel value="From Date" >
+                            </p:outputLabel>
+                            <p:datePicker value="#{reportController.fromDate}" 
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
+                            <p:spacer width="20"></p:spacer>
+                            <p:outputLabel value="To Date" >
+                            </p:outputLabel>
+                            <p:datePicker value="#{reportController.toDate}"
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
+
+                            <p:outputLabel value="Institution/Branch" >
+                            </p:outputLabel>
+                            <p:selectOneMenu 
+                                id="cmdInstitution"
+                                value="#{reportController.institution}"
+                                filter="true"
+                                >
+                                <f:selectItem itemLabel="All"></f:selectItem>
+                                <f:selectItems value="#{institutionController.items}"
+                                               var="i"
+                                               itemLabel="#{i.name}"
+                                               itemValue="#{i}"></f:selectItems>
+
+                            </p:selectOneMenu>
+
+                            <p:spacer></p:spacer>
+
+                            <p:outputLabel value="Collecting Center Name"></p:outputLabel>
+                            <p:selectOneMenu value="#{reportController.collectingCentre}">
+                                <f:selectItem itemLabel="Select" ></f:selectItem>
+                                <f:selectItems value="#{collectingCentreController.items}"
+                                               var="i"
+                                               itemLabel="#{i.name}"
+                                               itemValue="#{i}" ></f:selectItems>
+                            </p:selectOneMenu>
+
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Process" 
+                                action="#{reportController.processCollectingCentreTestWiseCountReport}" >
+
+                            </p:commandButton>
+
+                        </h:panelGrid>
+
+                        <h:panelGrid columns="2">
+
+
+                            <h:outputLabel value="From Date :  "/>
+                            <h:outputLabel value="#{reportController.fromDate}"  >
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                            </h:outputLabel>
+
+                            <h:outputLabel value="To Date :  "/>
+                            <h:outputLabel value="#{reportController.toDate}"  >
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                            </h:outputLabel>
+
+                            <h:outputLabel value="CC Name :  "/>
+                            <h:outputLabel value="#{reportController.collectingCentre}"  ></h:outputLabel>
+
+
+                        </h:panelGrid>
+
+
+                        <p:dataTable value="#{reportController.testWiseCounts}" var="c" rowIndexVar="rowIndex">
+                            <p:column headerText="S. No" >
+                                <h:outputText value="#{rowIndex + 1}" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Test Name" >
+                                <h:outputText value="#{c.testName}" ></h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Count" >
+                                <h:outputText value="#{c.count}" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Hos Fee" >
+                                <h:outputText value="#{c.hosFee}" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="CC Fee" >
+                                <h:outputText value="#{c.ccFee}" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Professional Fee" >
+                                <h:outputText value="#{c.proFee}" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Total Amount" >
+                                <h:outputText value="#{c.total}" ></h:outputText>
+                            </p:column>
+
+                        </p:dataTable>
+
+                    </p:panel>
+
+                </h:form>
+
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

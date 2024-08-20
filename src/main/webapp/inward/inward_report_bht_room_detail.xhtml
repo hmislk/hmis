@@ -1,26 +1,26 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:bi="http://java.sun.com/jsf/composite/inward/bill"
-      xmlns:pe="http://primefaces.org/ui/extensions">
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:bi="http://xmlns.jcp.org/jsf/composite/inward/bill"
+      >
 
     <h:body>
 
-        <ui:composition template="/resources/template/template.xhtml">
+        <ui:composition template="/inward/inward_reports.xhtml">
 
-            <ui:define name="content">
+            <ui:define name="subcontent">
                 <h:form>
                     <p:panel header="Room Charge Report By BHT Wise" styleClass="alignTop" >
                         <h:panelGrid columns="2">
                             <h:outputLabel value="From Date"/>
-                            <p:calendar navigator="true" id="fromDate" value="#{inwardReportControllerBht.reportKeyWord.fromDate}"  pattern="dd MMMM yyyy hh mm ss a" >
+                            <p:calendar navigator="true" id="fromDate" value="#{inwardReportControllerBht.reportKeyWord.fromDate}"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                             </p:calendar>
                             <h:outputLabel value="To Date"/>
-                            <p:calendar navigator="true" id="toDate" value="#{inwardReportControllerBht.reportKeyWord.toDate}"  pattern="dd MMMM yyyy hh mm ss a" >
+                            <p:calendar navigator="true" id="toDate" value="#{inwardReportControllerBht.reportKeyWord.toDate}"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                             </p:calendar>
                             <h:outputText value="Admission Type" ></h:outputText>
                             <p:selectOneMenu  id="lstSelect"   value="#{inwardReportControllerBht.reportKeyWord.admissionType}" >
@@ -33,7 +33,7 @@
                                 <f:selectItems value="#{enumController.paymentMethodForAdmission}" />
                             </p:selectOneMenu>
                             <h:outputLabel value="BHT No  " ></h:outputLabel>
-                            <p:autoComplete converter="admis" widgetVar="aPt" id="acPt" forceSelection="true" 
+                            <p:autoComplete  widgetVar="aPt" id="acPt" forceSelection="true" 
                                             value="#{inwardReportControllerBht.reportKeyWord.patientEncounter}"
                                             completeMethod="#{admissionController.completePatientAll}" 
                                             var="myItem" itemValue="#{myItem}" 
@@ -66,8 +66,8 @@
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
 
-                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();"  >
-                                <pe:exporter type="xlsx" target="tbl" fileName="newly_added_report"  />
+                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;"   >
+                                <p:dataExporter type="xlsx" target="tbl" fileName="newly_added_report"  />
                             </p:commandButton>  
                         </h:panelGrid>
 
@@ -83,11 +83,11 @@
                                 <h:outputLabel value="BHT No : #{inwardReportControllerBht.reportKeyWord.patientEncounter.patient.person.name}" rendered="#{inwardReportControllerBht.reportKeyWord.patientEncounter ne null}" style=" white-space:pre-line;"/>
                                 <h:outputLabel value="From : " style=" white-space:pre-line;"/>
                                 <h:outputLabel  value="#{inwardReportControllerBht.reportKeyWord.fromDate}" >
-                                    <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>                          
                                 <h:outputLabel value="&emsp;&emsp;To :"/>
                                 <h:outputLabel  value="#{inwardReportControllerBht.reportKeyWord.toDate}" >
-                                    <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                             </f:facet>
                             <p:column>

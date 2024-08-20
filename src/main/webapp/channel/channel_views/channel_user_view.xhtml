@@ -1,0 +1,140 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="index.xhtml">
+            <ui:define name="subcontent">
+                <h:form>
+                    <p:panel>
+                        <f:facet name="header">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <p:outputLabel value="User View"/>    
+                                <div class="d-flex gap-1">
+                                    <p:commandButton
+                                        ajax="false"
+                                        value="Process"
+                                        icon="fas fa-refresh"
+                                        class="ui-button-warning mx-1"
+                                        action="#{channelReportController.fillDoctorView()}">
+                                    </p:commandButton>
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        class="ui-button-secondary"
+                                        icon="fa-solid fa-arrow-left"
+                                        action="#{bookingControllerViewScope.navigateToChannelBookingFromMenuByDate()}" 
+                                        value="Back to Channel Booking" >
+                                    </p:commandButton>
+                                    
+                                </div>
+                            </div>
+
+
+                        </f:facet>
+                        <div class="d-flex justify-content-end gap-2 mb-4">
+                            <p:commandButton 
+                                value="Print" 
+                                ajax="fasle" 
+                                icon="fa fa-print"
+                                class="ui-button-info"
+                                action="#">
+                                <p:printer target="userView"/>
+                            </p:commandButton>
+
+                        </div>
+                        <p:dataTable id="userView" value="#{channelReportController.doctorViewSessions}" var="bs" sortBy="#{bs.bill.billClass}">
+                            <f:facet name="header">
+                                <div style="text-align: center;">
+                                    <p:outputLabel value="#{sessionController.loggedUser.institution.name}" />
+                                    <br/>
+                                    <p:outputLabel value="#{sessionController.loggedUser.institution.address}" />
+                                    <br/>
+                                    <p:outputLabel value="User View" style="font-size: 22px; font-weight: 700;" />
+                                </div>
+
+                                <div class="d-flex gap-2">
+                                    <p:outputLabel value="Consultant : "/>
+                                    <p:outputLabel value="#{bookingController.staff.person.nameWithTitle}"/>
+                                </div>
+
+                                <div class="d-flex gap-2">
+                                    <p:outputLabel value="Session Name : "/>
+                                    <h:outputLabel value="#{bookingController.selectedSessionInstance.name}" />
+                                </div>
+
+                                <div class="d-flex gap-2">
+                                    <p:outputLabel value="Date : "/>
+                                    <h:outputLabel value="#{bookingController.selectedSessionInstance.sessionDate}" >
+                                        <f:convertDateTime pattern="dd-MM-yyyy"/>
+                                    </h:outputLabel>
+                                </div>
+
+                            </f:facet>
+                            <p:column headerText="No">#{bs.serialNo}</p:column>
+                            <p:column headerText="Patient Name">#{bs.bill.patient.person.nameWithTitle}</p:column>
+                            <p:column headerText="Fee">
+                                <h:outputLabel value="#{bs.doctorFee.billedFee.feeValue}"/>
+                            </p:column>
+                            <p:column headerText="Repay">
+                                <h:outputLabel value="#{bs.doctorFee.prevFee.feeValue}"/>
+                            </p:column>
+                            <p:column headerText="Net Fee">
+                                <h:outputLabel value="#{bs.doctorFee.billedFee.feeValue+bs.doctorFee.prevFee.feeValue}"/>
+                            </p:column>
+                            <p:column headerText="Tax">
+                                <h:outputLabel value="#{bs.tax.billedFee.feeValue}"/>
+                            </p:column>
+                            <p:column headerText="Paid or Not">
+                                <p:outputLabel rendered="#{bs.bill.billType eq 'ChannelCredit'}" value="Credit" style="color: red;"/>
+                                <p:outputLabel rendered="#{bs.bill.billType eq 'ChannelPaid'}" value="Paid"/>
+                            </p:column>   
+                            <p:column headerText="Booked User">
+                                <h:outputLabel value="#{bs.bill.creater.webUserPerson.nameWithTitle}">                        
+                                </h:outputLabel>
+                            </p:column>
+                            <p:column headerText="Booked Date">
+                                <h:outputLabel value="#{bs.bill.createdAt}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                </h:outputLabel>
+                            </p:column>
+                            <p:column headerText="Booked Time">
+                                <h:outputLabel value="#{bs.createdAt}">
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
+                                </h:outputLabel>
+                            </p:column>
+                            <p:summaryRow >
+                                <p:column colspan="2"/>
+                                <p:column style="text-align: right;">
+                                    <h:outputLabel value="#{channelReportController.billedTotalFee}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>                                            
+                                </p:column>
+                                <p:column style="text-align: right;">
+                                    <h:outputLabel value="#{channelReportController.repayTotalFee}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>                                            
+                                </p:column>
+                                <p:column style="text-align: right;">
+                                    <h:outputLabel value="#{channelReportController.billedTotalFee+channelReportController.repayTotalFee}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>                                            
+                                </p:column>
+                                <p:column style="text-align: right;">
+                                    <h:outputLabel value="#{channelReportController.taxTotal}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>                                            
+                                </p:column>
+                            </p:summaryRow>
+
+                        </p:dataTable>
+
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

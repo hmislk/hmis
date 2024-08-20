@@ -1,17 +1,17 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/resources/template/template.xhtml"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://java.sun.com/jsf/core"
-                xmlns:h="http://java.sun.com/jsf/html">
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:h="http://xmlns.jcp.org/jsf/html">
 
     <ui:define name="content">
         <h:form>
             <h:panelGrid columns="4" id="spec">     
                 <p:panel header="Speciality">       
                     <h:panelGrid columns="1">
-                        <p:selectOneListbox converter="specilityCon" id="acSpeciality" value="#{bookingPastController.speciality}" style="height: 300px; width: 300px; padding: 2px; margin: auto;" >
+                        <p:selectOneListbox  id="acSpeciality" value="#{bookingPastController.speciality}" style="height: 300px; width: 300px; padding: 2px; margin: auto;" >
                             <f:selectItems value="#{specialityController.items}" var="s" itemLabel="#{s.name}" itemValue="#{s}" />
                             <f:ajax  event="change" execute="@this" render="scStaff tbl bSession "  /> 
                         </p:selectOneListbox>
@@ -20,14 +20,14 @@
 
                 <p:panel header="Consultant">       
                     <h:panelGrid columns="1">
-                        <p:selectOneListbox converter="stfcon" id="scStaff" value="#{bookingPastController.staff}" style="height: 300px; width: 300px; padding: 2px; margin: auto;" >
+                        <p:selectOneListbox  id="scStaff" value="#{bookingPastController.staff}" style="height: 300px; width: 300px; padding: 2px; margin: auto;" >
                             <f:selectItems value="#{bookingPastController.consultants}" var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}" />
                             <f:ajax  event="change" execute="@this" render="tbl bSession"  /> 
                         </p:selectOneListbox>
                     </h:panelGrid>
                 </p:panel>
                 <p:panel>
-                    <p:calendar id="date"  value="#{bookingPastController.date}" navigator="false" pattern="dd MMMM yyyy" >
+                    <p:calendar id="date"  value="#{bookingPastController.date}" navigator="false" pattern="#{sessionController.applicationPreference.longDateFormat}" >
                         <f:ajax event="dateSelect" execute="scStaff"  render="tbl bSession"/>
                     </p:calendar>
                 </p:panel>
@@ -38,7 +38,7 @@
                                             style="height: 150px; width: 300px; padding: 2px; margin: auto;" >
 
                             <f:selectItems value="#{bookingPastController.serviceSessions}" var="mys" itemLabel="#{mys.name}" itemValue="#{mys}" />
-                            <f:ajax  event="change" execute="@this scStaff date" render=":#{p:component('bSession')} "  /> 
+                            <f:ajax  event="change" execute="@this scStaff date" render=":#{p:resolveFirstComponentWithId('bSession',view).clientId} "  /> 
                         </p:selectOneListbox>
                     </h:panelGrid>
 

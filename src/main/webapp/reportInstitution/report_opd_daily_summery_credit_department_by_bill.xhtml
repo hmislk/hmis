@@ -1,190 +1,188 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
-                template="/resources/template/template.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/reportInstitution/report_own.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://java.sun.com/jsf/core"
-                xmlns:ca="http://java.sun.com/jsf/composite/cashSummery"
-                xmlns:pe="http://primefaces.org/ui/extensions">
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ca="http://xmlns.jcp.org/jsf/composite/cashSummery"
+                >
 
-    <ui:define name="content">
+    <ui:define name="subcontent">
         <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
-        <h:form id="panelPrint" styleClass="noBorder summeryBorder">
+        <h:form>
 
-            <p:panel  style="border: none;">
+            <p:panel>
                 <f:facet name="header" >
-
-                    <p:outputLabel value="#{creditSummeryController.institution.name} "/> 
-                    <p:outputLabel value=" Credit Summary - Detail"/><br/>
-
-                    <h:panelGrid columns="2" styleClass="noPrintButton">
-
-                        <h:outputLabel value="From Date"/>
-                        <p:calendar id="frmDate" value="#{creditSummeryController.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" >
-                        </p:calendar>
-
-                        <h:outputLabel value="To Date"/>
-                        <p:calendar id="toDate" value="#{creditSummeryController.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" >
-                        </p:calendar>
-                        <h:outputLabel value="Credit Company"/>
-                        <p:autoComplete styleClass="noPrintButton" id="creditCom" forceSelection="true" value="#{creditSummeryController.institution}" 
-                                        completeMethod="#{creditCompanyController.completeCredit}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
-
-                        </p:autoComplete>  
-                    </h:panelGrid>
-                    <h:panelGrid columns="5" styleClass="noPrintButton">
-                        <p:spacer width="100" height="1"/>   
-                        <p:commandButton id="btnRefresh" value="Refresh" ajax="false"  styleClass="noPrintButton" style="float: right;" actionListener="#{creditSummeryController.makeNull}" />
-                        <p:defaultCommand target="btnRefresh"/>
-
-                        <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" style="float: right;" >
-                            <p:printer target="panelPrint" />
-                        </p:commandButton>
-
-                        <p:commandButton actionListener="#{creditSummeryController.makeNull}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
-                            <pe:exporter subTable="true" type="xlsx" target="safrin" fileName="credit_dep_by_bill"  />
-                        </p:commandButton>
-
-                    </h:panelGrid>
+                    <p:outputLabel value=" Credit Summary - Report by Bill"/><br/>
                 </f:facet>
 
-            </p:panel>            
-            <p:dataTable id="safrin" value="#{creditSummeryController.dailyCreditByBill}" var="d" >  
-                <f:facet name="header">
-                    <h:outputLabel value="Report By Bill"/>
-                    <h:outputLabel value="#{creditSummeryController.institution.name}" style="white-space: pre-line"/>
-                    <br/>
-                    <h:outputLabel value="From  :  "/>
-                    <h:outputLabel value="#{creditSummeryController.fromDate}"  >
-                        <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a" />
-                    </h:outputLabel>
-                    <p:spacer width="30" height="1"/>
-                    <h:outputLabel value="To "/>
-                    <h:outputLabel value="#{creditSummeryController.toDate}"  >
-                        <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a" />
-                    </h:outputLabel>
-                </f:facet>
-                <p:columnGroup type="header">
-                    <p:row>
+                <h:panelGrid columns="2" class="my-2" >
 
-                        <p:column headerText="Bill No"/>                      
-                        <p:column headerText="Ref. Bill"/>                      
-                        <p:column headerText="Patient Name"/>
-                        <p:column headerText="Discount"/>
-                        <p:column headerText="Vat"/>
-                        <p:column headerText="Net Total"/>
-                        <p:column headerText="Vat Plus Net Total"/>
+                    <h:outputLabel value="From Date"/>
+                    <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="frmDate" value="#{creditSummeryController.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                    </p:calendar>
 
-                    </p:row>
-                </p:columnGroup>
-                <p:subTable value="#{d.bills}" var="b" >
+                    <h:outputLabel value="To Date"/>
+                    <p:calendar class="w-100 mx-4" inputStyleClass="w-100 my-1" id="toDate" value="#{creditSummeryController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                    </p:calendar>
+                    <h:outputLabel value="Credit Company"/>
+                    <p:autoComplete class="w-100 mx-4" inputStyleClass="w-100"  id="creditCom" forceSelection="true" value="#{creditSummeryController.institution}" 
+                                    completeMethod="#{creditCompanyController.completeCredit}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
 
-                    <f:facet name="header" >
-                        <p:outputLabel value="#{d.department.name}" />                                  
-                    </f:facet>
-                    <p:column>
-                        <h:outputLabel value="#{b.insId}" style="color: red;" rendered="#{(b.cancelled or b.refunded)}" />
-                        <h:outputLabel value="#{b.insId}" rendered="#{(!b.cancelled and !b.refunded)}" />
-                    </p:column>                      
-                    <p:column>
-                        <h:outputLabel value="#{b.billedBill.insId} - " />
-                        <h:outputLabel value="#{b.billedBill.createdAt}" >
-                            <f:convertDateTime pattern="dd MM yyyy hh:mm:ss a" />
-                        </h:outputLabel>
-                    </p:column>                      
-                    <p:column>
-                        <h:outputLabel value="#{b.patient.person.nameWithTitle}"/>
-                    </p:column>
-                    <p:column style="text-align: right;">        
-                        <h:outputLabel value="#{b.discount}" style="text-align: right;">
-                            <f:convertNumber pattern="#,##0.00"/>
-                        </h:outputLabel>                                        
-                    </p:column>
-                    <p:column style="text-align: right;">                               
-                        <h:outputLabel value="#{b.vat}">
-                            <f:convertNumber pattern="#,##0.00"/>
-                        </h:outputLabel>
-                    </p:column>
-                    <p:column style="text-align: right;">                               
-                        <h:outputLabel value="#{b.netTotal}" >
-                            <f:convertNumber pattern="#,##0.00"/>
-                        </h:outputLabel>
-                    </p:column>
-                    <p:column style="text-align: right;">                               
-                        <h:outputLabel value="#{b.netTotal+b.vat}">
-                            <f:convertNumber pattern="#,##0.00"/>
-                        </h:outputLabel>
-                    </p:column>
+                    </p:autoComplete>  
+                </h:panelGrid>
+                <h:panelGrid columns="5" class="my-2" >
+                    
+                    <p:commandButton class="ui-button-warning" icon="fas fa-cogs" id="btnRefresh" value="Process" ajax="false" actionListener="#{creditSummeryController.makeNull}" />
+                    <p:defaultCommand target="btnRefresh"/>
 
-                    <p:columnGroup type="footer">
-                        <p:row>
-                            <p:column colspan="3">
-                                <f:facet name="footer">
-                                    <h:outputLabel value="#{d.department.name} Total :"/>
-                                </f:facet>
+                    <p:commandButton class="ui-button-info mx-2" icon="fas fa-print" ajax="false" value="Print" >
+                        <p:printer target="panelPrint" />
+                    </p:commandButton>
+
+                    <p:commandButton class="ui-button-success" icon="fas fa-file-excel" actionListener="#{creditSummeryController.makeNull}" ajax="false" value="Excel" >
+                        <p:dataExporter  type="xlsx" target="safrin" fileName="credit_dep_by_bill"  />
+                    </p:commandButton>
+
+                </h:panelGrid>
+
+                <p:panel  id="panelPrint" styleClass="noBorder summeryBorder">
+                    <p:dataTable id="safrin" value="#{creditSummeryController.dailyCreditByBill}" var="d" >  
+                        <f:facet name="header">
+                            <p:outputLabel value="#{creditSummeryController.institution.name}" style="white-space: pre-line"/>
+                            <h:outputLabel value="&emsp; Report By Bill"/>
+                            <br/>
+                            <h:outputLabel value="From  : &nbsp; "/>
+                            <h:outputLabel value="#{creditSummeryController.fromDate}"  >
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
+                            </h:outputLabel>
+                            <p:spacer width="30" height="1"/>
+                            <h:outputLabel value="&emsp;To : &nbsp; "/>
+                            <h:outputLabel value="#{creditSummeryController.toDate}"  >
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
+                            </h:outputLabel>
+                        </f:facet>
+                        <p:columnGroup type="header">
+                            <p:row>
+
+                                <p:column headerText="Bill No"/>                      
+                                <p:column headerText="Ref. Bill"/>                      
+                                <p:column headerText="Patient Name"/>
+                                <p:column headerText="Discount" style="text-align: right;"/>
+                                <p:column headerText="VAT" style="text-align: right;"/>
+                                <p:column headerText="Net Total" style="text-align: right;"/>
+                                <p:column headerText="VAT Plus Net Total" style="text-align: right;"/>
+
+                            </p:row>
+                        </p:columnGroup>
+                        <p:subTable value="#{d.bills}" var="b" >
+
+                            <f:facet name="header" >
+                                <p:outputLabel value="#{d.department.name}" />                                  
+                            </f:facet>
+                            <p:column>
+                                <h:outputLabel value="#{b.insId}" style="color: red;" rendered="#{(b.cancelled or b.refunded)}" />
+                                <h:outputLabel value="#{b.insId}" rendered="#{(!b.cancelled and !b.refunded)}" />
+                            </p:column>                      
+                            <p:column>
+                                <h:outputLabel value="#{b.billedBill.insId} - " />
+                                <h:outputLabel value="#{b.billedBill.createdAt}" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
+                                </h:outputLabel>
+                            </p:column>                      
+                            <p:column>
+                                <h:outputLabel value="#{b.patient.person.nameWithTitle}"/>
                             </p:column>
-
-                            <p:column style="text-align: right;">
-                                <f:facet name="footer">
-                                    <h:outputLabel value="#{d.discountTotal}">
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </h:outputLabel>
-                                </f:facet>
+                            <p:column style="text-align: right;">        
+                                <h:outputLabel value="#{b.discount}" style="text-align: right;">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>                                        
                             </p:column>
-                            <p:column style="text-align: right;">
-                                <f:facet name="footer">
-                                    <h:outputLabel value="#{d.vatTotal}">
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </h:outputLabel>
-                                </f:facet>
-                            </p:column>
-                            <p:column style="text-align: right;">
-                                <f:facet name="footer">
-                                    <h:outputLabel value="#{d.netTotal}">
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </h:outputLabel>
-                                </f:facet>
-                            </p:column>
-                            <p:column style="text-align: right;">
-                                <f:facet name="footer">
-                                    <h:outputLabel value="#{d.vatTotal+d.netTotal}">
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </h:outputLabel>
-                                </f:facet>
-                            </p:column>                           
-                        </p:row>
-                    </p:columnGroup>
-                </p:subTable>
-                <p:columnGroup type="footer">
-                    <p:row>
-
-                        <p:column footerText="Total Collection" style="font-weight: bold;" />   
-
-                        <p:column footerText="#{creditSummeryController.departmentTotalByBillWithVat}" colspan="6" style="text-align: right; font-weight: bold;">
-                            <f:facet name="footer">
-                                <h:outputLabel value="#{creditSummeryController.departmentTotalByBillWithVat}" style="float: right;">
+                            <p:column style="text-align: right;">                               
+                                <h:outputLabel value="#{b.vat}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
-                            </f:facet>
-                        </p:column>
-                    </p:row>
-                </p:columnGroup>
-                <f:facet name="footer" >
-                    <h:outputLabel value="Printed By : #{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
-                </f:facet>
+                            </p:column>
+                            <p:column style="text-align: right;">                               
+                                <h:outputLabel value="#{b.netTotal}" >
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                            </p:column>
+                            <p:column style="text-align: right;">                               
+                                <h:outputLabel value="#{b.netTotal+b.vat}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                            </p:column>
 
-                <!--                <f:facet name="footer">
-                                    <h:outputLabel value="Total Collection" />
-                                    <h:outputLabel value="#{creditSummeryController.departmentTotalByBill}" style="float: right;">
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </h:outputLabel>
-                                </f:facet>-->
+                            <p:columnGroup type="footer">
+                                <p:row>
+                                    <p:column colspan="3">
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{d.department.name} Total :"/>
+                                        </f:facet>
+                                    </p:column>
 
-            </p:dataTable>
+                                    <p:column style="text-align: right;">
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{d.discountTotal}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column style="text-align: right;">
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{d.vatTotal}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column style="text-align: right;">
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{d.netTotal}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column style="text-align: right;">
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{d.vatTotal+d.netTotal}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>                           
+                                </p:row>
+                            </p:columnGroup>
+                        </p:subTable>
+                        <p:columnGroup type="footer">
+                            <p:row>
 
+                                <p:column footerText="Total Collection" style="font-weight: bold;" />   
 
+                                <p:column footerText="#{creditSummeryController.departmentTotalByBillWithVat}" colspan="6" style="text-align: right; font-weight: bold;">
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{creditSummeryController.departmentTotalByBillWithVat}" style="float: right;">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                            </p:row>
+                        </p:columnGroup>
+                        <f:facet name="footer" >
+                            <h:outputLabel value="Printed By : #{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+                        </f:facet>
 
+                        <!--                <f:facet name="footer">
+                                            <h:outputLabel value="Total Collection" />
+                                            <h:outputLabel value="#{creditSummeryController.departmentTotalByBill}" style="float: right;">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputLabel>
+                                        </f:facet>-->
+
+                    </p:dataTable>
+
+                </p:panel>         
+            </p:panel>         
 
         </h:form>
     </ui:define>

@@ -5,6 +5,7 @@
 package com.divudi.entity;
 
 import com.divudi.data.SymanticHyrachi;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
@@ -15,12 +16,11 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Inheritance;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Temporal;
 import javax.persistence.Transient;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
@@ -28,7 +28,7 @@ import javax.xml.bind.annotation.XmlTransient;
  *
  */
 @Entity
-@XmlRootElement
+@Inheritance
 public class Category implements Serializable {
 
     static final long serialVersionUID = 1L;
@@ -37,42 +37,58 @@ public class Category implements Serializable {
     Long id;
     //Main Properties
     String name;
-    String tName;
-    String sName;
     String description;
     int orderNo;
     //Created Properties
     @ManyToOne
+    
     WebUser creater;
+    
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date createdAt;
     //Retairing properties
-    boolean retired;
+    
+    private boolean retired;
     @ManyToOne
+    
     WebUser retirer;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    
     Date retiredAt;
+    
     String retireComments;
+    
     Double dblValue;
+    
     Long longValue;
+    
     @ManyToOne
     Category parentCategory;
+    
     Double saleMargin = 0.0;
+    
     Double wholeSaleMargin = 0.0;
-    @OneToMany(mappedBy = "category")
+
+    private Double pointesForThousand;
+    
+    @OneToMany(mappedBy = "category", fetch = FetchType.LAZY)
     List<Item> items;
     String code;
     @OneToMany(mappedBy = "parentCategory", fetch = FetchType.LAZY, cascade = CascadeType.REFRESH)
     List<Category> childCategories;
     @Enumerated
     SymanticHyrachi symanticType;
+
     @Transient
     private String entityClass;
+    
     boolean filled;
+    private double profitMargin;
     @ManyToOne
-    Institution institution;
+    private PaymentScheme paymentScheme;
+
     @ManyToOne
-    Department department;
+    private Institution institution;
 
     // @ManyToOne
     //   private Department department;
@@ -80,15 +96,15 @@ public class Category implements Serializable {
         return filled;
     }
 
+    public String getIdStr() {
+        if (this.id == null) {
+            return null;
+        }
+        return id + "";
+    }
+
     public void setFilled(boolean filled) {
         this.filled = filled;
-    }
-    
-    
-    
-
-    public String getCategoryClass() {
-        return this.getClass().toString();
     }
 
     public SymanticHyrachi getSymanticType() {
@@ -99,7 +115,6 @@ public class Category implements Serializable {
         this.symanticType = symanticType;
     }
 
-    @XmlTransient
     public List<Category> getChildCategories() {
         return childCategories;
     }
@@ -109,6 +124,9 @@ public class Category implements Serializable {
     }
 
     public String getCode() {
+        if (code == null || code.trim().equals("")) {
+            code = CommonFunctions.nameToCode(name);
+        }
         return code;
     }
 
@@ -199,14 +217,6 @@ public class Category implements Serializable {
         this.retireComments = retireComments;
     }
 
-    public boolean isRetired() {
-        return retired;
-    }
-
-    public void setRetired(boolean retired) {
-        this.retired = retired;
-    }
-
     public Date getRetiredAt() {
         return retiredAt;
     }
@@ -263,25 +273,6 @@ public class Category implements Serializable {
         return name;
     }
 
-    public String gettName() {
-        return tName;
-    }
-
-    public void settName(String tName) {
-        this.tName = tName;
-    }
-
-    public String getsName() {
-        //////System.out.println("get name");
-        return sName;
-    }
-
-    public void setsName(String sName) {
-        //////System.out.println("set name");
-        this.sName = sName;
-    }
-
-    @XmlTransient
     public List<Item> getItems() {
         return items;
     }
@@ -307,12 +298,36 @@ public class Category implements Serializable {
         this.institution = institution;
     }
 
-    public Department getDepartment() {
-        return department;
+    public boolean isRetired() {
+        return retired;
     }
 
-    public void setDepartment(Department department) {
-        this.department = department;
+    public void setRetired(boolean retired) {
+        this.retired = retired;
+    }
+
+    public double getProfitMargin() {
+        return profitMargin;
+    }
+
+    public void setProfitMargin(double profitMargin) {
+        this.profitMargin = profitMargin;
+    }
+
+    public PaymentScheme getPaymentScheme() {
+        return paymentScheme;
+    }
+
+    public void setPaymentScheme(PaymentScheme paymentScheme) {
+        this.paymentScheme = paymentScheme;
+    }
+
+    public Double getPointesForThousand() {
+        return pointesForThousand;
+    }
+
+    public void setPointesForThousand(Double pointesForThousand) {
+        this.pointesForThousand = pointesForThousand;
     }
 
     

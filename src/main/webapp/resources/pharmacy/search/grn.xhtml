@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:cc="http://java.sun.com/jsf/composite"
-      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:f="http://java.sun.com/jsf/core">
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <!-- INTERFACE -->
     <cc:interface>
@@ -16,7 +16,7 @@
             <h:outputLabel value="GRN No"/> 
             <h:outputLabel value="Po No"/> 
             <h:outputLabel value="Invoice No"/> 
-            <h:outputLabel value="Dealor Name"/>
+            <h:outputLabel value="Supplier Name"/>
             <h:outputLabel value="Net Total"/>
              <h:outputLabel value="Item Name"/>
              <h:outputLabel value="Item Code"/>
@@ -29,6 +29,11 @@
             <p:inputText autocomplete="off" value="#{searchController.searchKeyword.code}"/>
             
         </h:panelGrid>
+        
+          
+        <p:commandButton ajax="false" value="Download" >
+            <p:dataExporter target="tblBills" type="xlsx" fileName="bill_list" ></p:dataExporter>
+        </p:commandButton>
 
         <p:spacer height="30"/>
         <p:dataTable rowIndexVar="i" id="tblBills" value="#{searchController.bills}" var="bill" >
@@ -58,7 +63,7 @@
             <p:column headerText="Invoice Date" >
                 <h:commandLink action="/pharmacy/pharmacy_reprint_grn" >
                     <h:outputLabel  value="#{bill.invoiceDate}">
-                        <f:convertDateTime pattern="dd MM yyyy"/>
+                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                     </h:outputLabel>                    
                     <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
                 </h:commandLink>

@@ -1,70 +1,75 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition template="/resources/template/template.xhtml"
+<ui:composition template="/pharmacy/pharmacy_analytics.xhtml"
                 xmlns="http://www.w3.org/1999/xhtml"
-                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:h="http://java.sun.com/jsf/html"
-                xmlns:f="http://java.sun.com/jsf/core">
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core">
 
-    <ui:define name="content">
+    <ui:define name="subcontent">
         <h:form>
             <p:panel header="Pharmaceutical Item With Distributor" >
 
-                <p:commandButton ajax="false" value="Refresh"
-                                 action="#{pharmacySaleReport.createItemsDistributersWithDistributer}"/>
+                <div class="row mb-3">
+                    <div class="col-md-12">
+                        <p:commandButton 
+                            style="float: right"
+                            class="ui-button-warning"
+                            icon="fa fa-refresh"
+                            ajax="false" 
+                            value="Process"
+                            action="#{pharmacySaleReportController.createItemsDistributersWithDistributer}">
+                        </p:commandButton>
+                    </div>
+                </div>
+                
+                <p:dataTable 
+                    value="#{pharmacySaleReportController.distributerWithDestributorItems}" 
+                    var="di"
+                    paginatorPosition="bottom"
+                    rows="10"
+                    paginator="true"
+                    paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                    rowsPerPageTemplate="20,30,50"
 
-
-                <p:panel id="paItems">
-                    <p:dataTable value="#{pharmacySaleReport.distributerWithDestributorItems}" var="di"
-                                 
-                                 
-                                 rows="10"
-                                     paginator="true"
-                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                     rowsPerPageTemplate="5,10,15"
-                                 
-                                 >
+                    >
+                    <f:facet name="header">
+                        <p:outputLabel value="Pharmaceutical Item With Distributor" />
+                    </f:facet>
+                    
+                    <p:columnGroup type="header" >
+                        <p:row>
+                            <p:column headerText="Category" />
+                            <p:column headerText="Name" />
+                            <p:column headerText="Code" />
+                            <p:column headerText="Generic" />
+                        </p:row>
+                    </p:columnGroup>
+                    
+                    <p:subTable value="#{di.itemsDistributors}" var="i"  >
                         <f:facet name="header">
-                            <p:outputLabel value="Pharmaceutical Item With Distributor" />
+                            <p:outputLabel value="Distributor Name : #{di.distributor.name}" />
                         </f:facet>
-                        <p:columnGroup type="header" >
-                            <p:row>
-                                <p:column headerText="Category" />
-                                <p:column headerText="Name" />
-                                <p:column headerText="Code" />
-                                <p:column headerText="Generic" />
-                            </p:row>
-                        </p:columnGroup>
-                        <p:subTable value="#{di.itemsDistributors}" var="i"  >
-                            <f:facet name="header">
-                                <p:outputLabel value="Distributor Name : #{di.distributor.name}" />
-                            </f:facet>
-                            <p:column headerText="Category">
-                                <p:outputLabel value="#{i.item.category.name}"></p:outputLabel>
-                            </p:column>
-                            <p:column headerText="Category">
-                                <p:outputLabel value="#{i.institution.name}"></p:outputLabel>
-                            </p:column>
-                            <p:column headerText="Name">
-                                <p:outputLabel value="#{i.item.name}"></p:outputLabel>
-                            </p:column>
-                            <p:column headerText="Code" >
-                                <p:outputLabel value="#{i.item.code}"></p:outputLabel>
-                            </p:column>
-                            <p:column headerText="Generic">
-                                <p:outputLabel value="#{i.item.vmp.name}"></p:outputLabel>
-                            </p:column>
-                        </p:subTable>
-                    </p:dataTable>
-                </p:panel>
-
-
+                        <p:column headerText="Category">
+                            <p:outputLabel value="#{i.item.category.name}"></p:outputLabel>
+                        </p:column>
+                        <p:column headerText="Category">
+                            <p:outputLabel value="#{i.institution.name}"></p:outputLabel>
+                        </p:column>
+                        <p:column headerText="Name">
+                            <p:outputLabel value="#{i.item.name}"></p:outputLabel>
+                        </p:column>
+                        <p:column headerText="Code" >
+                            <p:outputLabel value="#{i.item.code}"></p:outputLabel>
+                        </p:column>
+                        <p:column headerText="Generic">
+                            <p:outputLabel value="#{i.item.vmp.name}"></p:outputLabel>
+                        </p:column>
+                   </p:subTable>
+                    
+                </p:dataTable>
             </p:panel>
         </h:form>
-
-
     </ui:define>
-
-
 </ui:composition>

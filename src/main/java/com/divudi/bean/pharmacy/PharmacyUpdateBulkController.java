@@ -1,12 +1,12 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Open Hospital Management Information System
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.CommonController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.DepartmentType;
 import com.divudi.entity.Category;
 import com.divudi.entity.pharmacy.Amp;
@@ -51,7 +51,7 @@ public class PharmacyUpdateBulkController implements Serializable {
     public void fillPharmacyItems() {
 
         if (category == null) {
-            UtilityController.addErrorMessage("Select Category....");
+            JsfUtil.addErrorMessage("Select Category....");
             return;
         }
 
@@ -68,7 +68,7 @@ public class PharmacyUpdateBulkController implements Serializable {
         m.put("dep", DepartmentType.Store);
         m.put("cat", category);
 
-        amps = getAmpFacade().findBySQL(sql, m);
+        amps = getAmpFacade().findByJpql(sql, m);
     }
 
     public void fillPharmacyDiscountDisAllowedItems() {
@@ -87,24 +87,24 @@ public class PharmacyUpdateBulkController implements Serializable {
 
         m.put("dep", DepartmentType.Store);
 
-        amps = getAmpFacade().findBySQL(sql, m);
+        amps = getAmpFacade().findByJpql(sql, m);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Administration/Bulk update/Update bulk discount allowed(/faces/pharmacy/pharmacy_update_discount_allowed_bulk.xhtml)");
+        
     }
 
     public void updatePharmacyItemCategory() {
         if (amps == null || amps.isEmpty()) {
-            UtilityController.addErrorMessage("Nothing To Update.");
+            JsfUtil.addErrorMessage("Nothing To Update.");
             return;
         }
 
         if (updateCategory == null) {
-            UtilityController.addErrorMessage("Select Update Category...");
+            JsfUtil.addErrorMessage("Select Update Category...");
             return;
         }
 
         if (category.equals(updateCategory)) {
-            UtilityController.addErrorMessage("Nothing To Update.Same Category...");
+            JsfUtil.addErrorMessage("Nothing To Update.Same Category...");
             return;
         }
 
@@ -119,13 +119,13 @@ public class PharmacyUpdateBulkController implements Serializable {
             ////System.out.println("**********************************");
         }
 
-        UtilityController.addSuccessMessage("Updated...");
+        JsfUtil.addSuccessMessage("Updated...");
 
     }
 
     public void updatePharmacyItemDiscountAllowed() {
         if (amps == null || amps.isEmpty()) {
-            UtilityController.addErrorMessage("Nothing To Update.");
+            JsfUtil.addErrorMessage("Nothing To Update.");
             return;
         }
 
@@ -140,7 +140,7 @@ public class PharmacyUpdateBulkController implements Serializable {
             ////System.out.println("**********************************");
         }
 
-        UtilityController.addSuccessMessage("Updated...");
+        JsfUtil.addSuccessMessage("Updated...");
 
     }
 
@@ -150,7 +150,7 @@ public class PharmacyUpdateBulkController implements Serializable {
             a.setDiscountAllowed(Boolean.TRUE);
             getAmpFacade().edit(a);
         }
-        UtilityController.addSuccessMessage("Updated...");
+        JsfUtil.addSuccessMessage("Updated...");
     }
 
     public AmpFacade getAmpFacade() {

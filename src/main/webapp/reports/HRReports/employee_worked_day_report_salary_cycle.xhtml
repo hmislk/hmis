@@ -1,0 +1,167 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/reports/index.xhtml">
+            <ui:define name="subcontent">
+                <h:form >
+                    <p:panel header="Employee Worked Day Report (Salary Cycle)" >
+                        <p:panelGrid columns="4" class="w-100">
+
+                            <p:outputLabel value="Salary Cycle" ></p:outputLabel>
+                            <p:selectOneMenu 
+
+                                value="" 
+                                filter="true"
+                                class="w-100 ">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value=""
+                                               var="d"
+                                               itemLabel=""
+                                               itemValue="" ></f:selectItems>
+                            </p:selectOneMenu>
+
+                            <p:outputLabel value="Institute" ></p:outputLabel>
+                            <p:selectOneMenu 
+                                id="cmdFromInstitution"
+                                value="" 
+                                filter="true"
+                                class="w-100 ">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value=""
+                                               var="d"
+                                               itemLabel=""
+                                               itemValue="" ></f:selectItems>
+                            </p:selectOneMenu>
+
+                            <p:outputLabel value="Department" >
+                            </p:outputLabel>
+                            <p:selectOneMenu 
+                                id="cmdFromDepartment"
+                                value="#{reportController.fromDepartment}" 
+                                filter="true"
+                                class="w-100 ">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value="#{departmentController.getInsDepartments(reportController.fromInstitution)}"
+                                               var="d"
+                                               itemLabel="#{d.name}"
+                                               itemValue="#{d}" ></f:selectItems>
+                            </p:selectOneMenu>
+
+                            <p:outputLabel value="Employee" >
+                            </p:outputLabel>
+                            <p:selectOneMenu value="" filter="true" class="w-100 ">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value=""
+                                               var="i"
+                                               itemLabel=""
+                                               itemValue=""
+                                               ></f:selectItems>
+                            </p:selectOneMenu>
+
+
+                            <p:outputLabel value="Staff Category " >
+                            </p:outputLabel>
+                            <p:selectOneMenu value="" filter="true"  class="w-100 " >
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value=""
+                                               var="i"
+                                               itemLabel=""
+                                               itemValue=""
+                                               ></f:selectItems>
+                            </p:selectOneMenu>
+
+                            <p:outputLabel value="Staff Designation " >
+                            </p:outputLabel>
+                            <p:selectOneMenu value="" filter="true"  class="w-100 " >
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value=""
+                                               var="i"
+                                               itemLabel=""
+                                               itemValue=""
+                                               ></f:selectItems>
+                            </p:selectOneMenu>
+
+                            <p:outputLabel value="Staff Roster " >
+                            </p:outputLabel>
+                            <p:selectOneMenu value="" filter="true"  class="w-100 " >
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value=""
+                                               var="i"
+                                               itemLabel=""
+                                               itemValue=""
+                                               ></f:selectItems>
+                            </p:selectOneMenu>
+                            
+                        </p:panelGrid>
+
+                        <div class="d-flex align-items-center">
+                            <p:selectBooleanCheckbox id="myCheckbox" value="" />
+                            <p:outputLabel for="myCheckbox" value="Aditional Details" class="ml-2" />
+                            <p:commandButton class="m-2" ajax="false" value="Process" action="#{reportController.processLabTestCount()}" >
+                            </p:commandButton>
+                            <p:commandButton class="m-2" ajax="false" value="Download"
+                                             action="#{reportController.downloadLabTestCount}">
+                            </p:commandButton>
+                            <p:commandButton class="m-2" ajax="false" value="Print"
+                                             action="#{reportController.downloadLabTestCount}">
+                            </p:commandButton>
+                        </div>
+
+
+                        <p:dataTable id="tbl" value="" 
+                                     paginator="true"
+                                     rows="10">
+                            <p:column headerText="Staff Code">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Staff">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Worked Days ">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Worked Days Before ">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Worked Days This">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Worked Days Additional ">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="No Pay Leave">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Late No Pay Days ">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Merchantile Days ">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Poya Days ">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Off Days">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Remarks ">
+                                <h:outputText value="" />
+                            </p:column>
+
+                        </p:dataTable>
+
+
+                    </p:panel>
+
+                </h:form>
+
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

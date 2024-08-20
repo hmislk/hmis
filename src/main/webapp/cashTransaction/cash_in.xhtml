@@ -1,12 +1,12 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/resources/template/template.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
-                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:bi="http://java.sun.com/jsf/composite/cashTransaction">
+                xmlns:bi="http://xmlns.jcp.org/jsf/composite/cashTransaction">
     <ui:define name="content">
         <h:panelGroup >
             <h:form  >
@@ -64,7 +64,7 @@
                                 <h:outputLabel value="Summary"/>
                             </f:facet>
                             <h:panelGrid columns="2">                                
-                                <p:commandButton ajax="false" value="Cal Cash Value" action="#{cashInController.calTotal()}" onclick="onSubmitButton();"/>
+                                <p:commandButton ajax="false" value="Cal Cash Value" action="#{cashInController.calTotal()}" />
                                 <p:inputText autocomplete="off" value="#{cashInController.bill.cashTransaction.cashValue}"
                                              disabled="#{cashInController.referenceBill ne null}">
                                     <f:convertNumber pattern="#000.00"/>
@@ -155,15 +155,15 @@
                         </p:panel>
 
                         <p:panel>
-                            <p:commandButton ajax="false" value="Settle" action="#{cashInController.settle()}" onclick="onSubmitButton();"/>
-                            <p:commandButton ajax="false" value="Clear" action="#{cashInController.makeNull()}" onclick="onSubmitButton();"/>
+                            <p:commandButton ajax="false" value="Settle" action="#{cashInController.settle()}" />
+                            <p:commandButton ajax="false" value="Clear" action="#{cashInController.makeNull()}" />
                         </p:panel>
                     </h:panelGrid>
                 </p:panel>
 
                 <p:panel rendered="#{cashInController.printPreview}">
                     <p:commandButton ajax="false" value="New Bill"
-                                    actionListener="#{cashInController.makeNull()}" onclick="onSubmitButton();"/>
+                                    actionListener="#{cashInController.makeNull()}" />
 
                     <bi:cashIn  bill="#{cashInController.bill}"/>
                 </p:panel>

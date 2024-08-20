@@ -1,21 +1,21 @@
 /*
- * MSc(Biomedical Informatics) Project
+ * Open Hospital Management Information System
  *
- * Development and Implementation of a Web-based Combined Data Repository of
- Genealogical, Clinical, Laboratory and Genetic Data
- * and
- * a Set of Related Tools
+ * Dr M H B Ariyaratne
+ * Acting Consultant (Health Informatics)
+ * (94) 71 5812399
+ * (94) 71 5812399
  */
 package com.divudi.bean.inward;
 
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.inward.SurgeryBillType;
 import com.divudi.ejb.BillNumberGenerator;
-import com.divudi.ejb.CommonFunctions;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
@@ -32,6 +32,7 @@ import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.EncounterComponentFacade;
 import com.divudi.facade.PatientItemFacade;
 import com.divudi.facade.TimedItemFeeFacade;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -50,8 +51,8 @@ import org.apache.commons.beanutils.BeanUtils;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- * Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -72,8 +73,7 @@ public class InwardTimedItemController implements Serializable {
     private PatientItemFacade patientItemFacade;
     @EJB
     private TimedItemFeeFacade timedItemFeeFacade;
-    /////////////////
-    @EJB
+
     private CommonFunctions commonFunctions;
     @Inject
     private InwardBeanController inwardBean;
@@ -188,7 +188,7 @@ public class InwardTimedItemController implements Serializable {
         m.put("fd", frmDate);
         m.put("td", toDate);
 
-        items = getPatientItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        items = getPatientItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
         total = 0.0;
         totalMins = 0.0;
@@ -206,16 +206,16 @@ public class InwardTimedItemController implements Serializable {
         }
 
         if (getBatchBill().getPatientEncounter() == null) {
-            UtilityController.addErrorMessage("Admission ?");
+            JsfUtil.addErrorMessage("Admission ?");
             return true;
         }
         if (getBatchBill().getProcedure().getItem() == null) {
-            UtilityController.addErrorMessage("Select Surgery");
+            JsfUtil.addErrorMessage("Select Surgery");
             return true;
         }
 
         if (getBatchBill().getPatientEncounter().isPaymentFinalized()) {
-            UtilityController.addErrorMessage("Final Payment is Finalized");
+            JsfUtil.addErrorMessage("Final Payment is Finalized");
             return true;
         }
 
@@ -229,7 +229,7 @@ public class InwardTimedItemController implements Serializable {
         }
 
         if (getTimedEncounterComponent().getBillFee().getPatientItem().getItem() == null) {
-            UtilityController.addErrorMessage("Select Timed Service ");
+            JsfUtil.addErrorMessage("Select Timed Service ");
             return;
         }
 
@@ -287,11 +287,11 @@ public class InwardTimedItemController implements Serializable {
         }
         if (bf.getPatientItem().getToTime() != null) {
             if (bf.getPatientItem().getToTime().before(bf.getPatientItem().getFromTime())) {
-                UtilityController.addErrorMessage("Service Not Finalize check Service Start Time & End Time");
+                JsfUtil.addErrorMessage("Service Not Finalize check Service Start Time & End Time");
                 return;
             }
-            if (bf.getPatientItem().getToTime().getTime()==bf.getPatientItem().getFromTime().getTime()) {
-                UtilityController.addErrorMessage("Service Start Time & End Time Can't Be Equal");
+            if (bf.getPatientItem().getToTime().getTime() == bf.getPatientItem().getFromTime().getTime()) {
+                JsfUtil.addErrorMessage("Service Start Time & End Time Can't Be Equal");
                 return;
             }
         }
@@ -346,6 +346,10 @@ public class InwardTimedItemController implements Serializable {
             patientItem.setRetiredAt(new Date());
             patientItem.setRetired(true);
             getPatientItemFacade().edit(patientItem);
+            
+            createPatientItems();
+            
+            JsfUtil.addSuccessMessage("Removed successfully.");
         }
     }
 
@@ -480,7 +484,7 @@ public class InwardTimedItemController implements Serializable {
 
         getBillBean().updateBatchBill(getBatchBill());
 
-        UtilityController.addSuccessMessage("Surgery Detail Successfull Updated");
+        JsfUtil.addSuccessMessage("Surgery Detail Successfull Updated");
 
         //makeNull();
     }
@@ -515,12 +519,32 @@ public class InwardTimedItemController implements Serializable {
 
     }
 
+    public String navigateToAddInwardTimedServicesFromMenu() {
+        makeNull();
+        return "/inward/inward_timed_service_consume";
+    }
+
+    public String navigateToAddInwardTimedServicesFromInpatientProfile() {
+        return "/inward/inward_timed_service_consume";
+    }
+
+    public String navigateToAddInwardTimedServiceForTheatreFromMenu() {
+        makeNull();
+        return "/theater/inward_timed_service_consume_surgery";
+    }
+
+    public String navigateToAddInwardTimedServiceForTheatreFromInpatientProfile() {
+        makeNull();
+        return "/theater/inward_timed_service_consume_surgery";
+    }
+
     private boolean errorCheck() {
         if (getCurrent().getPatientEncounter() == null) {
-            UtilityController.addErrorMessage("Please Select BHT");
+            JsfUtil.addErrorMessage("Please Select BHT");
             return true;
         }
         if (getCurrent().getItem() == null) {
+            JsfUtil.addErrorMessage("Please Select Service");
             return true;
         }
         return false;
@@ -531,7 +555,10 @@ public class InwardTimedItemController implements Serializable {
             return;
         }
         TimedItemFee timedItemFee = getInwardBean().getTimedItemFee((TimedItem) getCurrent().getItem());
-        double count = getInwardBean().calCount(timedItemFee, getCurrent().getFromTime(), getCurrent().getToTime());
+        if (getCurrent().getToTime() == null) {
+            getCurrent().setToTime(new Date());
+        }
+        double count = getInwardBean().calCount(timedItemFee, getCurrent().getPatientEncounter().getDateOfAdmission(), getCurrent().getToTime());
 
         getCurrent().setServiceValue(count * timedItemFee.getFee());
         getCurrent().setCreater(getSessionController().getLoggedUser());
@@ -547,6 +574,8 @@ public class InwardTimedItemController implements Serializable {
         current.setItem(null);
 
         createPatientItems();
+        
+        JsfUtil.addSuccessMessage("Added Successfully.");
 
     }
 
@@ -554,11 +583,11 @@ public class InwardTimedItemController implements Serializable {
         PatientItem temPi;
         if (pic.getToTime() != null) {
             if (pic.getToTime().before(pic.getFromTime())) {
-                UtilityController.addErrorMessage("Service Not Finalize check Service Start Time & End Time");
+                JsfUtil.addErrorMessage("Service Not Finalize check Service Start Time & End Time");
                 return;
             }
-            if (pic.getToTime().getTime()==pic.getFromTime().getTime()) {
-                UtilityController.addErrorMessage("Service Start Time & End Time Can't Be Equal");
+            if (pic.getToTime().getTime() == pic.getFromTime().getTime()) {
+                JsfUtil.addErrorMessage("Service Start Time & End Time Can't Be Equal");
                 return;
             }
         }
@@ -584,6 +613,8 @@ public class InwardTimedItemController implements Serializable {
         getPatientItemFacade().edit(pic);
 
         createPatientItems();
+        
+        JsfUtil.addSuccessMessage("Updated Successfully.");
 
     }
 
@@ -592,7 +623,7 @@ public class InwardTimedItemController implements Serializable {
                 + " and i.retired=false and i.patientEncounter=:pe";
         HashMap hm = new HashMap();
         hm.put("pe", getCurrent().getPatientEncounter());
-        items = getPatientItemFacade().findBySQL(sql, hm);
+        items = getPatientItemFacade().findByJpql(sql, hm);
 
         if (items == null) {
             items = new ArrayList<>();

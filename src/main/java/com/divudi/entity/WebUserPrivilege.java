@@ -1,6 +1,6 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+* Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.entity;
 
@@ -32,6 +32,8 @@ public class WebUserPrivilege implements Serializable {
     WebUser webUser;
     @Enumerated(EnumType.STRING)
     Privileges privilege;
+    @ManyToOne
+    private Department department;
     //Created Properties
     @ManyToOne
     WebUser creater;
@@ -46,6 +48,8 @@ public class WebUserPrivilege implements Serializable {
     String retireComments;
     String sname;
     String tname;
+    @ManyToOne
+    private WebUserRole webUserRole;
 
     public Long getId() {
         return id;
@@ -90,6 +94,8 @@ public class WebUserPrivilege implements Serializable {
     public WebUser getCreater() {
         return creater;
     }
+    
+    
 
     public void setCreater(WebUser creater) {
         this.creater = creater;
@@ -150,6 +156,8 @@ public class WebUserPrivilege implements Serializable {
     public void setTname(String tname) {
         this.tname = tname;
     }
+    
+    
 
     @Override
     public int hashCode() {
@@ -174,5 +182,21 @@ public class WebUserPrivilege implements Serializable {
     @Override
     public String toString() {
         return "com.divudi.data.WebUserPrivilege[ id=" + id + " ]";
+    }
+
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
+    }
+
+    public WebUserRole getWebUserRole() {
+        return webUserRole;
+    }
+
+    public void setWebUserRole(WebUserRole webUserRole) {
+        this.webUserRole = webUserRole;
     }
 }

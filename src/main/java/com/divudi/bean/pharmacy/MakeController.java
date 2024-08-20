@@ -1,15 +1,15 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Open Hospital Management Information System
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.entity.pharmacy.Make;
 import com.divudi.facade.MakeFacade;
-import com.divudi.facade.util.JsfUtil;
-import com.divudi.facade.util.JsfUtil.PersistAction;
+import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil.PersistAction;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
@@ -91,7 +91,7 @@ public class MakeController implements Serializable {
         if (items == null) {
             String jpql;
             jpql = "Select m from Make m where m.retired=false order by m.name";
-            items = getFacade().findBySQL(jpql);
+            items = getFacade().findByJpql(jpql);
         }
         return items;
     }

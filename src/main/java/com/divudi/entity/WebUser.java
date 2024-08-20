@@ -1,31 +1,36 @@
 /*
  * Author : Dr. M H B Ariyaratne
  *
- * MO(Health Information), Department of Health Services, Southern Province
- * and
+ * Acting Consultant (Health Informatics), Department of Health Services, Southern Province
+ * (94) 71 5812399
  * Email : buddhika.ari@gmail.com
  */
 package com.divudi.entity;
 
+import com.divudi.data.LoginPage;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
-import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- * Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Entity
-@XmlRootElement
+
 public class WebUser implements Serializable {
 
     static final long serialVersionUID = 1L;
@@ -45,29 +50,37 @@ public class WebUser implements Serializable {
     @ManyToOne
     WebTheme userWebTheme;
     String webUserPassword;
-    
+
     @OneToOne
     Person webUserPerson;
     //Main Properties
-//    @Column(unique = true, nullable = false)
+    @Column(unique = true, nullable = false)
     String name;
     String description;
     //Created Properties
     @ManyToOne
+    @JsonIgnore
     WebUser creater;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    @JsonIgnore
     Date createdAt;
     //Retairing properties
+    @JsonIgnore
     boolean retired;
     @ManyToOne
+    @JsonIgnore
     WebUser retirer;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    @JsonIgnore
     Date retiredAt;
     String retireComments;
     //Activation properties
+    @JsonIgnore
     boolean activated;
+    @JsonIgnore
     @ManyToOne
     WebUser activator;
+    @JsonIgnore
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date activatedAt;
     String activateComments;
@@ -78,13 +91,18 @@ public class WebUser implements Serializable {
     String email;
     String telNo;
     @ManyToOne
+    @JsonIgnore
     Institution institution;
     @ManyToOne
+    @JsonIgnore
     Department department;
     @ManyToOne
+    @JsonIgnore
     Staff staff;
 
     String code;
+    @Enumerated(EnumType.STRING)
+    private LoginPage loginPage;
 
     public Staff getStaff() {
         return staff;
@@ -98,7 +116,7 @@ public class WebUser implements Serializable {
     }
 
     public Institution getInstitution() {
-        //////System.out.println("Getting Institution");
+        //////// // System.out.println("Getting Institution");
         return institution;
     }
 
@@ -139,7 +157,32 @@ public class WebUser implements Serializable {
     }
 
     public String getPrimeTheme() {
-        return primeTheme;
+        List<String> validThemes = Arrays.asList(
+                "material-light-outlined",
+                "material-light-filled",
+                "material-dark-outlined",
+                "material-dark-filled",
+                "bootstrap-light-outlined",
+                "bootstrap-light-filled",
+                "bootstrap-dark-outlined",
+                "bootstrap-dark-filled",
+                "primeone-light-outlined",
+                "primeone-light-filled",
+                "primeone-dim-outlined",
+                "primeone-dim-filled",
+                "primeone-dark-outlined",
+                "primeone-dark-filled",
+                "saga",
+                "vela",
+                "arya"
+        );
+
+        
+        if (validThemes.contains(primeTheme)) {
+            return primeTheme;
+        } else {
+            return "material-light-outlined"; // Default theme
+        }
     }
 
     public void setPrimeTheme(String primeTheme) {
@@ -313,5 +356,15 @@ public class WebUser implements Serializable {
     public void setCode(String code) {
         this.code = code;
     }
+
+    public LoginPage getLoginPage() {
+        return loginPage;
+    }
+
+    public void setLoginPage(LoginPage loginPage) {
+        this.loginPage = loginPage;
+    }
+
+  
 
 }

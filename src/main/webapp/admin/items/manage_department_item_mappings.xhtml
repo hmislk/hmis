@@ -1,0 +1,183 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/admin/items/index.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui">
+    <ui:define name="item">
+
+        <h:panelGroup >
+            <h:form id="form"  >
+                <p:growl />
+                <p:panel header="Manage Department Item Mapping" >
+
+                    <div class="row" >
+                        <div class="col-6" >
+                            <p:panelGrid columns="2" >
+                                <p:outputLabel value="Department" >
+                                </p:outputLabel>
+
+                                <p:autoComplete 
+                                    value="#{itemMappingController.department}" 
+                                    completeMethod="#{departmentController.completeDept}"
+                                    var="pasindu"
+                                    itemLabel="#{pasindu.name}"
+                                    itemValue="#{pasindu}"
+                                    >
+                                    <p:column headerText="Institution" >
+                                        <h:outputText value="#{pasindu.institution.name}" ></h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Department" >
+                                        <h:outputText value="#{pasindu.name}" ></h:outputText>
+                                    </p:column>
+                                </p:autoComplete>
+                                <p:commandButton 
+                                    value="Fill Items Added For Department" 
+                                    ajax="false"
+                                    class="ui-button-warning"
+                                    icon="fas fa-spinner"
+                                    action="#{itemMappingController.fillItemMappingsForSelectedDepartment()}">
+                                </p:commandButton>
+                                <p:commandButton 
+                                    value="Add Items to Department" 
+                                    ajax="false"
+                                    class="ui-button-success"
+                                    icon="fas fa-plus"
+                                    action="#{itemMappingController.addAllSelectedItemsToDepartment()}">
+                                </p:commandButton>
+                            </p:panelGrid>
+
+
+
+                            <p:dataTable 
+                                value="#{itemController.items}" 
+                                var="item" 
+                                rowKey="#{item.id}"
+                                selection="#{itemMappingController.selectedItems}"
+                                paginator="true" 
+                                paginatorPosition="bottom"
+                                rows="10"
+                                paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
+                                rowsPerPageTemplate="5,10,{ShowAll|'All'}"
+                                >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="All Items" ></p:outputLabel>
+                                </f:facet>
+
+                                <p:column selectionMode="multiple" width="15"></p:column>
+                                <p:column headerText="Created At"  sortBy="#{item.createdAt}" filterBy="#{item.createdAt}" filterMatchMode="contains">
+                                    <h:outputText value="#{item.createdAt}" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Name"  sortBy="#{item.name}" filterBy="#{item.name}" filterMatchMode="contains">
+                                    <h:outputText value="#{item.name}" ></h:outputText>
+                                </p:column>
+                                <p:column 
+                                    headerText="Institution" 
+                                    sortBy="#{item.institution.name}" 
+                                    filterBy="#{item.institution.name}" 
+                                    filterMatchMode="contains">
+                                    <h:outputText value="#{item.institution.name}" ></h:outputText>
+                                </p:column>
+                                <p:column
+                                    headerText="Department"  
+                                    sortBy="#{item.department.name}" 
+                                    filterBy="#{item.department.name}" 
+                                    filterMatchMode="contains">
+                                    <h:outputText value="#{item.department.name}" ></h:outputText>
+                                </p:column>
+                                <p:column
+                                    headerText="Base Value"  
+                                    sortBy="#{item.total}" 
+                                    filterBy="#{item.total}" 
+                                    filterMatchMode="contains">
+                                    <h:outputText value="#{item.name}" ></h:outputText>
+                                </p:column>
+                            </p:dataTable>
+                        </div>
+                        <div class="col-6" >
+
+                            <p:dataTable value="#{itemMappingController.items}" 
+                                         rowKey="#{im.id}"
+                                         selection="#{itemMappingController.selectedItemMappings}"
+                                         var="im"
+                                         paginator="true" paginatorPosition="bottom"
+                                         paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                         currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
+                                         rowsPerPageTemplate="5,10,{ShowAll|'All'}"
+                                         >
+                                <f:facet name="header" >
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <div>
+                                            <p:outputLabel value="Items Mapped" ></p:outputLabel>
+                                        </div>
+                                        <div>
+                                            <p:commandButton
+                                                style="float: right;"
+                                                value="Remove Selected"
+                                                ajax="false"
+                                                class="ui-button-danger"
+                                                icon="fas fa-trash"
+                                                action="#{itemMappingController.removeSelectedItemMappingForDepartment()}"></p:commandButton>
+                                        </div>
+                                    </div>
+                                </f:facet>
+                                <p:column selectionMode="multiple" width="15"></p:column>
+                                <p:column headerText="Name"  sortBy="#{im.item.name}" filterBy="#{im.item.name}" filterMatchMode="contains">
+                                    <h:outputText value="#{im.item.name}" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Item Department"  sortBy="#{im.item.department.name}" filterBy="#{im.item.department.name}" filterMatchMode="contains">
+                                    <h:outputText value="#{im.item.department.name}" ></h:outputText>
+                                </p:column>
+                                <p:column 
+                                    headerText="Mapped Institution" 
+                                    sortBy="#{im.institution.name}"
+                                    filterBy="#{im.institution.name}"
+                                    filterMatchMode="contains">
+                                    <h:outputText value="#{im.institution.name}" ></h:outputText>
+                                </p:column>
+                                <p:column
+                                    headerText="Mapped Department"  
+                                    sortBy="#{im.department.name}"
+                                    filterBy="#{im.department.name}"
+                                    filterMatchMode="contains">
+                                    <h:outputText value="#{im.department.name}" ></h:outputText>
+                                </p:column>
+                                <p:column
+                                    headerText="Base Value"  
+                                    sortBy="#{im.item.total}" 
+                                    filterBy="#{im.item.total}" 
+                                    filterMatchMode="contains">
+                                    <h:outputText value="#{im.item.total}" ></h:outputText>
+                                </p:column>
+
+                            </p:dataTable>
+                        </div>
+                    </div>
+
+
+
+
+
+
+
+
+                </p:panel>
+
+            </h:form>
+
+        </h:panelGroup>
+
+        <h:form>
+
+
+
+
+        </h:form>
+
+
+    </ui:define>
+
+</ui:composition>

@@ -1,7 +1,7 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Open Hospital Management Information System
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.common;
 
@@ -12,13 +12,12 @@ import com.divudi.data.BillClassType;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
 import com.divudi.data.PaymentMethod;
-import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.data.dataStructure.QuickBookFormat;
 import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.data.inward.AdmissionTypeEnum;
 import com.divudi.data.inward.InwardChargeType;
 import com.divudi.data.table.String3Value2;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
@@ -39,6 +38,7 @@ import com.divudi.facade.InstitutionFacade;
 import com.divudi.facade.ItemFacade;
 import com.divudi.facade.PatientEncounterFacade;
 import com.divudi.facade.PatientRoomFacade;
+import com.divudi.java.CommonFunctions;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
@@ -81,7 +81,7 @@ public class QuickBookReportController implements Serializable {
     @EJB
     private PatientRoomFacade patientRoomFacade;
 
-    @EJB
+
     private CommonFunctions commonFunctions;
 
     @Inject
@@ -183,7 +183,7 @@ public class QuickBookReportController implements Serializable {
         m.put("toDate", td);
         m.put("fromDate", fd);
 
-        List<Item> tmp = getItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        List<Item> tmp = getItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
 
         return tmp;
@@ -212,7 +212,7 @@ public class QuickBookReportController implements Serializable {
         m.put("toDate", td);
         m.put("fromDate", fd);
 
-        List<Item> tmp = getItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        List<Item> tmp = getItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
 
         return tmp;
@@ -239,7 +239,7 @@ public class QuickBookReportController implements Serializable {
         m.put("fromDate", fd);
         m.put("typ", Investigation.class);
 
-        List<Item> tmp = getItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        List<Item> tmp = getItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
 
         return tmp;
@@ -479,12 +479,12 @@ public class QuickBookReportController implements Serializable {
             billsReturnCancelP.addAll(getBills(new CancelledBill(), BillType.PurchaseReturn, d, getInstitution(), getCommonFunctions().getStartOfDay(fromDate), getCommonFunctions().getEndOfDay(toDate)));
         }
 
-        //System.out.println("billsBilled.size() = " + billsBilled.size());
+        //// // System.out.println("billsBilled.size() = " + billsBilled.size());
         bills.addAll(billsBilled);
-        //System.out.println("billsBilledP.size() = " + billsBilledP.size());
+        //// // System.out.println("billsBilledP.size() = " + billsBilledP.size());
         bills.addAll(billsBilledP);
 
-        //System.out.println("bills.size() = " + bills.size());
+        //// // System.out.println("bills.size() = " + bills.size());
 
         quickBookFormats = new ArrayList<>();
 
@@ -535,11 +535,11 @@ public class QuickBookReportController implements Serializable {
             quickBookFormats.add(qbf);
         }
         bills = new ArrayList<>();
-        //System.out.println("billsCanceled.size() = " + billsCanceled.size());
+        //// // System.out.println("billsCanceled.size() = " + billsCanceled.size());
         bills.addAll(billsCanceled);
-        //System.out.println("billsCanceledP.size() = " + billsCanceledP.size());
+        //// // System.out.println("billsCanceledP.size() = " + billsCanceledP.size());
         bills.addAll(billsCanceledP);
-        //System.out.println("bills.size() = " + bills.size());
+        //// // System.out.println("bills.size() = " + bills.size());
 
         for (Bill b : bills) {
             grantTot = 0.0;
@@ -589,11 +589,11 @@ public class QuickBookReportController implements Serializable {
         }
 
         bills = new ArrayList<>();
-        //System.out.println("billsReturn.size() = " + billsReturn.size());
+        //// // System.out.println("billsReturn.size() = " + billsReturn.size());
         bills.addAll(billsReturn);
-        //System.out.println("billsReturnP.size() = " + billsReturnP.size());
+        //// // System.out.println("billsReturnP.size() = " + billsReturnP.size());
         bills.addAll(billsReturnP);
-        //System.out.println("bills.size() = " + bills.size());
+        //// // System.out.println("bills.size() = " + bills.size());
 
         for (Bill b : bills) {
             grantTot = 0.0;
@@ -645,7 +645,7 @@ public class QuickBookReportController implements Serializable {
         }
 
         bills = new ArrayList<>();
-        //System.out.println("billsReturnCancel.size() = " + billsReturnCancel.size());
+        //// // System.out.println("billsReturnCancel.size() = " + billsReturnCancel.size());
         bills.addAll(billsReturnCancel);
         bills.addAll(billsReturnCancelP);
 
@@ -722,12 +722,12 @@ public class QuickBookReportController implements Serializable {
             billsReturnCancelP.addAll(getBills(new CancelledBill(), BillType.PurchaseReturn, d, getInstitution(), getCommonFunctions().getStartOfDay(fromDate), getCommonFunctions().getEndOfDay(toDate)));
         }
 
-        //System.out.println("billsBilled.size() = " + billsBilled.size());
+        //// // System.out.println("billsBilled.size() = " + billsBilled.size());
         bills.addAll(billsBilled);
-        //System.out.println("billsBilledP.size() = " + billsBilledP.size());
+        //// // System.out.println("billsBilledP.size() = " + billsBilledP.size());
         bills.addAll(billsBilledP);
 
-        //System.out.println("bills.size() = " + bills.size());
+        //// // System.out.println("bills.size() = " + bills.size());
 
         quickBookFormats = new ArrayList<>();
 
@@ -740,7 +740,7 @@ public class QuickBookReportController implements Serializable {
             qbf.setRowType("SPL");
             qbf.setTrnsType("Bill");
             qbf.setDate(sdf.format(b.getCreatedAt()));
-            qbf.setAccnt("INVENTORIES:" + b.getDepartment().gettName());
+            qbf.setAccnt("INVENTORIES:" + b.getDepartment().getCode());
             qbf.setName("");
             qbf.setInvItemType("");
             qbf.setInvItem("");
@@ -779,11 +779,11 @@ public class QuickBookReportController implements Serializable {
             quickBookFormats.add(qbf);
         }
         bills = new ArrayList<>();
-        //System.out.println("billsCanceled.size() = " + billsCanceled.size());
+        //// // System.out.println("billsCanceled.size() = " + billsCanceled.size());
         bills.addAll(billsCanceled);
-        //System.out.println("billsCanceledP.size() = " + billsCanceledP.size());
+        //// // System.out.println("billsCanceledP.size() = " + billsCanceledP.size());
         bills.addAll(billsCanceledP);
-        //System.out.println("bills.size() = " + bills.size());
+        //// // System.out.println("bills.size() = " + bills.size());
 
         for (Bill b : bills) {
             grantTot = 0.0;
@@ -794,7 +794,7 @@ public class QuickBookReportController implements Serializable {
             qbf.setRowType("SPL");
             qbf.setTrnsType("Bill Refund");
             qbf.setDate(sdf.format(b.getCreatedAt()));
-            qbf.setAccnt("INVENTORIES:" + b.getDepartment().gettName());
+            qbf.setAccnt("INVENTORIES:" + b.getDepartment().getCode());
             qbf.setName("");
             qbf.setInvItemType("");
             qbf.setInvItem("");
@@ -834,11 +834,11 @@ public class QuickBookReportController implements Serializable {
         }
 
         bills = new ArrayList<>();
-        //System.out.println("billsReturn.size() = " + billsReturn.size());
+        //// // System.out.println("billsReturn.size() = " + billsReturn.size());
         bills.addAll(billsReturn);
-        //System.out.println("billsReturnP.size() = " + billsReturnP.size());
+        //// // System.out.println("billsReturnP.size() = " + billsReturnP.size());
         bills.addAll(billsReturnP);
-        //System.out.println("bills.size() = " + bills.size());
+        //// // System.out.println("bills.size() = " + bills.size());
 
         for (Bill b : bills) {
             grantTot = 0.0;
@@ -849,7 +849,7 @@ public class QuickBookReportController implements Serializable {
             qbf.setRowType("SPL");
             qbf.setTrnsType("Bill Refund");
             qbf.setDate(sdf.format(b.getCreatedAt()));
-            qbf.setAccnt("INVENTORIES:" + b.getDepartment().gettName());
+            qbf.setAccnt("INVENTORIES:" + b.getDepartment().getCode());
             qbf.setName("");
             qbf.setInvItemType("");
             qbf.setInvItem("");
@@ -889,7 +889,7 @@ public class QuickBookReportController implements Serializable {
         }
 
         bills = new ArrayList<>();
-        //System.out.println("billsReturnCancel.size() = " + billsReturnCancel.size());
+        //// // System.out.println("billsReturnCancel.size() = " + billsReturnCancel.size());
         bills.addAll(billsReturnCancel);
         bills.addAll(billsReturnCancelP);
 
@@ -902,7 +902,7 @@ public class QuickBookReportController implements Serializable {
             qbf.setRowType("SPL");
             qbf.setTrnsType("Bill");
             qbf.setDate(sdf.format(b.getCreatedAt()));
-            qbf.setAccnt("INVENTORIES:" + b.getDepartment().gettName());
+            qbf.setAccnt("INVENTORIES:" + b.getDepartment().getCode());
             qbf.setName("");
             qbf.setInvItemType("");
             qbf.setInvItem("");
@@ -1003,8 +1003,8 @@ public class QuickBookReportController implements Serializable {
             long d = (long) lobj[2];
             double sum = (double) lobj[3];
             BillClassType bclass = (BillClassType) lobj[4];
-//            //System.out.println("fValue = " + sum);
-//            //System.out.println("d = " + d);
+//            //// // System.out.println("fValue = " + sum);
+//            //// // System.out.println("d = " + d);
             if (itemBefore == null) {
                 qbf.setRowType("SPL");
                 if (creditCompany != null) {
@@ -1176,7 +1176,7 @@ public class QuickBookReportController implements Serializable {
 
         double d = getBillFeeFacade().findDoubleByJpql(jpql, temMap, TemporalType.TIMESTAMP);
 //        List<Object[]> lobjs = getBillFacade().findAggregates(jpql, temMap, TemporalType.TIMESTAMP);
-//        //System.out.println("lobjs.size = " + lobjs.size());
+//        //// // System.out.println("lobjs.size = " + lobjs.size());
 
 //        SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yy");
 //        Item itemBefore = null;
@@ -1964,7 +1964,7 @@ public class QuickBookReportController implements Serializable {
         temMap.put("bts", bts);
         temMap.put("pms", paymentMethods);
 
-        List<Bill> bills = getBillFacade().findBySQL(jpql, temMap, TemporalType.TIMESTAMP);
+        List<Bill> bills = getBillFacade().findByJpql(jpql, temMap, TemporalType.TIMESTAMP);
 
         SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yy");
         SimpleDateFormat sdf2 = new SimpleDateFormat("yyyyMMdd");
@@ -2160,7 +2160,7 @@ public class QuickBookReportController implements Serializable {
         temMap.put("pm", PaymentMethod.Credit);
 
 
-        creditCompanies = getInstitutionFacade().findBySQL(jpql, temMap, TemporalType.TIMESTAMP);
+        creditCompanies = getInstitutionFacade().findByJpql(jpql, temMap, TemporalType.TIMESTAMP);
         return creditCompanies;
     }
 
@@ -2183,7 +2183,7 @@ public class QuickBookReportController implements Serializable {
         temMap.put("d", dep);
         temMap.put("ins", ins);
 
-        return getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        return getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
 
@@ -2202,7 +2202,7 @@ public class QuickBookReportController implements Serializable {
         temMap.put("btps", billTypes);
         temMap.put("ins", ins);
 
-        return getDepartmentFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        return getDepartmentFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
 
@@ -2243,7 +2243,7 @@ public class QuickBookReportController implements Serializable {
         m.put("td", getCommonFunctions().getEndOfDay(td));
         m.put("billType", BillType.InwardFinalBill);
 
-        pes = getPatientEncounterFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        pes = getPatientEncounterFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
 
         return pes;

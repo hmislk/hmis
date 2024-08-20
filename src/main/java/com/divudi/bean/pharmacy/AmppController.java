@@ -1,14 +1,16 @@
 /*
- * MSc(Biomedical Informatics) Project
+ * Open Hospital Management Information System
  *
- * Development and Implementation of a Web-based Combined Data Repository of
- Genealogical, Clinical, Laboratory and Genetic Data
- * and
- * a Set of Related Tools
+ * Dr M H B Ariyaratne
+ * Acting Consultant (Health Informatics)
+ * (94) 71 5812399
+ * (94) 71 5812399
  */
 package com.divudi.bean.pharmacy;
+
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
+
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.entity.pharmacy.Ampp;
 import com.divudi.entity.pharmacy.MeasurementUnit;
@@ -31,8 +33,8 @@ import javax.inject.Named;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
+ * Informatics)
  */
 @Named
 @SessionScoped
@@ -81,13 +83,21 @@ public class AmppController implements Serializable {
     public List<Ampp> completeAmpp(String qry) {
         List<Ampp> a = null;
         if (qry != null) {
-            a = getFacade().findBySQL("select c from Ampp c where c.retired=false and upper(c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
+            a = getFacade().findByJpql("select c from Ampp c where c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
         }
         if (a == null) {
             a = new ArrayList<>();
         }
         return a;
     }
+
+//    public List<Ampp> completeAmpp() {
+//        List<Ampp> a = null;
+//
+//        a = getFacade().findByJpql("select c from Ampp c where c.retired=false order by c.name");
+//
+//        return a;
+//    }
 
     public void prepareAdd() {
         current = new Ampp();
@@ -99,26 +109,25 @@ public class AmppController implements Serializable {
         items = null;
     }
 
-    private void saveVmpp() {
-        if (getCurrent().getVmpp().getId() == null) {
-            getVmppFacade().create(getCurrent().getVmpp());
-        } else {
-            getVmppFacade().edit(getCurrent().getVmpp());
-        }
-    }
-
+//    private void saveVmpp() {
+//        if (getCurrent().getVmpp().getId() == null) {
+//            getVmppFacade().create(getCurrent().getVmpp());
+//        } else {
+//            getVmppFacade().edit(getCurrent().getVmpp());
+//        }
+//    }
     public void saveSelected() {
         Vmpp tmp = getPharmacyBean().getVmpp(getCurrent(), getPackUnit());
         getCurrent().setVmpp(tmp);
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(getCurrent());
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             getCurrent().setCreatedAt(new Date());
             getCurrent().setCreater(getSessionController().getLoggedUser());
             getFacade().create(getCurrent());
-            UtilityController.addSuccessMessage("Saved Successfully");
+            JsfUtil.addSuccessMessage("Saved Successfully");
         }
 //
 //        tmp.setName(getCurrent().getName() + "(Vmpp)");
@@ -167,9 +176,9 @@ public class AmppController implements Serializable {
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
@@ -203,8 +212,8 @@ public class AmppController implements Serializable {
     }
 
     public void searchItems(AjaxBehaviorEvent e) {
-        selectedItems = getFacade().findBySQL("select c from Ampp c where c.retired=false "
-                + " and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+        selectedItems = getFacade().findByJpql("select c from Ampp c where c.retired=false "
+                + " and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
 
     }
 
@@ -219,47 +228,7 @@ public class AmppController implements Serializable {
     /**
      *
      */
-    @FacesConverter("amppCon")
-    public static class AmppControllerConverter implements Converter {
-
-        @Override
-        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
-                return null;
-            }
-            AmppController controller = (AmppController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "amppController");
-            return controller.getEjbFacade().find(getKey(value));
-        }
-
-        java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
-            return key;
-        }
-
-        String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
-        }
-
-        @Override
-        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
-            if (object == null) {
-                return null;
-            }
-            if (object instanceof Ampp) {
-                Ampp o = (Ampp) object;
-                return getStringKey(o.getId());
-            } else {
-                throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + AmppController.class.getName());
-            }
-        }
-    }
-    
-     @FacesConverter(forClass = Ampp.class)
+    @FacesConverter(forClass = Ampp.class)
     public static class AmppConverter implements Converter {
 
         @Override

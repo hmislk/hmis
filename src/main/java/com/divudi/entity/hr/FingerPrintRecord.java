@@ -1,6 +1,6 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+* Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.entity.hr;
 
@@ -20,19 +20,20 @@ import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Inheritance;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Transient;
-import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  *
  * @author Buddhika
  */
 @Entity
-@XmlRootElement
+@Inheritance
+
 public class FingerPrintRecord implements Serializable {
 
     @OneToOne(mappedBy = "loggedRecord")
@@ -169,7 +170,7 @@ public class FingerPrintRecord implements Serializable {
         formatter = new SimpleDateFormat(pattern, currentLocale);
         try {
             output = formatter.format(date);
-//         //   ////System.out.println(pattern + " " + output);
+//         //   ////// // System.out.println(pattern + " " + output);
         } catch (Exception e) {
         }
 

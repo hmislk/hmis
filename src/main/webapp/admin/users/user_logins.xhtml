@@ -1,0 +1,122 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:autocomplete="http://xmlns.jcp.org/jsf/composite/autocomplete">
+
+    <h:body>
+        <ui:composition template="/admin/users/index.xhtml">
+            <ui:define name="subcontent">
+                <h:form>
+                    <p:panel id="panelReport" >
+
+                        <f:facet name ="header" >
+                            <i class="fa fa-file-text" aria-hidden="true"/>
+                            <h:outputLabel styleClass="noPrintButton"  value="Logins Report" class="mx-2 mt-2" />
+                            <p:commandButton 
+                                value="Print" ajax="false" 
+                                icon="fa fa-print"
+                                style="float: right;"
+                                class="ui-button-info">
+                                <p:printer target="printBlock" />
+                            </p:commandButton>
+                        </f:facet>
+
+                        <div class="mb-2 d-flex justify-content-between">
+                            <h:panelGrid columns="6">
+                                <p:outputLabel value="From Date" />
+                                <p:outputLabel value=":" style="width: 40px; text-align: center "/>
+                                <p:calendar styleClass="noPrintButton" value="#{loginController.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                                </p:calendar>
+                                <p:outputLabel value="To Date" style="width: 100px; text-align: right "/>
+                                <p:outputLabel value=":" style="width: 40px; text-align: center "/>
+                                <p:calendar styleClass="noPrintButton" value="#{loginController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                                </p:calendar>
+                            </h:panelGrid>
+
+                            <h:panelGrid columns="3">
+                                <p:commandButton 
+                                    id="btnRefresh" 
+                                    action="#{loginController.fillLogins()}"
+                                    styleClass="noPrintButton" 
+                                    value="Process" icon="fa fa-refresh"
+                                    class="ui-button-warning"
+                                    style="float: right"
+                                    ajax="false">                               
+                                </p:commandButton>
+                                <p:defaultCommand target="btnRefresh"/>
+                                <p:commandButton 
+                                    value="Excel" 
+                                    icon="fa fa-file-excel"
+                                    class="ui-button-success">
+                                    <p:dataExporter target="tbl" type="xlsx" fileName="User_logins" />
+                                </p:commandButton>
+                            </h:panelGrid>
+                        </div>
+
+                        <p:panel styleClass="printBlock" id="printBlock" >
+
+                            <h:outputLabel value="#{labels.topic}" styleClass="rh1" style="font-size: 18px;" /> 
+                            <br/>
+
+                            <h:outputLabel value="Login Details Report"/>
+                            <br/><br/>
+
+                            <h:panelGrid columns="3">
+                                <h:outputLabel value="From Date" />
+                                <h:outputLabel value=" : " style="width: 20px; text-align: center"/>
+                                <h:outputLabel value="#{loginController.fromDate}"  >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
+                                </h:outputLabel>
+
+                                <h:outputLabel value="To Date "  ></h:outputLabel>
+                                <h:outputLabel value=" : " style="width: 20px; text-align: center"/>
+                                <h:outputLabel value="#{loginController.toDate}" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
+                                </h:outputLabel>
+                            </h:panelGrid>
+
+                            <p:dataTable id="tbl" value="#{loginController.logins}" var="b" rowIndexVar="index" sortMode="multiple">
+                                <p:column headerText="No" width="30px" >
+                                    <h:outputLabel value="#{index +1}" ></h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Institution" >
+                                    <h:outputLabel value="#{b.institution.name}" ></h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Department">
+                                    <h:outputLabel value="#{b.department.name}" ></h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Code">
+                                    <h:outputLabel value="#{b.webUser.code}" >
+                                    </h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Name">
+                                    <h:outputLabel value="#{b.webUser.webUserPerson.name}" >
+                                    </h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Login At"  sortBy="#{b.logedAt}">
+                                    <h:outputLabel value="#{b.logedAt}" >
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
+                                    </h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Log out at" sortBy="#{b.logoutAt}" >
+                                    <h:outputLabel value="#{b.logoutAt}" >
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
+                                    </h:outputLabel>
+                                </p:column>
+                                <p:column headerText="IP">
+                                    <h:outputLabel value="#{b.ipaddress}" >
+                                    </h:outputLabel>
+                                </p:column>
+                            </p:dataTable>
+
+                        </p:panel>
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

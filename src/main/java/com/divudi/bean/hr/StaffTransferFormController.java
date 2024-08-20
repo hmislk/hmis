@@ -1,12 +1,12 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Open Hospital Management Information System
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.hr;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.entity.Department;
 import com.divudi.entity.Staff;
 import com.divudi.entity.hr.StaffShift;
@@ -14,7 +14,8 @@ import com.divudi.entity.hr.TransferForm;
 import com.divudi.facade.StaffFacade;
 import com.divudi.facade.StaffShiftFacade;
 import com.divudi.facade.TransferFormFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
@@ -44,7 +45,6 @@ public class StaffTransferFormController implements Serializable {
     @EJB
     StaffShiftFacade staffShiftFacade;
 
-    @EJB
     CommonFunctions commonFunctions;
     List<TransferForm> transferForms;
     Department department;
@@ -90,7 +90,7 @@ public class StaffTransferFormController implements Serializable {
         m.put("fd", fromDate);
         m.put("td", toDate);
 
-        transferForms = getTransferFormFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        transferForms = getTransferFormFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
 

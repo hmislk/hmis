@@ -1,19 +1,21 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
-                template="/resources/template/template.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
-                xmlns:f="http://java.sun.com/jsf/core"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/pharmacy/pharmacy_analytics.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui">
 
 
-    <ui:define name="content">
+    <ui:define name="subcontent">
         <h:panelGroup >
             <h:form  >
                 <p:panel header="Single Item Transaction Details" styleClass="alignTop verticalAndHorizontalCenteringLarge">
-                    <h:panelGrid columns="3" >
-                        <h:outputLabel value="Select Item"/>
+                    
+                    <div class="row">
+                        <div class="col-4">
+                            <h:outputLabel value="Select Item"/>&nbsp;
                         <p:autoComplete id="lstSelect"    
                                         value="#{pharmacyController.pharmacyItem}" 
                                         forceSelection="true"
@@ -30,24 +32,30 @@
                                 <h:outputLabel value="#{myItem.barcode}" ></h:outputLabel>
                             </p:column>
                         </p:autoComplete>
-                        <p:commandButton ajax="false"
-                                         action="#{pharmacyController.fillDetails()}" value="Process"/>
-
-
-                        <h:outputLabel value="From Date"/>
+                        </div>
+                        <div class="col-4">
+                            <h:outputLabel value="From"/>&nbsp;
                         <p:calendar id="frmDate" value="#{pharmacyController.fromDate}" 
-                                    navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" >
+                                    navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                             <f:ajax event="dateSelect" execute="@this toDate" render="tab"/>
                         </p:calendar>
-                        <p:spacer/>
-
-                        <h:outputLabel value="To Date"/>
-                        <p:calendar id="toDate" value="#{pharmacyController.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" >
+                        </div>
+                        <div class="col-4">
+                            <h:outputLabel value="To"/>&nbsp;
+                        <p:calendar id="toDate" value="#{pharmacyController.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                             <f:ajax event="dateSelect" execute="@this toDate" render="tab"/>
                         </p:calendar>
-                        <p:spacer/>
-
-
+                        </div>
+                    </div>
+                    
+                    <h:panelGrid columns="1" class="my-2">
+                        <p:commandButton 
+                            ajax="false" 
+                            value="Process"
+                            icon="fas fa-arrows-rotate"
+                            class="ui-button-warning"
+                            action="#{pharmacyController.fillDetails()}"  >
+                        </p:commandButton>
                     </h:panelGrid>
 
 
@@ -65,7 +73,7 @@
                                         </p:column>
                                         <p:column >
                                             <f:facet name="header">
-                                                QTY
+                                                Qty
                                             </f:facet>
                                         </p:column>
                                     </p:row>
@@ -126,7 +134,7 @@
                                         </p:column>
                                         <p:column >
                                             <f:facet name="header">
-                                                QTY
+                                                Qty
                                             </f:facet>
                                         </p:column>
                                         <p:column >
@@ -211,7 +219,7 @@
                                         </p:column>
                                         <p:column >
                                             <f:facet name="header">
-                                                QTY
+                                                Qty
                                             </f:facet>
                                         </p:column>
                                         <p:column >
@@ -296,7 +304,7 @@
                                         </p:column>
                                         <p:column >
                                             <f:facet name="header">
-                                                QTY
+                                                Qty
                                             </f:facet>
                                         </p:column>
                                         <p:column >
@@ -381,7 +389,7 @@
                                         </p:column>
                                         <p:column >
                                             <f:facet name="header">
-                                                Sent QTY
+                                                Sent Qty
                                             </f:facet>
                                         </p:column>
                                         <p:column >
@@ -467,7 +475,7 @@
                                         </p:column>
                                         <p:column >
                                             <f:facet name="header">
-                                                Received QTY
+                                                Received Qty
                                             </f:facet>
                                         </p:column>
                                         <p:column >
@@ -553,7 +561,7 @@
                                         </p:column>
                                         <p:column >
                                             <f:facet name="header">
-                                                Sent QTY
+                                                Sent Qty
                                             </f:facet>
                                         </p:column>
                                         <p:column >
@@ -639,13 +647,13 @@
                                 </p:column>
                                 <p:column headerText="Date">
                                     <h:outputLabel value="#{dd2.bill.createdAt}" >
-                                        <f:convertDateTime pattern="dd MMM yyyy" ></f:convertDateTime>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="PO No">
                                     #{dd2.bill.referenceBill.deptId}
                                 </p:column>
-                                <p:column headerText="Dealor">
+                                <p:column headerText="Supplier">
                                     #{dd2.bill.fromInstitution.name}
                                 </p:column>
                                 <p:column headerText="Free Qty">
@@ -674,10 +682,10 @@
                                 </p:column>
                                 <p:column headerText="Order Date">
                                     <p:outputLabel value="#{dd3.bill.createdAt}" >
-                                        <f:convertDateTime pattern="dd MMM yyyy"></f:convertDateTime>
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"></f:convertDateTime>
                                     </p:outputLabel>
                                 </p:column>
-                                <p:column headerText="Dealor">
+                                <p:column headerText="Supplier">
                                     #{dd3.bill.toInstitution.name}
                                 </p:column>
                                 <p:column headerText="PO Qty">
@@ -695,7 +703,7 @@
                                 <p:column headerText="Bill No">
                                     #{dd3.bill.deptId}
                                 </p:column>
-                                <p:column headerText="Dealor">
+                                <p:column headerText="Supplier">
                                     #{dd3.bill.fromInstitution.name}
                                 </p:column>
                                 <p:column headerText="Billed By">
@@ -703,7 +711,7 @@
                                 </p:column>    
                                 <p:column headerText="Billed At">
                                     <p:outputLabel value="#{dd3.bill.createdAt}" >
-                                        <f:convertDateTime pattern="dd MMM yyyy"></f:convertDateTime>
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"></f:convertDateTime>
                                     </p:outputLabel>
                                 </p:column> 
                                 <p:column headerText="Purchase Rate">

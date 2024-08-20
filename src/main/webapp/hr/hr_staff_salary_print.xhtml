@@ -1,27 +1,26 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/resources/template/template.xhtml" 
-                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://java.sun.com/jsf/core"
-                xmlns:hr="http://java.sun.com/jsf/composite/autocomplete"
-                xmlns:salary="http://java.sun.com/jsf/composite/hr">
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:hr="http://xmlns.jcp.org/jsf/composite/autocomplete"
+                xmlns:salary="http://xmlns.jcp.org/jsf/composite/hr">
 
     <ui:define name="content">
         <h:form>
             <p:panel rendered="#{!staffSalaryController.printPreview}">
                 <p:panel>
-                    <p:commandButton ajax="false" value="Fill Salary" action="#{staffSalaryController.fetchStaffSalay}" onclick="onSubmitButton();"/>                    
-                    <p:commandButton ajax="false" value="Clear" actionListener="#{staffSalaryController.clear}"  onclick="onSubmitButton();" />
+                    <p:commandButton ajax="false" value="Fill Salary" action="#{staffSalaryController.fetchStaffSalay}" />                    
+                    <p:commandButton ajax="false" value="Clear" actionListener="#{staffSalaryController.clear}"   />
                 </p:panel>
 
                 <p:tabView style="min-height:300px;">
                     <p:tab title="Cycle">
                         <p:selectOneMenu id="advanced" 
                                          value="#{staffSalaryController.salaryCycle}" 
-                                         converter="salaryCycleConverter" 
-                                         effect="fade" var="t" 
+                                         var="t" 
                                          filter="true" 
                                          filterMatchMode="startsWith"  >
 
@@ -46,19 +45,19 @@
                         <h:panelGrid columns="2" id="cycleDetail">
                             <h:outputLabel value="Salary From Date "/>
                             <h:outputLabel value="#{staffSalaryController.salaryCycle.salaryFromDate}"  >                                                        
-                                <f:convertDateTime pattern="dd MMMM yyyy"/>
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                             </h:outputLabel>
                             <h:outputLabel value="Salary To Date "/>
                             <h:outputLabel   value="#{staffSalaryController.salaryCycle.salaryToDate}" >
-                                <f:convertDateTime pattern="dd MMMM yyyy"/>
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                             </h:outputLabel>
                             <h:outputLabel value="Worked From Date "/>
                             <h:outputLabel value="#{staffSalaryController.salaryCycle.workedFromDate}" >
-                                <f:convertDateTime pattern="dd MMMM yyyy"/>
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                             </h:outputLabel>
                             <h:outputLabel value="Worked To Date "/>
                             <h:outputLabel   value="#{staffSalaryController.salaryCycle.workedToDate}">
-                                <f:convertDateTime pattern="dd MMMM yyyy"/>
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                             </h:outputLabel>
                         </h:panelGrid>
                         <h:panelGrid columns="2"> 
@@ -130,9 +129,9 @@
 
                                 <p:column>
                                     <p:commandButton process="@this" 
-                                                     update=":#{p:component('lst')} " 
+                                                     update=":#{p:resolveFirstComponentWithId('lst',view).clientId} " 
                                                      value="View"  
-                                                     actionListener="#{staffSalaryController.onEditListener(i)}" onclick="onSubmitButton();">                              
+                                                     actionListener="#{staffSalaryController.onEditListener(i)}" >                              
                                     </p:commandButton>                          
                                 </p:column>
 
@@ -223,7 +222,7 @@
                             <p:inputText value="#{staffSalaryController.reportKeyWord.string}" autocomplete="off" />
                             <p:outputLabel value="Adress" />
                             <p:inputText value="#{staffSalaryController.reportKeyWord.address}" autocomplete="off" />
-                            <p:commandButton value="Refresh" ajax="false" action="#{staffSalaryController.reportKeyWord.split()}" />
+                            <p:commandButton value="Process" ajax="false" action="#{staffSalaryController.reportKeyWord.split()}" />
                             <p:commandButton value="Print" ajax="false" action="#"
                                              disabled="#{staffSalaryController.current.blocked}">
                                 <p:printer target="gpBillPreviewPaysheet" ></p:printer>

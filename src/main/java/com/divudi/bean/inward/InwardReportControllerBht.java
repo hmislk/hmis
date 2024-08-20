@@ -1,7 +1,7 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Open Hospital Management Information System
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.inward;
 
@@ -585,7 +585,7 @@ public class InwardReportControllerBht implements Serializable {
         sql = sql + " group by bf.billItem.item.category order by bf.billItem.item.category.name";
         List<Object[]> results = billFeeFacade.findAggregates(sql, m);
 
-        ////System.out.println("results = " + results);
+        ////// // System.out.println("results = " + results);
 //        PatientEncounter pe = new PatientEncounter();
 //        pe.getAdmissionType();
         if (results == null) {
@@ -627,7 +627,7 @@ public class InwardReportControllerBht implements Serializable {
         m.put("bty", BillType.CashRecieveBill);
         m.put("bhtno", pe);
 
-        creditPayment = billItemFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+        creditPayment = billItemFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
 
         return creditPayment;
 
@@ -645,7 +645,7 @@ public class InwardReportControllerBht implements Serializable {
         m.put("bty", BillType.InwardPaymentBill);
         m.put("bhtno", pe);
 
-        paidbyPatientBillList = billFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+        paidbyPatientBillList = billFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
 
         return paidbyPatientBillList;
 
@@ -872,7 +872,7 @@ public class InwardReportControllerBht implements Serializable {
         finalBill = inwardBeanController.fetchFinalBill(patientEncounter);
         calTotal();
 
-        commonController.printReportDetails(startTime, startTime, startTime, "BHT income by categories individual BHT( /faces/inward/inward_report_bht_income_by_caregories_bht.xhtml)");
+        
     }
 
     public void calTotal() {
@@ -943,7 +943,7 @@ public class InwardReportControllerBht implements Serializable {
         m.put("fd", getReportKeyWord().getFromDate());
         m.put("td", getReportKeyWord().getToDate());
 
-        patientRooms = patientRoomFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+        patientRooms = patientRoomFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
 

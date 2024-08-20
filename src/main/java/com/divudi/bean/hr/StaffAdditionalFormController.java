@@ -1,13 +1,13 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Open Hospital Management Information System
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.hr;
 
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.data.SystemTimeStamp;
 import com.divudi.data.hr.DayType;
 import com.divudi.data.hr.ReportKeyWord;
@@ -28,7 +28,7 @@ import com.divudi.facade.HrFormFacade;
 import com.divudi.facade.SalaryCycleFacade;
 import com.divudi.facade.ShiftFacade;
 import com.divudi.facade.StaffShiftFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -201,7 +201,7 @@ public class StaffAdditionalFormController implements Serializable {
                 + " order by st.staff.codeInterger";
         hm.put("dt", d);
         hm.put("rs", staff);
-        List<StaffShift> tmp = getStaffShiftFacade().findBySQLWithoutCache(sql, hm, TemporalType.DATE);
+        List<StaffShift> tmp = getStaffShiftFacade().findByJpqlWithoutCache(sql, hm, TemporalType.DATE);
 //        System.err.println("fetchStaffShiftWithShift:: " + tmp);
         return tmp;
     }
@@ -279,11 +279,11 @@ public class StaffAdditionalFormController implements Serializable {
 //        m.put("tm", Times.All);
         sql += createKeyWord(m);
 
-        additionalForms = getAdditionalFormFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        additionalForms = getAdditionalFormFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
 //        calMinitsAditional(additionalForms);
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Forms/Additional form report vertification(/faces/hr/hr_form_staff_additional_report.xhtml)");
+        
     }
 
     public void calTotals(List<AdditionalForm> list) {
@@ -320,11 +320,11 @@ public class StaffAdditionalFormController implements Serializable {
 //        m.put("tm", Times.All);
         sql += createKeyWord(m);
 
-        hrForms = hrFormFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+        hrForms = hrFormFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
 
 //        calMinitsAditional(additionalForms);
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Forms/Form report that not comes toanalys(/faces/hr/hr_form_staff_form_report.xhtml)");
+        
     }
 
 //    public void searchFormByApprovedDate() {
@@ -342,7 +342,7 @@ public class StaffAdditionalFormController implements Serializable {
 //        sql += createKeyWord(m);
 //
 //        System.err.println("SQL " + sql);
-//        hrForms = hrFormFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+//        hrForms = hrFormFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
 //
 ////        calMinitsAditional(additionalForms);
 //    }
@@ -362,11 +362,11 @@ public class StaffAdditionalFormController implements Serializable {
 //        m.put("tm", Times.All);
         sql += createKeyWord(m);
 
-        hrForms = hrFormFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+        hrForms = hrFormFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
 
 //        calMinitsAditional(additionalForms);
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Forms/Form report that not comes toanalys(/faces/hr/hr_form_staff_form_report.xhtml)");
+        
     }
 
     public List<HrForm> getHrForms() {
@@ -392,11 +392,11 @@ public class StaffAdditionalFormController implements Serializable {
 //        m.put("tm", Times.All);
         sql += createKeyWord(m);
 
-        additionalForms = getAdditionalFormFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        additionalForms = getAdditionalFormFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
 //        calMinitsAditional(additionalForms);
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Forms/Additional form report vertification(/faces/hr/hr_form_staff_additional_report.xhtml)");
+        
     }
 
     public void searchByApproveDate() {
@@ -414,11 +414,11 @@ public class StaffAdditionalFormController implements Serializable {
 //        m.put("tm", Times.All);
         sql += createKeyWord(m);
 
-        additionalForms = getAdditionalFormFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        additionalForms = getAdditionalFormFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
 //        calMinitsAditional(additionalForms);
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Forms/Additional form report vertification(/faces/hr/hr_form_staff_additional_report.xhtml)");
+        
     }
 
     public void createAmmendmentTable() {
@@ -450,11 +450,11 @@ public class StaffAdditionalFormController implements Serializable {
         m.put("fd", fromDate);
         m.put("td", toDate);
 
-        additionalForms = getAdditionalFormFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        additionalForms = getAdditionalFormFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
         calMinitsAditional(additionalForms);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Forms/Additional form report(/faces/hr/hr_form_staff_additional_report_1.xhtml)");
+        
 
     }
 
@@ -465,18 +465,18 @@ public class StaffAdditionalFormController implements Serializable {
             if (a.getFromTime() != null && a.getToTime() != null) {
                 Calendar frmCal = Calendar.getInstance();
                 frmCal.setTime(a.getFromTime());
-                ////System.out.println("frmCal = " + frmCal);
+                ////// // System.out.println("frmCal = " + frmCal);
                 Calendar toCal = Calendar.getInstance();
                 frmCal.setTime(a.getToTime());
-                ////System.out.println("toCal = " + toCal);
-                ////System.out.println("toCal.getTimeInMillis() = " + toCal.getTimeInMillis());
-                ////System.out.println("frmCal.getTimeInMillis() = " + frmCal.getTimeInMillis());
-                ////System.out.println("toCal.getTimeInMillis()-frmCal.getTimeInMillis() = " + (toCal.getTimeInMillis() - frmCal.getTimeInMillis()));
+                ////// // System.out.println("toCal = " + toCal);
+                ////// // System.out.println("toCal.getTimeInMillis() = " + toCal.getTimeInMillis());
+                ////// // System.out.println("frmCal.getTimeInMillis() = " + frmCal.getTimeInMillis());
+                ////// // System.out.println("toCal.getTimeInMillis()-frmCal.getTimeInMillis() = " + (toCal.getTimeInMillis() - frmCal.getTimeInMillis()));
                 long time = ((toCal.getTime().getTime() - frmCal.getTime().getTime()) / (1000 * 60));
                 awt.setAf(a);
                 awt.setTime(time);
-                ////System.out.println("awt.getAf() = " + awt.getAf());
-                ////System.out.println("awt.getTime() = " + awt.getTime());
+                ////// // System.out.println("awt.getAf() = " + awt.getAf());
+                ////// // System.out.println("awt.getTime() = " + awt.getTime());
                 aditionalWithTimes.add(awt);
             }
         }
@@ -514,11 +514,11 @@ public class StaffAdditionalFormController implements Serializable {
         m.put("fd", fromDate);
         m.put("td", toDate);
 
-        additionalForms = getAdditionalFormFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        additionalForms = getAdditionalFormFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
         calMinitsAditional(additionalForms);
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Forms/Additional form report(Search Approved Date)(/faces/hr/hr_form_staff_additional_report_1.xhtml)");
+        
 
     }
 
@@ -549,11 +549,11 @@ public class StaffAdditionalFormController implements Serializable {
         m.put("fd", fromDate);
         m.put("td", toDate);
 
-        additionalForms = getAdditionalFormFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        additionalForms = getAdditionalFormFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
         calMinitsAditional(additionalForms);
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Forms/Additional form report(Search Shift Date)(/faces/hr/hr_form_staff_additional_report_1.xhtml)");
+        
 
     }
 
@@ -585,7 +585,7 @@ public class StaffAdditionalFormController implements Serializable {
         m.put("fd", fromDate);
         m.put("td", toDate);
 
-        additionalForms = getAdditionalFormFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        additionalForms = getAdditionalFormFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
 
@@ -618,7 +618,7 @@ public class StaffAdditionalFormController implements Serializable {
         m.put("fd", fromDate);
         m.put("td", toDate);
 
-        additionalForms = getAdditionalFormFacade().findBySQL(sql, m, TemporalType.DATE);
+        additionalForms = getAdditionalFormFacade().findByJpql(sql, m, TemporalType.DATE);
 
     }
 
@@ -651,7 +651,7 @@ public class StaffAdditionalFormController implements Serializable {
         m.put("fd", fromDate);
         m.put("td", toDate);
 
-        additionalForms = getAdditionalFormFacade().findBySQL(sql, m, TemporalType.DATE);
+        additionalForms = getAdditionalFormFacade().findByJpql(sql, m, TemporalType.DATE);
 
     }
 
@@ -680,7 +680,7 @@ public class StaffAdditionalFormController implements Serializable {
         hm.put("dt", getDate());
         hm.put("stf", getCurrentAdditionalForm().getStaff());
 
-        staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
+        staffShifts = staffShiftFacade.findByJpql(sql, hm, TemporalType.DATE);
 
         hm.clear();
         sql = "select c from "
@@ -691,7 +691,7 @@ public class StaffAdditionalFormController implements Serializable {
         hm.put("dt", getDate());
         hm.put("stf", getCurrentAdditionalForm().getStaff());
 
-        staffShifts.addAll(staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE));
+        staffShifts.addAll(staffShiftFacade.findByJpql(sql, hm, TemporalType.DATE));
 
     }
 
@@ -711,7 +711,7 @@ public class StaffAdditionalFormController implements Serializable {
         hm.put("dt", getDate());
         hm.put("stf", getCurrentAdditionalForm().getStaff());
 
-        staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
+        staffShifts = staffShiftFacade.findByJpql(sql, hm, TemporalType.DATE);
 
     }
 
@@ -727,7 +727,7 @@ public class StaffAdditionalFormController implements Serializable {
         hm.put("dt", date);
         hm.put("stf", staff);
 
-        staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
+        staffShifts = staffShiftFacade.findByJpql(sql, hm, TemporalType.DATE);
     }
 
     public List<StaffShift> getStaffShifts() {
@@ -831,15 +831,15 @@ public class StaffAdditionalFormController implements Serializable {
 
 //        if (fetchCurrentSalaryCycle(date) != null) {
 //            SalaryCycle s = fetchCurrentSalaryCycle(date);
-//            //System.out.println("s.getWorkedFromDate() = " + s.getWorkedFromDate());
-//            //System.out.println("s.getWorkedToDate() = " + s.getWorkedToDate());
-//            //System.out.println("s.getDayOffPhFromDate() = " + s.getDayOffPhFromDate());
-//            //System.out.println("s.getDayOffPhToDate() = " + s.getDayOffPhToDate());
+//            //// // System.out.println("s.getWorkedFromDate() = " + s.getWorkedFromDate());
+//            //// // System.out.println("s.getWorkedToDate() = " + s.getWorkedToDate());
+//            //// // System.out.println("s.getDayOffPhFromDate() = " + s.getDayOffPhFromDate());
+//            //// // System.out.println("s.getDayOffPhToDate() = " + s.getDayOffPhToDate());
 //            Date nowDate = CommonFunctions.getEndOfDay();
-//            //System.out.println("nowDate = " + nowDate);
+//            //// // System.out.println("nowDate = " + nowDate);
 //            if (nowDate.getTime() > s.getDayOffPhToDate().getTime()) {
 //                double d = (nowDate.getTime() - s.getDayOffPhToDate().getTime()) / (1000 * 60 * 60 * 24);
-//                //System.out.println("d = " + d);
+//                //// // System.out.println("d = " + d);
 //                if (d > 3) {
 //                    JsfUtil.addErrorMessage("You Can't Add This Addional."
 //                            + "because you can add only additionls within 3 days after Day off / PH To Date");
@@ -907,7 +907,7 @@ public class StaffAdditionalFormController implements Serializable {
         }
         if (fetchCurrentSalaryCycle(date) != null) {
             SalaryCycle s = fetchCurrentSalaryCycle(date);
-            //System.out.println("s.getWorkedFromDate() = " + s.getWorkedFromDate());
+            //// // System.out.println("s.getWorkedFromDate() = " + s.getWorkedFromDate());
             Date nowDate = CommonFunctions.getEndOfDay();
             if (nowDate.getTime() > s.getDayOffPhToDate().getTime()) {
                 double d = (nowDate.getTime() - s.getDayOffPhToDate().getTime()) / (1000 * 60 * 60 * 24);
@@ -989,15 +989,15 @@ public class StaffAdditionalFormController implements Serializable {
 
 //        if (fetchCurrentSalaryCycle(date) != null) {
 //            SalaryCycle s = fetchCurrentSalaryCycle(date);
-//            //System.out.println("s.getWorkedFromDate() = " + s.getWorkedFromDate());
-//            //System.out.println("s.getWorkedToDate() = " + s.getWorkedToDate());
-//            //System.out.println("s.getDayOffPhFromDate() = " + s.getDayOffPhFromDate());
-//            //System.out.println("s.getDayOffPhToDate() = " + s.getDayOffPhToDate());
+//            //// // System.out.println("s.getWorkedFromDate() = " + s.getWorkedFromDate());
+//            //// // System.out.println("s.getWorkedToDate() = " + s.getWorkedToDate());
+//            //// // System.out.println("s.getDayOffPhFromDate() = " + s.getDayOffPhFromDate());
+//            //// // System.out.println("s.getDayOffPhToDate() = " + s.getDayOffPhToDate());
 //            Date nowDate = CommonFunctions.getEndOfDay();
-//            //System.out.println("nowDate = " + nowDate);
+//            //// // System.out.println("nowDate = " + nowDate);
 //            if (nowDate.getTime() > s.getDayOffPhToDate().getTime()) {
 //                double d = (nowDate.getTime() - s.getDayOffPhToDate().getTime()) / (1000 * 60 * 60 * 24);
-//                //System.out.println("d = " + d);
+//                //// // System.out.println("d = " + d);
 //                if (d > 3) {
 //                    JsfUtil.addErrorMessage("You Can't Add This Addional."
 //                            + "because you can add only additionls within 3 days after Day off / PH To Date");
@@ -1036,7 +1036,7 @@ public class StaffAdditionalFormController implements Serializable {
                 + " and c.dayOffPhToDate>:d ";
         m.put("d", d);
 
-        return salaryCycleFacade.findFirstBySQL(sql, m, TemporalType.TIMESTAMP);
+        return salaryCycleFacade.findFirstByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
 
@@ -1087,7 +1087,7 @@ public class StaffAdditionalFormController implements Serializable {
         Shift shift = null;
 
         if (currentAdditionalForm.getStaffShift() == null) {
-            UtilityController.addErrorMessage("Please Un Select Staff Shift");
+            JsfUtil.addErrorMessage("Please Un Select Staff Shift");
             return;
         }
         DayType dayType;
@@ -1152,8 +1152,6 @@ public class StaffAdditionalFormController implements Serializable {
         staffShiftExtra.setShiftDate(date);
         staffShiftExtra.setShiftStartTime(currentAdditionalForm.getFromTime());
         staffShiftExtra.setShiftEndTime(currentAdditionalForm.getToTime());
-        System.err.println("staffShiftExtra.getDayType() = " + staffShiftExtra.getDayType());
-        System.err.println("dayType = " + dayType);
         staffShiftExtra.setDayType(dayType);
         staffShiftFacade.edit(staffShiftExtra);
 
@@ -1244,7 +1242,7 @@ public class StaffAdditionalFormController implements Serializable {
         hm.put("rs", roster);
         hm.put("dtp", dayType);
 
-        Shift sh = shiftFacade.findFirstBySQL(sql, hm, TemporalType.DATE);
+        Shift sh = shiftFacade.findFirstByJpql(sql, hm, TemporalType.DATE);
         if (sh == null) {
             sh = new Shift();
             sh.setCreatedAt(new Date());
@@ -1256,7 +1254,7 @@ public class StaffAdditionalFormController implements Serializable {
             sh.setEndingTime(null);
             shiftFacade.create(sh);
         }
-//        //System.out.println("sh.getName() = " + sh.getShift().getName());
+//        //// // System.out.println("sh.getName() = " + sh.getShift().getName());
         return sh;
     }
 
@@ -1274,7 +1272,7 @@ public class StaffAdditionalFormController implements Serializable {
         hm.put("rs", roster);
         hm.put("dtp", dayType);
 
-        Shift sh = shiftFacade.findFirstBySQL(sql, hm, TemporalType.DATE);
+        Shift sh = shiftFacade.findFirstByJpql(sql, hm, TemporalType.DATE);
         if (sh == null) {
             sh = new Shift();
             sh.setCreatedAt(new Date());
@@ -1303,7 +1301,7 @@ public class StaffAdditionalFormController implements Serializable {
         hm.put("dtp1", DayType.DayOff);
         hm.put("dtp2", DayType.SleepingDay);
 
-        Shift sh = shiftFacade.findFirstBySQL(sql, hm, TemporalType.DATE);
+        Shift sh = shiftFacade.findFirstByJpql(sql, hm, TemporalType.DATE);
 
         return sh;
     }
@@ -1322,7 +1320,7 @@ public class StaffAdditionalFormController implements Serializable {
         hm.put("dtp1", DayType.DayOff);
         hm.put("dtp2", DayType.SleepingDay);
 
-        Shift sh = shiftFacade.findFirstBySQL(sql, hm, TemporalType.DATE);
+        Shift sh = shiftFacade.findFirstByJpql(sql, hm, TemporalType.DATE);
 
         return sh;
     }
@@ -1377,12 +1375,12 @@ public class StaffAdditionalFormController implements Serializable {
 
 //    public void fetchShift() {
 //        if (getCurrentAdditionalForm().getStaff() == null) {
-//            UtilityController.addErrorMessage("Please Select Staff");
+//            JsfUtil.addErrorMessage("Please Select Staff");
 //            return;
 //        }
 //
 //        if (getDate() == null) {
-//            UtilityController.addErrorMessage("Please Select Date");
+//            JsfUtil.addErrorMessage("Please Select Date");
 //            return;
 //        }
 //
@@ -1405,7 +1403,7 @@ public class StaffAdditionalFormController implements Serializable {
 //
 //        hm.put("dtp", new DayType[]{DayType.DayOff, DayType.MurchantileHoliday, DayType.Poya, DayType.SleepingDay});
 //        hm.put("rs", getCurrentAdditionalForm().getStaff().getRoster());
-//        shifts = shiftFacade.findBySQL(sql, hm);
+//        shifts = shiftFacade.findByJpql(sql, hm);
 //    }
     public AdditionalForm getCurrentAdditionalForm() {
         if (currentAdditionalForm == null) {

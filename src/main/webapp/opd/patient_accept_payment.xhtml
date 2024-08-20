@@ -1,0 +1,235 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:form>
+                    <p:panel style="height: 100vh">
+                        <f:facet name="header" >
+                            <h:outputText styleClass="fas fa-search" />
+                            <h:outputLabel class="mx-2" value="OPD Bill Search To Pay "/>
+                        </f:facet>
+
+                        <div class="row">
+                            <div class="col-2">
+                                
+                                    <h:outputLabel value="From Date"/>
+                                    <p:calendar
+                                        class="w-100" 
+                                        id="fromDate"
+                                        inputStyleClass="form-control"
+                                        value="#{searchController.fromDate}" 
+                                        navigator="false"
+                                        maxdate="#{sessionController.currentDate}" 
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                        >      
+                                    </p:calendar>
+                                    <h:outputLabel value="To Date"/>
+                                    <p:calendar
+                                        class="my-1 w-100" 
+                                        id="toDate" 
+                                        value="#{searchController.toDate}" 
+                                        inputStyleClass="form-control"
+                                        navigator="false" 
+                                        maxdate="#{sessionController.currentDate}" 
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                        >                                                                              
+                                    </p:calendar>
+                                    <h:outputLabel value="Patient"/>
+                                    <p:autoComplete 
+                                        widgetVar="aPt" 
+                                        id="acPt" 
+                                        forceSelection="true" 
+                                        placeholder="Type at least 4 letters to search"
+                                        value="#{searchController.patient}" 
+                                        minQueryLength="4"
+                                        completeMethod="#{patientController.completePatientByNameOrCode}" 
+                                        var="apt" itemLabel="#{apt.person.name}" 
+                                        scrollHeight="500" 
+                                        itemValue="#{apt}" 
+                                        class="w-100" 
+                                        inputStyleClass="form-control"
+                                        >
+                                        <p:column headerText="Name">
+                                            <h:outputLabel value="#{apt.person.nameWithTitle}" />
+                                        </p:column>
+
+                                        <p:column headerText="Age">
+                                            <h:outputLabel value="#{apt.age}" />
+                                        </p:column>
+                                        <p:column headerText="NIC">
+                                            <h:outputLabel value="#{apt.person.nic}"/>
+                                        </p:column>
+                                        <p:column headerText="Code">
+                                            <h:outputLabel value="#{apt.code}" />
+                                        </p:column>
+                                        <p:column headerText="PHN">
+                                            <h:outputLabel value="#{apt.phn}"/>
+                                        </p:column>
+                                        <p:column headerText="Sex">
+                                            <h:outputLabel value="#{apt.person.sex}" />
+                                        </p:column>
+                                        <p:column headerText="Address">
+                                            <h:outputLabel value="#{apt.person.address}" />
+                                        </p:column>
+                                        <p:column headerText="Date of Birth">
+                                            <h:outputLabel value="#{apt.person.dob}" >
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                            </h:outputLabel>
+                                        </p:column>
+                                    </p:autoComplete>
+                                    <p:commandButton  
+                                        id="btnSearch" 
+                                        icon="fas fa-search" 
+                                        class="ui-button-success w-100 mt-3" 
+                                        ajax="false" 
+                                        value="Search Paid Bills"
+                                        action="#{searchController.fillPatientBillsPaid()}"/>
+                                    <p:commandButton 
+                                        class="my-1 ui-button-warning w-100" 
+                                        icon="fas fa-search" 
+                                        ajax="false" 
+                                        value="Search To Pay Bills"
+                                        action="#{searchController.fillPatientBillsPaid()}"/>
+                                    <p:commandButton  
+                                        ajax="false" 
+                                        icon="fas fa-search" 
+                                        class="ui-button-warning w-100 " 
+                                        value="Search Paid or To Pay Bills"
+                                        action="#{searchController.fillPatientBillsPaidAndToPay}"/>
+                            </div>
+                            <div class="col-10">
+
+                                <p:defaultCommand target="btnSearch"/>
+
+                                <p:dataTable 
+                                    class="mt-4"
+                                    rowIndexVar="i"
+                                    id="tblBills" 
+                                    value="#{searchController.bills}" 
+                                    var="bill"  
+                                    rowKey="#{bill.id}"
+                                    paginator="true"
+                                    paginatorPosition="bottom"
+                                    paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                    rowsPerPageTemplate="5,10,15"
+                                    rows="10"
+                                    >
+
+                                    <p:column headerText="No" styleClass="alignTop" width="1%">
+                                        <h:outputLabel value="#{i+1}"/>
+                                    </p:column>
+
+                                    <p:column headerText="Bill No" width="5%">
+                                        <h:outputLabel value="#{bill.deptId}"  ></h:outputLabel>
+                                    </p:column>  
+
+                                    <p:column headerText="Patient" width="10%">
+                                        <h:outputLabel value="#{bill.patient.person.nameWithTitle}"  ></h:outputLabel>
+                                    </p:column> 
+
+                                    <p:column headerText="Department" width="7%" >
+                                        <h:outputLabel value="#{bill.department.name}"  ></h:outputLabel>
+                                    </p:column> 
+
+                                    <p:column headerText="Billed At" width="5%" >
+                                        <h:outputLabel value="#{bill.createdAt}" >
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                        </h:outputLabel>
+                                        <br/>
+                                        <h:panelGroup rendered="#{bill.cancelled}" >
+                                            <h:outputLabel style="color: red;" value="Cancelled at " />
+                                            <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" 
+                                                           value="#{bill.cancelledBill.createdAt}" >
+                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                            </h:outputLabel>
+                                        </h:panelGroup>                             
+                                    </p:column>                 
+                                    <p:column headerText="Billed By" width="6%">
+                                        <h:outputLabel value="#{bill.creater.webUserPerson.name}" >                                      
+                                        </h:outputLabel>
+                                        <br/>
+                                        <h:panelGroup rendered="#{bill.cancelled}" >
+                                            <h:outputLabel style="color: red;" value="Cancelled By " />
+                                            <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.creater.webUserPerson.name}" >                                       
+                                            </h:outputLabel>
+                                        </h:panelGroup>                               
+                                    </p:column>                                                          
+                                    <p:column headerText="Net Value" width="6%">
+
+                                        <h:outputLabel value="#{bill.netTotal}" >
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+
+                                    </p:column>
+
+                                    <p:column width="6%">
+                                        <p:commandButton ajax="false"  value="Accept Payment" 
+                                                         action="#{opdPreSettleController.toSettle(bill)}" 
+                                                         disabled="#{bill.referenceBill ne null or bill.cancelled}">   
+                                        </p:commandButton>
+                                    </p:column>
+
+                                    <p:column width="40%">
+                                        <p:dataTable value="#{bill.cashBillsOpdPre}" var="rb">
+                                            <p:column  headerText="Bill No">                                                               
+                                                <h:outputLabel  value="#{rb.deptId}"/>                                   
+                                            </p:column>
+                                            <p:column headerText="Accepted At">
+                                                <h:outputLabel value="#{rb.createdAt}" >
+                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                </h:outputLabel>
+                                                <br/>
+                                                <h:panelGroup rendered="#{rb.cancelled}">
+                                                    <h:outputLabel style="color: red;" value="Cancelled at " />
+                                                    <h:outputLabel style="color: red;" rendered="#{rb.cancelled}"
+                                                                   value="#{rb.cancelledBill.createdAt}" >
+                                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                    </h:outputLabel>
+                                                </h:panelGroup>                               
+                                            </p:column> 
+                                            <p:column headerText="Accepted By">                               
+                                                <h:outputLabel value="#{rb.creater.webUserPerson.name}" >                                      
+                                                </h:outputLabel>                                
+                                                <br/>
+                                                <h:panelGroup rendered="#{rb.cancelled}" >
+                                                    <h:outputLabel style="color: red;" value="Cancelled by " />
+                                                    <h:outputLabel style="color: red;" rendered="#{rb.cancelled}"
+                                                                   value="#{rb.cancelledBill.creater.webUserPerson.name}" >                                       
+                                                    </h:outputLabel>
+                                                </h:panelGroup> 
+                                            </p:column>                                                     
+                                            <p:column headerText="Net Total">
+                                                <h:outputLabel value="#{rb.netTotal}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>                                  
+                                            </p:column>
+                                            <p:column width="20%">
+                                                <p:commandButton ajax="false" value="View Payment Bill" action="/opd/bill_reprint?faces-redirect=true" disabled="#{bill.referenceBill eq null}">
+                                                    <f:setPropertyActionListener target="#{billSearch.billSearch}" value="#{rb}" />
+                                                </p:commandButton>
+                                            </p:column>
+                                        </p:dataTable>
+                                    </p:column>
+
+                                </p:dataTable>
+
+                            </div>
+                        </div>
+
+                    </p:panel>
+
+                </h:form>
+            </ui:define>
+
+
+        </ui:composition>
+
+    </h:body>
+</html>

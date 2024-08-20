@@ -1,9 +1,12 @@
 package com.divudi.bean.common;
 
+import com.divudi.data.DepartmentItemCount;
 import com.divudi.data.DepartmentType;
 import com.divudi.data.FeeType;
+import com.divudi.data.InstitutionItemCount;
+import com.divudi.data.ItemLight;
 import com.divudi.data.ItemType;
-import com.divudi.data.SymanticType;
+import com.divudi.data.dataStructure.ItemFeeRow;
 import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.entity.BillExpense;
 import com.divudi.entity.Category;
@@ -22,11 +25,17 @@ import com.divudi.entity.lab.ItemForItem;
 import com.divudi.entity.lab.Machine;
 import com.divudi.entity.pharmacy.Amp;
 import com.divudi.entity.pharmacy.Ampp;
+import com.divudi.entity.pharmacy.PharmaceuticalItem;
 import com.divudi.entity.pharmacy.Vmp;
 import com.divudi.entity.pharmacy.Vmpp;
 import com.divudi.facade.ItemFacade;
 import com.divudi.facade.ItemFeeFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.SessionNumberType;
+import com.divudi.data.Sex;
+import com.divudi.entity.UserPreference;
+import com.divudi.facade.DepartmentFacade;
+import com.divudi.facade.ItemMappingFacade;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -35,6 +44,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -47,12 +58,11 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
 import org.apache.commons.beanutils.BeanUtils;
-import org.apache.commons.lang3.ClassUtils;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- * Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -63,24 +73,36 @@ public class ItemController implements Serializable {
      */
     private static final long serialVersionUID = 1L;
     @EJB
-    private ItemFacade ejbFacade;
+    private ItemFacade itemFacade;
     @EJB
     private ItemFeeFacade itemFeeFacade;
+    @EJB
+    ItemMappingFacade itemMappingFacade;
+    @EJB
+    DepartmentFacade departmentFacade;
     /**
      * Managed Beans
      */
     @Inject
     SessionController sessionController;
     @Inject
+    ItemMappingController itemMappingController;
+    @Inject
     ItemFeeManager itemFeeManager;
     @Inject
     DepartmentController departmentController;
+    @Inject
+    InstitutionController institutionController;
     @Inject
     ItemForItemController itemForItemController;
     @Inject
     ItemFeeController itemFeeController;
     @Inject
     ServiceController serviceController;
+    @Inject
+    ItemApplicationController itemApplicationController;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
 
     /**
      * Properties
@@ -90,19 +112,668 @@ public class ItemController implements Serializable {
     private List<Item> items = null;
     private List<Item> investigationsAndServices = null;
     private List<Item> itemlist;
-    List<Item> allItems;
+    List<ItemLight> allItems;
+    private List<ItemLight> filteredItems;
+    private ItemLight selectedItemLight;
+    private List<ItemLight> departmentItems;
+    private List<ItemLight> institutionItems;
+    private List<ItemLight> ccDeptItems;
+    private List<ItemLight> ccInstitutionItems;
     List<ItemFee> allItemFees;
     List<Item> selectedList;
     List<ItemFee> selectedItemFeeList;
-    private Institution instituion;
-    Department department;
+    private Institution institution;
+    private Department department;
+    private Institution filterInstitution;
+    private Department filterDepartment;
     FeeType feeType;
     List<Department> departments;
     private Machine machine;
     private List<Item> machineTests;
     private List<Item> investigationSampleComponents;
+    private List<ItemFee> ItemFeesList;
+    private List<ItemFeeRow> itemFeeRows;
+    private List<DepartmentItemCount> departmentItemCounts;
+    private DepartmentItemCount departmentItemCount;
+    private List<InstitutionItemCount> institutionItemCounts;
+    private InstitutionItemCount institutionItemCount;
+    private List<Item> suggestItems;
+    boolean masterItem;
+    private Sex patientGender;
 
     ReportKeyWord reportKeyWord;
+
+    private List<Item> packaes;
+
+    public void processDepartmentItemCount() {
+        // Query for count of items without a department
+        String jpqlWithoutDept = "select count(i) "
+                + "from Item i "
+                + "where i.retired=:ret "
+                + "and i.department is null "
+                + "and (TYPE(i)=:ix or TYPE(i)=:sv)";
+
+        // Query for items with departments
+        String jpqlWithDept = "select new com.divudi.data.DepartmentItemCount("
+                + "i.department.id, i.department.name, count(i)) "
+                + "from Item i "
+                + "where i.retired=:ret "
+                + "and i.department is not null "
+                + "and (TYPE(i)=:ix or TYPE(i)=:sv) "
+                + "group by i.department.id, i.department.name "
+                + "order by i.department.name";
+
+        Map<String, Object> m = new HashMap<>();
+        m.put("ret", false);
+        m.put("ix", Investigation.class);
+        m.put("sv", Service.class);
+
+        // Get count of items without a department
+        Long countWithoutDepartment = itemFacade.countByJpql(jpqlWithoutDept, m);
+        DepartmentItemCount icWithoutDept = new DepartmentItemCount(-1L, "No Department", countWithoutDepartment);
+
+        // Get list of items with a department
+        List<DepartmentItemCount> withDeptList = (List<DepartmentItemCount>) itemFacade.findLightsByJpql(jpqlWithDept, m);
+
+        // Create final list and add count for items without a department first
+        departmentItemCounts = new ArrayList<>();
+        departmentItemCounts.add(icWithoutDept);
+        departmentItemCounts.addAll(withDeptList);
+    }
+
+    public void processInstitutionItemCount() {
+        // Query for count of items without an institution
+        String jpqlWithoutIns = "select count(i) "
+                + "from Item i "
+                + "where i.retired=:ret "
+                + "and i.institution is null "
+                + "and (TYPE(i)=:ix or TYPE(i)=:sv)";
+
+        // Query for items with institutions
+        String jpqlWithIns = "select new com.divudi.data.InstitutionItemCount("
+                + "i.institution.id, i.institution.name, i.institution.code, count(i)) "
+                + "from Item i "
+                + "where i.retired=:ret "
+                + "and i.institution is not null "
+                + "and (TYPE(i)=:ix or TYPE(i)=:sv) "
+                + "group by i.institution.id, i.institution.name, i.institution.code "
+                + "order by i.institution.name";
+
+        Map<String, Object> m = new HashMap<>();
+        m.put("ret", false);
+        m.put("ix", Investigation.class);
+        m.put("sv", Service.class);
+
+        // Get count of items without an institution
+        Long countWithoutInstitution = itemFacade.countByJpql(jpqlWithoutIns, m);
+        InstitutionItemCount icWithout = new InstitutionItemCount(-1L, "No Institution", "No Code", countWithoutInstitution);
+
+        // Get list of items with an institution
+        List<InstitutionItemCount> withInsList = (List<InstitutionItemCount>) itemFacade.findLightsByJpql(jpqlWithIns, m);
+
+        // Create final list and add count for items without an institution first
+        institutionItemCounts = new ArrayList<>();
+        institutionItemCounts.add(icWithout);
+        institutionItemCounts.addAll(withInsList);
+    }
+
+    public List<ItemFee> fetchItemFeeList() {
+        List<ItemFee> itemFees = new ArrayList<>();
+        String sql;
+        sql = "select c from ItemFee c "
+                + " where c.retired=false order by c.name ";
+        ItemFeesList = getItemFeeFacade().findByJpql(sql);
+        return ItemFeesList;
+    }
+
+    private List<ItemFee> fetchItemFeesForItem(Item item) {
+        String sql = "select c from ItemFee c where c.item.id = :itemId and c.retired=false";
+        Map<String, Object> params = new HashMap<>();
+        params.put("itemId", item.getId());
+        return getItemFeeFacade().findByJpql(sql, params);
+    }
+
+    public void fillFilteredItems() {
+        filteredItems = fillItems();
+    }
+
+    public String fillInstitutionItems() {
+        if (filterInstitution == null) {
+            JsfUtil.addErrorMessage("Select institution");
+            return null;
+        }
+        return fillInstitutionAndDepartmentItems(filterInstitution, null);
+    }
+
+    public String fillDepartmentItems() {
+        if (filterInstitution == null) {
+            JsfUtil.addErrorMessage("Select institution");
+            return null;
+        }
+        if (filterDepartment == null) {
+            JsfUtil.addErrorMessage("Select Department");
+            return null;
+        }
+        return fillInstitutionAndDepartmentItems(filterInstitution, filterDepartment);
+    }
+
+    public String fillInstitutionAndDepartmentItems(Institution institution, Department department) {
+        if (configOptionApplicationController.getBooleanValueByKey("List OPD Items with Item Fees in Manage Items", false)) {
+            Map<String, Object> parameters = new HashMap<>();
+            String jpql = "SELECT new com.divudi.data.ItemLight("
+                    + "f.item.id, "
+                    + "f.item.name, "
+                    + "f.item.code, "
+                    + "f.item.total, "
+                    + "f.name, "
+                    + "f.fee, "
+                    + "f.ffee) "
+                    + "FROM Fee f "
+                    + "WHERE f.retired = :ret "
+                    + "AND (TYPE(f.item)=:ixc OR TYPE(f.item)=:svc) ";
+
+            parameters.put("ret", false);
+            parameters.put("ixc", Investigation.class);
+            parameters.put("svc", Service.class);
+            if (filterInstitution != null) {
+                jpql += "AND f.item.institution=:ins ";
+                parameters.put("ins", institution);
+            }
+            if (filterDepartment != null) {
+                jpql += "AND f.item.department=:dept ";
+                parameters.put("dept", department);
+            }
+
+            jpql += "ORDER BY f.item.name";
+            filteredItems = (List<ItemLight>) itemFacade.findLightsByJpql(jpql, parameters);
+        } else {
+            Map<String, Object> parameters = new HashMap<>();
+            String jpql = "SELECT new com.divudi.data.ItemLight("
+                    + "i.id, "
+                    + "i.name, "
+                    + "i.code, "
+                    + "i.total) "
+                    + "FROM Item i "
+                    + "WHERE i.retired = :ret "
+                    + "AND (TYPE(i)=:ixc OR TYPE(i)=:svc) ";
+
+            parameters.put("ret", false);
+            parameters.put("ixc", Investigation.class);
+            parameters.put("svc", Service.class);
+            if (filterInstitution != null) {
+                jpql += "AND i.institution=:ins ";
+                parameters.put("ins", institution);
+            }
+            if (filterDepartment != null) {
+                jpql += "AND i.department=:dept ";
+                parameters.put("dept", department);
+            }
+
+            jpql += "ORDER BY i.name";
+            filteredItems = (List<ItemLight>) itemFacade.findLightsByJpql(jpql, parameters);
+        }
+
+        return "/admin/items/list?faces-redirect=true;";
+    }
+
+    public String fillItemsWithoutInstitution() {
+        if (configOptionApplicationController.getBooleanValueByKey("List OPD Items with Item Fees in Manage Items", false)) {
+            Map<String, Object> parameters = new HashMap<>();
+            String jpql = "SELECT new com.divudi.data.ItemLight("
+                    + "f.item.id, "
+                    + "f.item.name, "
+                    + "f.item.code, "
+                    + "f.item.total, "
+                    + "f.name, "
+                    + "f.fee, "
+                    + "f.ffee) "
+                    + "FROM Fee f "
+                    + "WHERE f.retired = :ret "
+                    + "AND (f.item.institution IS NULL) "
+                    + "AND (TYPE(f.item)=:ixc OR TYPE(f.item)=:svc) ";
+
+            parameters.put("ret", false);
+            parameters.put("ixc", Investigation.class);
+            parameters.put("svc", Service.class);
+
+            jpql += "ORDER BY f.item.name";
+            filteredItems = (List<ItemLight>) itemFacade.findLightsByJpql(jpql, parameters);
+        } else {
+            Map<String, Object> parameters = new HashMap<>();
+            String jpql = "SELECT new com.divudi.data.ItemLight("
+                    + "i.id, "
+                    + "i.name, "
+                    + "i.code, "
+                    + "i.total) "
+                    + "FROM Item i "
+                    + "WHERE i.retired = :ret "
+                    + "AND i.institution IS NULL "
+                    + "AND (TYPE(i)=:ixc OR TYPE(i)=:svc) "
+                    + "ORDER BY i.name";
+
+            parameters.put("ret", false);
+            parameters.put("ixc", Investigation.class);
+            parameters.put("svc", Service.class);
+            filteredItems = (List<ItemLight>) itemFacade.findLightsByJpql(jpql, parameters);
+        }
+
+        return "/admin/items/list?faces-redirect=true;";
+    }
+
+    public String fillItemsWithoutDepartment() {
+        if (configOptionApplicationController.getBooleanValueByKey("List OPD Items with Item Fees in Manage Items", false)) {
+            Map<String, Object> parameters = new HashMap<>();
+            String jpql = "SELECT new com.divudi.data.ItemLight("
+                    + "f.item.id, "
+                    + "f.item.name, "
+                    + "f.item.code, "
+                    + "f.item.total, "
+                    + "f.name, "
+                    + "f.fee, "
+                    + "f.ffee) "
+                    + "FROM Fee f "
+                    + "WHERE f.retired = :ret "
+                    + "AND (f.item.department IS NULL) "
+                    + "AND (TYPE(f.item) = :ixc OR TYPE(f.item) = :svc) "
+                    + "ORDER BY f.item.name";
+
+            parameters.put("ret", false);
+            parameters.put("ixc", Investigation.class);
+            parameters.put("svc", Service.class);
+
+            filteredItems = (List<ItemLight>) itemFacade.findLightsByJpql(jpql, parameters);
+
+        } else {
+            Map<String, Object> parameters = new HashMap<>();
+            String jpql = "SELECT new com.divudi.data.ItemLight("
+                    + "i.id, "
+                    + "i.name, "
+                    + "i.code, "
+                    + "i.total) "
+                    + "FROM Item i "
+                    + "WHERE i.retired = :ret "
+                    + "AND i.department IS NULL "
+                    + "AND (TYPE(i)=:ixc OR TYPE(i)=:svc) "
+                    + "ORDER BY i.name";
+
+            parameters.put("ret", false);
+            parameters.put("ixc", Investigation.class);
+            parameters.put("svc", Service.class);
+            filteredItems = (List<ItemLight>) itemFacade.findLightsByJpql(jpql, parameters);
+        }
+
+        return "/admin/items/list?faces-redirect=true;";
+    }
+
+    public String navigateToListItemsOfSelectedDepartment() {
+        if (departmentItemCount == null) {
+            JsfUtil.addErrorMessage("Select dept");
+            return "";
+        }
+        filterInstitution = null;
+        if (departmentItemCount.getDepartmentId() == null) {
+            filterDepartment = null;
+            return fillItemsWithoutDepartment();
+        } else {
+            filterDepartment = departmentController.findDepartment(departmentItemCount.getDepartmentId());
+            return fillDepartmentItems();
+        }
+    }
+
+    public String navigateToListItemsOfSelectedInstitution() {
+        if (institutionItemCount == null) {
+            JsfUtil.addErrorMessage("Select dept");
+            return "";
+        }
+        filterDepartment = null;
+        if (institutionItemCount.getInstitutionId() == null || institutionItemCount.getInstitutionId() < 1l) {
+            filterInstitution = null;
+            return fillItemsWithoutInstitution();
+        } else {
+            filterInstitution = institutionController.findInstitution(institutionItemCount.getInstitutionId());
+            return fillInstitutionItems();
+        }
+    }
+
+    public List<ItemLight> fillItems() {
+        Map<String, Object> parameters = new HashMap<>();
+        String jpql = "SELECT new com.divudi.data.ItemLight("
+                + "i.id, i.orderNo, i.isMasterItem, i.hasReportFormat, "
+                + "c.name, c.id, ins.name, ins.id, "
+                + "d.name, d.id, s.name, s.id, "
+                + "p.name, stf.id, i.name, i.code, i.barcode, "
+                + "i.printName, i.shortName, i.fullName, i.total) "
+                + "FROM Item i "
+                + "LEFT JOIN i.category c "
+                + "LEFT JOIN i.institution ins "
+                + "LEFT JOIN i.department d "
+                + "LEFT JOIN i.speciality s "
+                + "LEFT JOIN i.staff stf "
+                + "LEFT JOIN stf.person p "
+                + "WHERE i.retired = :ret "
+                + "AND (TYPE(i)=:ixc OR TYPE(i)=:svc) ";
+
+        if (filterInstitution != null) {
+            jpql += "AND i.institution=:ins ";
+            parameters.put("ins", filterInstitution);
+        } else {
+            jpql += "AND i.institution IS NULL ";
+        }
+
+        if (filterDepartment != null) {
+            jpql += "AND i.department=:dep ";
+            parameters.put("dep", filterDepartment);
+        } else {
+            jpql += "AND i.department IS NULL ";
+        }
+
+        parameters.put("ret", false);
+        parameters.put("ixc", Investigation.class);
+        parameters.put("svc", Service.class);
+
+        jpql += "ORDER BY i.name";
+
+        List<ItemLight> lst = (List<ItemLight>) itemFacade.findLightsByJpql(jpql, parameters);
+        return lst;
+    }
+
+    public String navigateToListAllItems() {
+        allItems = null;
+        return "/item/reports/item_list";
+    }
+
+    public String navigateToEditFeaturesOfMultipleItems() {
+        return "/admin/items/multiple_item_edit";
+    }
+
+    public String navigateToListFilteredItems() {
+        filteredItems = null;
+        return "/admin/items/list";
+    }
+
+    public String navigateToListAllItemsForAdmin() {
+        allItems = null;
+        filterDepartment = null;
+        filterInstitution = null;
+        return "/admin/items/list";
+    }
+
+    public void fillInvestigations() {
+        fillItemsByType(Investigation.class);
+    }
+
+    public void fillServices() {
+        fillItemsByType(Service.class);
+    }
+
+    public void fillMedicines() {
+        fillItemsByType(PharmaceuticalItem.class);
+    }
+
+    public void fillItemsByType(Class it) {
+        String jpql = "select i "
+                + " from Item i"
+                + " where type(i)=:scs "
+                + " order by i.name";
+        Map m = new HashMap();
+        m.put("scs", it);
+        allItems = getFacade().findByJpql(jpql, m);
+    }
+
+    public String toManageItemIndex() {
+        return "/admin/items/index?faces-redirect=true";
+    }
+
+    public String toListInvestigations() {
+        fillInvestigations();
+        return "/admin/investigations?faces-redirect=true";
+    }
+
+    public String toAddNewInvestigation() {
+        current = new Investigation();
+        return "/admin/investigation?faces-redirect=true";
+    }
+
+    public String toEditInvestigation() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Nothing selected");
+            return "";
+        }
+        return "/admin/institution?faces-redirect=true";
+    }
+
+    public String deleteInvestigation() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Nothing selected");
+            return "";
+        }
+        current.setRetired(true);
+        getFacade().edit(current);
+        return toListInvestigations();
+    }
+
+    public String saveSelectedInvestigation() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Nothing selected");
+            return "";
+        }
+        if (current.getId() == null) {
+            getFacade().create(current);
+        } else {
+            getFacade().edit(current);
+        }
+        return toListInvestigations();
+    }
+
+    public Item findItemByCode(String code) {
+        String jpql;
+        Map m = new HashMap();
+        jpql = "select i "
+                + " from Item i "
+                + " where i.retired=:ret "
+                + " and i.code=:code";
+        m.put("ret", false);
+        m.put("code", code);
+        Item item = getFacade().findFirstByJpql(jpql, m);
+        if (item == null) {
+            jpql = "select i "
+                    + " from Item i "
+                    + " where i.code=:code";
+            m = new HashMap();
+            m.put("code", code);
+            item = getFacade().findFirstByJpql(jpql, m);
+            if (item != null) {
+                item.setRetired(false);
+                getFacade().edit(item);
+            } else {
+                item = new Item();
+                item.setName(code);
+                item.setCode(code);
+                getFacade().create(item);
+            }
+        }
+        return item;
+    }
+
+    public Item findItem(Long id) {
+        return getFacade().find(id);
+    }
+
+    public Item findItemByCode(String code, String parentCode) {
+        Item parentItem = findItemByCode(parentCode);
+        String jpql;
+        Map m = new HashMap();
+        jpql = "select i "
+                + " from Item i "
+                + " where i.retired=:ret "
+                + " and i.parentItem=:pi "
+                + " and i.code=:code";
+        m.put("ret", false);
+        m.put("code", code);
+        m.put("pi", parentItem);
+        Item item = getFacade().findFirstByJpql(jpql, m);
+        if (item == null) {
+            jpql = "select i "
+                    + " from Item i "
+                    + " and i.parentItem=:pi "
+                    + " where i.code=:code";
+            m = new HashMap();
+            m.put("code", code);
+            m.put("pi", parentItem);
+            item = getFacade().findFirstByJpql(jpql, m);
+            if (item != null) {
+                item.setRetired(false);
+                getFacade().edit(item);
+            } else {
+                item = new Item();
+                item.setName(code);
+                item.setCode(code);
+                item.setParentItem(parentItem);
+                getFacade().create(item);
+            }
+        }
+        return item;
+    }
+
+    public Item findItemByName(String name, String parentCode) {
+        Item parentItem = findItemByCode(parentCode);
+        String jpql;
+        Map m = new HashMap();
+        jpql = "select i "
+                + " from Item i "
+                + " where i.retired=:ret "
+                + " and i.parentItem=:pi "
+                + " and i.name=:name";
+        m.put("ret", false);
+        m.put("name", name);
+        m.put("pi", parentItem);
+        Item item = getFacade().findFirstByJpql(jpql, m);
+        if (item == null) {
+            jpql = "select i "
+                    + " from Item i "
+                    + " where i.parentItem=:pi "
+                    + " and i.name=:name";
+            m = new HashMap();
+            m.put("name", name);
+            m.put("pi", parentItem);
+            item = getFacade().findFirstByJpql(jpql, m);
+            if (item != null) {
+                item.setRetired(false);
+                getFacade().edit(item);
+            } else {
+                item = new Item();
+                item.setName(name);
+                item.setCode(CommonController.nameToCode(name));
+                item.setParentItem(parentItem);
+                getFacade().create(item);
+            }
+        }
+        return item;
+    }
+
+    public Item findItemByName(String name, Department dept) {
+        try {
+            String jpql;
+            Map m = new HashMap();
+            jpql = "select i "
+                    + " from Item i "
+                    + " where i.retired=:ret "
+                    + " and i.department=:dept "
+                    + " and i.name=:name";
+            m.put("ret", false);
+            m.put("name", name);
+            m.put("dept", dept);
+            Item item = getFacade().findFirstByJpql(jpql, m);
+            return item;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    public Item findAndCreateItemByName(String name, Department dept) {
+        try {
+            String jpql;
+            Map m = new HashMap();
+            jpql = "select i "
+                    + " from Item i "
+                    + " where i.retired=:ret "
+                    + " and i.department=:dept "
+                    + " and i.name=:name";
+            m.put("ret", false);
+            m.put("name", name);
+            m.put("dept", dept);
+            Item item = getFacade().findFirstByJpql(jpql, m);
+            if (item == null) {
+                item = new Item();
+                item.setName(name);
+                getFacade().create(item);
+            }
+            return item;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    public Item findItemByName(String name, String code, Department dept) {
+        try {
+            String jpql;
+            Map m = new HashMap();
+            jpql = "select i "
+                    + " from Item i "
+                    + " where i.retired=:ret "
+                    + " and i.department=:dept "
+                    + " and i.code=:code "
+                    + " and i.name=:name ";
+            m.put("ret", false);
+            m.put("name", name);
+            m.put("code", code);
+            m.put("dept", dept);
+            Item item = getFacade().findFirstByJpql(jpql, m);
+            return item;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+    
+    public Item findItemByNameAndCode(String name, String code) {
+        try {
+            String jpql;
+            Map m = new HashMap();
+            jpql = "select i "
+                    + " from Item i "
+                    + " where i.retired=:ret "
+                    + " and i.code=:code "
+                    + " and i.name=:name ";
+            m.put("ret", false);
+            m.put("name", name);
+            m.put("code", code);
+            Item item = getFacade().findFirstByJpql(jpql, m);
+            return item;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+    
+   
+
+
+    public Item findMasterItemByName(String name) {
+        try {
+            String jpql;
+            Map m = new HashMap();
+            jpql = "select i "
+                    + " from Item i "
+                    + " where i.retired=:ret "
+                    + " and i.isMasterItem=:mi "
+                    + " and i.name=:name";
+            m.put("ret", false);
+            m.put("name", name);
+            m.put("mi", true);
+            return getFacade().findFirstByJpql(jpql, m);
+        } catch (Exception e) {
+            return null;
+        }
+    }
 
     public void fillInvestigationSampleComponents() {
         if (current == null) {
@@ -164,7 +835,7 @@ public class ItemController implements Serializable {
         m.put("t", ItemType.SampleComponent);
         m.put("r", false);
         m.put("m", ix);
-        return getFacade().findBySQL(j, m);
+        return getFacade().findByJpql(j, m);
     }
 
     public void removeSampleComponent() {
@@ -212,7 +883,7 @@ public class ItemController implements Serializable {
 
     public void addSampleComponentsForAllInvestigationsWithoutSampleComponents() {
         String j = "select ix from Investigation ix ";
-        List<Item> ixs = getFacade().findBySQL(j);
+        List<Item> ixs = getFacade().findByJpql(j);
         for (Item ix : ixs) {
             if (ix instanceof Investigation) {
                 Investigation tix = (Investigation) ix;
@@ -249,17 +920,17 @@ public class ItemController implements Serializable {
         m.put("t", ItemType.AnalyzerTest);
         m.put("m", machine);
         m.put("r", false);
-        machineTests = getFacade().findBySQL(j, m);
+        machineTests = getFacade().findByJpql(j, m);
     }
 
     public List<Item> completeMachineTests(String qry) {
         List<Item> ts;
-        String j = "select i from Item i where i.itemType=:t and (lower(i.name) like :m or lower(i.name) like :m ) and i.retired=:r order by i.code";
+        String j = "select i from Item i where i.itemType=:t and ((i.name) like :m or (i.name) like :m ) and i.retired=:r order by i.code";
         Map m = new HashMap();
         m.put("t", ItemType.AnalyzerTest);
         m.put("m", "%" + qry.toLowerCase() + "%");
         m.put("r", false);
-        ts = getFacade().findBySQL(j, m);
+        ts = getFacade().findByJpql(j, m);
         return ts;
     }
 
@@ -293,7 +964,7 @@ public class ItemController implements Serializable {
             return;
         }
         current.setMachine(machine);
-        current.setInstitution(machine.getInstitution());
+//        current.setInstitution(machine.getInstitution());
         current.setItemType(ItemType.AnalyzerTest);
 
         if (current.getId() == null) {
@@ -334,6 +1005,114 @@ public class ItemController implements Serializable {
                 itemFeeManager.addNewFee();
             }
         }
+    }
+
+    public void markSelectedItemsFeesChangableAtBilling() {
+        if (selectedList == null || selectedList.isEmpty()) {
+            JsfUtil.addErrorMessage("Nothing is selected");
+            return;
+        }
+        for (Item i : selectedList) {
+            i.setUserChangable(true);
+            itemFacade.edit(i);
+        }
+        JsfUtil.addSuccessMessage("All Marked as Fees Changable at Billing");
+    }
+
+    public void markSelectedItemsAsDiscountableAtBilling() {
+        if (selectedList == null || selectedList.isEmpty()) {
+            JsfUtil.addErrorMessage("Nothing is selected");
+            return;
+        }
+        for (Item i : selectedList) {
+            i.setDiscountAllowed(true);
+            itemFacade.edit(i);
+        }
+        JsfUtil.addSuccessMessage("All Marked as Fees Changable at Billing");
+    }
+
+    public void unmarkSelectedItemsFeesChangableAtBilling() {
+        if (selectedList == null || selectedList.isEmpty()) {
+            JsfUtil.addErrorMessage("Nothing is selected");
+            return;
+        }
+        for (Item i : selectedList) {
+            i.setUserChangable(false);
+            itemFacade.edit(i);
+        }
+        JsfUtil.addSuccessMessage("All Unmarked as Fees Changable at Billing");
+    }
+
+    public void markSelectedItemsAsPrintSessionNumber() {
+        if (selectedList == null || selectedList.isEmpty()) {
+            JsfUtil.addErrorMessage("Nothing is selected");
+            return;
+        }
+        for (Item i : selectedList) {
+            i.setPrintSessionNumber(true);
+            itemFacade.edit(i);
+        }
+        JsfUtil.addSuccessMessage("All Marked as Print Session Numbers");
+    }
+
+    public void unmarkSelectedItemsAsNotToPrintSessionNumber() {
+        if (selectedList == null || selectedList.isEmpty()) {
+            JsfUtil.addErrorMessage("Nothing is selected");
+            return;
+        }
+        for (Item i : selectedList) {
+            i.setPrintSessionNumber(false);
+            itemFacade.edit(i);
+        }
+        JsfUtil.addSuccessMessage("All Marked as Not to Print Session Numbers");
+    }
+
+    public void unmarkSelectedItemsAsDiscountableAtBilling() {
+        if (selectedList == null || selectedList.isEmpty()) {
+            JsfUtil.addErrorMessage("Nothing is selected");
+            return;
+        }
+        for (Item i : selectedList) {
+            i.setDiscountAllowed(false);
+            itemFacade.edit(i);
+        }
+        JsfUtil.addSuccessMessage("All Unmarked as Discountable at Billing");
+    }
+
+    public void markSelectedItemsForPrintSeparateFees() {
+        if (selectedList == null || selectedList.isEmpty()) {
+            JsfUtil.addErrorMessage("Nothing is selected");
+            return;
+        }
+        for (Item i : selectedList) {
+            i.setPrintFeesForBills(true);
+            itemFacade.edit(i);
+        }
+        JsfUtil.addSuccessMessage("All Marked for Print Separate Fees");
+    }
+
+    public void unMarkSelectedItemsForPrintSeparateFees() {
+        if (selectedList == null || selectedList.isEmpty()) {
+            JsfUtil.addErrorMessage("Nothing is selected");
+            return;
+        }
+        for (Item i : selectedList) {
+            i.setPrintFeesForBills(false);
+            itemFacade.edit(i);
+        }
+        JsfUtil.addSuccessMessage("All Unmarked for Print Separate Fees");
+    }
+
+    public void addSessionNumberType() {
+        if (selectedList == null || selectedList.isEmpty()) {
+            JsfUtil.addErrorMessage("Nothing is selected");
+            return;
+        }
+        for (Item i : selectedList) {
+            i.setSessionNumberType(SessionNumberType.ByBill);
+            itemFacade.edit(i);
+        }
+        JsfUtil.addSuccessMessage("All Unmarked for Print Separate Fees");
     }
 
     public void updateSelectedItemFees() {
@@ -381,8 +1160,18 @@ public class ItemController implements Serializable {
         getInvestigationsAndServices();
     }
 
+    public List<Department> fillInstitutionDepatrments() {
+        Map m = new HashMap();
+        m.put("ins", current.getInstitution());
+        String sql = "Select d From Department d "
+                + " where d.retired=false "
+                + " and d.institution=:ins "
+                + " order by d.name";
+        departments = departmentFacade.findByJpql(sql, m);
+        return departments;
+    }
+
     public List<Department> getDepartments() {
-        departments = departmentController.getInstitutionDepatrments(instituion);
         return departments;
     }
 
@@ -391,8 +1180,7 @@ public class ItemController implements Serializable {
     }
 
     public void createNewItemsFromMasterItems() {
-        ////System.out.println("createNewItemsFromMasterItems");
-        if (instituion == null) {
+        if (institution == null) {
             JsfUtil.addErrorMessage("Select institution");
             return;
         }
@@ -405,7 +1193,6 @@ public class ItemController implements Serializable {
             return;
         }
         for (Item i : selectedList) {
-            ////System.out.println("i.getName() = " + i.getName());
             Item ni = null;
             if (i instanceof Investigation) {
                 try {
@@ -429,25 +1216,21 @@ public class ItemController implements Serializable {
                 continue;
             }
             ni.setId(null);
-            ni.setInstitution(instituion);
+            ni.setInstitution(institution);
             ni.setDepartment(department);
             ni.setItemFee(null);
             getFacade().create(ni);
             i.setItemFees(itemFeeManager.fillFees(i));
-            ////System.out.println("ni = " + ni);
-            ////System.out.println("i.getItemFees() = " + i.getItemFees());
-            ////System.out.println("ni.getItemFees() = " + ni.getItemFees());
 
             for (ItemFee f : i.getItemFees()) {
                 ItemFee nf = new ItemFee();
-                ////System.out.println("f = " + f);
                 try {
                     BeanUtils.copyProperties(nf, f);
                 } catch (IllegalAccessException | InvocationTargetException ex) {
                     Logger.getLogger(ItemController.class.getName()).log(Level.SEVERE, null, ex);
                 }
                 if (nf.getInstitution() != null) {
-                    nf.setInstitution(instituion);
+                    nf.setInstitution(institution);
                 }
                 if (nf.getDepartment() != null) {
                     nf.setDepartment(department);
@@ -456,7 +1239,6 @@ public class ItemController implements Serializable {
                 nf.setItem(ni);
                 ni.getItemFees().add(nf);
                 getItemFeeFacade().create(nf);
-                ////System.out.println("nf = " + nf);
             }
             getFacade().edit(ni);
             List<Item> ifis = itemForItemController.getItemsForParentItem(i);
@@ -469,12 +1251,11 @@ public class ItemController implements Serializable {
                     ifin.setCreater(getSessionController().getLoggedUser());
                 }
             }
-            ////System.out.println("ni.getItemFees() = " + ni.getItemFees());
         }
     }
 
     public void updateItemsFromMasterItems() {
-        if (instituion == null) {
+        if (institution == null) {
             JsfUtil.addErrorMessage("Select institution");
             return;
         }
@@ -493,7 +1274,7 @@ public class ItemController implements Serializable {
             }
 
             if (i.getInstitution() != null) {
-                i.setInstitution(instituion);
+                i.setInstitution(institution);
             }
             getFacade().edit(i);
         }
@@ -503,7 +1284,7 @@ public class ItemController implements Serializable {
     }
 
     public void updateItemsAndFees() {
-        if (instituion == null) {
+        if (institution == null) {
             JsfUtil.addErrorMessage("Select institution");
             return;
         }
@@ -522,7 +1303,7 @@ public class ItemController implements Serializable {
             }
 
             if (fee.getInstitution() != null) {
-                fee.setInstitution(instituion);
+                fee.setInstitution(institution);
             }
             getItemFeeFacade().edit(fee);
         }
@@ -540,12 +1321,11 @@ public class ItemController implements Serializable {
             sql = "select c.item from ItemsDistributors c"
                     + " where c.retired=false "
                     + " and c.item.retired=false "
-                    + " and c.institution=:ins and (upper(c.item.name) like :q or "
-                    + " upper(c.item.barcode) like :q or upper(c.item.code) like :q )order by c.item.name";
-            hm.put("ins", getInstituion());
+                    + " and c.institution=:ins and ((c.item.name) like :q or "
+                    + " (c.item.barcode) like :q or (c.item.code) like :q )order by c.item.name";
+            hm.put("ins", getInstitution());
             hm.put("q", "%" + query + "%");
-            //////System.out.println(sql);
-            suggestions = getFacade().findBySQL(sql, hm, 20);
+            suggestions = getFacade().findByJpql(sql, hm, 20);
         }
         return suggestions;
 
@@ -559,10 +1339,9 @@ public class ItemController implements Serializable {
         sql = "select c.item from ItemsDistributors c where c.retired=false "
                 + " and c.institution=:ins "
                 + " order by c.item.name";
-        hm.put("ins", getInstituion());
+        hm.put("ins", getInstitution());
 
-        //////System.out.println(sql);
-        suggestions = getFacade().findBySQL(sql, hm);
+        suggestions = getFacade().findByJpql(sql, hm);
 
         return suggestions;
 
@@ -589,40 +1368,67 @@ public class ItemController implements Serializable {
                 tmpMap.put("types", Arrays.asList(itemClasses));
             }
 
-            sql += " and (upper(c.name) like :q or upper(c.code) like :q or upper(c.barcode) like :q  ) ";
+            sql += " and ((c.name) like :q or (c.code) like :q or (c.barcode) like :q  ) ";
             tmpMap.put("q", "%" + query.toUpperCase() + "%");
 
             sql += " order by c.name";
 
             if (count != 0) {
-                lst = getFacade().findBySQL(sql, tmpMap, TemporalType.TIMESTAMP, count);
+                lst = getFacade().findByJpql(sql, tmpMap, TemporalType.TIMESTAMP, count);
             } else {
-                lst = getFacade().findBySQL(sql, tmpMap, TemporalType.TIMESTAMP);
+                lst = getFacade().findByJpql(sql, tmpMap, TemporalType.TIMESTAMP);
             }
         }
         return lst;
     }
 
+    public List<Item> findItemsFromBarcode(String barcode) {
+        String sql;
+        List<Item> lst;
+        HashMap tmpMap = new HashMap();
+        if (barcode == null) {
+            lst = new ArrayList<>();
+        } else {
+            sql = "select c "
+                    + " from Item c "
+                    + " where c.retired=false ";
+
+            sql += " and c.barcode=:q ";
+            tmpMap.put("q", barcode);
+
+            sql += " order by c.name";
+
+            lst = getFacade().findByJpql(sql, tmpMap, TemporalType.TIMESTAMP);
+
+        }
+        return lst;
+    }
+
+    public List<Item> completeMasterItems(String query) {
+        String jpql;
+        List<Item> lst;
+        if (query == null) {
+            lst = new ArrayList<>();
+        } else {
+            HashMap tmpMap = new HashMap();
+            jpql = "select damith "
+                    + " from Item damith "
+                    + " where damith.retired=:ret ";
+            jpql += " and (damith.name like :q or damith.code like :q or damith.barcode like :q ) ";
+            jpql += " and damith.isMasterItem=:mi ";
+            tmpMap.put("q", "%" + query + "%");
+            tmpMap.put("mi", true);
+            tmpMap.put("ret", false);
+            jpql += " order by damith.name";
+
+            lst = getFacade().findByJpql(jpql, tmpMap);
+        }
+
+        return lst;
+    }
+
     public List<Item> completeItem(String query) {
         return completeItem(query, null, null, 20);
-//        List<Item> suggestions;
-//        String sql;
-//        HashMap hm = new HashMap();
-//        if (query == null) {
-//            suggestions = new ArrayList<>();
-//        } else {
-//            sql = "select c from Item c "
-//                    + " where c.retired=false"
-//                    + "  and (upper(c.name) like :q"
-//                    + "  or upper(c.barcode) like :q"
-//                    + "  or upper(c.code) like :q )"
-//                    + " order by c.name";
-//            hm.put("q", "%" + query.toUpperCase() + "%");
-////////System.out.println(sql);
-//            suggestions = getFacade().findBySQL(sql, hm, 20);
-//        }
-//        return suggestions;
-//
     }
 
     List<Item> itemList;
@@ -640,35 +1446,75 @@ public class ItemController implements Serializable {
     }
 
     public List<Item> completeAmpItem(String query) {
-//        DepartmentType[] dts = new DepartmentType[]{DepartmentType.Pharmacy, null};
-//        Class[] classes = new Class[]{Amp.class};
-//        return completeItem(query, classes, dts, 30);
-//        
-        String sql;
-        HashMap tmpMap = new HashMap();
-        if (query == null) {
-            suggestions = new ArrayList<>();
+        List<Item> suggestions = new ArrayList<>();
+        if (query == null || query.trim().isEmpty()) {
+            return suggestions;
         } else {
+            String[] words = query.split("\\s+");
+            String sql = "SELECT c FROM Item c WHERE c.retired = false AND type(c) = :amp AND "
+                    + "(c.departmentType IS NULL OR c.departmentType != :dep) AND (";
 
-            sql = "select c from Item c where c.retired=false "
-                    + " and (type(c)= :amp) and "
-                    + " ( c.departmentType is null or c.departmentType!=:dep ) "
-                    + " and (upper(c.name) like :str or upper(c.code) like :str or"
-                    + " upper(c.barcode) like :str ) order by c.name";
-            //////System.out.println(sql);
+            // Dynamic part of the query for the name field using each word
+            StringBuilder nameConditions = new StringBuilder();
+            for (int i = 0; i < words.length; i++) {
+                if (i > 0) {
+                    nameConditions.append(" AND ");
+                }
+                nameConditions.append("LOWER(c.name) LIKE :nameStr").append(i);
+            }
+
+            // Adding name conditions and the static conditions for code and barcode
+            sql += "(" + nameConditions + ") OR LOWER(c.code) LIKE :codeStr OR LOWER(c.barcode) LIKE :barcodeStr) "
+                    + "ORDER BY c.name";
+
+            // Setting parameters
+            HashMap<String, Object> tmpMap = new HashMap<>();
             tmpMap.put("dep", DepartmentType.Store);
             tmpMap.put("amp", Amp.class);
-            tmpMap.put("str", "%" + query.toUpperCase() + "%");
-            suggestions = getFacade().findBySQL(sql, tmpMap, TemporalType.TIMESTAMP, 30);
+            tmpMap.put("codeStr", "%" + query.toLowerCase() + "%");
+
+            tmpMap.put("barcodeStr", query.toLowerCase());
+
+            for (int i = 0; i < words.length; i++) {
+                tmpMap.put("nameStr" + i, "%" + words[i].toLowerCase() + "%");
+            }
+            suggestions = getFacade().findByJpql(sql, tmpMap, TemporalType.TIMESTAMP, 30);
         }
         return suggestions;
-
     }
 
+//    @Deprecated(forRemoval = true)
+//    public List<Item> completeAmps(String query) {
+//        // Please use Amp Controller completeAmps
+//        //#{ampController.completeAmp}
+//        String jpql;
+//        HashMap params = new HashMap();
+//        if (query == null) {
+//            suggestions = new ArrayList<>();
+//        } else {
+//            jpql = "select c "
+//                    + " from Amp c "
+//                    + " where c.retired=false "
+//                    + " and "
+//                    + " (c.departmentType is null or c.departmentType!=:dep ) "
+//                    + " and "
+//                    + " ("
+//                    + " (c.name) like :str "
+//                    + " or "
+//                    + " (c.code) like :str "
+//                    + " or "
+//                    + " (c.barcode) like :str ) "
+//                    + "order by c.name";
+//            params.put("dep", DepartmentType.Pharmacy);
+//            params.put("str", "%" + query.toUpperCase() + "%");
+//            System.out.println("jpql = " + jpql);
+//            System.out.println("params = " + params);
+//            suggestions = getFacade().findByJpql(jpql, params, 30);
+//        }
+//        return suggestions;
+//
+//    }
     public List<Item> completeAmpItemAll(String query) {
-//        DepartmentType[] dts = new DepartmentType[]{DepartmentType.Pharmacy, null};
-//        Class[] classes = new Class[]{Amp.class};
-//        return completeItem(query, classes, dts, 0);
         String sql;
         HashMap tmpMap = new HashMap();
         if (query == null) {
@@ -676,15 +1522,18 @@ public class ItemController implements Serializable {
         } else {
 
             sql = "select c from Item c where "
-                    + " (type(c)= :amp) and "
+                    + " c.retired=:ret "
+                    + " and (type(c)= :amp) "
+                    + " and "
                     + " ( c.departmentType is null or c.departmentType!=:dep ) "
-                    + " and (upper(c.name) like :str or upper(c.code) like :str or"
-                    + " upper(c.barcode) like :str ) order by c.name";
-            //////System.out.println(sql);
+                    + " and "
+                    + " ((c.name) like :str or (c.code) like :str or (c.barcode) like :str ) "
+                    + " order by c.name";
             tmpMap.put("dep", DepartmentType.Store);
             tmpMap.put("amp", Amp.class);
+            tmpMap.put("ret", false);
             tmpMap.put("str", "%" + query.toUpperCase() + "%");
-            suggestions = getFacade().findBySQL(sql, tmpMap, TemporalType.TIMESTAMP, 30);
+            suggestions = getFacade().findByJpql(sql, tmpMap, TemporalType.TIMESTAMP, 30);
         }
         return suggestions;
 
@@ -704,16 +1553,16 @@ public class ItemController implements Serializable {
 //                    + "where c.retired=false and "
 //                    + "(type(c)= :amp) "
 //                    + "and (c.departmentType=:dep or c.departmentType=:inven )"
-//                    + "and (upper(c.name) like :str or "
-//                    + "upper(c.code) like :str or "
-//                    + "upper(c.barcode) like :str) "
+//                    + "and ((c.name) like :str or "
+//                    + "(c.code) like :str or "
+//                    + "(c.barcode) like :str) "
 //                    + "order by c.name";
-//            //////System.out.println(sql);
+//            //////// // System.out.println(sql);
 //            tmpMap.put("amp", Amp.class);
 //            tmpMap.put("dep", DepartmentType.Store);
 //            tmpMap.put("inven", DepartmentType.Inventry);
 //            tmpMap.put("str", "%" + query.toUpperCase() + "%");
-//            suggestions = getFacade().findBySQL(sql, tmpMap, TemporalType.TIMESTAMP, 30);
+//            suggestions = getFacade().findByJpql(sql, tmpMap, TemporalType.TIMESTAMP, 30);
 //        }
 //        return suggestions;
 //
@@ -733,15 +1582,15 @@ public class ItemController implements Serializable {
 //                    + "where c.retired=false and "
 //                    + "(type(c)= :amp) "
 //                    + "and c.departmentType=:dep "
-//                    + "and (upper(c.name) like :str or "
-//                    + "upper(c.code) like :str or "
-//                    + "upper(c.barcode) like :str) "
+//                    + "and ((c.name) like :str or "
+//                    + "(c.code) like :str or "
+//                    + "(c.barcode) like :str) "
 //                    + "order by c.name";
-//            //////System.out.println(sql);
+//            //////// // System.out.println(sql);
 //            tmpMap.put("amp", Amp.class);
 //            tmpMap.put("dep", DepartmentType.Inventry);
 //            tmpMap.put("str", "%" + query.toUpperCase() + "%");
-//            suggestions = getFacade().findBySQL(sql, tmpMap, TemporalType.TIMESTAMP, 30);
+//            suggestions = getFacade().findByJpql(sql, tmpMap, TemporalType.TIMESTAMP, 30);
 //        }
 //        return suggestions;
 
@@ -761,15 +1610,15 @@ public class ItemController implements Serializable {
 //                    + "where c.retired=false and "
 //                    + "(type(c)= :amp) "
 //                    + "and c.departmentType=:dep "
-//                    + "and (upper(c.name) like :str or "
-//                    + "upper(c.code) like :str or "
-//                    + "upper(c.barcode) like :str) "
+//                    + "and ((c.name) like :str or "
+//                    + "(c.code) like :str or "
+//                    + "(c.barcode) like :str) "
 //                    + "order by c.name";
-//            //////System.out.println(sql);
+//            //////// // System.out.println(sql);
 //            tmpMap.put("amp", Amp.class);
 //            tmpMap.put("dep", DepartmentType.Store);
 //            tmpMap.put("str", "%" + query.toUpperCase() + "%");
-//            suggestions = getFacade().findBySQL(sql, tmpMap, TemporalType.TIMESTAMP, 30);
+//            suggestions = getFacade().findByJpql(sql, tmpMap, TemporalType.TIMESTAMP, 30);
 //        }
 //        return suggestions;
 //
@@ -786,14 +1635,14 @@ public class ItemController implements Serializable {
 //            sql = "select c from Item c "
 //                    + "where c.retired=false and "
 //                    + "(type(c)= :amp) "
-//                    + "and (upper(c.name) like :str or "
-//                    + "upper(c.code) like :str or "
-//                    + "upper(c.barcode) like :str) "
+//                    + "and ((c.name) like :str or "
+//                    + "(c.code) like :str or "
+//                    + "(c.barcode) like :str) "
 //                    + "order by c.name";
-//            //////System.out.println(sql);
+//            //////// // System.out.println(sql);
 //            tmpMap.put("amp", BillExpense.class);
 //            tmpMap.put("str", "%" + query.toUpperCase() + "%");
-//            suggestions = getFacade().findBySQL(sql, tmpMap, TemporalType.TIMESTAMP, 30);
+//            suggestions = getFacade().findByJpql(sql, tmpMap, TemporalType.TIMESTAMP, 30);
 //        }
 //        return suggestions;
     }
@@ -808,11 +1657,10 @@ public class ItemController implements Serializable {
                 + " (type(c)= :amp) "
                 + " and c.departmentType=:dep "
                 + " order by c.name";
-        //////System.out.println(sql);
         tmpMap.put("amp", Amp.class);
         tmpMap.put("dep", DepartmentType.Store);
 
-        suggestions = getFacade().findBySQL(sql, tmpMap, TemporalType.TIMESTAMP);
+        suggestions = getFacade().findByJpql(sql, tmpMap, TemporalType.TIMESTAMP);
 
         return suggestions;
 
@@ -826,19 +1674,56 @@ public class ItemController implements Serializable {
             suggestions = new ArrayList<>();
         } else {
             if (query.length() > 4) {
-                sql = "select c from Item c where c.retired=false and (type(c)= :amp or type(c)=:ampp ) and (upper(c.name) like '%" + query.toUpperCase() + "%' or upper(c.code) like '%" + query.toUpperCase() + "%' or upper(c.barcode) like '%" + query.toUpperCase() + "%') order by c.name";
+                sql = "select c from Item c where c.retired=false and (type(c)= :amp or type(c)=:ampp ) and ((c.name) like '%" + query.toUpperCase() + "%' or (c.code) like '%" + query.toUpperCase() + "%' or (c.barcode) like '%" + query.toUpperCase() + "%') order by c.name";
             } else {
-                sql = "select c from Item c where c.retired=false and (type(c)= :amp or type(c)=:ampp ) and (upper(c.name) like '%" + query.toUpperCase() + "%' or upper(c.code) like '%" + query.toUpperCase() + "%') order by c.name";
+                sql = "select c from Item c where c.retired=false and (type(c)= :amp or type(c)=:ampp ) and ((c.name) like '%" + query.toUpperCase() + "%' or (c.code) like '%" + query.toUpperCase() + "%') order by c.name";
             }
 
-//////System.out.println(sql);
             tmpMap.put("amp", Amp.class);
             tmpMap.put("ampp", Ampp.class);
-            suggestions = getFacade().findBySQL(sql, tmpMap, TemporalType.TIMESTAMP, 30);
+            suggestions = getFacade().findByJpql(sql, tmpMap, TemporalType.TIMESTAMP, 30);
         }
         return suggestions;
 
     }
+
+    public List<Item> completeAmpAndVmpItem(String query) {
+        List<Item> suggestions;
+        String sql;
+        HashMap tmpMap = new HashMap();
+        if (query == null) {
+            suggestions = new ArrayList<>();
+        } else {
+            if (query.length() > 4) {
+                sql = "select c from Item c where c.retired=false and (type(c)= :amp or type(c)=:vmp ) and ((c.name) like '%" + query.toUpperCase() + "%' or (c.code) like '%" + query.toUpperCase() + "%' or (c.barcode) like '%" + query.toUpperCase() + "%') order by c.name";
+            } else {
+                sql = "select c from Item c where c.retired=false and (type(c)= :amp or type(c)=:vmp ) and ((c.name) like '%" + query.toUpperCase() + "%' or (c.code) like '%" + query.toUpperCase() + "%') order by c.name";
+            }
+
+//////// // System.out.println(sql);
+            tmpMap.put("amp", Amp.class);
+            tmpMap.put("vmp", Vmp.class);
+            suggestions = getFacade().findByJpql(sql, tmpMap, TemporalType.TIMESTAMP, 30);
+        }
+        return suggestions;
+
+    }
+
+    public List<Item> fillpackages() {
+        String sql;
+        sql = "select c from Item c where c.retired=false"
+                + " and (c.inactive=false or c.inactive is null) "
+                + " and type(c)=Packege "
+                + " order by c.name";
+        //System.out.println("sql = " + sql);
+        packaes = getFacade().findByJpql(sql);
+        //System.out.println("packaes = " + packaes);
+        if (packaes == null) {
+            return new ArrayList<>();
+        }
+        return packaes;
+    }
+
 
     public List<Item> completePackage(String query) {
         List<Item> suggestions;
@@ -849,9 +1734,8 @@ public class ItemController implements Serializable {
             sql = "select c from Item c where c.retired=false"
                     + " and (c.inactive=false or c.inactive is null) "
                     + "and type(c)=Packege "
-                    + "and upper(c.name) like '%" + query.toUpperCase() + "%' order by c.name";
-            //////System.out.println(sql);
-            suggestions = getFacade().findBySQL(sql);
+                    + "and (c.name) like '%" + query.toUpperCase() + "%' order by c.name";
+            suggestions = getFacade().findByJpql(sql);
         }
         return suggestions;
 
@@ -863,11 +1747,11 @@ public class ItemController implements Serializable {
         HashMap hm = new HashMap();
 
         sql = "select c from Item c where c.retired=false and type(c)=:cls"
-                + " and upper(c.name) like :q order by c.name";
+                + " and (c.name) like :q order by c.name";
 
         hm.put("cls", Service.class);
         hm.put("q", "%" + query.toUpperCase() + "%");
-        suggestions = getFacade().findBySQL(sql, hm, 20);
+        suggestions = getFacade().findByJpql(sql, hm, 20);
 
         return suggestions;
 
@@ -879,11 +1763,11 @@ public class ItemController implements Serializable {
         HashMap hm = new HashMap();
 
         sql = "select c from Item c where c.retired=false and type(c)=:cls"
-                + " and upper(c.name) like :q order by c.name";
+                + " and (c.name) like :q order by c.name";
 
         hm.put("cls", Investigation.class);
         hm.put("q", "%" + query.toUpperCase() + "%");
-        suggestions = getFacade().findBySQL(sql, hm, 20);
+        suggestions = getFacade().findByJpql(sql, hm, 20);
 
         return suggestions;
 
@@ -896,13 +1780,13 @@ public class ItemController implements Serializable {
         sql = "select c from Item c "
                 + " where c.retired=false "
                 + " and type(c)=:cls "
-                + " and upper(c.name) like :q "
+                + " and (c.name) like :q "
                 + " and c.institution=:ins "
                 + " order by c.name";
         hm.put("cls", Investigation.class);
         hm.put("q", "%" + query.toUpperCase() + "%");
         hm.put("ins", sessionController.getLoggedUser().getInstitution());
-        lst = getFacade().findBySQL(sql, hm, 20);
+        lst = getFacade().findByJpql(sql, hm, 20);
         return lst;
     }
 
@@ -912,14 +1796,14 @@ public class ItemController implements Serializable {
         HashMap hm = new HashMap();
 
         sql = "select c from Item c where c.retired=false and type(c)=:cls"
-                + " and upper(c.name) like :q "
+                + " and (c.name) like :q "
                 + " c.id in (Select f.item.id From Itemfee f where f.retired=false "
                 + " and f.feeType!=:ftp ) order by c.name ";
 
         hm.put("ftp", FeeType.Staff);
         hm.put("cls", Service.class);
         hm.put("q", "%" + query.toUpperCase() + "%");
-        lst = getFacade().findBySQL(sql, hm, 20);
+        lst = getFacade().findByJpql(sql, hm, 20);
         return lst;
     }
 
@@ -932,12 +1816,78 @@ public class ItemController implements Serializable {
             sql = "select c from Item c where c.retired=false "
                     + " and (c.inactive=false or c.inactive is null) "
                     + "and type(c)=MedicalPackage "
-                    + "and upper(c.name) like '%" + query.toUpperCase() + "%' order by c.name";
-            //////System.out.println(sql);
-            suggestions = getFacade().findBySQL(sql);
+                    + "and (c.name) like '%" + query.toUpperCase() + "%' order by c.name";
+            suggestions = getFacade().findByJpql(sql);
         }
         return suggestions;
 
+    }
+
+    public List<Item> completeAllServicesAndInvestigations(String query) {
+        List<Item> suggestions;
+        HashMap<String, Object> m = new HashMap<>();
+        String sql;
+        String[] keywords = null;
+
+        if (query == null || query.trim().isEmpty()) {
+            suggestions = new ArrayList<>();
+        } else {
+            keywords = query.trim().toLowerCase().split("\\s+");
+
+            StringBuilder sqlBuilder = new StringBuilder();
+            sqlBuilder.append("select c from Item c ")
+                    .append("where c.retired = false ")
+                    .append("and type(c) != :pac ")
+                    .append("and (type(c) = :ser ")
+                    .append("or type(c) = :inv ")
+                    .append("or type(c) = :ward ")
+                    .append("or type(c) = :the) ");
+
+            for (int i = 0; i < keywords.length; i++) {
+                if (i == 0) {
+                    sqlBuilder.append("and (");
+                } else {
+                    sqlBuilder.append(" or ");
+                }
+                sqlBuilder.append("upper(c.name) like :q").append(i);
+                m.put("q" + i, "%" + keywords[i].toUpperCase() + "%");
+            }
+            sqlBuilder.append(") order by c.name");
+
+            sql = sqlBuilder.toString();
+
+            m.put("pac", Packege.class);
+            m.put("ser", Service.class);
+            m.put("inv", Investigation.class);
+            m.put("ward", InwardService.class);
+            m.put("the", TheatreService.class);
+            suggestions = getFacade().findByJpql(sql, m);
+
+        }
+
+        if (suggestions != null && !suggestions.isEmpty()) {
+            List<Item> filteredSuggestions = new ArrayList<>();
+            for (Item suggestion : suggestions) {
+                String itemName = (suggestion.getName() != null) ? suggestion.getName().toLowerCase() : "";
+                String departmentName = (suggestion.getDepartment() != null && suggestion.getDepartment().getName() != null)
+                        ? suggestion.getDepartment().getName().toLowerCase() : "";
+
+                boolean matchesAll = true;
+                for (String keyword : keywords) {
+                    if (!itemName.contains(keyword) && !departmentName.contains(keyword)) {
+                        matchesAll = false;
+                        break;
+                    }
+                }
+
+                if (matchesAll) {
+                    filteredSuggestions.add(suggestion);
+                }
+            }
+            suggestions = filteredSuggestions;
+        }
+
+        return suggestions;
     }
 
     public List<Item> completeInwardItems(String query) {
@@ -954,7 +1904,7 @@ public class ItemController implements Serializable {
                     + " or type(c)=:inv"
                     + " or type(c)=:ward "
                     + " or type(c)=:the)  "
-                    + " and upper(c.name) like :q"
+                    + " and (c.name) like :q"
                     + " order by c.name";
             m.put("pac", Packege.class);
             m.put("ser", Service.class);
@@ -962,10 +1912,37 @@ public class ItemController implements Serializable {
             m.put("ward", InwardService.class);
             m.put("the", TheatreService.class);
             m.put("q", "%" + query.toUpperCase() + "%");
-            //    //////System.out.println(sql);
-            suggestions = getFacade().findBySQL(sql, m, 20);
+            suggestions = getFacade().findByJpql(sql, m, 20);
         }
         return suggestions;
+    }
+
+    public void fillItemsForInward() {
+        HashMap m = new HashMap();
+        String sql;
+        suggestItems = new ArrayList<>();
+        sql = "select c from Item c "
+                + " where c.retired=false "
+                + " and type(c)!=:pac "
+                + " and (type(c)=:ser "
+                + " or type(c)=:inv"
+                + " or type(c)=:ward "
+                + " or type(c)=:the)  "
+                + " order by c.name";
+        m.put("pac", Packege.class);
+        m.put("ser", Service.class);
+        m.put("inv", Investigation.class);
+        m.put("ward", InwardService.class);
+        m.put("the", TheatreService.class);
+        suggestItems = getFacade().findByJpql(sql, m);
+    }
+
+    public void makeAllItemsToAllowDiscounts() {
+        for (Item pi : getItems()) {
+            pi.setDiscountAllowed(true);
+            itemFacade.edit(pi);
+        }
+        JsfUtil.addSuccessMessage("All Servies and Investigations were made to allow discounts.");
     }
 
     public List<Item> completeTheatreItems(String query) {
@@ -982,15 +1959,14 @@ public class ItemController implements Serializable {
                     //                    + " and (type(c)=:ser "
                     //                    + " or type(c)=:inv "
                     //                    + " or type(c)=:the)  "
-                    + " and upper(c.name) like :q"
+                    + " and (c.name) like :q"
                     + " order by c.name";
 //            m.put("pac", Packege.class);
 //            m.put("ser", Service.class);
 //            m.put("inv", Investigation.class);
             m.put("the", TheatreService.class);
             m.put("q", "%" + query.toUpperCase() + "%");
-            //    //////System.out.println(sql);
-            suggestions = getFacade().findBySQL(sql, m, 20);
+            suggestions = getFacade().findByJpql(sql, m, 20);
         }
         return suggestions;
     }
@@ -1015,7 +1991,7 @@ public class ItemController implements Serializable {
                 + " or type(c)=:inward "
                 + " or type(c)=:inv) "
                 + " and (c.inactive=false or c.inactive is null) "
-                + " and upper(c.name) like :q";
+                + " and (c.name) like :q";
         if (department != null) {
             sql += " and c.department=:dep ";
             m.put("dep", getReportKeyWord().getDepartment());
@@ -1027,7 +2003,7 @@ public class ItemController implements Serializable {
         m.put("inv", Investigation.class);
         m.put("q", "%" + query.toUpperCase() + "%");
 
-        return getFacade().findBySQL(sql, m, 20);
+        return getFacade().findByJpql(sql, m, 20);
 
     }
 
@@ -1042,7 +2018,7 @@ public class ItemController implements Serializable {
                 + " or type(c)=:inward "
                 + " or type(c)=:inv) "
                 + " and (c.inactive=false or c.inactive is null) "
-                + " and upper(c.name) like :q";
+                + " and (c.name) like :q";
         if (department != null) {
             sql += " and c.department=:dep ";
             m.put("dep", getReportKeyWord().getDepartment());
@@ -1055,7 +2031,7 @@ public class ItemController implements Serializable {
         m.put("inward", InwardService.class);
         m.put("q", "%" + query.toUpperCase() + "%");
 
-        return getFacade().findBySQL(sql, m, 20);
+        return getFacade().findByJpql(sql, m, 20);
 
     }
 
@@ -1107,7 +2083,7 @@ public class ItemController implements Serializable {
     }
 
     public List<Item> completeOpdItemsByNamesAndCode(String query) {
-        if (sessionController.getLoggedPreference().isInstitutionRestrictedBilling()) {
+        if (sessionController.getApplicationPreference().isInstitutionRestrictedBilling()) {
             return completeOpdItemsByNamesAndCodeInstitutionSpecificOrNotSpecific(query, true);
         } else {
             return completeOpdItemsByNamesAndCodeInstitutionSpecificOrNotSpecific(query, false);
@@ -1116,7 +2092,7 @@ public class ItemController implements Serializable {
 
     public void makeItemsAsActiveOrInactiveByRetiredStatus() {
         String j = "select i from Item i";
-        List<Item> tis = getFacade().findBySQL(j);
+        List<Item> tis = getFacade().findByJpql(j);
         for (Item i : tis) {
             if (i.isRetired()) {
                 i.setInactive(true);
@@ -1126,10 +2102,10 @@ public class ItemController implements Serializable {
             getFacade().edit(i);
         }
     }
-    
-     public void toggleItemIctiveInactiveState() {
+
+    public void toggleItemIctiveInactiveState() {
         String j = "select i from Item i";
-        List<Item> tis = getFacade().findBySQL(j);
+        List<Item> tis = getFacade().findByJpql(j);
         for (Item i : tis) {
             if (i.isInactive()) {
                 i.setInactive(false);
@@ -1155,8 +2131,8 @@ public class ItemController implements Serializable {
                 + " and type(c)!=:inw "
                 + " and (type(c)=:ser "
                 + " or type(c)=:inv)  "
-                + " and (upper(c.name) like :q or upper(c.fullName) like :q or "
-                + " upper(c.code) like :q or upper(c.printName) like :q ) ";
+                + " and ((c.name) like :q or (c.fullName) like :q or "
+                + " (c.code) like :q or (c.printName) like :q ) ";
         if (spcific) {
             sql += " and c.institution=:ins";
             m.put("ins", getSessionController().getInstitution());
@@ -1172,14 +2148,56 @@ public class ItemController implements Serializable {
         m.put("inv", Investigation.class);
         m.put("q", "%" + query.toUpperCase() + "%");
 
-//        //System.out.println(sql);
-//        //System.out.println("m = " + m);
-        mySuggestions = getFacade().findBySQL(sql, m, 20);
-//        //System.out.println("mySuggestions = " + mySuggestions);
+        mySuggestions = getFacade().findByJpql(sql, m, 20);
+
         return mySuggestions;
     }
 
-    public List<Item> completeOpdItems(String query) {
+    public List<Item> completeItemsByDepartment(String query, Department department) {
+        List<Item> suggestions;
+        HashMap<String, Object> parameters = new HashMap<>();
+        String jpql;
+        if (query == null) {
+            suggestions = new ArrayList<>();
+        } else {
+            jpql = "SELECT c FROM Item c "
+                    + "WHERE c.retired = false "
+                    + "AND (type(c)=:ser OR type(c)=:inv) "
+                    + "AND (c.name LIKE :qry OR c.fullName LIKE :qry OR c.code LIKE :qry) "
+                    + "AND c.department=:department "
+                    + "ORDER BY c.name";
+            parameters.put("ser", Service.class);
+            parameters.put("inv", Investigation.class);
+            parameters.put("q", "%" + query.toLowerCase() + "%");
+            parameters.put("department", department);
+            suggestions = getFacade().findByJpql(jpql, parameters, 20);
+        }
+        return suggestions;
+    }
+
+    public List<Item> completeItemsByDepartment(String query, Institution institution) {
+        List<Item> suggestions;
+        HashMap<String, Object> parameters = new HashMap<>();
+        String jpql;
+        if (query == null) {
+            suggestions = new ArrayList<>();
+        } else {
+            jpql = "SELECT c FROM Item c "
+                    + "WHERE c.retired = false "
+                    + "AND (type(c)=:ser OR type(c)=:inv) "
+                    + "AND (c.name LIKE :qry OR c.fullName LIKE :qry OR c.code LIKE :qry) "
+                    + "AND c.department.institution=:ins "
+                    + "ORDER BY c.name";
+            parameters.put("ser", Service.class);
+            parameters.put("inv", Investigation.class);
+            parameters.put("q", "%" + query.toLowerCase() + "%");
+            parameters.put("ins", institution);
+            suggestions = getFacade().findByJpql(jpql, parameters, 20);
+        }
+        return suggestions;
+    }
+
+    public List<Item> completeServicesPlusInvestigationsAll(String query) {
         List<Item> mySuggestions;
         HashMap m = new HashMap();
         String sql;
@@ -1188,19 +2206,67 @@ public class ItemController implements Serializable {
         } else {
             sql = "select c from Item c "
                     + " where c.retired=false "
+                    + " and (type(c)=:ser or type(c)=:inv)  "
+                    + " and (c.name) like :q"
+                    + " order by c.name";
+            m.put("ser", Service.class);
+            m.put("inv", Investigation.class);
+            m.put("q", "%" + query.toUpperCase() + "%");
+
+            mySuggestions = getFacade().findByJpql(sql, m, 20);
+        }
+        return mySuggestions;
+    }
+
+    public List<Item> completeItemsByInstitution(String query, Institution institution) {
+        List<Item> suggestions;
+        HashMap<String, Object> parameters = new HashMap<>();
+        String jpql;
+        if (query == null) {
+            suggestions = new ArrayList<>();
+        } else {
+            jpql = "SELECT c FROM Item c "
+                    + "WHERE c.retired = false "
+                    + "AND (type(c)=:ser OR type(c)=:inv) "
+                    + "AND (LOWER(c.name) LIKE :q) "
+                    + "AND c.institution = :institution "
+                    + "ORDER BY c.name";
+            parameters.put("ser", Service.class);
+            parameters.put("inv", Investigation.class);
+            parameters.put("q", "%" + query.toLowerCase() + "%");
+            parameters.put("institution", institution);
+            suggestions = getFacade().findByJpql(jpql, parameters, 20);
+        }
+        return suggestions;
+    }
+
+    @Deprecated
+    public List<Item> completeOpdItemsForItemListringStrategyLoggedInstitution(String query) {
+        List<Item> mySuggestions;
+        HashMap m = new HashMap();
+        String sql;
+        if (query == null) {
+            mySuggestions = new ArrayList<>();
+        } else {
+            sql = "select c "
+                    + " from Item c "
+                    + " where c.retired=false "
                     + " and type(c)!=:pac "
                     + " and type(c)!=:inw "
                     + " and (type(c)=:ser "
                     + " or type(c)=:inv)  "
-                    + " and upper(c.name) like :q"
+                    + " and (c.name) like :q "
+                    + " and c.institution=:ins "
                     + " order by c.name";
             m.put("pac", Packege.class);
             m.put("inw", InwardService.class);
             m.put("ser", Service.class);
             m.put("inv", Investigation.class);
+            m.put("ins", sessionController.getInstitution());
+
             m.put("q", "%" + query.toUpperCase() + "%");
-            //    //////System.out.println(sql);
-            mySuggestions = getFacade().findBySQL(sql, m, 20);
+
+            mySuggestions = getFacade().findByJpql(sql, m, 20);
         }
         return mySuggestions;
     }
@@ -1211,18 +2277,16 @@ public class ItemController implements Serializable {
         if (query == null) {
             suggestions = new ArrayList<Item>();
         } else {
-            sql = "select c from Item c where c.institution.id = " + getSessionController().getInstitution().getId() + " and c.retired=false and type(c)!=Packege and type(c)!=TimedItem and upper(c.name) like '%" + query.toUpperCase() + "%' order by c.name";
-            //////System.out.println(sql);
-            suggestions = getFacade().findBySQL(sql);
+            sql = "select c from Item c where c.institution.id = " + getSessionController().getInstitution().getId() + " and c.retired=false and type(c)!=Packege and type(c)!=TimedItem and (c.name) like '%" + query.toUpperCase() + "%' order by c.name";
+
+            suggestions = getFacade().findByJpql(sql);
         }
         return suggestions;
     }
 
     public void makeSelectedAsMasterItems() {
         for (Item i : selectedList) {
-            ////System.out.println("i = " + i.getInstitution());
             if (i.getInstitution() != null) {
-                ////System.out.println("i = " + i.getInstitution().getName());
                 i.setInstitution(null);
                 getFacade().edit(i);
             }
@@ -1251,8 +2315,7 @@ public class ItemController implements Serializable {
         m.put("inw", InwardService.class);
         m.put("ser", Service.class);
         m.put("inv", Investigation.class);
-        ////System.out.println(sql);
-        items = getFacade().findBySQL(sql, m);
+        items = getFacade().findByJpql(sql, m);
         return items;
     }
 
@@ -1283,19 +2346,9 @@ public class ItemController implements Serializable {
         m.put("inw", InwardService.class);
         m.put("ser", Service.class);
         m.put("inv", Investigation.class);
-        ////System.out.println(sql);
-        itemFees = getItemFeeFacade().findBySQL(sql, m);
+
+        itemFees = getItemFeeFacade().findByJpql(sql, m);
         return itemFees;
-    }
-
-    public void createMasterItemsList() {
-        allItems = new ArrayList<>();
-        allItems = fetchOPDItemList(false);
-    }
-
-    public void createAllItemsList() {
-        allItems = new ArrayList<>();
-        allItems = fetchOPDItemList(true);
     }
 
     public void createAllItemsFeeList() {
@@ -1356,20 +2409,28 @@ public class ItemController implements Serializable {
         current = new Item();
     }
 
-    /**
-     *
-     * @return
-     */
-    public ItemFacade getEjbFacade() {
-        return ejbFacade;
+    public void prepareAddingInvestigation() {
+        current = new Investigation();
+    }
+
+    public void prepareAddingService() {
+        current = new Service();
     }
 
     /**
      *
-     * @param ejbFacade
+     * @return
      */
-    public void setEjbFacade(ItemFacade ejbFacade) {
-        this.ejbFacade = ejbFacade;
+    public ItemFacade getItemFacade() {
+        return itemFacade;
+    }
+
+    /**
+     *
+     * @param itemFacade
+     */
+    public void setItemFacade(ItemFacade itemFacade) {
+        this.itemFacade = itemFacade;
     }
 
     /**
@@ -1410,7 +2471,7 @@ public class ItemController implements Serializable {
     }
 
     private ItemFacade getFacade() {
-        return ejbFacade;
+        return itemFacade;
     }
 
     /**
@@ -1418,28 +2479,27 @@ public class ItemController implements Serializable {
      * @return
      */
     public List<Item> getItems() {
-        if(items==null){
+        if (items == null) {
             fillItemsWithInvestigationsAndServices();
         }
         return items;
     }
 
-    
-    public void fillItemsWithInvestigationsAndServices(){
+    public void fillItemsWithInvestigationsAndServices() {
         String temSql;
         HashMap h = new HashMap();
         temSql = "SELECT i FROM Item i where (type(i)=:t1 or type(i)=:t2 ) and i.retired=false order by i.department.name";
         h.put("t1", Investigation.class);
         h.put("t2", Service.class);
-        items = getFacade().findBySQL(temSql, h, TemporalType.TIME);
+        items = getFacade().findByJpql(temSql, h, TemporalType.TIME);
     }
-    
+
     public List<Item> getInwardItems() {
         String temSql;
         HashMap h = new HashMap();
         temSql = "SELECT i FROM Item i where type(i)=:t1 and i.retired=false order by i.department.name";
         h.put("t1", InwardService.class);
-        items = getFacade().findBySQL(temSql, h, TemporalType.TIME);
+        items = getFacade().findByJpql(temSql, h, TemporalType.TIME);
         return items;
     }
 
@@ -1448,7 +2508,7 @@ public class ItemController implements Serializable {
         HashMap h = new HashMap();
         temSql = "SELECT i FROM Item i where i.category=:cat and i.retired=false order by i.name";
         h.put("cat", category);
-        return getFacade().findBySQL(temSql, h);
+        return getFacade().findByJpql(temSql, h);
     }
 
     /**
@@ -1458,6 +2518,8 @@ public class ItemController implements Serializable {
      */
     private void recreateModel() {
         items = null;
+        allItems = null;
+        itemApplicationController.setItems(null);
     }
 
     /**
@@ -1467,7 +2529,18 @@ public class ItemController implements Serializable {
         saveSelected(getCurrent());
         JsfUtil.addSuccessMessage("Saved");
         recreateModel();
+        allItems = null;
+        getAllItems();
         getItems();
+        current = null;
+        getCurrent();
+    }
+
+    public void saveSelectedWithItemLight() {
+        saveSelected(getCurrent());
+        JsfUtil.addSuccessMessage("Saved");
+        recreateModel();
+        getAllItems();
     }
 
     public void saveSelected(Item item) {
@@ -1486,31 +2559,45 @@ public class ItemController implements Serializable {
      *
      */
     public void delete() {
-
-        if (current != null) {
-            current.setRetired(true);
-            current.setRetiredAt(new Date());
-            current.setRetirer(getSessionController().getLoggedUser());
-            getFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+        if (getCurrent() != null) {
+            getCurrent().setRetired(true);
+            getCurrent().setRetiredAt(new Date());
+            getCurrent().setRetirer(getSessionController().getLoggedUser());
+            getFacade().edit(getCurrent());
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
+        getAllItems();
         getItems();
         current = null;
-        getCurrent();
     }
 
-    public Institution getInstituion() {
-        if (instituion == null) {
-            instituion = getSessionController().getInstitution();
+    public void deleteWithItemLight() {
+        if (getCurrent() == null) {
+            JsfUtil.addSuccessMessage("No such item");
+            return;
         }
-        return instituion;
+        getCurrent().setRetired(true);
+        getCurrent().setRetiredAt(new Date());
+        getCurrent().setRetirer(getSessionController().getLoggedUser());
+        getFacade().edit(getCurrent());
+        JsfUtil.addSuccessMessage("Deleted Successfully");
+        recreateModel();
+        getAllItems();
+        selectedItemLight = null;
     }
 
-    public void setInstituion(Institution instituion) {
-        this.instituion = instituion;
+    public Institution getInstitution() {
+        if (institution == null) {
+            institution = getSessionController().getInstitution();
+        }
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
     }
 
     public FeeType getFeeType() {
@@ -1529,11 +2616,14 @@ public class ItemController implements Serializable {
         this.selectedList = selectedList;
     }
 
-    public List<Item> getAllItems() {
+    public List<ItemLight> getAllItems() {
+        if (allItems == null) {
+            allItems = itemApplicationController.getItems();
+        }
         return allItems;
     }
 
-    public void setAllItems(List<Item> allItems) {
+    public void setAllItems(List<ItemLight> allItems) {
         this.allItems = allItems;
     }
 
@@ -1617,12 +2707,124 @@ public class ItemController implements Serializable {
 
     public List<Item> getInvestigationsAndServices() {
         if (investigationsAndServices == null) {
+            investigationsAndServices = fillInvestigationsAndServices();
+        }
+        return investigationsAndServices;
+    }
+
+    public List<Item> fillInvestigationsAndServices() {
+        UserPreference up = sessionController.getDepartmentPreference();
+        switch (up.getInwardItemListingStrategy()) {
+            case ALL_ITEMS:
+                return listAllInvestigationsAndServices();
+            case ITEMS_OF_LOGGED_DEPARTMENT:
+                return listInvestigationsAndServicesOfLoggedDepartment();
+            case ITEMS_OF_LOGGED_INSTITUTION:
+                return listInvestigationsAndServicesOfLoggedInstitution();
+            case ITEMS_MAPPED_TO_LOGGED_DEPARTMENT:
+                return fillInvestigationsAndServicesMappingToDepartment(sessionController.getDepartment());
+            case ITEMS_MAPPED_TO_LOGGED_INSTITUTION:
+                return fillInvestigationsAndServicesMappingToInstitution(sessionController.getInstitution());
+            default:
+                return listAllInvestigationsAndServices();
+        }
+    }
+
+    public List<Item> listAllInvestigationsAndServices() {
+        if (investigationsAndServices == null) {
+            investigationsAndServices = listInvestigationsAndServices(null, null);
+        }
+        return investigationsAndServices;
+    }
+
+    public List<Item> listInvestigationsAndServicesOfLoggedInstitution() {
+        if (investigationsAndServices == null) {
+            investigationsAndServices = listInvestigationsAndServices(sessionController.getLoggedUser().getInstitution(), null);
+        }
+        return investigationsAndServices;
+    }
+
+    public List<Item> listInvestigationsAndServicesOfLoggedDepartment() {
+        if (investigationsAndServices == null) {
+            investigationsAndServices = listInvestigationsAndServices(sessionController.getLoggedUser().getInstitution(), sessionController.getLoggedUser().getDepartment());
+        }
+        return investigationsAndServices;
+    }
+
+    public List<Item> fillInvestigationsAndServicesMappingToInstitution(Institution institution) {
+        if (investigationsAndServices == null) {
+            investigationsAndServices = fillInvestigationsAndServicesMapping(institution, null);
+        }
+        return investigationsAndServices;
+    }
+
+    public List<Item> fillInvestigationsAndServicesMappingToDepartment(Department department) {
+        if (investigationsAndServices == null) {
+            investigationsAndServices = fillInvestigationsAndServicesMapping(null, department);
+        }
+        return investigationsAndServices;
+    }
+
+    public List<Item> fillInvestigationsAndServicesMapping(Institution institution, Department department) {
+        if (investigationsAndServices == null) {
+            String jpql = "SELECT im.item"
+                    + " FROM ItemMapping im "
+                    + " WHERE im.retired = false ";
+            HashMap<String, Object> parameters = new HashMap<>();
+            if (institution != null) {
+                jpql += " and im.institution=:ins ";
+                parameters.put("ins", institution);
+            }
+
+            if (department != null) {
+                jpql += " and im.department=:dep ";
+                parameters.put("dep", department);
+            }
+
+            jpql += " ORDER BY im.item.name ";
+            investigationsAndServices = itemFacade.findByJpql(jpql, parameters);
+
+        }
+        return investigationsAndServices;
+    }
+
+    public List<Item> fillDepartmentItems(Department department) {
+        String jpql = "SELECT item"
+                + " FROM Item item "
+                + " WHERE item.retired=:ret ";
+        HashMap<String, Object> parameters = new HashMap<>();
+        parameters.put("ret", false);
+        if (department != null) {
+            jpql += " and item.department=:dep ";
+            parameters.put("dep", department);
+        }
+        jpql += " ORDER BY item.name ";
+        return itemFacade.findByJpql(jpql, parameters);
+    }
+
+    public List<Item> listInvestigationsAndServices(Institution institution, Department department) {
+        if (investigationsAndServices == null) {
             String temSql;
             HashMap h = new HashMap();
-            temSql = "SELECT i FROM Item i where (type(i)=:t1 or type(i)=:t2 ) and i.retired=false order by i.department.name";
-            h.put("t1", Investigation.class);
-            h.put("t2", Service.class);
-            investigationsAndServices = getFacade().findBySQL(temSql, h, TemporalType.TIME);
+            temSql = "SELECT i FROM Item i where (type(i)=:t1 or type(i)=:t2 ) and i.retired=false ";
+            h
+                    .put("t1", Investigation.class
+                    );
+            h
+                    .put("t2", Service.class
+                    );
+
+            if (institution != null) {
+                temSql += " and i.institution=:ins ";
+                h.put("ins", institution);
+            }
+
+            if (department != null) {
+                temSql += " and i.department=:dep ";
+                h.put("dep", department);
+            }
+            temSql += " order by i.department.name";
+            investigationsAndServices = getFacade().findByJpql(temSql, h, TemporalType.TIME);
         }
         return investigationsAndServices;
     }
@@ -1663,6 +2865,234 @@ public class ItemController implements Serializable {
         this.sampleComponent = sampleComponent;
     }
 
+    public boolean isMasterItem() {
+        return masterItem;
+    }
+
+    public void setMasterItem(boolean masterItem) {
+        this.masterItem = masterItem;
+    }
+
+    public List<ItemFee> getItemFeesList() {
+        return ItemFeesList;
+    }
+
+    public void setItemFeesList(List<ItemFee> ItemFeesList) {
+        this.ItemFeesList = ItemFeesList;
+    }
+
+    public List<ItemLight> fillItemsByDepartment(Department dept) {
+        List<ItemLight> deptItems = new ArrayList<>();
+        for (ItemLight i : itemApplicationController.getItems()) {
+            if (i.getDepartmentId() != null && i.getDepartmentId().equals(dept.getId())) {
+                deptItems.add(i);
+            }
+        }
+        return deptItems;
+    }
+
+    public List<ItemLight> fillItemsByInstitution(Institution institution) {
+        List<ItemLight> insItems = new ArrayList<>();
+        if (institution == null) {
+            return insItems;
+        }
+        if (institution.getId() == null) {
+            return insItems;
+        }
+        for (ItemLight i : itemApplicationController.getItems()) {
+            if (i.getInstitutionId() == null) {
+                continue;
+            }
+            if (Objects.equals(i.getInstitutionId(), institution.getId())) {
+                insItems.add(i);
+            }
+        }
+
+        return insItems;
+    }
+
+    public List<ItemLight> getDepartmentItems() {
+        if (departmentItems == null) {
+            departmentItems = fillItemsByDepartment(getSessionController().getDepartment());
+        }
+        return departmentItems;
+    }
+
+    public List<ItemLight> getInstitutionItems() {
+        if (institutionItems == null) {
+            institutionItems = fillItemsByInstitution(getSessionController().getInstitution());
+        }
+        return institutionItems;
+    }
+
+    public List<ItemLight> getCcDeptItems() {
+        return ccDeptItems;
+    }
+
+    public void setCcDeptItems(List<ItemLight> ccDeptItems) {
+        this.ccDeptItems = ccDeptItems;
+    }
+
+    public List<ItemLight> getCcInstitutionItems() {
+        return ccInstitutionItems;
+    }
+
+    public void setCcInstitutionItems(List<ItemLight> ccInstitutionItems) {
+        this.ccInstitutionItems = ccInstitutionItems;
+    }
+
+    public List<ItemFeeRow> getItemFeeRows() {
+        return itemFeeRows;
+    }
+
+    public void setItemFeeRows(List<ItemFeeRow> itemFeeRows) {
+        this.itemFeeRows = itemFeeRows;
+    }
+
+    public ItemLight findItemLightById(Long id) {
+        Optional<ItemLight> itemLightOptional = findItemLightByIdStreaming(id);
+        ItemLight il = itemLightOptional.orElse(null);
+        return il;
+    }
+
+    public Optional<ItemLight> findItemLightByIdStreaming(Long id) {
+        if (id == null) {
+            return Optional.empty(); // Clearly indicate absence of value
+        }
+        return itemApplicationController.getItems().stream()
+                .filter(itemLight -> id.equals(itemLight.getId()))
+                .findFirst(); // Returns an Optional describing the first matching element, or an empty Optional if no match is found
+    }
+
+    public ItemLight getSelectedItemLight() {
+        if (getCurrent() == null) {
+            selectedItemLight = null;
+        } else {
+            selectedItemLight = new ItemLight(getCurrent());
+        }
+        return selectedItemLight;
+    }
+
+    public void setSelectedItemLight(ItemLight selectedItemLight) {
+        this.selectedItemLight = selectedItemLight;
+        if (selectedItemLight == null) {
+            setCurrent(null);
+        } else {
+            setCurrent(findItem(selectedItemLight.getId()));
+        }
+    }
+
+    public List<DepartmentItemCount> getDepartmentItemCounts() {
+        return departmentItemCounts;
+    }
+
+    public void setDepartmentItemCounts(List<DepartmentItemCount> departmentItemCounts) {
+        this.departmentItemCounts = departmentItemCounts;
+    }
+
+    public DepartmentItemCount getDepartmentItemCount() {
+        return departmentItemCount;
+    }
+
+    public void setDepartmentItemCount(DepartmentItemCount departmentItemCount) {
+        this.departmentItemCount = departmentItemCount;
+    }
+
+    public List<InstitutionItemCount> getInstitutionItemCounts() {
+        return institutionItemCounts;
+    }
+
+    public void setInstitutionItemCounts(List<InstitutionItemCount> institutionItemCounts) {
+        this.institutionItemCounts = institutionItemCounts;
+    }
+
+    public InstitutionItemCount getInstitutionItemCount() {
+        return institutionItemCount;
+    }
+
+    public void setInstitutionItemCount(InstitutionItemCount institutionItemCount) {
+        this.institutionItemCount = institutionItemCount;
+    }
+
+    public List<ItemLight> getFilteredItems() {
+        return filteredItems;
+    }
+
+    public void setFilteredItems(List<ItemLight> filteredItems) {
+        this.filteredItems = filteredItems;
+    }
+
+    public Institution getFilterInstitution() {
+        return filterInstitution;
+    }
+
+    public void setFilterInstitution(Institution filterInstitution) {
+        this.filterInstitution = filterInstitution;
+    }
+
+    public Department getFilterDepartment() {
+        return filterDepartment;
+    }
+
+    public void setFilterDepartment(Department filterDepartment) {
+        this.filterDepartment = filterDepartment;
+    }
+
+    public List<Item> getPackaes() {
+        if (packaes == null) {
+            packaes = fillpackages();
+        }
+        return packaes;
+    }
+
+    public void setPackaes(List<Item> packaes) {
+        this.packaes = packaes;
+    }
+
+    public List<Item> getSuggestItems() {
+        return suggestItems;
+    }
+
+    public void setSuggestItems(List<Item> suggestItems) {
+        this.suggestItems = suggestItems;
+    }
+
+    public Sex getPatientGender() {
+        return patientGender;
+    }
+
+    public void setPatientGender(Sex patientGender) {
+        this.patientGender = patientGender;
+    }
+
+    @FacesConverter("itemLightConverter")
+    public static class ItemLightConverter implements Converter {
+
+        @Override
+        public Object getAsObject(FacesContext context, UIComponent component, String value) {
+            if (value == null || value.isEmpty()) {
+                return null;
+            }
+            try {
+                Long id = Long.valueOf(value);
+                ItemController controller = (ItemController) context.getApplication().getELResolver()
+                        .getValue(context.getELContext(), null, "itemController");
+                ItemLight il = controller.findItemLightById(id);
+                return il;
+            } catch (NumberFormatException e) {
+                return null;
+            }
+        }
+
+        @Override
+        public String getAsString(FacesContext context, UIComponent component, Object value) {
+            if (value instanceof ItemLight) {
+                return ((ItemLight) value).getId().toString(); // Assuming getId() returns the ID
+            }
+            return null; // Or handle the error condition
+        }
+    }
+
     @FacesConverter(forClass = Item.class)
     public static class ItemControllerConverter implements Converter {
 
@@ -1680,7 +3110,7 @@ public class ItemController implements Serializable {
             }
             ItemController controller = (ItemController) facesContext.getApplication().getELResolver().
                     getValue(facesContext.getELContext(), null, "itemController");
-            return controller.getEjbFacade().find(getKey(value));
+            return controller.getItemFacade().find(getKey(value));
         }
 
         java.lang.Long getKey(String value) {
@@ -1725,62 +3155,4 @@ public class ItemController implements Serializable {
     /**
      *
      */
-    @FacesConverter("itemcon")
-    public static class ItemConverter implements Converter {
-
-        /**
-         *
-         * @param facesContext
-         * @param component
-         * @param value
-         * @return
-         */
-        @Override
-        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
-                return null;
-            }
-            ItemController controller = (ItemController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "itemController");
-            return controller.getEjbFacade().find(getKey(value));
-        }
-
-        java.lang.Long getKey(String value) {
-            java.lang.Long key = 0l;
-            try {
-                key = Long.valueOf(value);
-            } catch (Exception e) {
-
-            }
-
-            return key;
-        }
-
-        String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
-        }
-
-        /**
-         *
-         * @param facesContext
-         * @param component
-         * @param object
-         * @return
-         */
-        @Override
-        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
-            if (object == null) {
-                return null;
-            }
-            if (object instanceof Item) {
-                Item o = (Item) object;
-                return getStringKey(o.getId());
-            } else {
-                throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + ItemController.class.getName());
-            }
-        }
-    }
 }

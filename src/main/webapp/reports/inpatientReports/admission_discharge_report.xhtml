@@ -1,0 +1,396 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/reports/index.xhtml">
+            <ui:define name="subcontent">
+                <h:form >
+                    <p:panel header="Admission Discharge" >
+                        <p:panelGrid columns="4" class="w-100">
+                            <p:outputLabel value=" Admission From Date">
+                            </p:outputLabel>
+                            <p:datePicker value="#{reportController.fromDate}" 
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}"
+                                          class=" w-100" ></p:datePicker>
+                            <p:outputLabel value=" Admission To Date" >
+                            </p:outputLabel>
+                            <p:datePicker value="#{reportController.toDate}"
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}"
+                                          class=""></p:datePicker>
+
+                            <p:outputLabel value=" Discharge From Date">
+                            </p:outputLabel>
+                            <p:datePicker value="#{reportController.fromDate}" 
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}"
+                                          class=" w-100" ></p:datePicker>
+                            <p:outputLabel value=" Discharge To Date" >
+                            </p:outputLabel>
+                            <p:datePicker value="#{reportController.toDate}"
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}"
+                                          class=""></p:datePicker>
+
+                            <p:outputLabel value=" Settled From Date">
+                            </p:outputLabel>
+                            <p:datePicker value="#{reportController.fromDate}" 
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}"
+                                          class=" w-100" ></p:datePicker>
+                            <p:outputLabel value=" Settled To Date" >
+                            </p:outputLabel>
+                            <p:datePicker value="#{reportController.toDate}"
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}"
+                                          class=""></p:datePicker>
+
+                            <p:outputLabel value="Branch" >
+                            </p:outputLabel>
+                            <p:selectOneMenu 
+
+                                value="" 
+                                filter="true"
+                                class="w-100 ">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value=""
+                                               var="d"
+                                               itemLabel=""
+                                               itemValue="" ></f:selectItems>
+                            </p:selectOneMenu>
+
+                            <p:outputLabel value="Department" >
+                            </p:outputLabel>
+                            <p:selectOneMenu 
+                                id="cmdFromDepartment"
+                                value="#{reportController.fromDepartment}" 
+                                filter="true"
+                                class="w-100 ">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value="#{departmentController.getInsDepartments(reportController.fromInstitution)}"
+                                               var="d"
+                                               itemLabel="#{d.name}"
+                                               itemValue="#{d}" ></f:selectItems>
+                            </p:selectOneMenu>
+
+                            <p:outputLabel value="Service Center" >
+                            </p:outputLabel>
+                            <p:selectOneMenu value="" filter="true" class="w-100 ">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value=""
+                                               var="i"
+                                               itemLabel=""
+                                               itemValue=""
+                                               ></f:selectItems>
+                            </p:selectOneMenu>
+
+
+                            <p:outputLabel value="Discharge Type" >
+                            </p:outputLabel>
+                            <p:selectOneMenu value="" filter="true"  class="w-100 " >
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value=""
+                                               var="i"
+                                               itemLabel=""
+                                               itemValue=""
+                                               ></f:selectItems>
+                            </p:selectOneMenu>
+
+                            <p:outputLabel value="Consultant" >
+                            </p:outputLabel>
+                            <p:selectOneMenu value="" filter="true"  class="w-100 " >
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value=""
+                                               var="i"
+                                               itemLabel=""
+                                               itemValue=""
+                                               ></f:selectItems>
+                            </p:selectOneMenu>
+
+                            <p:outputLabel value="Sponsor" >
+                            </p:outputLabel>
+                            <p:selectOneMenu value="" filter="true"  class="w-100 " >
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value=""
+                                               var="i"
+                                               itemLabel=""
+                                               itemValue=""
+                                               ></f:selectItems>
+                            </p:selectOneMenu>
+
+                            <p:outputLabel value="Patient Category" >
+                            </p:outputLabel>
+                            <p:selectOneMenu value="" filter="true"  class="w-100 " >
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value=""
+                                               var="i"
+                                               itemLabel=""
+                                               itemValue=""
+                                               ></f:selectItems>
+                            </p:selectOneMenu>
+
+                            <p:outputLabel value="Sponsor" >
+                            </p:outputLabel>
+                            <p:selectOneMenu value="" filter="true"  class="w-100 " >
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value=""
+                                               var="i"
+                                               itemLabel=""
+                                               itemValue=""
+                                               ></f:selectItems>
+                            </p:selectOneMenu>
+
+                            <p:outputLabel value="Admission Status" >
+                            </p:outputLabel>
+                            <p:selectOneMenu value="" filter="true"  class="w-100 " >
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value=""
+                                               var="i"
+                                               itemLabel=""
+                                               itemValue=""
+                                               ></f:selectItems>
+                            </p:selectOneMenu>
+
+                            <p:outputLabel value="Admission Type" >
+                            </p:outputLabel>
+                            <p:selectOneMenu value="" filter="true"  class="w-100 " >
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value=""
+                                               var="i"
+                                               itemLabel=""
+                                               itemValue=""
+                                               ></f:selectItems>
+                            </p:selectOneMenu>
+
+
+                        </p:panelGrid>
+
+                        <div class="d-flex align-items-center">
+                            <p:commandButton class="m-2" ajax="false" value="Process" action="#{reportController.processLabTestCount()}" >
+                            </p:commandButton>
+                            <p:commandButton class="m-2" ajax="false" value="Download"
+                                             action="#{reportController.downloadLabTestCount}">
+                            </p:commandButton>
+                        </div>
+
+
+                        <p:dataTable id="tbl" value="" 
+                                     paginator="true"
+                                     rows="10">
+                            <p:column headerText="S.No">
+                                <h:outputText value="" />
+                            </p:column>
+
+                            <p:column headerText="MRN">
+                                <h:outputText value="" />
+                            </p:column>
+
+                            <p:column headerText="Patient Mobile No">
+                                <h:outputText value="" />
+                            </p:column>
+
+                            <p:column headerText="">
+                                <h:outputText value="Admission No" />
+                            </p:column>
+
+                            <p:column headerText="House No/ post">
+                                <h:outputText value="" />
+                            </p:column>
+
+                            <p:column headerText="Street / Village">
+                                <h:outputText value="" />
+                            </p:column>
+
+                            <p:column headerText="Locality/ post office">
+                                <h:outputText value="" />
+                            </p:column>
+
+                            <p:column headerText="District">
+                                <h:outputText value="" />
+                            </p:column>
+
+                            <p:column headerText="City">
+                                <h:outputText value="" />
+                            </p:column>
+
+                            <p:column headerText="State">
+                                <h:outputText value="" />
+                            </p:column>
+
+                            <p:column headerText="Country">
+                                <h:outputText value="" />
+                            </p:column>
+
+                            <p:column headerText="PIN">
+                                <h:outputText value="" />
+                            </p:column>
+
+                            <p:column headerText="Adminssion Note">
+                                <h:outputText value="" />
+                            </p:column>
+
+                            <p:column headerText="Sponcer Bed Type">
+                                <h:outputText value="" />
+                            </p:column>
+
+                            <p:column headerText="Admission Category">
+                                <h:outputText value="" />
+                            </p:column>
+
+                            <p:column headerText="Age ">
+                                <h:outputText value="" />
+                            </p:column>
+
+                            <p:column headerText="Gender ">
+                                <h:outputText value="" />
+                            </p:column>
+
+                            <p:column headerText="Department ">
+                                <h:outputText value="" />
+                            </p:column>
+
+                            <p:column headerText="Admission Date">
+                                <h:outputText value="" />
+                            </p:column>
+
+                            <p:column headerText="Expected Date Of Dischage">
+                                <h:outputText value="" />
+                            </p:column>
+
+                            <p:column headerText="IP NO">
+                                <h:outputText value="" />
+                            </p:column>
+
+                            <p:column headerText="Admission Status">
+                                <h:outputText value="" />
+                            </p:column>
+
+                            <p:column headerText="Cancel Remarks ">
+                                <h:outputText value="" />
+                            </p:column>
+
+                            <p:column headerText="Discharge Date ">
+                                <h:outputText value="" />
+                            </p:column>
+
+                            <p:column headerText="Discharge Type ">
+                                <h:outputText value="" />
+                            </p:column>
+
+                            <p:column headerText="Ward | Bed ">
+                                <h:outputText value="" />
+                            </p:column>
+
+                            <p:column headerText="Consultent">
+                                <h:outputText value="" />
+                            </p:column>
+
+                            <p:column headerText="Sponcer ">
+                                <h:outputText value="" />
+                            </p:column>
+
+                            <p:column headerText="Patient Category ">
+                                <h:outputText value="" />
+                            </p:column>
+
+                            <p:column headerText="Referral Doctor ">
+                                <h:outputText value="" />
+                            </p:column>
+
+                            <p:column headerText="Referral Hospital ">
+                                <h:outputText value="" />
+                            </p:column>
+
+                            <p:column headerText="Admission Category ">
+                                <h:outputText value="" />
+                            </p:column>
+                            
+                            <p:column headerText="Admission Remarks ">
+                                <h:outputText value="" />
+                            </p:column>
+                            
+                            <p:column headerText="Professional Fees ">
+                                <h:outputText value="" />
+                            </p:column>
+
+                            <p:column headerText="Hospital Amount ">
+                                <h:outputText value="" />
+                            </p:column>
+
+                            <p:column headerText="Sponsor Amount ">
+                                <h:outputText value="" />
+                            </p:column>
+
+                            <p:column headerText="Patient Amount ">
+                                <h:outputText value="" />
+                            </p:column>
+
+                            <p:column headerText="Discount ">
+                                <h:outputText value="" />
+                            </p:column>
+
+                            <p:column headerText="Invoice Amount ">
+                                <h:outputText value="" />
+                            </p:column>
+
+                            <p:column headerText="Invoice Amount ">
+                                <h:outputText value="" />
+                            </p:column>
+
+                            <p:column headerText="Bill Balance ">
+                                <h:outputText value="" />
+                            </p:column>
+
+                            <p:column headerText="Patient Balance ">
+                                <h:outputText value="" />
+                            </p:column>
+
+                            <p:column headerText="Admission User ">
+                                <h:outputText value="" />
+                            </p:column>
+
+                            <p:column headerText="Admission User ">
+                                <h:outputText value="" />
+                            </p:column>
+
+                            <p:column headerText="Discharge User ">
+                                <h:outputText value="" />
+                            </p:column>
+
+                            <p:column headerText="Received Date">
+                                <h:outputText value="" />
+                            </p:column>
+
+                            <p:column headerText="ALOS Days">
+                                <h:outputText value="" />
+                            </p:column>
+
+                            <p:column headerText="TAT Days">
+                                <h:outputText value="" />
+                            </p:column>
+
+                            <p:column headerText="TAT Time">
+                                <h:outputText value="" />
+                            </p:column>
+
+                            <p:column headerText="Admission Type">
+                                <h:outputText value="" />
+                            </p:column>
+
+                            <p:column headerText="Final Bill By">
+                                <h:outputText value="" />
+                            </p:column>
+
+                            <p:column headerText="Final Bill Date Time">
+                                <h:outputText value="" />
+                            </p:column>
+
+                        </p:dataTable>
+                    </p:panel>
+
+                </h:form>
+
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

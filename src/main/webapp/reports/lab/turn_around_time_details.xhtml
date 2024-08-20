@@ -1,0 +1,224 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/reports/index.xhtml">
+            <ui:define name="subcontent">
+
+                <h:form >
+
+
+
+                    <p:panel header="Turn Around Time Details" >
+                        <h:panelGrid columns="5" >
+                            <p:outputLabel value="From (Billed) Date" >
+                            </p:outputLabel>
+                            <p:datePicker value="#{reportController.fromDate}" 
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
+
+                            <p:spacer width="20"></p:spacer>
+
+                            <p:outputLabel value="To (Billed) Date" >
+                            </p:outputLabel>
+                            <p:datePicker value="#{reportController.toDate}"
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
+
+                            
+
+                            <p:outputLabel value="Institution/Branch" >
+                            </p:outputLabel>
+                            <p:selectOneMenu 
+                                id="cmdInstitution"
+                                value="#{reportController.institution}"
+                                filter="true"
+                                >
+                                <f:selectItem itemLabel="All"></f:selectItem>
+                                <f:selectItems value="#{institutionController.items}"
+                                               var="i"
+                                               itemLabel="#{i.name}"
+                                               itemValue="#{i}"></f:selectItems>
+                                <p:ajax process="@this" update="cmdDepartment"></p:ajax>
+                            </p:selectOneMenu>
+
+                            <p:spacer width="20"></p:spacer>
+                            
+                            <p:outputLabel value="Priority Type"></p:outputLabel>
+                            <p:selectOneMenu value="#{reportController.priorityType}">
+                                <f:selectItem itemLabel="Priority Type"/>
+                            </p:selectOneMenu>
+                            
+                            
+                            
+                            <p:outputLabel value="Total Average"></p:outputLabel>
+                            <p:selectOneMenu value="#{reportController.totalAverage}">
+                                <f:selectItem itemLabel="Percentage"/>
+                            </p:selectOneMenu>
+
+                           <p:spacer width="20"></p:spacer>
+                            
+                            <p:outputLabel value="Laboratary Department">
+                            </p:outputLabel>
+                            <p:selectOneMenu 
+                                id="cmdDepartment"
+                                value="#{reportController.department}" 
+                                filter="true"
+                                >
+                                <f:selectItem itemLabel="All"></f:selectItem>
+                                <f:selectItems value="#{departmentController.getInsDepartments(reportController.institution)}"
+                                               var="d"
+                                               itemLabel="#{d.name}"
+                                               itemValue="#{d}"></f:selectItems>
+                            </p:selectOneMenu>
+
+                            <p:outputLabel value="CC Name"></p:outputLabel>
+                            <p:selectOneMenu value="#{reportController.ccName}">
+                                <f:selectItem itemLabel="CC name"/>
+                            </p:selectOneMenu>
+
+                           <p:spacer width="20"></p:spacer>
+                            
+                            <p:outputLabel value="CC Route"></p:outputLabel>
+                            <p:selectOneMenu value="#{reportController.ccRoute}">
+                                <f:selectItem itemLabel="CC Route"/>
+                            </p:selectOneMenu>
+                            
+                            
+                            <p:outputLabel value="Visit"></p:outputLabel>
+                            <p:selectOneMenu value="#{reportController.visit}">
+                                <f:selectItem itemLabel="All visits"/>
+                            </p:selectOneMenu>
+                            
+                            <p:spacer width="20"></p:spacer>
+
+                            <p:outputLabel value="Patient MRN"></p:outputLabel>
+                            <p:selectOneMenu value="#{reportController.patientMrn}">
+                                <f:selectItem itemLabel="Patient MRN"/>
+                            </p:selectOneMenu>
+
+                          
+                            
+                            <p:outputLabel value="Investigation"></p:outputLabel>
+                            <p:selectOneMenu value="#{reportController.investigation}">
+                                <f:selectItem itemLabel="Investigation"/>
+                            </p:selectOneMenu>
+                            
+                            <p:spacer width="20"></p:spacer>
+                            
+                            <p:outputLabel value="Result status"></p:outputLabel>
+                            <p:selectOneMenu value="#{reportController.status}">
+                                <f:selectItem itemLabel="Result Status"/>
+                            </p:selectOneMenu>
+                            
+                            <p:outputLabel value="Refering Doctor Name"></p:outputLabel>
+                            <p:selectOneMenu value="#{reportController.refDocName}">
+                                <f:selectItem itemLabel="Doctor Name"/>
+                            </p:selectOneMenu>
+                            
+
+                        </h:panelGrid>
+
+                        <p:commandButton ajax="false" value="Process" action="null" class="my-2" >
+                        </p:commandButton>
+
+   
+                        <p:dataTable value="null" class="mb-2" >
+                            <p:column headerText="" >
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="T1" >
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="T2" >
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="T3" >
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="T4" >
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="T5" >
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="TAT" >
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Total" >
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                        </p:dataTable>
+
+                        <p:dataTable value="null" class="my-4" >
+                            <p:column headerText="Branch" >
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Lab Department" >
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Sample" >
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Priority" >
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Investigation" >
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Ordered" >
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Collected" >
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Accepted" >
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Entered" >
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Certified" >
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Printed" >
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="T1" >
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="T2" >
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="T3" >
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="T4" >
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="T5" >
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="TAT" >
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Total" >
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Status" >
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                        </p:dataTable>
+                        
+                    </p:panel>
+
+                </h:form>
+
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

@@ -1,0 +1,145 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+
+        <ui:composition template="/analytics/opd/index.xhtml">
+            <ui:define name="subcontent">
+                <h:form >
+                    <p:panel header="Test Counts" >
+
+                        <h:panelGrid columns="2" class="mb-2">
+
+                            <p:outputLabel value="Billing Institution/Branch" ></p:outputLabel>
+                            <p:selectOneMenu 
+                                id="cmdFromInstitution"
+                                class="mx-2 w-100"
+                                value="#{reportController.institution}"
+                                filter="true"
+                                >
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value="#{institutionController.companies}"
+                                               var="i"
+                                               itemLabel="#{i.name}"
+                                               itemValue="#{i}" ></f:selectItems>
+                                <p:ajax process="cmdFromInstitution" update="cmdFromDepartment" ></p:ajax>
+                            </p:selectOneMenu>
+
+                            <p:outputLabel value="Billing Department" ></p:outputLabel>
+                            <p:selectOneMenu 
+                                id="cmdFromDepartment"
+                                value="#{reportController.department}" 
+                                class="w-100 mx-2"
+                                filter="true">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value="#{departmentController.getInsDepartments(reportController.institution)}"
+                                               var="d"
+                                               itemLabel="#{d.name}"
+                                               itemValue="#{d}" ></f:selectItems>
+                            </p:selectOneMenu>
+
+                            <p:outputLabel value="Doctor" ></p:outputLabel>
+                            <p:autoComplete forceSelection="true" 
+                                            id="cmbDoc" 
+                                            value="#{reportController.doctor}" 
+                                            completeMethod="#{doctorController.completeDoctor}" var="ix" 
+                                            itemLabel="#{ix.person.name}" 
+                                            itemValue="#{ix}" 
+                                            inputStyleClass="form-control"
+                                            class="w-100 mx-2" 
+                                            size="10">
+                                <p:column headerText="Name" >
+                                    <h:outputText value="#{ix.person.nameWithTitle}" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Code" >
+                                    <h:outputText value="#{ix.code}" ></h:outputText>
+                                </p:column>
+                            </p:autoComplete>
+                            
+                            <p:outputLabel value="Item" ></p:outputLabel>
+                            <p:autoComplete forceSelection="true" 
+                                            id="cmbItem" 
+                                            value="#{reportController.item}" 
+                                            completeMethod="#{itemController.completeOpdItemsByNamesAndCode}" var="ix" 
+                                            itemLabel="#{ix.name}" 
+                                            itemValue="#{ix}" 
+                                            inputStyleClass="form-control"
+                                            class="w-100 mx-2" 
+                                            size="10">
+                                <p:column headerText="Name" >
+                                    <h:outputText value="#{ix.name}" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Code" >
+                                    <h:outputText value="#{ix.code}" ></h:outputText>
+                                </p:column>
+                            </p:autoComplete>
+
+                            <p:outputLabel value="From" ></p:outputLabel>
+                            <p:datePicker 
+                                class="mt-1 mx-2 w-100"
+                                inputStyleClass="w-100"
+                                showTime="true"
+                                showButtonBar="true"
+                                value="#{reportController.fromDate}" 
+                                pattern="#{sessionController.applicationPreference.longDateFormat}">
+                            </p:datePicker>
+
+                            <p:outputLabel value="To" ></p:outputLabel>
+                            <p:datePicker 
+                                showTime="true"
+                                showButtonBar="true"
+                                class="mt-1 mx-2 w-100"
+                                inputStyleClass="w-100"
+                                value="#{reportController.toDate}"
+                                pattern="#{sessionController.applicationPreference.longDateFormat}">
+                            </p:datePicker>
+
+                        </h:panelGrid>
+
+                        <p:commandButton 
+                            ajax="false" 
+                            icon="fa fa-refresh"
+                            class=""
+                            value="Process" 
+                            action="#{reportController.processOpdServiceCountDoctorWise()}" >
+                        </p:commandButton>
+
+                        <p:commandButton 
+                            ajax="false" 
+                            icon="fa fa-download"
+                            class="ui-button-warning mx-2"
+                            value="Download"
+                            action="#{reportController.downloadOpdServiceCount()}">
+                        </p:commandButton>
+
+                        <p:dataTable id="tbl" 
+                                     value="#{reportController.reportOpdServiceCount}" 
+                                     var="item"
+                                     paginatorPosition="bottom"
+                                     paginator="true"
+                                     class="mt-3"
+                                     rows="10"
+
+                                     >
+                            <p:column headerText="Doctor Name">
+                                <p:commandLink  ajax="false" class="mr-4" action="#{reportController.filterOpdServiceCountBySelectedDoctor(item.doctorId)}"
+                                               value="#{item.doctor}"/>
+                            </p:column>
+                            <p:column headerText="Test Name">
+                                <p:commandLink  ajax="false" class="mr-4" action="#{reportController.filterOpdServiceCountBySelectedService(item.serviceId)}"
+                                               value="#{item.service}"/>
+                            </p:column>
+                            <p:column headerText="Test Count">
+                                <h:outputText value="#{item.serviceCount}" />
+                            </p:column>
+                        </p:dataTable>
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

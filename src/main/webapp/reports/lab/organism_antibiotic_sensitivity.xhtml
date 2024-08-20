@@ -1,0 +1,222 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/reports/index.xhtml">
+            <ui:define name="subcontent">
+
+                <h:form >
+                    <p:panel header="Organism Antibiotic Sensitivity Report" >
+                        <h:panelGrid columns="5" >
+                            <p:outputLabel value="From (Billed) Date" >
+                            </p:outputLabel>
+                            <p:datePicker value="#{reportController.fromDate}" 
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
+                            <p:spacer width="20"></p:spacer>
+                            <p:outputLabel value="To (Billed) Date" >
+                            </p:outputLabel>
+                            <p:datePicker value="#{reportController.toDate}"
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
+                            <p:outputLabel value="Age" >
+                            </p:outputLabel>
+                            <p:selectOneMenu value="#{reportController.patient.age}">
+                                <f:selectItem itemLabel="Select Age to filter"/>
+                            </p:selectOneMenu>
+                            <p:spacer width="20"></p:spacer>
+
+                            <p:outputLabel value="Institution/Branch" >
+                            </p:outputLabel>
+                            <p:selectOneMenu 
+                                id="cmdInstitution"
+                                value="#{reportController.institution}"
+                                filter="true"
+                                >
+                                <f:selectItem itemLabel="All"></f:selectItem>
+                                <f:selectItems value="#{institutionController.items}"
+                                               var="i"
+                                               itemLabel="#{i.name}"
+                                               itemValue="#{i}"></f:selectItems>
+                                <p:ajax process="@this" update="cmdDepartment"></p:ajax>
+                            </p:selectOneMenu>
+
+
+
+                            <p:outputLabel value="Department">
+                            </p:outputLabel>
+                            <p:selectOneMenu 
+                                id="cmdDepartment"
+                                value="#{reportController.department}" 
+                                filter="true"
+                                >
+                                <f:selectItem itemLabel="All"></f:selectItem>
+                                <f:selectItems value="#{departmentController.getInsDepartments(reportController.institution)}"
+                                               var="d"
+                                               itemLabel="#{d.name}"
+                                               itemValue="#{d}"></f:selectItems>
+                            </p:selectOneMenu>
+
+                            <p:spacer></p:spacer>
+
+                            <p:outputLabel value="Pateint MRN" >
+                            </p:outputLabel>
+
+                            <h:panelGroup>
+                                <p:inputText autocomplete="off" id="txtMrn" value="#{reportController.patient.phn}" class="form-control" />
+                            </h:panelGroup>
+                            <p:outputLabel value="Investigation" >
+                            </p:outputLabel>
+                            <p:selectOneMenu value="#{reportController.investigation}">
+                                <f:selectItem itemLabel="Select Investigation"/>
+                                <f:selectItems value="#{investigationController.investigationItems}" itemLabel="#{i.sname}" var="i" itemValue="#{i}"/>
+                            </p:selectOneMenu>
+
+                            <p:spacer></p:spacer>
+                            <p:outputLabel value="Referring Doctor Name" >
+                            </p:outputLabel>
+                            <p:selectOneMenu value="#{reportController.referingDoctor}">
+                                <f:selectItem itemLabel="Select referring doctor"/>
+                                <f:selectItems value="#{doctorController.items}" itemLabel="#{d.name}" var="d" itemValue="#{d}"/>
+                            </p:selectOneMenu>
+
+                            <p:outputLabel value="Visiting Type"></p:outputLabel>
+                            <p:selectOneMenu value="">
+                                <f:selectItem itemLabel="All visits"/>
+                            </p:selectOneMenu>
+
+                            <p:spacer></p:spacer>
+                            <p:outputLabel value="Organism" >
+                            </p:outputLabel>
+                            <p:selectOneMenu 
+                                value=""
+                                filter="true"
+                                >
+                                <f:selectItem itemLabel="Select Organism"></f:selectItem>
+                                <f:selectItems value="#{investigationController.items}" itemLabel="#{d.name}" var="d" itemValue="#{d}"/>
+
+                            </p:selectOneMenu>
+
+
+
+                            <p:outputLabel value="Antibiotics">
+                            </p:outputLabel>
+                            <p:selectOneMenu 
+                                value="" 
+                                filter="true"
+                                >
+                                <f:selectItems  value="#{antibioticController.selectedItems}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
+
+                            </p:selectOneMenu>
+
+                            <p:spacer></p:spacer>
+
+                            <p:outputLabel value="Sensitivity">
+                            </p:outputLabel>
+                            <p:selectOneMenu 
+                                value="" 
+                                filter="true"
+                                >
+                                <f:selectItems  value="" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
+
+                            </p:selectOneMenu>
+
+
+
+                            <p:commandButton ajax="false" value="Process" action="null" >
+                            </p:commandButton>
+
+                        </h:panelGrid>
+
+                        <h:panelGrid columns="2">
+                            <h:outputLabel value="Institution/Branch :  "/>
+                            <h:outputLabel value="#{reportController.institution}"  ></h:outputLabel>
+
+                            <h:outputLabel value="From Date :  "/>
+                            <h:outputLabel value="#{reportController.fromDate}"  >
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                            </h:outputLabel>
+
+                            <h:outputLabel value="To Date :  "/>
+                            <h:outputLabel value="#{reportController.toDate}"  >
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                            </h:outputLabel>
+
+                            <p:outputLabel value="MRN" >
+                            </p:outputLabel>
+                            <p:outputLabel 
+                                value="#{reportController.patient.phn}">
+
+                            </p:outputLabel>
+
+                            <p:outputLabel value="Organism" >
+                            </p:outputLabel>
+<!--                            <h:outputLabel value="#{reportController.organism}">
+                            </h:outputLabel>-->
+
+                            <p:outputLabel value="Antibiotic" >
+                            </p:outputLabel>
+                            <!--                            <p:outputLabel 
+                                                            value="#{reportController.antibiotic}">
+                                                            
+                                                        </p:outputLabel>-->
+                            <p:outputLabel value="Sensitivity" >
+                            </p:outputLabel>
+                            <!--                            <p:outputLabel 
+                                                            value="#{reportController.sensitivity}">
+                                                            
+                                                        </p:outputLabel>-->
+
+                        </h:panelGrid>
+
+
+                        <p:dataTable value="null" var="c">
+                            <p:column headerText="MRN" >
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Sample" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Investigation" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Speciman" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Visit Type" >
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Name" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Patient" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Organism" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Antibiotic" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Sensitivity" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Remarks" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                        </p:dataTable>
+
+                    </p:panel>
+
+                </h:form>
+
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

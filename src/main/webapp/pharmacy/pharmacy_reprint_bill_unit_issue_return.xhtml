@@ -1,11 +1,11 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:ph="http://java.sun.com/jsf/composite/pharmacy/inward">
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ph="http://xmlns.jcp.org/jsf/composite/pharmacy/inward">
 
     <h:body>
 
@@ -16,29 +16,32 @@
                     <p:panel header="Reprint" >
                         <f:facet name="header" >
                             <h:outputLabel value="Reprint Return Bill" ></h:outputLabel>
-                            <hr/>
-                            <p:commandButton value="Reprint" ajax="false" >
+                            
+                            <p:commandButton 
+                                value="Back"
+                                style="float: right"
+                                ajax="false" 
+                                action="/pharmacy/pharmacy_search_issue_bill_return" >
+                            </p:commandButton>
+                            <p:commandButton 
+                                class="ui-button-info mx-2"
+                                icon="fa fa-print"
+                                style="float: right"
+                                value="Reprint" 
+                                ajax="false" >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
-                            <p:commandButton value="Back" ajax="false" action="/pharmacy/pharmacy_search_issue_bill_return" />
+                            
                         </f:facet>
 
-                    </p:panel>
-
-
-
-
-                    <h:panelGroup id="gpBillPreview" >
+                        <h:panelGroup id="gpBillPreview" >
                         <ph:returnBill bill="#{pharmacyIssueController.bill}" duplicate="true" />
                     </h:panelGroup>
-
+                        
+                    </p:panel>
 
                 </h:form>
             </ui:define>
-
-
-
         </ui:composition>
-
     </h:body>
 </html>

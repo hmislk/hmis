@@ -1,14 +1,14 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:cc="http://java.sun.com/jsf/composite"
-      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:f="http://java.sun.com/jsf/core">
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <!-- INTERFACE -->
     <cc:interface>
-        //<cc:attribute name="bill" type="com.divudi.entity.Bill" />
+        <cc:attribute name="bill" type="com.divudi.entity.Bill" />
         <cc:attribute name="dup"/>
         <cc:attribute name="refund"/>
         <cc:attribute name="cancell"/>
@@ -64,7 +64,7 @@
                          left: 25%;
                          top: 30%;" >                       
                         <h:outputLabel value="#{cc.attrs.bill.billDate}" style="font-size: 16px;">
-                            <f:convertDateTime pattern="dd/MM/yy"/>
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                         </h:outputLabel>
                     </div>
 
@@ -105,7 +105,7 @@
                          position: absolute;
                          left: 15%;
                          top: 55%;" >
-                        <h:dataTable value="#{cc.attrs.bill.billItems}" var="bip"   >
+                        <h:dataTable value="#{cc.attrs.bill.billItems}" var="bip">
                             <h:column >
 
                                 <h:outputLabel rendered="#{bip.item.department.id eq cc.attrs.bill.toDepartment.id}" value="#{bip.item.printName}" style="margin: 4px; font-size: 20px!important;" >

@@ -3,14 +3,14 @@
  *
  * Development and Implementation of Web-based System by ww.divudi.com
  Development and Implementation of Web-based System by ww.divudi.com
- * and
- * a Set of Related Tools
+ * (94) 71 5812399
+ * (94) 71 5812399
  */
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.dataStructure.SearchKeyword;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
@@ -37,8 +37,8 @@ import javax.inject.Named;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- * Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
+ * Acting Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -88,7 +88,7 @@ public class ItemsDistributorsController implements Serializable {
         String sql = "Select i from ItemsDistributors i where i.retired=false"
                 + " and i.institution.id= " + getCurrentInstituion().getId() + " and "
                 + " i.item.id=" + getCurrentItem().getId();
-        ItemsDistributors tmp = getFacade().findFirstBySQL(sql);
+        ItemsDistributors tmp = getFacade().findFirstByJpql(sql);
         if (tmp != null) {
             return true;
         } else {
@@ -102,7 +102,7 @@ public class ItemsDistributorsController implements Serializable {
                 + " order by i.id desc";
         Map m = new HashMap();
         m.put("item", i);
-        ItemsDistributors tmp = getFacade().findFirstBySQL(sql, m);
+        ItemsDistributors tmp = getFacade().findFirstByJpql(sql, m);
         if (tmp != null) {
             return tmp.getInstitution();
         } else {
@@ -110,18 +110,18 @@ public class ItemsDistributorsController implements Serializable {
         }
     }
 
-    public void addToPackage() {
+    public void addItemToDistributor() {
         if (getCurrentInstituion() == null) {
-            UtilityController.addErrorMessage("Please select a package");
+            JsfUtil.addErrorMessage("Please select a package");
             return;
         }
         if (getCurrentItem() == null) {
-            UtilityController.addErrorMessage("Please select an item");
+            JsfUtil.addErrorMessage("Please select an item");
             return;
         }
 
         if (checkItem()) {
-            UtilityController.addErrorMessage("Item already added for this dealor");
+            JsfUtil.addErrorMessage("Item already added for this dealor");
             return;
         }
 
@@ -134,17 +134,18 @@ public class ItemsDistributorsController implements Serializable {
         if (pi.getId() == null) {
             getFacade().create(pi);
         }
-        UtilityController.addSuccessMessage("Added");
+        JsfUtil.addSuccessMessage("Added");
         recreateModel();
+        listItemForDistributer();
     }
 
     public void removeFromPackage() {
         if (getCurrentInstituion() == null) {
-            UtilityController.addErrorMessage("Please select a package");
+            JsfUtil.addErrorMessage("Please select a package");
             return;
         }
         if (getCurrent() == null) {
-            UtilityController.addErrorMessage("Please select an item");
+            JsfUtil.addErrorMessage("Please select an item");
             return;
         }
 
@@ -152,8 +153,9 @@ public class ItemsDistributorsController implements Serializable {
         getCurrent().setRetirer(getSessionController().getLoggedUser());
         getCurrent().setRetiredAt(new Date());
         getFacade().edit(getCurrent());
-        UtilityController.addSuccessMessage("Item Removed");
+        JsfUtil.addSuccessMessage("Item Removed");
         recreateModel();
+        listItemForDistributer();
     }
 
     /**
@@ -228,7 +230,12 @@ public class ItemsDistributorsController implements Serializable {
      *
      * @return
      */
-    public List<ItemsDistributors> getItems() {
+    
+    public List<ItemsDistributors> getItems() {  
+        return items;
+    }
+    
+    public void listItemForDistributer(){
         String temSql;
         HashMap hm = new HashMap();
 
@@ -240,12 +247,11 @@ public class ItemsDistributorsController implements Serializable {
 
         hm.put("ins", getCurrentInstituion());
 
-        items = getFacade().findBySQL(temSql, hm);
+        items = getFacade().findByJpql(temSql, hm);
 
         if (items == null) {
             items = new ArrayList<>();
         }
-        return items;
     }
 
     public void createItemDistributorTable() {
@@ -261,30 +267,30 @@ public class ItemsDistributorsController implements Serializable {
                 + " and b.institution.retired=false and b.retired=false";
 
         if (getSearchKeyword().getInstitution() != null && !getSearchKeyword().getInstitution().trim().equals("")) {
-            sql += " and  (upper(b.institution.name) like :ins )";
+            sql += " and  ((b.institution.name) like :ins )";
             tmp.put("ins", "%" + getSearchKeyword().getInstitution().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getItemName() != null && !getSearchKeyword().getItemName().trim().equals("")) {
-            sql += " and  (upper(b.item.name) like :itm )";
+            sql += " and  ((b.item.name) like :itm )";
             tmp.put("itm", "%" + getSearchKeyword().getItemName().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getCode() != null && !getSearchKeyword().getCode().trim().equals("")) {
-            sql += " and  (upper(b.item.code) like :cde )";
+            sql += " and  ((b.item.code) like :cde )";
             tmp.put("cde", "%" + getSearchKeyword().getCode().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getCategory() != null && !getSearchKeyword().getCategory().trim().equals("")) {
-            sql += " and  (upper(b.item.category.name) like :cat )";
+            sql += " and  ((b.item.category.name) like :cat )";
             tmp.put("cat", "%" + getSearchKeyword().getCategory().trim().toUpperCase() + "%");
         }
 
         sql += " order by b.institution.name,b.item.name ";
 
-        searchItems = getFacade().findBySQL(sql, tmp);
+        searchItems = getFacade().findByJpql(sql, tmp);
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Administration/Check enterd data/Item distributor(/faces/pharmacy/pharmacy_item_by_distributor.xhtml)");
+        
 
     }
 
@@ -309,12 +315,12 @@ public class ItemsDistributorsController implements Serializable {
 
             getFacade().edit(current);
 
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            UtilityController.addSuccessMessage("Saved Successfully");
+            JsfUtil.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
         getItems();
@@ -332,9 +338,9 @@ public class ItemsDistributorsController implements Serializable {
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();

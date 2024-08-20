@@ -1,36 +1,35 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:pe="http://primefaces.org/ui/extensions">
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      >
 
     <h:body>
-        <ui:composition template="/resources/template/template.xhtml">
-            <ui:define name="content">
+        <ui:composition template="/analytics/opd/index.xhtml">
+            <ui:define name="subcontent">
                 <h:form>
-                    <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet> 
                     <p:panel header="OPD Doctor Payments And Due" >
                         
-                            <h:panelGrid columns="2" >
+                            <h:panelGrid columns="2" class="my-2" >
                                 <h:outputLabel value="From Date"/>
-                                <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >      
+                                <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
                                 </p:calendar>
-                                <h:outputLabel value="To Date"/>
-                                <p:calendar styleClass="dateTimePicker" id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >                                                                              
+                                <h:outputLabel value="To Date" />
+                                <p:calendar class="w-100 mx-4 " inputStyleClass="w-100 mt-1" id="toDate" value="#{searchController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
                                 </p:calendar>
                                 <h:outputLabel value="Speciality"/> 
-                                <p:autoComplete style="min-width: 400px!important;" forceSelection="true" value="#{searchController.speciality}" id="acSpeciality"
+                                <p:autoComplete class="w-100 mx-4" inputStyleClass="w-100 mt-1" forceSelection="true" value="#{searchController.speciality}" id="acSpeciality"
                                                 completeMethod="#{specialityController.completeSpeciality}" var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
-                                                converter="specilityCon"   >
+                                                >
                                 </p:autoComplete>
 
                                 <h:outputLabel value="Doctor Name"/>      
-                                <p:autoComplete style="width: 400px;" forceSelection="true" value="#{searchController.staff}" id="scStaff"
+                                <p:autoComplete class="w-100 mx-4" inputStyleClass="w-100 mt-1" forceSelection="true" value="#{searchController.staff}" id="scStaff"
                                                 completeMethod="#{staffPaymentBillController.completeStaff}" var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
-                                                converter="stfcon"   >
+                                                >
                                 </p:autoComplete>
 
                                 <h:outputLabel value="Service Name"/>
@@ -38,7 +37,7 @@
                                                 value="#{searchController.item}" 
                                                 completeMethod="#{itemController.completeOpdItemsByNamesAndCode}"
                                                 var="ix" itemLabel="#{ix.name}" itemValue="#{ix}"
-                                                size="30"  style="width: 400px;" >
+                                                class="w-100 mx-4" inputStyleClass="w-100 mt-1" >
                                     <p:column>
                                         #{ix.name}
                                     </p:column>
@@ -53,27 +52,24 @@
                                     </p:column>
                                 </p:autoComplete>
                             </h:panelGrid>
-                                <h:panelGrid columns="4"> 
-                                    <p:spacer width="90" height="0"/>
-                                <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createDueFeeTableAndPaidFeeTable()}"/>
-                                <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
-                                    <pe:exporter type="xlsx" target="tblFee,tblFee2" fileName="opd_pro_pay_due"  />
-                                </p:commandButton>
-                                <p:commandButton value="Print" ajax="false" action="#" >
+                            <h:panelGrid columns="6" class="my-2 mt-2"> 
+                                <p:commandButton class="ui-button-warning" icon="fas fa-cogs" id="btnSearch" ajax="false" value="Process" action="#{searchController.createDueFeeTableAndPaidFeeTable()}"/>
+                                <p:commandButton class="ui-button-info mx-2" icon="fas fa-print" value="Print" ajax="false" action="#" >
                                     <p:printer target="gpBillPreview" ></p:printer>
                                 </p:commandButton>
-                                <p:watermark for="acIx" value="Service" />
-                                <p:watermark for="acSpeciality" value="Speciality" />
-                                <p:watermark for="scStaff" value="Staff / Doctor" />
-
+                                <p:commandButton class="ui-button-success" icon="fas fa-file-excel" ajax="false" value="Excel"  >
+                                    <p:dataExporter type="xlsx" target="tblFee,tblFee2" fileName="opd_pro_pay_due"  />
+                                </p:commandButton>
+                                                                                                
                             </h:panelGrid>
                         <br/><br/>
 
                         <p:defaultCommand target="btnSearch" />
                         <p:panel id="gpBillPreview" styleClass="noBorder summeryBorder">
+                            <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet> 
                             <p:panel header="OPD Doctor Payments And Due">
 
-                                <p:dataTable rowIndexVar="i"  id="tblFee" value="#{searchController.billFees}" var="bf"   >
+                                <p:dataTable rowIndexVar="i"  id="tblFee" value="#{searchController.billFees}" var="bf">
                                     <f:facet name="header">
                                          <p:outputLabel value="Due Payments" /><br/>
                                         <h:outputLabel value="From : "/>
@@ -127,10 +123,10 @@
 
                                     <p:column headerText="BilledAt" >
                                         <f:facet name="header">
-                                            <h:outputLabel value="BilledAt"/>
+                                            <h:outputLabel value="Billed At"/>
                                         </f:facet>
                                         <h:outputLabel value="#{bf.bill.createdAt}">
-                                            <f:convertDateTime pattern="dd/MM/yy &nbsp; hh:mm:ss a" ></f:convertDateTime>
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></f:convertDateTime>
                                         </h:outputLabel>
                                     </p:column>
 
@@ -162,7 +158,7 @@
 
                             <p:panel>
 
-                                <p:dataTable rowIndexVar="i"  id="tblFee2" value="#{searchController.billFeesDone}" var="bf"   >
+                                <p:dataTable rowIndexVar="i"  id="tblFee2" value="#{searchController.billFeesDone}" var="bf">
                                     <f:facet name="header">
                                          <p:outputLabel value="Done Payments" /><br/>
                                         <h:outputLabel value="From : "/>
@@ -217,10 +213,10 @@
 
                                     <p:column headerText="BilledAt" >
                                         <f:facet name="header">
-                                            <h:outputLabel value="BilledAt"/>
+                                            <h:outputLabel value="Billed At"/>
                                         </f:facet>
                                         <h:outputLabel value="#{bf.bill.createdAt}">
-                                            <f:convertDateTime pattern="dd/MM/yy &nbsp; hh:mm:ss a" ></f:convertDateTime>
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></f:convertDateTime>
                                         </h:outputLabel>
                                     </p:column>
                                     

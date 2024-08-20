@@ -1,10 +1,10 @@
 /*
- * MSc(Biomedical Informatics) Project
+ * Open Hospital Management Information System
  *
- * Development and Implementation of a Web-based Combined Data Repository of
- Genealogical, Clinical, Laboratory and Genetic Data
- * and
- * a Set of Related Tools
+ * Dr M H B Ariyaratne
+ * Acting Consultant (Health Informatics)
+ * (94) 71 5812399
+ * (94) 71 5812399
  */
 package com.divudi.bean.common;
 import com.divudi.entity.Department;
@@ -29,11 +29,11 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
-
+import com.divudi.bean.common.util.JsfUtil;
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- * Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
+ * Acting Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -64,31 +64,31 @@ public class ServiceFeeController implements Serializable {
             suggestions = new ArrayList<Staff>();
         } else {
             if (getCurrentFee().getSpeciality() == null) {
-                sql = "select p from Staff p where p.retired=false and (upper(p.person.name) like '%" + query.toUpperCase() + "%'or  upper(p.code) like '%" + query.toUpperCase() + "%' ) order by p.person.name";
+                sql = "select p from Staff p where p.retired=false and ((p.person.name) like '%" + query.toUpperCase() + "%'or  (p.code) like '%" + query.toUpperCase() + "%' ) order by p.person.name";
             } else {
-                sql = "select p from Staff p where p.speciality.id=" + getCurrentFee().getSpeciality().getId() + " and p.retired=false and (upper(p.person.name) like '%" + query.toUpperCase() + "%'or  upper(p.code) like '%" + query.toUpperCase() + "%' ) order by p.person.name";
+                sql = "select p from Staff p where p.speciality.id=" + getCurrentFee().getSpeciality().getId() + " and p.retired=false and ((p.person.name) like '%" + query.toUpperCase() + "%'or  (p.code) like '%" + query.toUpperCase() + "%' ) order by p.person.name";
             }
-            //////System.out.println(sql);
-            suggestions = getStaffFacade().findBySQL(sql);
+            //////// // System.out.println(sql);
+            suggestions = getStaffFacade().findByJpql(sql);
         }
         return suggestions;
     }
 
     public List<Department> getInstitutionDepatrments() {
         List<Department> d;
-        //////System.out.println("gettin ins dep ");
+        //////// // System.out.println("gettin ins dep ");
         if (getCurrentFee().getInstitution() == null) {
             return new ArrayList<Department>();
         } else {
             String sql = "Select d From Department d where d.retired=false and d.institution.id=" + getCurrentFee().getInstitution().getId();
-            d = getDepartmentFacade().findBySQL(sql);
+            d = getDepartmentFacade().findByJpql(sql);
         }
 
         return d;
     }
 
     public void makeAllNullForeignCharges() {
-        for (Fee f : getFeeFacade().findBySQL("select f from Fee")) {
+        for (Fee f : getFeeFacade().findByJpql("select f from Fee")) {
             if (f.getFfee() == 0.0) {
                 f.setFfee(f.getFee());
                 getFeeFacade().edit(f);
@@ -122,11 +122,11 @@ public class ServiceFeeController implements Serializable {
 
     public void saveCharge() {
         if (currentIx == null) {
-            UtilityController.addErrorMessage("Please select a charge");
+            JsfUtil.addErrorMessage("Please select a charge");
             return;
         }
         if (currentFee == null) {
-            UtilityController.addErrorMessage("Please select a charge");
+            JsfUtil.addErrorMessage("Please select a charge");
             return;
         }
         currentFee.setItem(currentIx);
@@ -134,10 +134,10 @@ public class ServiceFeeController implements Serializable {
             currentFee.setCreatedAt(new Date());
             currentFee.setCreater(getSessionController().getLoggedUser());
             getItemFeeFacade().create(currentFee);
-            UtilityController.addSuccessMessage("Fee Added");
+            JsfUtil.addSuccessMessage("Fee Added");
         } else {
             getItemFeeFacade().edit(currentFee);
-            UtilityController.addSuccessMessage("Fee Saved");
+            JsfUtil.addSuccessMessage("Fee Saved");
         }
         currentIx.setTotal(calTot());
 
@@ -203,16 +203,16 @@ public class ServiceFeeController implements Serializable {
 
     public void removeFee() {
         if (currentIx == null) {
-            UtilityController.addErrorMessage("Please select a investigation");
+            JsfUtil.addErrorMessage("Please select a investigation");
             return;
         }
         if (getRemovedItemFee() == null) {
-            UtilityController.addErrorMessage("Please select one to remove");
+            JsfUtil.addErrorMessage("Please select one to remove");
             return;
         }
 
         if (getRemovedItemFee().getId() == null || getRemovedItemFee().getId() == 0) {
-            UtilityController.addErrorMessage("Nothing to remove");
+            JsfUtil.addErrorMessage("Nothing to remove");
             return;
         } else {
             getRemovedItemFee().setRetired(true);
@@ -236,9 +236,9 @@ public class ServiceFeeController implements Serializable {
             currentIx.setRetiredAt(new Date());
             currentIx.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(currentIx);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
 
         currentIx = null;
@@ -251,12 +251,12 @@ public class ServiceFeeController implements Serializable {
 
     public void createCharges() {
         String sql = "select c from ItemFee c where c.retired = false and c.item.id = " + currentIx.getId();
-        fees = itemFeeFacade.findBySQL(sql);
+        fees = itemFeeFacade.findByJpql(sql);
     }
 
 //    public List<ItemFee> getCharges() {
 //        if (currentIx != null && currentIx.getId() != null) {
-//            setCharges(getItemFeeFacade().findBySQL("select c from ItemFee c where c.retired = false and c.item.id = " + currentIx.getId()));
+//            setCharges(getItemFeeFacade().findByJpql("select c from ItemFee c where c.retired = false and c.item.id = " + currentIx.getId()));
 //        } else {
 //            setCharges(new ArrayList<ItemFee>());
 //        }
@@ -266,19 +266,19 @@ public class ServiceFeeController implements Serializable {
 //        return fees;
 //    }
     public void updateCharges() {
-        //////System.out.println("updating service charges");
+        //////// // System.out.println("updating service charges");
         for (ItemFee f : fees) {
-            //////System.out.println("fe is " + f.getFee());
+            //////// // System.out.println("fe is " + f.getFee());
             if (f.getId() == null || f.getId() == 0) {
                 getItemFeeFacade().create(f);
-                //////System.out.println("fee created");
+                //////// // System.out.println("fee created");
             } else {
                 getItemFeeFacade().edit(f);
-                //////System.out.println("fee saved");
+                //////// // System.out.println("fee saved");
             }
         }
         currentIx.setTotal(calTot());
-        //////System.out.println("item saved. " + currentIx.getTotal());
+        //////// // System.out.println("item saved. " + currentIx.getTotal());
         getEjbFacade().edit(currentIx);
     }
 

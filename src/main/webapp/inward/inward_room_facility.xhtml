@@ -1,112 +1,187 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
-                template="/resources/template/template.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
-                xmlns:f="http://java.sun.com/jsf/core"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/inward/inward_administration.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui">
 
-    <ui:define name="content">
-        <h:panelGroup >
-            <h:form  >
-                
-                <h:commandLink action="/inward/inward_administration" type="reset" >
-                    <p:graphicImage library="image" name="back.jpg" styleClass="backButton"></p:graphicImage>
-                </h:commandLink>
-                
-                <p:growl autoUpdate="true" />
-                <p:focus id="selectFocus" context="gpSelect" />
-                <p:focus id="detailFocus" context="gpDetail" />
+    <ui:define name="subcontent">
+        <h:panelGroup>
+            <h:form >
+                <p:growl/>
+                <p:focus id="selectFocus" for="lstSelect" />
+                <p:focus id="detailFocus" for="txtName" />
 
+                <p:panel class="mx-1">
+                    <f:facet name="header">
+                        <i class="fa-solid fa-gears"></i>
+                        <p:outputLabel value="Manage Room Charges *" class="mx-2"/>
+                    </f:facet>
 
-                <p:panel header="Manage Room Charges" styleClass="alignTop" >
-                    
-                    <h:panelGrid id ="gpVeda" columns="2" >
+                    <div class="row">
+                        <div class="col-md-5">
 
-                        <h:panelGrid id="gpSelect" columns="1"  >
-                            <p:panel >
-                                <h:panelGrid id="gpSelectText" >
-                                    <h:selectOneListbox converter="fac"  id="lstSelect"   size="10" value="#{roomFacilityChargeController.current}" style="min-width: 223px">
-                                        <f:selectItems  value="#{roomFacilityChargeController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
-                                        <f:ajax render="gpDetail" execute="lstSelect" >
-                                        </f:ajax>
-                                    </h:selectOneListbox>
-                                </h:panelGrid>
-                                <h:panelGrid id="gpSelectButtons" columns="3"  >
-                                    <p:commandButton ajax="false" id="btnAdd" value="Add" action="#{roomFacilityChargeController.prepareAdd()}" styleClass="buttons" onclick="onSubmitButton();"  >
+                            <div class="row" >
+                                <div class="col-12" >
+                                    <p:commandButton
+                                        id="btnAdd" 
+                                        process="btnAdd"
+                                        update="lstSelect gpDetail "
+                                        icon="fa fa-plus"
+                                        value="Add" 
+                                        action="#{roomFacilityChargeController.prepareAdd()}" 
+                                        class="ui-button-success w-25"   >
                                     </p:commandButton>
 
-                                    <p:commandButton process="@this" update="@all" id="btnDelete" onclick="if (!confirm('Are you sure you want to delete this record?'))
-                                                return false;" action="#{roomFacilityChargeController.delete()}"  value="Delete"  >
+                                    <p:commandButton 
+                                        id="btnDelete" 
+                                        process="btnDelete" 
+                                        update="gpDetail lstSelect" 
+                                        icon="fa fa-trash"
+                                        class="ui-button-danger mx-2 w-25"
+                                        onclick="if (!confirm('Are you sure you want to delete this record?'))
+                                                    return false;" 
+                                        action="#{roomFacilityChargeController.delete()}"  
+                                        value="Delete"  >
                                     </p:commandButton>
-                                </h:panelGrid>
-                            </p:panel>
-                        </h:panelGrid  >
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="form-group">                                            
 
-                        <p:panel>
-                            <h:panelGrid id="gpDetail" columns="1">
-                                <h:panelGrid id="gpDetailText" columns="2">
+                                        <p:selectOneListbox 
+                                            converter="fac"  
+                                            id="lstSelect" 
+                                            filter="true"  
+                                            class="mt-2"
+                                            filterMatchMode="contains"
+                                            value="#{roomFacilityChargeController.current}" 
+                                            >
+                                            <f:selectItems  
+                                                value="#{roomFacilityChargeController.items}" 
+                                                var="myItem" 
+                                                itemValue="#{myItem}" 
+                                                itemLabel="#{myItem.name}" ></f:selectItems>
+                                            <f:ajax 
+                                                render="gpDetail" 
+                                                execute="lstSelect" >
+                                            </f:ajax>
+                                        </p:selectOneListbox>
+
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-7">
+
+                            <p:panel class="mx-1" id="gpDetail">
+                                <f:facet name="header">
+                                    <p:outputLabel value="Details of Room Charges" class="mt-2"/>
+
+                                    <p:commandButton 
+                                        id="btnSave" 
+                                        process="btnSave gpDetail" 
+                                        update="lstSelect" 
+                                        value="Save" 
+                                        icon="fa fa-save"
+                                        style="float: right;"
+                                        action="#{roomFacilityChargeController.saveSelected()}" 
+                                        class="ui-button-warning">
+                                    </p:commandButton>
+                                    <p:defaultCommand target="btnSave"/>
+
+                                </f:facet>
+                                <h:panelGrid columns="3" class="w-100">
+
                                     <h:outputText id="lblName" value="Name" ></h:outputText>
-                                    <h:inputText autocomplete="off" id="txtName" value="#{roomFacilityChargeController.current.name}"  ></h:inputText>
-                                    <h:outputLabel value="Room Facility"/>
-                                    <h:selectManyCheckbox  value="#{roomFacilityChargeController.current.roomFacilities}">
+                                    <p:outputLabel value=": " style="width: 30px; text-align: center; " ></p:outputLabel>
+                                    <p:inputText autocomplete="off" id="txtName" value="#{roomFacilityChargeController.current.name}" class="w-100 ml-2"  ></p:inputText>
+
+                                    <h:outputLabel value="Facilitiy"/>
+                                    <p:outputLabel value=": " style="width: 30px; text-align: center; " ></p:outputLabel>
+                                    <p:selectManyCheckbox  value="#{roomFacilityChargeController.current.roomFacilities}" class="w-100 mt-2 mb-2">
                                         <f:selectItems value="#{roomFacilityChargeController.roomFacilitys}"/>
-                                    </h:selectManyCheckbox>
+                                    </p:selectManyCheckbox>
+
                                     <h:outputLabel value="Room"/>
-                                    <h:selectOneMenu value="#{roomFacilityChargeController.current.room}">
+                                    <p:outputLabel value=": " style="width: 30px; text-align: center; " ></p:outputLabel>
+                                    <p:selectOneMenu value="#{roomFacilityChargeController.current.room}" class="w-100 ml-2">
                                         <f:selectItem itemLabel="Select Room"/>
                                         <f:selectItems value="#{roomController.items}" var="r" itemLabel="#{r.name}" itemValue="#{r}"/>
-                                    </h:selectOneMenu>
+                                    </p:selectOneMenu>
+
                                     <h:outputLabel value="Room Category"/>
-                                    <h:selectOneMenu value="#{roomFacilityChargeController.current.roomCategory}">
+                                    <p:outputLabel value=": " style="width: 30px; text-align: center; " ></p:outputLabel>
+                                    <p:selectOneMenu value="#{roomFacilityChargeController.current.roomCategory}" class="w-100 mt-2 mb-2">
                                         <f:selectItem itemLabel="Select Room Category"/>
                                         <f:selectItems value="#{roomCategoryController.items}" var="r" itemLabel="#{r.name}" itemValue="#{r}"/>
-                                    </h:selectOneMenu>
+                                    </p:selectOneMenu>
+
                                     <h:outputLabel value="Department"/>
+                                    <p:outputLabel value=": " style="width: 30px; text-align: center; " ></p:outputLabel>
                                     <p:autoComplete value="#{roomFacilityChargeController.current.department}" 
                                                     forceSelection="true"
                                                     completeMethod="#{departmentController.completeDept}" 
-                                                    var="c" itemLabel="#{c.name}" itemValue="#{c}" >
+                                                    var="c" itemLabel="#{c.name}" itemValue="#{c}" class="w-100 ml-2" >
                                     </p:autoComplete>
-                                    <h:outputLabel value="Duration Hour"/>
-                                    <h:inputText autocomplete="off" value="#{roomFacilityChargeController.current.timedItemFee.durationHours}"/>
-                                    <h:outputLabel value="Over Shoot Hour"/>
-                                    <h:inputText autocomplete="off" value="#{roomFacilityChargeController.current.timedItemFee.overShootHours}"/>
-                                    <h:outputLabel value="Administration Charge"/>
-                                    <h:inputText autocomplete="off" value="#{roomFacilityChargeController.current.adminstrationCharge}"/>
-                                    <h:outputLabel value="Madical Care Charge"/>
-                                    <h:inputText autocomplete="off" value="#{roomFacilityChargeController.current.medicalCareCharge}"/>
-                                    <h:outputLabel value="Room Charge"></h:outputLabel>
-                                    <h:inputText autocomplete="off" value="#{roomFacilityChargeController.current.roomCharge}"/>
-                                    <h:outputLabel value="Maintanace Charge"/>
-                                    <h:inputText autocomplete="off" value="#{roomFacilityChargeController.current.maintananceCharge}"/>
-                                    <h:outputLabel value="Nursing Charge"/>
-                                    <h:inputText autocomplete="off" value="#{roomFacilityChargeController.current.nursingCharge}"/>
-                                    <h:outputLabel value="Duration Days For Mo Charge" rendered="#{sessionController.currentPreference.inwardMoChargeCalculateInitialTime}"/>
-                                    <h:inputText autocomplete="off" value="#{roomFacilityChargeController.current.timedItemFee.durationDaysForMoCharge}" rendered="#{sessionController.currentPreference.inwardMoChargeCalculateInitialTime}"/>
-                                    <h:outputLabel value="MO Charge" />
-                                    <h:inputText autocomplete="off" value="#{roomFacilityChargeController.current.moCharge}"/>
-                                    <h:outputLabel value="Charge for After Duration Days" rendered="#{sessionController.currentPreference.inwardMoChargeCalculateInitialTime}"/>
-                                    <h:inputText autocomplete="off" value="#{roomFacilityChargeController.current.moChargeForAfterDuration}" rendered="#{sessionController.currentPreference.inwardMoChargeCalculateInitialTime}"/>
+
+                                    <h:outputLabel value="Fee Calculation Block Duration in Hours"/>
+                                    <p:outputLabel value=": " style="width: 30px; text-align: center; " ></p:outputLabel>
+                                    <p:inputText autocomplete="off" value="#{roomFacilityChargeController.current.timedItemFee.durationHours}" class="w-100 mt-2 mb-2"/>
+
+                                    <h:outputLabel value="Over Shoot Hour for the last Block"/>
+                                    <p:outputLabel value=": " style="width: 30px; text-align: center; " ></p:outputLabel>
+                                    <p:inputText autocomplete="off" value="#{roomFacilityChargeController.current.timedItemFee.overShootHours}" class="w-100 ml-2"/>
+
+                                    <h:outputLabel value="#{webContentController.findSingleText('Administration Charge')} - for a Block"/>
+                                    <p:outputLabel value=": " style="width: 30px; text-align: center; " ></p:outputLabel>
+                                    <p:inputText autocomplete="off" value="#{roomFacilityChargeController.current.adminstrationCharge}" class="w-100 mt-2 mb-2"/>
+
+                                    <h:outputLabel value="Madical Care Charge for a Block"/>
+                                    <p:outputLabel value=": " style="width: 30px; text-align: center; " ></p:outputLabel>
+                                    <p:inputText autocomplete="off" value="#{roomFacilityChargeController.current.medicalCareCharge}" class="w-100 ml-2"/>
+
+                                    <h:outputLabel value="Room Charge for a Block"></h:outputLabel>
+                                    <p:outputLabel value=": " style="width: 30px; text-align: center; " ></p:outputLabel>
+                                    <p:inputText autocomplete="off" value="#{roomFacilityChargeController.current.roomCharge}" class="w-100 mt-2 mb-2"/>
+
+                                    <h:outputLabel value="Maintanace Charge for a Block"/>
+                                    <p:outputLabel value=": " style="width: 30px; text-align: center; " ></p:outputLabel>
+                                    <p:inputText autocomplete="off" value="#{roomFacilityChargeController.current.maintananceCharge}" class="w-100 ml-2"/>
+
+                                    <h:outputLabel value="Nursing Charge for a Block"/>
+                                    <p:outputLabel value=": " style="width: 30px; text-align: center; " ></p:outputLabel>
+                                    <p:inputText autocomplete="off" value="#{roomFacilityChargeController.current.nursingCharge}" class="w-100 mt-2 mb-2"/>
+
+                                    <h:outputLabel value="Duration Days For Mo Charge for a Block" rendered="#{sessionController.departmentPreference.inwardMoChargeCalculateInitialTime}"/>
+                                    <p:outputLabel value=": " style="width: 30px; text-align: center; " rendered="#{sessionController.departmentPreference.inwardMoChargeCalculateInitialTime}" ></p:outputLabel>
+                                    <p:inputText autocomplete="off" class="w-100 ml-2" value="#{roomFacilityChargeController.current.timedItemFee.durationDaysForMoCharge}" rendered="#{sessionController.departmentPreference.inwardMoChargeCalculateInitialTime}"/>
+
+                                    <h:outputLabel value="MO Charge for a Block" />
+                                    <p:outputLabel value=": " style="width: 30px; text-align: center; " ></p:outputLabel>
+                                    <p:inputText autocomplete="off" value="#{roomFacilityChargeController.current.moCharge}" class="w-100  mt-2 mb-2"/>
+
+                                    <h:outputLabel value="Charge for After Duration Days" rendered="#{sessionController.departmentPreference.inwardMoChargeCalculateInitialTime}"/>
+                                    <p:outputLabel value=": " style="width: 30px; text-align: center; " rendered="#{sessionController.departmentPreference.inwardMoChargeCalculateInitialTime}"></p:outputLabel>
+                                    <p:inputText autocomplete="off" class="w-100 ml-2" value="#{roomFacilityChargeController.current.moChargeForAfterDuration}" rendered="#{sessionController.departmentPreference.inwardMoChargeCalculateInitialTime}"/>
+
                                     <h:outputLabel value="Linen Charge Per Day" />
-                                    <h:inputText autocomplete="off" value="#{roomFacilityChargeController.current.linenCharge}"/>
+                                    <p:outputLabel value=": " style="width: 30px; text-align: center; " ></p:outputLabel>
+                                    <p:inputText autocomplete="off" class="w-100 mt-2 mb-2" value="#{roomFacilityChargeController.current.linenCharge}"/>
 
                                 </h:panelGrid>
-                                <h:panelGrid id="gpDetailButtons" columns="2">
-                                    <p:commandButton ajax="false" id="btnSave" value="Save" action="#{roomFacilityChargeController.saveSelected()}" styleClass="buttons" onclick="onSubmitButton();" >
+                            </p:panel>
 
-                                    </p:commandButton>
-                                    <p:defaultCommand target="btnSave"/>
-                                </h:panelGrid>
-                            </h:panelGrid>
-                        </p:panel>
-                    </h:panelGrid>
+                        </div>
+                    </div>
                 </p:panel>
+
             </h:form>
-
         </h:panelGroup>
-
     </ui:define>
-
 </ui:composition>

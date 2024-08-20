@@ -1,0 +1,188 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      >
+
+    <h:body>
+
+        <ui:composition template="/lab/administration.xhtml">
+
+            <ui:define name="subcontent">
+                <h:form>
+                    <p:panelGrid columns="1" >
+                        <p:panel header="Select Investigation and Field" >
+                             <f:facet name="header">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <h:outputLabel value="Select Investigation and Field" />
+                                    </div>
+                                    <div>
+                                        <p:commandButton 
+                                            value="Back" 
+                                            class="my-1"
+                                            icon="fas fa-arrow-left"
+                                            action="#{investigationController.navigateToManageInvestigation}" ajax="false" ></p:commandButton> 
+                                    </div>
+                                </div>
+                                
+                            </f:facet>
+                            <h:panelGrid columns="4" class="mx-4" >
+                                <h:outputLabel value="Select Investigation" class="mx-2" />
+                                <p:autoComplete class="mx-4" widgetVar="aPt" id="acPt" forceSelection="true"
+                                                value="#{investigationItemDynamicLabelController.investigation}" 
+                                                completeMethod="#{investigationController.completeInvest}" 
+                                                var="apt" itemLabel="#{apt.name}" 
+                                                itemValue="#{apt}" size="30"  style="width: 400px;">
+                                    <p:column>
+                                        #{apt.name}
+                                    </p:column>
+                                    <p:column>
+                                        #{apt.id}
+                                    </p:column>
+                                    <p:column>
+                                        #{apt.fullName}
+                                    </p:column>
+                                    <p:column>
+                                        #{apt.department.name}
+                                    </p:column>
+                                    <p:column>
+                                        #{apt.institution.name}
+                                    </p:column>
+                                    <p:ajax process="acPt iif" update="iif tbl" event="itemSelect"/>
+                                </p:autoComplete> 
+                                
+                                <p:selectBooleanCheckbox itemLabel="Master Items Only" value="#{investigationController.listMasterItemsOnly}">
+                                    <p:ajax event="change" process="@this" update="acPt" />
+                                </p:selectBooleanCheckbox>
+                                
+                                <h:outputLabel value="" ></h:outputLabel>
+                                <h:outputLabel value="Select Dynamic Label" class="mx-2" ></h:outputLabel>
+                                <p:selectOneMenu class="mx-4 w-75 mt-1" id="iif" value="#{investigationItemDynamicLabelController.investigationItemofDynamicLabelType}" >
+                                    <f:selectItem itemLabel="Select Item" />
+                                    <f:selectItems value="#{investigationItemDynamicLabelController.investigationItemsOfDynamicLabelType}" var="iifs" itemLabel="#{iifs.name}" itemValue="#{iifs}" />
+                                    <p:ajax event="change" process="iif" update="tbl" />
+                                </p:selectOneMenu>
+
+                            </h:panelGrid>
+                        </p:panel>
+                        <p:panel header="Adding new dynamic label" >
+                            <h:panelGrid columns="3" class="w-100" >
+                                <h:outputLabel value="Sex" ></h:outputLabel>
+                                 <h:outputLabel value=":" ></h:outputLabel>
+                                <p:selectOneMenu id="txtNewSex"  value="#{investigationItemDynamicLabelController.sex}" style="width: 200px;">
+                                    <f:selectItem itemLabel="Select Sex"/>
+                                    <f:selectItem itemLabel="Male" itemValue="Male"/>
+                                    <f:selectItem itemLabel="Female" itemValue="Female"/>
+                                </p:selectOneMenu>
+
+                                <h:outputLabel value="From Age" ></h:outputLabel>
+                                 <h:outputLabel value=":" ></h:outputLabel>
+                                <h:panelGrid columns="2">
+                                    <p:inputText autocomplete="off" value="#{investigationItemDynamicLabelController.fromAge}"></p:inputText>
+                                    <h:selectOneMenu value="#{investigationItemDynamicLabelController.fromAgeUnit}" >
+                                        <f:selectItem itemValue="Days" />
+                                        <f:selectItem itemValue="Months" />
+                                        <f:selectItem itemValue="Years" />
+                                    </h:selectOneMenu>
+                                </h:panelGrid>
+                                <h:outputLabel value="To Age" ></h:outputLabel>
+                                 <h:outputLabel value=":" ></h:outputLabel>
+                                <h:panelGrid columns="2">
+                                    <p:inputText autocomplete="off" value="#{investigationItemDynamicLabelController.toAge}"></p:inputText>
+                                    <h:selectOneMenu value="#{investigationItemDynamicLabelController.toAgeUnit}" >
+                                        <f:selectItem itemValue="Days" />
+                                        <f:selectItem itemValue="Months" />
+                                        <f:selectItem itemValue="Years" />
+                                    </h:selectOneMenu>
+                                </h:panelGrid>
+                                <h:outputLabel value="Label" ></h:outputLabel>
+                                <h:outputLabel value=":" ></h:outputLabel>
+                                <p:inputTextarea value="#{investigationItemDynamicLabelController.flagMessage}" ></p:inputTextarea>
+                                
+                                <p:commandButton class="ui-button-warning" icon="fas fa-save" process="@this" update="tbl" value="Save" ajax="false" action="#{investigationItemDynamicLabelController.saveForDynamicLabel()}"   >
+                                </p:commandButton>
+
+
+                            </h:panelGrid>
+                        </p:panel>
+                        <p:panel header="Already added Labels" >
+                            <f:facet name="header" >
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <h:outputLabel value="Already added Labels" />
+                                    </div>
+                                    <div>
+                                        <p:commandButton value="Excel" ajax="false" class="mx-2 ui-button-success" icon="fas fa-file-excel">
+                                        <p:dataExporter type="xlsx" target="tbl" fileName="/lab/dianamic_lables"  />
+                                    </p:commandButton>
+                                    </div>
+                                </div>
+                                    
+                                </f:facet>
+                            <p:panelGrid columns="1" >
+                                <p:dataTable id="tbl" value="#{investigationItemDynamicLabelController.dynamicLabels}" var="f" >
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="#{investigationItemDynamicLabelController.investigation.name} - " />
+                                        
+                                        <p:outputLabel value="#{investigationItemDynamicLabelController.investigationItemofDynamicLabelType.name}" />
+                                    </f:facet>
+                                    <p:column headerText="Sex">
+                                        <f:facet name="header" >
+                                            <p:outputLabel value="Sex" />
+                                        </f:facet>
+                                        <p:outputLabel value="#{f.sex}" />
+                                    </p:column>
+                                    <p:column headerText="From Age">
+                                        <f:facet name="header" >
+                                            <p:outputLabel value="From Age" />
+                                        </f:facet>
+                                        <p:inputText autocomplete="off" value="#{f.fromAge}" >
+                                            <p:ajax event="blur" listener="#{investigationItemDynamicLabelController.saveFlags()}" process="tbl"/>
+                                        </p:inputText>
+                                    </p:column>
+                                    <p:column headerText="To Age">
+                                        <f:facet name="header" >
+                                            <p:outputLabel value="To Age" />
+                                        </f:facet>
+                                        <p:inputText autocomplete="off" value="#{f.toAge}" >
+                                            <p:ajax event="blur" listener="#{investigationItemDynamicLabelController.saveFlags()}" process="tbl"/>
+                                        </p:inputText>
+                                    </p:column>
+
+                                    <p:column headerText="Message">
+                                        <f:facet name="header" >
+                                            <p:outputLabel value="Message" />
+                                        </f:facet>
+                                        <p:inputText autocomplete="off" value="#{f.flagMessage}" >
+                                            <p:ajax event="blur" listener="#{investigationItemDynamicLabelController.saveFlags()}" process="tbl"/>
+                                        </p:inputText>
+                                    </p:column>
+
+                                    <p:column headerText="Remove" exportable="false">
+                                        <p:commandButton ajax="false" value="Remove" action="#{investigationItemDynamicLabelController.removeDynamicLabelValue()}"   >
+                                            <f:setPropertyActionListener value="#{f}" target="#{investigationItemDynamicLabelController.removingInvestigationItemofDynamicLabelType}" />
+                                        </p:commandButton>
+                                    </p:column>
+
+                                </p:dataTable>
+
+                            </p:panelGrid>
+
+                        </p:panel>
+                    </p:panelGrid>
+
+
+
+
+                </h:form>
+            </ui:define>
+
+
+        </ui:composition>
+
+    </h:body>
+</html>

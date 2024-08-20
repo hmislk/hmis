@@ -1,0 +1,272 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="bill" type="com.divudi.entity.Bill" />
+        <cc:attribute name="duplicate" type="java.lang.Boolean"/>
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <h:form>
+            <p:commandButton value="Print" class="ui-button-info mx-2" icon="fas fa-print" ajax="false" action="#" >
+                <p:printer target="gpBillPreview" ></p:printer>
+            </p:commandButton> 
+            <h:outputStylesheet library="css" name="opd_five_five.css" ></h:outputStylesheet>
+            <h:panelGroup id="gpBillPreview">
+                <div class="fiveinchbill" style="page-break-after: always" >
+
+            <div class="institutionName">
+                <h:outputLabel value="#{cc.attrs.bill.department.printingName}" />
+            </div>
+            <div class="institutionContact" >
+                <div>
+                    <h:outputLabel value="#{cc.attrs.bill.department.address}"/>
+                </div>
+                <div >
+                    <h:outputLabel value="#{cc.attrs.bill.department.telephone1} "/>
+                    <h:outputLabel value=" /" style="width: 20px; text-align: center;"/>
+                    <h:outputLabel value="#{cc.attrs.bill.department.telephone2}"/>
+                </div>
+                <div >
+                    <h:outputLabel value="#{cc.attrs.bill.department.fax}"/>                                                 
+                </div>
+            </div>
+
+            <div class="headingBillFiveFive" style="text-align: center;font-weight: bold;">
+                <h:outputLabel value="Refund Receipt"   /> 
+                <br />
+                <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
+                <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
+            </div>
+
+            <div class="billline">
+                <hr></hr>   
+            </div>
+
+            <div class="billDetailsFiveFive" >
+                <table style="width: 99%!important;" >
+                    <tr>
+                        <td style="text-align: left;" >
+                            <h:outputLabel value="Name" class="billDetailsFiveFive" ></h:outputLabel>
+                        </td>
+                        <td style="width: 10px;"></td>
+                        <td >:</td>
+                        <td style="width: 5px;"></td>
+                        <td>
+                            <h:outputLabel value="#{cc.attrs.bill.patient.person.nameWithTitle}" class="billDetailsFiveFive" >
+                            </h:outputLabel>
+
+                        </td>
+                        <td style="width: 50px;"></td>
+                        <td>
+                            <h:outputLabel value="Age" class="billDetailsFiveFive" ></h:outputLabel>
+                        </td>
+                        <td>
+                            <h:outputLabel value=":" class="billDetailsFiveFive" ></h:outputLabel>
+                        </td>
+
+                        <td>
+                            <h:outputLabel value="#{cc.attrs.bill.patient.age}" class="billDetailsFiveFive">
+                            </h:outputLabel>
+                        </td>
+
+                    </tr>
+
+
+                    <tr>
+                        <td style="text-align: left;" >
+                            <h:outputLabel value="Gender" class="billDetailsFiveFive" ></h:outputLabel>
+                        </td>
+                        <td style="width: 10px;"></td>
+                        <td >:</td>
+                        <td style="width: 5px;"></td>
+                        <td>
+                            <h:outputLabel value="#{cc.attrs.bill.patient.person.sex}" class="billDetailsFiveFive" >
+                            </h:outputLabel>
+
+                        </td>
+                        <td style="width: 50px;"></td>
+                        <td>
+                            <h:outputLabel value="Address" class="billDetailsFiveFive" ></h:outputLabel>
+                        </td>
+                        <td>
+                            <h:outputLabel value=":" class="billDetailsFiveFive" ></h:outputLabel>
+                        </td>
+
+                        <td>
+                            <h:outputLabel value="#{cc.attrs.bill.patientEncounter.patient.person.address}" class="billDetailsFiveFive">
+                            </h:outputLabel>
+                        </td>
+
+                    </tr>
+
+
+                    <tr>
+                        <td style="text-align: left;" >
+                            <h:outputLabel value="Phone" class="billDetailsFiveFive" ></h:outputLabel>
+                        </td>
+                        <td style="width: 10px;"></td>
+                        <td >:</td>
+                        <td style="width: 5px;"></td>
+                        <td>
+                            <h:outputLabel value="#{cc.attrs.bill.patient.person.phone}" class="billDetailsFiveFive" >
+                            </h:outputLabel>
+
+                        </td>
+                        <td style="width: 50px;"></td>
+                        <td>
+                            <h:outputLabel value="Payment Type" class="billDetailsFiveFive" ></h:outputLabel>
+                        </td>
+                        <td>
+                            <h:outputLabel value=":" class="billDetailsFiveFive" ></h:outputLabel>
+                        </td>
+
+                        <td>
+                            <h:outputLabel value="#{cc.attrs.bill.paymentMethod}" class="billDetailsFiveFive">
+                            </h:outputLabel>
+                        </td>
+
+                    </tr>
+
+                    <tr>
+                        <td style="text-align: left;" >
+                            <h:outputLabel value="BHT No" class="billDetailsFiveFive" ></h:outputLabel>
+                        </td>
+                        <td style="width: 10px;"></td>
+                        <td >:</td>
+                        <td style="width: 5px;"></td>
+                        <td>
+                            <h:outputLabel value="#{cc.attrs.bill.patientEncounter.bhtNo}" class="billDetailsFiveFive" >
+                            </h:outputLabel>
+
+                        </td>
+                        <td style="width: 50px;"></td>
+                        <td>
+                            <h:outputLabel value="Bill No" class="billDetailsFiveFive" ></h:outputLabel>
+                        </td>
+                        <td>
+                            <h:outputLabel value=":" class="billDetailsFiveFive" ></h:outputLabel>
+                        </td>
+
+                        <td>
+                            <h:outputLabel value="#{cc.attrs.bill.insId}" class="billDetailsFiveFive">
+                            </h:outputLabel>
+                        </td>
+
+                    </tr>
+                    <tr>
+                        <td style="text-align: left;" >
+                            <h:outputLabel value="Bill Date" class="billDetailsFiveFive" ></h:outputLabel>
+                        </td>
+                        <td style="width: 10px;"></td>
+                        <td >:</td>
+                        <td style="width: 5px;"></td>
+                        <td>
+                            <h:outputLabel value="#{cc.attrs.bill.createdAt}" class="billDetailsFiveFive" >
+                                <f:convertDateTime pattern="dd/MMM/yyyy" ></f:convertDateTime>
+                            </h:outputLabel>
+
+                        </td>
+                        <td style="width: 50px;"></td>
+                        <td>
+                            <h:outputLabel value="Bill Time" class="billDetailsFiveFive" ></h:outputLabel>
+                        </td>
+                        <td>
+                            <h:outputLabel value=":" class="billDetailsFiveFive" ></h:outputLabel>
+                        </td>
+
+                        <td>
+                            <h:outputLabel value="#{cc.attrs.bill.createdAt}" class="billDetailsFiveFive">
+                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm a"  ></f:convertDateTime>
+                            </h:outputLabel>
+                        </td>
+
+                    </tr>
+
+                </table>
+            </div>
+
+            <div class="itemHeadingsFiveFive" >
+
+                <table width="100%" style="width: 100%;" >
+                    <tr>
+                        <td colspan="2" style="text-align: center;" class="billline">
+                            <hr/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="width:55%!important;">
+                            <h:outputLabel value="Refund Amount" styleClass="itemHeadingsFiveFive" ></h:outputLabel>
+                        </td>
+                        <td  style="float: right;text-align: right; padding-right: 30px!important">
+                             
+                             <div class="d-flex align-items-center">
+                                 <div>
+                                     <h:outputLabel value="Rs. &nbsp;" style="font-size: 18px!important;"/>
+                                 </div>
+                                 <div>
+                                     
+                                     <h:outputLabel value="#{cc.attrs.bill.netTotal}"  styleClass="itemHeadingsFiveFive" >
+                                 <f:convertNumber pattern="#,###,##0.00" />
+                            </h:outputLabel>
+                             
+                                 </div>
+                                 <div>
+                                     <h:outputLabel value=" /=" style="font-size: 16px!important;"/>
+                                 </div>
+                             </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" style="text-align: center;" class="billline">
+                            <hr />
+                        </td>
+                    </tr>
+                </table>
+
+                
+                <div style=" top: 5%!important;
+                         left: 5%!important;
+                         bottom:  20%!important;
+                         font-size: 13px!important;">
+                            <h:outputLabel  value="Cash Received."   />
+                        </div>
+
+
+            </div>
+                    <div style="position: absolute;
+                         left: 5%!important;
+                         bottom:  3%!important;
+                         font-size: 12px!important;
+                         text-decoration: overline;">
+                            <h:outputLabel  value="Patient/Guardian"   />
+                        </div>
+                    <div style="position: absolute;
+                         left: 70%!important;
+                         bottom:  3%!important;
+                         font-size: 12px!important;
+                         text-decoration: overline;">
+                            <h:outputLabel  value="Cashier : #{cc.attrs.bill.creater.webUserPerson.name}"   />
+                        </div>
+            <div class="footer" style="text-align: center;">
+                <br/>
+                <h:outputLabel value="#{sessionController.userPreference.pharmacyBillFooter}"/>
+                <br/>
+            </div>
+
+
+
+        </div>
+            </h:panelGroup>
+        </h:form>
+    </cc:implementation>
+</html>

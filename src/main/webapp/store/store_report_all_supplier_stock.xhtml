@@ -1,59 +1,58 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:pe="http://primefaces.org/ui/extensions">
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      >
 
     <h:body>
 
-        <ui:composition template="/resources/template/template.xhtml">
+        <ui:composition template="/store/store_reports_index.xhtml">
 
-            <ui:define name="content">
+            <ui:define name="subcontent">
                 <h:form>
 
                     <p:panel header="All Supplier Stock Report" >
 
-                        <h:panelGrid columns="2" >
+                        <h:panelGrid columns="7" class="my-2 " >
                             <h:outputLabel value="Department" ></h:outputLabel>
-                            <p:autoComplete completeMethod="#{departmentController.completeDept}" 
+                            <p:autoComplete class="w-100 mx-4" inputStyleClass="w-100" completeMethod="#{departmentController.completeDept}" 
                                             var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" 
-                                            forceSelection="true" value="#{storeReportsStock.department}" converter="departmentConverter" >
+                                            forceSelection="true" value="#{storeReportsStock.department}"  >
                             </p:autoComplete>
-                            </h:panelGrid>
-                        <h:panelGrid columns="4" >
-                            <p:spacer width="80" height="1"/>
-                            <p:commandButton ajax="false" value="Process" actionListener="#{storeReportsStock.fillAllDistributorStocks()}" ></p:commandButton>
-                            <p:commandButton value="Print" ajax="false" >
+                            <p:spacer width="30" height="1" ></p:spacer>
+                            <p:commandButton class="ui-button-warning" icon="fas fa-cogs" ajax="false" value="Process" actionListener="#{storeReportsStock.fillAllDistributorStocks()}" ></p:commandButton>
+                            <p:commandButton class="ui-button-info mx-2" icon="fas fa-print" value="Print" ajax="false" >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
-                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
-                                <pe:exporter type="xlsx" target="tbl" fileName="Category_report"  />
+                            <p:commandButton class="ui-button-success" icon="fas fa-file-excel" ajax="false" value="Excel" >
+                                <p:dataExporter type="xlsx" target="tbl" fileName="Category_report"  />
                             </p:commandButton>
                         </h:panelGrid>
+
 
                         <h:panelGroup id="gpBillPreview">
                             <p:dataTable id="tbl" rowStyleClass="#{i.stock eq 0 ?'noDisplayRow' : ''}" value="#{storeReportsStock.records}" var="i"  >
                                 <f:facet name="header">
                                     <h:outputLabel value="#{storeReportsStock.department.name} : All Suppliers' Stock"/>  
                                 </f:facet>
-                                
+
                                 <p:column headerText="Supplier">
                                     <f:facet name="header">
                                         <h:outputLabel value="Supplier"/>
                                     </f:facet>
                                     <h:outputLabel value="#{i.institution.name}" ></h:outputLabel>
                                 </p:column>
-                                
+
                                 <!--<p:column headerText="Code">
                                     <f:facet name="header">
                                         <h:outputLabel value="Code"/>
                                     </f:facet>
                                     <h:outputLabel value="#{i.itemBatch.item.code}" style="width: 100px!important;" ></h:outputLabel>
                                 </p:column>-->
-                                
+
                                 <p:column headerText="Stock Quentity">
                                     <f:facet name="header">
                                         <h:outputLabel value="Stock Quantity"/>
@@ -62,7 +61,7 @@
                                         <f:convertNumber pattern="#,###" ></f:convertNumber>
                                     </h:outputLabel>
                                 </p:column>
-                                
+
                                 <p:column headerText="Purchase Value" style="text-align: right;">
                                     <f:facet name="header">
                                         <h:outputLabel value="Purchase Value"/>
@@ -76,7 +75,7 @@
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
-                                
+
                                 <p:column headerText="Retail Sale Value" style="text-align: right;">
                                     <f:facet name="header">
                                         <h:outputLabel value="Retail Sale Value"/>

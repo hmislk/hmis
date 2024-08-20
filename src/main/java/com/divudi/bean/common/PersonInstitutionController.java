@@ -1,12 +1,11 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Open Hospital Management Information System
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.common;
 
 import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.bean.common.util.PagingInfo;
 import com.divudi.data.PersonInstitutionType;
 import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.entity.Consultant;
@@ -17,26 +16,20 @@ import com.divudi.entity.Staff;
 import com.divudi.facade.PersonInstitutionFacade;
 import com.divudi.facade.StaffFacade;
 import java.io.Serializable;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
-import javax.faces.FacesException;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
+import javax.faces.convert.FacesConverter;
 import javax.faces.model.SelectItem;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.PersistenceUnit;
-import javax.transaction.UserTransaction;
 
 /**
  *
@@ -47,18 +40,11 @@ import javax.transaction.UserTransaction;
 public class PersonInstitutionController implements Serializable {
 
     public PersonInstitutionController() {
-        pagingInfo = new PagingInfo();
-        converter = new PersonInstitutionConverter();
     }
+
     private PersonInstitution personInstitution = null;
     private List<PersonInstitution> personInstitutionItems = null;
     private PersonInstitutionFacade jpaController = null;
-    private PersonInstitutionConverter converter = null;
-    private PagingInfo pagingInfo = null;
-    @Resource
-    private UserTransaction utx = null;
-    @PersistenceUnit(unitName = "hmisPU")
-    private EntityManagerFactory emf = null;
 
     @Inject
     SessionController sessionController;
@@ -67,7 +53,6 @@ public class PersonInstitutionController implements Serializable {
     StaffFacade staffFacade;
     @EJB
     PersonInstitutionFacade personInstitutionFacade;
-    
 
     ReportKeyWord reportKeyWord;
 
@@ -128,12 +113,8 @@ public class PersonInstitutionController implements Serializable {
         this.staffFacade = staffFacade;
     }
 
-    public PersonInstitutionFacade getPersonInstitutionFacade() {
+    private PersonInstitutionFacade getPersonInstitutionFacade() {
         return personInstitutionFacade;
-    }
-
-    public void setPersonInstitutionFacade(PersonInstitutionFacade personInstitutionFacade) {
-        this.personInstitutionFacade = personInstitutionFacade;
     }
 
     public ReportKeyWord getReportKeyWord() {
@@ -213,10 +194,11 @@ public class PersonInstitutionController implements Serializable {
         if (reportKeyWord == null) {
             return;
         }
-        institutionPersons = findPersonInstitutions(reportKeyWord.getInstitution(), reportKeyWord.getStaff(),reportKeyWord.getSpeciality());
+        institutionPersons = findPersonInstitutions(reportKeyWord.getInstitution(), reportKeyWord.getStaff(), reportKeyWord.getSpeciality());
 
     }
 // important for today
+
     public void createWithOutInstitutionPersonsStaffs() {
         if (institution == null) {
             JsfUtil.addErrorMessage("Please Select Institution");
@@ -241,7 +223,7 @@ public class PersonInstitutionController implements Serializable {
 
         m.put("typ", PersonInstitutionType.Channelling);
 
-        staffsWithInstitutionPersons = getStaffFacade().findBySQL(sql, m);
+        staffsWithInstitutionPersons = getStaffFacade().findByJpql(sql, m);
 
         m = new HashMap();
 
@@ -257,7 +239,7 @@ public class PersonInstitutionController implements Serializable {
 
         m.put("class", Consultant.class);
 
-        staffsAll = getStaffFacade().findBySQL(sql, m);
+        staffsAll = getStaffFacade().findByJpql(sql, m);
 
         withOutInstitutionPersonsStaffs.addAll(staffsAll);
         withOutInstitutionPersonsStaffs.removeAll(staffsWithInstitutionPersons);
@@ -283,10 +265,10 @@ public class PersonInstitutionController implements Serializable {
         m.put("typ", PersonInstitutionType.Channelling);
         m.put("staff", s);
 
-        return getPersonInstitutionFacade().findFirstBySQL(sql, m);
+        return getPersonInstitutionFacade().findFirstByJpql(sql, m);
     }
 
-    public List<PersonInstitution> findPersonInstitutions(Institution i, Staff s,Speciality sp) {
+    public List<PersonInstitution> findPersonInstitutions(Institution i, Staff s, Speciality sp) {
 
         String sql;
         Map m = new HashMap();
@@ -303,7 +285,7 @@ public class PersonInstitutionController implements Serializable {
             sql += " and pi.staff=:staff ";
             m.put("staff", s);
         }
-        
+
         if (sp != null) {
             sql += " and pi.staff.speciality=:spe ";
             m.put("spe", sp);
@@ -313,15 +295,10 @@ public class PersonInstitutionController implements Serializable {
 
         m.put("typ", PersonInstitutionType.Channelling);
 
-        return getPersonInstitutionFacade().findBySQL(sql, m);
+        return getPersonInstitutionFacade().findByJpql(sql, m);
     }
 
-    public PagingInfo getPagingInfo() {
-        if (pagingInfo.getItemCount() == -1) {
-            pagingInfo.setItemCount(getJpaController().count());
-        }
-        return pagingInfo;
-    }
+   
 
     public PersonInstitutionFacade getJpaController() {
         if (jpaController == null) {
@@ -341,9 +318,6 @@ public class PersonInstitutionController implements Serializable {
 
     public PersonInstitution getPersonInstitution() {
         if (personInstitution == null) {
-            personInstitution = (PersonInstitution) JsfUtil.getObjectFromRequestParameter("jsfcrud.currentPersonInstitution", converter, null);
-        }
-        if (personInstitution == null) {
             personInstitution = new PersonInstitution();
         }
         return personInstitution;
@@ -360,203 +334,55 @@ public class PersonInstitutionController implements Serializable {
         return "personInstitution_create";
     }
 
-    public String create() {
-        try {
-            utx.begin();
-        } catch (Exception ex) {
-        }
-        try {
-            Exception transactionException = null;
-            getJpaController().create(personInstitution);
-            try {
-                utx.commit();
-            } catch (javax.transaction.RollbackException ex) {
-                transactionException = ex;
-            } catch (Exception ex) {
-            }
-            if (transactionException == null) {
-                JsfUtil.addSuccessMessage("PersonInstitution was successfully created.");
-            } else {
-                JsfUtil.ensureAddErrorMessage(transactionException, "A persistence error occurred.");
-            }
-        } catch (Exception e) {
-            try {
-                utx.rollback();
-            } catch (Exception ex) {
-            }
-            JsfUtil.ensureAddErrorMessage(e, "A persistence error occurred.");
-            return null;
-        }
-        return listSetup();
-    }
-
-    public String detailSetup() {
-        return scalarSetup("personInstitution_detail");
-    }
-
-    public String editSetup() {
-        return scalarSetup("personInstitution_edit");
-    }
-
-    private String scalarSetup(String destination) {
-        reset(false);
-        personInstitution = (PersonInstitution) JsfUtil.getObjectFromRequestParameter("jsfcrud.currentPersonInstitution", converter, null);
-        if (personInstitution == null) {
-            String requestPersonInstitutionString = JsfUtil.getRequestParameter("jsfcrud.currentPersonInstitution");
-            JsfUtil.addErrorMessage("The personInstitution with id " + requestPersonInstitutionString + " no longer exists.");
-            return relatedOrListOutcome();
-        }
-        return destination;
-    }
-
-    public String edit() {
-        String personInstitutionString = converter.getAsString(FacesContext.getCurrentInstance(), null, personInstitution);
-        String currentPersonInstitutionString = JsfUtil.getRequestParameter("jsfcrud.currentPersonInstitution");
-        if (personInstitutionString == null || personInstitutionString.length() == 0 || !personInstitutionString.equals(currentPersonInstitutionString)) {
-            String outcome = editSetup();
-            if ("personInstitution_edit".equals(outcome)) {
-                JsfUtil.addErrorMessage("Could not edit personInstitution. Try again.");
-            }
-            return outcome;
-        }
-        try {
-            utx.begin();
-        } catch (Exception ex) {
-        }
-        try {
-            Exception transactionException = null;
-            getJpaController().edit(personInstitution);
-            try {
-                utx.commit();
-            } catch (javax.transaction.RollbackException ex) {
-                transactionException = ex;
-            } catch (Exception ex) {
-            }
-            if (transactionException == null) {
-                JsfUtil.addSuccessMessage("PersonInstitution was successfully updated.");
-            } else {
-                JsfUtil.ensureAddErrorMessage(transactionException, "A persistence error occurred.");
-            }
-        } catch (Exception e) {
-            try {
-                utx.rollback();
-            } catch (Exception ex) {
-            }
-            JsfUtil.ensureAddErrorMessage(e, "A persistence error occurred.");
-            return null;
-        }
-        return detailSetup();
-    }
-
-    public String remove() {
-        String idAsString = JsfUtil.getRequestParameter("jsfcrud.currentPersonInstitution");
-        Long id = new Long(idAsString);
-        try {
-            utx.begin();
-        } catch (Exception ex) {
-        }
-        try {
-            Exception transactionException = null;
-            getJpaController().remove(getJpaController().find(id));
-            try {
-                utx.commit();
-            } catch (javax.transaction.RollbackException ex) {
-                transactionException = ex;
-            } catch (Exception ex) {
-            }
-            if (transactionException == null) {
-                JsfUtil.addSuccessMessage("PersonInstitution was successfully deleted.");
-            } else {
-                JsfUtil.ensureAddErrorMessage(transactionException, "A persistence error occurred.");
-            }
-        } catch (Exception e) {
-            try {
-                utx.rollback();
-            } catch (Exception ex) {
-            }
-            JsfUtil.ensureAddErrorMessage(e, "A persistence error occurred.");
-            return null;
-        }
-        return relatedOrListOutcome();
-    }
-
-    private String relatedOrListOutcome() {
-        String relatedControllerOutcome = relatedControllerOutcome();
-        if (relatedControllerOutcome != null) {
-            return relatedControllerOutcome;
-        }
-        return listSetup();
-    }
-
-    public List<PersonInstitution> getPersonInstitutionItems() {
-        if (personInstitutionItems == null) {
-            getPagingInfo();
-            personInstitutionItems = getJpaController().findRange(new int[]{pagingInfo.getFirstItem(), pagingInfo.getFirstItem() + pagingInfo.getBatchSize()});
-        }
-        return personInstitutionItems;
-    }
-
-    public String next() {
-        reset(false);
-        getPagingInfo().nextPage();
-        return "personInstitution_list";
-    }
-
-    public String prev() {
-        reset(false);
-        getPagingInfo().previousPage();
-        return "personInstitution_list";
-    }
-
-    private String relatedControllerOutcome() {
-        String relatedControllerString = JsfUtil.getRequestParameter("jsfcrud.relatedController");
-        String relatedControllerTypeString = JsfUtil.getRequestParameter("jsfcrud.relatedControllerType");
-        if (relatedControllerString != null && relatedControllerTypeString != null) {
-            FacesContext context = FacesContext.getCurrentInstance();
-            Object relatedController = context.getApplication().getELResolver().getValue(context.getELContext(), null, relatedControllerString);
-            try {
-                Class<?> relatedControllerType = Class.forName(relatedControllerTypeString);
-                Method detailSetupMethod = relatedControllerType.getMethod("detailSetup");
-                return (String) detailSetupMethod.invoke(relatedController);
-            } catch (ClassNotFoundException e) {
-                throw new FacesException(e);
-            } catch (NoSuchMethodException e) {
-                throw new FacesException(e);
-            } catch (IllegalAccessException e) {
-                throw new FacesException(e);
-            } catch (InvocationTargetException e) {
-                throw new FacesException(e);
-            }
-        }
-        return null;
-    }
-
     private void reset(boolean resetFirstItem) {
         personInstitution = null;
         personInstitutionItems = null;
-        pagingInfo.setItemCount(-1);
-        if (resetFirstItem) {
-            pagingInfo.setFirstItem(0);
-        }
     }
 
-    public void validateCreate(FacesContext facesContext, UIComponent component, Object value) {
-        PersonInstitution newPersonInstitution = new PersonInstitution();
-        String newPersonInstitutionString = converter.getAsString(FacesContext.getCurrentInstance(), null, newPersonInstitution);
-        String personInstitutionString = converter.getAsString(FacesContext.getCurrentInstance(), null, personInstitution);
-        if (!newPersonInstitutionString.equals(personInstitutionString)) {
-            createSetup();
-        }
-    }
-
-    public Converter getConverter() {
-        return converter;
-    }
-   // new method for create doctor session 
-    
-    
-    
    
-    
+    private PersonInstitutionFacade getFacade() {
+        return personInstitutionFacade;
+    }
+    // new method for create doctor session 
+
+    @FacesConverter(forClass = PersonInstitution.class)
+    public static class PersonInstitutionConverter implements Converter {
+
+        @Override
+        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
+            if (value == null || value.length() == 0) {
+                return null;
+            }
+            PersonInstitutionController controller = (PersonInstitutionController) facesContext.getApplication().getELResolver().
+                    getValue(facesContext.getELContext(), null, "personInstitutionController");
+            return controller.getFacade().find(getKey(value));
+        }
+
+        java.lang.Long getKey(String value) {
+            java.lang.Long key;
+            key = Long.valueOf(value);
+            return key;
+        }
+
+        String getStringKey(java.lang.Long value) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(value);
+            return sb.toString();
+        }
+
+        @Override
+        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
+            if (object == null) {
+                return null;
+            }
+            if (object instanceof PersonInstitution) {
+                PersonInstitution o = (PersonInstitution) object;
+                return getStringKey(o.getId());
+            } else {
+                throw new IllegalArgumentException("object " + object + " is of type "
+                        + object.getClass().getName() + "; expected type: " + PersonInstitution.class.getName());
+            }
+        }
+    }
 
 }

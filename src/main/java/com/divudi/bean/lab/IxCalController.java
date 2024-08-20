@@ -1,15 +1,15 @@
 /*
- * MSc(Biomedical Informatics) Project
+ * Open Hospital Management Information System
  *
- * Development and Implementation of a Web-based Combined Data Repository of
- Genealogical, Clinical, Laboratory and Genetic Data
- * and
- * a Set of Related Tools
+ * Dr M H B Ariyaratne
+ * Acting Consultant (Health Informatics)
+ * (94) 71 5812399
+ * (94) 71 5812399
  */
 package com.divudi.bean.lab;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.InvestigationItemType;
 import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.InvestigationItem;
@@ -35,7 +35,7 @@ import javax.persistence.TemporalType;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
  Informatics)
  */
 @Named
@@ -91,36 +91,36 @@ public  class IxCalController implements Serializable {
 
     public void addCal() {
         if (ix == null) {
-            UtilityController.addErrorMessage("Investigation ?");
+            JsfUtil.addErrorMessage("Investigation ?");
             return;
         }
         if (cal == null) {
-            UtilityController.addErrorMessage("Calculation ?");
+            JsfUtil.addErrorMessage("Calculation ?");
             return;
         }
         if (addingIxCal == null) {
-            UtilityController.addErrorMessage("Cal?");
+            JsfUtil.addErrorMessage("Cal?");
             return;
         }
         addingIxCal.setCalIxItem(cal);
-        //////System.out.println("id is " + addingIxCal.getId());
+        //////// // System.out.println("id is " + addingIxCal.getId());
         if (addingIxCal.getId() == null || addingIxCal.getId() == 0) {
-            //////System.out.println("iivc creating");
+            //////// // System.out.println("iivc creating");
             getIivcFacade().create(addingIxCal);
         } else {
-            //////System.out.println("iivc editing");
+            //////// // System.out.println("iivc editing");
             getIivcFacade().edit(addingIxCal);
         }
         items.add(addingIxCal);
         addingIxCal = new IxCal();
-        UtilityController.addSuccessMessage("Added");
+        JsfUtil.addSuccessMessage("Added");
 
     }
 
     public IxCal lastCal() {
         IxCal tcal = null;
         if (items != null || items.isEmpty()!=true) {
-            //////System.out.println("items are null or empty");
+            //////// // System.out.println("items are null or empty");
             tcal = items.get(items.size() - 1);
         }
         return tcal;
@@ -172,7 +172,7 @@ public  class IxCalController implements Serializable {
         if (ix != null) {
             Map m = new HashMap();
             m.put("iit", InvestigationItemType.Value);
-            vals = getIiFacade().findBySQL("select i from InvestigationItem i where i.retired=false and i.item.id = " + ix.getId() + " and i.ixItemType =:iit", m, TemporalType.TIMESTAMP);
+            vals = getIiFacade().findByJpql("select i from InvestigationItem i where i.retired=false and i.item.id = " + ix.getId() + " and i.ixItemType =:iit", m, TemporalType.TIMESTAMP);
         }
         if (vals == null) {
             vals = new ArrayList<InvestigationItem>();
@@ -194,18 +194,18 @@ public  class IxCalController implements Serializable {
             jpql = "select i from InvestigationItem i where i.retired=false and i.item.id = " + ix.getId() + " and i.ixItemType = :iit order by i.cssTop";
             Map m = new HashMap();
             m.put("iit", InvestigationItemType.Calculation);
-            cals = getIiFacade().findBySQL(jpql, m, TemporalType.TIMESTAMP);
+            cals = getIiFacade().findByJpql(jpql, m, TemporalType.TIMESTAMP);
             if (cals == null) {
                 cals = new ArrayList<InvestigationItem>();
             }
         }
 //        cals = new ArrayList<InvestigationItem>();
         if (ix != null) {
-            //////System.out.println("ii count is " + ix.getReportItems().size());
+            //////// // System.out.println("ii count is " + ix.getReportItems().size());
             for (ReportItem ii : ix.getReportItems()) {
                 
                 if (ii instanceof InvestigationItem && ii.getIxItemType() == InvestigationItemType.Calculation) {
-                    //////System.out.println("ii is " + ii);
+                    //////// // System.out.println("ii is " + ii);
                 }
             }
         }
@@ -243,8 +243,8 @@ public  class IxCalController implements Serializable {
         String sql;
         if (ix != null && cal != null) {
             sql = "select i from IxCal i where (i.retired=false or i.retired is null) and i.calIxItem.id = " + cal.getId();
-            ////System.out.println("sql = " + sql);
-            items = getFacade().findBySQL(sql);
+            ////// // System.out.println("sql = " + sql);
+            items = getFacade().findByJpql(sql);
         }
         if (items == null) {
             items = new ArrayList<>();

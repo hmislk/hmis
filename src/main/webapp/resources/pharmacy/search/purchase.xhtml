@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:cc="http://java.sun.com/jsf/composite"
-      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:f="http://java.sun.com/jsf/core">
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <!-- INTERFACE -->
     <cc:interface>
@@ -17,14 +17,20 @@
             <h:outputLabel value="Net Total"/>
             <h:outputLabel value="Item Name"/>
             <h:outputLabel value="Item Code"/>
-            <h:outputLabel value="Dealor Name"/>
+            <h:outputLabel value="Supplier Name"/>
             <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />
             <p:inputText autocomplete="off" value="#{searchController.searchKeyword.netTotal}"/>
             <p:inputText autocomplete="off" value="#{searchController.searchKeyword.itemName}"/>
             <p:inputText autocomplete="off" value="#{searchController.searchKeyword.code}"/>
             <p:inputText autocomplete="off" value="#{searchController.searchKeyword.fromInstitution}"/>
         </h:panelGrid>
-        <p:dataTable rowIndexVar="i"  value="#{searchController.bills}" var="bill" >
+
+
+        <p:commandButton ajax="false" value="Download" >
+            <p:dataExporter target="tbl" type="xlsx" fileName="bill_list" ></p:dataExporter>
+        </p:commandButton>
+
+        <p:dataTable rowIndexVar="i" id="tbl"  value="#{searchController.bills}" var="bill" >
             <f:facet name="header">
                 <h:outputLabel value="PURCHASE BILL SEARCH"/>
             </f:facet>
@@ -34,7 +40,19 @@
                     <h:outputLabel  ></h:outputLabel>
                     <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
                 </h:commandLink>
-            </p:column>    
+            </p:column>   
+            <p:column headerText="Invoice NO" >
+                <h:commandLink action="pharmacy_reprint_purchase" value="#{bill.invoiceNumber}">
+                    <h:outputLabel  ></h:outputLabel>
+                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
+                </h:commandLink>
+            </p:column>  
+            <p:column headerText="Invoice Date" >
+                <h:commandLink action="pharmacy_reprint_purchase" value="#{bill.invoiceDate}">
+                    <h:outputLabel  ></h:outputLabel>
+                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
+                </h:commandLink>
+            </p:column>  
             <p:column headerText="Billed at"  >
                 <h:commandLink action="pharmacy_reprint_purchase" >
                     <h:outputLabel value="#{bill.createdAt}" >
@@ -81,7 +99,7 @@
                     <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
                 </h:commandLink>
             </p:column>                               
-            <p:column headerText="Dealor" >
+            <p:column headerText="Supplier" >
                 <h:commandLink action="pharmacy_reprint_purchase" >
                     <h:outputLabel value="#{bill.fromInstitution.name}" ></h:outputLabel>
                     <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>

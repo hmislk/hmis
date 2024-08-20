@@ -1,17 +1,17 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.hr;
 
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.hr.DayType;
 import com.divudi.data.hr.LeaveType;
 import com.divudi.data.hr.PaysheetComponentType;
 import com.divudi.data.hr.ReportKeyWord;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.ejb.FinalVariables;
 import com.divudi.ejb.HumanResourceBean;
 import com.divudi.entity.Staff;
@@ -26,6 +26,7 @@ import com.divudi.facade.StaffPaysheetComponentFacade;
 import com.divudi.facade.StaffSalaryComponantFacade;
 import com.divudi.facade.StaffSalaryFacade;
 import com.divudi.facade.StaffShiftFacade;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -68,7 +69,8 @@ public class StaffSalaryAdvanceController implements Serializable {
     private StaffFacade staffFacade;
     @EJB
     private HumanResourceBean humanResourceBean;
-    @EJB
+
+    
     private CommonFunctions commonFunctions;
     /////////////
     @Inject
@@ -194,7 +196,7 @@ public class StaffSalaryAdvanceController implements Serializable {
 //
 //    }
     public void onEdit(RowEditEvent event) {
-        ////////System.out.println("Runn");
+        ////////// // System.out.println("Runn");
         StaffSalaryComponant tmp = (StaffSalaryComponant) event.getObject();
 
         getHumanResourceBean().setEpf(tmp, getHrmVariablesController().getCurrent().getEpfRate(), getHrmVariablesController().getCurrent().getEpfCompanyRate());
@@ -727,22 +729,22 @@ public class StaffSalaryAdvanceController implements Serializable {
 
     private boolean dateCheck() {
         if (getSalaryCycle() == null) {
-            UtilityController.addErrorMessage("Please Select Salary Cycle");
+            JsfUtil.addErrorMessage("Please Select Salary Cycle");
             return true;
         }
 
         if (getSalaryCycle().getSalaryAdvanceFromDate() == null || getSalaryCycle().getSalaryAdvanceToDate() == null) {
-            UtilityController.addErrorMessage("Please Select Salary Date");
+            JsfUtil.addErrorMessage("Please Select Salary Date");
             return true;
         }
 
         if (getSalaryCycle().getWorkedFromDate() == null || getSalaryCycle().getWorkedToDate() == null) {
-            UtilityController.addErrorMessage("Please Select Over time Date");
+            JsfUtil.addErrorMessage("Please Select Over time Date");
             return true;
         }
 
 //        if (getHumanResourceBean().checkExistingSalary(getSalaryCycle().getSalaryFromDate(), getSalaryToDate(), getCurrent().getStaff())) {
-//            UtilityController.addErrorMessage("There is Already defined Salary for this salary cycle please edit");
+//            JsfUtil.addErrorMessage("There is Already defined Salary for this salary cycle please edit");
 //            return true;
 //        }
         return false;
@@ -856,7 +858,7 @@ public class StaffSalaryAdvanceController implements Serializable {
         HashMap hm = new HashMap();
         hm.put("sc", getSalaryCycle());
         hm.put("stf", getCurrent().getStaff());
-        StaffSalaryComponant salaryComponant = staffSalaryComponantFacade.findFirstBySQL(sql, hm);
+        StaffSalaryComponant salaryComponant = staffSalaryComponantFacade.findFirstByJpql(sql, hm);
 
         if (salaryComponant != null) {
             getCurrent().getStaffSalaryComponants().add(salaryComponant);
@@ -873,7 +875,7 @@ public class StaffSalaryAdvanceController implements Serializable {
         HashMap hm = new HashMap();
         hm.put("sc", getSalaryCycle());
         hm.put("stf", staff);
-        StaffSalaryComponant salaryComponant = staffSalaryComponantFacade.findFirstBySQL(sql, hm);
+        StaffSalaryComponant salaryComponant = staffSalaryComponantFacade.findFirstByJpql(sql, hm);
 
         return salaryComponant;
 
@@ -929,7 +931,7 @@ public class StaffSalaryAdvanceController implements Serializable {
 
         }
 
-        UtilityController.addSuccessMessage("Record Succesfully Deleted");
+        JsfUtil.addSuccessMessage("Record Succesfully Deleted");
     }
 //
 //    public void calStaffLeaveFromLateIn(StaffShift stfCurrent, double fromTime, double toTime, double shiftCount) {
@@ -1086,7 +1088,7 @@ public class StaffSalaryAdvanceController implements Serializable {
         Date toDate = null;
 
         if (getStaffController().getSelectedList() == null) {
-            UtilityController.addErrorMessage("Pls Select Staff");
+            JsfUtil.addErrorMessage("Pls Select Staff");
             return;
         }
 
@@ -1119,11 +1121,11 @@ public class StaffSalaryAdvanceController implements Serializable {
 
         if (flag) {
             items = null;
-            UtilityController.addErrorMessage("There is allready salary generated .please delete generated salary");
+            JsfUtil.addErrorMessage("There is allready salary generated .please delete generated salary");
         }
         //   createStaffSalaryTable();
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Staff Salary advance(Generate Salary Advance)(/faces/hr/hr_staff_salary_advance.xhtml)");
+        
     }
 
     private void fetchAndSetBankData() {
@@ -1138,7 +1140,7 @@ public class StaffSalaryAdvanceController implements Serializable {
         hm.put("stf", getCurrent().getStaff());
         hm.put("tp", PaysheetComponentType.LoanNetSalary);
 
-        StaffPaysheetComponent staffPaysheetComponent = getStaffPaysheetComponentFacade().findFirstBySQL(sql, hm, TemporalType.DATE);
+        StaffPaysheetComponent staffPaysheetComponent = getStaffPaysheetComponentFacade().findFirstByJpql(sql, hm, TemporalType.DATE);
         if (staffPaysheetComponent != null) {
             getCurrent().setBankBranch(staffPaysheetComponent.getBankBranch());
             getCurrent().setAccountNo(staffPaysheetComponent.getAccountNo());
@@ -1218,7 +1220,7 @@ public class StaffSalaryAdvanceController implements Serializable {
 
         sql += " order by ss.staff.codeInterger";
 
-        items = getStaffSalaryFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        items = getStaffSalaryFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
 
     }
 
@@ -1250,7 +1252,7 @@ public class StaffSalaryAdvanceController implements Serializable {
         }
 
         //   createStaffSalaryTable();
-         commonController.printReportDetails(fromDate, toDate, startTime, "HR/Staff Salary advance(Save Salary Advance)(/faces/hr/hr_staff_salary_advance.xhtml)");
+         
         
         
     }
@@ -1288,7 +1290,7 @@ public class StaffSalaryAdvanceController implements Serializable {
 //        hm.put("fd", getSalaryCycle().getSalaryFromDate());
 //        hm.put("td", getSalaryCycle().getSalaryToDate());
 //
-//        items = getStaffSalaryFacade().findBySQL(sql, hm, TemporalType.DATE);
+//        items = getStaffSalaryFacade().findByJpql(sql, hm, TemporalType.DATE);
 //    }
     public StaffSalary fetchStaffSalaryTable(Staff stf, Date fromDate, Date toDate) {
         String sql = "Select s From StaffSalary s"
@@ -1302,7 +1304,7 @@ public class StaffSalaryAdvanceController implements Serializable {
         hm.put("fd", fromDate);
         hm.put("td", toDate);
 
-        return getStaffSalaryFacade().findFirstBySQL(sql, hm, TemporalType.DATE);
+        return getStaffSalaryFacade().findFirstByJpql(sql, hm, TemporalType.DATE);
     }
 
     public List<StaffSalary> getItems() {
@@ -1428,45 +1430,6 @@ public class StaffSalaryAdvanceController implements Serializable {
         }
     }
 
-    @FacesConverter("staffSalaryAdvanceCon")
-    public static class StaffSalaryControllerConverter implements Converter {
-
-        @Override
-        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
-                return null;
-            }
-            StaffSalaryAdvanceController controller = (StaffSalaryAdvanceController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "staffSalaryAdvanceController");
-            return controller.getStaffSalaryFacade().find(getKey(value));
-        }
-
-        java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
-            return key;
-        }
-
-        String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
-        }
-
-        @Override
-        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
-            if (object == null) {
-                return null;
-            }
-            if (object instanceof StaffSalary) {
-                StaffSalary o = (StaffSalary) object;
-                return getStringKey(o.getId());
-            } else {
-                throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + StaffSalaryAdvanceController.class.getName());
-            }
-        }
-    }
 
     public CommonController getCommonController() {
         return commonController;

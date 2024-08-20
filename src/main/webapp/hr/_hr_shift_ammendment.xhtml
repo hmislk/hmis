@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/resources/template/template.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:hr="http://java.sun.com/jsf/composite/hr">
+                xmlns:hr="http://xmlns.jcp.org/jsf/composite/hr">
 
     <ui:define name="content">
         <h:form>
@@ -16,7 +16,7 @@
                                          value="#{shiftAmendmentController.shiftAmendment1.staff}"
                                          completeMethod="#{staffController.completeStaffCode}" 
                                          var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
-                                         converter="stfcon"   >   
+                                         >   
                             <p:ajax event="itemSelect" process="@this" update="stf1"/>
                         </p:autoComplete>   
 
@@ -27,7 +27,7 @@
                         <h:outputLabel value="From Date"/>
                         <p:calendar value="#{shiftAmendmentController.shiftAmendment1.fromDate}" 
                                     navigator="true"
-                                    pattern="dd MM yyyy" >                               
+                                    pattern="#{sessionController.applicationPreference.shortDateFormat}" >                               
                         </p:calendar>     
                         <h:outputLabel value="From Shift"/>
                         <p:autoComplete value="#{shiftAmendmentController.shiftAmendment1.fromShift}"
@@ -41,7 +41,7 @@
                         <h:outputLabel value="To Date"/>
                         <p:calendar value="#{shiftAmendmentController.shiftAmendment1.toDate}" 
                                     navigator="true"
-                                    pattern="dd MM yyyy" >                               
+                                    pattern="#{sessionController.applicationPreference.shortDateFormat}" >                               
                         </p:calendar>     
                         <h:outputLabel value="From Shift"/>
                         <p:autoComplete value="#{shiftAmendmentController.shiftAmendment1.toShift}"

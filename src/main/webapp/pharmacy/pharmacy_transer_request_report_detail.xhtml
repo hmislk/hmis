@@ -1,0 +1,231 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/pharmacy/pharmacy_analytics.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp"
+                >
+
+
+    <ui:define name="subcontent">
+
+        <h:panelGroup rendered="true" >
+            <h:form>
+                <p:panel  styleClass="noBorder summeryBorder" header="Transfer Issue Summary">
+                    <h:panelGrid columns="4" class="w-100">
+                        <h:outputLabel value="From Date"/>
+                        <p:calendar id="frmDate" value="#{commonReport.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                        </p:calendar>
+
+                        <h:outputLabel value="To Date"/>
+                        <p:calendar id="toDate" value="#{commonReport.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                        </p:calendar>
+
+                        <h:outputLabel  value="Department"></h:outputLabel>
+                        <p:autoComplete  value="#{commonReport.department}"  
+                                         completeMethod="#{departmentController.completeDept}" var="dept"
+                                         itemValue="#{dept}" itemLabel="#{dept.name}" 
+                                         forceSelection="true" rendered="true"
+                                         requiredMessage="You must select a department" >
+                        </p:autoComplete>
+
+
+
+                        <h:outputLabel value="Institution"/>
+                        <p:autoComplete  value="#{commonReport.institution}"
+                                         completeMethod="#{institutionController.completeCompany}" 
+                                         forceSelection="true"
+                                         var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" />
+
+                        <h:outputLabel value="Bill No"/>
+                        <p:inputText  value="#{commonReport.departmentId}"
+                                      />
+                        <p:defaultCommand target="btnRefresh"/>
+                    </h:panelGrid>
+
+
+
+
+
+                    <h:panelGrid columns="3" class="my-2">
+                        <p:commandButton 
+                            id="btnRefresh" 
+                            ajax="false" 
+                            value="Fill To Be Transfer" 
+                            icon="fa-solid fa-fill"
+                            class="ui-button-warning"
+                            actionListener="#{commonReport.fillToBeTranserDeatilReport()}"
+                            style="float: right;" />  
+                        <p:commandButton 
+                            ajax="false" 
+                            value="Fill Transfered" 
+                            icon="fa-solid fa-fill"
+                            class="mx-1 ui-button-warning"
+                            actionListener="#{commonReport.fillTranserDeatilReport()}"
+                            style="float: right;" />  
+
+                        <p:commandButton 
+                            ajax="false" 
+                            value="Print"
+                            icon="fa-solid fa-print"
+                            class="ui-button-info"
+                            style="float: right;" >
+                            <p:printer target="reportPrint"/>
+                        </p:commandButton>  
+                    </h:panelGrid>
+
+                    <p:panel id="reportPrint">
+                        <h:panelGrid columns="2" styleClass="printBlock" >
+
+                            <h:outputLabel value="Transfer Issue Detailed Report"/>
+                            <h:outputLabel/>
+                            <h:outputLabel value="Institution "/>
+                            <h:outputLabel value="#{commonReport.department.institution.name}"/>
+                            <h:outputLabel value="Department "/>
+                            <h:outputLabel value="#{commonReport.department.name}"/>
+                            <h:outputLabel value="From" />
+                            <h:outputLabel  value="#{commonReport.fromDate}" >
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                            </h:outputLabel>                          
+                            <h:outputLabel value="To"/>
+                            <h:outputLabel  value="#{commonReport.toDate}" >
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                            </h:outputLabel>
+                        </h:panelGrid>
+
+                        <p:spacer height="5"/>
+                        <p:dataTable 
+                            id="billed"  
+                            value="#{commonReport.bills}"
+                            var="b" 
+                            rendered="#{commonReport.bills ne null}" 
+                            sortBy="#{b.billType}"
+                            rowKey="#{b.id}">
+
+                            <f:facet name="header">  
+                                <h:outputLabel value="From :" />&nbsp;&nbsp;
+                                <h:outputLabel  value="#{commonReport.fromDate}" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                </h:outputLabel>                          
+                                &nbsp;&nbsp;<h:outputLabel value="To :"/>&nbsp;&nbsp;
+                                <h:outputLabel  value="#{commonReport.toDate}" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                </h:outputLabel><br/>
+                            </f:facet>
+
+                            <p:column headerText="Transer Request No" >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Transer Request No"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b.deptId}"/>
+
+                            </p:column>
+
+
+
+                            <p:column headerText="Created At"  >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Created At"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b.createdAt}" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                </h:outputLabel>
+                                <h:outputLabel value="Cancelled. #{b.cancelledBill.deptId}" rendered="#{b.cancelledBill.deptId ne null}" style="color: red;"></h:outputLabel>   
+                                <h:outputLabel value="#{b.cancelledBill.createdAt}" rendered="#{b.cancelledBill.deptId ne null}" style="color: red;">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                </h:outputLabel>   
+                            </p:column>
+
+                            <p:column headerText="Transefring Department"  >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Transefring Department"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b.fromDepartment.name}" rendered="#{b.billType eq 'PharmacyTransferRequest'}"/>
+                                <h:outputLabel value="#{b.toDepartment.name}" rendered="#{b.billType eq 'PharmacyTransferIssue'}"/>
+                            </p:column>
+
+                            <p:column headerText="Transefring Institution"  >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Transefring Institution"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b.fromInstitution.name}" rendered="#{b.billType eq 'PharmacyTransferRequest'}"/>
+                                <h:outputLabel value="#{b.toInstitution.name}" rendered="#{b.billType eq 'PharmacyTransferIssue'}"/>
+
+                            </p:column>
+
+
+                            <p:column headerText="Net Total">
+                                <ui:fragment rendered="#{b.netTotal ne 0.00}">
+                                    <h:outputLabel value="#{b.netTotal}">
+                                        <f:convertNumber pattern="#,##0.00"></f:convertNumber>
+                                    </h:outputLabel>
+                                </ui:fragment>
+                                <ui:fragment rendered="#{b.netTotal eq 0.00}">
+                                    <h:outputLabel value="Not issued"/>
+                                </ui:fragment>
+                            </p:column>
+
+
+
+                            <p:column headerText="Staff">
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Staff"/>
+                                </f:facet> 
+                                <ui:fragment rendered="#{b.toStaff ne null}">
+                                    <h:outputLabel value="#{b.toStaff.name}"/>
+                                </ui:fragment>
+                                <ui:fragment rendered="#{b.toStaff eq null}">
+                                    <h:outputLabel value="Not issued"/>
+                                </ui:fragment>
+
+                            </p:column>
+
+
+                            <p:column headerText="View Bill" exportable="false" >
+                                <div class="d-flex">
+                                    <p:commandButton 
+                                        id="viewRequested"
+                                        ajax="false"
+                                        value="View Requested"
+                                        class="ui-button-warning"
+                                        rendered="#{b.billType eq 'PharmacyTransferRequest'}"
+                                        action="pharmacy_transfer_request" >
+
+                                        <f:setPropertyActionListener target="#{transferRequestController.bill}" value="#{b}"/>
+                                        <f:setPropertyActionListener target="#{transferRequestController.printPreview}" value="true"/>
+                                    </p:commandButton>
+                                    <p:commandButton 
+                                        id="viewIssued"
+                                        ajax="false"
+                                        value="View Issued"
+                                        class="mx-1 ui-button-warning"
+                                        disabled="#{b.cancelledBill.deptId ne null}"
+                                        rendered="#{b.billType eq 'PharmacyTransferIssue'}"
+                                        action="pharmacy_transfer_issue" >
+
+                                        <f:setPropertyActionListener target="#{transferIssueController.issuedBill}" value="#{b}"/>
+                                        <f:setPropertyActionListener target="#{transferIssueController.printPreview}" value="true"/>
+                                    </p:commandButton>
+                                </div>
+
+                            </p:column>
+
+                        </p:dataTable>
+
+
+                    </p:panel>
+
+
+
+
+
+
+                </p:panel>
+            </h:form>
+        </h:panelGroup>
+    </ui:define>
+
+</ui:composition>

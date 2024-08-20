@@ -1,38 +1,36 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:pe="http://primefaces.org/ui/extensions">
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      >
 
     <h:body>
 
-        <ui:composition template="/resources/template/template.xhtml">
+        <ui:composition template="/pharmacy/pharmacy_analytics.xhtml">
 
-            <ui:define name="content">
+            <ui:define name="subcontent">
                 <h:form >
                     <p:panel header="Unit Issue By Item(Batch)">
-                        <h:panelGrid columns="4" >
+                        <h:panelGrid columns="4" class="w-100"  >
+                            <h:outputLabel value="From" ></h:outputLabel>
+                            <p:calendar value="#{reportsTransfer.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
+                            <h:outputLabel value="To" ></h:outputLabel>
+                            <p:calendar value="#{reportsTransfer.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                             <h:outputLabel value="From Department" />
                             <p:autoComplete completeMethod="#{departmentController.completeDept}" 
                                             var="dept" itemLabel="#{dept.name}"
                                             itemValue="#{dept}" forceSelection="true" 
-                                            value="#{reportsTransfer.fromDepartment}" converter="departmentConverter" >
+                                            value="#{reportsTransfer.fromDepartment}"  >
                             </p:autoComplete>
-
                             <h:outputLabel value="To Department" />
                             <p:autoComplete completeMethod="#{departmentController.completeDept}" 
-                                            var="dept" itemLabel="#{dept.name}"
+                                            var="dept" itemLabel="#{dept.name}" class="w-100"
                                             itemValue="#{dept}" forceSelection="true" 
-                                            value="#{reportsTransfer.toDepartment}" converter="departmentConverter" >
+                                            value="#{reportsTransfer.toDepartment}"  >
                             </p:autoComplete>
-
-                            <h:outputLabel value="From" ></h:outputLabel>
-                            <p:calendar value="#{reportsTransfer.fromDate}" pattern="dd MMMM yyyy HH:mm:ss" ></p:calendar>
-                            <h:outputLabel value="To" ></h:outputLabel>
-                            <p:calendar value="#{reportsTransfer.toDate}" pattern="dd MMMM yyyy HH:mm:ss" ></p:calendar>
                             <h:outputLabel value="Item Category"/>
                             <p:autoComplete  value="#{reportsTransfer.category}" 
                                              forceSelection="true"
@@ -41,34 +39,50 @@
                             </p:autoComplete> 
                         </h:panelGrid>
 
+                        <h:panelGrid columns="3" class="my-2"> 
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Fill" 
+                                icon="fa-solid fa-fill"
+                                class="ui-button-warning"
+                                action="#{reportsTransfer.fillItemCounts}" />
+                            <p:commandButton 
+                                value="Excel"
+                                ajax="false"
+                                icon="fa-solid fa-file-excel"
+                                class="ui-button-success mx-2"  >
+                                <p:dataExporter type="xlsx" target="tbl" fileName="pharmacy_item_transaction_report"/>
+                            </p:commandButton>
+                            <p:commandButton 
+                                value="Print" 
+                                ajax="false" 
+                                icon="fa-solid fa-print"
+                                class="ui-button-info"
+                                action="#" >
+                                <p:printer target="gpBillPreview" ></p:printer>
+                            </p:commandButton>
+                        </h:panelGrid>
 
-                        <p:commandButton ajax="false" value="Fill" 
-                                         action="#{reportsTransfer.fillItemCounts}" />
-                        <p:commandButton value="Excel" ajax="false">
-                            <pe:exporter type="xlsx" 
-                                         target="tbl" 
-                                         fileName="pharmacy_item_transaction_report"
-                                         />
-                        </p:commandButton>
-
-                        <h:panelGroup styleClass="noBorder normalFont">
+                        <h:panelGroup id="gpBillPreview" styleClass="noBorder normalFont">
                             <p:dataTable id="tbl"  value="#{reportsTransfer.itemCounts}"
                                          stickyHeader="true"
-                                         var="i"   >
+                                         var="i">
                                 <f:facet name="header">
                                     <h:outputLabel value="Unit Issue By Item(Batch)"/>
                                     &#13;&nbsp;
-                                    <h:outputLabel value="#{reportsTransfer.fromDepartment.name}"/>
-                                    <h:outputLabel value="To "/>
-                                    <h:outputLabel value="#{reportsTransfer.toDepartment.name}"/>
-                                    &#13;&nbsp;
                                     <h:outputLabel value="From  "/>
-                                    <h:outputLabel value="#{reportsTransfer.fromDate}">
-                                        <f:convertDateTime pattern="dd MM yyyy" ></f:convertDateTime>
+                                    <h:outputLabel class="mx-2" value="#{reportsTransfer.fromDepartment.name}"/>
+                                    <h:outputLabel  value="To "/>
+                                    <h:outputLabel class="mx-2" value="#{reportsTransfer.toDepartment.name}"/>
+                                    &#13;&nbsp;
+                                    <br></br>
+                                    <h:outputLabel value="From  "/>
+                                    <h:outputLabel class="mx-2" value="#{reportsTransfer.fromDate}">
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}"  ></f:convertDateTime>
                                     </h:outputLabel>                                  
                                     <h:outputLabel value="To  "/>
-                                    <h:outputLabel value="#{reportsTransfer.toDate}">
-                                        <f:convertDateTime pattern="dd MM yyyy" ></f:convertDateTime>
+                                    <h:outputLabel class="mx-2" value="#{reportsTransfer.toDate}">
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}"  ></f:convertDateTime>
                                     </h:outputLabel>
                                 </f:facet>
                                 <p:column headerText="Item">

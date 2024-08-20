@@ -1,9 +1,10 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+* Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.entity;
 
+import com.divudi.bean.common.StaffWelfarePeriod;
 import com.divudi.data.IdentifiableWithNameOrCode;
 import com.divudi.data.hr.EmployeeLeavingStatus;
 import com.divudi.data.hr.EmployeeStatus;
@@ -27,21 +28,31 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Inheritance;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
 import javax.persistence.Transient;
-import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  *
  * @author buddhika
  */
 @Entity
-@XmlRootElement
+@Inheritance
 public class Staff implements Serializable, IdentifiableWithNameOrCode {
 
+    
+    static final long serialVersionUID = 1L;
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    Long id;
+    String registration;
+    @Lob
+    String qualification;
+    String code = "";
+    
     @ManyToOne
     Roster roster;
 
@@ -58,15 +69,9 @@ public class Staff implements Serializable, IdentifiableWithNameOrCode {
     int orderNo;
     @OneToOne(mappedBy = "staff")
     ShiftPreference shiftPreference;
-    static final long serialVersionUID = 1L;
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    //Main Properties
-    Long id;
-    String registration;
+
     @Lob
-    String qualification;
-    String code = "";
+    private String description;
     @ManyToOne
     Person person;
     @ManyToOne
@@ -125,13 +130,14 @@ public class Staff implements Serializable, IdentifiableWithNameOrCode {
     private Institution epfBankBranch;
     private String epfAccountNo;
     private String accountNo;
-    String epfNo;    
-  
+    String epfNo;
 
     String acNo;
 
 //    double workingHourPerShift;
 //    double leaveHour;
+    private double creditLimitQualified;
+    private double currentCreditValue;
     double annualWelfareQualified;
     double annualWelfareUtilized;
     double workingTimeForOverTimePerWeek;
@@ -143,10 +149,20 @@ public class Staff implements Serializable, IdentifiableWithNameOrCode {
     @Temporal(javax.persistence.TemporalType.DATE)
     Date dateWithOutNotice;
     
-    
+    @Enumerated
+    private StaffWelfarePeriod staffWelfarePeriod;
+
     @Transient
     private String name;
-    
+
+    @Transient
+    public String getCurrentClassName() {
+        if (this != null) {
+            return this.getClass().getSimpleName();
+        }
+        return "";
+    }
+
     public double getTransDblValue() {
         return transDblValue;
     }
@@ -154,8 +170,6 @@ public class Staff implements Serializable, IdentifiableWithNameOrCode {
     public void setTransDblValue(double transDblValue) {
         this.transDblValue = transDblValue;
     }
-    
-    
 
     public Date getDateRetired() {
         return dateRetired;
@@ -164,8 +178,6 @@ public class Staff implements Serializable, IdentifiableWithNameOrCode {
     public void setDateRetired(Date dateRetired) {
         this.dateRetired = dateRetired;
     }
-    
-    
 
     public boolean isAllowedLateInLeave() {
         return allowedLateInLeave;
@@ -360,6 +372,14 @@ public class Staff implements Serializable, IdentifiableWithNameOrCode {
     }
 
     public String getCode() {
+        if (code == null || code.trim().equals("")) {
+            if (person != null) {
+                if (person.getName() != null) {
+                    String temName = person.getName() + "      ";
+                    code = temName.substring(0, 5);
+                }
+            }
+        }
         return code;
     }
 
@@ -377,9 +397,6 @@ public class Staff implements Serializable, IdentifiableWithNameOrCode {
     }
 
     public String getRegistration() {
-        if(registration==null||registration.trim().equals("")){
-            registration = "Consultant";
-        }
         return registration;
     }
 
@@ -396,10 +413,10 @@ public class Staff implements Serializable, IdentifiableWithNameOrCode {
     }
 
     public Institution getInstitution() {
-        if(institution != null){
+        if (institution != null) {
             institution.split();
         }
-        
+
         return institution;
     }
 
@@ -704,13 +721,46 @@ public class Staff implements Serializable, IdentifiableWithNameOrCode {
         this.dateWithOutNotice = dateWithOutNotice;
     }
 
+    @Transient
     public String getName() {
-        if(getPerson()!=null){
+        if (getPerson() != null) {
             name = getPerson().getNameWithTitle();
         }
         return name;
     }
 
+    public String getDescription() {
+        return description;
+    }
 
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public StaffWelfarePeriod getStaffWelfarePeriod() {
+        return staffWelfarePeriod;
+    }
+
+    public void setStaffWelfarePeriod(StaffWelfarePeriod staffWelfarePeriod) {
+        this.staffWelfarePeriod = staffWelfarePeriod;
+    }
+
+    public double getCreditLimitQualified() {
+        return creditLimitQualified;
+    }
+
+    public void setCreditLimitQualified(double creditLimitQualified) {
+        this.creditLimitQualified = creditLimitQualified;
+    }
+
+    public double getCurrentCreditValue() {
+        return currentCreditValue;
+    }
+
+    public void setCurrentCreditValue(double currentCreditValue) {
+        this.currentCreditValue = currentCreditValue;
+    }
     
+    
+
 }

@@ -1,12 +1,15 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.entity;
 
+import com.divudi.data.Denomination;
 import com.divudi.data.PaymentMethod;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -16,15 +19,15 @@ import javax.persistence.Id;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.Temporal;
+import javax.persistence.Transient;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
-/**
- *
- * @author Buddhika
- */
 @Entity
 public class Payment implements Serializable {
 
     static final long serialVersionUID = 1L;
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     Long id;
@@ -34,18 +37,21 @@ public class Payment implements Serializable {
 
     @Temporal(javax.persistence.TemporalType.DATE)
     Date writtenAt;
+
     @Temporal(javax.persistence.TemporalType.DATE)
     Date toRealizeAt;
 
     @Enumerated(EnumType.STRING)
     PaymentMethod paymentMethod;
 
-    //Realization Properties
     boolean realized;
+
     @Temporal(javax.persistence.TemporalType.DATE)
     Date realizedAt;
+
     @ManyToOne
-    WebUser realiazer;
+    WebUser realizer;
+
     @Lob
     String realizeComments;
 
@@ -55,32 +61,49 @@ public class Payment implements Serializable {
     @Lob
     String comments;
 
-    //Created Properties
     @ManyToOne
     WebUser creater;
+
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date createdAt;
-    //Retairing properties
+
     boolean retired;
+
     @ManyToOne
     WebUser retirer;
+
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date retiredAt;
-    String retireComments;
-    //
 
-    //paymentMethord Details
+    String retireComments;
+
     private String chequeRefNo;
+
     @Temporal(javax.persistence.TemporalType.DATE)
     private Date chequeDate;
+
     private String creditCardRefNo;
-    
+
     double paidValue;
-    
+
+    private int creditDurationInDays;
+
+    @Lob
+    private String currencyDenominationsJson;
+
     @ManyToOne
     Institution institution;
+
     @ManyToOne
     Department department;
+
+    @Transient
+    private List<Denomination> currencyDenominations;
+
+    @Transient
+    private List<String> humanReadableDenominations;
+
+    private String referenceNo;
 
     public Long getId() {
         return id;
@@ -88,6 +111,23 @@ public class Payment implements Serializable {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public List<String> getHumanReadableDenominations() {
+        List<String> humanReadableList = new ArrayList<>();
+        deserializeDenominations();
+        if (this.currencyDenominations != null) {
+            for (Denomination denomination : this.currencyDenominations) {
+                if (denomination.getCount() > 0) {
+                    String valueFormatted = String.format("%.2f", denomination.getValue());
+                    String countFormatted = String.format("%d", denomination.getCount());
+                    String totalFormatted = String.format("%.2f", denomination.getValue() * denomination.getCount());
+                    String humanReadable = "(" + valueFormatted + "x" + countFormatted + "=" + totalFormatted + ")";
+                    humanReadableList.add(humanReadable);
+                }
+            }
+        }
+        return humanReadableList;
     }
 
     public Bill getBill() {
@@ -138,12 +178,12 @@ public class Payment implements Serializable {
         this.realizedAt = realizedAt;
     }
 
-    public WebUser getRealiazer() {
-        return realiazer;
+    public WebUser getRealizer() {
+        return realizer;
     }
 
-    public void setRealiazer(WebUser realiazer) {
-        this.realiazer = realiazer;
+    public void setRealizer(WebUser realizer) {
+        this.realizer = realizer;
     }
 
     public String getRealizeComments() {
@@ -243,6 +283,7 @@ public class Payment implements Serializable {
         return "com.divudi.entity.Payment[ id=" + id + " ]";
     }
 
+    // Can be use as a reference number for any payment method
     public String getChequeRefNo() {
         return chequeRefNo;
     }
@@ -275,6 +316,14 @@ public class Payment implements Serializable {
         this.paidValue = paidValue;
     }
 
+    public int getCreditDurationInDays() {
+        return creditDurationInDays;
+    }
+
+    public void setCreditDurationInDays(int creditDurationInDays) {
+        this.creditDurationInDays = creditDurationInDays;
+    }
+
     public Institution getInstitution() {
         return institution;
     }
@@ -290,5 +339,104 @@ public class Payment implements Serializable {
     public void setDepartment(Department department) {
         this.department = department;
     }
+
+    public Payment copyAttributes() {
+        Payment newPayment = new Payment();
+
+        // Copying attributes
+        newPayment.setBill(this.bill);
+        newPayment.setWrittenAt(this.writtenAt);
+        newPayment.setToRealizeAt(this.toRealizeAt);
+        newPayment.setPaymentMethod(this.paymentMethod);
+        newPayment.setRealized(this.realized);
+        newPayment.setRealizedAt(this.realizedAt);
+        newPayment.setRealizer(this.realizer);
+        newPayment.setRealizeComments(this.realizeComments);
+        newPayment.setBank(this.bank);
+        newPayment.setComments(this.comments);
+        newPayment.setCurrencyDenominationsJson(this.currencyDenominationsJson);
+        newPayment.setCreater(this.creater);
+        newPayment.setCreatedAt(this.createdAt);
+        newPayment.setRetired(this.retired);
+        newPayment.setRetirer(this.retirer);
+        newPayment.setRetiredAt(this.retiredAt);
+        newPayment.setRetireComments(this.retireComments);
+        newPayment.setChequeRefNo(this.chequeRefNo);
+        newPayment.setChequeDate(this.chequeDate);
+        newPayment.setCreditCardRefNo(this.creditCardRefNo);
+        newPayment.setPaidValue(this.paidValue);
+        newPayment.setInstitution(this.institution);
+        newPayment.setDepartment(this.department);
+
+        // Note: ID is not copied to ensure the uniqueness of each entity
+        // newPayment.setId(this.id); // This line is intentionally commented out
+        return newPayment;
+    }
+
+    public void setCurrencyDenominationsJson(String currencyDenominationsJson) {
+        this.currencyDenominationsJson = currencyDenominationsJson;
+    }
+
+    public void serializeDenominations() {
+        if (this.currencyDenominations != null) {
+            JSONArray jsonArray = new JSONArray();
+            for (Denomination denomination : this.currencyDenominations) {
+                if (denomination != null) {
+                    JSONObject jsonObject = new JSONObject();
+                    jsonObject.put("value", denomination.getValue());
+                    jsonObject.put("count", denomination.getCount());
+                    jsonArray.put(jsonObject);
+                }
+            }
+            this.currencyDenominationsJson = jsonArray.toString();
+        } else {
+            this.currencyDenominationsJson = "[]"; // Empty JSON array if currencyDenominations is null
+        }
+    }
+
+    public void deserializeDenominations() {
+        if (this.currencyDenominationsJson != null && !this.currencyDenominationsJson.isEmpty()) {
+            try {
+                JSONArray jsonArray = new JSONArray(this.currencyDenominationsJson);
+                this.currencyDenominations = new ArrayList<>();
+                for (int i = 0; i < jsonArray.length(); i++) {
+                    JSONObject jsonObject = jsonArray.getJSONObject(i);
+                    if (jsonObject.has("value") && jsonObject.has("count")) {
+                        int value = jsonObject.getInt("value");
+                        int count = jsonObject.getInt("count");
+                        this.currencyDenominations.add(new Denomination(value, count));
+                    }
+                }
+            } catch (Exception e) {
+                System.out.println("Error deserializing currency denominations: " + e.getMessage());
+                this.currencyDenominations = new ArrayList<>(); // Initialize to an empty list on error
+            }
+        } else {
+            this.currencyDenominations = new ArrayList<>(); // Initialize to an empty list if JSON is null or empty
+        }
+    }
+
+    public String getCurrencyDenominationsJson() {
+        return currencyDenominationsJson;
+    }
+
+    public List<Denomination> getCurrencyDenominations() {
+        return currencyDenominations;
+    }
+
+    public void setCurrencyDenominations(List<Denomination> currencyDenominations) {
+        this.currencyDenominations = currencyDenominations;
+    }
+
+    public String getReferenceNo() {
+        
+        return referenceNo;
+    }
+
+    public void setReferenceNo(String referenceNo) {
+        this.referenceNo = referenceNo;
+    }
+
+   
 
 }

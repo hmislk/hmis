@@ -1,12 +1,12 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Open Hospital Management Information System
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.cashTransaction;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
@@ -150,7 +150,7 @@ public class CashInController implements Serializable {
         WebUser wb = getWebUserFacade().find(getSessionController().getLoggedUser().getId());
         getSessionController().setLoggedUser(wb);
 
-        UtilityController.addSuccessMessage("Succesfully Cash Inned ");
+        JsfUtil.addSuccessMessage("Succesfully Cash Inned ");
         printPreview = true;
 
     }

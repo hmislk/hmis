@@ -1,65 +1,115 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
-                template="/resources/template/template.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/inward/inward_administration.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://java.sun.com/jsf/core">
+                xmlns:f="http://xmlns.jcp.org/jsf/core">
 
-    <ui:define name="content">
+    <ui:define name="subcontent">
         <h:panelGroup >
             <h:form id="form"  >
 
-                <p:panel header="Manage Service Fees" >
+                <p:panel >
+                    <f:facet name="header">
+                        <i class="fa-solid fa-gears"></i>
+                        <p:outputLabel value="Manage Service Fees" class="mx-2"/>
+                    </f:facet>
 
                     <h:panelGrid columns="1" >
-                        <h:panelGrid columns="2" >
+                        <h:panelGrid columns="3" class="mb-2">
                             <h:outputLabel value="Select Service" />
-                            <p:autoComplete converter="timedIt" 
-                                            forceSelection="true"  
-                                            value="#{timedItemFeeController.currentIx}" 
-                                            completeMethod="#{timedItemController.completeInvest}" 
-                                            var="ix" itemLabel="#{ix.name}" 
-                                            itemValue="#{ix}" 
-                                            size="30"
-                                            style="width: 400px;">
+                            <p:outputLabel value=": " style="width: 30px; text-align: center; " ></p:outputLabel>
+                            <p:autoComplete 
+                                forceSelection="true"  
+                                value="#{timedItemFeeController.currentIx}" 
+                                completeMethod="#{timedItemController.completeInvest}" 
+                                var="ix" 
+                                inputStyleClass="form-control"
+                                itemLabel="#{ix.name}" 
+                                itemValue="#{ix}"
+                                class="w-100 mx-2"
+                                
+                                >
                                 <p:ajax event="itemSelect" process="@this" update="gpDetail" listener="#{timedItemFeeController.fillCharges()}"></p:ajax>
                             </p:autoComplete>
                         </h:panelGrid>
 
                         <h:panelGrid id ="gpVeda" columns="2" styleClass="alignTop" >
-                            <p:panel id="gpDetail" >
+                            <p:panel id="gpDetail" class="w-100">
                                 <f:facet name="header" >
                                     <h:outputLabel value="Charge Detail" ></h:outputLabel>
                                     <h:outputText style="float:right;" id="lblTotal" value="Total : #{timedItemFeeController.currentIx.total}"/>
                                 </f:facet>
-                                <h:panelGrid columns="2">
+
+                                <h:panelGrid columns="3" >
+
                                     <h:outputText value="Fee Name"/>
-                                    <h:inputText autocomplete="off" id="txtFeeName" value="#{timedItemFeeController.currentFee.name}"/>
+                                    <p:outputLabel value=": " style="width: 30px; text-align: center; " ></p:outputLabel>
+                                    <p:inputText 
+                                        autocomplete="off" 
+                                        id="txtFeeName" 
+                                        value="#{timedItemFeeController.currentFee.name}" 
+                                        style="width: 500px;"/>
+
                                     <h:outputText value="Fee Type"/>
-                                    <h:selectOneListbox id="cmbFeeType" size="1" value="#{timedItemFeeController.currentFee.feeType}" >
+                                    <p:outputLabel value=": " style="width: 30px; text-align: center; " ></p:outputLabel>
+                                    <p:selectOneMenu 
+                                        id="cmbFeeType" 
+                                        style="width: 500px;"
+                                        class="mt-2 mb-2"
+                                        value="#{timedItemFeeController.currentFee.feeType}" >
                                         <f:selectItem itemLabel="Please select the type"/>
                                         <f:selectItem itemLabel="Staff Fee" itemValue="Staff" />
                                         <f:selectItem itemLabel="Hospital Fee" itemValue="OwnInstitution" />
                                         <f:selectItem itemLabel="Outside Fee" itemValue="OtherInstitution" />
-                                    </h:selectOneListbox>
-                                    <h:outputText value="Fee"/>
-                                    <h:inputText autocomplete="off" id="txtFee" value="#{timedItemFeeController.currentFee.fee}"/>
-                                    <h:outputLabel value="Duration Hour"/>
-                                    <h:inputText autocomplete="off" value="#{timedItemFeeController.currentFee.durationHours}"/>
-                                    <h:outputLabel value="Over Shoot Hour"/>
-                                    <h:inputText autocomplete="off" value="#{timedItemFeeController.currentFee.overShootHours}"/>
-                                    <h:outputLabel value=""/>
-                                    <p:selectBooleanCheckbox value="#{timedItemFeeController.currentFee.booleanValue}"
-                                                             itemLabel="Consider Each Unit"/>
-                                    <h:outputText value=""/>
-                                    <h:commandButton id="btnAddTo" value="Add" 
-                                                     action="#{timedItemFeeController.saveCharge}" styleClass="buttons">
+                                    </p:selectOneMenu>
 
-                                    </h:commandButton>
+                                    <h:outputText value="Fee"/>
+                                    <p:outputLabel value=": " style="width: 30px; text-align: center; " ></p:outputLabel>
+                                    <p:inputText 
+                                        autocomplete="off" 
+                                        id="txtFee" 
+                                        value="#{timedItemFeeController.currentFee.fee}" 
+                                        style="width: 500px;"/>
+
+                                    <h:outputLabel value="Duration Hour"/>
+                                    <p:outputLabel value=": " style="width: 30px; text-align: center; " ></p:outputLabel>
+                                    <p:inputText 
+                                        autocomplete="off" 
+                                        class="mt-2 mb-2"
+                                        value="#{timedItemFeeController.currentFee.durationHours}" 
+                                        style="width: 500px;"/>
+
+                                    <h:outputLabel value="Over Shoot Hour"/>
+                                    <p:outputLabel value=": " style="width: 30px; text-align: center; " ></p:outputLabel>
+                                    <p:inputText 
+                                        autocomplete="off" 
+                                        value="#{timedItemFeeController.currentFee.overShootHours}" 
+                                        style="width: 500px;"/>
+
+                                    <p:selectBooleanCheckbox 
+                                        value="#{timedItemFeeController.currentFee.booleanValue}"
+                                        itemLabel="Consider Each Unit"
+                                        class="mt-2"
+                                        />
+
                                 </h:panelGrid>
 
+                                <p:commandButton 
+                                    id="btnAddTo" 
+                                    value="Add" 
+                                    icon="fa fa-plus"
+                                    update="gpDetail dtbFee"
+                                    style="width: 150px;"
+                                    action="#{timedItemFeeController.saveCharge}" 
+                                    class="ui-button-success mt-2 mb-3">
+                                </p:commandButton>
+
                                 <p:dataTable id="dtbFee" rowIndexVar="rowIndex" value="#{timedItemFeeController.charges}" var="bi" >
+                                    <p:column headerText="No" style="width: 50px">
+                                        <h:outputText value="#{rowIndex +1}" />
+                                    </p:column>
                                     <p:column headerText="Fee Name">
                                         <p:inputText value="#{bi.name}" autocomplete="off" />
                                     </p:column>
@@ -72,15 +122,26 @@
                                     <p:column headerText="Over Shoot">
                                         <p:inputText value="#{bi.overShootHours}" autocomplete="off" />
                                     </p:column>
-                                    <p:column headerText="Update">
-                                        <p:commandButton id="update" ajax="false" value="Update" action="#{timedItemFeeController.updateFee(bi)}" >
+                                    <p:column headerText="Action" style="width: 100px">
+                                        <p:commandButton 
+                                            id="update" 
+                                            ajax="false" 
+                                            class=" ui-button-warning"
+                                            icon="fa fa-pencil"
+                                            action="#{timedItemFeeController.updateFee(bi)}" >
                                         </p:commandButton>
-                                    </p:column>
-                                    <p:column headerText="Remove">
-                                        <h:commandButton id="remove" value="Remove" action="#{timedItemFeeController.removeFee}" >
+
+                                        <p:commandButton 
+                                            id="remove" 
+                                            icon="fa fa-trash"
+                                            class="ui-button-danger mx-2"
+                                            action="#{timedItemFeeController.removeFee}" >
                                             <f:setPropertyActionListener value="#{bi}" target="#{timedItemFeeController.removedTimedItemFee}"/>
-                                            <p:ajax update=":#{p:component('lblTotal')} dtbFee"  process="remove dtbFee" />
-                                        </h:commandButton>
+                                            <p:ajax update=":#{p:resolveFirstComponentWithId('lblTotal',view).clientId} dtbFee"  process="remove dtbFee" />
+                                        </p:commandButton>
+
+                                        <p:tooltip for="update" value="Update"  showDelay="0" hideDelay="0"></p:tooltip>
+                                        <p:tooltip for="remove" value="Remove"  showDelay="0" hideDelay="0"></p:tooltip>
                                     </p:column>
                                 </p:dataTable>
 

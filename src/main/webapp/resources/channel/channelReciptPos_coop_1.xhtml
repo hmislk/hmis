@@ -1,11 +1,11 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:cc="http://java.sun.com/jsf/composite">
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite">
 
     <!-- INTERFACE -->
     <cc:interface>
@@ -42,12 +42,12 @@
                     </div>
                     <div style="position: absolute!important; font-size: 15px!important; left: 30%!important; top: 42%!important;">
                         <h:outputLabel value="#{cc.attrs.bill.singleBillSession.sessionDate}" style="font-size: 14px!important;">
-                            <f:convertDateTime pattern="dd MMMM yyyy" ></f:convertDateTime>
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
                         </h:outputLabel>
                     </div>
                     <div style="position: absolute!important; font-size: 15px!important; left: 70%!important; top: 42%!important;">
                         <h:outputLabel value="#{cc.attrs.bill.singleBillSession.serviceSession.startingTime}" style="font-size: 14px!important;">
-                            <f:convertDateTime pattern="hh:mm a" ></f:convertDateTime>
+                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}"  ></f:convertDateTime>
                         </h:outputLabel>
                     </div>
                     <div style="position: absolute!important; font-size: 15px!important; left: 22%!important; top: 53%!important;">

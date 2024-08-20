@@ -1,22 +1,19 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+* Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.entity.clinical;
 
+import com.divudi.entity.Item;
 import java.io.Serializable;
 import javax.persistence.Entity;
-import javax.persistence.Inheritance;
 
 /**
  *
- * @author Buddhika
+ * @author buddhika
  */
 @Entity
-@Inheritance
-public class ClinicalFindingItem extends ClinicalEntity implements Serializable {
-    private static final long serialVersionUID = 1L;
-    
-    
+@Deprecated 
+public class ClinicalFindingItem extends Item implements Serializable {
     
 }

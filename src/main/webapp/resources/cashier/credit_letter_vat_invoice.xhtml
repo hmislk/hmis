@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:cc="http://java.sun.com/jsf/composite"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui">
 
     <!-- INTERFACE -->
@@ -219,7 +219,7 @@
                             <h:outputLabel value="#{cc.attrs.con.fromDate}"  >
                                 <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a" />
                             </h:outputLabel>
-                            <h:outputLabel value=" - " />
+                            <h:outputLabel value="&nbsp; - &nbsp;" />
                             <h:outputLabel value="#{cc.attrs.con.toDate}" >
                                 <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a" />
                             </h:outputLabel>
@@ -265,7 +265,7 @@
                                     </p:column>
                                     <p:column style="text-align: right;"> 
                                         <f:facet name="header">
-                                            <p:outputLabel value="Vat Liable Value" />
+                                            <p:outputLabel value="VAT Liable Value" />
                                         </f:facet>
                                         <h:outputLabel value="#{b.vatCalulatedAmount}" >
                                             <f:convertNumber pattern="#,##0.00"/>
@@ -273,7 +273,7 @@
                                     </p:column>
                                     <p:column style="text-align: right;"> 
                                         <f:facet name="header">
-                                            <p:outputLabel value="Vat " />
+                                            <p:outputLabel value="VAT " />
                                         </f:facet>
                                         <h:outputLabel value="#{b.vat}" >
                                             <f:convertNumber pattern="#,##0.00"/>
@@ -305,7 +305,7 @@
                                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                                                   Non-Taxabl Total : " style="font-weight: bold;"/>
+                                                   Non-Taxable Total : " style="font-weight: bold;"/>
                                     <h:outputLabel value="#{cc.attrs.con.total-cc.attrs.con.totalVatCalculatedValue}" style="font-weight: bold;float: right;" >
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel><br></br>
@@ -313,7 +313,7 @@
                                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                                                   Vat Liable Total : " style="font-weight: bold;"/>
+                                                   VAT Liable Total : " style="font-weight: bold;"/>
                                     <h:outputLabel value="#{cc.attrs.con.totalVatCalculatedValue}" style="font-weight: bold;float: right;" >
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel><br></br>
@@ -321,7 +321,7 @@
                                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                                                   Vat Total : " style="font-weight: bold;"/>
+                                                   VAT Total : " style="font-weight: bold;"/>
                                     <h:outputLabel value="#{cc.attrs.con.totalVat}" style="font-weight: bold; float: right;" >
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel><br></br>

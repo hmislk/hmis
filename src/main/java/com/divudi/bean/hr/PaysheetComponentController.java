@@ -1,14 +1,14 @@
 /*
- * MSc(Biomedical Informatics) Project
+ * Open Hospital Management Information System
  *
- * Development and Implementation of a Web-based Combined Data Repository of
- Genealogical, Clinical, Laboratory and Genetic Data
- * and
- * a Set of Related Tools
+ * Dr M H B Ariyaratne
+ * Acting Consultant (Health Informatics)
+ * (94) 71 5812399
+ * (94) 71 5812399
  */
 package com.divudi.bean.hr;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.hr.PaysheetComponentType;
 import com.divudi.entity.hr.PaysheetComponent;
 import com.divudi.facade.PaysheetComponentFacade;
@@ -28,8 +28,8 @@ import javax.inject.Named;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- * Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
+ * Acting Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -46,17 +46,17 @@ public class PaysheetComponentController implements Serializable {
     String selectText = "";
 
     public List<PaysheetComponent> getSelectedItems() {
-        selectedItems = getFacade().findBySQL("select c from PaysheetComponent c where c.retired=false and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+        selectedItems = getFacade().findByJpql("select c from PaysheetComponent c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
     }
 
     public List<PaysheetComponent> completePaysheetComponent(String qry) {
         List<PaysheetComponent> a = null;
         if (qry != null) {
-            a = getFacade().findBySQL("select c "
+            a = getFacade().findByJpql("select c "
                     + " from PaysheetComponent"
                     + " c where c.retired=false "
-                    + " and upper(c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
+                    + " and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
         }
         if (a == null) {
             a = new ArrayList<PaysheetComponent>();
@@ -89,7 +89,7 @@ public class PaysheetComponentController implements Serializable {
 
         hm.put("ct", PaysheetComponentType.addition.getSystemDefinedComponents());
 
-        PaysheetComponent tmp = getEjbFacade().findFirstBySQL(sql, hm);
+        PaysheetComponent tmp = getEjbFacade().findFirstByJpql(sql, hm);
 
         if (tmp != null) {
 
@@ -103,13 +103,13 @@ public class PaysheetComponentController implements Serializable {
     public void saveSelected() {
 
         if (getCurrent().getComponentType() == null) {
-            UtilityController.addErrorMessage("Pls Select Compnent Type");
+            JsfUtil.addErrorMessage("Pls Select Compnent Type");
             return;
         }
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             boolean flag = false;
             for (PaysheetComponentType p : PaysheetComponentType.addition.getSystemDefinedComponents()) {
@@ -118,14 +118,14 @@ public class PaysheetComponentController implements Serializable {
                 }
             }
             if (flag && checkComponent()) {
-                UtilityController.addErrorMessage("This Component Type Already Exist");
+                JsfUtil.addErrorMessage("This Component Type Already Exist");
                 return;
             }
 
             current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            UtilityController.addSuccessMessage("Saved Successfully");
+            JsfUtil.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
         getItems();
@@ -172,9 +172,9 @@ public class PaysheetComponentController implements Serializable {
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
@@ -192,7 +192,7 @@ public class PaysheetComponentController implements Serializable {
                 + " and s.componentType  in :tp ";
         HashMap hm = new HashMap();
         hm.put("tp", PaysheetComponentType.addition.getUserDefinedComponents());
-        items = ejbFacade.findBySQL(sql, hm);
+        items = ejbFacade.findByJpql(sql, hm);
         return items;
     }
 

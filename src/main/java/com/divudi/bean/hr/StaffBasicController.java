@@ -1,12 +1,12 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.hr;
 
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.data.hr.PaysheetComponentType;
 import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.ejb.HumanResourceBean;
@@ -20,7 +20,7 @@ import com.divudi.facade.PaysheetComponentFacade;
 import com.divudi.facade.StaffEmploymentFacade;
 import com.divudi.facade.StaffFacade;
 import com.divudi.facade.StaffPaysheetComponentFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -62,6 +62,7 @@ public class StaffBasicController implements Serializable {
     ////////
     @Inject
     private SessionController sessionController;
+    private int hrAdminMenuIndex;
     private Date fromDate;
     private Date toDate;
     private ReportKeyWord reportKeyWord;
@@ -90,22 +91,22 @@ public class StaffBasicController implements Serializable {
 
     private boolean errorCheck() {
         if (getCurrent().getStaff() == null) {
-            UtilityController.addErrorMessage("Select Staff");
+            JsfUtil.addErrorMessage("Select Staff");
             return true;
         }
 
         if (getCurrent().getFromDate() == null) {
-            UtilityController.addErrorMessage("Select From Date");
+            JsfUtil.addErrorMessage("Select From Date");
             return true;
         }
 
         if (getCurrent().getToDate() == null) {
-            UtilityController.addErrorMessage("Select To Date");
+            JsfUtil.addErrorMessage("Select To Date");
             return true;
         }
 
         if (humanResourceBean.checkStaff(getCurrent(), getCurrent().getPaysheetComponent(), getCurrent().getStaff(), getCurrent().getFromDate(), getCurrent().getToDate())) {
-            UtilityController.addErrorMessage("There is Some component in Same Date Range");
+            JsfUtil.addErrorMessage("There is Some component in Same Date Range");
             return true;
         }
 
@@ -135,7 +136,7 @@ public class StaffBasicController implements Serializable {
         hm.put("tp", PaysheetComponentType.BasicSalary);
         hm.put("st", getCurrent().getStaff());
         hm.put("dt", getCurrent().getFromDate());
-        List<StaffPaysheetComponent> tmp = getStaffPaysheetComponentFacade().findBySQL(sql, hm, TemporalType.DATE);
+        List<StaffPaysheetComponent> tmp = getStaffPaysheetComponentFacade().findByJpql(sql, hm, TemporalType.DATE);
 
         for (StaffPaysheetComponent ss : tmp) {
             ss.setToDate(getCurrent().getFromDate());
@@ -174,7 +175,7 @@ public class StaffBasicController implements Serializable {
     private void updateStaffEmployment() {
 
         if (getCurrent().getStaff().getStaffEmployment() == null) {
-            //   //////System.out.println("ceate A :");
+            //   //////// // System.out.println("ceate A :");
             StaffEmployment se = new StaffEmployment();
             se.setCreatedAt(new Date());
             se.setCreater(getSessionController().getLoggedUser());
@@ -185,15 +186,15 @@ public class StaffBasicController implements Serializable {
             getCurrent().getStaff().setStaffEmployment(se);
             getStaffFacade().edit(getCurrent().getStaff());
         }
-        //   //////System.out.println("ceate B :");
+        //   //////// // System.out.println("ceate B :");
         createComponent();
-        // //////System.out.println("ceate C :");
+        // //////// // System.out.println("ceate C :");
         getStaffEmploymentFacade().edit(getCurrent().getStaff().getStaffEmployment());
     }
 
     private void createComponent() {
 
-        //////System.out.println("ceate D :" + getCurrent().getStaff().getStaffEmployment());     
+        //////// // System.out.println("ceate D :" + getCurrent().getStaff().getStaffEmployment());     
         StaffBasics tmp = new StaffBasics();
         tmp.setCreatedAt(new Date());
         tmp.setCreater(getSessionController().getLoggedUser());
@@ -272,14 +273,14 @@ public class StaffBasicController implements Serializable {
 
         hm.put("tp", PaysheetComponentType.BasicSalary);
 
-        items = getStaffPaysheetComponentFacade().findBySQL(sql, hm, TemporalType.DATE);
+        items = getStaffPaysheetComponentFacade().findByJpql(sql, hm, TemporalType.DATE);
 
         if (!getRepeatedComponent().isEmpty()) {
             for (StaffPaysheetComponent sp : items) {
                 for (StaffPaysheetComponent err : getRepeatedComponent()) {
                     if (sp.getId().equals(err.getId())) {
                         sp.setExist(true);
-                        //////System.out.println("settin");
+                        //////// // System.out.println("settin");
                     }
                 }
             }
@@ -379,10 +380,10 @@ public class StaffBasicController implements Serializable {
         }
 
         sql += " order by s.staff.codeInterger,s.paysheetComponent.orderNo";
-        items = getStaffPaysheetComponentFacade().findBySQL(sql, hm, TemporalType.DATE);
+        items = getStaffPaysheetComponentFacade().findByJpql(sql, hm, TemporalType.DATE);
         calTotal(items);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Salary Report/staff paysheet component list(/faces/hr/hr_staff_paysheet_component_list.xhtml)");
+        
 
     }
 
@@ -393,26 +394,25 @@ public class StaffBasicController implements Serializable {
         }
     }
 
-    public List<StaffPaysheetComponent> getItems2() {
-        if (items == null) {
-            String sql = "Select s from StaffPaysheetComponent s"
-                    + " where s.retired=false "
-                    + " and s.paysheetComponent.componentType=:tp "
-                    + " order by s.staff.codeInterger";
-            //and (s.toDate>= :td or s.toDate is null)
-            HashMap hm = new HashMap();
-            // hm.put("td", getToDate());
-            //    hm.put("fd", getFromDate());
-            //  hm.put("st", getCurrent().getStaff());
-            hm.put("tp", PaysheetComponentType.BasicSalary);
-
-            items = getStaffPaysheetComponentFacade().findBySQL(sql, hm, TemporalType.DATE);
-
-        }
-
-        return items;
-    }
-
+//    public List<StaffPaysheetComponent> getItems2() {
+//        if (items == null) {
+//            String sql = "Select s from StaffPaysheetComponent s"
+//                    + " where s.retired=false "
+//                    + " and s.paysheetComponent.componentType=:tp "
+//                    + " order by s.staff.codeInterger";
+//            //and (s.toDate>= :td or s.toDate is null)
+//            HashMap hm = new HashMap();
+//            // hm.put("td", getToDate());
+//            //    hm.put("fd", getFromDate());
+//            //  hm.put("st", getCurrent().getStaff());
+//            hm.put("tp", PaysheetComponentType.BasicSalary);
+//
+//            items = getStaffPaysheetComponentFacade().findByJpql(sql, hm, TemporalType.DATE);
+//
+//        }
+//
+//        return items;
+//    }
     private Date date;
 
     public void resetDate() {
@@ -445,7 +445,7 @@ public class StaffBasicController implements Serializable {
         HashMap hm = new HashMap();
         hm.put("tp", PaysheetComponentType.BasicSalary);
 
-        return getPaysheetComponentFacade().findFirstBySQL(sql, hm, TemporalType.DATE);
+        return getPaysheetComponentFacade().findFirstByJpql(sql, hm, TemporalType.DATE);
 
     }
 
@@ -611,6 +611,94 @@ public class StaffBasicController implements Serializable {
 
     public void setCommonController(CommonController commonController) {
         this.commonController = commonController;
+    }
+
+    public int getHrAdminMenuIndex() {
+        return hrAdminMenuIndex;
+    }
+
+    public void setHrAdminMenuIndex(int hrAdminMenuIndex) {
+        this.hrAdminMenuIndex = hrAdminMenuIndex;
+    }
+
+    public String navigateToHrRoster() {
+        return "/hr/hr_roster?faces-redirect=true";
+    }
+
+    public String navigateToHrShift() {
+        return "/hr/hr_shift?faces-redirect=true";
+    }
+
+    public String navigateToHrPaysheetComponent() {
+        return "/hr/hr_paysheet_component?faces-redirect=true";
+    }
+
+    public String navigateToHrPaysheetComponentSystem() {
+        return "/hr/hr_paysheet_component_system?faces-redirect=true";
+    }
+
+    public String navigateToHrPhDate() {
+        return "/hr/hr_ph_date?faces-redirect=true";
+    }
+
+    public String navigateToHrHrmVariables() {
+        return "/hr/hr_hrm_variables?faces-redirect=true";
+    }
+
+    public String navigateToHrSalaryCycle() {
+        return "/hr/hr_salary_cycle?faces-redirect=true";
+    }
+
+    public String navigateToHrStaffAdmin() {
+        return "/hr/hr_staff_admin?faces-redirect=true";
+    }
+
+    public String navigateToHrChangeStaff() {
+        return "/hr/hr_change_staff?faces-redirect=true";
+    }
+
+    public String navigateToHrStaffCategory() {
+        return "/hr/hr_staff_category?faces-redirect=true";
+    }
+
+    public String navigateToHrStaffGrade() {
+        return "/hr/hr_staff_grade?faces-redirect=true";
+    }
+
+    public String navigateToHrStaffDesignation() {
+        return "/hr/hr_staff_designation?faces-redirect=true";
+    }
+
+    public String navigateToHrStaffTransfer() {
+        return "/hr/hr_form_staff_transfer?faces-redirect=true";
+    }
+
+    public String navigateToHrStaffBasicIndividual() {
+        return "/hr/hr_staff_basic_individual?faces-redirect=true";
+    }
+
+    public String navigateToHrStaffPaysheetComponentIndividual() {
+        return "/hr/hr_staff_paysheet_component_individual?faces-redirect=true";
+    }
+
+    public String navigateToHrStaffPaysheetComponentAll() {
+        return "/hr/hr_staff_paysheet_component_all?faces-redirect=true";
+    }
+
+    public String navigateToHrStaffLoanInstallment() {
+        return "/hr/hr_staff_loan_installment?faces-redirect=true";
+    }
+
+    public String navigateToHrStaffLeaveEntitle() {
+        return "/hr/hr_staff_leave_entitle?faces-redirect=true";
+    }
+
+    public String navigateToHrStaffPaysheetComponentAllPerformanceAllovance() {
+        return "/hr/hr_staff_paysheet_component_all_performance_allovance?faces-redirect=true";
+    }
+
+    public String navigateToHrStaffPaysheetComponentAllPerformanceAllovancePercentage() {
+        return "/hr/hr_staff_paysheet_component_all_performace_allovance_percentatge?faces-redirect=true";
     }
 
 }

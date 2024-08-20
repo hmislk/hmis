@@ -1,7 +1,7 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Open Hospital Management Information System
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 
 package com.divudi.bean.common;
@@ -31,12 +31,12 @@ public class TransferController implements Serializable {
     }
 
     public Patient getPatient() {
-//        //////System.out.println("getting patient = " + patient);
+//        //////// // System.out.println("getting patient = " + patient);
         return patient;
     }
 
     public void setPatient(Patient patient) {
-//        //////System.out.println("setting patient = " + patient);
+//        //////// // System.out.println("setting patient = " + patient);
         this.patient = patient;
     }
 

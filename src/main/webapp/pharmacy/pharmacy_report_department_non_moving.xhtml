@@ -1,77 +1,59 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:pe="http://primefaces.org/ui/extensions">
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      >
 
     <h:body>
 
-        <ui:composition template="/resources/template/template.xhtml">
+        <ui:composition template="/pharmacy/pharmacy_analytics.xhtml">
 
-            <ui:define name="content">
+            <ui:define name="subcontent">
                 <h:form>
 
 
                     <p:panel header="Non Moving Stock Report" >
-
-                        <p:panelGrid columns="2" styleClass="alignTop" >
-
-                            <h:panelGrid columns="2"  >
-                                <h:outputLabel value="Department" ></h:outputLabel>
-                                <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{reportsStock.department}" converter="departmentConverter" >
+                        
+                        <h:panelGrid columns="2" class="my-2" >
+                            <h:outputLabel value="Department" ></h:outputLabel>
+                                <p:autoComplete class="w-100 mx-4" inputStyleClass="w-100" completeMethod="#{departmentController.completeDept}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{reportsStock.department}"  >
                                 </p:autoComplete>
-
-                                <h:outputLabel value="From" ></h:outputLabel>
-                                <p:calendar value="#{reportsStock.fromDateE}" pattern="dd/MMM/yyyy - hh:mm:ss a" ></p:calendar>
-
-                                <h:outputLabel value="To" ></h:outputLabel>
-                                <p:calendar value="#{reportsStock.toDateE}" pattern="dd/MMM/yyyy - hh:mm:ss a" ></p:calendar>
-
-                                <h:outputLabel value="Category" ></h:outputLabel>
-                                <p:autoComplete completeMethod="#{pharmaceuticalItemCategoryController.completeCategory}" var="cat" 
+                            <h:outputLabel value="Category" ></h:outputLabel>
+                                <p:autoComplete class="w-100 mx-4" inputStyleClass="w-100" completeMethod="#{pharmaceuticalItemCategoryController.completeCategory}" var="cat" 
                                                 itemLabel="#{cat.name}" itemValue="#{cat}" forceSelection="true" value="#{reportsStock.category}"
                                                 >
                                 </p:autoComplete>
-
-
-                                <h:outputLabel value="Movement Type" ></h:outputLabel>
-                                <p:selectCheckboxMenu value="#{reportsStock.billTypes}" label="Bill Types"  >
+                            <h:outputLabel value="Movement Type" ></h:outputLabel>
+                                <p:selectCheckboxMenu class="w-100 mx-4" value="#{reportsStock.billTypes}" label="Bill Types"  >
                                     <f:selectItems value="#{enumController.pharmacyBillTypes3}" var="pbt" itemLabel="#{pbt.label}" itemValue="#{pbt}" ></f:selectItems>
                                 </p:selectCheckboxMenu>
+                            <h:outputLabel value="From" ></h:outputLabel>
+                                <p:calendar class="w-100 mx-4" inputStyleClass="w-100" value="#{reportsStock.fromDateE}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
+                            <h:outputLabel value="To" ></h:outputLabel>
+                                <p:calendar class="w-100 mx-4" inputStyleClass="w-100" value="#{reportsStock.toDateE}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
+                        </h:panelGrid>
+                        <h:panelGrid columns="6" class="my-2">
+                            <p:commandButton class="ui-button-outlined" ajax="false" value="Three Months Nonmoving" actionListener="#{reportsStock.fillThreeMonthsNonmoving()}" ></p:commandButton>
+                            <p:commandButton class="ui-button-outlined" ajax="false" value="Six Months Nonmoving" actionListener="#{reportsStock.fillSixMonthsNonmoving()}" ></p:commandButton>
+                            <p:commandButton class="ui-button-outlined" ajax="false" value="One Year Nonmoving" actionListener="#{reportsStock.fillOneYearNonmoving()}" ></p:commandButton>
 
-                            </h:panelGrid>
-
-                            <h:panelGrid columns="1" >
-                                <h:panelGrid columns="4" >
-                                    <p:commandButton ajax="false" value="Process" actionListener="#{reportsStock.fillDepartmentNonmovingStocks}" ></p:commandButton>
-                                    <p:commandButton ajax="false" value="Three Months Nonmoving" actionListener="#{reportsStock.fillThreeMonthsNonmoving()}" ></p:commandButton>
-                                    <p:commandButton ajax="false" value="Six Months Nonmoving" actionListener="#{reportsStock.fillSixMonthsNonmoving()}" ></p:commandButton>
-                                    <p:commandButton ajax="false" value="One Year Nonmoving" actionListener="#{reportsStock.fillOneYearNonmoving()}" ></p:commandButton>
-
-                                </h:panelGrid>
-                                <h:panelGrid columns="4" >
-                                    <p:commandButton value="Print" ajax="false" >
-                                        <p:printer target="gpBillPreview" ></p:printer>
-                                    </p:commandButton>
-                                    <p:commandButton value="Excel" ajax="false">
-                                        <pe:exporter type="xlsx" target="tbl" fileName="Total Stock"
-                                                     facetBackground="#008000" facetFontSize="15" 
-                                                     facetFontColor="#FFFFFF" facetFontStyle="BOLD" cellFontColor="#0000FF" cellFontSize="12"  cellFontStyle="NORMAL" 
-                                                     fontName="Courier New" />
-                                    </p:commandButton>
-                                </h:panelGrid>
-
-                            </h:panelGrid>
-
-                        </p:panelGrid>
+                            <p:commandButton class="ui-button-warning mx-2" icon="fas fa-cogs" ajax="false" value="Process" actionListener="#{reportsStock.fillDepartmentNonmovingStocks}" ></p:commandButton>
+                            <p:commandButton class="ui-button-info" icon="fas fa-print" value="Print" ajax="false" >
+                               <p:printer target="gpBillPreview" ></p:printer>
+                            </p:commandButton>
+                            <p:commandButton class="ui-button-success mx-2" icon="fas fa-file-excel" value="Excel" ajax="false">
+                                <p:dataExporter type="xlsx" target="tbl" fileName="Total Stock"/>
+                            </p:commandButton>
+                        </h:panelGrid>
 
                         <h:panelGroup id="gpBillPreview"   style="min-width: 100%!important;">
                             <p:dataTable id="tbl"  value="#{reportsStock.items}" var="i"  
                                          rows="10"
                                          paginator="true"
+                                         paginatorPosition="bottom"
                                          paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                          rowsPerPageTemplate="5,10,15"
                                          >

@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:cc="http://java.sun.com/jsf/composite"
-      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:f="http://java.sun.com/jsf/core">
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <!-- INTERFACE -->
     <cc:interface>
@@ -59,7 +59,7 @@
                     <div class="billdatePrintingRuhunu" >                       
 
                         <h:outputLabel value="#{cc.attrs.bill.billDate}">
-                            <f:convertDateTime pattern="dd/MM/yy"/>
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                         </h:outputLabel>
 
                     </div>
@@ -80,7 +80,7 @@
                     <div class="billtimePrintingRuhunu" >      
 
                         <h:outputLabel value="#{cc.attrs.bill.billTime}">
-                            <f:convertDateTime pattern="hh:mm a"/>
+                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" />
                         </h:outputLabel>
 
                     </div>
@@ -112,7 +112,7 @@
 
 
                     <div class="itemsPrintingRuhunu" >
-                        <h:dataTable value="#{cc.attrs.bill.billItems}" var="bip"   >
+                        <h:dataTable value="#{cc.attrs.bill.billItems}" var="bip">
                             <h:column >
 
                                 <h:outputLabel rendered="#{bip.item.department.id eq cc.attrs.bill.toDepartment.id}" value="#{bip.item.printName}" style="margin: 4px; font-size: 11px!important;" >

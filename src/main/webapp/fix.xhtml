@@ -1,0 +1,161 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:head>
+        <title>Facelet Title</title>
+    </h:head>
+    <h:body>
+        <h:form >
+            <p:menubar >
+                <p:menuitem  
+                    ajax="false"  
+                    action="#{webUserController.navigateToManageUsers()}" 
+                    value="Manage Users" 
+                    icon="fa fa-users" >
+                </p:menuitem>
+
+            </p:menubar>
+
+
+
+            <p:accordionPanel>
+                <p:tab title="Manage Users"   >
+                    <div class="d-grid gap-2">
+
+                        <p:commandButton 
+                            ajax="false" 
+                            value="View Users" 
+                            action="#{webUserController.navigateToListUsers()}" />
+
+
+                        <div class="container-fluid p-2" >
+                            <div class="row" >
+                                <div class="col-md-9" >
+
+                                    <p:dataTable id="lstSelect" 
+                                                 value="#{webUserController.webUseLights}" 
+                                                 var="u"
+                                                 rowKey="#{u.id}"
+                                                 selection="#{webUserController.selectedLight}" 
+                                                 rows="10" 
+                                                 selectionMode="single"
+                                                 paginator="true"
+                                                 paginatorPosition="bottom"
+                                                 paginatorAlwaysVisible="false"
+                                                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                                 rowsPerPageTemplate="10,50,100,500"
+                                                 >
+                                        <p:ajax event="rowSelect" process="@this" update=":#{p:resolveFirstComponentWithId('actions',view).clientId}" ></p:ajax>
+                                        <p:ajax event="rowUnselect" process="@this" update=":#{p:resolveFirstComponentWithId('actions',view).clientId}" ></p:ajax>
+                                        <p:column headerText="User Name" 
+                                                  sortBy="#{u.userName}" 
+                                                  filterBy="#{u.userName}"
+                                                  filterMatchMode="contains">
+                                            <h:outputText value="#{u.userName}"/>
+                                        </p:column>
+
+                                    </p:dataTable>
+
+                                </div>
+
+                                <h:panelGroup id="actions" class="col-md-3 col-md-3 d-flex flex-column" >
+
+                                    <p:commandButton ajax="false"
+                                                     disabled="#{webUserController.selected == null}" 
+                                                     icon="fa fa-trash" 
+                                                     value="Remove" 
+                                                     class="m-1 ui-button-danger" 
+                                                     onclick="if (!confirm('Are you sure you want to Remove User?'))
+                                                                 return false;" action="#{webUserController.removeUser}" />
+
+                                    <p:commandButton disabled="#{webUserController.selected == null}" icon="fa fa-user-cog" value="Manage User" class="m-1" action="#{webUserController.navigateToEditUser()}" ajax="false" />
+                                    <p:commandButton disabled="#{webUserController.selected == null}" icon="fa fa-key" value="Manage Password" class="m-1" action="#{webUserController.navigateToEditPasswordByAdmin()}" ajax="false" />
+                                    <p:commandButton disabled="#{webUserController.selected == null}" icon="fa fa-users-cog" value="Manage Staff" class="m-1" action="#{webUserController.navigateToManageStaff()}" ajax="false" />
+                                    <p:commandButton disabled="#{webUserController.selected == null}" icon="fa fa-building" value="Manage User Departments" class="m-1" action="#{webUserController.navigateToManageDepartments()}" ajax="false" />
+                                    <p:commandButton disabled="#{webUserController.selected == null}" icon="fa fa-unlock-alt" value="Manage Privileges" class="m-1" action="#{webUserController.navigateToManagePrivileges()}" ajax="false" />
+                                    <p:commandButton disabled="#{webUserController.selected == null}" icon="fa fa-credit-card" value="Manage User Payment Schemes" class="m-1" action="#{webUserController.navigateToManagePaymentSchemes()}" ajax="false" />
+                                    <p:commandButton disabled="#{webUserController.selected == null}" icon="fa fa-icons" value="Manage User Icons" class="m-1" action="#{webUserController.navigateToManageUserIcons()}" ajax="false" />
+                                    <p:commandButton disabled="#{webUserController.selected == null}" icon="fa fa-signature" value="Manage Signature" class="m-1" action="#{webUserController.toManageSignature()}" ajax="false" />
+                                    <p:commandButton disabled="#{webUserController.selected == null}" icon="fa fa-tachometer-alt" value="Manage Dashboards" class="m-1" action="#{webUserController.toManageDashboards()}" ajax="false" />
+
+                                </h:panelGroup>
+
+                                <p:panel header="Manage User Privilages"  >
+                                    <f:facet name="header" >
+                                        <i class="fa fa-unlock-alt" aria-hidden="true"/>
+                                        <h:outputLabel value="Manage User Privilages" class="mx-2"/>
+                                    </f:facet>
+
+                                    <h:panelGrid  columns="3">    
+                                        <p:outputLabel  value="User Name" ></p:outputLabel>
+                                        <p:outputLabel  value=":" style="width: 50px; text-align: center" ></p:outputLabel>
+                                        <p:outputLabel class="form-control w-100" value="#{userPrivilageController.currentWebUser.name}"></p:outputLabel>
+                                        <p:outputLabel  value="Department" ></p:outputLabel>
+                                        <p:outputLabel  value=":" style="width: 50px; text-align: center" ></p:outputLabel>
+                                        <p:selectOneMenu 
+                                            id="cmbDepartment"
+                                            placeholder="Department"
+                                            value="#{userPrivilageController.department}" 
+                                            style="width: 500px"
+                                            filter="true">
+                                            <f:selectItem itemLabel="All" ></f:selectItem>
+                                            <f:selectItems 
+                                                value="#{userPrivilageController.departments}"
+                                                var="d"
+                                                itemLabel="#{d.name}"
+                                                itemValue="#{d}" ></f:selectItems>
+                                        </p:selectOneMenu>
+                                    </h:panelGrid>  
+
+
+                                    <div class="w-100 mt-2 mb-2">
+
+                                        <p:commandButton 
+                                            value="List Privileges"
+                                            process="cmbInstitution cmbDepartment"
+                                            class="ui-button-success mx-1"
+                                            ajax="false"
+                                            icon="fa fa-list"
+                                            action="#{userPrivilageController.fillUserPrivileges}">
+                                        </p:commandButton>
+
+                                        <p:commandButton 
+                                            value="Update User Privilage"  
+                                            action="#{userPrivilageController.savePrivileges}"
+                                            class="ui-button-warning"
+                                            ajax="false" 
+                                            icon="fa fa-save"
+                                            style="float: right"
+                                            >  
+                                        </p:commandButton> 
+                                    </div>
+
+                                    <p:tree
+                                        id="tree"
+                                        selectionMode="checkbox"
+                                        datakey="#{node}"
+                                        selection="#{userPrivilageController.selectedNodes}"
+                                        value="#{userPrivilageController.rootTreeNode}" 
+                                        var="node" 
+                                        propagateSelectionDown="true"
+                                        propagateSelectionUp="true"
+                                        >  
+                                        <p:treeNode>  
+                                            <h:outputText value="#{node}" />  
+                                        </p:treeNode>  
+                                    </p:tree>
+                                </p:panel>
+                            </div>
+                        </div>
+
+                    </div>
+                </p:tab>
+            </p:accordionPanel>
+
+        </h:form>
+    </h:body>
+</html>
+

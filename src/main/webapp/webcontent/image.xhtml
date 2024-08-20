@@ -1,0 +1,63 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html">
+
+    <h:body>
+
+        <ui:composition template="/webcontent/index.xhtml">
+
+            <ui:define name="contents">
+
+                <h:form enctype="multipart/form-data">
+
+                    <div class="row" >
+
+                        <div class="col form" >
+                            <h:outputLabel class="form form-label" for="txtName" ></h:outputLabel>
+                            <h:inputText class="form form-control" id="txtName" value="#{uploadController.selected.webContent.name}"></h:inputText>
+
+                            <h:outputLabel class="form form-label" for="txtOrder" ></h:outputLabel>
+                            <h:inputText class="form form-control" id="txtOrder" value="#{uploadController.selected.webContent.orderNo}"></h:inputText>
+
+                            <h:commandButton class="form btn btn-success" value="Save" action="#{uploadController.save()}" ></h:commandButton>
+
+                        </div>
+
+
+                        <div class="col" >
+                            <p:graphicImage class="w-100"
+                                            cache="false"  value="#{streamedContentController.imageByUploadId}"  >
+                                <f:param name="id" value="#{uploadController.selected.idStr}" />
+                            </p:graphicImage>
+                        </div>
+                    </div>
+
+                    <div class="row" >
+                        <div class="col" >
+
+                            <h:panelGrid columns="2" class="w-100 border border-light">
+                                <f:facet name="header" >
+                                    File Upload (PDF/Images)
+                                </f:facet>
+                                <p:fileUpload value="#{uploadController.file}" mode="simple" skinSimple="true"
+                                              class="btn btn-success fw-bold m-2 "/>
+                                <p:commandButton value="Submit" ajax="false" 
+                                                 action="#{uploadController.upload()}" class="btn btn-warning"/>
+                            </h:panelGrid>
+
+
+                        </div>
+                    </div>
+
+                </h:form>
+
+            </ui:define>
+
+        </ui:composition>
+
+    </h:body>
+</html>

@@ -1,0 +1,133 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html">
+
+
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+
+                <div class="row" >
+                    <div class="col-md-3" >
+                        <h:form>
+                            <p:accordionPanel  activeIndex="#{institutionController.managaeInstitutionIndex}">
+                                <p:ajax process="@this"></p:ajax>
+                                <p:tab title="Preferences" >
+                                    <div class="d-grid gap-2">
+                                        <!-- Application Preferences Button with PF icon, now with a less alarming deprecation indicator -->
+                                        <p:commandButton styleClass="linkButton ui-button-warning" ajax="false" value="Application Preferences"
+                                                         action="#{sessionController.toManageApplicationPreferences}" icon="pi pi-cog"/>
+
+                                        <!-- Department Preferences Button with PF icon, now with a less alarming deprecation indicator -->
+                                        <p:commandButton styleClass="linkButton ui-button-warning" ajax="false" value="Department Preferences" icon="pi pi-wrench"
+                                                         action="#{sessionController.toManageDepartmentPreferences()}"/>
+
+                                        <!-- Application Options Button with emphasized color and icon for high importance -->
+                                        <p:commandButton styleClass="linkButton ui-button-success" ajax="false" value="Application Options" icon="pi pi-sliders-h"
+                                                         action="#{configOptionController.navigateToApplicationOptions()}"/>
+
+                                        <!-- Institution Options Button - still under development, less prominent color -->
+                                        <p:commandButton styleClass="linkButton ui-button-info" ajax="false" value="Institution Options" icon="pi pi-building"
+                                                         action="#{configOptionController.navigateToInstitutionOptions()}"/>
+
+                                        <!-- Department Options Button - still under development, less prominent color -->
+                                        <p:commandButton styleClass="linkButton ui-button-info" ajax="false" value="Department Options" icon="pi pi-sitemap"
+                                                         action="#{configOptionController.navigateToDepartmentOptions()}"/>
+
+                                        <!-- User Options Button - still under development, less prominent color -->
+                                        <p:commandButton styleClass="linkButton ui-button-info" ajax="false" value="User Options" icon="pi pi-users"
+                                                         action="#{configOptionController.navigateToUserOptions()}"/>
+                                    </div>
+
+                                </p:tab>
+                                <p:tab title="Manage" >
+                                    <div class="d-grid gap-2">
+                                        <p:commandButton 
+                                            class="changeColor"
+                                            ajax="false" 
+                                            value="Manage Institutions" 
+                                            action="#{navigationController.navigateToManageInstitution()}" 
+                                            icon="fa-solid fa-building-user"/>
+                                        <p:commandButton  
+                                            styleClass="linkButton" 
+                                            ajax="false" 
+                                            value="Manage Departments" 
+                                            action="#{navigationController.navigateToManageDepartment()}" 
+                                            actionListener="#{departmentController.fillSearchItems()}" icon="fas fa-building"/>
+                                        <p:commandButton styleClass="linkButton"  
+                                                         action="#{institutionController.toListInstitutions()}" 
+                                                         icon="bi bi-list" value="List Institutions">
+                                        </p:commandButton>
+                                        <p:commandButton styleClass="linkButton" 
+                                                         action="#{departmentController.toListDepartments()}" 
+                                                         icon="bi bi-list"
+                                                         value="List Departments">
+                                        </p:commandButton>
+                                        <p:commandButton styleClass="linkButton" icon="bi bi-building-fill" ajax="false" value="Institution Branch" action="#{navigationController.navigateToInstitutionBranch()}" />
+                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Collecting Centres" icon="fa-solid fa-warehouse" action="#{navigationController.navigateToCollectingCenter()}" />
+                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Credit Companies" icon="fas fa-credit-card" action="#{navigationController.navigateToCreditCompany()}" />
+
+                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Manage Areas" icon="fas fa-location-dot" action="#{navigationController.navigateToArea()}" />
+                                        <p:commandButton styleClass="linkButton" 
+                                                         rendered="false"
+                                                         action="#{routeController.toAddNewRoute}" 
+                                                         icon="fas fa-map-location-dot"
+                                                         value="Add New Route">
+                                        </p:commandButton>
+                                        <p:commandButton styleClass="linkButton" 
+                                                         rendered="false"
+                                                         action="#{routeController.toListRoutes()}" 
+                                                         value="List Routes"
+                                                         icon="fas fa-list">
+                                        </p:commandButton>
+                                        <p:commandButton styleClass="linkButton" 
+                                                         action="#{routeController.manageRoutes()}" 
+                                                         icon="fas fa-map-location-dot"
+                                                         value="Manage Routes">
+                                        </p:commandButton>
+                                    </div>
+                                </p:tab>
+                                <p:tab title="Bulk Transactions" >
+                                    <div class="d-grid gap-2">
+                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Credit Company Upload" icon="fas fa-credit-card" action="#{navigationController.navigateToCreditCompanyUpload()}" />
+                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Upload Collecting Centres" icon="fas fa-upload" action="#{dataUploadController.navigateToCollectingCenterUpload()}" />
+                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Upload Departments" icon="fas fa-upload" action="#{dataUploadController.navigateToDepartmentUpload()}" />
+                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Upload Supplier" icon="fas fa-upload" action="#{dataUploadController.navigateToSupplierUpload()}" />
+
+                                    </div>
+                                </p:tab>
+
+                                <p:tab title="Developer" >
+                                    <div class="d-grid gap-2">
+
+
+                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Bulk Delete Institutions" action="#{navigationController.navigateToInstitutionBulkDelete()}" icon="fa-solid fa-trash"/>
+                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Bulk Delete Departments" action="#{navigationController.navigateToDepartmentBulkDelete()}"  icon="fa-solid fa-trash-can"/>
+
+
+                                    </div>
+                                </p:tab>
+                            </p:accordionPanel>
+                        </h:form>
+                    </div>
+                    <div class="col-md-9" >
+                        <ui:insert name="admin" >
+
+                        </ui:insert>
+
+                    </div>
+                </div>
+
+
+
+            </ui:define>
+
+
+        </ui:composition>
+
+    </h:body>
+</html>

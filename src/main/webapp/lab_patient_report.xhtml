@@ -1,12 +1,12 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
-      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:fn="http://java.sun.com/jsp/jstl/functions"
-      xmlns:ez="http://java.sun.com/jsf/composite/ezcomp">
+      xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp">
 
 
 
@@ -14,7 +14,7 @@
 
     </head>
 
-    <body>
+    <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:outputStylesheet library="css" name="lab.css" ></h:outputStylesheet>
@@ -57,24 +57,24 @@
                                     <p:outputLabel value="Report Format" ></p:outputLabel>
                                     <p:selectOneMenu  id="mnuCat" value="#{patientReportController.currentPatientReport.reportFormat}"  style="width: 300px!important;">
                                         <f:selectItems  value="#{reportFormatController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
-                                        <f:ajax event="change" execute="mnuCat" render=":#{p:component('divPrint')}" />
+                                        <f:ajax event="change" execute="mnuCat" render=":#{p:resolveFirstComponentWithId('divPrint',view).clientId}" />
                                     </p:selectOneMenu>
                                 </h:panelGrid>
                                 <h:panelGrid columns="9" >
                                     <p:commandButton rendered="#{webUserController.hasPrivilege('LabDataentry') eq true and patientReportController.currentPatientReport.approved ne true}"  
                                                      value="Save" 
-                                                     action="#{patientReportController.savePatientReport()}" ajax="false" onclick="onSubmitButton();"  >
+                                                     action="#{patientReportController.savePatientReport()}" ajax="false"   >
                                     </p:commandButton>
-                                    <p:commandButton ajax="false" process="tblVals" update=":#{p:component('tblCals')} :#{p:component('tblFlags')} :#{p:component('divPrint')}"  styleClass="nonPrintBlock"  value="Calculate" 
-                                                     action="#{patientReportController.calculate}" onclick="onSubmitButton();"   >
+                                    <p:commandButton ajax="false" process="tblVals" update=":#{p:resolveFirstComponentWithId('tblCals',view).clientId} :#{p:resolveFirstComponentWithId('tblFlags',view).clientId} :#{p:resolveFirstComponentWithId('divPrint',view).clientId}"  styleClass="nonPrintBlock"  value="Calculate" 
+                                                     action="#{patientReportController.calculate}" >
                                     </p:commandButton>
 
                                     <p:commandButton styleClass="nonPrintBlock"  id="btnApprove"  disabled ="#{!(webUserController.hasPrivilege('LabAutherizing') eq true and patientReportController.currentPatientReport.dataEntered eq true)}"   
-                                                     value="Approve" action="#{patientReportController.approvePatientReport()}" ajax="false" onclick="onSubmitButton();"  >
+                                                     value="Approve" action="#{patientReportController.approvePatientReport()}" ajax="false"   >
                                     </p:commandButton>
 
                                     <p:commandButton styleClass="nonPrintBlock"  id="btnCancel"  disabled ="#{!(webUserController.hasPrivilege('LabDeAutherizing') eq true and patientReportController.currentPatientReport.approved eq true)}"   value="Cancel Approval" 
-                                                     action="#{patientReportController.reverseApprovalOfPatientReport()}" ajax="false" onclick="onSubmitButton();"  >
+                                                     action="#{patientReportController.reverseApprovalOfPatientReport()}" ajax="false"   >
                                     </p:commandButton>
 
                                     <!--                                    <p:commandButton styleClass="nonPrintBlock"  
@@ -87,12 +87,12 @@
                                     <p:spacer width="30" ></p:spacer>
                                     <p:commandButton  styleClass="nonPrintBlock"  value="Patient Report Search" action="#{patientReportController.patientReportSearch}" ajax="false" >
                                     </p:commandButton>
-                                    <p:commandButton  styleClass="nonPrintBlock"  value="Report Search" action="/lab/search_for_reporting_ondemand" ajax="false" onclick="onSubmitButton();"  >
+                                    <p:commandButton  styleClass="nonPrintBlock"  value="Report Search" action="/lab/search_for_reporting_ondemand?faces-redirect=true" ajax="false"   >
                                     </p:commandButton>
-                                    <p:commandButton  styleClass="nonPrintBlock"  value="To Approve List" action="#{searchController.listReportsAwaitingApproval()}" ajax="false" onclick="onSubmitButton();"  >
+                                    <p:commandButton  styleClass="nonPrintBlock"  value="To Approve List" action="#{searchController.listReportsAwaitingApproval()}" ajax="false"   >
                                     </p:commandButton>
 
-                                    <p:commandButton styleClass="nonPrintBlock" ajax="false" value="Back to Visit" action="/clinical/clinical_new_opd_visit.xhtml" style="float: right;" onclick="onSubmitButton();" ></p:commandButton>
+                                    <p:commandButton styleClass="nonPrintBlock" ajax="false" value="Back to Visit" action="/clinical/clinical_new_opd_visit.xhtml" style="float: right;"  ></p:commandButton>
 
                                 </h:panelGrid>
 
@@ -135,7 +135,7 @@
                                         </table>
                                     </p:panel>
                                     <h:panelGroup  
-                                        rendered="#{patientReportController.currentPatientReport.transInvestigation.reportType ne 'Microbiology'  and patientReportController.currentPatientReport.containCalculations eq true }"   >
+                                        rendered="#{patientReportController.currentPatientReport.transInvestigation.reportType ne 'Microbiology'  and patientReportController.currentPatientReport.containCalculations eq true }">
                                         <p:panel header="Calculations " id="tblCals">
                                             <table >               
                                                 <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" 
@@ -143,7 +143,7 @@
 
                                                             >
 
-                                                    <h:panelGroup   rendered="#{pvcal.investigationItem.ixItemType eq 'Calculation'}"   >
+                                                    <h:panelGroup   rendered="#{pvcal.investigationItem.ixItemType eq 'Calculation'}">
                                                         <tr>
                                                             <td>
                                                                 <h:outputLabel value="#{pvcal.investigationItem.name}" ></h:outputLabel>
@@ -331,10 +331,10 @@
                                                 <h1>D</h1>
                                                 <h1>E</h1>
                                             </h:panelGroup>
-                                            <p:editor rendered="#{patientReportController.currentPatientReport.templateItem ne null}" 
+                                            <p:textEditor secure="false" rendered="#{patientReportController.currentPatientReport.templateItem ne null}" 
                                                       value="#{patientReportController.currentPatientReport.templateItem.lobValue}" widgetVar="editor" height="650" >
 
-                                            </p:editor>
+                                            </p:textEditor>
                                         </p:panel>
 
                                     </p:panel>
@@ -569,5 +569,5 @@
 
         </ui:composition>
 
-    </body>
+    </h:body>
 </html>

@@ -1,9 +1,9 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.common;
-
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
@@ -30,7 +30,6 @@ import com.divudi.facade.InstitutionFacade;
 import com.divudi.facade.RefundBillFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import javax.ejb.EJB;
@@ -151,33 +150,33 @@ public class AgentPaymentReceiveSearchController implements Serializable {
         comment = null;
     }
 
-    private void cancelBillComponents(CancelledBill can, BillItem bt) {
-        for (BillComponent nB : getBillComponents()) {
-            BillComponent bC = new BillComponent();
-            bC.setCatId(nB.getCatId());
-            bC.setDeptId(nB.getDeptId());
-            bC.setInsId(nB.getInsId());
-            bC.setDepartment(nB.getDepartment());
-            bC.setDeptId(nB.getDeptId());
-            bC.setInstitution(nB.getInstitution());
-            bC.setItem(nB.getItem());
-            bC.setName(nB.getName());
-            bC.setPackege(nB.getPackege());
-            bC.setSpeciality(nB.getSpeciality());
-            bC.setStaff(nB.getStaff());
-
-            bC.setBill(can);
-            bC.setBillItem(bt);
-            bC.setCreatedAt(new Date());
-            bC.setCreater(getSessionController().getLoggedUser());
-            getBillCommponentFacade().create(bC);
-        }
-
-    }
+//    private void cancelBillComponents(CancelledBill can, BillItem bt) {
+//        for (BillComponent nB : getBillComponents()) {
+//            BillComponent bC = new BillComponent();
+//            bC.setCatId(nB.getCatId());
+//            bC.setDeptId(nB.getDeptId());
+//            bC.setInsId(nB.getInsId());
+//            bC.setDepartment(nB.getDepartment());
+//            bC.setDeptId(nB.getDeptId());
+//            bC.setInstitution(nB.getInstitution());
+//            bC.setItem(nB.getItem());
+//            bC.setName(nB.getName());
+//            bC.setPackege(nB.getPackege());
+//            bC.setSpeciality(nB.getSpeciality());
+//            bC.setStaff(nB.getStaff());
+//
+//            bC.setBill(can);
+//            bC.setBillItem(bt);
+//            bC.setCreatedAt(new Date());
+//            bC.setCreater(getSessionController().getLoggedUser());
+//            getBillCommponentFacade().create(bC);
+//        }
+//
+//    }
 
     private boolean checkPaid() {
         String sql = "SELECT bf FROM BillFee bf where bf.retired=false and bf.bill.id=" + getBill().getId();
-        List<BillFee> tempFe = getBillFeeFacade().findBySQL(sql);
+        List<BillFee> tempFe = getBillFeeFacade().findByJpql(sql);
 
         for (BillFee f : tempFe) {
             if (f.getPaidValue() != 0.0) {
@@ -214,22 +213,22 @@ public class AgentPaymentReceiveSearchController implements Serializable {
 
     private boolean errorCheck() {
         if (getBill().isCancelled()) {
-            UtilityController.addErrorMessage("Already Cancelled. Can not cancel again");
+            JsfUtil.addErrorMessage("Already Cancelled. Can not cancel again");
             return true;
         }
 
         if (getBill().isRefunded()) {
-            UtilityController.addErrorMessage("Already Returned. Can not cancel.");
+            JsfUtil.addErrorMessage("Already Returned. Can not cancel.");
             return true;
         }
 
         if (checkPaid()) {
-            UtilityController.addErrorMessage("Doctor Payment Already Paid So Cant Cancel Bill");
+            JsfUtil.addErrorMessage("Doctor Payment Already Paid So Cant Cancel Bill");
             return true;
         }
 
         if (getComment() == null || getComment().trim().equals("")) {
-            UtilityController.addErrorMessage("Please enter a comment");
+            JsfUtil.addErrorMessage("Please enter a comment");
             return true;
         }
 
@@ -287,7 +286,7 @@ public class AgentPaymentReceiveSearchController implements Serializable {
                 getBill().setCancelled(true);
                 getBill().setCancelledBill(cb);
                 getBilledBillFacade().edit(getBill());
-                UtilityController.addSuccessMessage("Cancelled");
+                JsfUtil.addSuccessMessage("Cancelled");
 
                 //for channel agencyHistory Update
                 getAgentPaymentRecieveBillController().createAgentHistory(cb.getFromInstitution(), cb.getNetTotal(), historyType, cb);
@@ -298,11 +297,11 @@ public class AgentPaymentReceiveSearchController implements Serializable {
                 printPreview = true;
             } else {
                 getEjbApplication().getBillsToCancel().add(cb);
-                UtilityController.addSuccessMessage("Awaiting Cancellation");
+                JsfUtil.addSuccessMessage("Awaiting Cancellation");
             }
 
         } else {
-            UtilityController.addErrorMessage("No Bill to cancel");
+            JsfUtil.addErrorMessage("No Bill to cancel");
         }
 
     }
@@ -310,35 +309,35 @@ public class AgentPaymentReceiveSearchController implements Serializable {
     List<Bill> billsApproving;
     private Bill billForCancel;
 
-    public void approveCancellation() {
-
-        if (billsApproving == null) {
-            UtilityController.addErrorMessage("Select Bill to Approve Cancell");
-            return;
-        }
-        for (Bill b : billsApproving) {
-
-            b.setApproveUser(getSessionController().getCurrent());
-            b.setApproveAt(Calendar.getInstance().getTime());
-            getBillFacade().create(b);
-
-            cancelBillItems(b);
-            b.getBilledBill().setCancelled(true);
-            b.getBilledBill().setCancelledBill(b);
-
-            getBilledBillFacade().edit(getBill());
-
-            ejbApplication.getBillsToCancel().remove(b);
-
-            UtilityController.addSuccessMessage("Cancelled");
-
-        }
-
-        billForCancel = null;
-    }
+//    public void approveCancellation() {
+//
+//        if (billsApproving == null) {
+//            JsfUtil.addErrorMessage("Select Bill to Approve Cancell");
+//            return;
+//        }
+//        for (Bill b : billsApproving) {
+//
+//            b.setApproveUser(getSessionController().getCurrent());
+//            b.setApproveAt(Calendar.getInstance().getTime());
+//            getBillFacade().create(b);
+//
+//            cancelBillItems(b);
+//            b.getBilledBill().setCancelled(true);
+//            b.getBilledBill().setCancelledBill(b);
+//
+//            getBilledBillFacade().edit(getBill());
+//
+//            ejbApplication.getBillsToCancel().remove(b);
+//
+//            JsfUtil.addSuccessMessage("Cancelled");
+//
+//        }
+//
+//        billForCancel = null;
+//    }
 
     public List<Bill> getBillsToApproveCancellation() {
-        //////System.out.println("1");
+        //////// // System.out.println("1");
         billsToApproveCancellation = ejbApplication.getBillsToCancel();
         return billsToApproveCancellation;
     }
@@ -398,9 +397,9 @@ public class AgentPaymentReceiveSearchController implements Serializable {
     public List<BillItem> getBillItems() {
         if (getBill() != null) {
             String sql = "SELECT b FROM BillItem b WHERE b.retired=false and b.bill.id=" + getBill().getId();
-            billItems = getBillItemFacede().findBySQL(sql);
-            //////System.out.println("sql for bill item search is " + sql);
-            //////System.out.println("results for bill item search is " + billItems);
+            billItems = getBillItemFacede().findByJpql(sql);
+            //////// // System.out.println("sql for bill item search is " + sql);
+            //////// // System.out.println("results for bill item search is " + billItems);
             if (billItems == null) {
                 billItems = new ArrayList<BillItem>();
             }
@@ -412,7 +411,7 @@ public class AgentPaymentReceiveSearchController implements Serializable {
     public List<BillComponent> getBillComponents() {
         if (getBill() != null) {
             String sql = "SELECT b FROM BillComponent b WHERE b.retired=false and b.bill.id=" + getBill().getId();
-            billComponents = getBillCommponentFacade().findBySQL(sql);
+            billComponents = getBillCommponentFacade().findByJpql(sql);
             if (billComponents == null) {
                 billComponents = new ArrayList<BillComponent>();
             }
@@ -424,7 +423,7 @@ public class AgentPaymentReceiveSearchController implements Serializable {
         if (getBill() != null) {
             if (billFees == null) {
                 String sql = "SELECT b FROM BillFee b WHERE b.retired=false and b.bill.id=" + getBill().getId();
-                billFees = getBillFeeFacade().findBySQL(sql);
+                billFees = getBillFeeFacade().findByJpql(sql);
                 if (billFees == null) {
                     billFees = new ArrayList<BillFee>();
                 }
@@ -437,7 +436,7 @@ public class AgentPaymentReceiveSearchController implements Serializable {
     public List<BillFee> getPayingBillFees() {
         if (getBill() != null) {
             String sql = "SELECT b FROM BillFee b WHERE b.retired=false and b.bill.id=" + getBill().getId();
-            billFees = getBillFeeFacade().findBySQL(sql);
+            billFees = getBillFeeFacade().findByJpql(sql);
             if (billFees == null) {
                 billFees = new ArrayList<BillFee>();
             }

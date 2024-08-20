@@ -1,0 +1,82 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui">
+
+    <h:body>
+
+        <ui:composition template="/emr/reports/index.xhtml">
+
+
+            <ui:define name="subcontent">
+                <h:form>
+
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between">
+                            <h5 class="card-title">Vmp Data</h5>
+                            <div>
+                                <p:commandButton ajax="false" icon="pi pi-file-excel" title="Export to Excel">
+                                    <p:dataExporter type="xls" target="vmpsDataTable" fileName="vmpData" />
+                                </p:commandButton>
+                            </div>
+                        </div>
+
+                        <div class="card-body">
+
+
+
+                            <p:dataTable id="vmpsDataTable" value="#{vmpController.items}" var="vmp" 
+                                         paginator="true" rows="10" 
+                                         paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                         rowsPerPageTemplate="5,10,20,50"
+                                         emptyMessage="No VMP records found">
+
+                                <p:column headerText="Name (VMP)" filterBy="#{vmp.name}" filterMatchMode="contains" width="500">
+                                    <h:outputText value="#{vmp.name}"></h:outputText>
+                                </p:column>
+                                <p:column headerText="Generic (VTM Name)" filterBy="#{vmp.vtm.name}" filterMatchMode="contains">
+                                    <h:outputText value="#{vmp.vtm.name}"></h:outputText>
+                                </p:column>
+                                <p:column headerText="Dosage Form" filterBy="#{vmp.dosageForm.name}" filterMatchMode="contains">
+                                    <h:outputText value="#{vmp.dosageForm.name}"></h:outputText>
+                                </p:column>
+                                <p:column headerText="Strength Unit" filterBy="#{vmp.strengthUnit.name}" filterMatchMode="contains">
+                                    <h:outputText value="#{vmp.strengthUnit.name}"></h:outputText>
+                                </p:column>
+                                <p:column headerText="Issue Unit" filterBy="#{vmp.issueUnit.name}" filterMatchMode="contains">
+                                    <h:outputText value="#{vmp.issueUnit.name}"></h:outputText>
+                                </p:column>
+                                <p:column headerText="Strength Units per Issue Unit" filterBy="#{vmp.strengthUnitsPerIssueUnit}" filterMatchMode="contains">
+                                    <h:outputText value="#{vmp.strengthUnitsPerIssueUnit}"></h:outputText>
+                                </p:column>
+                                <p:column headerText="Min Issue Quantity" filterBy="#{vmp.minimumIssueQuantity}" filterMatchMode="contains">
+                                    <h:outputText value="#{vmp.minimumIssueQuantity}"></h:outputText>
+                                </p:column>
+                                <p:column headerText="Issue Multiplies Quantity" filterBy="#{vmp.issueMultipliesQuantity}" filterMatchMode="contains">
+                                    <h:outputText value="#{vmp.issueMultipliesQuantity}"></h:outputText>
+                                </p:column>
+
+                            </p:dataTable>
+
+
+                            <p:inputTextarea value="#{vmpController.bulkText}" class="w-100" rows="10"></p:inputTextarea>
+                            <div>
+                                <p:commandButton value="Cleance"
+                                                 ajax="false" 
+                                                 icon="pi pi-file-excel" 
+                                                 title="Cleance"
+                                                 action="#{vmpController.cleanceVMPs()}">
+                                </p:commandButton>
+                            </div>
+                        </div>
+                    </div>
+
+                </h:form>
+            </ui:define>
+
+        </ui:composition>
+
+    </h:body>
+</html>

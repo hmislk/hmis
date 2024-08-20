@@ -1,7 +1,7 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Open Hospital Management Information System
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.ejb;
 
@@ -42,7 +42,7 @@ public class PharmacyErrorCheckingEjb {
         m.put("td", toDate);
         m.put("i", item);
         sql = "select bi from BillItem bi where bi.bill.billTime between :fd and :td and b.item=:i";
-        return getBillItemFacade().findBySQL(sql, m);
+        return getBillItemFacade().findByJpql(sql, m);
     }
 
     public double getTotalQty(BillType billType, Bill bill, Department department, Item item) {
@@ -73,7 +73,7 @@ public class PharmacyErrorCheckingEjb {
         hm.put("dep", department);
         hm.put("class", PreBill.class);
 
-        return getBillItemFacade().findBySQL(sql, hm);
+        return getBillItemFacade().findByJpql(sql, hm);
 
     }
 
@@ -116,7 +116,7 @@ public class PharmacyErrorCheckingEjb {
 
         //newly Added
         //  hm.put("refType", BillType.PharmacySale);
-        List<BillItem> list = getBillItemFacade().findBySQL(sql, hm);
+        List<BillItem> list = getBillItemFacade().findByJpql(sql, hm);
 
         if (list == null) {
             list = new ArrayList<>();
@@ -174,13 +174,23 @@ public class PharmacyErrorCheckingEjb {
     }
 
     public List<BillItem> allBillItems(Item item, Department department) {
+        List<BillItem> temp;
+        temp = allBillItemsForBinCard(item, department);
+        return temp;
+    }
+
+    public List<BillItem> allBillItemsForBinCard(Item item, Department department) {
         String sql;
         Map m = new HashMap();
         m.put("d", department);
         m.put("i", item);
-        sql = "select bi from BillItem bi where bi.item=:i  "
-                + " and bi.bill.department=:d order by  bi.createdAt";
-        return getBillItemFacade().findBySQL(sql, m);
+        m.put("po", BillType.PharmacyOrder);
+        m.put("poa", BillType.PharmacyOrderApprove);
+        sql = "select bi from BillItem bi where bi.item = :i "
+                + " and bi.bill.department = :d"
+                + " and bi.bill.billType != :po and bi.bill.billType != :poa"
+                + " order by bi.createdAt desc";
+        return getBillItemFacade().findByJpql(sql, m);
     }
 
     public List<BillItem> allBillItemsByDate(Item item, Department department, Date fromDate, Date toDate) {
@@ -192,7 +202,7 @@ public class PharmacyErrorCheckingEjb {
         m.put("td", toDate);
         sql = "select bi from BillItem bi where bi.item=:i and bi.bill.department=:d "
                 + " and bi.createdAt between :fd and :td ";
-        return getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        return getBillItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
     }
 
     public List<BillItem> allBillItemsByDateOnlyStock(Item item, Department department, Date fromDate, Date toDate) {
@@ -244,7 +254,7 @@ public class PharmacyErrorCheckingEjb {
                 + " and bi.bill.billType in :bts "
                 + " order by bi.pharmaceuticalBillItem.stock.id,"
                 + " bi.createdAt ";
-        return getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        return getBillItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
     }
 
     public List<BillItem> allBillItems2(Item item, Department department) {
@@ -260,7 +270,7 @@ public class PharmacyErrorCheckingEjb {
         sql = "select bi from BillItem bi where bi.item=:i and bi.bill.department=:d and bi.bill.createdAt is not null "
                 + " and (bi.bill.billType!=:btp1 and bi.bill.billType!=:btp2 "
                 + "and bi.bill.billType!=:btp3 and bi.bill.billType!=:btp4 and bi.bill.billType!=:btp5)";
-        return getBillItemFacade().findBySQL(sql, m);
+        return getBillItemFacade().findByJpql(sql, m);
     }
 
     public List<BillItem> allBillItemsWithCreatedAt(Item item, Department department) {
@@ -270,7 +280,7 @@ public class PharmacyErrorCheckingEjb {
         m.put("i", item);
         sql = "select bi from BillItem bi where bi.item=:i and bi.bill.department=:d"
                 + "  and bi.bill.createdAt is not null";
-        return getBillItemFacade().findBySQL(sql, m);
+        return getBillItemFacade().findByJpql(sql, m);
     }
 
     public List<BillItem> allBillItems(Item item) {
@@ -278,7 +288,7 @@ public class PharmacyErrorCheckingEjb {
         Map m = new HashMap();
         m.put("i", item);
         sql = "select bi from BillItem bi where bi.item=:i";
-        return getBillItemFacade().findBySQL(sql, m);
+        return getBillItemFacade().findByJpql(sql, m);
     }
 
     public List<Bill> errPreBills(Department dept) {
@@ -290,7 +300,7 @@ public class PharmacyErrorCheckingEjb {
         sql = "select pb from PreBill pb where pb.retired=false and pb.department=:d order by pb.id";
         //////System.out.println("m = " + m);
         //////System.out.println("sql = " + sql);
-        List<Bill> pbs = getBillFacade().findBySQL(sql, m);
+        List<Bill> pbs = getBillFacade().findByJpql(sql, m);
         List<Bill> epbs = new ArrayList<>();
         epbs = new ArrayList<Bill>();
         for (Bill pb : pbs) {

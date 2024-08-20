@@ -1,10 +1,10 @@
 /*
- * MSc(Biomedical Informatics) Project
+ * Open Hospital Management Information System
  *
- * Development and Implementation of a Web-based Combined Data Repository of
- Genealogical, Clinical, Laboratory and Genetic Data
- * and
- * a Set of Related Tools
+ * Dr M H B Ariyaratne
+ * Acting Consultant (Health Informatics)
+ * (94) 71 5812399
+ * (94) 71 5812399
  */
 package com.divudi.bean.common;
 
@@ -20,9 +20,9 @@ import com.divudi.entity.pharmacy.AssetCategory;
 import com.divudi.entity.pharmacy.ConsumableCategory;
 import com.divudi.entity.pharmacy.PharmaceuticalCategory;
 import com.divudi.entity.pharmacy.PharmaceuticalItemCategory;
-import com.divudi.entity.pharmacy.StoreItemCategory;
 import com.divudi.facade.CategoryFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.SymanticHyrachi;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -41,8 +41,8 @@ import javax.persistence.TemporalType;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- * Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -58,10 +58,56 @@ public class CategoryController implements Serializable {
     Category fromCategory;
     Category toCategory;
     private List<Category> items = null;
+    private List<Category> feeListTypes = null;
     String selectText = "";
 
     @Inject
     ItemController itemController;
+
+    public String navigateToManageFeeListTypes() {
+        fillFeeItemListTypes();
+        return "/admin/pricing/fee_list_types?faces-redirect=true";
+    }
+
+    private void fillFeeItemListTypes() {
+        String jpql = "Select c "
+                + " from Category c "
+                + " where c.retired=:ret "
+                + " and c.symanticType=:st "
+                + " order by c.name";
+        Map m = new HashMap();
+        m.put("ret", false);
+        m.put("st", SymanticHyrachi.Fee_List_Type);
+        feeListTypes = getFacade().findByJpql(jpql, m);
+    }
+
+    public void saveFeeListType() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No Entity to save");
+            return;
+        }
+        current.setSymanticType(SymanticHyrachi.Fee_List_Type);
+        save(current);
+        fillFeeItemListTypes();
+    }
+
+    public void prepareAddFeeListType() {
+        current = new Category();
+        current.setSymanticType(SymanticHyrachi.Fee_List_Type);
+    }
+
+    public void deleteFeeListType() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No Entity to save");
+            return;
+        }
+        current.setRetired(true);
+        current.setRetiredAt(new Date());
+        current.setRetirer(sessionController.getLoggedUser());
+        save(current);
+        fillFeeItemListTypes();
+        JsfUtil.addSuccessMessage("Deleted");
+    }
 
     public void fromTransferItemsFromFromCategoryToToCategory() {
         if (fromCategory == null) {
@@ -74,7 +120,7 @@ public class CategoryController implements Serializable {
         }
         List<Item> cis = itemController.getItems(fromCategory);
         for (Item i : cis) {
-            ////System.out.println("i.getName() = " + i.getName());
+            ////// // System.out.println("i.getName() = " + i.getName());
             i.setCategory(toCategory);
             itemController.saveSelected(i);
         }
@@ -98,10 +144,47 @@ public class CategoryController implements Serializable {
 
     public List<Category> completeCategory(String qry) {
         List<Category> c;
-        c = getFacade().findBySQL("select c from Category c where c.retired=false and upper(c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
+        c = getFacade().findByJpql("select c from Category c where c.retired=false and c.name like '%" + qry.toUpperCase() + "%' order by c.name");
         if (c == null) {
             c = new ArrayList<>();
         }
+        return c;
+    }
+
+    public Category findAndCreateCategoryByName(String qry) {
+        Category c;
+        String jpql;
+        jpql = "select c from "
+                + " Category c "
+                + " where c.retired=:ret "
+                + " and c.name=:name "
+                + " order by c.name";
+        Map m = new HashMap();
+        m.put("ret", false);
+        m.put("name", qry);
+        c = getFacade().findFirstByJpql(jpql, m);
+        if (c == null) {
+            c = new Category();
+            c.setName(qry);
+            c.setCode("category_" + CommonController.nameToCode(qry));
+            getFacade().create(c);
+        }
+        return c;
+    }
+
+    public Category findCategoryByName(String qry) {
+//        System.out.println("qry = " + qry);
+        Category c;
+        String jpql;
+        jpql = "select c from "
+                + " Category c "
+                + " where c.retired=:ret "
+                + " and c.name=:name "
+                + " order by c.name";
+        Map m = new HashMap();
+        m.put("ret", false);
+        m.put("name", qry);
+        c = getFacade().findFirstByJpql(jpql, m);
         return c;
     }
 
@@ -111,7 +194,7 @@ public class CategoryController implements Serializable {
         HashMap tmpMap = new HashMap();
         sql = "select c from Category c where c.retired=false and c.parentCategory=:cat order by c.name";
         tmpMap.put("cat", cat);
-        suggestions = getFacade().findBySQL(sql, tmpMap);
+        suggestions = getFacade().findByJpql(sql, tmpMap);
         return suggestions;
     }
 
@@ -123,14 +206,33 @@ public class CategoryController implements Serializable {
             suggestions = new ArrayList<>();
         } else {
 
-            sql = "select c from Category c where c.retired=false and (type(c)= :sup or type(c)= :sub) and upper(c.name) like '%" + query.toUpperCase() + "%' order by c.name";
-            //////System.out.println(sql);
+            sql = "select c from Category c where c.retired=false and (type(c)= :sup or type(c)= :sub) and (c.name) like '%" + query.toUpperCase() + "%' order by c.name";
+            //////// // System.out.println(sql);
             tmpMap.put("sup", ServiceCategory.class);
             tmpMap.put("sub", ServiceSubCategory.class);
-            suggestions = getFacade().findBySQL(sql, tmpMap, TemporalType.TIMESTAMP);
+            suggestions = getFacade().findByJpql(sql, tmpMap, TemporalType.TIMESTAMP);
         }
         return suggestions;
     }
+
+    private List<Category> serviceCategories;
+
+    public List<Category> findServiceCategories() {
+        List<Category> suggestions;
+        String sql;
+        HashMap tmpMap = new HashMap();
+        sql = "select c "
+                + " from Category c "
+                + " where c.retired=false "
+                + " and (type(c)= :sup or type(c)= :sub) "
+                + " order by c.name";
+        tmpMap.put("sup", ServiceCategory.class);
+        tmpMap.put("sub", ServiceSubCategory.class);
+        suggestions = getFacade().findByJpql(sql, tmpMap, TemporalType.TIMESTAMP);
+        return suggestions;
+    }
+    
+    
 
     public List<Category> completeInvestigationCategory(String query) {
         List<Category> suggestions;
@@ -140,14 +242,14 @@ public class CategoryController implements Serializable {
             suggestions = new ArrayList<>();
         } else {
 
-            sql = "select c from Category c where c.retired=false and type(c)= :cat and upper(c.name) like '%" + query.toUpperCase() + "%' order by c.name";
-            //////System.out.println(sql);
+            sql = "select c from Category c where c.retired=false and type(c)= :cat and (c.name) like '%" + query.toUpperCase() + "%' order by c.name";
+            //////// // System.out.println(sql);
             tmpMap.put("cat", InvestigationCategory.class);
-            suggestions = getFacade().findBySQL(sql, tmpMap, TemporalType.TIMESTAMP);
+            suggestions = getFacade().findByJpql(sql, tmpMap, TemporalType.TIMESTAMP);
         }
         return suggestions;
     }
-    
+
     public List<Category> completeServiceInvestigationCategory(String query) {
         List<Category> suggestions;
         String sql;
@@ -156,12 +258,12 @@ public class CategoryController implements Serializable {
             suggestions = new ArrayList<>();
         } else {
 
-            sql = "select c from Category c where c.retired=false and (type(c)= :sup or type(c)= :sub or type(c)= :inv) and upper(c.name) like '%" + query.toUpperCase() + "%' order by c.name";
-            //////System.out.println(sql);
+            sql = "select c from Category c where c.retired=false and (type(c)= :sup or type(c)= :sub or type(c)= :inv) and (c.name) like '%" + query.toUpperCase() + "%' order by c.name";
+            //////// // System.out.println(sql);
             tmpMap.put("sup", ServiceCategory.class);
             tmpMap.put("sub", ServiceSubCategory.class);
             tmpMap.put("inv", InvestigationCategory.class);
-            suggestions = getFacade().findBySQL(sql, tmpMap, TemporalType.TIMESTAMP);
+            suggestions = getFacade().findByJpql(sql, tmpMap, TemporalType.TIMESTAMP);
         }
         return suggestions;
     }
@@ -173,7 +275,7 @@ public class CategoryController implements Serializable {
 
         sql = "select c from Category c where c.retired=false"
                 + " and (type(c)= :service or type(c)= :sub or type(c)= :invest or "
-                + "type(c)= :time or type(c)= :parm or type(c)= :con  ) and upper(c.name)"
+                + "type(c)= :time or type(c)= :parm or type(c)= :con  ) and (c.name)"
                 + " like :q order by c.name";
 
         temMap.put("service", ServiceCategory.class);
@@ -184,7 +286,7 @@ public class CategoryController implements Serializable {
         temMap.put("con", ConsumableCategory.class);
         temMap.put("q", "%" + qry.toUpperCase() + "%");
 
-        c = getFacade().findBySQL(sql, temMap, TemporalType.DATE);
+        c = getFacade().findByJpql(sql, temMap, TemporalType.DATE);
 
         if (c == null) {
             c = new ArrayList<>();
@@ -192,7 +294,7 @@ public class CategoryController implements Serializable {
         return c;
     }
 
-    public  List<Category> fetchCategoryList() {
+    public List<Category> fetchCategoryList() {
         List<Category> c;
         String sql;
         Map temMap = new HashMap();
@@ -205,7 +307,7 @@ public class CategoryController implements Serializable {
         temMap.put("sub", ServiceSubCategory.class);
         temMap.put("invest", InvestigationCategory.class);
 
-        c = getFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        c = getFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
         if (c == null) {
             c = new ArrayList<>();
@@ -220,14 +322,14 @@ public class CategoryController implements Serializable {
 
         sql = "select c from Category c where c.retired=false"
                 + " and (type(c)= :service or type(c)= :sub  )"
-                + " and upper(c.name)"
+                + " and (c.name)"
                 + " like :q order by c.name";
 
         temMap.put("service", ServiceCategory.class);
         temMap.put("sub", ServiceSubCategory.class);
         temMap.put("q", "%" + qry.toUpperCase() + "%");
 
-        c = getFacade().findBySQL(sql, temMap, TemporalType.DATE);
+        c = getFacade().findByJpql(sql, temMap, TemporalType.DATE);
 
         if (c == null) {
             c = new ArrayList<>();
@@ -245,7 +347,7 @@ public class CategoryController implements Serializable {
                 + " and (type(c)= :service "
                 + " or type(c)= :sub "
                 + " or type(c)=:invest )"
-                + " and upper(c.name)"
+                + " and (c.name)"
                 + " like :q order by c.name";
 
         temMap.put("service", ServiceCategory.class);
@@ -253,7 +355,7 @@ public class CategoryController implements Serializable {
         temMap.put("invest", InvestigationCategory.class);
         temMap.put("q", "%" + qry.toUpperCase() + "%");
 
-        c = getFacade().findBySQL(sql, temMap, TemporalType.DATE);
+        c = getFacade().findByJpql(sql, temMap, TemporalType.DATE);
 
         if (c == null) {
             c = new ArrayList<>();
@@ -262,22 +364,23 @@ public class CategoryController implements Serializable {
     }
 
     public List<Category> getServiceCategory() {
-        List<Category> c;
-        String sql;
-        Map temMap = new HashMap();
-
-        sql = "select c from Category c "
-                + " where c.retired=false"
-                + " and (type(c)= :service "
-                + " or type(c)= :sub  )"
-                + "order by c.name";
-
-        temMap.put("service", ServiceCategory.class);
-        temMap.put("sub", ServiceSubCategory.class);
-
-        c = getFacade().findBySQL(sql, temMap, TemporalType.DATE);
-
-        return c;
+        return getServiceCategories();
+//        List<Category> c;
+//        String sql;
+//        Map temMap = new HashMap();
+//
+//        sql = "select c from Category c "
+//                + " where c.retired=false"
+//                + " and (type(c)= :service "
+//                + " or type(c)= :sub  )"
+//                + "order by c.name";
+//
+//        temMap.put("service", ServiceCategory.class);
+//        temMap.put("sub", ServiceSubCategory.class);
+//
+//        c = getFacade().findByJpql(sql, temMap, TemporalType.DATE);
+//
+//        return c;
     }
 
     public List<Category> completeCategoryServicePharmacy(String qry) {
@@ -287,7 +390,7 @@ public class CategoryController implements Serializable {
 
         sql = "select c from Category c where c.retired=false"
                 + " and (type(c)= :service or type(c)= :sub or type(c)= :ph  )"
-                + " and upper(c.name)"
+                + " and (c.name)"
                 + " like :q order by c.name";
 
         temMap.put("service", ServiceCategory.class);
@@ -296,7 +399,7 @@ public class CategoryController implements Serializable {
 
         temMap.put("q", "%" + qry.toUpperCase() + "%");
 
-        c = getFacade().findBySQL(sql, temMap, TemporalType.DATE);
+        c = getFacade().findByJpql(sql, temMap, TemporalType.DATE);
 
         if (c == null) {
             c = new ArrayList<>();
@@ -310,13 +413,13 @@ public class CategoryController implements Serializable {
         Map temMap = new HashMap();
 
         sql = "select c from Category c where c.retired=false"
-                + " and (type(c)= :invest ) and upper(c.name)"
+                + " and (type(c)= :invest ) and (c.name)"
                 + " like :q order by c.name";
 
         temMap.put("invest", InvestigationCategory.class);
         temMap.put("q", "%" + qry.toUpperCase() + "%");
 
-        c = getFacade().findBySQL(sql, temMap, TemporalType.DATE);
+        c = getFacade().findByJpql(sql, temMap, TemporalType.DATE);
 
         if (c == null) {
             c = new ArrayList<>();
@@ -332,13 +435,13 @@ public class CategoryController implements Serializable {
         sql = "select c from Category c"
                 + "  where c.retired=false"
                 + " and (type(c)= :parm ) "
-                + " and upper(c.name) like :q "
+                + " and (c.name) like :q "
                 + " order by c.name";
 
         temMap.put("parm", PharmaceuticalItemCategory.class);
         temMap.put("q", "%" + qry.toUpperCase() + "%");
 
-        c = getFacade().findBySQL(sql, temMap, TemporalType.DATE);
+        c = getFacade().findByJpql(sql, temMap, TemporalType.DATE);
 
         if (c == null) {
             c = new ArrayList<>();
@@ -352,13 +455,13 @@ public class CategoryController implements Serializable {
         Map temMap = new HashMap();
 
         sql = "select c from Category c where c.retired=false"
-                + " and (type(c)= :parm ) and upper(c.name)"
+                + " and (type(c)= :parm ) and (c.name)"
                 + " like :q order by c.name";
 
         temMap.put("parm", ConsumableCategory.class);
         temMap.put("q", "%" + qry.toUpperCase() + "%");
 
-        c = getFacade().findBySQL(sql, temMap, TemporalType.DATE);
+        c = getFacade().findByJpql(sql, temMap, TemporalType.DATE);
 
         if (c == null) {
             c = new ArrayList<>();
@@ -375,7 +478,7 @@ public class CategoryController implements Serializable {
 
         temMap.put("con", PharmaceuticalCategory.class);
 
-        c = getFacade().findBySQL(sql, temMap, TemporalType.DATE);
+        c = getFacade().findByJpql(sql, temMap, TemporalType.DATE);
 
         if (c == null) {
             c = new ArrayList<Category>();
@@ -384,7 +487,7 @@ public class CategoryController implements Serializable {
     }
 
     public List<Category> getSelectedItems() {
-        selectedItems = getFacade().findBySQL("select c from Category c where c.retired=false and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+        selectedItems = getFacade().findByJpql("select c from Category c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
     }
 
@@ -404,17 +507,24 @@ public class CategoryController implements Serializable {
         items = null;
     }
 
-    public void saveSelected() {
-
-        if (getCurrent().getId() != null && getCurrent().getId() > 0) {
-            getFacade().edit(current);
-            UtilityController.addSuccessMessage("Updated Successfully.");
-        } else {
-            current.setCreatedAt(new Date());
-            current.setCreater(getSessionController().getLoggedUser());
-            getFacade().create(current);
-            UtilityController.addSuccessMessage("Saved Successfully");
+    public void save(Category categoryToSave) {
+        if (categoryToSave == null) {
+            JsfUtil.addErrorMessage("Nothing to save");
+            return;
         }
+        if (categoryToSave.getId() != null && categoryToSave.getId() > 0) {
+            getFacade().edit(categoryToSave);
+            JsfUtil.addSuccessMessage("Updated Successfully.");
+        } else {
+            categoryToSave.setCreatedAt(new Date());
+            categoryToSave.setCreater(getSessionController().getLoggedUser());
+            getFacade().create(categoryToSave);
+            JsfUtil.addSuccessMessage("Saved Successfully");
+        }
+    }
+
+    public void saveSelected() {
+        save(current);
         recreateModel();
         getItems();
     }
@@ -458,14 +568,14 @@ public class CategoryController implements Serializable {
         sql = "select c from Category c"
                 + "  where c.retired=false"
                 + " and (type(c)= :parm or type(c)=:assetcat)"
-                + " and upper(c.name) like :q "
+                + " and (c.name) like :q "
                 + " order by c.name";
 
         temMap.put("parm", ConsumableCategory.class);
         temMap.put("assetcat", AssetCategory.class);
         temMap.put("q", "%" + qry.toUpperCase() + "%");
 
-        cc = getFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        cc = getFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
         if (cc == null) {
             cc = new ArrayList<>();
@@ -480,9 +590,9 @@ public class CategoryController implements Serializable {
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
@@ -501,7 +611,7 @@ public class CategoryController implements Serializable {
                     + " from Category c "
                     + " where c.retired=false "
                     + " order by c.name";
-            items = getFacade().findBySQL(j);
+            items = getFacade().findByJpql(j);
         }
         return items;
     }
@@ -513,7 +623,7 @@ public class CategoryController implements Serializable {
         if (nationalities == null) {
             String jpql;
             jpql = "Select n from Nationality n where n.retired=false order by n.name";
-            nationalities = getFacade().findBySQL(jpql);
+            nationalities = getFacade().findByJpql(jpql);
         }
         return nationalities;
     }
@@ -522,7 +632,7 @@ public class CategoryController implements Serializable {
         if (religions == null) {
             String jpql;
             jpql = "Select n from Religion n where n.retired=false order by n.name";
-            religions = getFacade().findBySQL(jpql);
+            religions = getFacade().findByJpql(jpql);
         }
         return religions;
     }
@@ -559,7 +669,7 @@ public class CategoryController implements Serializable {
 
     public void updateCategory(Category cat) {
         if (cat == null) {
-            ////System.out.println("cat = " + cat);
+            ////// // System.out.println("cat = " + cat);
             return;
         }
         getFacade().edit(cat);
@@ -573,6 +683,24 @@ public class CategoryController implements Serializable {
             items = null;
             getItems();
         }
+    }
+
+    public List<Category> getFeeListTypes() {
+        if (feeListTypes == null) {
+            fillFeeItemListTypes();
+        }
+        return feeListTypes;
+    }
+
+    public void setFeeListTypes(List<Category> feeListTypes) {
+        this.feeListTypes = feeListTypes;
+    }
+
+    public List<Category> getServiceCategories() {
+        if(serviceCategories==null){
+            serviceCategories = findServiceCategories();
+        }
+        return serviceCategories;
     }
 
     /**
@@ -618,46 +746,4 @@ public class CategoryController implements Serializable {
         }
     }
 
-    /**
-     *
-     */
-    @FacesConverter("categoryConverter")
-    public static class CategoryConverter implements Converter {
-
-        @Override
-        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
-                return null;
-            }
-            CategoryController controller = (CategoryController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "categoryController");
-            return controller.getEjbFacade().find(getKey(value));
-        }
-
-        java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
-            return key;
-        }
-
-        String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
-        }
-
-        @Override
-        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
-            if (object == null) {
-                return null;
-            }
-            if (object instanceof Category) {
-                Category o = (Category) object;
-                return getStringKey(o.getId());
-            } else {
-                throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + CategoryController.class.getName());
-            }
-        }
-    }
 }

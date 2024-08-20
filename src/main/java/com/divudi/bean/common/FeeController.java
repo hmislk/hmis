@@ -1,33 +1,40 @@
 /*
- * MSc(Biomedical Informatics) Project
+ * Open Hospital Management Information System
  *
- * Development and Implementation of a Web-based Combined Data Repository of
- Genealogical, Clinical, Laboratory and Genetic Data
- * and
- * a Set of Related Tools
+ * Dr M H B Ariyaratne
+ * Acting Consultant (Health Informatics)
+ * (94) 71 5812399
+ * (94) 71 5812399
  */
 package com.divudi.bean.common;
+
 import com.divudi.entity.Fee;
 import com.divudi.facade.FeeFacade;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 import javax.ejb.EJB;
-import javax.enterprise.context.SessionScoped; import javax.faces.component.UIComponent;
+import javax.enterprise.context.SessionScoped;
+import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
+import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.FeeType;
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
+ * Informatics)
  */
 @Named
 @SessionScoped
 @SuppressWarnings("serial")
-public  class FeeController implements Serializable {
+public class FeeController implements Serializable {
 
     @Inject
     SessionController sessionController;
@@ -39,7 +46,7 @@ public  class FeeController implements Serializable {
     String selectText = "";
 
     public List<Fee> getSelectedItems() {
-        selectedItems = getFacade().findBySQL("select c from Fee c where c.retired=false and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+        selectedItems = getFacade().findByJpql("select c from Fee c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
     }
 
@@ -59,16 +66,36 @@ public  class FeeController implements Serializable {
         items = null;
     }
 
+    public Fee findFee(String name) {
+        String jpql = "select f "
+                + " from Fee f "
+                + " where f.retired=:ret "
+                + " and f.name=:name";
+        Map m = new HashMap();
+        m.put("ret", false);
+        m.put("name", name);
+        Fee fee = getFacade().findFirstByJpql(jpql, m);
+        if (fee != null) {
+            return fee;
+        }
+        fee = new Fee();
+        fee.setCreatedAt(new Date());
+        fee.setCreater(sessionController.getLoggedUser());
+        fee.setFeeType(FeeType.Staff);
+        getFacade().create(fee);
+        return fee;
+    }
+
     public void saveSelected() {
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            UtilityController.addSuccessMessage("Saved Successfully");
+            JsfUtil.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
         getItems();
@@ -112,9 +139,9 @@ public  class FeeController implements Serializable {
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
@@ -129,6 +156,14 @@ public  class FeeController implements Serializable {
     public List<Fee> getItems() {
         items = getFacade().findAll("name", true);
         return items;
+    }
+
+    public String navigateToAdminFee() {
+        return "/admin/pricing/index?faces-redirect=true";
+    }
+
+    public String navigateToAdminDiscounts() {
+        return "/admin/pricing/admin_discounts?faces-redirect=true";
     }
 
     /**

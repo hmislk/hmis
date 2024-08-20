@@ -1,11 +1,11 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:cc="http://java.sun.com/jsf/composite">
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite">
 
     <!-- INTERFACE -->
     <cc:interface>
@@ -159,7 +159,7 @@
                                         <td>
                                             <b>
                                                 <h:outputLabel value="#{cc.attrs.bill.singleBillSession.sessionDate}" style="font-size: 15px!important">
-                                                    <f:convertDateTime pattern="dd MMMM yyyy" ></f:convertDateTime>
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
                                                 </h:outputLabel>
                                             </b>
                                         </td>
@@ -178,7 +178,7 @@
                                         </td>
                                         <td>
                                             <h:outputLabel value="#{cc.attrs.bill.singleBillSession.serviceSession.startingTime}" style="font-size: 15px!important">
-                                                <f:convertDateTime pattern="hh:mm a"></f:convertDateTime>
+                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" ></f:convertDateTime>
                                             </h:outputLabel>
                                         </td>
                                         <td>
@@ -187,7 +187,7 @@
                                     </tr>
 
 
-                                    <ui:repeat value="#{cc.attrs.bill.billFees}" var="cbif" >
+                                    <ui:repeat value="#{cc.attrs.bill.billFeesWIthoutZeroValue}" var="cbif" >
 
                                         <h:panelGroup rendered="#{cbif.feeValue ne 0.0}" >
 
@@ -304,12 +304,12 @@
                                         <td>
                                             <h:outputLabel value="#{cc.attrs.bill.paidBill.billTime}" 
                                                            >
-                                                <f:convertDateTime pattern="dd MMM yy hh:mm a" ></f:convertDateTime>
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></f:convertDateTime>
                                             </h:outputLabel>
                                             <p:spacer height="1" width="20" ></p:spacer>
                                             <h:outputLabel value="#{cc.attrs.bill.billTime}" 
                                                            >
-                                                <f:convertDateTime pattern="dd MMM yy hh:mm a" ></f:convertDateTime>
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></f:convertDateTime>
                                             </h:outputLabel>
 
                                         </td>

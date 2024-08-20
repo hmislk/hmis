@@ -1,39 +1,37 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
-                template="/resources/template/template.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+               template="/store/store_reports_index.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://java.sun.com/jsf/core"
-                xmlns:pe="http://primefaces.org/ui/extensions">
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                >
 
-    <ui:define name="content">
+    <ui:define name="subcontent">
         <h:form>
-            <p:panel header="3) Sale Report By Payment Method">
-                <h:panelGrid columns="2" styleClass="noPrintButton">
+            <p:panel header="Sale Summary Report By Date">
+                <h:panelGrid columns="2" class="my-2">
                     <h:outputLabel value="From Date"/>
-                    <p:calendar value="#{storeSaleReport.fromDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss a"  >
+                    <p:calendar class="w-100 mx-4" inputStyleClass="w-100" value="#{storeSaleReport.fromDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"   >
                     </p:calendar>
                     <h:outputLabel value="To Date"/>
-                    <p:calendar value="#{storeSaleReport.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss a" >
+                    <p:calendar class="w-100 mx-4" inputStyleClass="w-100" value="#{storeSaleReport.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                     </p:calendar>
                     <h:outputLabel value="Department"/>
-                    <p:autoComplete styleClass="noPrintButton"  value="#{storeSaleReport.department}"  style="text-align: left; margin: 0px; padding: 0px;"  completeMethod="#{departmentController.completeDept}" var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" forceSelection="true" rendered="true" requiredMessage="You must select a department" >
+                    <p:autoComplete class="w-100 mx-4" inputStyleClass="w-100"  value="#{storeSaleReport.department}"  style="text-align: left; margin: 0px; padding: 0px;"  completeMethod="#{departmentController.completeDept}" var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" forceSelection="true" rendered="true" requiredMessage="You must select a department" >
                     </p:autoComplete>
-
+                </h:panelGrid>
+                <h:panelGrid columns="6" class="my-2">
+                    <p:commandButton class="ui-button-warning" icon="fas fa-cogs" ajax="false" value="Process" action="#{storeSaleReport.createSalePaymentMethod()}" />
+                    <p:commandButton class="ui-button-info mx-2" icon="fas fa-print" ajax="false" value="Print" >
+                        <p:printer target="panelPrint" />
+                    </p:commandButton>
+                    <p:commandButton class="ui-button-success" icon="fas fa-file-excel" actionListener="#{storeSaleReport.createSalePaymentMethod()}" ajax="false" value="Excel" >
+                        <p:dataExporter type="xlsx" target="sum1" fileName="report_pharmacy_sale_by_date_summery_payment_method"  />
+                    </p:commandButton>
                 </h:panelGrid>
             </p:panel>
             <p:panel id="panelPrint">
-                <h:panelGrid columns="3">
-                    <p:commandButton ajax="false" value="Process" action="#{storeSaleReport.createSalePaymentMethod()}" styleClass="noPrintButton"/>
-                    <p:commandButton actionListener="#{storeSaleReport.createSalePaymentMethod()}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
-                        <pe:exporter type="xlsx" target="sum1" fileName="report_pharmacy_sale_by_date_summery_payment_method"  />
-                    </p:commandButton>
-                    <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" >
-                        <p:printer target="panelPrint" />
-                    </p:commandButton>
-                </h:panelGrid>
-
                 <h:panelGrid styleClass="printBlock" columns="2">
 
                 </h:panelGrid>
@@ -41,16 +39,16 @@
                 <p:dataTable id="sum1" value="#{storeSaleReport.billedPaymentSummery.bills}" var="i">
                     <f:facet name="header">  
                         <h:outputLabel value="Sale Summary Report By Date"/>
-                        <h:outputLabel value="#{storeSaleReport.department.name}"/>
+<!--                        <h:outputLabel value="#{storeSaleReport.department.name}"/>-->
                         <br/>
-                        <h:outputLabel value="From Date :  "/>
+                        <h:outputLabel value="From Date : &emsp;"/>
                         <h:outputLabel value="#{storeSaleReport.fromDate}"  >
-                            <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a" />
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                         </h:outputLabel>
                         <p:spacer width="30" height="1"/>
-                        <h:outputLabel value="To Date"/>
+                        <h:outputLabel value="To Date : &emsp;"/>
                         <h:outputLabel value="#{storeSaleReport.toDate}"  >
-                            <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a" />
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                         </h:outputLabel>
                         <br/>
                         <p:outputLabel value="Department :" />

@@ -1,62 +1,62 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
-                template="/resources/template/template.xhtml"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/reportInstitution/report_own.xhtml"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://java.sun.com/jsf/core"
-                xmlns:h="http://java.sun.com/jsf/html"
-                xmlns:ch="http://java.sun.com/jsf/composite/channel"
-                xmlns:pe="http://primefaces.org/ui/extensions">
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:ch="http://xmlns.jcp.org/jsf/composite/channel"
+                >
 
-    <ui:define name="content">
+    <ui:define name="subcontent">
 
         <h:form>
 
             <p:panel>
                 <f:facet name="header">
-                    <p:outputLabel value="Consultant Wise Appoinment Totals And Count" />
-                    <p:commandButton id="btnBack" value="Back" 
+                    <p:outputLabel value="Category Wise Income" />
+                    <p:commandButton id="btnBack" value="Back" rendered="false"
                                      action="/channel/channel_reports" style="float: right;"
                                      ajax="false">
                     </p:commandButton>
                 </f:facet>
 
-                <p:panel>
-                    <h:panelGrid columns="2" >
+                <h:panelGrid columns="2" class="my-2" >
                         <h:outputLabel value="From Date"/>
-                        <p:calendar value="#{bookKeepingSummery.fromDate}" navigator="true" pattern="dd MMM yyyy hh:mm:ss a" styleClass="dateTimePicker">
+                        <p:calendar class="w-100 mx-4" inputStyleClass="w-100" value="#{bookKeepingSummery.fromDate}" pattern="dd MMM yyyy hh:mm:ss a">
                         </p:calendar>
                         <h:outputLabel value="To Date"/>
-                        <p:calendar value="#{bookKeepingSummery.toDate}" navigator="true" pattern="dd MMM yyyy hh:mm:ss a" styleClass="dateTimePicker">
+                        <p:calendar class="w-100 mx-4" inputStyleClass="w-100" value="#{bookKeepingSummery.toDate}" pattern="dd MMM yyyy hh:mm:ss a">
                         </p:calendar>
-                    </h:panelGrid>
-                    <h:panelGrid columns="2" id="pg1" >
+<!--                    </h:panelGrid>
+                    <h:panelGrid columns="2" class="my-2" id="pg1" >-->
                         <h:outputLabel value="Select Institution"/>
 
-                        <p:autoComplete completeMethod="#{institutionController.completeCompany}" required="true" 
+                        <p:autoComplete class="w-100 mx-4" inputStyleClass="w-100" completeMethod="#{institutionController.completeCompany}" required="true" 
                                         forceSelection="true"
                                         requiredMessage="Please Select Institution" value="#{bookKeepingSummery.institution}"
                                         var="pta" itemLabel="#{pta.name}" itemValue="#{pta}" />
                         <h:outputLabel value="By Date"/> 
-                        <p:selectBooleanCheckbox value="#{bookKeepingSummery.byDate}" />
+                        <p:selectBooleanCheckbox class="w-100 mx-4" value="#{bookKeepingSummery.byDate}" />
                         <h:outputLabel value="With Out Pro"/> 
-                        <p:selectBooleanCheckbox value="#{bookKeepingSummery.withOutPro}" />
+                        <p:selectBooleanCheckbox class="w-100 mx-4" value="#{bookKeepingSummery.withOutPro}" />
                     </h:panelGrid> 
-                    <h:panelGrid columns="3">
-                        <p:commandButton action="#{bookKeepingSummery.createCashCategorySummery()}" value="Process" ajax="false" />
-                        <p:commandButton ajax="false" value="Print" styleClass="noPrintButton">
+                <h:panelGrid columns="6" class="my-2" >
+                    <p:commandButton class="ui-button-warning" icon="fas fa-cogs" action="#{bookKeepingSummery.createCashCategorySummery()}" value="Process" ajax="false" />
+                    <p:commandButton ajax="false" value="Print" class="ui-button-info mx-2" icon="fas fa-print" >
                             <p:printer target="reportPrint"  />
                         </p:commandButton> 
-                        <p:commandButton value="Excel" ajax="false" style="float: right;">
-                            <pe:exporter type="xlsx" target="tbl1" fileName="Category_Summery"  />
+                    <p:commandButton value="Excel" ajax="false" class="ui-button-success" icon="fas fa-file-excel" >
+                            <p:dataExporter type="xlsx" target="tbl1" fileName="Category_Summery"  />
                         </p:commandButton>
                     </h:panelGrid>
-                </p:panel>
+ 
                 <p:panel id="reportPrint" styleClass="noBorder summeryBorder">
-                    <p:dataTable id="tbl1" value="#{bookKeepingSummery.bookKeepingSummeryRowsOpd}" var="s">
+                    <p:dataTable id="tbl1" value="#{bookKeepingSummery.bookKeepingSummeryRowsOpd}" var="s"
+                                 >
                         <p:column>
                             <f:facet name="header">
-                                <h:outputText value="Doctor Name"/>
+                                <h:outputText value="Category Name"/>
                             </f:facet>
                             <h:outputText value="#{s.categoryName}"/>
                         </p:column>

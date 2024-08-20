@@ -1,9 +1,9 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/resources/template/template.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
-                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui">
 
@@ -13,11 +13,11 @@
             <p:panel header="Investigation Summary" >
                 <p:panelGrid columns="4">
                     <h:outputLabel value="From Date"/>
-                    <p:calendar id="fromDate" value="#{patientInvestigationController.fromDate}" navigator="true" pattern="dd MMMM yyyy" >
+                    <p:calendar id="fromDate" value="#{patientInvestigationController.fromDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateFormat}" >
                         <f:ajax event="dateSelect" execute="toDate fromDate"  render="investigation toDate fromDate"/>
                     </p:calendar>
                     <h:outputLabel value="To Date"/>
-                    <p:calendar id="toDate" value="#{patientInvestigationController.toDate}" navigator="true" pattern="dd MMMM yyyy" >
+                    <p:calendar id="toDate" value="#{patientInvestigationController.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateFormat}" >
                         <f:ajax event="dateSelect" execute="toDate fromDate"  render="investigation toDate fromDate"/>
                     </p:calendar>
                 </p:panelGrid>

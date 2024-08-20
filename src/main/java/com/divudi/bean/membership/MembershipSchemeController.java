@@ -1,23 +1,21 @@
 /*
- * MSc(Biomedical Informatics) Project
+ * Open Hospital Management Information System
  *
- * Development and Implementation of a Web-based Combined Data Repository of
- Genealogical, Clinical, Laboratory and Genetic Data
- * and
- * a Set of Related Tools
+ * Dr M H B Ariyaratne
+ * Acting Consultant (Health Informatics)
+ * (94) 71 5812399
+ * (94) 71 5812399
  */
 package com.divudi.bean.membership;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.entity.Institution;
-import com.divudi.entity.Patient;
 import com.divudi.entity.membership.MembershipScheme;
 import com.divudi.facade.MembershipSchemeFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -33,8 +31,8 @@ import javax.inject.Named;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- * Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -51,44 +49,43 @@ public class MembershipSchemeController implements Serializable {
     String selectText = "";
     Institution lastInstitution;
 
-    public MembershipScheme fetchPatientMembershipScheme(Patient patient, boolean hasExpiary) {
-
-        MembershipScheme membershipScheme = null;
-        if (hasExpiary) {
-            if (patient != null
-                    && patient.getPerson() != null) {
-
-                Date fromDate = patient.getFromDate();
-                Date toDate = patient.getToDate();
-
-                if (fromDate != null && toDate != null) {
-                    Calendar fCalendar = Calendar.getInstance();
-                    fCalendar.setTime(fromDate);
-                    Calendar tCalendar = Calendar.getInstance();
-                    tCalendar.setTime(toDate);
-                    Calendar nCalendar = Calendar.getInstance();
-
-                    if (((fromDate.before(new Date()) && toDate.after(new Date())))
-                            || (fCalendar.get(Calendar.DATE) == nCalendar.get(Calendar.DATE) || tCalendar.get(Calendar.DATE) == nCalendar.get(Calendar.DATE))) {
-                        membershipScheme = patient.getPerson().getMembershipScheme();
-                    }
-                }
-            }
-        } else {
-            if (patient !=null && patient.getPerson()!=null && patient.getPerson().getMembershipScheme() != null) {
-                membershipScheme = patient.getPerson().getMembershipScheme();
-            }
-        }
-        return membershipScheme;
-    }
-
+//    public MembershipScheme fetchPatientMembershipScheme(Patient patient, boolean hasExpiary) {
+//
+//        MembershipScheme membershipScheme = null;
+//        if (hasExpiary) {
+//            if (patient != null
+//                    && patient.getPerson() != null) {
+//
+//                Date fromDate = patient.getFromDate();
+//                Date toDate = patient.getToDate();
+//
+//                if (fromDate != null && toDate != null) {
+//                    Calendar fCalendar = Calendar.getInstance();
+//                    fCalendar.setTime(fromDate);
+//                    Calendar tCalendar = Calendar.getInstance();
+//                    tCalendar.setTime(toDate);
+//                    Calendar nCalendar = Calendar.getInstance();
+//
+//                    if (((fromDate.before(new Date()) && toDate.after(new Date())))
+//                            || (fCalendar.get(Calendar.DATE) == nCalendar.get(Calendar.DATE) || tCalendar.get(Calendar.DATE) == nCalendar.get(Calendar.DATE))) {
+//                        membershipScheme = patient.getPerson().getMembershipScheme();
+//                    }
+//                }
+//            }
+//        } else {
+//            if (patient !=null && patient.getPerson()!=null && patient.getPerson().getMembershipScheme() != null) {
+//                membershipScheme = patient.getPerson().getMembershipScheme();
+//            }
+//        }
+//        return membershipScheme;
+//    }
     public List<MembershipScheme> completeMembershipScheme(String qry) {
         List<MembershipScheme> c;
         HashMap hm = new HashMap();
-        String sql = "select c from MembershipScheme c where c.retired=false and upper(c.name) "
+        String sql = "select c from MembershipScheme c where c.retired=false and (c.name) "
                 + " like :q order by c.name";
         hm.put("q", "%" + qry.toUpperCase() + "%");
-        c = getFacade().findBySQL(sql, hm);
+        c = getFacade().findByJpql(sql, hm);
 
         if (c == null) {
             c = new ArrayList<>();
@@ -97,13 +94,18 @@ public class MembershipSchemeController implements Serializable {
     }
 
     public List<MembershipScheme> getSelectedItems() {
-        selectedItems = getFacade().findBySQL("select c from MembershipScheme c where c.retired=false and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+        selectedItems = getFacade().findByJpql("select c from MembershipScheme c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
     }
 
     public void prepareAdd() {
         current = new MembershipScheme();
         fillItems();
+    }
+
+    public String navigateToMembershipScheme() {
+        prepareAdd();
+        return "/admin/pricing/membership/membership_scheme?faces-redirect=true";
     }
 
     public void setSelectedItems(List<MembershipScheme> selectedItems) {
@@ -119,23 +121,23 @@ public class MembershipSchemeController implements Serializable {
     }
 
     public void saveSelected() {
-        getCurrent().setInstitution(getSessionController().getInstitution());
-        if (getCurrent().getCode() == null || getCurrent().getCode().equals("")) {
-            JsfUtil.addErrorMessage("Please Select Code Like \"LM\"");
-            return;
-        }
-        if (getCurrent().getCode().length() > 2) {
-            JsfUtil.addErrorMessage("Please Set Code Using 2 Charactors");
-            return;
-        }
+//        getCurrent().setInstitution(getSessionController().getInstitution());
+//        if (getCurrent().getCode() == null || getCurrent().getCode().equals("")) {
+//            JsfUtil.addErrorMessage("Please Select Code Like \"LM\"");
+//            return;
+//        }
+//        if (getCurrent().getCode().length() > 2) {
+//            JsfUtil.addErrorMessage("Please Set Code Using 2 Charactors");
+//            return;
+//        }
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            UtilityController.addSuccessMessage("Saved Successfully");
+            JsfUtil.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
         fillItems();
@@ -176,15 +178,14 @@ public class MembershipSchemeController implements Serializable {
     }
 
     public void delete() {
-
         if (current != null) {
             current.setRetired(true);
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         fillItems();
@@ -207,12 +208,11 @@ public class MembershipSchemeController implements Serializable {
         String j;
         j = "select s "
                 + " from MembershipScheme s "
-                + " where s.retired=false "
-                + " and s.institution=:ins "
+                + " where s.retired=:ret "
                 + " order by s.name";
         Map m = new HashMap();
-        m.put("ins", sessionController.getInstitution());
-        items = getFacade().findBySQL(j, m);
+        m.put("ret", false);
+        items = getFacade().findByJpql(j, m);
     }
 
     public Institution getLastInstitution() {
@@ -261,7 +261,7 @@ public class MembershipSchemeController implements Serializable {
                 return getStringKey(o.getId());
             } else {
                 throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + MembershipSchemeController.class.getName());
+                        + object.getClass().getName() + "; expected type: " + MembershipScheme.class.getName());
             }
         }
     }
@@ -269,43 +269,4 @@ public class MembershipSchemeController implements Serializable {
     /**
      *
      */
-    @FacesConverter("membershipSchemeConverter")
-    public static class MembershipSchemeConverter implements Converter {
-
-        @Override
-        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
-                return null;
-            }
-            MembershipSchemeController controller = (MembershipSchemeController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "membershipSchemeController");
-            return controller.getEjbFacade().find(getKey(value));
-        }
-
-        java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
-            return key;
-        }
-
-        String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
-        }
-
-        @Override
-        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
-            if (object == null) {
-                return null;
-            }
-            if (object instanceof MembershipScheme) {
-                MembershipScheme o = (MembershipScheme) object;
-                return getStringKey(o.getId());
-            } else {
-                throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + MembershipSchemeController.class.getName());
-            }
-        }
-    }
 }

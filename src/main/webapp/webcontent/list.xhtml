@@ -1,0 +1,46 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui">
+
+    <h:body>
+
+        <ui:composition template="./index.xhtml">
+
+            <ui:define name="contents">
+
+                <div class="row" >
+                    <h:form >
+                        <div class="form-group" >
+                            <h:outputLabel class="form-label" for="txtName" value="Name" ></h:outputLabel>
+                            <h:inputText class="form form-control" id="txtName" value="#{webContentController.selected.name}"></h:inputText>
+
+                            <h:outputLabel class="form-label" for="txtSinhala"  value="Sinhala" ></h:outputLabel>
+                            <h:inputText  class="form form-control" id="txtSinhala" value="#{webContentController.selected.sinhala}"></h:inputText>
+
+                            <h:outputLabel class="form form-label" for="txtTamil"  value="Tamil" ></h:outputLabel>
+                            <h:inputText  class="form form-control" id="txtTamil" value="#{webContentController.selected.tamil}"></h:inputText>
+
+                            <h:outputLabel class="form form-label" for="txtEnglish"  value="English" ></h:outputLabel>
+                            <h:inputText   class="form form-control" id="txtEnglish" value="#{webContentController.selected.english}"></h:inputText>
+
+                            <h:outputLabel class="form form-label" for="txtOrder"  value="Order No" ></h:outputLabel>
+                            <h:inputText class="form form-control" id="txtOrder" value="#{webContentController.selected.orderNo}"></h:inputText>
+
+                            <h:commandButton class="form btn btn-success" value="Save" action="#{webContentController.saveSelected()}" ></h:commandButton>
+
+                        </div>
+                    </h:form>
+
+
+                </div>
+
+
+            </ui:define>
+
+        </ui:composition>
+
+    </h:body>
+</html>

@@ -1,0 +1,43 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:a="http://xmlns.jcp.org/jsf/passthrough"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <header class="py-3 border-bottom">
+            <div class="container d-flex flex-wrap justify-content-center">
+                <a href="/" class="d-flex align-items-center mb-3 mb-lg-0 me-lg-auto text-dark text-decoration-none">
+                    <p:graphicImage class="bi me-2"  height="40"
+                                    cache="false"  value="#{streamedContentController.imageByUpWebContentId}"  >
+                        <f:param name="id" value="#{webContentController.findSingleWebContent('site_logo').idStr}" />
+                    </p:graphicImage>
+                    <h1><h:outputText value="#{webContentController.findSingleText('site_title')}" escape="true" ></h:outputText></h1>
+                    <span class="fs-4"></span>
+                </a>
+
+                <h:form>
+                    <ul class="nav">
+                        <li class="nav-item ">
+                            <h:selectOneMenu id="cmbLang" value="#{webContentController.language}" >
+                                <f:selectItems value="#{webLanguageController.items}" var="l" itemLabel="#{l.name}" itemValue="#{l}" ></f:selectItems>
+                                <f:ajax event="change" execute="cmbLang" render="@all" ></f:ajax>
+                            </h:selectOneMenu>
+                        </li>
+                    </ul>
+                </h:form>
+                
+            </div>
+        </header>
+    </cc:implementation>
+</html>

@@ -1,18 +1,17 @@
 /*
- * MSc(Biomedical Informatics) Project
+ * Open Hospital Management Information System
  *
- * Development and Implementation of a Web-based Combined Data Repository of
- Genealogical, Clinical, Laboratory and Genetic Data
- * and
- * a Set of Related Tools
+ * Dr M H B Ariyaratne
+ * Acting Consultant (Health Informatics)
+ * (94) 71 5812399
+ * (94) 71 5812399
  */
 package com.divudi.bean.inward;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.data.inward.AdmissionTypeEnum;
 import com.divudi.entity.Patient;
-import com.divudi.entity.Person;
 import com.divudi.entity.inward.Admission;
 import com.divudi.entity.inward.GuardianRoom;
 import com.divudi.entity.inward.PatientRoom;
@@ -23,7 +22,7 @@ import com.divudi.facade.PatientRoomFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.RoomFacade;
 import com.divudi.facade.RoomFacilityChargeFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -43,8 +42,8 @@ import javax.persistence.TemporalType;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- * Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
+ * Acting Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -94,7 +93,7 @@ public class RoomChangeController implements Serializable {
 
     public void remove(PatientRoom pR) {
         if(pR==null){
-            UtilityController.addErrorMessage("No Patient Room Detected");
+            JsfUtil.addErrorMessage("No Patient Room Detected");
             return;
         }
         
@@ -102,21 +101,21 @@ public class RoomChangeController implements Serializable {
 
         if (admissionTypeEnum == AdmissionTypeEnum.Admission
                 && pR.getPreviousRoom() == null) {
-            UtilityController.addErrorMessage("To Delete Patient Room There should be Previus room U can ReSet Correct Room Facility and update");
+            JsfUtil.addErrorMessage("To Delete Patient Room There should be Previus room U can ReSet Correct Room Facility and update");
             return;
         }
         
         if (admissionTypeEnum == AdmissionTypeEnum.Admission
                 && pR.getNextRoom() != null && !pR.getNextRoom().isRetired() && pR.getPreviousRoom() != null 
                 && !pR.getPreviousRoom().isRetired()) {
-            UtilityController.addErrorMessage("You have to Remove Last one First");
+            JsfUtil.addErrorMessage("You have to Remove Last one First");
             return;
         }
         
         
         if (admissionTypeEnum == AdmissionTypeEnum.Admission
                 && pR.getNextRoom() != null && !pR.getNextRoom().isRetired()) {
-            UtilityController.addErrorMessage("To Delete Patient Room There next Room Should Be Empty");
+            JsfUtil.addErrorMessage("To Delete Patient Room There next Room Should Be Empty");
             return;
         }
 
@@ -137,7 +136,7 @@ public class RoomChangeController implements Serializable {
 
     public void discharge(PatientRoom pR) {
         if (pR.getDischargedAt() == null) {
-            UtilityController.addErrorMessage("Please Select Discharge Date");
+            JsfUtil.addErrorMessage("Please Select Discharge Date");
             return;
         }
 
@@ -160,12 +159,13 @@ public class RoomChangeController implements Serializable {
         pR.setDischarged(false);
         pR.setDischargedBy(null);
         getPatientRoomFacade().edit(pR);
+        
     }
 
     public void removeGuardianRoom(PatientRoom pR) {
 
         if (pR.getNextRoom() != null && !pR.getNextRoom().isRetired()) {
-            UtilityController.addErrorMessage("To Delete Patient Room There next Room Should Be Empty");
+            JsfUtil.addErrorMessage("To Delete Patient Room There next Room Should Be Empty");
             return;
         }
 
@@ -200,7 +200,7 @@ public class RoomChangeController implements Serializable {
 
         if (patientRoom1.getAdmittedAt() != null
                 && patientRoom1.getAdmittedAt().getTime() > getChangeAt().getTime()) {
-            UtilityController.addErrorMessage("U cant discharge early date than admitted");
+            JsfUtil.addErrorMessage("U cant discharge early date than admitted");
             return null;
         }
 
@@ -225,7 +225,7 @@ public class RoomChangeController implements Serializable {
             return;
         }
 
-        if (sessionController.getLoggedPreference().isInwardMoChargeCalculateInitialTime()) {
+        if (sessionController.getApplicationPreference().isInwardMoChargeCalculateInitialTime()) {
             if (errorCheck()) {
                 return;
             }
@@ -239,7 +239,7 @@ public class RoomChangeController implements Serializable {
         oldPatientRoom.setNextRoom(newPatientRoom);
         getPatientRoomFacade().edit(oldPatientRoom);
 
-        UtilityController.addSuccessMessage("Successfully Room Changed");
+        JsfUtil.addSuccessMessage("Successfully Room Changed");
 
         // recreate();
         newRoomFacilityCharge = null;
@@ -248,7 +248,7 @@ public class RoomChangeController implements Serializable {
     }
 
     public void addNewRoom() {
-        if (sessionController.getLoggedPreference().isInwardMoChargeCalculateInitialTime()) {
+        if (sessionController.getApplicationPreference().isInwardMoChargeCalculateInitialTime()) {
             if (errorCheck()) {
                 return;
             }
@@ -259,7 +259,7 @@ public class RoomChangeController implements Serializable {
         getCurrent().setCurrentPatientRoom(newPatientRoom);
         getEjbFacade().edit(getCurrent());
 
-        UtilityController.addSuccessMessage("Successfully Room Changed");
+        JsfUtil.addSuccessMessage("Successfully Room Changed");
 
         // recreate();
         newRoomFacilityCharge = null;
@@ -286,7 +286,7 @@ public class RoomChangeController implements Serializable {
                 + " where pr.patientEncounter=:pe "
                 + " order by pr.admittedAt desc";
         hm.put("pe", getCurrent());
-        return getPatientRoomFacade().findFirstBySQL(sql, hm);
+        return getPatientRoomFacade().findFirstByJpql(sql, hm);
     }
 
     public void changeGurdianRoom() {
@@ -303,14 +303,14 @@ public class RoomChangeController implements Serializable {
             getPatientRoomFacade().edit(oldGaurdianRoom);
         }
 
-        UtilityController.addSuccessMessage("Successfully Room Changed");
+        JsfUtil.addSuccessMessage("Successfully Room Changed");
         newRoomFacilityCharge = null;
         changeAt = null;
         createGuardianRoom();
     }
 
     public List<Admission> getSelectedItems() {
-        selectedItems = getFacade().findBySQL("select c from Admission c where c.retired=false and c.discharged!=true and upper(c.bhtNo) like '%" + getSelectText().toUpperCase() + "%' or upper(c.patient.person.name) like '%" + getSelectText().toUpperCase() + "%' order by c.bhtNo");
+        selectedItems = getFacade().findByJpql("select c from Admission c where c.retired=false and c.discharged!=true and (c.bhtNo) like '%" + getSelectText().toUpperCase() + "%' or (c.patient.person.name) like '%" + getSelectText().toUpperCase() + "%' order by c.bhtNo");
         return selectedItems;
     }
 
@@ -328,9 +328,9 @@ public class RoomChangeController implements Serializable {
             getCurrent().setRetiredAt(new Date());
             getCurrent().setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(getCurrent());
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
@@ -375,19 +375,7 @@ public class RoomChangeController implements Serializable {
     }
 
     public Admission getCurrent() {
-        if (current == null) {
-            Person p = new Person();
-            Patient tPatient = new Patient();
-            tPatient.setPerson(p);
-
-            current = new Admission();
-            current.setPatient(tPatient);
-
-            Person g = new Person();
-            current.setGuardian(g);
-
-            addLinenCharge = 0.0;
-        }
+       
         return current;
     }
 
@@ -405,7 +393,7 @@ public class RoomChangeController implements Serializable {
                 + " order by pr.admittedAt";
         hm.put("pe", getCurrent());
         hm.put("class", GuardianRoom.class);
-        patientRoom = getPatientRoomFacade().findBySQL(sql, hm);
+        patientRoom = getPatientRoomFacade().findByJpql(sql, hm);
 
     }
 
@@ -416,7 +404,7 @@ public class RoomChangeController implements Serializable {
                 + " where pr.patientEncounter=:pe "
                 + " order by pr.admittedAt";
         hm.put("pe", getCurrent());
-        patientRoom = getPatientRoomFacade().findBySQL(sql, hm);
+        patientRoom = getPatientRoomFacade().findByJpql(sql, hm);
 
     }
 
@@ -428,7 +416,7 @@ public class RoomChangeController implements Serializable {
         if (items == null) {
             String temSql;
             temSql = "SELECT i FROM Admission i where i.retired=false and i.discharged=false order by i.bhtNo";
-            items = getFacade().findBySQL(temSql);
+            items = getFacade().findByJpql(temSql);
             if (items == null) {
                 items = new ArrayList<>();
             }
@@ -457,7 +445,7 @@ public class RoomChangeController implements Serializable {
         if (patientList == null) {
             String temSql;
             temSql = "SELECT i FROM Patient i where i.retired=false ";
-            patientList = getPatientFacade().findBySQL(temSql);
+            patientList = getPatientFacade().findByJpql(temSql);
         }
         return patientList;
     }

@@ -1,99 +1,138 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition template="/resources/template/template.xhtml"
-                xmlns:ui="http://java.sun.com/jsf/facelets"
-                xmlns:hr="http://java.sun.com/jsf/composite/autocomplete"
-                xmlns:h="http://java.sun.com/jsf/html"
+<ui:composition template="/hr/hr_admin.xhtml"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:hr="http://xmlns.jcp.org/jsf/composite/autocomplete"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:pe="http://primefaces.org/ui/extensions"
-                xmlns:f="http://java.sun.com/jsf/core">
+
+                xmlns:f="http://xmlns.jcp.org/jsf/core">
 
 
-    <ui:define name="content">
+    <ui:define name="subContent">
 
         <h:panelGroup >
-            <h:form  >
+            <h:form>
+                <p:panel header="Shift Basic">
+                    <div class="row">
+                        <div class="col-6">
+                            <p:panel header="Detail" >
+                                <h:panelGrid columns="2"  >
 
-                <h:panelGrid columns="2" >
-                    <p:panel header="Detail" >
-                        <h:panelGrid columns="2"  >
+                                    <h:outputLabel value="Staff Name"/>
+                                    <p:autoComplete class="w-100 mx-4" inputStyleClass="w-100" forceSelection="true" 
+                                                    value="#{staffBasicController.current.staff}"
+                                                    completeMethod="#{staffController.completeStaffCode}" var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
+                                                    >   
+                                        <f:ajax event="itemSelect" execute="@this" render="tb7 stfCode stfCode2" listener="#{staffBasicController.makeItemNul}" />
+                                        <p:column headerText="Staff Name">
+                                            <h:outputLabel value="#{mys.person.name}"/>
+                                        </p:column>
+                                        <p:column headerText="Code">
+                                            <h:outputLabel value="#{mys.code}"/>
+                                        </p:column>
 
-                            <h:outputLabel value="Staff Name"/>
-                            <p:autoComplete  forceSelection="true" 
-                                             value="#{staffBasicController.current.staff}"
-                                             completeMethod="#{staffController.completeStaffCode}" var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
-                                             converter="stfcon"   >   
-                                <f:ajax event="itemSelect" execute="@this" render="tb7 stfCode stfCode2" listener="#{staffBasicController.makeItemNul}" />
-                                <p:column headerText="Staff Name">
-                                    <h:outputLabel value="#{mys.person.name}"/>
-                                </p:column>
-                                <p:column headerText="Code">
-                                    <h:outputLabel value="#{mys.code}"/>
-                                </p:column>
+                                    </p:autoComplete>
 
-                            </p:autoComplete>
-                            <p:outputLabel value="Emp Code"></p:outputLabel>
-                            <p:outputLabel id="stfCode" value="#{staffBasicController.current.staff.code}"></p:outputLabel>
-                            <p:outputLabel value="EPF Code"></p:outputLabel>
-                            <p:outputLabel id="stfCode2" value="#{staffBasicController.current.staff.epfNo}"></p:outputLabel>
-                            <h:outputLabel value="From"/>
-                            <p:calendar id="frm" navigator="true" value="#{staffBasicController.current.fromDate}" pattern="dd MM yyyy" >                                
-                            </p:calendar>
-                            <h:outputLabel value="To"/>
-                            <p:calendar id="to" navigator="true"  value="#{staffBasicController.current.toDate}" pattern="dd MM yyyy">                                      
-                            </p:calendar>                    
-                            <h:outputLabel value="Salary"/>
-                            <p:inputText autocomplete="off"  value="#{staffBasicController.current.staffPaySheetComponentValue}"/>
+                                    <p:outputLabel value="Emp Code" class="my-1"></p:outputLabel>
+                                    <p:outputLabel id="stfCode" value="#{staffBasicController.current.staff.code}"></p:outputLabel>
+                                    <p:outputLabel value="EPF Code" class="my-1"></p:outputLabel>
+                                    <p:outputLabel id="stfCode2" value="#{staffBasicController.current.staff.epfNo}"></p:outputLabel>
+                                    <h:outputLabel value="From"/>
+                                    <p:calendar id="frm" class="w-100 mx-4" inputStyleClass="w-100" navigator="true" value="#{staffBasicController.current.fromDate}" pattern="#{sessionController.applicationPreference.shortDateFormat}" >                                
+                                    </p:calendar>
+                                    <h:outputLabel value="To"/>
+                                    <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="to" navigator="true"  value="#{staffBasicController.current.toDate}" pattern="#{sessionController.applicationPreference.shortDateFormat}">                                      
+                                    </p:calendar>                    
+                                    <h:outputLabel value="Salary"/>
+                                    <p:inputText class="w-100 mx-4" autocomplete="off"  value="#{staffBasicController.current.staffPaySheetComponentValue}"/>
 
-                            <h:outputLabel value="BR Value"/>
-                            <p:inputText autocomplete="off"  value="#{staffBasicController.current.dblValue}"/>
+                                    <h:outputLabel value="BR Value"/>
+                                    <p:inputText class="w-100 mx-4" autocomplete="off"  value="#{staffBasicController.current.dblValue}"/>
 
-                            <p:commandButton id="btnAdd" value="Save" action="#{staffBasicController.save}" ajax="false" onclick="onSubmitButton();"/>
-                            <p:commandButton value="Clear" action="#{staffBasicController.makeNull}" ajax="false" onclick="onSubmitButton();" />
+                                </h:panelGrid>
+                                <div class="mt-2">
+                                    <p:commandButton
+                                        class="ui-button-warning w-25"
+                                        id="btnAdd" 
+                                        value="Save"
+                                        action="#{staffBasicController.save}"
+                                        ajax="false" />
+                                    <p:commandButton 
+                                        class="w-25 ui-button-secondary mx-1"
+                                        value="Clear" 
+                                        action="#{staffBasicController.makeNull}" 
+                                        ajax="false"  />
+                                </div>
+                            </p:panel>
+                        </div>
+                        <div class="col-6">
+                            <p:panel header="Basic Detail">
+                                <h:panelGrid columns="2" >
+                                    <h:outputLabel value="From  " />
+                                    <p:calendar class="mx-4 w-100" inputStyleClass="w-100" value="#{staffBasicController.fromDate}"
+                                                navigator="true"
+                                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />                                          
+                                    <h:outputLabel value="Employee  "/>
+                                    <hr:completeStaff  value="#{staffBasicController.reportKeyWord.staff}"/>
+                                    <h:outputLabel value="Department  "/>
+                                    <hr:department value="#{staffBasicController.reportKeyWord.department}"/>
+                                    <h:outputLabel value="Institution  "/>
+                                    <hr:institution value="#{staffBasicController.reportKeyWord.institution}"/>
+                                    <h:outputLabel value="Staff Category  "/>
+                                    <hr:completeStaffCategory value="#{staffBasicController.reportKeyWord.staffCategory}"/>
+                                    <h:outputLabel value="Designation "/>
+                                    <hr:completeDesignation value="#{staffBasicController.reportKeyWord.designation}"/>
+                                    <h:outputLabel value="Roster  "/>
+                                    <hr:completeRoster value="#{staffBasicController.reportKeyWord.roster}"/> 
 
-                        </h:panelGrid>
-                    </p:panel>
-
-                </h:panelGrid>
-
+                                </h:panelGrid>
+                                <div class="mt-4">
+                                    <p:commandButton 
+                                        ajax="false"
+                                        value="Fill" 
+                                        icon="fas fa-fill"
+                                        class="ui-button-warning w-25"
+                                        action="#{staffBasicController.createBasicTable}" />
+                                    <p:commandButton
+                                        ajax="false"
+                                        icon="fas fa-file-excel"
+                                        class="ui-button-success w-25 mx-1"
+                                        value="Excel"
+                                        >
+                                        <p:dataExporter type="xlsx" target="tb7" fileName="hr_staff_basic_individual"  />
+                                    </p:commandButton>
+                                    <p:commandButton 
+                                        value="Print" 
+                                        class="ui-button-info w-25"
+                                        icon="fas fa-print"
+                                        ajax="false" 
+                                        action="#" >
+                                        <p:printer target="staffbasic" ></p:printer>
+                                    </p:commandButton>
+                                </div>
+                            </p:panel>
+                        </div>
+                    </div>
+                </p:panel>
 
                 <p:spacer height="30" />
 
                 <p:panel>
                     <f:facet name="header">
-                        <h:outputLabel value="Basic List"/>
-                        <p:commandButton value="Refresh" action="#{staffBasicController.makeItemNul}" ajax="false" style="float: right;" onclick="onSubmitButton();"/>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h:outputLabel value="Basic List"/>
+                            <div>
+                                <p:commandButton 
+                                    value="Process"
+                                    action="#{staffBasicController.makeItemNul}" 
+                                    ajax="false" 
+                                    />
+                            </div>
+                        </div>
 
                     </f:facet>
-                    <h:panelGrid columns="2" >
-                        <h:outputLabel value="From : " />
-                        <p:calendar value="#{staffBasicController.fromDate}"
-                                    navigator="true"
-                                    pattern="dd MMMM yyyy hh:mm:ss a" />                                          
-                        <h:outputLabel value="Employee : "/>
-                        <hr:completeStaff value="#{staffBasicController.reportKeyWord.staff}"/>
-                        <h:outputLabel value="Department : "/>
-                        <hr:department value="#{staffBasicController.reportKeyWord.department}"/>
-                        <h:outputLabel value="Institution : "/>
-                        <hr:institution value="#{staffBasicController.reportKeyWord.institution}"/>
-                        <h:outputLabel value="Staff Category : "/>
-                        <hr:completeStaffCategory value="#{staffBasicController.reportKeyWord.staffCategory}"/>
-                        <h:outputLabel value="Designation : "/>
-                        <hr:completeDesignation value="#{staffBasicController.reportKeyWord.designation}"/>
-                        <h:outputLabel value="Roster : "/>
-                        <hr:completeRoster value="#{staffBasicController.reportKeyWord.roster}"/> 
 
-
-                        <h:panelGrid columns="3"> 
-                            <p:commandButton ajax="false" value="Fill" action="#{staffBasicController.createBasicTable}" />
-                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
-                                <pe:exporter type="xlsx" target="tb7" fileName="hr_staff_basic_individual"  />
-                            </p:commandButton>
-                            <p:commandButton value="Print" ajax="false" action="#" >
-                                <p:printer target="staffbasic" ></p:printer>
-                            </p:commandButton>
-                        </h:panelGrid>
-                    </h:panelGrid>
                     <p:panel id="staffbasic" styleClass="noBorder summeryBorder" >
                         <p:dataTable id="tb7"  value="#{staffBasicController.items}" 
                                      filteredValue="#{staffBasicController.filteredStaffPaysheet}"
@@ -142,7 +181,7 @@
                                     <h:outputLabel value="DOJ"  />
                                 </f:facet>
                                 <h:outputLabel value="#{i.staff.dateJoined}" >
-                                    <f:convertDateTime pattern="dd MMMM yyyy"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                                 </h:outputLabel>
                             </p:column>
                             <p:column headerText="From"  >
@@ -150,7 +189,7 @@
                                     <h:outputLabel value="From"  />
                                 </f:facet>
                                 <h:outputLabel value="#{i.fromDate}" >
-                                    <f:convertDateTime pattern="dd MMMM yyyy"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                                 </h:outputLabel>
                             </p:column>
                             <p:column headerText="To" >
@@ -160,11 +199,11 @@
                                 <p:cellEditor>  
                                     <f:facet name="output">
                                         <h:outputLabel value="#{i.toDate}">
-                                            <f:convertDateTime pattern="dd MMMM yyyy"/>
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                                         </h:outputLabel>
                                     </f:facet>
                                     <f:facet name="input">
-                                        <p:calendar  navigator="true" value="#{i.toDate}"  pattern="dd MMMM yyyy" />
+                                        <p:calendar  navigator="true" value="#{i.toDate}"  pattern="#{sessionController.applicationPreference.longDateFormat}" />
                                     </f:facet>
                                 </p:cellEditor>
 
@@ -195,7 +234,7 @@
                                     <h:outputLabel value="Resign Date"  />
                                 </f:facet>
                                 <h:outputLabel value="#{i.staff.dateLeft}">
-                                    <f:convertDateTime pattern="dd MMMM yyyy"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                                 </h:outputLabel>
                             </p:column>
                             <p:column headerText="Staff" >
@@ -224,13 +263,13 @@
                             </p:column>
 
                             <p:column style="width:6%" exportable="false" styleClass="noPrintButton">  
-                                <p:commandButton ajax="false" value="Remove" action="#{staffBasicController.remove}" onclick="onSubmitButton();">
+                                <p:commandButton ajax="false" value="Remove" action="#{staffBasicController.remove}" >
                                     <f:setPropertyActionListener target="#{staffBasicController.current}" value="#{i}" />
                                 </p:commandButton>
                             </p:column>  
 
                             <p:column style="width:6%" exportable="false" styleClass="noPrintButton">  
-                                <p:commandButton ajax="false" value="View" onclick="onSubmitButton();">
+                                <p:commandButton ajax="false" value="View" >
                                     <f:setPropertyActionListener target="#{staffBasicController.current}" value="#{i}" />
                                 </p:commandButton>
                             </p:column> 

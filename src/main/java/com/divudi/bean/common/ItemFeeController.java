@@ -1,13 +1,14 @@
 /*
- * MSc(Biomedical Informatics) Project
+ * Open Hospital Management Information System
  *
- * Development and Implementation of a Web-based Combined Data Repository of
- Genealogical, Clinical, Laboratory and Genetic Data
- * and
- * a Set of Related Tools
+ * Dr M H B Ariyaratne
+ * Acting Consultant (Health Informatics)
+ * (94) 71 5812399
+ * (94) 71 5812399
  */
 package com.divudi.bean.common;
 
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.entity.Department;
 import com.divudi.entity.Item;
 import com.divudi.entity.ItemFee;
@@ -20,6 +21,7 @@ import com.divudi.facade.StaffFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
@@ -32,8 +34,8 @@ import javax.inject.Named;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- * Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -62,37 +64,53 @@ public class ItemFeeController implements Serializable {
             suggestions = new ArrayList<Staff>();
         } else {
             if (getCurrentFee().getSpeciality() == null) {
-                sql = "select p from Staff p where p.retired=false and (upper(p.person.name) like '%" + query.toUpperCase() + "%'or  upper(p.code) like '%" + query.toUpperCase() + "%' ) order by p.person.name";
+                sql = "select p from Staff p where p.retired=false and ((p.person.name) like '%" + query.toUpperCase() + "%'or  (p.code) like '%" + query.toUpperCase() + "%' ) order by p.person.name";
             } else {
-                sql = "select p from Staff p where p.speciality.id=" + getCurrentFee().getSpeciality().getId() + " and p.retired=false and (upper(p.person.name) like '%" + query.toUpperCase() + "%'or  upper(p.code) like '%" + query.toUpperCase() + "%' ) order by p.person.name";
+                sql = "select p from Staff p where p.speciality.id=" + getCurrentFee().getSpeciality().getId() + " and p.retired=false and ((p.person.name) like '%" + query.toUpperCase() + "%'or  (p.code) like '%" + query.toUpperCase() + "%' ) order by p.person.name";
             }
-            //////System.out.println(sql);
-            suggestions = getStaffFacade().findBySQL(sql);
+            //////// // System.out.println(sql);
+            suggestions = getStaffFacade().findByJpql(sql);
         }
         return suggestions;
     }
 
     public List<Department> getInstitutionDepatrments() {
         List<Department> d;
-        //////System.out.println("gettin ins dep ");
+        //////// // System.out.println("gettin ins dep ");
         if (getCurrentFee().getInstitution() == null) {
             return new ArrayList<Department>();
         } else {
             String sql = "Select d From Department d where d.retired=false and d.institution.id=" + getCurrentFee().getInstitution().getId();
-            d = getDepartmentFacade().findBySQL(sql);
+            d = getDepartmentFacade().findByJpql(sql);
         }
 
         return d;
     }
-    
+
+    public List<ItemFee> fillDepartmentItemFees(Department department) {
+        String jpql = "SELECT f"
+                + " FROM ItemFee f "
+                + " WHERE f.retired=:ret "
+                + " and f.item.retired=:ret ";
+        HashMap<String, Object> parameters = new HashMap<>();
+        parameters.put("ret", false);
+
+        jpql += " and f.item.department=:dep ";
+        parameters.put("dep", department);
+
+        jpql += " ORDER BY f.item.name, f.name ";
+
+        return itemFeeFacade.findByJpql(jpql, parameters);
+    }
+
     public List<Department> getInstitutionDepatrments(ItemFee fee) {
         List<Department> d;
-        //////System.out.println("gettin ins dep ");
+        //////// // System.out.println("gettin ins dep ");
         if (getCurrentFee().getInstitution() == null) {
             return new ArrayList<Department>();
         } else {
             String sql = "Select d From Department d where d.retired=false and d.institution.id=" + fee.getInstitution().getId();
-            d = getDepartmentFacade().findBySQL(sql);
+            d = getDepartmentFacade().findByJpql(sql);
         }
 
         return d;
@@ -100,11 +118,11 @@ public class ItemFeeController implements Serializable {
 
     public void saveCharge() {
         if (currentIx == null) {
-            UtilityController.addErrorMessage("Please select a charge");
+            JsfUtil.addErrorMessage("Please select a charge");
             return;
         }
         if (currentFee == null) {
-            UtilityController.addErrorMessage("Please select a charge");
+            JsfUtil.addErrorMessage("Please select a charge");
             return;
         }
         currentFee.setItem(currentIx);
@@ -112,10 +130,10 @@ public class ItemFeeController implements Serializable {
             currentFee.setCreatedAt(new Date());
             currentFee.setCreater(getSessionController().getLoggedUser());
             getItemFeeFacade().create(currentFee);
-            UtilityController.addSuccessMessage("Fee Added");
+            JsfUtil.addSuccessMessage("Fee Added");
         } else {
             getItemFeeFacade().edit(currentFee);
-            UtilityController.addSuccessMessage("Fee Saved");
+            JsfUtil.addSuccessMessage("Fee Saved");
         }
         currentIx.setTotal(calTot());
 
@@ -173,16 +191,16 @@ public class ItemFeeController implements Serializable {
 
     public void removeFee() {
         if (currentIx == null) {
-            UtilityController.addErrorMessage("Please select a investigation");
+            JsfUtil.addErrorMessage("Please select a investigation");
             return;
         }
         if (getRemovedItemFee() == null) {
-            UtilityController.addErrorMessage("Please select one to remove");
+            JsfUtil.addErrorMessage("Please select one to remove");
             return;
         }
 
         if (getRemovedItemFee().getId() == null || getRemovedItemFee().getId() == 0) {
-            UtilityController.addErrorMessage("Nothing to remove");
+            JsfUtil.addErrorMessage("Nothing to remove");
             return;
         } else {
             getRemovedItemFee().setRetired(true);
@@ -206,9 +224,9 @@ public class ItemFeeController implements Serializable {
             currentIx.setRetiredAt(new Date());
             currentIx.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(currentIx);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
 
         currentIx = null;
@@ -221,13 +239,17 @@ public class ItemFeeController implements Serializable {
 
     public void createCharges() {
         String sql = "select c from ItemFee c where c.retired = false and c.item.id = " + currentIx.getId();
-        fees = itemFeeFacade.findBySQL(sql);
+        fees = itemFeeFacade.findByJpql(sql);
     }
-    
-    public List<ItemFee> getFees(Item i){
-        String sql="select c from ItemFee c where c.retired = false and c.item.id = " + i.getId();
-        List<ItemFee> fees=itemFeeFacade.findBySQL(sql);
+
+    public List<ItemFee> getFees(Item i) {
+        String sql = "select c from ItemFee c where c.retired = false and c.item.id = " + i.getId();
+        List<ItemFee> fees = itemFeeFacade.findByJpql(sql);
         return fees;
+    }
+
+    public ItemFee findItemFeeFromItemFeeId(Long id) {
+        return getItemFeeFacade().find(id);
     }
 
     public List<ItemFee> getCharges() {
@@ -301,7 +323,7 @@ public class ItemFeeController implements Serializable {
     /**
      *
      */
-    @FacesConverter("conItemFee")
+    @FacesConverter(forClass = ItemFee.class)
     public static class ItemFeeControllerConverter implements Converter {
 
         @Override

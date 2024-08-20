@@ -1,12 +1,12 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
-      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:pe="http://primefaces.org/ui/extensions"
-      xmlns:hr="http://java.sun.com/jsf/composite/autocomplete">
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      
+      xmlns:hr="http://xmlns.jcp.org/jsf/composite/autocomplete">
 
     <h:body>
 
@@ -20,9 +20,9 @@
                         </f:facet>
                         <h:panelGrid columns="2" >
                             <h:outputLabel value="From : " />
-                            <p:calendar value="#{hrReportController.fromDate}" pattern="dd MMMM yyyy hh:mm:ss a" />
+                            <p:calendar value="#{hrReportController.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                             <h:outputLabel value="To : " />
-                            <p:calendar value="#{hrReportController.toDate}" pattern="dd MMMM yyyy hh:mm:ss a" />
+                            <p:calendar value="#{hrReportController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                             <h:outputLabel value="Institution : "/>
                             <hr:institution value="#{hrReportController.reportKeyWord.institution}"/>   
                             <h:outputLabel value="Department : "/>
@@ -40,8 +40,8 @@
                         <p:commandButton ajax="false" value="Finger Print Verified Record All" action="#{hrReportController.createFingerPrintRecordVarifiedAll()}"/>
                         <p:commandButton ajax="false" value="Finger Print Verified Record With Logged Record" action="#{hrReportController.createFingerPrintRecordVarifiedWithLogged()}"/>
                         <p:commandButton ajax="false" value="Finger Print Verified Record Without Logged Record " action="#{hrReportController.createFingerPrintRecordVarifiedWithOutLogged()}"/>
-                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
-                            <pe:exporter type="xlsx" target="tb1" fileName="hr_report_finger_print_record_verified"  />
+                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton"  >
+                            <p:dataExporter type="xlsx" target="tb1" fileName="hr_report_finger_print_record_verified"  />
                         </p:commandButton>
                         <p:commandButton value="Print" ajax="false" action="#"  >
                             <p:printer target="gpBillPreview" ></p:printer>
@@ -108,7 +108,7 @@
                                         <h:outputLabel value="Verified Date"/>
                                     </f:facet>
                                     <h:outputLabel  value="#{ss.recordTimeStamp}">
-                                        <f:convertDateTime pattern="dd/MM/yy"/>
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Verified Time">
@@ -129,7 +129,7 @@
                                         <h:outputLabel value="Logged Date"/>
                                     </f:facet>
                                     <h:outputLabel  value="#{ss.loggedRecord.recordTimeStamp}">
-                                        <f:convertDateTime pattern="dd/MM/yy"/>
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Logged Time">

@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core">
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <h:body>
 
@@ -12,28 +12,29 @@
 
             <ui:define name="content">
                 <h:form>
-                    <p:panel header="Manage Items/Services">
-                        <p:tabView orientation="left">
+                    
+                    <p:panel header="Manage Items/Services" rendered="false">
+                        <p:tabView orientation="left" >
                             <p:tab title="Manage Items / Services">
                                 <h:panelGrid columns="1" >
 
 
-                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Investigations" action="/lab/investigation" onclick="onSubmitButton();"/>
-                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Investigation Fees" action="/lab/investigation_fee" onclick="onSubmitButton();"/>
-                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Service Categories" action="/opd_service_category" onclick="onSubmitButton();"/>
-                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Service Subcategories" action="/opd_service_subcategory" onclick="onSubmitButton();"/>
-                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Service" action="/opd_service" onclick="onSubmitButton();"/>
-                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Inward Service" action="/inward/inward_service" onclick="onSubmitButton();"/>
-                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Theatre Service" action="/inward/theatre_service" onclick="onSubmitButton();"/>
-                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Bill Expenses" action="/common/bill_expenses" onclick="onSubmitButton();"/>
+                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Investigations" action="/lab/investigation" />
+                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Investigation Fees" action="/lab/investigation_fee" />
+                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Service Categories" action="/opd_service_category" />
+                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Service Subcategories" action="/opd_service_subcategory" />
+                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Service" action="/opd_service" />
+                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Inward Service" action="/inward/inward_service" />
+                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Theatre Service" action="/inward/theatre_service" />
+                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Bill Expenses" action="/common/bill_expenses" />
 
 
                                     <p:commandButton  styleClass="linkButton" ajax="false" value="Relationships" action="relationships" ></p:commandButton>
                                     <p:commandButton  styleClass="linkButton" ajax="false" value="Religions" action="/common/religion" ></p:commandButton>
                                     <p:commandButton  styleClass="linkButton" ajax="false" value="Nationalities" action="/common/nationality" ></p:commandButton>
 
-                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Bulk Delete of Services" action="opd_service_list_to_remove" onclick="onSubmitButton();"/>
-                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Bulk Un-Delete of Services" action="/common/item_bulk_un_delete" onclick="onSubmitButton();"/>
+                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Bulk Delete of Services" action="opd_service_list_to_remove" />
+                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Bulk Un-Delete of Services" action="/common/item_bulk_un_delete" />
 
 
                                 </h:panelGrid>
@@ -48,11 +49,11 @@
                             </p:tab>
                             <p:tab title="Bulk Transactions">
                                 <h:panelGrid columns="1" >
-                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Bulk Delete of Services" action="opd_service_list_to_remove" onclick="onSubmitButton();"/>
-                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Bulk Un-Delete of Services" action="/common/item_bulk_un_delete" onclick="onSubmitButton();"/>
+                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Bulk Delete of Services" action="opd_service_list_to_remove" />
+                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Bulk Un-Delete of Services" action="/common/item_bulk_un_delete" />
 
-                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Bulk Delete of Investigations" action="/lab/investigation_list_to_remove" onclick="onSubmitButton();"/>
-                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Bulk Un-Delete of Investigations" action="/common/investigation_bulk_un_delete" onclick="onSubmitButton();"/>
+                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Bulk Delete of Investigations" action="/lab/investigation_list_to_remove" />
+                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Bulk Un-Delete of Investigations" action="/common/investigation_bulk_un_delete" />
                                     
                                 </h:panelGrid>
                             </p:tab>
@@ -62,7 +63,7 @@
                                                      ajax="false" 
                                                      value="Create New Items for New Institution" 
                                                      action="/dataAdmin/create_items_for_new_institution" 
-                                                     onclick="onSubmitButton();"/>
+                                                     />
                                 </h:panelGrid>
                             </p:tab>
                         </p:tabView>

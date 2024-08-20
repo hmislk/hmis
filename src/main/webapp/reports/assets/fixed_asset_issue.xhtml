@@ -1,0 +1,174 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+
+        <ui:composition template="/reports/index.xhtml" class="w-100">
+            <ui:define name="subcontent">
+                <h:form>
+                    <p:panel header="Fixed Asset Issue" class="w-100 p-1">
+                        <h:panelGrid columns="5" class="w-100">
+                            <p:outputLabel value="Institution/Branch" for="institutionMenu"></p:outputLabel>
+                            <p:selectOneMenu value="#{reportController.institution}" id="institutionMenu" required="true">
+                                <f:selectItem itemLabel="Select Institution Type"/>
+                                <f:selectItems value="#{institutionController.items}" var="i" itemLabel="#{i.name}" itemValue="#{i}"/>
+                                <p:ajax event="change" process="@this" update="panalDepartment"></p:ajax>
+                            </p:selectOneMenu>
+                            <p:spacer/>
+                            <p:outputLabel value="Sub Category"></p:outputLabel>
+                            <p:selectOneMenu>
+                                <f:selectItem itemLabel="Select Sub category"/>
+                            </p:selectOneMenu>
+
+
+                            <p:outputLabel value="Asset"></p:outputLabel>
+                            <p:selectOneMenu>
+                                <f:selectItem itemLabel="Select Asset"/>
+                            </p:selectOneMenu>
+                            <p:spacer/>
+                            <p:outputLabel value="Store" for="departmentMenu"></p:outputLabel>
+                            <h:panelGroup id="panalDepartment">
+                                <p:selectOneMenu value="#{reportController.department}" id="departmentMenu" required="true" rendered="#{reportController.institution ne null}">
+                                    <f:selectItem itemLabel="Select Department Type"/>
+                                    <f:selectItems value="#{departmentController.getInstitutionDepatrments(reportController.institution)}" var="d" itemLabel="#{d.name}" itemValue="#{d}"/>
+                                </p:selectOneMenu>
+                            </h:panelGroup>
+
+
+                            <p:outputLabel value="Vendor"></p:outputLabel>
+                            <p:selectOneMenu>
+                                <f:selectItem itemLabel="Select Vendor"/>
+                            </p:selectOneMenu>
+                        </h:panelGrid><br/>
+
+                        <p:dataTable value="#{searchController.telephoneNumbers}" var="b" id="tb1" rowIndexVar="i"
+                                     rowKey="#{b}" 
+                                     rows="#{searchController.rows}"
+                                     selection="#{searchController.selectedTelephoneNumbers}"
+                                     paginator="true"
+                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     rowsPerPageTemplate="20, 50, 100, 1000, 1500" class="w-100">
+
+                            <f:facet name="header" >
+                                <p:outputLabel value="Fixed Asset Issue Reports" />                                
+                            </f:facet>
+
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Asset Sub Category" >
+                                    </p:outputLabel>
+                                </f:facet>
+
+                              
+                            </p:column>
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Asset" >
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Asset Location" >
+                                    </p:outputLabel>
+                                </f:facet> 
+                            </p:column>
+                            
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Vendor" >
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Make" >
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Serial No" >
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Model No" >
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Asset Purchase Price" >
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="AMC-From Date" >
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="AMC-End Date" >
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="AMC amount" >
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Depreciation Method" >
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Depreciation Rate" >
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Accumilated Depreciation Value" >
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Current Value" >
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+                        </p:dataTable>
+
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

@@ -1,6 +1,6 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+* Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.entity.pharmacy;
 
@@ -64,7 +64,7 @@ public class ItemBatch implements Serializable {
     
     @ManyToOne
     BillItem lastPurchaseBillItem;
-
+    
     public String getSerialNo() {
         return serialNo;
     }

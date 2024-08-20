@@ -1,24 +1,24 @@
 /*
- * MSc(Biomedical Informatics) Project
+ * Open Hospital Management Information System
  *
- * Development and Implementation of a Web-based Combined Data Repository of
- Genealogical, Clinical, Laboratory and Genetic Data
- * and
- * a Set of Related Tools
+ * Dr M H B Ariyaratne
+ * Acting Consultant (Health Informatics)
+ * (94) 71 5812399
+ * (94) 71 5812399
  */
 package com.divudi.bean.inward;
 
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.inward.PatientEncounterComponentType;
 import com.divudi.data.inward.SurgeryBillType;
 import com.divudi.ejb.BillNumberGenerator;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillEntry;
 import com.divudi.entity.BillFee;
@@ -37,6 +37,7 @@ import com.divudi.facade.EncounterComponentFacade;
 import com.divudi.facade.FeeFacade;
 import com.divudi.facade.ItemFacade;
 import com.divudi.facade.StaffFacade;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -52,7 +53,7 @@ import org.primefaces.event.TabChangeEvent;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
  * formatics)
  */
 @Named
@@ -88,7 +89,7 @@ public class InwardProfessionalBillController implements Serializable {
     private BillBeanController billBean;
     @EJB
     BillNumberGenerator billNumberBean;
-    @EJB
+
     CommonFunctions commonFunctions;
     //////////////////    
     private List<Bill> items = null;
@@ -127,13 +128,13 @@ public class InwardProfessionalBillController implements Serializable {
             sql += " and c.speciality=:sp";
             hm.put("sp", getProEncounterComponent().getBillFee().getSpeciality());
         }
-        sql += " and (upper(c.person.name) like :q "
-                + " or upper(c.code) like :q )"
+        sql += " and ((c.person.name) like :q "
+                + " or (c.code) like :q )"
                 + " order by c.person.name";
 
         hm.put("q", "%" + qry.toUpperCase() + "%");
-        List<Staff> s = getStaffFacade().findBySQL(sql, hm, 20);
-        ////System.out.println("s = " + s);
+        List<Staff> s = getStaffFacade().findByJpql(sql, hm, 20);
+        ////// // System.out.println("s = " + s);
         return s;
     }
 
@@ -170,16 +171,16 @@ public class InwardProfessionalBillController implements Serializable {
 
     private boolean generalChecking() {
         if (getBatchBill().getPatientEncounter() == null) {
-            UtilityController.addErrorMessage("Admission ?");
+            JsfUtil.addErrorMessage("Admission ?");
             return true;
         }
         if (getBatchBill().getProcedure().getItem() == null) {
-            UtilityController.addErrorMessage("Select Surgery");
+            JsfUtil.addErrorMessage("Select Surgery");
             return true;
         }
 
         if (getBatchBill().getPatientEncounter().isPaymentFinalized()) {
-            UtilityController.addErrorMessage("Final Payment is Finalized");
+            JsfUtil.addErrorMessage("Final Payment is Finalized");
             return true;
         }
 
@@ -224,7 +225,7 @@ public class InwardProfessionalBillController implements Serializable {
         }
 
         if (encounterComponent.getBillFee().getPaidValue() != 0) {
-            UtilityController.addErrorMessage("Staff Payment Already Paid U cant Remove");
+            JsfUtil.addErrorMessage("Staff Payment Already Paid U cant Remove");
             return;
         }
 
@@ -361,7 +362,7 @@ public class InwardProfessionalBillController implements Serializable {
 
         getBillBean().updateBatchBill(getBatchBill());
 
-        UtilityController.addSuccessMessage("Surgery Detail Successfull Updated");
+        JsfUtil.addSuccessMessage("Surgery Detail Successfull Updated");
 
         //    makeNull();
     }
@@ -379,7 +380,7 @@ public class InwardProfessionalBillController implements Serializable {
         }
 
         if (getProEncounterComponent().getBillFee().getStaff() == null) {
-            UtilityController.addErrorMessage("Select Staff ");
+            JsfUtil.addErrorMessage("Select Staff ");
             return;
         }
 
@@ -412,18 +413,18 @@ public class InwardProfessionalBillController implements Serializable {
 
         if (getCurrentBillFee() != null && getCurrentBillFee().getSpeciality() != null) {
             sql = " select p from Staff p where p.retired=false and "
-                    + " (upper(p.person.name) like :q "
-                    + " or  upper(p.code) like :q  ) "
+                    + " ((p.person.name) like :q "
+                    + " or  (p.code) like :q  ) "
                     + " and p.speciality=:spe order by p.person.name";
             hm.put("spe", getCurrentBillFee().getSpeciality());
         } else {
             sql = " select p from Staff p where p.retired=false and "
-                    + " (upper(p.person.name) "
-                    + " like :q or  upper(p.code) like :q "
+                    + " ((p.person.name) "
+                    + " like :q or  (p.code) like :q "
                     + " ) order by p.person.name";
         }
         hm.put("q", "%" + query.toUpperCase() + "%");
-        suggestions = getStaffFacade().findBySQL(sql, hm, 20);
+        suggestions = getStaffFacade().findByJpql(sql, hm, 20);
 
         return suggestions;
     }
@@ -493,7 +494,7 @@ public class InwardProfessionalBillController implements Serializable {
     }
 
     public List<Item> completeItem(String qry) {
-        List<Item> completeItems = getItemFacade().findBySQL("select c from Item c where c.retired=false and (type(c) = Service or type(c) = Packege ) and upper(c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
+        List<Item> completeItems = getItemFacade().findByJpql("select c from Item c where c.retired=false and (type(c) = Service or type(c) = Packege ) and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
         return completeItems;
     }
 
@@ -512,6 +513,8 @@ public class InwardProfessionalBillController implements Serializable {
     public BillEntryFacade getBillEntryFacade() {
         return billEntryFacade;
     }
+    
+  
 
     public void setBillEntryFacade(BillEntryFacade billEntryFacade) {
         this.billEntryFacade = billEntryFacade;
@@ -577,15 +580,28 @@ public class InwardProfessionalBillController implements Serializable {
 
     public void addToBill() {
         if (getCurrent().getPatientEncounter() == null) {
-            UtilityController.addErrorMessage("Please Select Patient Encounter");
+            JsfUtil.addErrorMessage("Please Select Patient Encounter");
             return;
         }
 
         if (currentBillFee == null) {
-            UtilityController.addErrorMessage("Nothing to add");
+            JsfUtil.addErrorMessage("Nothing to add");
             return;
         }
-
+        
+        if(currentBillFee.getSpeciality()==null){
+             JsfUtil.addErrorMessage("Please select a Speciality");
+                return;
+        }else if (currentBillFee.getStaff()==null){
+             JsfUtil.addErrorMessage("Please select a Staff");
+                return;
+        }else if (currentBillFee.getFeeValue()== 0.0) {
+             JsfUtil.addErrorMessage("Please add fee");
+                return;
+        }else if (currentBillFee.getFeeAt()== null) {
+             JsfUtil.addErrorMessage("Please select Date");
+                return;
+        }
         if (getCurrent().getId() == null) {
             getCurrent().setDepartment(getSessionController().getLoggedUser().getDepartment());
             getCurrent().setInstitution(getSessionController().getLoggedUser().getInstitution());
@@ -601,7 +617,7 @@ public class InwardProfessionalBillController implements Serializable {
         currentBillFee = null;
 
         save();
-        //   UtilityController.addSuccessMessage("Fee Added");
+        //   JsfUtil.addSuccessMessage("Fee Added");
     }
 
     public void feeChanged(BillFee bf) {
@@ -674,12 +690,12 @@ public class InwardProfessionalBillController implements Serializable {
 
     private boolean errorCheck() {
         if (getCurrent().getPatientEncounter() == null) {
-            UtilityController.addErrorMessage("Selct Patient Encounter");
+            JsfUtil.addErrorMessage("Selct Patient Encounter");
             return true;
         }
 
         if (lstBillFees.size() <= 0) {
-            UtilityController.addErrorMessage("Professional Fee Should Not Empty");
+            JsfUtil.addErrorMessage("Professional Fee Should Not Empty");
             return true;
         }
 
@@ -698,7 +714,7 @@ public class InwardProfessionalBillController implements Serializable {
             saveBillFee(getCurrent(), getBillItem(), bf);
         }
 
-        UtilityController.addSuccessMessage("Bill Saved");
+        JsfUtil.addSuccessMessage("Bill Saved");
 
     }
 
@@ -726,9 +742,28 @@ public class InwardProfessionalBillController implements Serializable {
         batchBill = null;
         makeNullList();
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "Service & Items/Add Outside Charges(/faces/inward/inward_bill_professional.xhtml)");
+        
     }
 
+    public String navigateToAddProfessionalFeesFromMenu() {
+        makeNull();
+        return "/inward/inward_bill_professional?faces-redirect=true";
+    }
+    
+    public String navigateToAddProfessionalFeesFromInpatientProfile() {
+        return "/inward/inward_bill_professional?faces-redirect=true";
+    }
+
+    public String navigateToAddEstimatedProfessionalFeeFromMenu() {
+        makeNull();
+        return "/inward/inward_bill_professional_estimate?faces-redirect=true";
+    }
+
+    public String navigateToAddEstimatedProfessionalFeeFromInpatientProfile() {
+        return "/inward/inward_bill_professional_estimate?faces-redirect=true";
+    }
+
+    
     public void makeNullList() {
         currentBillFee = null;
         billItem = null;
@@ -828,7 +863,6 @@ public class InwardProfessionalBillController implements Serializable {
         if (current == null) {
             current = new BilledBill();
             current.setBillType(BillType.InwardProfessional);
-
             current.setDepartment(getSessionController().getLoggedUser().getDepartment());
             current.setInstitution(getSessionController().getLoggedUser().getInstitution());
         }
@@ -845,18 +879,18 @@ public class InwardProfessionalBillController implements Serializable {
 
     public void removeBillItem() {
         //TODO: Need to add Logic
-        //////System.out.println(getIndex());
+        //////// // System.out.println(getIndex());
         if (getIndex() != null) {
             //   boolean remove;
             BillEntry temp = getLstBillEntries().get(getIndex());
-            //////System.out.println("Removed Item:" + temp.getBillItem().getNetValue());
+            //////// // System.out.println("Removed Item:" + temp.getBillItem().getNetValue());
             recreateList(temp);
             // remove = getLstBillEntries().remove(getIndex());
 
             //  getLstBillEntries().remove(index);
-            ////////System.out.println("Is Removed:" + remove);
+            ////////// // System.out.println("Is Removed:" + remove);
             calTotals();
-            //////System.out.println(getCurrent().getNetTotal());
+            //////// // System.out.println(getCurrent().getNetTotal());
         }
     }
 
@@ -875,7 +909,7 @@ public class InwardProfessionalBillController implements Serializable {
         for (BillEntry b : getLstBillEntries()) {
             if (b.getBillItem().getItem() != r.getBillItem().getItem()) {
                 temp.add(b);
-                //////System.out.println(b.getBillItem().getNetValue());
+                //////// // System.out.println(b.getBillItem().getNetValue());
             }
         }
         lstBillEntries = temp;

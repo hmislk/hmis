@@ -1,34 +1,33 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:se="http://java.sun.com/jsf/composite/inward/search"
-      xmlns:pe="http://primefaces.org/ui/extensions">
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:se="http://xmlns.jcp.org/jsf/composite/inward/search"
+      >
 
     <h:body>
-        <ui:composition template="/resources/template/template.xhtml">
-            <ui:define name="content">
+        <ui:composition template="/reportInstitution/report_own.xhtml">
+            <ui:define name="subcontent">
                 <h:form>
                     <p:panel header="Search Bills" >
                         <f:facet name="header" >
+                            <h:outputLabel value="Credit Report"/>
+                        </f:facet>
                             <h:panelGroup>
-                                <h:panelGrid columns="1">
-                                    <h:outputLabel value="Credit Report"/>
-                                </h:panelGrid>
-                                <h:panelGrid columns="2" id="pan">
+                                <h:panelGrid columns="2" id="pan" class="my-2">
                                     <h:outputLabel value="From Date"/>
-                                    <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{mdInwardReportController.fromDate}" navigator="true" pattern="dd MMMM yyyy hh mm ss a" >
+                                    <p:calendar class="w-100 mx-4" inputStyleClass="w-100"  id="fromDate" value="#{mdInwardReportController.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
 
                                     </p:calendar>
                                     <h:outputLabel value="To Date"/>
-                                    <p:calendar styleClass="dateTimePicker" id="toDate" value="#{mdInwardReportController.toDate}" navigator="true" pattern="dd MMMM yyyy hh mm ss a" >
+                                    <p:calendar class="w-100 mx-4" inputStyleClass="w-100"  id="toDate" value="#{mdInwardReportController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
 
                                     </p:calendar>
-                                    <p:outputLabel value="Payments For : "/>
-                                    <p:selectOneRadio value="#{mdInwardReportController.reportKeyWord.string}" >
+                                    <p:outputLabel value="Payments For  "/>
+                                    <p:selectOneRadio class="w-100 mx-4" value="#{mdInwardReportController.reportKeyWord.string}" >
                                         <f:selectItem itemLabel="All" itemValue="3" />
                                         <f:selectItem itemLabel="Inward" itemValue="0" />
                                         <f:selectItem itemLabel="OPD" itemValue="1" />
@@ -36,49 +35,50 @@
                                         <f:ajax event="change" execute="@this" render="pan" />
                                     </p:selectOneRadio>
                                     <p:outputLabel value="Credit Company"></p:outputLabel>
-                                    <p:autoComplete id="creditCompany" 
+                                    <p:autoComplete class="w-100 mx-4" inputStyleClass="w-100" id="creditCompany" 
                                                     forceSelection="true"
                                                     value="#{mdInwardReportController.reportKeyWord.institution}"  
                                                     completeMethod="#{creditCompanyController.completeCredit}" var="ix" 
                                                     itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 300px;">
                                     </p:autoComplete> 
-                                    <p:outputLabel value="Admission Type" rendered="#{mdInwardReportController.reportKeyWord.string eq '0'}"/>
-                                    <p:selectOneMenu value="#{mdInwardReportController.admissionType}" rendered="#{mdInwardReportController.reportKeyWord.string eq '0'}">
+                                    <p:outputLabel  value="Admission Type" rendered="#{mdInwardReportController.reportKeyWord.string eq '0'}"/>
+                                    <p:selectOneMenu class="w-100 mx-4" autoWidth="false" value="#{mdInwardReportController.admissionType}" rendered="#{mdInwardReportController.reportKeyWord.string eq '0'}">
                                         <f:selectItem itemLabel="All Admission Type"/>
                                         <f:selectItems  value="#{inwardReportController.admissionty}" var="myItem" 
                                                         itemValue="#{myItem}" itemLabel="#{myItem.name}"></f:selectItems>
                                     </p:selectOneMenu>
 
                                 </h:panelGrid>
-                                <h:panelGrid columns="3">
-                                    <p:commandButton ajax="false" action="#{mdInwardReportController.createCreditInwardOpdPharmacyBills()}" value="Search" onclick="onSubmitButton();" />
-                                    <p:commandButton value="Print" ajax="false" action="#" >
+                                <h:panelGrid columns="6" class="my-2">
+                                    <p:commandButton class="ui-button-warning" icon="fas fa-cogs" ajax="false" action="#{mdInwardReportController.createCreditInwardOpdPharmacyBills()}" value="Process"  />
+                                    <p:commandButton class="ui-button-info mx-2" icon="fas fa-print" value="Print" ajax="false" action="#" >
                                         <p:printer target="gpBillPreview" ></p:printer>
                                     </p:commandButton>
 
-                                    <p:commandButton actionListener="#{mdInwardReportController.createCreditInwardOpdPharmacyBills()}" ajax="false" value="Excel" styleClass="noPrintButton">
-                                        <pe:exporter type="xlsx" target="tblBills" fileName="newly_added_report"  />
+                                    <p:commandButton class="ui-button-success" icon="fas fa-file-excel" actionListener="#{mdInwardReportController.createCreditInwardOpdPharmacyBills()}" ajax="false" value="Excel">
+                                        <p:dataExporter type="xlsx" target="tblBills" fileName="newly_added_report"  />
                                     </p:commandButton> 
                                 </h:panelGrid>
                             </h:panelGroup>
-                        </f:facet>
                         <p:panel id="gpBillPreview" styleClass="noBorder summeryBorder">
 
                             <p:dataTable id="tblBills" value="#{mdInwardReportController.bills}" var="b" style="width: 100%">
                                 <f:facet name="header" >
-                                    <p:outputLabel value="From "/>
-                                    <p:outputLabel value="#{mdInwardReportController.fromDate}" >
-                                        <f:convertDateTime pattern="dd MMM yyyy"/>
-                                    </p:outputLabel>
-                                    <p:outputLabel value=" To " />
-                                    <p:outputLabel value="#{mdInwardReportController.toDate}" >
-                                        <f:convertDateTime pattern="dd MMM yyyy"/>
-                                    </p:outputLabel>
                                     <p:outputLabel value=" All Balance Payment Bills" />
+                                    <h:outputLabel value=" &nbsp; - #{mdInwardReportController.reportKeyWord.institution.name}" style="white-space: pre-line"/>
+                                    <p:spacer height="10" width="100%" />
+                                    <p:outputLabel value="From : &nbsp;"/>
+                                    <p:outputLabel value="#{mdInwardReportController.fromDate}" >
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                    </p:outputLabel>
+                                    <p:outputLabel value="&emsp; To : &nbsp;" />
+                                    <p:outputLabel value="#{mdInwardReportController.toDate}" >
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                    </p:outputLabel>
                                 </f:facet>
                                 <p:column rendered="#{mdInwardReportController.reportKeyWord.string eq '0'}">
                                     <f:facet name="header">
-                                        <h:outputLabel value="Bht No"/>
+                                        <h:outputLabel value="BHT No"/>
                                     </f:facet>
                                     <h:outputLabel value="#{b.patientEncounter.bhtNo}" ></h:outputLabel>
                                 </p:column>
@@ -125,7 +125,7 @@
                                     </h:outputLabel>
 
                                     <h:panelGroup rendered="#{b.cancelled}" >
-                                        <h:outputLabel style="color: red;" value="Cancelled at " >
+                                        <h:outputLabel style="color: red;" value="Cancelled At " >
                                         </h:outputLabel>
                                         <h:outputLabel style="color: red;" rendered="#{b.cancelled}" value="#{b.cancelledBill.createdAt}" >
                                             <f:convertDateTime pattern="dd MMM yy"/>

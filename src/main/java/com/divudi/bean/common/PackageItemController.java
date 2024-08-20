@@ -3,10 +3,11 @@
  *
  * Development and Implementation of Web-based System by ww.divudi.com
  Development and Implementation of Web-based System by ww.divudi.com
- * and
- * a Set of Related Tools
+ * (94) 71 5812399
+ * (94) 71 5812399
  */
 package com.divudi.bean.common;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.entity.Item;
 import com.divudi.entity.PackageFee;
 import com.divudi.entity.PackageItem;
@@ -34,8 +35,8 @@ import javax.persistence.TemporalType;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
+ * Informatics)
  */
 @Named
 @SessionScoped
@@ -63,6 +64,8 @@ public class PackageItemController implements Serializable {
     private List<Item> filteredItems;
     List<Item> serviceItems;
 
+    private boolean canRemovePackageItemfromPackage;
+
     public List<Item> getServiceItems() {
         if (serviceItems == null) {
             String temSql;
@@ -70,25 +73,29 @@ public class PackageItemController implements Serializable {
             temSql = "SELECT i FROM Item i where (type(i)=:t1 or type(i)=:t2 ) and i.retired=false order by i.department.name";
             h.put("t1", Investigation.class);
             h.put("t2", Service.class);
-            serviceItems = getItemFacade().findBySQL(temSql, h, TemporalType.TIME);
+            serviceItems = getItemFacade().findByJpql(temSql, h, TemporalType.TIME);
 
         }
 
         return serviceItems;
     }
+    
+    public String navigateToPackageItemList(){
+         return "/admin/pricing/package_item?faces-redirect=true";
+     }
 
     public void updateFee() {
         if (getCurrentPackege() == null) {
-            UtilityController.addErrorMessage("Please select a package");
+            JsfUtil.addErrorMessage("Please select a package");
             return;
         }
         if (getCurrentItem() == null) {
-            UtilityController.addErrorMessage("Please select an item");
+            JsfUtil.addErrorMessage("Please select an item");
             return;
         }
 
         getFacade().edit(getCurrent());
-        UtilityController.addSuccessMessage("savedFeeSuccessfully");
+        JsfUtil.addSuccessMessage("savedFeeSuccessfully");
         saveCharge();
         //recreateModel();
         getItems();
@@ -135,7 +142,7 @@ public class PackageItemController implements Serializable {
             calculateTotalFee();
             setCurrent(getCurrent());
         } catch (Exception e) {
-            //////System.out.println(e.getMessage());
+            //////// // System.out.println(e.getMessage());
         }
     }
 
@@ -147,11 +154,11 @@ public class PackageItemController implements Serializable {
 
     public void addToPackage() {
         if (getCurrentPackege() == null) {
-            UtilityController.addErrorMessage("Please select a package");
+            JsfUtil.addErrorMessage("Please select a package");
             return;
         }
         if (getCurrentItem() == null) {
-            UtilityController.addErrorMessage("Please select an item");
+            JsfUtil.addErrorMessage("Please select an item");
             return;
         }
         PackageItem pi = new PackageItem();
@@ -160,18 +167,47 @@ public class PackageItemController implements Serializable {
         pi.setItem(getCurrentItem());
         pi.setCreatedAt(new Date());
         pi.setCreater(sessionController.loggedUser);
-        getFacade().create(pi);
-        UtilityController.addSuccessMessage("Added");
+        if(pi.getId() == null){
+            getFacade().create(pi);
+        }
+        
+        pi.getItem().setCanRemoveItemfromPackage(canRemovePackageItemfromPackage);
+        
+        if(pi.getId() != null){
+            itemFacade.edit(pi.getItem());
+        }
+        
+        JsfUtil.addSuccessMessage("Added");
         recreateModel();
+    }
+    
+    public void EditPackageItem() {
+        if (getCurrentPackege() == null) {
+            JsfUtil.addErrorMessage("Please select a package");
+            return;
+        }
+        if (getCurrent() == null) {
+            JsfUtil.addErrorMessage("Please select an item");
+            return;
+        }else{
+            getCurrent().getItem().setCanRemoveItemfromPackage(canRemovePackageItemfromPackage);
+            itemFacade.edit(getCurrent().getItem());
+        }
+
+        recreateModel();
+        getItems();
+        
+        JsfUtil.addSuccessMessage("Updated");
+        
     }
 
     public void removeFromPackage() {
         if (getCurrentPackege() == null) {
-            UtilityController.addErrorMessage("Please select a package");
+            JsfUtil.addErrorMessage("Please select a package");
             return;
         }
         if (getCurrent() == null) {
-            UtilityController.addErrorMessage("Please select an item");
+            JsfUtil.addErrorMessage("Please select an item");
             return;
         }
 
@@ -179,8 +215,9 @@ public class PackageItemController implements Serializable {
         getCurrent().setRetirer(getSessionController().getLoggedUser());
         getCurrent().setRetiredAt(new Date());
         getFacade().edit(getCurrent());
-        UtilityController.addSuccessMessage("Item Removed");
+        JsfUtil.addSuccessMessage("Item Removed");
         recreateModel();
+        getItems();
     }
 
     /**
@@ -250,6 +287,11 @@ public class PackageItemController implements Serializable {
     private PackageItemFacade getFacade() {
         return ejbFacade;
     }
+    
+    public void clearValus(){
+        canRemovePackageItemfromPackage = false;
+        
+    }
 
     /**
      *
@@ -259,7 +301,7 @@ public class PackageItemController implements Serializable {
         String temSql;
         if (getCurrentPackege() != null) {
             temSql = "SELECT i FROM PackageItem i where i.retired=false and i.packege.id = " + getCurrentPackege().getId();
-            items = getFacade().findBySQL(temSql);
+            items = getFacade().findByJpql(temSql);
         } else {
             items = null;
         }
@@ -291,12 +333,12 @@ public class PackageItemController implements Serializable {
 
             getFacade().edit(current);
 
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            UtilityController.addSuccessMessage("Saved Successfully");
+            JsfUtil.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
         getItems();
@@ -314,9 +356,9 @@ public class PackageItemController implements Serializable {
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
@@ -408,7 +450,7 @@ public class PackageItemController implements Serializable {
     public List<PackageFee> getCharges() {
         if (getCurrent() != null && getCurrent().getId() != null) {
             String temp = "SELECT  p from PackageFee p where p.retired=false and p.item.id=" + getCurrent().getItem().getId() + "and p.packege.id=" + getCurrentPackege().getId();
-            charges = getPackageFeeFacade().findBySQL(temp);
+            charges = getPackageFeeFacade().findByJpql(temp);
         }
         if (charges == null) {
             charges = new ArrayList<PackageFee>();
@@ -442,6 +484,14 @@ public class PackageItemController implements Serializable {
 
     public void setFilteredItems(List<Item> filteredItems) {
         this.filteredItems = filteredItems;
+    }
+
+    public boolean isCanRemovePackageItemfromPackage() {
+        return canRemovePackageItemfromPackage;
+    }
+
+    public void setCanRemovePackageItemfromPackage(boolean canRemovePackageItemfromPackage) {
+        this.canRemovePackageItemfromPackage = canRemovePackageItemfromPackage;
     }
 
     /**

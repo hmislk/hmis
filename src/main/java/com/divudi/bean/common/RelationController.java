@@ -4,8 +4,8 @@ import com.divudi.entity.Relation;
 
 
 import com.divudi.facade.RelationFacade;
-import com.divudi.facade.util.JsfUtil;
-import com.divudi.facade.util.JsfUtil.PersistAction;
+import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil.PersistAction;
 
 
 
@@ -81,7 +81,7 @@ public class RelationController implements Serializable {
     public List<Relation> getItems() {
         if (items == null) {
             String j = "select r from Relation r where r.retired=false order by r.orderNo";
-            items = getFacade().findBySQL(j);
+            items = getFacade().findByJpql(j);
         }
         return items;
     }

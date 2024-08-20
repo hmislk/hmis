@@ -1,0 +1,67 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+
+        <ui:composition template="./index.xhtml">
+            <ui:define name="subcontent">
+                <p:panel header="Iniaitl Fund Bill" >
+                    <p:panel header="Funds" >
+                        <div class="d-flex align-items-center my-2 ">
+                            <p:outputLabel value="Payment Method" ></p:outputLabel>
+                            <p:selectOneMenu class="mx-2" id="cmdPayment" value="#{financialTransactionController.currentPayment.paymentMethod}" >
+                                <f:selectItem itemLabel="Select Payment Method" ></f:selectItem>
+                                <f:selectItems value="#{enumController.paymentMethods}" ></f:selectItems>
+                            </p:selectOneMenu>
+
+                            <p:outputLabel class="mx-5" value="#{financialTransactionController.currentBill.total}" ></p:outputLabel>
+                            <p:commandButton class="ui-button-success" value="Settle" ajax="false" action="#{financialTransactionController.settleFundTransferReceiveBill()}" ></p:commandButton>
+
+                        </div>
+                        <p:dataTable id="tblbill" value="#{financialTransactionController.fundTransferBillsToReceive}" var="bp" selectionMode="single"
+                                     selection="#{financialTransactionController.selectedBill}">
+
+                            <p:column headerText="Staff" >
+                                <h:outputText value="#{bp.staff.person.nameWithInitials}" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Created At" >
+                                <h:outputText value="#{bp.createdAt}" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Payment Method" >
+                                <h:outputText value="#{bp.paymentMethod}" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Total" >
+                                <h:outputText value="#{bp.total}" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Net Total" >
+                                <h:outputText value="#{bp.netTotal}" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="" >
+                                <p:commandButton 
+                                    id="btnRemove"
+                                    value="Remove"
+                                    class="ui-button-danger"
+                                    icon="fas fa-trash"
+                                    action="#{financialTransactionController.removePayment}" 
+                                    process="btnRemove tblPayments"
+                                    update="tblPayments"
+                                    >
+                                    <f:setPropertyActionListener value="#{bp}" target="#{financialTransactionController.removingPayment}" ></f:setPropertyActionListener>
+                                </p:commandButton>
+                            </p:column>
+                        </p:dataTable>
+
+                    </p:panel>
+
+
+                </p:panel>
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

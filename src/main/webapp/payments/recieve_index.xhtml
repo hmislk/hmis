@@ -1,0 +1,63 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html">
+
+
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+
+                <div class="row" >
+                    <div class="col-md-3" >
+                        <h:form>
+                            <p:accordionPanel activeIndex="#{searchController.managePaymentIndex}">
+                                <p:ajax process="@this"></p:ajax>
+                                <p:tab title="Inward Deposite" >
+                                    <div class="d-grid gap-2">
+                                        <p:commandButton  class="w-100" ajax="false"  action="/inward/inward_bill_payment?faces-redirect=true" value="Payment" 
+                                         actionListener="#{inwardPaymentController.makeNull}" rendered="#{webUserController.hasPrivilege('InwardBilling')}"/>
+                                        <p:commandButton  class="w-100" ajax="false" action="/inward/inward_search_payment?faces-redirect=true" value="Payment Search" actionListener="#{searchController.makeListNull}"  rendered="#{webUserController.hasPrivilege('InwardBillSearch')}"  />
+                                        <p:commandButton  class="w-100" ajax="false" action="/inward/inward_bill_refund?faces-redirect=true" value="Refund" actionListener="#{inwardRefundController.makeNull}" rendered="#{webUserController.hasPrivilege('InwardBilling')}"/>
+                                        <p:commandButton  class="w-100" ajax="false" action="/inward/inward_search_refund?faces-redirect=true" value="Refund Search" actionListener="#{searchController.makeListNull}"  rendered="#{webUserController.hasPrivilege('InwardBillSearch')}"/>
+                                    </div>
+                                </p:tab>
+                                <p:tab title="Agent" >
+                                    <div class="d-grid gap-2">
+                                        <p:commandButton  class="w-100" ajax="false" action="/agent_bill?faces-redirect=true" value="Agent Payment" actionListener="#{agentPaymentRecieveBillController.prepareNewBill()}"/>
+                                        <p:commandButton  class="w-100" ajax="false" action="/agent_bill_search_own?faces-redirect=true"
+                                         actionListener="#{searchController.makeListNull}"  value="Agent Payment Bill Search"/>
+                                    </div>
+                                </p:tab>
+                                <p:tab title="Collecting Center" >
+                                    <p:commandButton  class="w-100" ajax="false" action="/lab/collecting_centre_bill?faces-redirect=true" value="Collecting Centre Payment" actionListener="#{agentPaymentRecieveBillController.prepareNewBill()}" />
+                                </p:tab>
+                                <p:tab title="Patient Deposite" >
+                                    <div class="d-grid gap-2">
+                                        <p:commandButton value="Patient Deposite" class="w-100" ajax="false" rendered="#{webUserController.hasPrivilege('Payment')}" action="/payments/patient/receive?faces-redirect=true" actionListener="#{patientController.clearDataForPatientDeposite()}" />  
+                                    </div>
+
+                                </p:tab>
+                            </p:accordionPanel>
+                        </h:form>
+                    </div>
+                    <div class="col-md-9" >
+                        <ui:insert name="admin" >
+
+                        </ui:insert>
+
+                    </div>
+                </div>
+
+
+
+            </ui:define>
+
+
+        </ui:composition>
+
+    </h:body>
+</html>

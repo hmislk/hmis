@@ -1,0 +1,200 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+
+                <p:panel header="Reports">
+                    <div class="row" >
+                        <div class="col-md-3" >
+                            <h:form>
+                                <p:accordionPanel activeIndex="#{searchController.manageListIndex}">
+                                    <p:ajax process="@this"></p:ajax>
+                                    <p:tab title="Summaries">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                value="Shift End Summaries" 
+                                                action="#{financialTransactionController.navigateToListShiftEndSummaries()}"
+                                                class="w-100">
+                                            </p:commandButton>
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                value="Day End Summery" 
+                                                actionListener="#{searchController.makeNull()}"
+                                                action="#{financialTransactionController.navigateToDayEndReport()}"
+                                                class="w-100">
+                                            </p:commandButton>
+                                        </div>
+                                    </p:tab>
+                                    <p:tab title="Lists">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                value="Day End Summary" 
+                                                action="#{financialTransactionController.navigateToDayEndSummary()}"
+                                                class="w-100">
+                                            </p:commandButton>
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                value="User Bill Summary" 
+                                                actionListener="#{searchController.makeNull()}"
+                                                action="#{searchController.navigateToUserFinancialTransactionSummaryByBill()}"
+                                                class="w-100">
+                                            </p:commandButton>
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                value="Financial Transactions Summary" 
+                                                actionListener="#{searchController.makeNull()}"
+                                                action="#{searchController.navigateToAllFinancialTransactionSummary()}"
+                                                class="w-100">
+                                            </p:commandButton>
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                value="Financial Transactions Summary by cashier" 
+                                                actionListener="#{searchController.makeNull()}"
+                                                action="#{searchController.navigateToAllFinancialTransactionSummaryCashier()}"
+                                                class="w-100">
+                                            </p:commandButton>
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                value="Financial Transactions Summary - Payment Method" 
+                                                actionListener="#{searchController.makeNull()}"
+                                                action="#{searchController.navigateToFinancialTransactionSummaryPaymentMethod()}"
+                                                class="w-100">
+                                            </p:commandButton>
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                value="Financial Transactions Summary - Cashiers" 
+                                                actionListener="#{searchController.makeNull()}"
+                                                action="#{searchController.navigateToFinancialTransactionSummaryByUsers()}"
+                                                class="w-100">
+                                            </p:commandButton>
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                value="Financial Transactions Summary - Cashier Payment Method" 
+                                                actionListener="#{searchController.makeNull()}"
+                                                action="#{searchController.navigateToFinancialTransactionSummaryByUserPayment()}"
+                                                class="w-100">
+                                            </p:commandButton>
+
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                value="Financial Transactions Summary - Department" 
+                                                actionListener="#{searchController.makeNull()}"
+                                                action="#{searchController.navigateToFinancialTransactionSummaryByDepartment()}"
+                                                class="w-100">
+                                            </p:commandButton>
+
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                value="All Bills" 
+                                                action="/analytics/all_bills"
+                                                class="w-100">
+                                            </p:commandButton>
+                                            <p:commandButton 
+                                                ajax="false" value="List of Bills of Other Institutions"
+                                                action="#{searchController.navigateToListOtherInstitutionBills()}"
+                                                class="w-100">
+                                            </p:commandButton>
+                                        </div>
+                                    </p:tab>
+                                    <p:tab title="OPD Reports">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton ajax="false" value="OPD Bill List" action="#{searchController.navigateToOpdBillList()}" 
+                                                             ></p:commandButton>
+                                            <p:commandButton ajax="false" value="Cancelled Bill List" action="#" ></p:commandButton>
+                                            <p:commandButton ajax="false" value="Returned Bill List" action="#" ></p:commandButton>
+
+                                        </div>
+                                    </p:tab>
+                                    <p:tab title="Professional Payment Reports">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton
+                                                ajax="false" 
+                                                value="Channel Professional Payments By Payments" 
+                                                action="#{searchController.navigateToChannellingPaymentBillList()}" 
+                                                ></p:commandButton>
+                                            <p:commandButton
+                                                ajax="false" 
+                                                value="Channel Professional Payments By Payment Items" 
+                                                action="#{searchController.navigateToChannellingPaymentBillFeeList()}" 
+                                                ></p:commandButton>
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                value="OPD Professional Payment by Payment" 
+
+                                                action="#{searchController.navigateToOpdPaymentBillList}" 
+
+                                                ></p:commandButton>
+                                            <p:commandButton
+                                                ajax="false" 
+                                                value="OPD Professional Payments By Payment Items" 
+                                                action="#{searchController.navigateToOpdPaymentBillFeeList()}" 
+                                                ></p:commandButton>
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                value="Professional Payments by Payment" 
+                                                action="#{searchController.navigateToProfessionalPaymentBillList()}" >
+                                            </p:commandButton>
+
+                                        </div>
+                                    </p:tab>
+                                    <p:tab title="Credit Reports">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                value="Staff Credit Bill List" 
+                                                action="#{searchController.navigateToStaffCreditBillList}" ></p:commandButton>
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                value="Genaral Credit Bill List" 
+                                                action="#{searchController.navigateToGeneralCreditBillList}" ></p:commandButton>
+                                        </div>
+                                    </p:tab>
+
+                                    <p:tab title="Lab Reports" disabled="true">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton ajax="false" value="Bill List" action="#"  ></p:commandButton>
+                                            <p:commandButton ajax="false" value="Test List" action="report_list_lab_tests"  ></p:commandButton>
+                                            <p:commandButton ajax="false" value="Referral Bill List" action="#"  ></p:commandButton>
+                                            <p:commandButton ajax="false" value="Referral Test List" action="#"  ></p:commandButton>
+                                        </div>
+                                    </p:tab>
+                                    <p:tab title="SMS Reports">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton ajax="false" value="SMS List" action="#{searchController.navigateToSmsList()}"></p:commandButton>
+                                            <p:commandButton ajax="false" value="SMS Failed List" action="#{searchController.navigateToFailedSmsList()}"  ></p:commandButton>
+                                            <p:commandButton ajax="false" value="Sent SMS" action="#{searchController.navigateToSendSms()}"  ></p:commandButton>
+                                        </div>
+                                    </p:tab>  
+                                    <p:tab title="Audit Reports">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton ajax="false" value="Audit Event List" 
+                                                             action="#{auditEventController.navigateToAuditEventList()}"></p:commandButton>
+                                        </div>
+                                    </p:tab>  
+
+                                </p:accordionPanel>
+                            </h:form>
+                        </div>
+                        <div class="col-md-9" >
+                            <ui:insert name="report">
+                            </ui:insert>
+                        </div>
+                    </div>
+                </p:panel>
+
+            </ui:define>
+
+
+        </ui:composition>
+
+    </h:body>
+</html>

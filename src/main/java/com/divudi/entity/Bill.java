@@ -1,11 +1,12 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+* Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.entity;
 
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillType;
+import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.IdentifiableWithNameOrCode;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.inward.SurgeryBillType;
@@ -14,9 +15,14 @@ import com.divudi.entity.membership.MembershipScheme;
 import com.divudi.entity.pharmacy.StockVarientBillItem;
 import java.io.Serializable;
 import java.lang.reflect.Field;
+import java.text.DateFormat;
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -26,14 +32,12 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Inheritance;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.OrderBy;
-import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.Transient;
 
@@ -42,15 +46,17 @@ import javax.persistence.Transient;
  * @author buddhika
  */
 @Entity
-@Table(name = "bill")
-@NamedQueries({
-    @NamedQuery(name = "Bill.findAll", query = "SELECT b FROM Bill b")
-    ,
-    @NamedQuery(name = "Bill.findById", query = "SELECT b FROM Bill b WHERE b.id = :id")})
+@Inheritance
 public class Bill implements Serializable {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    Long id;
+    
+    static final long serialVersionUID = 1L;
+    
     @ManyToOne
-    MembershipScheme membershipScheme;
+    private MembershipScheme membershipScheme;
     @OneToOne
     private CashTransaction cashTransaction;
     @OneToMany(mappedBy = "bill", fetch = FetchType.LAZY)
@@ -73,205 +79,212 @@ public class Bill implements Serializable {
     private List<Bill> refundBills = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
-    BillClassType billClassType;
+    protected BillClassType billClassType;
 
-    @ManyToOne
-    BatchBill batchBill;
-
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     private Category category;
     @Transient
     boolean transError;
 
-    static final long serialVersionUID = 1L;
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    Long id;
-    ////////////////////////////////////////////////////
+    private String ipOpOrCc;
+    
+    
+
     @OneToMany(mappedBy = "bill", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    List<Payment> payments = new ArrayList<>();
+    private List<Payment> payments = new ArrayList<>();
     @OneToMany(mappedBy = "bill", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    List<BillFee> billFees = new ArrayList<>();
+    private List<BillFee> billFees = new ArrayList<>();
     @OneToMany(mappedBy = "bill", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @OrderBy("inwardChargeType, searialNo")
-    List<BillItem> billItems;
+    private List<BillItem> billItems;
 
     @OneToMany(mappedBy = "expenseBill", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @OrderBy("searialNo")
-    List<BillItem> billExpenses;
+    private List<BillItem> billExpenses;
 
     @OneToMany(mappedBy = "bill", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    List<BillComponent> billComponents = new ArrayList<>();
+    private List<BillComponent> billComponents = new ArrayList<>();
     ////////////////////////////////////////////////   
     @Lob
-    String comments;
+    private String comments;
     // Bank Detail
-    String creditCardRefNo;
-    String chequeRefNo;
-    @ManyToOne
-    Institution bank;
+    private String creditCardRefNo;
+    private String chequeRefNo;
+
+    private int creditDuration;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Institution bank;
     @Temporal(javax.persistence.TemporalType.DATE)
-    Date chequeDate;
+    private Date chequeDate;
     //Approve
-    @ManyToOne
-    WebUser approveUser;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private WebUser approveUser;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-    Date approveAt;
+    private Date approveAt;
     //Pharmacy
     @Temporal(javax.persistence.TemporalType.DATE)
-    Date invoiceDate;
+    private Date invoiceDate;
     //Enum
     @Enumerated(EnumType.STRING)
-    BillType billType;
+    private BillType billType;
     @Enumerated(EnumType.STRING)
-    PaymentMethod paymentMethod;
-    @ManyToOne
-    BillItem singleBillItem;
-    @ManyToOne
-    BillSession singleBillSession;
+    private BillTypeAtomic billTypeAtomic;
+    @Enumerated(EnumType.STRING)
+    private PaymentMethod paymentMethod;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private BillItem singleBillItem;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private BillSession singleBillSession;
     String qutationNumber;
-    @ManyToOne
-    Institution referredByInstitution;
-    @Column(name = "referralID")
-    String referralNumber;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Institution referredByInstitution;
+    @Column
+    private String referenceNumber; //referenceNumber
 
     //Values
-    double margin;
+    private double margin;
 
-    double total;
-    double netTotal;
-    double discount;
-    double vat;
-    double vatPlusNetTotal;
+    private double total;
+    private double netTotal;
+    private double discount;
+    private double vat;
+    private double vatPlusNetTotal;
 
-    double discountPercent;
+    @Transient
+    private double absoluteNetTotal;
 
-    double billTotal;
-    double paidAmount;
-    double balance;
-    double serviceCharge;
-    Double tax = 0.0;
-    Double cashPaid = 0.0;
-    Double cashBalance = 0.0;
-    double saleValue = 0.0f;
-    double freeValue = 0.0f;
-    double performInstitutionFee;
-    double staffFee;
-    double billerFee;
-    double grantTotal;
-    double expenseTotal;
+    private double discountPercent;
+
+    private double billTotal;
+    private double paidAmount;
+    private double refundAmount;
+    private double balance;
+    private double serviceCharge;
+    private Double tax = 0.0;
+    private Double cashPaid = 0.0;
+    private Double cashBalance = 0.0;
+    private double saleValue = 0.0f;
+    private double freeValue = 0.0f;
+    private double performInstitutionFee;
+    private double staffFee;
+    private double billerFee;
+    private double grantTotal;
+    private double expenseTotal;
     //with minus tax and discount
-    double grnNetTotal;
+    private double grnNetTotal;
 
     //Institution
-    @ManyToOne
-    Institution paymentSchemeInstitution;
-    @ManyToOne
-    Institution collectingCentre;
-    @ManyToOne
-    Institution institution;
-    @ManyToOne
-    Institution fromInstitution;
-    @ManyToOne
-    Institution toInstitution;
-    @ManyToOne
-    Institution creditCompany;
-    @ManyToOne
-    Institution referenceInstitution;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Institution paymentSchemeInstitution;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @Deprecated //Use fromInstitution
+    private Institution collectingCentre;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Institution institution;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Institution fromInstitution;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Institution toInstitution;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Institution creditCompany;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Institution referenceInstitution;
     //Departments
-    @ManyToOne
-    Department referringDepartment;
-    @ManyToOne
-    Department department;
-    @ManyToOne
-    Department fromDepartment;
-    @ManyToOne
-    Department toDepartment;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Department referringDepartment;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Department department;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Department fromDepartment;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Department toDepartment;
     //Bill
     @ManyToOne(fetch = FetchType.LAZY)
-    Bill billedBill;
-    @ManyToOne
-    Bill cancelledBill;
-    @ManyToOne
-    Bill refundedBill;
-    @ManyToOne
-    Bill reactivatedBill;
+    private Bill billedBill;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Bill cancelledBill;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Bill refundedBill;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Bill reactivatedBill;
 
-    @ManyToOne
-    Bill referenceBill;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Bill referenceBill;
     //Id's
-    String deptId;
-    String insId;
-    String catId;
-    String sessionId;
-    String bookingId;
-    String invoiceNumber;
+    private String deptId;
+    private String insId;
+    private String catId;
+    private String sessionId;
+    @Deprecated
+    private String bookingId;
+    private String invoiceNumber;
     @Transient
-    int intInvoiceNumber;
+    private int intInvoiceNumber;
     //Staff
-    @ManyToOne
-    Staff staff;
-    @ManyToOne
-    Staff fromStaff;
-    @ManyToOne
-    Staff toStaff;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Staff staff;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Staff fromStaff;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Staff toStaff;
     //Booleans
-    boolean cancelled;
-    boolean refunded;
-    boolean reactivated;
+    private boolean paid;
+    private boolean cancelled;
+    private boolean refunded;
+    private boolean reactivated;
     //Created Properties
-    @ManyToOne
-    WebUser creater;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private WebUser creater;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-    Date createdAt;
+    private Date createdAt;
     //Edited Properties
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     private WebUser editor;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date editedAt;
     //Checking Property
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     private WebUser checkedBy;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date checkeAt;
     //Retairing properties
     boolean retired;
-    @ManyToOne
-    WebUser retirer;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private WebUser retirer;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-    Date retiredAt;
-    String retireComments;
+    private Date retiredAt;
+    private String retireComments;
     ////////////////
-    @ManyToOne
-    PaymentScheme paymentScheme;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private PaymentScheme paymentScheme;
     @Temporal(javax.persistence.TemporalType.DATE)
-    Date billDate;
+    private Date billDate;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-    Date billTime;
+    private Date billTime;
     @Transient
-    String billClass;
-    @ManyToOne
-    Item billPackege;//BILLPACKEGE_ID
-    @ManyToOne
-    Person person;
-    @ManyToOne
-    Patient patient;
-    @ManyToOne
-    Doctor referredBy;
-    @ManyToOne
-    PatientEncounter patientEncounter;
-    @ManyToOne
+    private String billClass;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Item billPackege;//BILLPACKEGE\\_ID
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Person person;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Patient patient;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Doctor referredBy;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private PatientEncounter patientEncounter;
+    @ManyToOne(fetch = FetchType.LAZY)
     private PatientEncounter procedure;
     @Transient
-    List<Bill> listOfBill;
+    private List<Bill> listOfBill;
 
     @Transient
     private List<BillItem> transActiveBillItem;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     private Bill forwardReferenceBill;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     private Bill backwardReferenceBill;
     private double hospitalFee;
     private double professionalFee;
@@ -281,26 +294,23 @@ public class Bill implements Serializable {
     private boolean transBoolean;
     @Enumerated(EnumType.STRING)
     private SurgeryBillType surgeryBillType;
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     private WebUser toWebUser;
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     private WebUser fromWebUser;
     double claimableTotal;
 
-    //Denormalization
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-    Date appointmentAt;
+    private Date appointmentAt;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-    Date paidAt;
-    @ManyToOne
-    Bill paidBill;
+    private Date paidAt;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Bill paidBill;
     double qty;
-    @Transient
-    double transTotalSaleValue;
 
     //Sms Info
     private Boolean smsed = false;
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     private WebUser smsedUser;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date smsedAt;
@@ -309,31 +319,327 @@ public class Bill implements Serializable {
 
     //Print Information
     private boolean printed;
-//    @ManyToOne
-//    private WebUser printedUser;
-//    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-//    private Date printedAt;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private WebUser printedUser;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date printedAt;
+
+        //Print Information
+    private boolean duplicatedPrinted;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private WebUser duplicatePrintedUser;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date duplicatePrintedAt;
 
     @Transient
-    double transTotalCCFee;
+    private double transTotalSaleValue;
     @Transient
-    double transTotalWithOutCCFee;
+    private double transTotalCCFee;
     @Transient
-    double transCurrentCCBalance;
+    private double transTotalWithOutCCFee;
     @Transient
-    AgentHistory agentHistory;
+    private double transCurrentCCBalance;
     @Transient
-    double vatCalulatedAmount;
+    private AgentHistory agentHistory;
     @Transient
-    double vatPlusStaffFee;
+    private double vatCalulatedAmount;
     @Transient
-    double vatPlusHosFee;
-
+    private double vatPlusStaffFee;
+    @Transient
+    private double vatPlusHosFee;
     @Transient
     private boolean approvedAnyTest = false;
-
     @Transient
     private IdentifiableWithNameOrCode referredInstituteOrDoctor;
+    @Transient
+    private String billPrint;
+    @Transient
+    private String billTemplate;
+    @Transient
+    private String ageAtBilledDate;
+    @Transient
+    private Bill tmpRefBill;
+    
+    private String agentRefNo;
+    private boolean billClosed;
+    
+    private String localNumber;
+    
+    
+
+    private void generateBillPrintFromBillTemplate() {
+        billPrint = "";
+        if (billTemplate == null) {
+            return;
+        }
+        if (billTemplate.trim().equals("")) {
+            return;
+        }
+        billPrint = billTemplate;
+
+        if (this.getPatient() != null) {
+            Patient tmpPt = this.getPatient();
+            if (tmpPt.getPerson() != null) {
+                Person tmpPerson = tmpPt.getPerson();
+                billPrint = billPrint.replaceAll("\\{patient\\_name\\}", tmpPerson.getNameWithTitle() != null ? tmpPerson.getNameWithTitle() : "");
+                billPrint = billPrint.replaceAll("\\{patient\\_age\\}", tmpPerson.getAgeAsString() != null ? tmpPerson.getAgeAsString() : "");
+                billPrint = billPrint.replaceAll("\\{patient\\_sex\\}", tmpPerson.getSex() != null ? tmpPerson.getSex().name() : "");
+                billPrint = billPrint.replaceAll("\\{patient\\_address\\}", tmpPerson.getAddress() != null ? tmpPerson.getAddress() : "");
+                billPrint = billPrint.replaceAll("\\{patient\\_phone\\}", tmpPerson.getPhone() != null ? tmpPerson.getPhone() : "");
+
+                billPrint = billPrint.replaceAll("\\{name\\}", tmpPerson.getNameWithTitle() != null ? tmpPerson.getNameWithTitle() : "");
+                billPrint = billPrint.replaceAll("\\{age\\}", tmpPerson.getAgeAsString() != null ? tmpPerson.getAgeAsString() : "");
+                billPrint = billPrint.replaceAll("\\{gender\\}", tmpPerson.getSex() != null ? tmpPerson.getSex().name() : "");
+                billPrint = billPrint.replaceAll("\\{phone\\_number\\}", tmpPerson.getPhone() != null ? tmpPerson.getPhone() : "");
+                billPrint = billPrint.replaceAll("\\{address\\}", tmpPerson.getAddress() != null ? tmpPerson.getAddress() : "");
+            }
+            billPrint = billPrint.replaceAll("\\{patient\\_phn\\_number\\}", tmpPt.getPhn() != null ? tmpPt.getPhn() : "");
+            billPrint = billPrint.replaceAll("\\{patient\\_id\\}", String.valueOf(tmpPt.getId()));
+            billPrint = billPrint.replaceAll("\\{patient\\_code\\}", tmpPt.getCode() != null ? tmpPt.getCode() : "");
+            billPrint = billPrint.replaceAll("\\{patient\\_mrn\\}", tmpPt.getPhn() != null ? tmpPt.getPhn() : "");
+        }
+
+        if (this.getPatientEncounter() != null) {
+            PatientEncounter encounter = this.getPatientEncounter();
+            billPrint = billPrint.replaceAll("\\{admission\\_number\\}", encounter.getBhtNo() != null ? encounter.getBhtNo() : "");
+            billPrint = billPrint.replaceAll("\\{admission\\_date\\}", encounter.getDateOfAdmission() != null ? encounter.getDateOfAdmission().toString() : "");
+        }
+
+        if (this.getPaymentMethod() != null) {
+            billPrint = billPrint.replaceAll("\\{payment\\_method\\}", this.getPaymentMethod().getLabel() != null ? this.getPaymentMethod().getLabel() : "");
+        }
+
+        billPrint = billPrint.replaceAll("\\{id\\}", this.getIdStr());
+
+        String tmpBarcode = "<img id=\"barcode" + this.getId() + "\"/>";
+        billPrint = billPrint.replaceAll("\\{barcode\\}", tmpBarcode);
+
+        billPrint = billPrint.replaceAll("\\{ins\\_id\\}", this.getInsId());
+        billPrint = billPrint.replaceAll("\\{dept\\_id\\}", this.getDeptId());
+
+        String doubleFormat = "#,##0.00";
+
+        String shortDateFormat = "d M yy";
+        String shortTimeFormat = "d M yy hh:mm a";
+        String longDateFormat = "dd MMMM yyyy";
+        String longTimeFormat = "hh:mm:ss a";
+        String shortDateTimeFormat = "d M yy hh:mm a";
+
+        DecimalFormat df = new DecimalFormat(doubleFormat);
+
+        if (this.getBillItems() != null) {
+            String itemCount = Integer.toString(this.getBillItems().size());
+
+            billPrint = billPrint.replaceAll("\\{gross\\_total\\}", df.format(this.getTotal()));
+            billPrint = billPrint.replaceAll("\\{discount\\}", df.format(this.getDiscount()));
+            billPrint = billPrint.replaceAll("\\{net\\_total\\}", df.format(this.getNetTotal()));
+
+            billPrint = billPrint.replaceAll("\\{discount\\_percent\\}", df.format(this.getDiscountPercent()));
+            billPrint = billPrint.replaceAll("\\{cash\\_tendered\\}", df.format(this.getCashPaid()));
+            billPrint = billPrint.replaceAll("\\{cash\\_balance\\}", df.format(this.getCashBalance()));
+            billPrint = billPrint.replaceAll("\\{outstanding\\_balance\\}", df.format(this.getBalance()));
+            billPrint = billPrint.replaceAll("\\{number\\_of\\_item\\_types\\}", itemCount);
+            billPrint = billPrint.replaceAll("\\{count\\_of\\_items\\}", itemCount);
+
+        }
+
+        billPrint = billPrint.replaceAll("\\{institution\\_id\\}", Objects.toString(this.getInsId(), ""));
+        billPrint = billPrint.replaceAll("\\{department\\_id\\}", Objects.toString(this.getDeptId(), ""));
+        billPrint = billPrint.replaceAll("\\{id\\}", Objects.toString(this.getIdStr(), ""));
+        billPrint = billPrint.replaceAll("\\{id\\_barcode\\}", Objects.toString(this.getIdStr(), ""));
+        billPrint = billPrint.replaceAll("\\{Bill Payment Completed Details\\}", Objects.toString(this.getIdStr(), ""));
+
+        if (this.getPaidAt() != null) {
+            Date tmpPaidAt = this.getPaidAt();
+
+            DateFormat shortDateFormatter = new SimpleDateFormat(shortDateFormat);
+            DateFormat shortTimeFormatter = new SimpleDateFormat(shortTimeFormat);
+            DateFormat longDateFormatter = new SimpleDateFormat(longDateFormat);
+            DateFormat longTimeFormatter = new SimpleDateFormat(longTimeFormat);
+            DateFormat shortDateTimeFormatter = new SimpleDateFormat(shortDateTimeFormat);
+
+            billPrint = billPrint.replaceAll("\\{paid\\_date\\}", longDateFormatter.format(tmpPaidAt));
+            billPrint = billPrint.replaceAll("\\{paid\\_time\\}", longDateFormatter.format(tmpPaidAt));
+            billPrint = billPrint.replaceAll("\\{paid\\_date\\_time\\}", longDateFormatter.format(tmpPaidAt));
+
+            billPrint = billPrint.replaceAll("\\{paid\\_date\\_short\\}", shortDateFormatter.format(tmpPaidAt));
+            billPrint = billPrint.replaceAll("\\{paid\\_time\\_short\\}", shortTimeFormatter.format(tmpPaidAt));
+            billPrint = billPrint.replaceAll("\\{paid\\_date\\_time\\_short\\}", shortDateTimeFormatter.format(tmpPaidAt));
+
+            billPrint = billPrint.replaceAll("\\{paid\\_date\\_long\\}", longDateFormatter.format(tmpPaidAt));
+            billPrint = billPrint.replaceAll("\\{paid\\_time\\_long\\}", longTimeFormatter.format(tmpPaidAt));
+            billPrint = billPrint.replaceAll("\\{paid\\_date\\_time\\_long\\}", longDateFormatter.format(tmpPaidAt) + " " + longTimeFormatter.format(tmpPaidAt));
+        }
+
+        if (this.getCreatedAt() != null) {
+            Date createdDateTimeTmp = this.getCreatedAt();
+
+            DateFormat shortDateFormatter = new SimpleDateFormat(shortDateFormat);
+            DateFormat shortTimeFormatter = new SimpleDateFormat(shortTimeFormat);
+            DateFormat longDateFormatter = new SimpleDateFormat(longDateFormat);
+            DateFormat longTimeFormatter = new SimpleDateFormat(longTimeFormat);
+            DateFormat shortDateTimeFormatter = new SimpleDateFormat(shortDateTimeFormat);
+
+            billPrint = billPrint.replaceAll("\\{bill\\_date\\}", longDateFormatter.format(createdDateTimeTmp));
+            billPrint = billPrint.replaceAll("\\{bill\\_time\\}", longDateFormatter.format(createdDateTimeTmp));
+            billPrint = billPrint.replaceAll("\\{bill\\_date\\_time\\}", longDateFormatter.format(createdDateTimeTmp));
+
+            billPrint = billPrint.replaceAll("\\{bill\\_date\\_short\\}", shortDateFormatter.format(createdDateTimeTmp));
+            billPrint = billPrint.replaceAll("\\{bill\\_time\\_short\\}", shortTimeFormatter.format(createdDateTimeTmp));
+            billPrint = billPrint.replaceAll("\\{bill\\_date\\_time\\_short\\}", shortDateTimeFormatter.format(createdDateTimeTmp));
+
+            billPrint = billPrint.replaceAll("\\{bill\\_date\\_long\\}", longDateFormatter.format(createdDateTimeTmp));
+            billPrint = billPrint.replaceAll("\\{bill\\_time\\_long\\}", longTimeFormatter.format(createdDateTimeTmp));
+            billPrint = billPrint.replaceAll("\\{bill\\_date\\_time\\_long\\}", longDateFormatter.format(createdDateTimeTmp) + " " + longTimeFormatter.format(createdDateTimeTmp));
+        }
+
+        if (this.getInstitution() != null) {
+            billPrint = billPrint.replaceAll("\\{institution\\_name\\}", safeReplace(this.getInstitution().getName()));
+            billPrint = billPrint.replaceAll("\\{institution\\_address\\}", safeReplace(this.getInstitution().getAddress()));
+            billPrint = billPrint.replaceAll("\\{institution\\_phone\\}", safeReplace(this.getInstitution().getPhone()));
+            billPrint = billPrint.replaceAll("\\{institution\\_email\\}", safeReplace(this.getInstitution().getEmail()));
+            billPrint = billPrint.replaceAll("\\{institution\\_website\\}", safeReplace(this.getInstitution().getWeb()));
+        }
+
+        if (this.getDepartment() != null) {
+            billPrint = billPrint.replaceAll("\\{department\\_name\\}", safeReplace(this.getDepartment().getName()));
+            billPrint = billPrint.replaceAll("\\{department\\_address\\}", safeReplace(this.getDepartment().getAddress()));
+            billPrint = billPrint.replaceAll("\\{department\\_phone\\}", safeReplace(this.getDepartment().getTelephone1()));
+            billPrint = billPrint.replaceAll("\\{department\\_email\\}", safeReplace(this.getDepartment().getEmail()));
+        }
+
+        if (this.getFromInstitution() != null) {
+            billPrint = billPrint.replaceAll("\\{from\\_institution\\_name\\}", safeReplace(this.getFromInstitution().getName()));
+            billPrint = billPrint.replaceAll("\\{from\\_institution\\_address\\}", safeReplace(this.getFromInstitution().getAddress()));
+            billPrint = billPrint.replaceAll("\\{from\\_institution\\_phone\\}", safeReplace(this.getFromInstitution().getPhone()));
+            billPrint = billPrint.replaceAll("\\{from\\_institution\\_email\\}", safeReplace(this.getFromInstitution().getEmail()));
+            billPrint = billPrint.replaceAll("\\{from\\_institution\\}", safeReplace(this.getFromInstitution().getName()));
+        }
+
+        if (this.getFromDepartment() != null) {
+            billPrint = billPrint.replaceAll("\\{from\\_department\\_name\\}", safeReplace(this.getFromDepartment().getName()));
+            billPrint = billPrint.replaceAll("\\{from\\_department\\_address\\}", safeReplace(this.getFromDepartment().getAddress()));
+            billPrint = billPrint.replaceAll("\\{from\\_department\\_phone\\}", safeReplace(this.getFromDepartment().getTelephone1()));
+            billPrint = billPrint.replaceAll("\\{from\\_department\\_email\\}", safeReplace(this.getFromDepartment().getEmail()));
+            billPrint = billPrint.replaceAll("\\{from\\_department\\}", safeReplace(this.getDepartment().getName()));
+        }
+
+        if (this.getToInstitution() != null) {
+            billPrint = billPrint.replaceAll("\\{to\\_institution\\_name\\}", safeReplace(this.getToInstitution().getName()));
+            billPrint = billPrint.replaceAll("\\{to\\_institution\\_address\\}", safeReplace(this.getToInstitution().getAddress()));
+            billPrint = billPrint.replaceAll("\\{to\\_institution\\_phone\\}", safeReplace(this.getToInstitution().getPhone()));
+            billPrint = billPrint.replaceAll("\\{to\\_institution\\_email\\}", safeReplace(this.getToInstitution().getEmail()));
+            billPrint = billPrint.replaceAll("\\{to\\_institution\\}", safeReplace(this.getToInstitution().getName()));
+        }
+
+        if (this.getToDepartment() != null) {
+            billPrint = billPrint.replaceAll("\\{to\\_department\\_name\\}", safeReplace(this.getToDepartment().getName()));
+            billPrint = billPrint.replaceAll("\\{to\\_department\\_address\\}", safeReplace(this.getToDepartment().getAddress()));
+            billPrint = billPrint.replaceAll("\\{to\\_department\\_phone\\}", safeReplace(this.getToDepartment().getTelephone1()));
+            billPrint = billPrint.replaceAll("\\{to\\_department\\_email\\}", safeReplace(this.getToDepartment().getEmail()));
+            billPrint = billPrint.replaceAll("\\{to\\_department\\}", safeReplace(this.getToDepartment().getName()));
+        }
+
+        if (this.getCreater() != null) {
+            billPrint = billPrint.replaceAll("\\{bill\\_raised\\_user\\_username\\}", safeReplace(this.getCreater().getName()));
+
+            if (this.getCreater().getWebUserPerson() != null) {
+                billPrint = billPrint.replaceAll("\\{bill\\_raised\\_user\\_name\\}", safeReplace(this.getCreater().getWebUserPerson().getName()));
+                billPrint = billPrint.replaceAll("\\{Bill Raised Details\\}", safeReplace(this.getCreater().getWebUserPerson().getName()));
+            }
+
+            billPrint = billPrint.replaceAll("\\{cashier\\_user\\_name\\}", safeReplace(this.getCreater().getName()));
+
+            if (this.getCreater().getWebUserPerson() != null) {
+                billPrint = billPrint.replaceAll("\\{cashier\\_name\\}", safeReplace(this.getCreater().getWebUserPerson().getName()));
+            }
+
+            billPrint = billPrint.replaceAll("\\{cashier\\_code\\}", safeReplace(this.getCreater().getCode()));
+        }
+
+        billPrint = billPrint.replaceAll("\\{item\\_qty\\_rate\\_value\\_table\\}", convertBillItemsToItemQtyRateValueTable(billItems));
+        billPrint = billPrint.replaceAll("\\{item\\_value\\_table\\}", convertBillItemsToItemValueTable(billItems));
+        billPrint = billPrint.replaceAll("\\{item\\_rate\\_qty\\_newline\\_value\\_table\\}", safeReplace(this.getIdStr()));
+
+    }
+
+    
+    
+    private String safeReplace(String value) {
+        return value != null ? value : "";
+    }
+
+    private String convertBillItemsToItemQtyRateValueTable(List<BillItem> bis) {
+        DecimalFormat df = new DecimalFormat("#,##0.00");
+        StringBuilder str = new StringBuilder();
+
+        // Add the table start, thead and headers
+        str.append("<table class='table table-borderless'>")
+                .append("<thead>")
+                .append("<tr>")
+                .append("<th>Item</th>")
+                .append("<th>Quantity</th>")
+                .append("<th>Rate</th>")
+                .append("<th>Value</th>")
+                .append("</tr>")
+                .append("</thead>")
+                .append("<tbody>");
+
+        // Add the table data
+        for (BillItem bi : bis) {
+            String tmpItem = bi.getItem().getName();
+            Double qty = bi.getQty();
+            Double rate = bi.getNetRate();
+            Double value = bi.getNetValue();
+
+            str.append("<tr>")
+                    .append("<td>").append(tmpItem).append("</td>")
+                    .append("<td>").append(df.format(qty)).append("</td>")
+                    .append("<td>").append(df.format(rate)).append("</td>")
+                    .append("<td>").append(df.format(value)).append("</td>")
+                    .append("</tr>");
+        }
+
+        // Add the table end
+        str.append("</tbody>")
+                .append("</table>");
+
+        return str.toString();
+    }
+
+    private String convertBillItemsToItemValueTable(List<BillItem> bis) {
+        DecimalFormat df = new DecimalFormat("#,##0.00");
+        StringBuilder str = new StringBuilder();
+
+        // Add the table start, thead and headers
+        str.append("<table class='table-sm'>")
+                .append("<thead>")
+                .append("<tr>")
+                .append("<th>Item</th>")
+                .append("<th>Value</th>")
+                .append("</tr>")
+                .append("</thead>")
+                .append("<tbody>");
+
+        // Add the table data
+        for (BillItem bi : bis) {
+            String tmpItem = bi.getItem().getName();
+            Double qty = bi.getQty();
+            Double rate = bi.getNetRate();
+            Double value = bi.getNetValue();
+
+            str.append("<tr>")
+                    .append("<td>").append(tmpItem).append("</td>")
+                    .append("<td>").append(df.format(value)).append("</td>")
+                    .append("</tr>");
+        }
+
+        // Add the table end
+        str.append("</tbody>")
+                .append("</table>");
+
+        return str.toString();
+    }
 
     public double getTransTotalSaleValue() {
         return transTotalSaleValue;
@@ -370,8 +676,6 @@ public class Bill implements Serializable {
     public void setBillTotal(double billTotal) {
         this.billTotal = billTotal;
     }
-
-    private boolean paid;
 
     public Bill getPaidBill() {
         return paidBill;
@@ -458,7 +762,7 @@ public class Bill implements Serializable {
         hospitalFee = 0 - bill.getHospitalFee();
         margin = 0 - bill.getMargin();
         grnNetTotal = 0 - bill.getGrnNetTotal();
-
+        billTotal = 0 - bill.getBillTotal();
     }
 
     public void invertValue() {
@@ -481,6 +785,7 @@ public class Bill implements Serializable {
         hospitalFee = 0 - getHospitalFee();
         grnNetTotal = 0 - getGrnNetTotal();
         vatPlusNetTotal = 0 - getVatPlusNetTotal();
+        billTotal = 0 - getBillTotal();
     }
 
     public void copy(Bill bill) {
@@ -514,6 +819,8 @@ public class Bill implements Serializable {
         invoiceNumber = bill.getInvoiceNumber();
         vat = bill.getVat();
         vatPlusNetTotal = bill.getVatPlusNetTotal();
+        sessionId = bill.getSessionId();
+        ipOpOrCc=bill.getIpOpOrCc();
         //      referenceBill=bill.getReferenceBill();
     }
 
@@ -526,6 +833,7 @@ public class Bill implements Serializable {
         this.hospitalFee = bill.getHospitalFee();
         this.margin = bill.getMargin();
         this.vat = bill.getVat();
+        this.billTotal = bill.getBillTotal();
         this.vatPlusNetTotal = bill.getVatPlusNetTotal();
     }
 
@@ -629,14 +937,12 @@ public class Bill implements Serializable {
     }
 
     public double getBalance() {
-
         return balance;
     }
 
-    public void setBalance(double balance) {
-        this.balance = balance;
-    }
-
+//    public void setBalance(double balance) {
+//        this.balance = balance;
+//    }
     public List<Bill> getListOfBill() {
         if (listOfBill == null) {
             listOfBill = new ArrayList<>();
@@ -747,9 +1053,6 @@ public class Bill implements Serializable {
 
     public void setCashPaid(Double cashPaid) {
         this.cashPaid = cashPaid;
-
-        cashBalance = netTotal - cashPaid;
-
     }
 
     public Double getCashBalance() {
@@ -863,6 +1166,7 @@ public class Bill implements Serializable {
     public void setPatientEncounter(PatientEncounter patientEncounter) {
         this.patientEncounter = patientEncounter;
     }
+
 
     public Long getId() {
         return id;
@@ -1240,7 +1544,27 @@ public class Bill implements Serializable {
     }
 
     public List<BillFee> getBillFees() {
+        if(billFees==null){
+            billFees=new ArrayList<>();
+        }
         return billFees;
+    }
+
+    @Transient
+    public List<BillFee> getBillFeesWIthoutZeroValue() {
+        if (billFees == null) {
+            return null;
+        }
+        List<BillFee> feesWithoutZeros = new ArrayList<>();
+        if (billFees.isEmpty()) {
+            return feesWithoutZeros;
+        }
+        for (BillFee bf : billFees) {
+            if (bf.getFeeValue() > 0 || bf.getFeeDiscount() > 0) {
+                feesWithoutZeros.add(bf);
+            }
+        }
+        return feesWithoutZeros;
     }
 
     public void setBillFees(List<BillFee> billFees) {
@@ -1271,24 +1595,15 @@ public class Bill implements Serializable {
         this.billedBill = billedBill;
     }
 
+    @Deprecated
     public String getBookingId() {
         return bookingId;
     }
 
+    @Deprecated
     public void setBookingId(String bookingId) {
         this.bookingId = bookingId;
     }
-
-    public BatchBill getBatchBill() {
-        return batchBill;
-    }
-
-    public void setBatchBill(BatchBill batchBill) {
-        this.batchBill = batchBill;
-    }
-
-    @Transient
-    private Bill tmpRefBill;
 
     public Bill getTmpRefBill() {
         return tmpRefBill;
@@ -1322,23 +1637,6 @@ public class Bill implements Serializable {
         this.backwardReferenceBill = backwardReferenceBill;
     }
 
-//    public List<BillItem> getTransActiveBillItem() {
-//        if (billItems != null) {
-//            transActiveBillItem = new ArrayList<>();
-//            for (BillItem b : billItems) {
-//                if (!b.isRetired()) {
-//                    transActiveBillItem.add(b);
-//                }
-//            }
-//        } else {
-//            transActiveBillItem = new ArrayList<>();
-//        }
-//        return transActiveBillItem;
-//    }call me internet is dead slow
-//
-//    public void setTransActiveBillItem(List<BillItem> transActiveBillItem) {
-//        this.transActiveBillItem = transActiveBillItem;
-//    }
     public List<Bill> getForwardReferenceBills() {
         if (forwardReferenceBills == null) {
             forwardReferenceBills = new ArrayList<>();
@@ -1636,12 +1934,12 @@ public class Bill implements Serializable {
         this.referredByInstitution = referredByInstitution;
     }
 
-    public String getReferralNumber() {
-        return referralNumber;
+    public String getReferenceNumber() {
+        return referenceNumber;
     }
 
-    public void setReferralNumber(String referralNumber) {
-        this.referralNumber = referralNumber;
+    public void setReferenceNumber(String referenceNumber) {
+        this.referenceNumber = referenceNumber;
     }
 
     public boolean isTransError() {
@@ -1764,21 +2062,6 @@ public class Bill implements Serializable {
         this.printed = printed;
     }
 
-//    public WebUser getPrintedUser() {
-//        return printedUser;
-//    }
-//
-//    public void setPrintedUser(WebUser printedUser) {
-//        this.printedUser = printedUser;
-//    }
-//
-//    public Date getPrintedAt() {
-//        return printedAt;
-//    }
-//
-//    public void setPrintedAt(Date printedAt) {
-//        this.printedAt = printedAt;
-//    }
     public boolean isApprovedAnyTest() {
         return approvedAnyTest;
     }
@@ -1795,5 +2078,169 @@ public class Bill implements Serializable {
         }
         return referredInstituteOrDoctor;
     }
+
+    public double getAbsoluteNetTotal() {
+        absoluteNetTotal = Math.abs(netTotal);
+        return absoluteNetTotal;
+    }
+
+    public String getBillPrint() {
+        generateBillPrintFromBillTemplate();
+        return billPrint;
+    }
+
+    public String getBillTemplate() {
+        return billTemplate;
+    }
+
+    public void setBillTemplate(String billTemplate) {
+        this.billTemplate = billTemplate;
+    }
+
+    public String getAgeAtBilledDate() {
+        if (patient == null || patient.getPerson() == null) {
+            ageAtBilledDate = "";
+            return ageAtBilledDate;
+        }
+
+        Date ptDob = patient.getPerson().getDob();
+        if (this.billDate == null) {
+            billDate = new Date();
+        }
+
+        Calendar calDob = Calendar.getInstance();
+        calDob.setTime(ptDob);
+        Calendar calBill = Calendar.getInstance();
+        calBill.setTime(billDate);
+
+        int yearDiff = calBill.get(Calendar.YEAR) - calDob.get(Calendar.YEAR);
+        int monthDiff = calBill.get(Calendar.MONTH) - calDob.get(Calendar.MONTH);
+        int dayDiff = calBill.get(Calendar.DAY_OF_MONTH) - calDob.get(Calendar.DAY_OF_MONTH);
+
+        if (dayDiff < 0) {
+            monthDiff--;
+            dayDiff += calBill.getActualMaximum(Calendar.DAY_OF_MONTH);
+        }
+
+        if (monthDiff < 0) {
+            yearDiff--;
+            monthDiff += 12;
+        }
+
+        if (yearDiff > 5) {
+            ageAtBilledDate = yearDiff + " years";
+        } else if (yearDiff >= 1) {
+            ageAtBilledDate = yearDiff + " years and " + monthDiff + " months";
+        } else {
+            ageAtBilledDate = monthDiff * 30 + dayDiff + " days";
+        }
+
+        return ageAtBilledDate;
+    }
+
+    public int getCreditDuration() {
+        return creditDuration;
+    }
+
+    public void setCreditDuration(int creditDuration) {
+        this.creditDuration = creditDuration;
+    }
+
+    public double getRefundAmount() {
+        return refundAmount;
+    }
+
+    public void setRefundAmount(double refundAmount) {
+        this.refundAmount = refundAmount;
+    }
+
+    public BillTypeAtomic getBillTypeAtomic() {
+        return billTypeAtomic;
+    }
+
+    public void setBillTypeAtomic(BillTypeAtomic billTypeAtomic) {
+        this.billTypeAtomic = billTypeAtomic;
+    }
+
+    public WebUser getPrintedUser() {
+        return printedUser;
+    }
+
+    public void setPrintedUser(WebUser printedUser) {
+        this.printedUser = printedUser;
+    }
+
+    public Date getPrintedAt() {
+        return printedAt;
+    }
+
+    public void setPrintedAt(Date printedAt) {
+        this.printedAt = printedAt;
+    }
+
+    public boolean isDuplicatedPrinted() {
+        return duplicatedPrinted;
+    }
+
+    public void setDuplicatedPrinted(boolean duplicatedPrinted) {
+        this.duplicatedPrinted = duplicatedPrinted;
+    }
+
+    public WebUser getDuplicatePrintedUser() {
+        return duplicatePrintedUser;
+    }
+
+    public void setDuplicatePrintedUser(WebUser duplicatePrintedUser) {
+        this.duplicatePrintedUser = duplicatePrintedUser;
+    }
+
+    public Date getDuplicatePrintedAt() {
+        return duplicatePrintedAt;
+    }
+
+    public void setDuplicatePrintedAt(Date duplicatePrintedAt) {
+        this.duplicatePrintedAt = duplicatePrintedAt;
+    }
+
+    public String getAgentRefNo() {
+        return agentRefNo;
+    }
+
+    public void setAgentRefNo(String agentRefNo) {
+        this.agentRefNo = agentRefNo;
+    }
+
+    public boolean isBillClosed() {
+        return billClosed;
+    }
+
+    public void setBillClosed(boolean billClosed) {
+        this.billClosed = billClosed;
+    }
+
+    public String getLocalNumber() {
+        return localNumber;
+    }
+
+    public void setLocalNumber(String localNumber) {
+        this.localNumber = localNumber;
+    }
+
+    public String getIpOpOrCc() {
+        ipOpOrCc="OP";
+        if(this.getPatientEncounter()!=null){
+            ipOpOrCc="IP";
+        }else if(this.getCollectingCentre()!=null){
+            ipOpOrCc="CC";
+        }
+        return ipOpOrCc;
+    }
+
+    public void setIpOpOrCc(String ipOpOrCc) {
+        this.ipOpOrCc = ipOpOrCc;
+    }
+    
+    
+    
 
 }

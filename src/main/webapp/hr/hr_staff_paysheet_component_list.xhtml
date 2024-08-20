@@ -1,12 +1,12 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/resources/template/template.xhtml"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:h="http://java.sun.com/jsf/html"
-                xmlns:pe="http://primefaces.org/ui/extensions"
-                xmlns:f="http://java.sun.com/jsf/core"
-                xmlns:hr="http://java.sun.com/jsf/composite/autocomplete">
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:hr="http://xmlns.jcp.org/jsf/composite/autocomplete">
 
     <ui:define name="content">
         <h:form>
@@ -14,7 +14,7 @@
                 <p:commandButton value="Reset Date" action="#{staffBasicController.resetDate()}" ajax="false" rendered="false"/>
                 <h:panelGrid columns="2">
                     <h:outputLabel value="Date"/>
-                    <p:calendar value="#{staffBasicController.date}" pattern="dd MMMM yyyy" >                                                                                
+                    <p:calendar value="#{staffBasicController.date}" pattern="#{sessionController.applicationPreference.longDateFormat}" >                                                                                
                     </p:calendar>
                     <h:outputLabel value="Select User Defined Component"/>
                     <p:selectOneMenu value="#{staffBasicController.paysheetComponent}">
@@ -44,8 +44,8 @@
                     <hr:completeBank value="#{staffBasicController.reportKeyWord.institutionBank}"/>
                 </h:panelGrid>
                 <p:commandButton value="Process" action="#{staffBasicController.createTable}" ajax="false" />
-                <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
-                    <pe:exporter type="xlsx" target="tb1" fileName="hr_staff_paysheet_component_list"  />
+                <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton"  >
+                    <p:dataExporter type="xlsx" target="tb1" fileName="hr_staff_paysheet_component_list"  />
                 </p:commandButton>
                 <p:commandButton value="Print" ajax="false" action="#" >
                     <p:printer target="gpBillPreview" ></p:printer>
@@ -83,7 +83,7 @@
                             </f:facet>
                             <h:outputLabel value="#{i.fromDate}" >
 
-                                <f:convertDateTime pattern="dd MMMM yyyy"/>
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                             </h:outputLabel>
                         </p:column>
                         <p:column headerText="To" >
@@ -95,11 +95,11 @@
 
                                 <f:facet name="output">
                                     <h:outputLabel value="#{i.toDate}">
-                                        <f:convertDateTime pattern="dd MMMM yyyy"/>
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                                     </h:outputLabel>
                                 </f:facet>
                                 <f:facet name="input">
-                                    <p:calendar value="#{i.toDate}"  pattern="dd MMMM yyyy" />
+                                    <p:calendar value="#{i.toDate}"  pattern="#{sessionController.applicationPreference.longDateFormat}" />
                                 </f:facet>
                             </p:cellEditor>
 

@@ -1,19 +1,18 @@
 /*
- * MSc(Biomedical Informatics) Project
+ * Open Hospital Management Information System
  *
- * Development and Implementation of a Web-based Combined Data Repository of
- Genealogical, Clinical, Laboratory and Genetic Data
- * and
- * a Set of Related Tools
+ * Dr M H B Ariyaratne
+ * Acting Consultant (Health Informatics)
+ * (94) 71 5812399
+ * (94) 71 5812399
  */
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
-import com.divudi.entity.pharmacy.VtmsVmps;
-import com.divudi.facade.VtmsVmpsFacade;
+import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.entity.pharmacy.VirtualProductIngredient;
+import com.divudi.facade.VirtualProductIngredientFacade;
 import java.io.Serializable;
-import java.util.Date;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
@@ -26,8 +25,8 @@ import javax.inject.Named;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- * Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -37,17 +36,17 @@ public class VtmInVmpController implements Serializable {
     @Inject
     SessionController sessionController;
     @EJB
-    private VtmsVmpsFacade ejbFacade;
-    List<VtmsVmps> selectedItems;
-    private VtmsVmps current;
-    private List<VtmsVmps> items = null;
+    private VirtualProductIngredientFacade ejbFacade;
+    List<VirtualProductIngredient> selectedItems;
+    private VirtualProductIngredient current;
+    private List<VirtualProductIngredient> items = null;
     String selectText = "";
 
     public void prepareAdd() {
-        current = new VtmsVmps();
+        current = new VirtualProductIngredient();
     }
 
-    public void setSelectedItems(List<VtmsVmps> selectedItems) {
+    public void setSelectedItems(List<VirtualProductIngredient> selectedItems) {
         this.selectedItems = selectedItems;
     }
 
@@ -63,26 +62,32 @@ public class VtmInVmpController implements Serializable {
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
-            current.setCreatedAt(new Date());
-            current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            UtilityController.addSuccessMessage("Saved Successfully");
+            JsfUtil.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
         getItems();
+    }
+
+    public void save(VirtualProductIngredient v) {
+        if (v.getId() != null) {
+            getFacade().edit(v);
+        } else {
+            getFacade().create(v);
+        }
     }
 
     public void setSelectText(String selectText) {
         this.selectText = selectText;
     }
 
-    public VtmsVmpsFacade getEjbFacade() {
+    public VirtualProductIngredientFacade getEjbFacade() {
         return ejbFacade;
     }
 
-    public void setEjbFacade(VtmsVmpsFacade ejbFacade) {
+    public void setEjbFacade(VirtualProductIngredientFacade ejbFacade) {
         this.ejbFacade = ejbFacade;
     }
 
@@ -97,11 +102,11 @@ public class VtmInVmpController implements Serializable {
     public VtmInVmpController() {
     }
 
-    public VtmsVmps getCurrent() {
+    public VirtualProductIngredient getCurrent() {
         return current;
     }
 
-    public void setCurrent(VtmsVmps current) {
+    public void setCurrent(VirtualProductIngredient current) {
         this.current = current;
     }
 
@@ -109,12 +114,10 @@ public class VtmInVmpController implements Serializable {
 
         if (current != null) {
             current.setRetired(true);
-            current.setRetiredAt(new Date());
-            current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
@@ -122,18 +125,18 @@ public class VtmInVmpController implements Serializable {
         getCurrent();
     }
 
-    private VtmsVmpsFacade getFacade() {
+    private VirtualProductIngredientFacade getFacade() {
         return ejbFacade;
     }
 
-    public List<VtmsVmps> getItems() {
+    public List<VirtualProductIngredient> getItems() {
         if (items == null) {
             String j;
-            j="select v "
+            j = "select v "
                     + " from VtmsVmps v "
                     + " where v.retired=false "
                     + " order by v.name";
-            items = getFacade().findBySQL(j);
+            items = getFacade().findByJpql(j);
         }
         return items;
     }
@@ -141,7 +144,7 @@ public class VtmInVmpController implements Serializable {
     /**
      *
      */
-    @FacesConverter(forClass = VtmsVmps.class)
+    @FacesConverter(forClass = VirtualProductIngredient.class)
     public static class VtmInVmpControllerConverter implements Converter {
 
         @Override
@@ -171,8 +174,8 @@ public class VtmInVmpController implements Serializable {
             if (object == null) {
                 return null;
             }
-            if (object instanceof VtmsVmps) {
-                VtmsVmps o = (VtmsVmps) object;
+            if (object instanceof VirtualProductIngredient) {
+                VirtualProductIngredient o = (VirtualProductIngredient) object;
                 return getStringKey(o.getId());
             } else {
                 throw new IllegalArgumentException("object " + object + " is of type "

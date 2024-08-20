@@ -1,0 +1,190 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/admin/items/index.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui">
+
+
+    <ui:define name="item">
+
+        <h:panelGroup >
+            <h:form id="form"  >
+                <p:growl/>
+
+                <p:panel header="Manage Service" >
+                    <div class="row">
+                        <div class="col-md-6 my-1">
+                            <p:commandButton 
+                                id="btnAdd"
+                                value="Add" 
+                                process="btnAdd"
+                                update="gpDetail"
+                                class="w-25 ui-button-success"
+                                action="#{theatreServiceController.prepareAdd()}" >
+
+                            </p:commandButton>
+
+                            <p:commandButton 
+                                id="btnDelete" 
+                                process="btnDelete"
+                                update="gpDetail lstSelect"
+                                class="mx-2 w-25 ui-button-danger"
+                                onclick="if (!confirm('Are you sure you want to delete this record?'))
+                                            return false;" 
+                                action="#{theatreServiceController.delete()}" 
+                                value="Delete"  >
+                            </p:commandButton>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-5">
+                            <h:panelGrid id="gpSelect" columns="1" class="w-100"  >
+
+                                <p:panel header="Search Service" >
+                                    <h:panelGrid id="gpSelectText" class="w-100" >
+
+                                        <p:selectOneListbox   
+                                            id="lstSelect"  
+                                            value="#{theatreServiceController.current}"
+                                            scrollHeight="500" 
+                                            class="w-100"
+                                            filter="true">
+                                            <f:selectItems 
+                                                value="#{theatreServiceController.selectedItems}" 
+                                                var="myItem" 
+                                                itemValue="#{myItem}"
+                                                itemLabel="#{myItem.name}" >
+                                            </f:selectItems>
+
+                                            <p:ajax 
+                                                event="change" 
+                                                update="gpDetail"
+                                                process="lstSelect" >
+                                            </p:ajax>
+
+                                        </p:selectOneListbox>
+                                    </h:panelGrid>
+                                </p:panel>
+                            </h:panelGrid  >
+                        </div>
+                        <div class="col-md-7">
+                            <p:panel >
+                                <f:facet name="footer" >
+                                    <p:commandButton 
+                                        id="btnSave"
+                                        value="Save" 
+                                        process="btnSave gpDetail"
+                                        update="lstSelect "
+                                        class="w-25 ui-button-warning"
+                                        action="#{theatreServiceController.saveSelected()}" 
+                                        >
+                                    </p:commandButton>
+                                    <p:defaultCommand target="btnSave"/>
+
+                                </f:facet>
+
+                                <h:panelGrid id="gpDetail" columns="2">
+                                    <h:outputLabel value="Created At" />
+                                    <p:calendar   value="#{theatreServiceController.current.createdAt}" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
+                                    <h:outputText id="lblName" value="Name" ></h:outputText>
+                                    <p:inputText autocomplete="off" id="txtName" value="#{theatreServiceController.current.name}" required="true" style="width: 400px;"></p:inputText>
+                                    <h:outputText id="lblAddress" value="Printing Name" ></h:outputText>
+                                    <p:inputText autocomplete="off" id="txtAddress"   value="#{theatreServiceController.current.printName}"  style="width: 400px;"></p:inputText>
+                                    <h:outputText id="lblFullName" value="Full Name" ></h:outputText>
+                                    <p:inputText autocomplete="off" id="txtFullName"   value="#{theatreServiceController.current.fullName}" style="width: 400px;" ></p:inputText>
+                                    <p:outputLabel value="Item Code"/>
+                                    <p:inputText autocomplete="off" value="#{theatreServiceController.current.code}" style="width: 400px;"/>
+
+                                    <h:outputText value="Service Category/Sub Category" ></h:outputText>
+                                    <p:autoComplete
+                                        completeMethod="#{categoryController.completeServiceCategory}" 
+                                        var="pta" itemLabel="#{pta.name} #{pta.parentCategory}" itemValue="#{pta}" 
+                                        forceSelection="true" value="#{theatreServiceController.current.category}" 
+                                        size="30">                                    
+                                        <p:column>#{pta.name}</p:column>
+                                        <p:column>#{pta.parentCategory}</p:column>                                        
+                                    </p:autoComplete>
+
+                                    <p:selectBooleanCheckbox   
+                                        id="chkBilledAs" 
+                                        value="#{theatreServiceController.billedAs}" 
+                                        itemLabel="Billed as a seperate investigation"  >
+                                        <p:ajax event="change" process="@this" update="billedAsIx" />
+                                    </p:selectBooleanCheckbox>
+                                    <p:autoComplete   disabled="#{!theatreServiceController.billedAs}" 
+                                                      widgetVar="aIx1" id="billedAsIx" forceSelection="true" 
+                                                      value="#{theatreServiceController.current.billedAs}" 
+                                                      completeMethod="#{theatreServiceController.completeItem}"
+                                                      var="ix1" itemLabel="#{ix1.name}" itemValue="#{ix1}" 
+                                                      size="30">
+                                    </p:autoComplete>
+
+                                    <p:selectBooleanCheckbox  id="chkReportedAs" value="#{theatreServiceController.reportedAs}" itemLabel="Reported as a seperate investigation" >
+                                        <p:ajax event="change" process="@this" update="reportedAsIx" />
+                                    </p:selectBooleanCheckbox>
+                                    <p:autoComplete  disabled="#{!theatreServiceController.reportedAs}" widgetVar="aIx2" id="reportedAsIx" forceSelection="true" value="#{theatreServiceController.current.reportedAs}" completeMethod="#{theatreServiceController.completeItem}" var="ix2" itemLabel="#{ix2.name}" itemValue="#{ix2}" size="30"  style="width: 400px;">
+                                    </p:autoComplete>
+
+                                    <h:outputText value="Institution" ></h:outputText>
+                                    <p:selectOneMenu id="cmbIns" value="#{theatreServiceController.current.institution}" style="width: 400px;">
+                                        <f:selectItem itemLabel="Please select a Institution"/>
+                                        <f:selectItems value="#{institutionController.companies}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
+                                        <f:ajax execute="cmbIns" render="cmbDep" event="change"/>                                        
+                                    </p:selectOneMenu>
+                                    <h:outputText value="Department" ></h:outputText>
+                                    <p:selectOneMenu id="cmbDep" value="#{theatreServiceController.current.department}" style="width: 400px;">
+                                        <f:selectItem itemLabel="Please select a Department"/>
+                                        <f:selectItems value="#{theatreServiceController.institutionDepatrments}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
+                                    </p:selectOneMenu>
+                                    <h:outputText value="Inward Charge Category" ></h:outputText>
+                                    <p:selectOneMenu id="cmbInward" value="#{theatreServiceController.current.inwardChargeType}" style="width: 400px;">
+                                        <f:selectItem itemLabel="Please select Charge"/>
+                                        <f:selectItems value="#{enumController.inwardChargeTypesForSetting}" var="i" itemLabel="#{i.label}" itemValue="#{i}"/>
+                                    </p:selectOneMenu>
+                                    <h:outputText value="Session Numbering" ></h:outputText>
+                                    <p:selectOneMenu  value="#{theatreServiceController.current.sessionNumberType}" style="width: 400px;">
+                                        <f:selectItem itemLabel="Please select Session Numbering"/>
+                                        <f:selectItems value="#{theatreServiceController.sessionNumberType}"/>
+                                    </p:selectOneMenu>
+                                    <h:outputText value="" ></h:outputText>
+                                    <p:selectBooleanCheckbox value="#{theatreServiceController.current.userChangable}" itemLabel="Can change Rate"/>
+
+                                    <h:outputText value="" ></h:outputText>
+                                    <p:selectBooleanCheckbox value="#{theatreServiceController.current.chargesVisibleForInward}" itemLabel="Charges Visible for inward billing"/>
+
+                                    <h:outputText value="" ></h:outputText>
+                                    <p:selectBooleanCheckbox value="#{theatreServiceController.current.marginNotAllowed}" itemLabel="Margin Not Allowed"/>
+
+                                    <h:outputText value="" ></h:outputText>
+                                    <p:selectBooleanCheckbox value="#{theatreServiceController.current.requestForQuentity}" itemLabel="Request for Quentity"/>
+
+
+                                    <h:outputText value="" ></h:outputText>
+                                    <p:selectBooleanCheckbox value="#{theatreServiceController.current.discountAllowed}" itemLabel="Discount Allowed"/>
+                                    <h:outputText value="" ></h:outputText>
+                                    <p:selectBooleanCheckbox value="#{theatreServiceController.current.patientNotRequired}" itemLabel="Patient Not Required"/>
+                                </h:panelGrid>
+
+                            </p:panel>
+                        </div>
+                    </div>
+                </p:panel>
+            </h:form>
+
+        </h:panelGroup>
+
+        <h:form>
+
+
+
+
+        </h:form>
+
+
+    </ui:define>
+
+</ui:composition>

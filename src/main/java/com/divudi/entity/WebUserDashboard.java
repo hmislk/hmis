@@ -1,7 +1,7 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Open Hospital Management Information System
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.entity;
 
@@ -28,12 +28,10 @@ public class WebUserDashboard implements Serializable {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    
     @ManyToOne
     private WebUser webUser;
     @Enumerated
     private Dashboard dashboard;
-    
     
     //Created Properties
     @ManyToOne
@@ -56,9 +54,6 @@ public class WebUserDashboard implements Serializable {
         this.id = id;
     }
     
-    
-    
-
     @Override
     public int hashCode() {
         int hash = 0;

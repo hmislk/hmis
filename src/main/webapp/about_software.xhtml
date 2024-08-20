@@ -1,0 +1,53 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <ui:define name="content">
+        <h:form>
+            <div style="display: flex; justify-content: center; height: 100vh;">
+                <p:panel style=" height: 100vh; width: 80%">
+                    <f:facet name="header">
+                        <p:outputLabel value="About Software"></p:outputLabel>
+                    </f:facet>
+                    <div class="row" style="width: 100%">
+                        <div class="col-4" style="width: 200px">
+                            <p:graphicImage library="image" name="CompanyLogo/companyLogo.png" style="cursor: pointer;" width="180" height="180"/>
+                        </div>
+                        <div class="col-8" >
+                            <h:outputLabel class="mx-2 h3" value="Hospital Information Management System" /><br/>
+                            <h:outputLabel class="mx-2 h5" value="Powered by CareCode Solutions (Pvt) Ltd" /><br/>
+                            <h:outputLink value="https://carecode.org" target="_blank">
+                                <p:chip label="Carecode.org" icon="fas fa-globe" styleClass="mr-3" />
+                            </h:outputLink>
+                            <h:outputLink value="https://github.com/hmislk" target="_blank" class="mx-2">
+                                <p:chip label="hmislk" icon="fab fa-github" styleClass="mr-3" />
+                            </h:outputLink>
+                            <h:outputLink value="https://facebook.com/carecodes" target="_blank">
+                                <p:chip label="CareCode Solutions" icon="fab fa-facebook" styleClass="mr-3" />
+                            </h:outputLink>
+                            <h:outputLink value="https://youtube.com/@CareCode" target="_blank" class="mx-2">
+                                <p:chip label="CareCode" icon="fab fa-youtube" styleClass="mr-3" />
+                            </h:outputLink>
+                            <h:outputLink value="mailto:info@carecode.org" target="_blank">
+                                <p:chip label="info@carecode.org" icon="fas fa-envelope" styleClass="mr-3" /><br/><br/>
+                            </h:outputLink>
+
+                            <h:panelGrid columns="3">
+                                <h:outputLabel class="mx-2 h6" value="Current version" />
+                                <h:outputLabel class="mx-2 h6" value=":" />
+                                <h:outputLabel class="mx-2 h6" value="#{versionController.systemVersion}" />
+                                <h:outputLabel class="mx-2 h6" value="Latest version" />
+                                <h:outputLabel class="mx-2 h6" value=": " />
+                                <h:outputLabel class="mx-2 h6" value="#{versionController.latestVersion}" />
+                            </h:panelGrid>
+                        </div>
+                    </div>
+                </p:panel>
+            </div>
+        </h:form>
+    </ui:define>
+</ui:composition>

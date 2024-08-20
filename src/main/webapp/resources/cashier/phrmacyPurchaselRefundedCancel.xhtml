@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:cc="http://java.sun.com/jsf/composite"
-      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:f="http://java.sun.com/jsf/core">
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <!-- INTERFACE -->
     <cc:interface>
@@ -19,24 +19,24 @@
                 <h:outputLabel value="Pharmacy Purchase Return Cancel" />
             </f:facet> 
 
-            <p:column headerText="Time"   >
+            <p:column headerText="Time">
                 <f:facet name="header">  
                     <h:outputLabel value="Time"/>
                 </f:facet> 
                 <h:outputLabel value="#{brPh.createdAt}" >
-                    <f:convertDateTime pattern="hh:mm a"/>
+                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" />
                 </h:outputLabel>
             </p:column>
 
             <p:column headerText="Refunded Id" >
                 <f:facet name="header">  
-                    <h:outputLabel value="Refunded Id"/>
+                    <h:outputLabel value="Refunded ID"/>
                 </f:facet> 
                 <h:outputLabel value="#{brPh.deptId}" ></h:outputLabel>
                 <h:outputLabel value="#{brPh.referenceBill.deptId}" rendered="#{brPh.deptId eq null}" ></h:outputLabel>
             </p:column>
 
-            <p:column headerText="Billed Id" >
+            <p:column headerText="Billed ID" >
                 <f:facet name="header">  
                     <h:outputLabel value="Billed Id"/>
                 </f:facet> 
@@ -85,7 +85,7 @@
 
             <p:column headerText="Checque" styleClass="averageNumericColumn" >
                 <f:facet name="header">  
-                    <h:outputLabel value="Checque"/>
+                    <h:outputLabel value="Cheque"/>
                 </f:facet> 
                 <h:outputLabel rendered="#{brPh.paymentMethod=='Cheque'}" value="#{brPh.netTotal}" >
                     <f:convertNumber pattern="#,##0.00"/>

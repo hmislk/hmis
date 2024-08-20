@@ -1,214 +1,269 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition template="/resources/template/template.xhtml"
-                xmlns:ui="http://java.sun.com/jsf/facelets"
-                xmlns:h="http://java.sun.com/jsf/html"
+<ui:composition template="/hr/hr_admin.xhtml"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://java.sun.com/jsf/core">
+                xmlns:f="http://xmlns.jcp.org/jsf/core">
 
-    <ui:define name="content">
+    <ui:define name="subContent">
         <h:form>
+            <p:growl id="messages" ></p:growl>
             <p:panel header="Manage Shifts" >
-                <h:panelGrid id ="gpVeda" columns="4" styleClass="alignTop" >
-
-                    <h:panelGrid id="gpSelect" columns="1"  >
-                        <h:panelGrid columns="2">
-                            <h:outputText  value="Roster" ></h:outputText>
-                            <p:selectOneMenu id='roster' value="#{shiftController.currentRoster}" >
-                                <f:selectItem itemLabel="Select Roster"/>
-                                <f:selectItems value="#{rosterController.items}" var="d" itemLabel="#{d.name}" itemValue="#{d}"/>
-                                <f:ajax event="change" execute="@this" render="gpSelectText gpDetail" listener="#{shiftController.createShiftList()}" />
+                <div class="row">
+                    <div class="col-6">
+                        <div class="row" >
+                            <p:selectOneMenu
+                                id="lstRosterSelect" 
+                                filter="true"
+                                value="#{shiftController.currentRoster}" 
+                                class="w-50 m-1">
+                                <f:selectItems  value="#{rosterController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
+                                <p:ajax update="gpDetail messages" process="lstRosterSelect" >
+                                </p:ajax>
                             </p:selectOneMenu>
-                        </h:panelGrid>
-                        <p:panel >
-                            <h:panelGrid id="gpSelectText" >
-                                <p:selectOneListbox  id="lstSelect"   value="#{shiftController.current}" style="min-width: 223px;max-height: 400px;">
-                                    <f:selectItems  value="#{shiftController.shiftList}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
-                                    <p:ajax update="gpDetail" process="@this" >
-                                    </p:ajax>
-                                </p:selectOneListbox>                               
-                            </h:panelGrid>
-                            <h:panelGrid id="gpSelectButtons" columns="3"  >
-                                <p:commandButton id="btnAdd" ajax="false" value="Add" action="#{shiftController.prepareAdd()}" styleClass="buttons" onclick="onSubmitButton();" >
-                                </p:commandButton>
-                                <p:commandButton id="btnDelete" ajax="false" onclick="if (!confirm('Are you sure you want to delete this record?'))
-                                            return false;" action="#{shiftController.delete()}"  value="Delete"  >
-                                </p:commandButton>
-                            </h:panelGrid>
-                        </p:panel>
-                    </h:panelGrid  >
-
-
-
-                    <p:panel id="gpDetail">
-                        <f:facet name="header">
-                            <h:outputLabel value="Shift Detail &nbsp;"/>
-                            <p:commandButton ajax="false" value="Save"  
-                                             action="#{shiftController.saveSelected}"  
-                                             onclick="onSubmitButton();"/>
-                            <p:commandButton ajax="false" value="Print" style="float: right;" >
-                                <p:printer target="panelPrint" ></p:printer>
+                            <p:commandButton 
+                                id="btnFill" 
+                                class="ui-button-success w-25 m-1"
+                                icon="fas fa-plus"
+                                process="btnFill lstRosterSelect" 
+                                update="lstSelect gpDetail messages" 
+                                value="Fill"
+                                action="#{shiftController.createShiftList()}"   >
                             </p:commandButton>
+                        </div>
+                        <div class="row" >
+
+
+                            <p:commandButton 
+                                id="btnAdd" 
+                                class="ui-button-success w-25"
+                                icon="fas fa-plus"
+                                process="btnAdd" 
+                                update="gpDetail" 
+                                value="Add"
+                                action="#{shiftController.prepareAdd()}"   >
+                            </p:commandButton>
+                            <p:commandButton 
+                                id="btnDelete"
+                                class="ui-button-danger w-25 mx-1"
+                                icon="fas fa-trash"
+                                process="btnDelete" 
+                                update="gpDetail lstSelect messages" 
+                                onclick="if (!confirm('Are you sure you want to delete this record?'))
+                                            return false;" action="#{shiftController.delete()}"  value="Delete"  >
+                            </p:commandButton>
+
+
+                            <p:selectOneListbox 
+                                id="lstSelect" filter="true"  value="#{shiftController.current}"
+                                class="w-100 mt-2" style="height: 300px;">
+                                <f:selectItems  value="#{shiftController.shiftList}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
+                                <p:ajax update="gpDetail" process="@this" >
+                                </p:ajax>
+                            </p:selectOneListbox>  
+
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <p:panel id="gpDetail">
+                            <f:facet name="header" >
+                                <h:outputText value="Shift Details" />
+                            </f:facet>
+                            <h:panelGrid id="gpDetailText" columns="2">
+                                <h:outputText  value="Roster" ></h:outputText>
+                                <p:selectOneMenu filter="true" class="h-100 w-100 mx-4" id='roster' value="#{shiftController.currentRoster}" >
+                                    <f:selectItem itemLabel="Select Roster"/>
+                                    <f:selectItems value="#{rosterController.items}" var="d" itemLabel="#{d.name}" itemValue="#{d}"/>
+                                    <f:ajax event="change" execute="@this" render="gpSelectText gpDetail" listener="#{shiftController.createShiftList()}" />
+                                </p:selectOneMenu>
+                                <h:outputText  value="Name" ></h:outputText>
+                                <p:inputText class="w-100 mx-4" autocomplete="off"  value="#{shiftController.current.name}"  />
+                                <h:outputText  value="Day Type" ></h:outputText>
+                                <p:selectOneMenu class="w-100 mx-4" value="#{shiftController.current.dayType}">                               
+                                    <f:selectItems value="#{enumController.dayTypeForShift}"/>
+                                    <f:ajax execute="@this roster" render="start" event="change"/>
+                                </p:selectOneMenu>
+                                <h:outputLabel value="Shift Order" rendered="false"/>
+                                <p:inputText class="w-100 mx-4" autocomplete="off" value="#{shiftController.current.shiftOrder}" rendered="false"/>
+                                <p:outputLabel value="Starting Time"/>
+                                <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id='start'  value="#{shiftController.current.startingTime}" navigator="true" pattern="#{sessionController.applicationPreference.longTimeFormat}" timeOnly="true">                            
+                                </p:calendar>  
+
+                                <p:outputLabel value="End Time"/>                        
+                                <p:calendar class="w-100 mx-4" inputStyleClass="w-100" value="#{shiftController.current.endingTime}" navigator="true" pattern="#{sessionController.applicationPreference.longTimeFormat}" timeOnly="true">                            
+                                </p:calendar>  
+
+                                <p:outputLabel value="Previous Shift"/>
+                                <p:autoComplete value="#{shiftController.current.previousShift}"
+                                                forceSelection="true"
+                                                completeMethod="#{shiftController.completeShift}"
+                                                var="mys"
+                                                class="w-100 mx-4"
+                                                inputStyleClass="w-100"
+                                                itemLabel="#{mys.name}" 
+                                                itemValue="#{mys}">                                  
+                                </p:autoComplete>
+
+                                <p:outputLabel value="Next Shift"/>
+                                <p:autoComplete value="#{shiftController.current.nextShift}"
+                                                forceSelection="true"
+                                                completeMethod="#{shiftController.completeShift}"
+                                                var="mys" 
+                                                class="w-100 mx-4"
+                                                inputStyleClass="w-100"
+                                                itemLabel="#{mys.name}" 
+                                                itemValue="#{mys}">                                  
+                                </p:autoComplete>
+                                <h:outputLabel value="Leave Hour Full"/>
+                                <p:inputText class="w-100 mx-4" value="#{shiftController.current.leaveHourFull}"/>
+                                <h:outputLabel value="Leave Hour Half"/>
+                                <p:inputText class="w-100 mx-4" value="#{shiftController.current.leaveHourHalf}"/>
+                                <h:outputLabel value="Duration Minute"/>
+                                <h:outputLabel class="w-100 mx-4" value="#{shiftController.current.durationMin}"/>
+
+                                <p:outputLabel value="First Shift"/>
+                                <p:selectBooleanCheckbox class="w-100 mx-4" value="#{shiftController.current.firstShift}" />
+                                <p:outputLabel value="Last Shift"/>
+                                <p:selectBooleanCheckbox class="w-100 mx-4" value="#{shiftController.current.lastShift}" />
+                                <p:outputLabel value="Half Shift"/>
+                                <p:selectBooleanCheckbox class="w-100 mx-4" value="#{shiftController.current.halfShift}" />                           
+                                <p:outputLabel value="Hide Shift"/>
+                                <p:selectBooleanCheckbox class="w-100 mx-4" value="#{shiftController.current.hideShift}" />
+
+
+                                <p:outputLabel value="This Shift Id"/>
+                                <p:outputLabel class="w-100 mx-4" value="#{shiftController.current.id}"/>
+
+                                <p:outputLabel value="Previous Shift Id"/>
+                                <p:outputLabel class="w-100 mx-4" value="#{shiftController.current.previousShift.id}"/>
+
+                                <p:outputLabel value="Next Shift Id"/>
+                                <p:outputLabel class="w-100 mx-4" value="#{shiftController.current.nextShift.id}"/>
+
+                            </h:panelGrid>
+
+
+
+
+                        </p:panel>
+
+                        <div class="d-flex align-items-center">
+
+                            <p:commandButton ajax="false" 
+                                             id="btnSave"
+                                             value="Save"  
+                                             process="btnSave gpDetail"
+                                             update="lstSelect"
+                                             class="ui-button-warning w-25 mt-4"
+                                             action="#{shiftController.saveSelected}"  
+                                             />
+                        </div>
+
+                    </div>
+                    <p:panel styleClass="printOnly" class="my-2">
+                        <f:facet name="header">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h:outputLabel value="Shift Detail"/>    
+                                <div class="d-flex justify-content-end">
+                                    <p:commandButton ajax="false" value="Print" class="mx-1 ui-button-info" icon="fas fa-print" >
+                                        <p:printer target="panelPrint" ></p:printer>
+                                    </p:commandButton>
+                                </div>
+                            </div>
                         </f:facet>
-                        <h:panelGrid id="gpDetailText" columns="2">
+                        <h:panelGroup id="panelPrint">
+                            <h:panelGrid id="gpDetailTextPrint" columns="3" class="w-100">
 
-                            <h:outputText  value="Name" ></h:outputText>
-                            <p:inputText autocomplete="off"  value="#{shiftController.current.name}"  />
-                            <h:outputText  value="Day Type" ></h:outputText>
-                            <p:selectOneMenu   value="#{shiftController.current.dayType}">                               
-                                <f:selectItems value="#{enumController.dayTypeForShift}"/>
-                                <f:ajax execute="@this roster" render="start" event="change"/>
-                            </p:selectOneMenu>
-                            <h:outputLabel value="Shift Order" rendered="false"/>
-                            <p:inputText autocomplete="off" value="#{shiftController.current.shiftOrder}" rendered="false"/>
-                            <p:outputLabel value="Starting Time"/>
-                            <p:calendar id='start'  value="#{shiftController.current.startingTime}" navigator="true" pattern="hh:mm:ss a" timeOnly="true">                            
-                            </p:calendar>  
+                                <h:outputText  value="Name" ></h:outputText>
+                                <h:outputLabel value=":"/>
+                                <h:outputText value="#{shiftController.current.name}"/>
 
-                            <p:outputLabel value="End Time"/>                        
-                            <p:calendar  value="#{shiftController.current.endingTime}" navigator="true" pattern="hh:mm:ss a" timeOnly="true">                            
-                            </p:calendar>  
+                                <h:outputText  value="Day Type" ></h:outputText>
+                                <h:outputLabel value=":"/>
+                                <h:outputText  value="#{shiftController.current.dayType}"/>
 
-                            <p:outputLabel value="Previous Shift"/>
-                            <p:autoComplete value="#{shiftController.current.previousShift}"
-                                            forceSelection="true"
-                                            completeMethod="#{shiftController.completeShift}"
-                                            var="mys" 
-                                            itemLabel="#{mys.name}" 
-                                            itemValue="#{mys}">                                  
-                            </p:autoComplete>
+                                <h:outputLabel value="Shift Order" rendered="false"/>
+                                <h:outputLabel value=":" rendered="false"/>
+                                <h:outputLabel value="#{shiftController.current.shiftOrder}" rendered="false"/>
 
-                            <p:outputLabel value="Next Shift"/>
-                            <p:autoComplete value="#{shiftController.current.nextShift}"
-                                            forceSelection="true"
-                                            completeMethod="#{shiftController.completeShift}"
-                                            var="mys" 
-                                            itemLabel="#{mys.name}" 
-                                            itemValue="#{mys}">                                  
-                            </p:autoComplete>
-                            <h:outputLabel value="Leave Hour Full"/>
-                            <h:inputText value="#{shiftController.current.leaveHourFull}"/>
-                            <h:outputLabel value="Leave Hour Half"/>
-                            <h:inputText value="#{shiftController.current.leaveHourHalf}"/>
-                            <h:outputLabel value="Duration Minute"/>
-                            <h:outputLabel value="#{shiftController.current.durationMin}"/>
+                                <p:outputLabel value="Starting Time"/>
+                                <h:outputLabel value=":"/>
+                                <h:outputLabel value="#{shiftController.current.startingTime}">
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
+                                </h:outputLabel>  
 
-                            <p:outputLabel value="First Shift"/>
-                            <p:selectBooleanCheckbox value="#{shiftController.current.firstShift}" />
-                            <p:outputLabel value="Last Shift"/>
-                            <p:selectBooleanCheckbox value="#{shiftController.current.lastShift}" />
-                            <p:outputLabel value="Half Shift"/>
-                            <p:selectBooleanCheckbox value="#{shiftController.current.halfShift}" />                           
-                            <p:outputLabel value="Hide Shift"/>
-                            <p:selectBooleanCheckbox value="#{shiftController.current.hideShift}" />
+                                <p:outputLabel value="End Time"/>
+                                <h:outputLabel value=":"/>
+                                <h:outputLabel value="#{shiftController.current.endingTime}">
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
+                                </h:outputLabel>  
+
+                                <p:outputLabel value="Previous Shift"/>
+                                <h:outputLabel value=":"/>
+                                <h:outputLabel value="#{shiftController.current.previousShift}"/>
+
+                                <p:outputLabel value="Next Shift"/>
+                                <h:outputLabel value=":"/>
+                                <h:outputLabel value="#{shiftController.current.nextShift}"/>
+
+                                <h:outputLabel value="Leave Hour Full"/>
+                                <h:outputLabel value=":"/>
+                                <h:outputLabel value="#{shiftController.current.leaveHourFull}"/>
+
+                                <h:outputLabel value="Leave Hour Half"/>
+                                <h:outputLabel value=":"/>
+                                <h:outputLabel value="#{shiftController.current.leaveHourHalf}"/>
+
+                                <h:outputLabel value="Duration Minute"/>
+                                <h:outputLabel value=":"/>
+                                <h:outputLabel value="#{shiftController.current.durationMin}"/>
+
+                                <p:outputLabel value="First Shift"/>
+                                <h:outputLabel value=":"/>
+                                <h:outputLabel value="#{shiftController.current.firstShift ? 'Yes':'No'}" />
+
+                                <p:outputLabel value="Last Shift"/>
+                                <h:outputLabel value=":"/>
+                                <h:outputLabel value="#{shiftController.current.lastShift ? 'Yes':'No'}" />
+
+                                <p:outputLabel value="Half Shift"/>
+                                <h:outputLabel value=":"/>
+                                <h:outputLabel value="#{shiftController.current.halfShift ? 'Yes':'No'}" />
+
+                                <p:outputLabel value="Hide Shift"/>
+                                <h:outputLabel value=":"/>
+                                <h:outputLabel value="#{shiftController.current.hideShift ? 'Yes':'No'}" />
 
 
-                            <p:outputLabel value="This Shift Id"/>
-                            <p:outputLabel value="#{shiftController.current.id}"/>
+                                <p:outputLabel value="This Shift Id"/>
+                                <h:outputLabel value=":"/>
+                                <p:outputLabel value="#{shiftController.current.id}"/>
 
-                            <p:outputLabel value="Previous Shift Id"/>
-                            <p:outputLabel value="#{shiftController.current.previousShift.id}"/>
+                                <p:outputLabel value="Previous Shift Id"/>
+                                <h:outputLabel value=":"/>
+                                <p:outputLabel value="#{shiftController.current.previousShift.id}"/>
 
-                            <p:outputLabel value="Next Shift Id"/>
-                            <p:outputLabel value="#{shiftController.current.nextShift.id}"/>
+                                <p:outputLabel value="Next Shift Id"/>
+                                <h:outputLabel value=":"/>
+                                <p:outputLabel value="#{shiftController.current.nextShift.id}"/>
 
-                        </h:panelGrid>
+                                <p:outputLabel value="Creator"/>
+                                <h:outputLabel value=":"/>
+                                <p:outputLabel value="#{shiftController.current.creater.webUserPerson.name}"/>
+
+                                <p:outputLabel value="Created At"/>
+                                <h:outputLabel value=":"/>
+                                <p:outputLabel value="#{shiftController.current.createdAt}">
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
+                                </p:outputLabel>
+
+                            </h:panelGrid>
+                        </h:panelGroup>
+
+
                     </p:panel>
-
-
-                </h:panelGrid>
-                <p:panel id="panelPrint" styleClass="printOnly">
-                    <f:facet name="header">
-                        <h:outputLabel value="Shift Detail"/>                        
-                    </f:facet>
-                    <h:panelGrid id="gpDetailTextPrint" columns="3">
-
-                        <h:outputText  value="Name" ></h:outputText>
-                        <h:outputLabel value=":"/>
-                        <h:outputText value="#{shiftController.current.name}"/>
-
-                        <h:outputText  value="Day Type" ></h:outputText>
-                        <h:outputLabel value=":"/>
-                        <h:outputText  value="#{shiftController.current.dayType}"/>
-
-                        <h:outputLabel value="Shift Order" rendered="false"/>
-                        <h:outputLabel value=":" rendered="false"/>
-                        <h:outputLabel value="#{shiftController.current.shiftOrder}" rendered="false"/>
-
-                        <p:outputLabel value="Starting Time"/>
-                        <h:outputLabel value=":"/>
-                        <h:outputLabel value="#{shiftController.current.startingTime}">
-                            <f:convertDateTime pattern="hh:mm:ss a"/>
-                        </h:outputLabel>  
-
-                        <p:outputLabel value="End Time"/>
-                        <h:outputLabel value=":"/>
-                        <h:outputLabel value="#{shiftController.current.endingTime}">
-                            <f:convertDateTime pattern="hh:mm:ss a"/>
-                        </h:outputLabel>  
-
-                        <p:outputLabel value="Previous Shift"/>
-                        <h:outputLabel value=":"/>
-                        <h:outputLabel value="#{shiftController.current.previousShift}"/>
-
-                        <p:outputLabel value="Next Shift"/>
-                        <h:outputLabel value=":"/>
-                        <h:outputLabel value="#{shiftController.current.nextShift}"/>
-
-                        <h:outputLabel value="Leave Hour Full"/>
-                        <h:outputLabel value=":"/>
-                        <h:outputLabel value="#{shiftController.current.leaveHourFull}"/>
-
-                        <h:outputLabel value="Leave Hour Half"/>
-                        <h:outputLabel value=":"/>
-                        <h:outputLabel value="#{shiftController.current.leaveHourHalf}"/>
-
-                        <h:outputLabel value="Duration Minute"/>
-                        <h:outputLabel value=":"/>
-                        <h:outputLabel value="#{shiftController.current.durationMin}"/>
-
-                        <p:outputLabel value="First Shift"/>
-                        <h:outputLabel value=":"/>
-                        <h:outputLabel value="#{shiftController.current.firstShift ? 'Yes':'No'}" />
-
-                        <p:outputLabel value="Last Shift"/>
-                        <h:outputLabel value=":"/>
-                        <h:outputLabel value="#{shiftController.current.lastShift ? 'Yes':'No'}" />
-
-                        <p:outputLabel value="Half Shift"/>
-                        <h:outputLabel value=":"/>
-                        <h:outputLabel value="#{shiftController.current.halfShift ? 'Yes':'No'}" />
-
-                        <p:outputLabel value="Hide Shift"/>
-                        <h:outputLabel value=":"/>
-                        <h:outputLabel value="#{shiftController.current.hideShift ? 'Yes':'No'}" />
-
-
-                        <p:outputLabel value="This Shift Id"/>
-                        <h:outputLabel value=":"/>
-                        <p:outputLabel value="#{shiftController.current.id}"/>
-
-                        <p:outputLabel value="Previous Shift Id"/>
-                        <h:outputLabel value=":"/>
-                        <p:outputLabel value="#{shiftController.current.previousShift.id}"/>
-
-                        <p:outputLabel value="Next Shift Id"/>
-                        <h:outputLabel value=":"/>
-                        <p:outputLabel value="#{shiftController.current.nextShift.id}"/>
-
-                        <p:outputLabel value="Creater"/>
-                        <h:outputLabel value=":"/>
-                        <p:outputLabel value="#{shiftController.current.creater.webUserPerson.name}"/>
-
-                        <p:outputLabel value="Created At"/>
-                        <h:outputLabel value=":"/>
-                        <p:outputLabel value="#{shiftController.current.createdAt}">
-                            <f:convertDateTime pattern="hh:mm:ss a"/>
-                        </p:outputLabel>
-
-                    </h:panelGrid>
-
-                </p:panel>
+                </div>
 
             </p:panel>
 

@@ -1,15 +1,13 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Open Hospital Management Information System
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.ejb;
 
 import com.divudi.entity.AppEmail;
 import com.divudi.facade.EmailFacade;
-import com.divudi.facade.util.JsfUtil;
 import java.io.File;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,11 +48,10 @@ public class EmailManagerEjb {
     }
 
     private void sendReportApprovalEmails() {
-        System.out.println("sendReportApprovalEmails");
         String j = "Select e from AppEmail e where e.sentSuccessfully=:ret and e.retired=false";
         Map m = new HashMap();
         m.put("ret", false);
-        List<AppEmail> emails = getEmailFacade().findBySQL(j,m);
+        List<AppEmail> emails = getEmailFacade().findByJpql(j,m);
         for (AppEmail e : emails) {
             e.setSentSuccessfully(Boolean.TRUE);
             getEmailFacade().edit(e);
@@ -78,7 +75,6 @@ public class EmailManagerEjb {
             String subject,
             String messageHtml,
             String attachmentFile1Path) {
-        System.out.println("sendEmail" );
         Properties props = new Properties();
         props.put("mail.smtp.starttls.enable", "true");
         props.put("mail.smtp.auth", "true");
@@ -93,7 +89,6 @@ public class EmailManagerEjb {
             }
         });
         try {
-            System.err.println("Starting 1");
             Message message = new MimeMessage(session);
             message.setFrom(new InternetAddress(sendingEmail));
             message.setRecipients(Message.RecipientType.TO,
@@ -123,10 +118,8 @@ public class EmailManagerEjb {
             return true;
 
         } catch (MessagingException e) {
-            System.out.println("e = " + e);
             return false;
         } catch (Exception e) {
-            System.out.println("e = " + e);
             return false;
         }
 

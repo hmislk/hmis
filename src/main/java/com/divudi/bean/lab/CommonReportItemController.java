@@ -1,15 +1,16 @@
 /*
- * MSc(Biomedical Informatics) Project
+ * Open Hospital Management Information System
  *
- * Development and Implementation of a Web-based Combined Data Repository of
- Genealogical, Clinical, Laboratory and Genetic Data
- * and
- * a Set of Related Tools
+ * Dr M H B Ariyaratne
+ * Acting Consultant (Health Informatics)
+ * (94) 71 5812399
+ * (94) 71 5812399
  */
 package com.divudi.bean.lab;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.UploadController;
+
 import com.divudi.data.InvestigationItemType;
 import com.divudi.data.ReportItemType;
 import com.divudi.entity.Category;
@@ -18,7 +19,9 @@ import com.divudi.entity.lab.ReportFormat;
 import com.divudi.entity.lab.ReportItem;
 import com.divudi.facade.CategoryFacade;
 import com.divudi.facade.CommonReportItemFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -31,13 +34,16 @@ import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
+import javax.faces.event.PhaseId;
 import javax.inject.Inject;
 import javax.inject.Named;
+import org.primefaces.model.DefaultStreamedContent;
+import org.primefaces.model.StreamedContent;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- * Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -53,6 +59,8 @@ public class CommonReportItemController implements Serializable {
     SessionController sessionController;
     @Inject
     private ReportFormatController reportFormatController;
+    @Inject
+    private UploadController uploadController;
 //  Class Variables
     private static final long serialVersionUID = 1L;
     List<CommonReportItem> selectedItems;
@@ -68,7 +76,7 @@ public class CommonReportItemController implements Serializable {
 
     public void setCategory(Category category) {
         this.category = category;
-        //////System.out.println("Common Report Format Category is " + category);
+        //////// // System.out.println("Common Report Format Category is " + category);
         items = null;
     }
 
@@ -88,9 +96,28 @@ public class CommonReportItemController implements Serializable {
         getEjbFacade().create(current);
     }
 
+    public StreamedContent getImage() throws IOException {
+        FacesContext context = FacesContext.getCurrentInstance();
+        if (context.getCurrentPhaseId() == PhaseId.RENDER_RESPONSE) {
+            // So, we're rendering the HTML. Return a stub StreamedContent so that it will generate right URL.
+            return DefaultStreamedContent.builder().build();
+        } else if (reportFormatController.getUpload() == null) {
+            return DefaultStreamedContent.builder().build();
+        } else {
+            String imageType = reportFormatController.getUpload().getFileType();
+            if (imageType == null || imageType.trim().equals("")) {
+                imageType = "image/png";
+            }
+            return DefaultStreamedContent.builder()
+                    .contentType(imageType)
+                    .stream(() -> new ByteArrayInputStream(reportFormatController.getUpload().getBaImage()))
+                    .build();
+        }
+    }
+
     public CommonReportItem getLastCommonReportItem() {
         String j = "select i from CommonReportItem i order by i.id desc";
-        return getEjbFacade().findFirstBySQL(j);
+        return getEjbFacade().findFirstByJpql(j);
     }
 
     public void addNewCombo() {
@@ -131,13 +158,15 @@ public class CommonReportItemController implements Serializable {
 
     public List<CommonReportItem> listCommonRportItems(Category commenReportFormat) {
 //        System.err.println("commenReportFormat = " + commenReportFormat);
+
+        reportFormatController.setUpload(uploadController.findUpload(commenReportFormat));
         String temSql;
         temSql = "SELECT i FROM CommonReportItem i where i.retired=false and i.category=:cat order by i.name";
         Map m = new HashMap();
         m.put("cat", commenReportFormat);
 //        System.err.println("temSql = " + temSql);
 //        System.err.println("m = " + m);
-        items = getFacade().findBySQL(temSql, m);
+        items = getFacade().findByJpql(temSql, m);
         return items;
     }
 
@@ -192,12 +221,12 @@ public class CommonReportItemController implements Serializable {
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(getCurrent());
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             getCurrent().setCreatedAt(new Date());
             getCurrent().setCreater(getSessionController().getLoggedUser());
             getFacade().create(getCurrent());
-            UtilityController.addSuccessMessage("Saved Successfully");
+            JsfUtil.addSuccessMessage("Saved Successfully");
         }
 //        recreateModel();
 //        getItems();
@@ -245,9 +274,9 @@ public class CommonReportItemController implements Serializable {
         }
         List<CommonReportItem> ris = getItems();
         ReportFormat c = new ReportFormat();
-        c.setName(category.getName() + "1");
-        c.settName(category.gettName() + "1");
-        c.setsName(category.getsName() + "1");
+        c.setName(category.getName() + "_1");
+        c.setCode(category.getCode() + "_1");
+        c.setDescription(category.getDescription() + "_1");
         c.setCreatedAt(new Date());
         c.setCreater(sessionController.getLoggedUser());
         getCategoryFacade().create(c);
@@ -258,7 +287,7 @@ public class CommonReportItemController implements Serializable {
             tri.setCategory(c);
             getFacade().create(tri);
         }
-        
+
         reportFormatController.setItems(null);
     }
 
@@ -279,8 +308,8 @@ public class CommonReportItemController implements Serializable {
             temSql = "SELECT i FROM CommonReportItem i where i.retired=false and i.category=:cat order by i.name";
             Map m = new HashMap();
             m.put("cat", category);
-            //////System.out.println("common report cat sql is " + temSql + " and " + m.toString());
-            items = getFacade().findBySQL(temSql, m);
+            //////// // System.out.println("common report cat sql is " + temSql + " and " + m.toString());
+            items = getFacade().findByJpql(temSql, m);
         } else {
             items = new ArrayList<>();
         }
@@ -302,8 +331,8 @@ public class CommonReportItemController implements Serializable {
             temSql = "SELECT i FROM CommonReportItem i where i.retired=false and i.category=:cat order by i.name";
             Map m = new HashMap();
             m.put("cat", cat);
-            //////System.out.println("common report cat sql is " + temSql + " and " + m.toString());
-            cis = getFacade().findBySQL(temSql, m);
+            //////// // System.out.println("common report cat sql is " + temSql + " and " + m.toString());
+            cis = getFacade().findByJpql(temSql, m);
         } else {
             cis = new ArrayList<>();
         }
@@ -312,6 +341,14 @@ public class CommonReportItemController implements Serializable {
 
     public ReportFormatController getReportFormatController() {
         return reportFormatController;
+    }
+
+    public UploadController getUploadController() {
+        return uploadController;
+    }
+
+    public void setUploadController(UploadController uploadController) {
+        this.uploadController = uploadController;
     }
 
     /**
@@ -360,8 +397,5 @@ public class CommonReportItemController implements Serializable {
     public CategoryFacade getCategoryFacade() {
         return categoryFacade;
     }
-    
-    
-    
-    
+
 }

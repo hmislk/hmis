@@ -6,13 +6,12 @@ package com.divudi.bean.channel;
 
 import com.divudi.bean.common.DoctorSpecialityController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
 import com.divudi.data.PersonInstitutionType;
 import com.divudi.data.Title;
 import com.divudi.ejb.ChannelBean;
-import com.divudi.ejb.CommonFunctions;
 import com.divudi.ejb.FinalVariables;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
@@ -38,7 +37,6 @@ import com.divudi.facade.StaffFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -48,7 +46,6 @@ import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
-import org.primefaces.event.SelectEvent;
 
 /**
  *
@@ -90,8 +87,6 @@ public class BookingPastController implements Serializable {
     private ChannelSearchController channelSearchController;
     @Inject
     DoctorSpecialityController doctorSpecialityController;
-    @Inject
-    CommonFunctions commonFunctions;
     ///////////////////
     @EJB
     private StaffFacade staffFacade;
@@ -158,7 +153,6 @@ public class BookingPastController implements Serializable {
 
     public String nurse() {
         if (preSet()) {
-            getChannelReportController().fillNurseViewPb();
             return "channel_nurse_view";
         } else {
             return "";
@@ -167,7 +161,6 @@ public class BookingPastController implements Serializable {
 
     public String doctor() {
         if (preSet()) {
-            getChannelReportController().fillDoctorView();
             return "channel_doctor_view";
         } else {
             return "";
@@ -236,12 +229,12 @@ public class BookingPastController implements Serializable {
         m.put("sp", getSpeciality());
         if (getSpeciality() != null) {
             sql = "select p from Staff p where p.retired=false and p.speciality=:sp order by p.person.name";
-            consultants = getStaffFacade().findBySQL(sql, m);
+            consultants = getStaffFacade().findByJpql(sql, m);
         } else {
             sql = "select p from Staff p where p.retired=false order by p.person.name";
-            consultants = getStaffFacade().findBySQL(sql);
+            consultants = getStaffFacade().findByJpql(sql);
         }
-//        ////System.out.println("consultants = " + consultants);
+//        //System.out.println("consultants = " + consultants);
         setStaff(null);
     }
 
@@ -256,7 +249,7 @@ public class BookingPastController implements Serializable {
     public boolean errorCheckForSerial() {
         boolean alreadyExists = false;
         for (BillSession bs : billSessions) {
-            ////System.out.println("billSessions" + bs.getId());
+            //System.out.println("billSessions" + bs.getId());
 
             if (selectedBillSession.equals(bs)) {
 
@@ -269,7 +262,7 @@ public class BookingPastController implements Serializable {
                 for (BillItem bi : bs.getBill().getBillItems()) {
                     if (serialNo == bi.getBillSession().getSerialNo()) {
                         alreadyExists = true;
-                        UtilityController.addErrorMessage("This Number Is Alredy Exsist");
+                        JsfUtil.addErrorMessage("This Number Is Alredy Exsist");
                     }
                 }
             }
@@ -282,14 +275,14 @@ public class BookingPastController implements Serializable {
     public boolean errorCheck() {
         boolean flag = false;
         if (serialNo == 0) {
-            UtilityController.addErrorMessage("Cant Add This Number");
+            JsfUtil.addErrorMessage("Cant Add This Number");
             return true;
         }
         for (BillSession bs : billSessions) {
             if (!bs.equals(selectedBillSession)) {
                 for (BillItem bi : bs.getBill().getBillItems()) {
                     if (serialNo == bi.getBillSession().getSerialNo()) {
-                        UtilityController.addErrorMessage("This Number Is Alredy Exsist");
+                        JsfUtil.addErrorMessage("This Number Is Alredy Exsist");
                         flag = true;
                     }
                 }
@@ -298,39 +291,6 @@ public class BookingPastController implements Serializable {
         }
 
         return flag;
-    }
-    
-    public void listnerMarkAbsent() {
-        Date td=getCommonFunctions().getEndOfDay();
-        Date fd=getCommonFunctions().getStartOfDay(getSelectedBillSession().getSessionDate());
-        long lng = getCommonFunctions().getDayCount(fd, td);
-        if (Math.abs(lng) > 2) {
-            UtilityController.addErrorMessage("Date Range is too Long");
-            return;
-        }
-        if (getSelectedBillSession().isAbsent()) {
-            getSelectedBillSession().setAbsentMarkedAt(new Date());
-            getSelectedBillSession().setAbsentMarkedUser(getSessionController().getLoggedUser());
-        }else{
-            getSelectedBillSession().setAbsentUnmarkedAt(new Date());
-            getSelectedBillSession().setAbsentUnmarkedUser(getSessionController().getLoggedUser());
-        }
-
-        getBillSessionFacade().edit(getSelectedBillSession());
-        ////System.out.println(getSelectedBillSession().getBill().getPatient());
-        if (getSelectedBillSession().isAbsent()) {
-            UtilityController.addSuccessMessage("Mark As Absent");
-            if (getSelectedBillSession().getBill().getPaidBill()!=null) {
-                getSelectedBillSession().getBill().getPaidBill().getSingleBillSession().setAbsent(true);
-                getBillSessionFacade().edit(getSelectedBillSession().getBill().getPaidBill().getSingleBillSession());
-            }
-        }else{
-            UtilityController.addSuccessMessage("Mark As Present");
-            if (getSelectedBillSession().getBill().getPaidBill()!=null) {
-                getSelectedBillSession().getBill().getPaidBill().getSingleBillSession().setAbsent(false);
-                getBillSessionFacade().edit(getSelectedBillSession().getBill().getPaidBill().getSingleBillSession());
-            }
-        }
     }
 
     public void updateSerial() {
@@ -347,13 +307,13 @@ public class BookingPastController implements Serializable {
         }
 
         getBillSessionFacade().edit(getSelectedBillSession());
-        ////System.out.println(getSelectedBillSession().getBill().getPatient());
-        UtilityController.addSuccessMessage("Serial Updated");
+        //System.out.println(getSelectedBillSession().getBill().getPatient());
+        JsfUtil.addSuccessMessage("Serial Updated");
     }
 
     public void updatePatient() {
         getPersonFacade().edit(getSelectedBillSession().getBill().getPatient().getPerson());
-        UtilityController.addSuccessMessage("Patient Updated");
+        JsfUtil.addSuccessMessage("Patient Updated");
     }
 
 //    public void fillBillSessions(SelectEvent event) {
@@ -376,7 +336,7 @@ public class BookingPastController implements Serializable {
 //        hh.put("class", BilledBill.class);
 //        hh.put("ssDate", getDate());
 //        hh.put("ss", getSelectedServiceSession());
-//        billSessions = getBillSessionFacade().findBySQL(sql, hh, TemporalType.DATE);
+//        billSessions = getBillSessionFacade().findByJpql(sql, hh, TemporalType.DATE);
 //    }
     
     public void fillBillSessions() {
@@ -398,7 +358,7 @@ public class BookingPastController implements Serializable {
         hh.put("class", BilledBill.class);
         hh.put("ssDate", getSelectedServiceSession().getSessionDate());
         hh.put("ss", getSelectedServiceSession());
-        billSessions = getBillSessionFacade().findBySQL(sql, hh, TemporalType.TIMESTAMP);
+        billSessions = getBillSessionFacade().findByJpql(sql, hh, TemporalType.TIMESTAMP);
 
     }
 
@@ -411,7 +371,7 @@ public class BookingPastController implements Serializable {
 
         Date currenDate = new Date();
         if (getDate().after(currenDate)) {
-            UtilityController.addErrorMessage("Please Select Before Date");
+            JsfUtil.addErrorMessage("Please Select Before Date");
             return;
         }
 
@@ -422,7 +382,7 @@ public class BookingPastController implements Serializable {
 //            c.setTime(getDate());
 //            int wd = c.get(Calendar.DAY_OF_WEEK);
 //            sql = "Select s From ServiceSession s where s.retired=false and s.staff.id=" + getStaff().getId() + " and s.sessionWeekday=" + wd;
-//            serviceSessions = getServiceSessionFacade().findBySQL(sql);
+//            serviceSessions = getServiceSessionFacade().findByJpql(sql);
             serviceSessions=fetchCreatedServiceSession(staff, date);
             int a=0;
             for (ServiceSession s : serviceSessions) {
@@ -492,7 +452,7 @@ public class BookingPastController implements Serializable {
                 + " where f.retired=false "
                 + " and f.item=:ses ";
         m.put("ses", item);
-        List<ItemFee> list = getItemFeeFacade().findBySQL(jpql, m, TemporalType.TIMESTAMP);
+        List<ItemFee> list = getItemFeeFacade().findByJpql(jpql, m, TemporalType.TIMESTAMP);
         return list;
     }
 
@@ -531,7 +491,7 @@ public class BookingPastController implements Serializable {
         m.put("d", d);
         m.put("staff", s);
         m.put("class", ServiceSession.class);
-        return getServiceSessionFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        return getServiceSessionFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
     }
     
     public void listnerStaffListForRowSelect() {
@@ -544,11 +504,11 @@ public class BookingPastController implements Serializable {
         String sql;
         Map m = new HashMap();
 
-//        ////System.out.println("consultants = " + consultants);
+//        //System.out.println("consultants = " + consultants);
         if (selectTextConsultant == null || selectTextConsultant.trim().equals("")) {
             m.put("sp", getSpeciality());
             if (getSpeciality() != null) {
-                if (getSessionController().getLoggedPreference().isShowOnlyMarkedDoctors()) {
+                if (getSessionController().getInstitutionPreference().isShowOnlyMarkedDoctors()) {
 
                     sql = " select pi.staff from PersonInstitution pi where pi.retired=false "
                             + " and pi.type=:typ "
@@ -562,40 +522,40 @@ public class BookingPastController implements Serializable {
                 } else {
                     sql = "select p from Staff p where p.retired=false and p.speciality=:sp order by p.person.name";
                 }
-                consultants = getStaffFacade().findBySQL(sql, m);
+                consultants = getStaffFacade().findByJpql(sql, m);
             }
         } else {
             if (selectTextConsultant.length() > 4) {
                 doctorSpecialityController.setSelectText("");
-                if (getSessionController().getLoggedPreference().isShowOnlyMarkedDoctors()) {
+                if (getSessionController().getInstitutionPreference().isShowOnlyMarkedDoctors()) {
 
                     sql = " select pi.staff from PersonInstitution pi where pi.retired=false "
                             + " and pi.type=:typ "
                             + " and pi.institution=:ins "
-                            + " and upper(pi.staff.person.name) like '%" + getSelectTextConsultant().toUpperCase() + "%' "
+                            + " and (pi.staff.person.name) like '%" + getSelectTextConsultant().toUpperCase() + "%' "
                             + " order by pi.staff.person.name ";
 
                     m.put("ins", getSessionController().getInstitution());
                     m.put("typ", PersonInstitutionType.Channelling);
-                    consultants = getStaffFacade().findBySQL(sql, m);
+                    consultants = getStaffFacade().findByJpql(sql, m);
 
                 } else {
                     sql = "select p from Staff p where p.retired=false "
-                            + " and upper(p.person.name) like '%" + getSelectTextConsultant().toUpperCase() + "%' "
+                            + " and (p.person.name) like '%" + getSelectTextConsultant().toUpperCase() + "%' "
                             + " order by p.person.name";
-                    consultants = getStaffFacade().findBySQL(sql);
+                    consultants = getStaffFacade().findByJpql(sql);
                 }
 
             } else {
                 m.put("sp", getSpeciality());
                 if (getSpeciality() != null) {
-                    if (getSessionController().getLoggedPreference().isShowOnlyMarkedDoctors()) {
+                    if (getSessionController().getInstitutionPreference().isShowOnlyMarkedDoctors()) {
 
                         sql = " select pi.staff from PersonInstitution pi where pi.retired=false "
                                 + " and pi.type=:typ "
                                 + " and pi.institution=:ins "
                                 + " and pi.staff.speciality=:sp "
-                                + " and upper(pi.staff.person.name) like '%" + getSelectTextConsultant().toUpperCase() + "%' "
+                                + " and (pi.staff.person.name) like '%" + getSelectTextConsultant().toUpperCase() + "%' "
                                 + " order by pi.staff.person.name ";
 
                         m.put("ins", getSessionController().getInstitution());
@@ -603,10 +563,10 @@ public class BookingPastController implements Serializable {
 
                     } else {
                         sql = "select p from Staff p where p.retired=false and p.speciality=:sp"
-                                + " and upper(p.person.name) like '%" + getSelectTextConsultant().toUpperCase() + "%' "
+                                + " and (p.person.name) like '%" + getSelectTextConsultant().toUpperCase() + "%' "
                                 + " order by p.person.name";
                     }
-                    consultants = getStaffFacade().findBySQL(sql, m);
+                    consultants = getStaffFacade().findByJpql(sql, m);
                 }
             }
         }
@@ -651,7 +611,7 @@ public class BookingPastController implements Serializable {
 //            c.setTime(getDate());
 //            int wd = c.get(Calendar.DAY_OF_WEEK);
 //            sql = "Select s From ServiceSession s where s.retired=false and s.staff.id=" + getStaff().getId() + " and s.sessionWeekday=" + wd;
-//            serviceSessions = getServiceSessionFacade().findBySQL(sql);
+//            serviceSessions = getServiceSessionFacade().findByJpql(sql);
 //        }
 
         return serviceSessions;
@@ -685,7 +645,7 @@ public class BookingPastController implements Serializable {
 //                        + getSelectedServiceSession().getId() + " and bs.sessionDate= :ssDate and bs.serviceSession.staff.id=" + getStaff().getId();
 //                HashMap hh = new HashMap();
 //                hh.put("ssDate", getDate());
-//                billSessions = getBillSessionFacade().findBySQL(sql, hh, TemporalType.DATE);
+//                billSessions = getBillSessionFacade().findByJpql(sql, hh, TemporalType.DATE);
 //
 //                setFees();
 //            }
@@ -716,7 +676,7 @@ public class BookingPastController implements Serializable {
 
     public void setSelectedServiceSession(ServiceSession selectedServiceSession) {
 //        makeBillSessionNull();
-//        calTotal();
+//        calChannelTotal();
         this.selectedServiceSession = selectedServiceSession;
     }
 
@@ -819,7 +779,7 @@ public class BookingPastController implements Serializable {
 
     public void setSelectedBillSession(BillSession selectedBillSession) {
         this.selectedBillSession = selectedBillSession;
-        getChannelCancelController().clearForNewBill();
+        getChannelCancelController().makeNull();
         getChannelCancelController().setBillSession(selectedBillSession);
     }
 
@@ -849,7 +809,7 @@ public class BookingPastController implements Serializable {
 
     public Boolean preSet() {
         if (getSelectedServiceSession() == null) {
-            UtilityController.addErrorMessage("Please select Service Session");
+            JsfUtil.addErrorMessage("Please select Service Session");
             return false;
         }
 
@@ -982,13 +942,5 @@ public class BookingPastController implements Serializable {
 
     public void setSelectTextSession(String selectTextSession) {
         this.selectTextSession = selectTextSession;
-    }
-
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
     }
 }

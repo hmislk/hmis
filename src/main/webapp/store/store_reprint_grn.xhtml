@@ -1,11 +1,11 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:st="http://java.sun.com/jsf/composite/store">
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:st="http://xmlns.jcp.org/jsf/composite/store">
 
     <h:body>
 
@@ -18,7 +18,7 @@
                         
                         <p:dataTable var="bi" styleClass="noBorder" 
                              value="#{storeBillSearch.billItems}" 
-                             scrollable="true" scrollHeight="250"                             
+                             scrollable="true" scrollHeight="250"                         
                              id="itemList">  
 
                     <f:facet name="header">  
@@ -28,7 +28,7 @@
                     <p:column >
                         <p:commandButton   value="Add Detail"
                                            process="@this" 
-                                           update=":#{p:component('billProperties')}"
+                                           update=":#{p:resolveFirstComponentWithId('billProperties',view).clientId}"
                                            style="float: right;" 
                                           actionListener="#{storeBillSearch.addDetailItemListener(bi)}"
                                            oncomplete="PF('dlgUpdate').show();">                        
@@ -68,7 +68,7 @@
                         </p:cellEditor>
                     </p:column>  
 
-                    <p:column headerText="Free"   >   
+                    <p:column headerText="Free">   
                         <p:cellEditor>  
                             <f:facet name="output">  
                                 <h:outputLabel id="freeQty" value="#{bi.pharmaceuticalBillItem.freeQty}"/>
@@ -79,7 +79,7 @@
                         </p:cellEditor>                        
                     </p:column> 
 
-                    <p:column headerText="Purchase Rate"   >  
+                    <p:column headerText="Purchase Rate">  
                         <p:cellEditor>  
                             <f:facet name="output">  
                                 <h:panelGroup id="purchase">
@@ -127,7 +127,7 @@
                         <p:cellEditor >
                             <f:facet name="output">
                                 <h:outputLabel value="#{bi.pharmaceuticalBillItem.doe}">
-                                    <f:convertDateTime pattern="dd/MM/yy"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                                 </h:outputLabel>
                             </f:facet>
                             <f:facet name="input">
@@ -140,7 +140,7 @@
                     </p:column> 
 
 
-                    <p:column headerText="Bathch No" >  
+                    <p:column headerText="Batch No" >  
                         <p:cellEditor >
                             <f:facet name="output">
                                 <h:outputLabel value="#{bi.pharmaceuticalBillItem.stringValue}" id="txtBatch"/>

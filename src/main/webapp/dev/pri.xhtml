@@ -1,0 +1,56 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:head>
+        <title>Facelet Title</title>
+    </h:head>
+    <h:body>
+        <h:form  >
+
+            <p:panel header="Manage User Privilages">
+
+
+                <f:facet name="header" >
+                    <h:outputLabel value="Manage User Privilages"/>
+                    <p:commandButton value="Update User Privilage"  action="#{userPrivilageController.savePrivileges()}" ajax="false"  >  
+                    </p:commandButton>
+
+
+                    <p:commandButton ajax="false" value="Back"
+                                     action="index" >
+                    </p:commandButton>
+
+                </f:facet>
+
+                <h:panelGrid  columns="2" >                          
+
+                    <p:autoComplete id="user"  forceSelection="true"  completeMethod="#{webUserController.completeUser}" var="us" 
+                                    itemLabel="#{us.webUserPerson.name}" itemValue="#{us}"  
+                                    value="#{userPrivilageController.currentWebUser}" >
+                        <f:ajax event="itemSelect" execute="user" render="tree" />
+                    </p:autoComplete>
+                </h:panelGrid>
+
+
+                <p:panel id="tree">
+                    <p:growl id="messages" showDetail="true" escape="false"/>  
+                    <p:tree value="#{userPrivilageController.tmp}" var="node"  
+                            selectionMode="checkbox" 
+                            selection="#{userPrivilageController.selectedNodes}">  
+                        <p:treeNode>  
+                            <h:outputText value="#{node}" />  
+                        </p:treeNode>  
+                    </p:tree>  
+
+
+                </p:panel>
+            </p:panel>
+
+
+        </h:form>
+    </h:body>
+</html>
+

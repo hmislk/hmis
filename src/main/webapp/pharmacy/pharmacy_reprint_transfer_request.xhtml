@@ -1,11 +1,11 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:pharmacy="http://java.sun.com/jsf/composite/pharmacy">
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:pharmacy="http://xmlns.jcp.org/jsf/composite/pharmacy">
 
     <h:body>
 
@@ -15,67 +15,116 @@
                 <h:form>
                     <p:panel >
                         <f:facet name="header" >
-                            <h:outputLabel value="Transfer Request Reprint" ></h:outputLabel>
-                            <p:commandButton ajax="false" action="pharmacy_transfer_request_list" actionListener="#{pharmacyBillSearch.makeNull()}" value="Requested List"/>
-                            <p:commandButton value="Reprint" ajax="false" >
+                            <h:outputLabel styleClass="fas fa-arrow-right-arrow-left" />
+                            <h:outputLabel value="Transfer Request Reprint" class="mx-4"></h:outputLabel>
+                            <p:commandButton 
+                                ajax="false" 
+                                action="pharmacy_transfer_request_list" 
+                                icon="fas fa-list"
+                                style="float: right"
+                                class="ui-button-warning"
+                                actionListener="#{pharmacyBillSearch.makeNull()}" 
+                                value="Requested List"/>
+
+                            <p:commandButton 
+                                value="Reprint" 
+                                icon="fas fa-print"
+                                style="float: right"
+                                class="ui-button-info mx-2"
+                                ajax="false" >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
+
+                            <p:commandButton 
+                                disabled="#{pharmacyBillSearch.bill.cancelled or pharmacyBillSearch.bill.forwardReferenceBills.size() ne 0}"
+                                class="ui-button-danger mx-1"
+                                style="float: right;"
+                                icon="fas fa-cancel"
+                                value="Cancel Request" 
+                                onclick="PF('confirmationDialog').show();"
+                                >
+                            </p:commandButton>
+
+                            <p:dialog  minHeight="100" width="800"  header="Confirmation" widgetVar="confirmationDialog" modal="true" >
+                                <p>Are you sure you want to cancel the request?</p>
+                                <p:inputText class="w-100" 
+                                             required="true" 
+                                             value="#{pharmacyBillSearch.comment}" 
+                                             placeholder="Please provide a comment for the cancel Request"/>
+                                <div class="d-flex mt-2">
+                                    <p:commandButton class="mx-2 ui-button-warning" ajax="false" value="Yes" action="#{pharmacyBillSearch.cancelPharmacyTransferRequestBill()}" onclick="PF('confirmationDialog').hide();" />
+                                    <p:commandButton value="No" onclick="PF('confirmationDialog').hide();" />
+                                </div>
+                            </p:dialog>
                         </f:facet>
 
-                        <p:panel>
-                            <p:panelGrid columns="2" style="width: 100%;">
-                                <p:panel header="Dealor Detail">
-                                    <p:panelGrid columns="2">
-                                        <h:outputLabel value="Dealor ​Name:" ></h:outputLabel>
-                                        <h:outputLabel value="#{pharmacyBillSearch.bill.toInstitution.name }" ></h:outputLabel>                                        
-                                    </p:panelGrid>
-                                </p:panel>
-                                <p:panel header="Bill Detail">
-                                    <p:panelGrid columns="2">
-                                        <h:outputLabel value="Bill No :" ></h:outputLabel>
+                        <div class="row" >
+                            <div class="col-12">
+                                <p:panel>
+                                    <f:facet name="header" >
+                                        <h:outputLabel styleClass="fas fa-file-invoice" />
+                                        <h:outputLabel value="Request Details" class="mx-4"></h:outputLabel>
+                                    </f:facet>
+                                    <h:panelGrid columns="3" class="w-75">
+                                        <h:outputLabel value="Bill No" ></h:outputLabel>
+                                        <h:outputLabel value=":" />
                                         <h:outputLabel value="#{pharmacyBillSearch.bill.insId}" ></h:outputLabel>
-                                        <h:outputLabel value="Payment Type : " ></h:outputLabel>
-                                        <h:outputLabel value="#{pharmacyBillSearch.bill.paymentMethod}" ></h:outputLabel>
+                                        <h:outputLabel value="Request Institution" ></h:outputLabel>
+                                        <h:outputLabel value=":" />
+                                        <h:outputLabel value="#{pharmacyBillSearch.bill.fromInstitution.name}" ><f:convertNumber pattern="#,##0.00" /></h:outputLabel>
+                                        <h:outputLabel value="Request Department" ></h:outputLabel>
+                                        <h:outputLabel value=":" />
+                                        <h:outputLabel value="#{pharmacyBillSearch.bill.fromDepartment.name}" ><f:convertNumber pattern="#,##0.00" /></h:outputLabel>
+                                        <h:outputLabel value="Request Created User" ></h:outputLabel>
+                                        <h:outputLabel value=":" />
+                                        <h:outputLabel value="#{pharmacyBillSearch.bill.creater.name}" ><f:convertNumber pattern="#,##0.00" /></h:outputLabel>
+                                        <h:outputLabel value="Request To Institution" ></h:outputLabel>
+                                        <h:outputLabel value=":" />
+                                        <h:outputLabel value="#{pharmacyBillSearch.bill.toInstitution.name}" ><f:convertNumber pattern="#,##0.00" /></h:outputLabel>
+                                        <h:outputLabel value="Request To Department" ></h:outputLabel>
+                                        <h:outputLabel value=":" />
+                                        <h:outputLabel value="#{pharmacyBillSearch.bill.toDepartment.name}" ><f:convertNumber pattern="#,##0.00" /></h:outputLabel>
 
-                                        <h:outputLabel value="Total :" ></h:outputLabel>
-
-                                        <h:outputLabel value="Discount :" ></h:outputLabel>
-                                        <h:outputLabel value="#{pharmacyBillSearch.bill.discount}" ><f:convertNumber pattern="#,##0.00" /></h:outputLabel>
-                                        <h:outputLabel value="Net Total :" ></h:outputLabel>
-                                        <h:outputLabel value="#{pharmacyBillSearch.bill.netTotal}" ><f:convertNumber pattern="#,##0.00" /></h:outputLabel>
-                                    </p:panelGrid>
+                                    </h:panelGrid>
                                 </p:panel>
-                            </p:panelGrid>
-                            <p:panel header="Bill Item Detail">
-                                <p:dataTable rowIndexVar="rowIndex" value="#{pharmacyBillSearch.bill.billItems}" var="bip" >
-                                    <p:column>
-                                        <f:facet name="header">No</f:facet>
-                                            #{rowIndex+1}
-                                    </p:column>
-                                    <p:column>
-                                        <f:facet name="header">Item</f:facet>
-                                            #{bip.item.id}
-                                    </p:column>
-                                    <p:column>
-                                        <f:facet name="header">Item</f:facet>
-                                            #{bip.item.name}
-                                    </p:column>
-                                    <p:column>
-                                        <f:facet name="header">Value</f:facet>
-                                            #{bip.pharmaceuticalBillItem.qty}
-                                    </p:column>
-                                    <p:column>
-                                        <f:facet name="header">Value</f:facet>
-                                            #{bip.pharmaceuticalBillItem.purchaseRate}
-                                    </p:column>
-                                </p:dataTable>
-                            </p:panel>
+                            </div>
+                        </div>
+
+                        <p:panel class="my-2">
+                            <f:facet name="header" >
+                                <h:outputLabel styleClass="fas fa-list-alt" />
+                                <h:outputLabel value="Bill Item Details" class="mx-4"></h:outputLabel>
+                            </f:facet>
+                            <p:dataTable rowIndexVar="rowIndex" value="#{pharmacyBillSearch.bill.billItems}" var="bip" >
+                                <p:column>
+                                    <f:facet name="header">No</f:facet>
+                                        #{rowIndex+1}
+                                </p:column>
+                                <p:column>
+                                    <f:facet name="header">Item</f:facet>
+                                        #{bip.item.id}
+                                </p:column>
+                                <p:column>
+                                    <f:facet name="header">Item</f:facet>
+                                        #{bip.item.name}
+                                </p:column>
+                                <p:column>
+                                    <f:facet name="header">Qty</f:facet>
+                                        #{bip.pharmaceuticalBillItem.qty}
+                                </p:column>
+                            </p:dataTable>
                         </p:panel>
 
 
+
                         <p:panel >
-                            <p:commandButton value="New Bill" ajax="false" action="#{pharmacyBillSearch.makeNull()}" >
-                            </p:commandButton>
+<!--                            <p:commandButton 
+                                value="New Bill" 
+                                icon="fas fa-plus"
+                                class="ui-button-warning"
+                                ajax="false" 
+                                action="#{pharmacyBillSearch.makeNull()}" >
+                            </p:commandButton>-->
                             <h:panelGroup id="gpBillPreview">
                                 <pharmacy:transferRequest  bill="#{pharmacyBillSearch.bill}" />
                             </h:panelGroup>
@@ -83,7 +132,7 @@
 
 
                     </p:panel>
- 
+
 
                 </h:form>
             </ui:define>

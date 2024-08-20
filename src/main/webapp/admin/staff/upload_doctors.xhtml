@@ -1,0 +1,164 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/admin/staff/admin_manage_staff_index.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui">
+
+
+    <ui:define name="subcontent">
+
+
+        <div class="container-fluid" >
+            <div class="card" >
+                <div class="card-header" >
+                    Upload Doctors
+                </div>
+                <div class="card-body" >
+                    <h:form enctype="multipart/form-data">
+                        <p:fileUpload value="#{dataUploadController.file}"
+                                      mode="simple"
+                                      label="Choose File"/>
+                        <p:commandButton value="Upload"
+                                         class="ui-button-warning m-1"
+                                         action="#{dataUploadController.uploadDoctors}"
+                                         ajax="false"/>
+
+                        <h:panelGroup id="tbls" >
+
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Column</th>
+                                        <th>Title</th>
+                                        <th>Description</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>A</td>
+                                        <td>Code</td>
+                                        <td>Doctors's unique code. Optional.</td>
+                                    </tr>
+                                    <tr>
+                                        <td>B</td>
+                                        <td>Title</td>
+                                        <td>Title of the Doctor (e.g., Dr., Mr., Ms.). Required.</td>
+                                    </tr>
+                                    <tr>
+                                        <td>C</td>
+                                        <td>Name</td>
+                                        <td>Doctor's name. Required.</td>
+                                    </tr>
+                                    <tr>
+                                        <td>D</td>
+                                        <td>Registration Number</td>
+                                        <td>Doctor's registration number. Optional.</td>
+                                    </tr>
+                                    <tr>
+                                        <td>E</td>
+                                        <td>Description</td>
+                                        <td>Description or additional details. Optional.</td>
+                                    </tr>
+                                    <tr>
+                                        <td>F</td>
+                                        <td>Sex</td>
+                                        <td>Sex of the Doctor. Required (use M or F).</td>
+                                    </tr>
+                                    <tr>
+                                        <td>G</td>
+                                        <td>Mobile Number</td>
+                                        <td>Doctor's mobile number. Optional.</td>
+                                    </tr>
+                                    <tr>
+                                        <td>H</td>
+                                        <td>Speciality</td>
+                                        <td>Doctor's speciality. Required.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+
+
+                        </h:panelGroup>
+
+                    </h:form>
+
+                </div>
+            </div>
+        </div>
+
+
+
+        <h:form>
+
+
+            <p:commandButton value="Save" action="#{dataUploadController.saveDoctors()}" ajax="false" >
+            </p:commandButton>
+
+            <p:dataTable
+                paginator="true"
+                rows="10"
+                rowKey="#{item.id}"
+                id="tbl"
+                value="#{dataUploadController.consultantsToSave}"
+                var="item" >
+                <f:facet name="header">
+                    <p:outputLabel value="Doctors Saved"></p:outputLabel>
+                </f:facet>
+
+                <!-- Code Column -->
+                <p:column headerText="Code">
+                    #{item.code}
+                </p:column>
+
+                <!-- Title Column -->
+                <p:column headerText="Title">
+                    #{item.person.title.label}
+                </p:column>
+
+                <!-- Name Column -->
+                <p:column headerText="Name">
+                    #{item.person.name}
+                </p:column>
+
+                <!-- Registration Number Column -->
+                <p:column headerText="Registration Number">
+                    #{item.registration}
+                </p:column>
+
+                <!-- Description Column -->
+                <p:column headerText="Description">
+                    #{item.description}
+                </p:column>
+
+                <!-- Sex Column -->
+                <p:column headerText="Sex">
+                    #{item.person.sex} 
+                </p:column>
+
+                <!-- Mobile Number Column -->
+                <p:column headerText="Mobile Number">
+                    #{item.person.mobile} 
+                </p:column>
+
+                <!-- Speciality Column -->
+                <p:column headerText="Speciality">
+                    #{item.speciality.name} 
+                </p:column>
+
+            </p:dataTable>
+
+        </h:form>
+
+
+
+
+
+
+
+
+    </ui:define>
+</ui:composition>

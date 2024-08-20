@@ -1,10 +1,10 @@
 /*
- * MSc(Biomedical Informatics) Project
+ * Open Hospital Management Information System
  *
- * Development and Implementation of a Web-based Combined Data Repository of
- Genealogical, Clinical, Laboratory and Genetic Data
- * and
- * a Set of Related Tools
+ * Dr M H B Ariyaratne
+ * Acting Consultant (Health Informatics)
+ * (94) 71 5812399
+ * (94) 71 5812399
  */
 package com.divudi.bean.common;
 import com.divudi.entity.Department;
@@ -33,10 +33,10 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
-
+import com.divudi.bean.common.util.JsfUtil;
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
  Informatics)
  */
 @Named
@@ -77,25 +77,25 @@ public class PackageItemFeeController implements Serializable {
             suggestions = new ArrayList<Staff>();
         } else {
             if (getCurrentFee().getSpeciality() == null) {
-                sql = "select p from Staff p where p.retired=false and (upper(p.person.name) like '%" + query.toUpperCase() + "%'or  upper(p.code) like '%" + query.toUpperCase() + "%' ) order by p.person.name";
+                sql = "select p from Staff p where p.retired=false and ((p.person.name) like '%" + query.toUpperCase() + "%'or  (p.code) like '%" + query.toUpperCase() + "%' ) order by p.person.name";
             } else {
-                sql = "select p from Staff p where p.speciality.id=" + getCurrentFee().getSpeciality().getId() + " and p.retired=false and (upper(p.person.name) like '%" + query.toUpperCase() + "%'or  upper(p.code) like '%" + query.toUpperCase() + "%' ) order by p.person.name";
+                sql = "select p from Staff p where p.speciality.id=" + getCurrentFee().getSpeciality().getId() + " and p.retired=false and ((p.person.name) like '%" + query.toUpperCase() + "%'or  (p.code) like '%" + query.toUpperCase() + "%' ) order by p.person.name";
             }
-            //////System.out.println(sql);
-            suggestions = getStaffFacade().findBySQL(sql);
+            //////// // System.out.println(sql);
+            suggestions = getStaffFacade().findByJpql(sql);
         }
         return suggestions;
     }
 
     public List<Department> getInstitutionDepatrments() {
         List<Department> d;
-        //////System.out.println("gettin ins dep ");
+        //////// // System.out.println("gettin ins dep ");
         //if (getCurrentFee()==null && getCurrentFee().getInstitution() == null && getCurrentFee().getInstitution().getId() == null) {
         if (getCurrentFee().getInstitution() == null) {
             return new ArrayList<Department>();
         } else {
             String sql = "Select d From Department d where d.retired=false and d.institution.id=" + getCurrentFee().getInstitution().getId();
-            d = getDepartmentFacade().findBySQL(sql);
+            d = getDepartmentFacade().findByJpql(sql);
         }
 
         return d;
@@ -105,7 +105,7 @@ public class PackageItemFeeController implements Serializable {
         String temSql;
         if (getCurrentPackege() != null) {
             temSql = "SELECT i FROM PackageItem i where i.retired=false and i.packege.id = " + getCurrentPackege().getId();
-            items = getPackageItemFacade().findBySQL(temSql);
+            items = getPackageItemFacade().findByJpql(temSql);
         } else {
             items = null;
         }
@@ -119,11 +119,11 @@ public class PackageItemFeeController implements Serializable {
     public void saveCharge() {
 
         if (currentFee == null) {
-            UtilityController.addErrorMessage("Please select a charge");
+            JsfUtil.addErrorMessage("Please select a charge");
             return;
         }
         if (currentIx == null) {
-            UtilityController.addErrorMessage("Please select a Investigation");
+            JsfUtil.addErrorMessage("Please select a Investigation");
             return;
         }
 
@@ -134,10 +134,10 @@ public class PackageItemFeeController implements Serializable {
             currentFee.setCreater(getSessionController().getLoggedUser());
 
             getPackageFeeFacade().create(currentFee);
-            UtilityController.addSuccessMessage("Fee Added");
+            JsfUtil.addSuccessMessage("Fee Added");
         } else {
             getPackageFeeFacade().edit(currentFee);
-            UtilityController.addSuccessMessage("Fee Saved");
+            JsfUtil.addSuccessMessage("Fee Saved");
         }
 
         setPakageTotal();
@@ -159,6 +159,10 @@ public class PackageItemFeeController implements Serializable {
         currentPackege.setTotal(total);
         getPackegeFacade().edit(currentPackege);
     }
+    
+    public String navigateToPackageItemFees(){
+         return "/admin/pricing/package_item_prices?faces-redirect=true";
+     }
 
     public ItemFacade getEjbFacade() {
         return ejbFacade;
@@ -190,7 +194,7 @@ public class PackageItemFeeController implements Serializable {
 
     public void removeFee() {
         if (getRemovedPackageFee().getId() == null || getRemovedPackageFee().getId() == 0) {
-            UtilityController.addErrorMessage("Nothing to remove");
+            JsfUtil.addErrorMessage("Nothing to remove");
             return;
         } else {
             getRemovedPackageFee().setRetired(true);
@@ -212,9 +216,9 @@ public class PackageItemFeeController implements Serializable {
             currentIx.setRetiredAt(new Date());
             currentIx.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(currentIx);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
 
         currentIx = null;
@@ -228,7 +232,7 @@ public class PackageItemFeeController implements Serializable {
     public List<PackageFee> getCharges() {
 
         if (currentIx != null && currentIx.getId() != null) {
-            setCharges(getPackageFeeFacade().findBySQL("select c from PackageFee c where c.retired = false and c.packege.id=" + getCurrentPackege().getId() + " and c.item.id = " + currentIx.getId()));
+            setCharges(getPackageFeeFacade().findByJpql("select c from PackageFee c where c.retired = false and c.packege.id=" + getCurrentPackege().getId() + " and c.item.id = " + currentIx.getId()));
 
         } else {
             setCharges(new ArrayList<PackageFee>());

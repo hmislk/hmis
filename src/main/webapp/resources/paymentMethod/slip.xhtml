@@ -1,27 +1,34 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:cc="http://java.sun.com/jsf/composite"
-      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:f="http://java.sun.com/jsf/core">
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="paymentMethodData" />
+        <cc:attribute name="paymentMethodData"  type="com.divudi.data.dataStructure.PaymentMethodData" />
+        <cc:attribute name="valueRequired" type="boolean" default="true"/>
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <h:panelGrid columns="3">
-            
-            <p:selectOneMenu value="#{cc.attrs.paymentMethodData.slip.institution}">
+        <div class="d-flex gap-2 mt-2">
+            <h:panelGroup rendered="#{cc.attrs.valueRequired}" class="" layout="block"  >
+                <p:inputText autocomplete="off"   value="#{cc.attrs.paymentMethodData.slip.totalValue}" style="width: 10em;" class="w-100" id="txtVal" >
+                    <p:ajax process="@this" ></p:ajax>
+                </p:inputText>
+                            </h:panelGroup>
+                        <p:selectOneMenu value="#{cc.attrs.paymentMethodData.slip.institution}" style="width: 200px;" >
                 <f:selectItem itemLabel="Select Bank"/>
                 <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
+                <p:ajax process="@this" ></p:ajax>
             </p:selectOneMenu>
-            <p:calendar  value="#{cc.attrs.paymentMethodData.slip.date}" pattern="dd MMMM yyyy" id="date">                            
+            <p:calendar value="#{cc.attrs.paymentMethodData.slip.date}" pattern="#{sessionController.applicationPreference.longDateFormat}" id="date" >                            
+                <p:ajax process="@this" ></p:ajax>
             </p:calendar>
-            <p:watermark value="Date" for="date"/>
-        </h:panelGrid>
+            <p:inputText value="#{cc.attrs.paymentMethodData.slip.comment}" placeholder="Enter Slip Comments" ></p:inputText>
+                    </div>
     </cc:implementation>
 </html>

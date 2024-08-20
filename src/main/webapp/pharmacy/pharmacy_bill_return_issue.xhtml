@@ -1,36 +1,64 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/resources/template/template.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://java.sun.com/jsf/core"
-                xmlns:ph="http://java.sun.com/jsf/composite/pharmacy/inward">
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ph="http://xmlns.jcp.org/jsf/composite/pharmacy/inward">
 
     <ui:define name="content">
         <h:form>
             <h:panelGroup rendered="#{!issueReturnController.printPreview}" styleClass="alignTop" >
                 <p:panel>
 
-                    <f:facet name="header" >      
+                    <f:facet name="header" >     
 
-                        <h:panelGrid columns="15"  >                                                     
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <p:outputLabel  value="Recievable Amount :" class="mt-2"/> 
+                                <p:outputLabel
+                                    class="mx-2 mt-2"
+                                    id="total"  
+                                    value="#{issueReturnController.returnBill.total}"
+                                    >
+                                </p:outputLabel>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <p:commandButton 
+                                    icon="fas fa-save"
+                                    class="ui-button-primary"
+                                    value="Save" 
+                                    action="#{issueReturnController.saveIssueBillReturn()}" 
+                                    ajax="false" >
+                                </p:commandButton>
+                                <p:commandButton 
+                                    icon="fas fa-save"
+                                    class="ui-button-success mx-1"
+                                    value="Finalize" 
+                                    action="#{issueReturnController.finalizeIssueBillReturn()}" 
+                                    ajax="false" >
+                                </p:commandButton>
+                                <p:commandButton 
+                                    icon="fa fa-money-bill-wave"
+                                    class="ui-button-warning"
+                                    value="Return" 
+                                    action="#{issueReturnController.settle}" 
+                                    ajax="false"  >
+                                </p:commandButton>
+                            </div>
+                        </div>
 
-                            <p:commandButton  value="Return" 
-                                             action="#{issueReturnController.settle}" 
-                                            ajax="false" 
-                                              style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;" onclick="onSubmitButton();" >
-                            </p:commandButton>
-                            <p:outputLabel  value="Recievable Amount" /> 
-                            <p:outputLabel id="total"  value="#{issueReturnController.returnBill.total}" 
-                                           style="float: right;"/> 
-                        </h:panelGrid>
                     </f:facet>
                 </p:panel>
 
-                <p:dataTable var="ph" value="#{issueReturnController.billItems}"
-                             scrollable="true" scrollHeight="250"
-                             id="itemList" >  
+                <p:dataTable 
+                    var="ph" 
+                    value="#{issueReturnController.billItems}"
+                    scrollable="true" 
+                    scrollHeight="250"
+                    rows="10"
+                    id="itemList" >  
 
                     <f:facet name="header">  
                         Returning Item 
@@ -41,8 +69,16 @@
                         <h:outputText value=" #{ph.item.name}"  />                     
 
                     </p:column>  
+                    <p:column headerText="BillItem id" style="width:50px!important;">  
+                        <h:outputText value=" #{ph.id}"  />                     
 
-                    <p:column headerText="Ballance Qty in Unit" style="width:25px!important;"> 
+                    </p:column> 
+                    <p:column headerText="Item id" style="width:50px!important;">  
+                        <h:outputText value=" #{ph.item.id}"  />                     
+
+                    </p:column> 
+
+                    <p:column headerText="Balance Qty in Unit" style="width:25px!important;"> 
                         <h:outputText value="#{ph.pharmaceuticalBillItem.qty}" />                   
                     </p:column>  
 
@@ -51,43 +87,74 @@
                     </p:column>                 
 
 
-                    <p:column headerText="Bathch No" style="width:25px!important;">                       
+                    <p:column headerText="Batch No" style="width:25px!important;">                       
                         <h:outputText value="#{ph.pharmaceuticalBillItem.stringValue}" />                        
                     </p:column>  
 
                     <p:column headerText="Date of Expirey" style="width:25px!important;">                     
-                        <h:outputText value="#{ph.pharmaceuticalBillItem.doe}" /> 
+                        <h:outputText value="#{ph.pharmaceuticalBillItem.doe}">
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"  />
+                        </h:outputText>
                     </p:column>
-
-
-                    <p:column headerText="Returning Qty in Unit" style="width:25px!important;">                     
-                        <p:inputText autocomplete="off" value="#{ph.qty}" >
-                            <f:ajax event="blur" render="@this :#{p:component('total')}" 
-                                    execute="@this" listener="#{issueReturnController.onEdit(ph)}" ></f:ajax>
+                   
+                    <p:column headerText="Returning Qty in Unit" style="width:25px!important;" >                     
+                        <p:inputText autocomplete="off" value="#{ph.qty}" disabled="#{issueReturnController.bill.checkedBy ne null}" >
+                            <f:ajax 
+                                event="blur" 
+                                render="@this :#{p:resolveFirstComponentWithId('total',view).clientId}" 
+                                execute="@this" 
+                                listener="#{issueReturnController.onEdit(ph)}" >
+                            </f:ajax>
                         </p:inputText>
                     </p:column>  
 
                 </p:dataTable>  
-                <p:spacer height="50"/>
-
             </h:panelGroup>
 
             <p:panel rendered="#{issueReturnController.printPreview}">
-                <p:commandButton ajax="false" action="/pharmacy/pharmacy_search_issue_bill" 
-                                 value="Pharmacy Issue Bill Search" actionListener="#{issueReturnController.makeNull}" 
-                                 onclick="onSubmitButton();" />                    
-                <p:commandButton value="Print Return Bill" ajax="false" action="#"  >
-                    <p:printer target="gpBillPreview1" ></p:printer>
-                </p:commandButton>
-                <p:commandButton value="Print Sale Bill" ajax="false" action="#"   >
-                    <p:printer target="gpBillPreview2" ></p:printer>
-                </p:commandButton>
-                <p:panel   id="gpBillPreview1"   >
+                <f:facet name="header">    
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <p:commandButton 
+                                ajax="false"
+                                class="ui-button-warning"
+                                icon="fa fa-search"
+                                action="/pharmacy/pharmacy_search_issue_bill" 
+                                value="Search Pharmacy Issue Bill" 
+                                actionListener="#{issueReturnController.makeNull}" 
+                                >
+                            </p:commandButton> 
+                        </div>
+                        <div class="d-flex">
+                            <p:commandButton 
+                                class="ui-button-info mx-2"
+                                icon="fa fa-print"
+                                value="Print Return Bill" 
+                                ajax="false" action="#"  >
+                                <p:printer target="gpBillPreview1" ></p:printer>
+                            </p:commandButton>
+
+                            <p:commandButton 
+                                class="ui-button-info"
+                                icon="fa fa-print"
+                                value="Print Sale Bill" 
+                                ajax="false" action="#">
+                                <p:printer target="gpBillPreview2" ></p:printer>
+                            </p:commandButton>
+                        </div>
+                    </div>
+
+                </f:facet>
+
+                <h:panelGroup id="gpBillPreview1">
                     <ph:returnBill bill="#{issueReturnController.returnBill}"/>                
-                </p:panel>
-                <p:panel   id="gpBillPreview2"   >
+                </h:panelGroup>
+
+                <p:spacer height="15px"/>
+
+                <h:panelGroup id="gpBillPreview2">
                     <ph:issueBill  bill="#{issueReturnController.bill}"/>                
-                </p:panel>
+                </h:panelGroup>
             </p:panel>
 
         </h:form>

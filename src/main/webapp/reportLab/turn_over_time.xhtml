@@ -1,16 +1,16 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
-                template="/resources/template/template.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
-                xmlns:f="http://java.sun.com/jsf/core"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/reportLab/lab_summeries_index.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:au="http://java.sun.com/jsf/composite/autocomplete"
-                xmlns:pe="http://primefaces.org/ui/extensions">
+                xmlns:au="http://xmlns.jcp.org/jsf/composite/autocomplete"
+                >
 
 
-    <ui:define name="content">
+    <ui:define name="subcontent">
         <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
 
         <h:panelGroup rendered="true" >
@@ -19,10 +19,9 @@
 
                 <p:panel id="panelPrint"  
                          header="Turn Around Time">
-
-                    <h:panelGrid columns="2" style="min-width: 50%;" styleClass="noPrintButton">
-                        <h:outputLabel value="Bill Type"/>
-                        <p:selectOneMenu value="#{investigationMonthSummeryOwnControllerSession.summeryType}" >
+                    <h:panelGrid columns="2" class="w-50 my-1">
+                        <h:outputLabel value="Bill Type" />
+                        <p:selectOneMenu value="#{investigationMonthSummeryOwnControllerSession.summeryType}" class="w-100" >
                             <f:selectItem itemValue="1" itemLabel="All Bill Types" />
                             <f:selectItem itemValue="2" itemLabel="Collecting Center Bill" />
                             <f:selectItem itemValue="3" itemLabel="OPD Bill" />
@@ -34,7 +33,7 @@
                                         value="#{investigationMonthSummeryOwnControllerSession.item}" 
                                         completeMethod="#{investigationController.completeInvest}" 
                                         var="apt" itemLabel="#{apt.name}" placeholder="Investigation"
-                                        itemValue="#{apt}" size="30"  style="width: 400px;">
+                                        itemValue="#{apt}" class="w-100 my-1" inputStyleClass="w-100">
                             <p:column>
                                 #{apt.name}
                             </p:column>
@@ -47,24 +46,24 @@
 
                         </p:autoComplete> 
                         <h:outputLabel value="Department"/>
-                        <au:department value="#{investigationMonthSummeryOwnControllerSession.department}" />
+                        <au:department value="#{investigationMonthSummeryOwnControllerSession.department}"/>
 
                         <h:outputLabel value="From"/>
-                        <p:calendar id="frmDate" styleClass="dateTimePicker" value="#{investigationMonthSummeryOwnControllerSession.fromDate}" pattern="dd MMMM yyyy HH:mm:ss" >
+                        <p:calendar id="frmDate" styleClass="dateTimePicker" value="#{investigationMonthSummeryOwnControllerSession.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" class="w-100" inputStyleClass="w-100 my-1" >
                         </p:calendar>
 
                         <h:outputLabel value="To"/>
-                        <p:calendar id="toDate" styleClass="dateTimePicker" value="#{investigationMonthSummeryOwnControllerSession.toDate}" pattern="dd MMMM yyyy HH:mm:ss" >
+                        <p:calendar id="toDate" styleClass="dateTimePicker" value="#{investigationMonthSummeryOwnControllerSession.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" class="w-100 my-1" inputStyleClass="w-100">
                         </p:calendar>
 
-                        <h:outputLabel value=""/>
-                        <h:panelGroup>
-                            <p:commandButton ajax="false"  value="Process"  
-                                             action="#{investigationMonthSummeryOwnControllerSession.createInvestigationTurnoverTime}"
-                                             styleClass="noPrintButton" style="float: left;" />
 
-                            <p:commandButton value="Back" ajax="false" styleClass="noPrintButton" action="/reportLab/lab_summeries_index" >
-                            </p:commandButton> 
+                        <h:panelGroup class="my-2">
+                            <p:commandButton ajax="false"  value="Process"  icon="fa-solid fa-arrows-rotate"
+                                             class="ui-button-warning"
+                                             action="#{investigationMonthSummeryOwnControllerSession.createInvestigationTurnoverTime}"
+                                             style="float: left;" />
+
+
                         </h:panelGroup>
                     </h:panelGrid>
 
@@ -72,7 +71,7 @@
 
                         <h:outputLabel style="font-size: 15pt!important; color: red;" value="Average Turn Around Time for #{investigationMonthSummeryOwnControllerSession.item.name} is " ></h:outputLabel>
                         <h:outputLabel style="font-size: 15pt!important; color: red;" value="#{investigationMonthSummeryOwnControllerSession.totalCount}" ></h:outputLabel>
-                        <h:outputLabel style="font-size: 15pt!important; color: red;" value=" minutes." ></h:outputLabel>
+                        <h:outputLabel style="font-size: 15pt!important; color: red;" value="&nbsp;minutes." ></h:outputLabel>
 
                     </p:panel>
 

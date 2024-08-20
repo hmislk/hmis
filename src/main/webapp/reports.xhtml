@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
-      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
       >
     <!--Author : Dr. M H B Ariyaratne, MO(Health Information), buddhika.ari@gmail.com-->
     <h:head>
@@ -41,11 +41,11 @@
                                         <p:outputLabel value="Bill Number"></p:outputLabel>
                                         <p:inputText value="#{sessionController.billNo}" style="width: 150px; margin-left: 20px;"  ></p:inputText>
                                         <p:outputLabel value="Phone Number"></p:outputLabel>
-                                        <p:inputMask mask="999-9999999" id="txtNewPtPhone" 
+                                        <p:inputText  id="txtNewPtPhone" 
                                                      autocomplete="off" maxlength="11" 
                                                      value="#{sessionController.phoneNo}"
                                                      style="width: 150px;  margin-left: 20px;">
-                                        </p:inputMask>
+                                        </p:inputText>
                                         <p:outputLabel></p:outputLabel>
                                         <h:commandButton class ="button" value= "View Reports" action="#{searchController.fillUserPatientReport}" ></h:commandButton>
                                     </h:panelGrid>

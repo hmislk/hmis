@@ -1,0 +1,140 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <ui:define name="content">
+        <h:form>
+            <p:growl/>
+            <p:panel >
+                <f:facet name="header">
+                    <p:outputLabel value="Select Request For Department : #{sessionController.department.name}"/> 
+                </f:facet>
+
+                <div class="row">
+                    <div class="col-md-2">
+                        <h:outputLabel value="From Date"/>
+                        <p:calendar 
+                            class="w-100"  
+                            inputStyleClass="form-control"
+                            styleClass="dateTimePicker" 
+                            id="fromDate" 
+                            value="#{searchController.fromDate}" 
+                            navigator="false" 
+                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
+                        </p:calendar>
+                        <h:outputLabel class="mb-2"  value="To Date"/>
+                        <p:calendar 
+                            class="w-100"  
+                            id="toDate" 
+                            inputStyleClass="form-control"
+                            value="#{searchController.toDate}" 
+                            navigator="false" 
+                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
+                        </p:calendar>
+                        <p:commandButton 
+                            id="btnSearch" 
+                            ajax="false" 
+                            value="Search" 
+                            icon="fas fa-search"
+                            class="ui-button-warning w-100 my-2"
+                            action="#{searchController.fillSavedTranserRequestBills()}"
+                            actionListener="#{transferIssueController.makeNull()}"> 
+                        </p:commandButton>
+
+                        <h:outputLabel value="Request No"/>   
+                        <p:inputText class="w-100"  autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />   
+                        <h:outputLabel value="From Department"/> 
+                        <p:inputText class="w-100"  autocomplete="off"  value="#{searchController.searchKeyword.department}" /> 
+
+                    </div>
+
+                    <div class="col-md-10">
+                        <p:dataTable 
+                            value="#{searchController.bills}" 
+                            var="p"
+                            rows="10"
+                            paginator="true"
+                            paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                            rowsPerPageTemplate="5,10,15"
+                            paginatorPosition="bottom">
+                            <p:column headerText="Request No" width="100px">                      
+                                <h:outputLabel value="#{p.deptId}"/>                         
+                            </p:column>
+                            <p:column headerText="From Department" width="150px">                      
+                                <h:outputLabel value="#{p.department.name}"/>                          
+                            </p:column> 
+                            <p:column headerText="Requested At" width="100px" >
+
+                                <h:outputLabel value="#{p.createdAt}" >
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                </h:outputLabel>
+                                <br/>
+                                <h:panelGroup rendered="#{p.cancelled}" >
+                                    <h:outputLabel style="color: red;" value="Cancelled at " />
+                                    <h:outputLabel style="color: red;" rendered="#{p.cancelled}" 
+                                                   value="#{p.cancelledBill.createdAt}" >
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                    </h:outputLabel>
+                                </h:panelGroup>
+
+                            </p:column>                 
+                            <p:column headerText="Requested By" width="100px" >                      
+                                <h:outputLabel value="#{p.creater.webUserPerson.name}" >                                      
+                                </h:outputLabel>                          
+                                <br/>
+                                <h:panelGroup rendered="#{p.cancelled}" >
+                                    <h:outputLabel style="color: red;" value="Cancelled By " />
+                                    <h:outputLabel style="color: red;" rendered="#{p.cancelled}" value="#{p.cancelledBill.creater.webUserPerson.name}" >                                       
+                                    </h:outputLabel>
+                                </h:panelGroup> 
+                            </p:column>  
+                           
+                            <p:column width="100px" headerText="Action" >
+                                <p:commandButton 
+                                    id="edit"
+                                    ajax="false"
+                                    title="Edit Request" 
+                                    icon="fas fa-edit"
+                                    class="ui-button-warning m-1"
+                                    disabled="#{p.checkedBy ne null or p.cancelled eq true}"
+                                    action="#{transferRequestController.navigateToEditRequest}">
+                                    <f:setPropertyActionListener 
+                                        target="#{transferRequestController.transerRequestBillPre}"
+                                        value="#{p}"/>
+                                </p:commandButton>
+                                <p:commandButton 
+                                    id="approve"
+                                    ajax="false"
+                                    title="Approve Request" 
+                                    icon="fas fa-check-circle"
+                                    class="ui-button-success m-1"
+                                    disabled="#{p.checkedBy eq null or p.forwardReferenceBill ne null or p.cancelled eq true or not webUserController.hasPrivilege('PurchaseOrdersApprovel')}"
+                                    action="#{transferRequestController.navigateToApproveRequest()}">
+                                    <f:setPropertyActionListener 
+                                        target="#{transferRequestController.transerRequestBillPre}"
+                                        value="#{p}"/>
+                                </p:commandButton>
+                                <p:commandButton  
+                                    class="m-1"  
+                                    icon="fa fa-eye"
+                                    title="View Bill" 
+                                    ajax="false"
+                                    action="/pharmacy/pharmacy_transfer_request_approval?faces-redirect=true" 
+                                    disabled="#{p.checkedBy eq null or p.forwardReferenceBill eq null}">
+                                    <f:setPropertyActionListener target="#{transferRequestController.bill}" value="#{p.forwardReferenceBill}"/>
+                                    <f:setPropertyActionListener target="#{transferRequestController.printPreview}" value="true"/>
+                                </p:commandButton>
+                            </p:column>
+                        </p:dataTable>
+                    </div>
+                </div>
+
+            </p:panel>
+        </h:form>
+    </ui:define>  
+
+</ui:composition>

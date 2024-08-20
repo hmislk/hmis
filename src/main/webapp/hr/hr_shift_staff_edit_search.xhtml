@@ -1,12 +1,12 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/resources/template/template.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://java.sun.com/jsf/core"
-                xmlns:pe="http://primefaces.org/ui/extensions"
-                xmlns:au="http://java.sun.com/jsf/composite/autocomplete">
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                
+                xmlns:au="http://xmlns.jcp.org/jsf/composite/autocomplete">
 
     <ui:define name="content">
         <h:form>
@@ -16,11 +16,11 @@
                     <p:panel>
                         <p:panelGrid columns="2" >
                             <h:outputLabel value="From Date"/>
-                            <p:calendar value="#{staffShiftController.fromDate}" pattern="dd MM yyyy">                                    
+                            <p:calendar value="#{staffShiftController.fromDate}" pattern="#{sessionController.applicationPreference.shortDateFormat}">                                    
                             </p:calendar>
 
                             <h:outputLabel value="To Date"/>
-                            <p:calendar value="#{staffShiftController.toDate}" pattern="dd MM yyyy">
+                            <p:calendar value="#{staffShiftController.toDate}" pattern="#{sessionController.applicationPreference.shortDateFormat}">
                             </p:calendar>
 
                             <h:outputLabel value="Staff : "/>
@@ -45,8 +45,8 @@
                         <p:commandButton value="Print" ajax="false" action="#" >
                             <p:printer target="gpBillPreview" ></p:printer>
                         </p:commandButton>
-                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
-                            <pe:exporter type="xlsx" target="tb1" fileName="hr_Shift_Staff"  />
+                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton"  >
+                            <p:dataExporter type="xlsx" target="tb1" fileName="hr_Shift_Staff"  />
                         </p:commandButton>
                     </p:panel>
                     <p:panel id="gpBillPreview" styleClass="noBorder summeryBorder">
@@ -101,7 +101,7 @@
                                     <h:outputLabel value="Starting Date"/>
                                 </f:facet>
                                 <p:outputLabel value="#{l.shiftStartTime}" >
-                                    <f:convertDateTime pattern="hh:mm:ss" />
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm:ss"  />
                                 </p:outputLabel>
                             </p:column>
 
@@ -110,13 +110,13 @@
                                     <h:outputLabel value="Ending Date"/>
                                 </f:facet>
                                 <p:outputLabel value="#{l.shiftEndTime}" >
-                                    <f:convertDateTime pattern="hh:mm:ss" />
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm:ss"  />
                                 </p:outputLabel>
                             </p:column>
 
-                            <p:column headerText="Creater">
+                            <p:column headerText="Creator">
                                 <f:facet name="header">
-                                    <h:outputLabel value="Creater"/>
+                                    <h:outputLabel value="Creator"/>
                                 </f:facet>
                                 <p:outputLabel value="#{l.creater.webUserPerson.nameWithTitle}" ></p:outputLabel>
                                 <br></br>

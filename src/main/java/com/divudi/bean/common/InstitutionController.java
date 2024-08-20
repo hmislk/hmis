@@ -6,8 +6,10 @@ import com.divudi.entity.AgentHistory;
 import com.divudi.entity.Institution;
 import com.divudi.facade.AgentHistoryFacade;
 import com.divudi.facade.InstitutionFacade;
+import com.divudi.bean.common.util.JsfUtil;
 import java.io.Serializable;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
@@ -25,8 +27,8 @@ import javax.inject.Named;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- * Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -62,10 +64,63 @@ public class InstitutionController implements Serializable {
     private List<Institution> banks = null;
     private List<Institution> suppliers = null;
     private List<Institution> agencies = null;
-    List<Institution> collectingCentre = null;
-    List<Institution> institution;
-    String selectText = "";
+    private List<Institution> collectingCentre = null;
+    private List<Institution> collectingCentresAndManagedInstitutions = null;
+    private List<Institution> institution;
+    private List<Institution> searchItems = null;
+    private String selectText = "";
     private Boolean codeDisabled = false;
+    private int managaeInstitutionIndex = -1;
+
+    public String toAdminManageInstitutions() {
+        return "/admin/institutions/admin_institutions_index?faces-redirect=true";
+    }
+
+    public String toListInstitutions() {
+        fillItems();
+        return "/admin/institutions/institutions?faces-redirect=true";
+    }
+
+    public String toAddNewInstitution() {
+        current = new Institution();
+        return "/admin/institutions/institution?faces-redirect=true";
+    }
+
+    public String toEditInstitution() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Nothing selected");
+            return "";
+        }
+        return "/admin/institutions/institution?faces-redirect=true";
+    }
+    
+    public void makeNull(){
+        current = null;
+        
+    }
+
+    public String deleteInstitution() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Nothing selected");
+            return "";
+        }
+        current.setRetired(true);
+        getFacade().edit(current);
+        return toListInstitutions();
+    }
+
+    public String saveSelectedInstitution() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Nothing selected");
+            return "";
+        }
+        if (current.getId() == null) {
+            getFacade().create(current);
+        } else {
+            getFacade().edit(current);
+        }
+        return toListInstitutions();
+    }
 
     public List<Institution> getSelectedItems() {
         if (selectText.trim().equals("")) {
@@ -98,13 +153,55 @@ public class InstitutionController implements Serializable {
         return completeInstitution(qry, InstitutionType.values());
     }
 
+    public List<Institution> getSearchItems() {
+        return searchItems;
+    }
+
+    public void fillSearchItems() {
+        if (selectText == null || selectText.trim().equals("")) {
+            String jpql = "select i "
+                    + "from Institution i "
+                    + "where i.retired=:ret "
+                    + "order by i.name";
+
+            Map m = new HashMap();
+            m.put("ret", false);
+            searchItems = getFacade().findByJpql(jpql, m);
+
+            if (searchItems != null && !searchItems.isEmpty()) {
+                current = searchItems.get(0);
+            } else {
+                current = null;
+            }
+        } else {
+            String sql = "Select i from Institution i where i.retired=false and (i.name) like :in order by i.name";
+            Map m = new HashMap();
+            m.put("in", "%" + selectText.toUpperCase() + "%");
+            searchItems = getFacade().findByJpql(sql, m);
+            if (searchItems != null && !searchItems.isEmpty()) {
+                current = searchItems.get(0);
+            } else {
+                current = null;
+            }
+        }
+    }
+
+    public List<Institution> fillAllItems() {
+        List<Institution> ins;
+        String sql = "Select i from Institution i where i.retired=:ret order by i.name";
+        Map m = new HashMap();
+        m.put("ret", false);
+        ins = getFacade().findByJpql(sql, m);
+        return ins;
+    }
+
     public List<Institution> completeInstitution(String qry, InstitutionType[] types) {
         String sql;
         HashMap hm = new HashMap();
         sql = "select c from Institution c "
                 + " where c.retired=false ";
         if (qry != null) {
-            sql += " and (upper(c.name) like :qry or upper(c.institutionCode) like :qry) ";
+            sql += " and ((c.name) like :qry or (c.institutionCode) like :qry) ";
             hm.put("qry", "%" + qry.toUpperCase() + "%");
         }
         if (types != null) {
@@ -113,7 +210,7 @@ public class InstitutionController implements Serializable {
             sql += "  and c.institutionType in :types";
         }
         sql += " order by c.name";
-        return getFacade().findBySQL(sql, hm);
+        return getFacade().findByJpql(sql, hm);
     }
 
     public List<Institution> getSuppliers() {
@@ -150,7 +247,7 @@ public class InstitutionController implements Serializable {
             agencies = completeInstitution(selectText, InstitutionType.Agency);
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Channeling/Reports/Income report/Agent Reports/Agent details(/faces/channel/channel_report_agent_details.xhtml)");
+        
 
         return agencies;
     }
@@ -206,6 +303,13 @@ public class InstitutionController implements Serializable {
         return companies;
     }
 
+    public List<Institution> getCollectingCenter() {
+        if (collectingCentre == null) {
+            collectingCentre = completeInstitution(null, InstitutionType.CollectingCentre);
+        }
+        return collectingCentre;
+    }
+
     public List<Institution> getBanks() {
         if (banks == null) {
             banks = completeInstitution(null, InstitutionType.Bank);
@@ -213,19 +317,19 @@ public class InstitutionController implements Serializable {
         return banks;
     }
 
-//    public List<Institution> getCollectingCenter() {
-//        if (banks == null) {
-//            banks = completeInstitution(null, InstitutionType.CollectingCentre);
-//        }
-//        return banks;
-//    }
     public Institution getInstitutionByName(String name, InstitutionType type) {
+        if (name == null) {
+            return null;
+        }
+        if (type == null) {
+            return null;
+        }
         String sql;
         Map m = new HashMap();
         m.put("n", name.toUpperCase());
         m.put("t", type);
-        sql = "select i from Institution i where upper(i.name) =:n and i.institutionType=:t";
-        Institution i = getFacade().findFirstBySQL(sql, m);
+        sql = "select i from Institution i where (i.name) =:n and i.institutionType=:t";
+        Institution i = getFacade().findFirstByJpql(sql, m);
         if (i == null) {
             i = new Institution();
             i.setName(name);
@@ -240,16 +344,73 @@ public class InstitutionController implements Serializable {
         return i;
     }
 
+    public Institution findAndSaveInstitutionByName(String name) {
+        if (name == null || name.trim().equals("")) {
+            return null;
+        }
+        String sql;
+        Map m = new HashMap();
+        m.put("name", name);
+        m.put("ret", false);
+        sql = "select i "
+                + " from Institution i "
+                + " where i.name=:name"
+                + " and i.retired=:ret";
+        Institution i = getFacade().findFirstByJpql(sql, m);
+      
+        if (i == null) {
+            i = new Institution();
+            i.setName(name);
+            getFacade().create(i);
+        } else {
+            i.setRetired(false);
+            getFacade().edit(i);
+        }
+        return i;
+    }
+    
+    public Institution findAndSaveInstitutionByCode(String code) {
+        if (code == null || code.trim().equals("")) {
+            return null;
+        }
+        String sql;
+        Map m = new HashMap();
+        m.put("code", code);
+        m.put("ret", false);
+        sql = "select i "
+                + " from Institution i "
+                + " where i.code=:code"
+                + " and i.retired=:ret";
+        Institution i = getFacade().findFirstByJpql(sql, m);
+        return i;
+    }
+    
+    public Institution findExistingInstitutionByName(String name) {
+        if (name == null || name.trim().equals("")) {
+            return null;
+        }
+        String sql;
+        Map m = new HashMap();
+        m.put("name", name);
+        m.put("ret", false);
+        sql = "select i "
+                + " from Institution i "
+                + " where i.name=:name"
+                + " and i.retired=:ret";
+        Institution i = getFacade().findFirstByJpql(sql, m);
+        return i;
+    }
+
     private Boolean checkCodeExist() {
         String sql = "SELECT i FROM Institution i where i.retired=false and i.institutionCode is not null ";
-        List<Institution> ins = getEjbFacade().findBySQL(sql);
+        List<Institution> ins = getEjbFacade().findByJpql(sql);
         if (ins != null) {
             for (Institution i : ins) {
-                if (i.getInstitutionCode() == null || i.getInstitutionCode().trim().equals("")) {
+                if (i.getCode() == null || i.getCode().trim().equals("")) {
                     continue;
                 }
-                if (i.getInstitutionCode() != null && i.getInstitutionCode().equals(getCurrent().getInstitutionCode())) {
-                    UtilityController.addErrorMessage("Insituion Code Already Exist Try another Code");
+                if (i.getCode() != null && i.getCode().equals(getCurrent().getCode())) {
+                    JsfUtil.addErrorMessage("Insituion Code Already Exist Try another Code");
                     return true;
                 }
             }
@@ -259,14 +420,14 @@ public class InstitutionController implements Serializable {
 
     private Boolean checkCodeExistAgency() {
         String sql = "SELECT i FROM Institution i where i.retired=false and i.institutionCode is not null ";
-        List<Institution> ins = getEjbFacade().findBySQL(sql);
+        List<Institution> ins = getEjbFacade().findByJpql(sql);
         if (ins != null) {
             for (Institution i : ins) {
-                if (i.getInstitutionCode() == null || i.getInstitutionCode().trim().equals("")) {
+                if (i.getCode() == null || i.getCode().trim().equals("")) {
                     continue;
                 }
-                if (i.getInstitutionCode() != null && i.getInstitutionCode().equals(getAgency().getInstitutionCode())) {
-                    UtilityController.addErrorMessage("Insituion Code Already Exist Try another Code");
+                if (i.getCode() != null && i.getCode().equals(getAgency().getCode())) {
+                    JsfUtil.addErrorMessage("Insituion Code Already Exist Try another Code");
                     return true;
                 }
             }
@@ -298,6 +459,7 @@ public class InstitutionController implements Serializable {
         agencies = null;
         suppliers = null;
         companies = null;
+        collectingCentresAndManagedInstitutions = null;
         creditCompanies = null;
         banks = null;
         suppliers = null;
@@ -305,63 +467,70 @@ public class InstitutionController implements Serializable {
 
     }
 
+    public void save(Institution ins) {
+        if (ins.getId() == null) {
+            getFacade().create(ins);
+        } else {
+            getFacade().edit(ins);
+        }
+    }
+
     public void saveSelected() {
         if (getCurrent().getInstitutionType() == null) {
-            UtilityController.addErrorMessage("Select Instituion Type");
+            JsfUtil.addErrorMessage("Select Institution Type");
             return;
         }
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
-
-            if (getCurrent().getInstitutionCode() != null) {
-                getCurrent().setInstitutionCode(getCurrent().getInstitutionCode());
-            }
+//
+//            if (getCurrent().getCode() != null) {
+//                getCurrent().setInstitutionCode(getCurrent().getCode());
+//            }
             getFacade().edit(getCurrent());
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
-            if (getCurrent().getInstitutionCode() != null) {
-                if (!checkCodeExist()) {
-                    getCurrent().setInstitutionCode(getCurrent().getInstitutionCode());
-
-                } else {
-                    return;
-                }
-            }
+//            if (getCurrent().getCode() != null) {
+//                if (!checkCodeExist()) {
+//                    getCurrent().setInstitutionCode(getCurrent().getCode());
+//
+//                } else {
+//                    return;
+//                }
+//            }
             getCurrent().setCreatedAt(new Date());
             getCurrent().setCreater(getSessionController().getLoggedUser());
             getFacade().create(getCurrent());
-            UtilityController.addSuccessMessage("Saved Successfully");
+            JsfUtil.addSuccessMessage("Saved Successfully");
         }
-        recreateModel();
-        getItems();
+        fillItems();
     }
 
     public void saveSelectedAgency() {
         if (getAgency().getInstitutionType() == null) {
-            UtilityController.addErrorMessage("Select Instituion Type");
+            JsfUtil.addErrorMessage("Select Institution Type");
             return;
         }
 
         if (getAgency().getId() != null && getAgency().getId() > 0) {
 
-            if (getAgency().getInstitutionCode() != null) {
-                getAgency().setInstitutionCode(getAgency().getInstitutionCode());
-            }
+//            if (getAgency().getCode() != null) {
+//                getAgency().setInstitutionCode(getAgency().getCode());
+//            }
             getFacade().edit(getAgency());
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
-            if (getAgency().getInstitutionCode() != null) {
-                if (!checkCodeExistAgency()) {
-                    getAgency().setInstitutionCode(getAgency().getInstitutionCode());
-
-                } else {
-                    return;
-                }
-            }
+//            if (getAgency().getCode() != null) {
+//                if (!checkCodeExistAgency()) {
+//                    getAgency().setInstitutionCode(getAgency().getCode());
+//
+//                } else {
+//                    return;
+//                }
+//            }
             getAgency().setCreatedAt(new Date());
             getAgency().setCreater(getSessionController().getLoggedUser());
             getFacade().create(getAgency());
-            UtilityController.addSuccessMessage("Saved Successfully");
+            JsfUtil.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
         fetchSelectedAgencys();
@@ -377,49 +546,49 @@ public class InstitutionController implements Serializable {
 
     public void updateCreditLimit(HistoryType historyType) {
         if (current == null || current.getId() == null) {
-            UtilityController.addErrorMessage("Please Select a Agency");
+            JsfUtil.addErrorMessage("Please Select an Agency");
             return;
         }
 
         if (current.getMaxCreditLimit() == 0.0) {
-            UtilityController.addErrorMessage("Please Enter Maximum Credit Limit.");
+            JsfUtil.addErrorMessage("Please Enter Maximum Credit Limit.");
             return;
         }
 
         Institution i = getFacade().find(current.getId());
         double mcl = i.getMaxCreditLimit();
-        //System.out.println("mcl = " + mcl);
+        //// // System.out.println("mcl = " + mcl);
         double acl = i.getAllowedCredit();
         double scl = i.getStandardCreditLimit();
 
         if (current.getStandardCreditLimit() > current.getAllowedCredit()) {
-            UtilityController.addErrorMessage("Allowed Credit Limit must Grater Than or Equal To Standard Credit Limit");
+            JsfUtil.addErrorMessage("Allowed Credit Limit must Grater Than or Equal To Standard Credit Limit");
             return;
         }
 
         if (current.getMaxCreditLimit() < current.getAllowedCredit()) {
-            UtilityController.addErrorMessage("Allowed Credit Limit must Less Than Maximum Credit Limit");
+            JsfUtil.addErrorMessage("Allowed Credit Limit must Less Than Maximum Credit Limit");
             return;
         }
 
         if ((current.getStandardCreditLimit() == scl) && (current.getAllowedCredit() == acl) && (current.getMaxCreditLimit() == mcl)) {
-            UtilityController.addErrorMessage("Nothing To Update");
+            JsfUtil.addErrorMessage("Nothing To Update");
             return;
         }
 
         if (current.getStandardCreditLimit() != scl) {
             createAgentCreditLimitUpdateHistory(current, scl, current.getStandardCreditLimit(), historyType, "Standard Credit Limit");
-            UtilityController.addSuccessMessage("Standard Credit Limit Updated");
+            JsfUtil.addSuccessMessage("Standard Credit Limit Updated");
         }
 
         if (current.getAllowedCredit() != acl) {
             createAgentCreditLimitUpdateHistory(current, acl, current.getAllowedCredit(), historyType, "Allowed Credit Limit");
-            UtilityController.addSuccessMessage("Allowed Credit Limit Updated");
+            JsfUtil.addSuccessMessage("Allowed Credit Limit Updated");
         }
 
         if (current.getMaxCreditLimit() != mcl) {
             createAgentCreditLimitUpdateHistory(current, mcl, current.getMaxCreditLimit(), historyType, "Max Credit Limit");
-            UtilityController.addSuccessMessage("Max Credit Limit Updated");
+            JsfUtil.addSuccessMessage("Max Credit Limit Updated");
         }
         getFacade().edit(current);
 
@@ -443,7 +612,11 @@ public class InstitutionController implements Serializable {
         agentHistory.setComment(comment);
         agentHistory.setInstitution(ins);
         agentHistoryFacade.create(agentHistory);
-        UtilityController.addSuccessMessage("History Saved");
+        JsfUtil.addSuccessMessage("History Saved");
+    }
+
+    public Institution findInstitution(Long id) {
+        return getFacade().find(id);
     }
 
     public void setSelectText(String selectText) {
@@ -480,9 +653,9 @@ public class InstitutionController implements Serializable {
             getCurrent().setRetiredAt(new Date());
             getCurrent().setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(getCurrent());
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
@@ -498,9 +671,9 @@ public class InstitutionController implements Serializable {
             getAgency().setRetiredAt(new Date());
             getAgency().setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(getAgency());
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         fetchSelectedAgencys();
         prepareAddAgency();
@@ -512,23 +685,32 @@ public class InstitutionController implements Serializable {
 
     public List<Institution> getItems() {
         if (items == null) {
-            String j;
-            j = "select i from Institution i where i.retired=false order by i.name";
-            items = getFacade().findBySQL(j);
+            fillItems();
         }
         return items;
+    }
+
+    public void fillItems() {
+        String j;
+        j = "select i "
+                + " from Institution i "
+                + " where i.retired=:ret"
+                + " order by i.name";
+        Map m = new HashMap();
+        m.put("ret", false);
+        items = getFacade().findByJpql(j, m);
     }
 
     public void formatAgentSerial() {
         InstitutionType[] types = {InstitutionType.Agency};
         selectedAgencies = completeInstitution(null, types);
         for (Institution a : selectedAgencies) {
-//            //System.out.println("a.getInstitutionCode() = " + a.getInstitutionCode());
-            DecimalFormat df=new DecimalFormat("000");
-            double d=Double.parseDouble(a.getInstitutionCode());
-//            //System.out.println("d = " + d);
+//            //// // System.out.println("a.getCode() = " + a.getCode());
+            DecimalFormat df = new DecimalFormat("000");
+            double d = Double.parseDouble(a.getCode());
+//            //// // System.out.println("d = " + d);
             a.setInstitutionCode(df.format(d));
-//            //System.out.println("a.getInstitutionCode() = " + a.getInstitutionCode());
+//            //// // System.out.println("a.getCode() = " + a.getCode());
             getFacade().edit(a);
         }
     }
@@ -595,44 +777,26 @@ public class InstitutionController implements Serializable {
         this.agency = agency;
     }
 
-    @FacesConverter("institutionConverter")
-    public static class InstitutionConverter implements Converter {
+    public int getManagaeInstitutionIndex() {
+        return managaeInstitutionIndex;
+    }
 
-        @Override
-        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
-                return null;
-            }
-            InstitutionController controller = (InstitutionController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "institutionController");
-            return controller.getEjbFacade().find(getKey(value));
-        }
+    public void setManagaeInstitutionIndex(int managaeInstitutionIndex) {
+        this.managaeInstitutionIndex = managaeInstitutionIndex;
+    }
 
-        java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
-            return key;
+    // Newly created by Dr M H B Ariyaratne with assistance from ChatGPT from OpenAI.
+    public List<Institution> getCollectingCentresAndManagedInstitutions() {
+        if (collectingCentresAndManagedInstitutions == null) {
+            collectingCentresAndManagedInstitutions = new ArrayList<>();
+            collectingCentresAndManagedInstitutions.addAll(getCompanies());
+            collectingCentresAndManagedInstitutions.addAll(getCollectingCenter());
         }
+        return collectingCentresAndManagedInstitutions;
+    }
 
-        String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
-        }
-
-        @Override
-        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
-            if (object == null) {
-                return null;
-            }
-            if (object instanceof Institution) {
-                Institution o = (Institution) object;
-                return getStringKey(o.getId());
-            } else {
-                throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + InstitutionController.class.getName());
-            }
-        }
+    public void setCollectingCentresAndManagedInstitutions(List<Institution> collectingCentresAndManagedInstitutions) {
+        this.collectingCentresAndManagedInstitutions = collectingCentresAndManagedInstitutions;
     }
 
     /**

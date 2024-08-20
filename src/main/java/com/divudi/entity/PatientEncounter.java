@@ -1,9 +1,10 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+* Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.entity;
 
+import com.divudi.data.EncounterType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.SymanticType;
 import com.divudi.data.inward.PatientEncounterType;
@@ -12,6 +13,7 @@ import com.divudi.entity.inward.AdmissionType;
 import com.divudi.entity.inward.EncounterComponent;
 import com.divudi.entity.inward.PatientRoom;
 import java.io.Serializable;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -24,6 +26,7 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Inheritance;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
@@ -35,6 +38,7 @@ import javax.persistence.Transient;
  * @author buddhika
  */
 @Entity
+@Inheritance
 public class PatientEncounter implements Serializable {
 //    @OneToMany(mappedBy = "patientEncounter",cascade = CascadeType.ALL,fetch = FetchType.LAZY)
 //     List<PatientRoom> patientRooms;
@@ -48,11 +52,16 @@ public class PatientEncounter implements Serializable {
     //Main Properties   
     Long id;
     String bhtNo;
+    @Enumerated
+    private EncounterType encounterType;
     long bhtLong;
+    private Long encounterId;
     @ManyToOne
     Patient patient;
     @ManyToOne
     Person guardian;
+    @ManyToOne
+    private Item guardianRelationshipToPatient;
     @ManyToOne
     private PatientRoom currentPatientRoom;
     @ManyToOne
@@ -103,7 +112,9 @@ public class PatientEncounter implements Serializable {
     List<ClinicalFindingValue> clinicalFindingValues;
     String name;
     @Temporal(javax.persistence.TemporalType.DATE)
-    Date dateTime;
+    Date encounterDate;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date encounterDateTime;
     @ManyToOne
     PatientEncounter parentEncounter;
     @ManyToOne
@@ -135,6 +146,49 @@ public class PatientEncounter implements Serializable {
     @ManyToOne
     Institution referredByInstitution;
     String referralId;
+
+    @Deprecated
+    private Double visitWeight = null;
+    private Double weight = null;
+    private Long sbp = null;
+    private Long dbp = null;
+    private Double bmi = null;
+    private Long pr = null;
+    private Double height = null;
+    private Integer respiratoryRate = null;
+    private Integer pfr = null;
+    private Double saturation = null;
+    @ManyToOne
+    private Institution workplace;
+    @ManyToOne
+    private Person referringPerson;
+    @ManyToOne
+    private Staff referringConsultant;
+    @ManyToOne
+    private Staff referringStaff;
+
+    // Transient method for BP
+    public String getBp() {
+        if (getSbp() != null && getDbp() != null) {
+            return sbp + "/" + dbp + " mmHg";
+        }
+        return ""; // or some default value
+    }
+
+    public void setBp(Long sdp, Long dbp) {
+        this.sbp = sdp;
+        this.dbp = dbp;
+
+    }
+
+    // Transient method for BMI
+    public String getBmiFormatted() {
+        if (bmi != null) {
+            DecimalFormat df = new DecimalFormat("#.0");
+            return df.format(bmi) + " kg/m²";
+        }
+        return ""; // or some default value
+    }
 
     public double getTransPaidByCompany() {
         return transPaidByCompany;
@@ -245,6 +299,8 @@ public class PatientEncounter implements Serializable {
     List<ClinicalFindingValue> diagnosis;
     @ManyToOne
     Department department;
+    @ManyToOne
+    private Institution institution;
 
     @Transient
     List<ClinicalFindingValue> investigations;
@@ -270,6 +326,7 @@ public class PatientEncounter implements Serializable {
         if (diagnosis == null) {
             diagnosis = new ArrayList<>();
             for (ClinicalFindingValue v : clinicalFindingValues) {
+
                 if (v.getClinicalFindingItem().getSymanticType() == SymanticType.Disease_or_Syndrome) {
                     diagnosis.add(v);
                 }
@@ -389,6 +446,9 @@ public class PatientEncounter implements Serializable {
     }
 
     public List<ClinicalFindingValue> getClinicalFindingValues() {
+        if (clinicalFindingValues == null) {
+            clinicalFindingValues = new ArrayList<>();
+        }
         return clinicalFindingValues;
     }
 
@@ -617,12 +677,15 @@ public class PatientEncounter implements Serializable {
         this.name = name;
     }
 
-    public Date getDateTime() {
-        return dateTime;
+    public Date getEncounterDate() {
+        if (encounterDate == null) {
+            encounterDate = createdAt;
+        }
+        return encounterDate;
     }
 
-    public void setDateTime(Date dateTime) {
-        this.dateTime = dateTime;
+    public void setEncounterDate(Date encounterDate) {
+        this.encounterDate = encounterDate;
     }
 
     public List<EncounterComponent> getEncounterComponents() {
@@ -797,5 +860,175 @@ public class PatientEncounter implements Serializable {
     public void setTransDayCount(long transDayCount) {
         this.transDayCount = transDayCount;
     }
+
+    public EncounterType getEncounterType() {
+        if (encounterType == null) {
+            encounterType = EncounterType.Admission;
+        }
+        return encounterType;
+    }
+
+    public void setEncounterType(EncounterType encounterType) {
+        this.encounterType = encounterType;
+    }
+
+    public Long getEncounterId() {
+        return encounterId;
+    }
+
+    public void setEncounterId(Long encounterId) {
+        this.encounterId = encounterId;
+    }
+
+    public Institution getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
+    }
+
+    public Double getVisitWeight() {
+        return visitWeight;
+    }
+
+    public void setVisitWeight(Double visitWeight) {
+        this.visitWeight = visitWeight;
+    }
+
+    public Long getSbp() {
+        return sbp;
+    }
+
+    public void setSbp(Long sbp) {
+        this.sbp = sbp;
+    }
+
+    public Long getDbp() {
+        return dbp;
+    }
+
+    public void setDbp(Long dbp) {
+        this.dbp = dbp;
+    }
+
+    public Double getBmi() {
+        return bmi;
+    }
+
+    public void setBmi(Double bmi) {
+        this.bmi = bmi;
+    }
+
+    public Long getPr() {
+        return pr;
+    }
+
+    public void setPr(Long pr) {
+        this.pr = pr;
+    }
+
+    public Date getEncounterDateTime() {
+        return encounterDateTime;
+    }
+
+    public void setEncounterDateTime(Date encounterDateTime) {
+        this.encounterDateTime = encounterDateTime;
+    }
+
+    public Double getHeight() {
+        return height;
+    }
+
+    public void setHeight(Double height) {
+        this.height = height;
+        calculateBmi();
+    }
+
+    public Double getWeight() {
+        return weight;
+    }
+
+    public void setWeight(Double weight) {
+        this.weight = weight;
+        calculateBmi();
+    }
+
+    private void calculateBmi() {
+        if (this.height == null || this.weight == null) {
+            return;
+        }
+
+        double heightInMeters = this.height / 100;
+        if (heightInMeters > 0) {
+            this.bmi = this.weight / Math.pow(heightInMeters, 2);
+        }
+    }
+
+    public Institution getWorkplace() {
+        return workplace;
+    }
+
+    public void setWorkplace(Institution workplace) {
+        this.workplace = workplace;
+    }
+
+    public Person getReferringPerson() {
+        return referringPerson;
+    }
+
+    public void setReferringPerson(Person referringPerson) {
+        this.referringPerson = referringPerson;
+    }
+
+    public Staff getReferringConsultant() {
+        return referringConsultant;
+    }
+
+    public void setReferringConsultant(Staff referringConsultant) {
+        this.referringConsultant = referringConsultant;
+    }
+
+    public Staff getReferringStaff() {
+        return referringStaff;
+    }
+
+    public void setReferringStaff(Staff referringStaff) {
+        this.referringStaff = referringStaff;
+    }
+
+    public Integer getRespiratoryRate() {
+        return respiratoryRate;
+    }
+
+    public void setRespiratoryRate(Integer respiratoryRate) {
+        this.respiratoryRate = respiratoryRate;
+    }
+
+    public Integer getPfr() {
+        return pfr;
+    }
+
+    public void setPfr(Integer pfr) {
+        this.pfr = pfr;
+    }
+
+    public Double getSaturation() {
+        return saturation;
+    }
+
+    public void setSaturation(Double saturation) {
+        this.saturation = saturation;
+    }
+
+    public Item getGuardianRelationshipToPatient() {
+        return guardianRelationshipToPatient;
+    }
+
+    public void setGuardianRelationshipToPatient(Item guardianRelationshipToPatient) {
+        this.guardianRelationshipToPatient = guardianRelationshipToPatient;
+    }
+    
+    
 
 }

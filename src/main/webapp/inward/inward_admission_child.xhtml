@@ -1,14 +1,14 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/resources/template/template.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
-                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:bill="http://java.sun.com/jsf/composite/inward"
-                xmlns:in="http://java.sun.com/jsf/composite/patient"
-                xmlns:credit="http://java.sun.com/jsf/composite/inward/creditCompany">
+                xmlns:bill="http://xmlns.jcp.org/jsf/composite/inward"
+                xmlns:in="http://xmlns.jcp.org/jsf/composite/patient"
+                xmlns:credit="http://xmlns.jcp.org/jsf/composite/inward/creditCompany">
 
 
     <ui:define name="content">
@@ -24,7 +24,7 @@
                         </p:selectOneMenu>
                         <p:outputLabel id="bh" value="#{admissionController.bhtText}" style="font-weight: bold ; margin: 1px; border: 3px  solid black ; padding: 3px; min-width: 150px; display: block; text-align: center ;  "   />
 
-                        <p:autoComplete  converter="fac" forceSelection="true"  
+                        <p:autoComplete  forceSelection="true"  
                                          id="cmbDoc" disabled="#{admissionController.current.admissionType eq null or admissionController.current.admissionType.roomFacilityCharge ne null}"
                                          value="#{admissionController.patientRoom.roomFacilityCharge}" 
                                          completeMethod="#{roomFacilityChargeController.completeRoom}"
@@ -32,13 +32,11 @@
                                          style="width: 400px;">                            
                         </p:autoComplete>
 
-                        <p:commandButton id="admt" action="#{admissionController.saveSelected}" ajax="false" value="Admit" onclick="onSubmitButton();" />
-                        <p:commandButton ajax="false" value="Clear" actionListener="#{admissionController.makeNull}" onclick="onSubmitButton();"/>
+                        <p:commandButton id="admt" action="#{admissionController.saveSelected}" ajax="false" value="Admit"  />
+                        <p:commandButton ajax="false" value="Clear" actionListener="#{admissionController.makeNull}" />
                         <p:defaultCommand target="admt"/>
 
-                        <p:watermark for="bh" value="BHT No"/>
-                        <p:watermark for="cmbDoc" value="Room No"/>
-
+                                                
                     </h:panelGrid>
                 </p:panel>
                 <h:panelGrid columns="1" id="gpDetail">
@@ -75,9 +73,9 @@
                                         <p:outputLabel value="Address" />
                                         <p:inputText autocomplete="off"  value="#{admissionController.current.guardian.address}"  />
                                         <p:outputLabel value="Mobile No" />
-                                        <p:inputMask mask="999-9999999"   value="#{admissionController.current.guardian.mobile}"  />
+                                        <p:inputText    value="#{admissionController.current.guardian.mobile}"  />
                                         <p:outputLabel value="Home Phone No" />
-                                        <p:inputMask mask="999-9999999"   value="#{admissionController.current.guardian.phone}"  />
+                                        <p:inputText    value="#{admissionController.current.guardian.phone}"  />
                                     </h:panelGrid>
                                 </p:tab>
                                 <p:tab title="Appointment" >
@@ -101,8 +99,8 @@
                                         <h:outputLabel rendered="#{admissionController.appointmentBill!=null}" value="#{admissionController.appointmentBill.patient.person.sex}" ></h:outputLabel>
                                         <h:outputLabel  rendered="#{admissionController.appointmentBill!=null}" value="DOB"  />
 
-                                        <h:outputLabel rendered="#{admissionController.appointmentBill!=null}" value="#{admissionController.appointmentBill.patient.person.dob}"   >
-                                            <f:convertDateTime pattern="dd/MM/yy" />
+                                        <h:outputLabel rendered="#{admissionController.appointmentBill!=null}" value="#{admissionController.appointmentBill.patient.person.dob}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                                         </h:outputLabel>
 
                                         <h:outputLabel  rendered="#{admissionController.appointmentBill!=null}" value="Adress" />
@@ -127,18 +125,18 @@
                                 <p:outputLabel value="Admitted Time"/>
                                 <p:calendar value="#{admissionController.current.dateOfAdmission}" 
                                             id="admissionTimeStamp"
-                                            pattern="dd/MMM/yyyy - hh:mm:ss a" >                               
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >                               
                                 </p:calendar>     
 
-                                <p:watermark value="Referring Doctor Speciality" for="acRefDocSpe" ></p:watermark>
-                                <p:watermark value="Referring Doctor" for="acRefDoc" ></p:watermark>
+                                
+                                
 
                                 <h:outputLabel value="Referring Doctor Speciality"/>
                                 <p:autoComplete forceSelection="true" id="acRefDocSpe"
                                                 value="#{inwardStaffPaymentBillController.referringDoctorSpeciality}" 
                                                 completeMethod="#{specialityController.completeSpeciality}" 
                                                 var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
-                                                converter="specilityCon" style="width: 200px!important;"  >
+                                                 style="width: 200px!important;"  >
                                     <f:ajax event="itemSelect" execute="@this" render="acRefDoc"/>
                                     <f:ajax event="blur" execute="@this" render="acRefDoc"/>
                                 </p:autoComplete>
@@ -150,11 +148,11 @@
                                                 var="ix" 
                                                 itemLabel="#{ix.person.name}" 
                                                 itemValue="#{ix}" size="30"  
-                                                converter="stfcon" >
+                                                 >
                                 </p:autoComplete>
 
-                                <p:watermark value="OPD Doctor Speciality" for="acSpeciality" ></p:watermark>
-                                <p:watermark value="OPD Doctor" for="scStaff" ></p:watermark>
+                                
+                                
 
                                 <h:outputLabel  value="OPD Doctor Speciality" ></h:outputLabel>
                                 <p:autoComplete forceSelection="true" 
@@ -162,7 +160,7 @@
                                                 id="acSpeciality"
                                                 completeMethod="#{specialityController.completeSpeciality}" 
                                                 var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
-                                                converter="specilityCon"   >
+                                                >
 
                                     <f:ajax event="itemSelect" execute="@this" render="scStaff"/>
                                     <f:ajax event="blur" execute="@this" render="scStaff"/>
@@ -172,7 +170,7 @@
                                                  value="#{admissionController.current.opdDoctor}" 
                                                  completeMethod="#{inwardStaffPaymentBillController.completeStaff}"
                                                  var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
-                                                 converter="stfcon"   >
+                                                 >
                                 </p:autoComplete>
 
                             </h:panelGrid>
@@ -199,7 +197,7 @@
                 </h:panelGrid>
             </h:panelGroup>
             <p:panel rendered="#{admissionController.printPreview}">
-                <p:commandButton ajax="false" value="New Admission" actionListener="#{admissionController.makeNull}" onclick="onSubmitButton();"/>                   
+                <p:commandButton ajax="false" value="New Admission" actionListener="#{admissionController.makeNull}" />                   
                 <bill:bht admission="#{admissionController.current}"/>
             </p:panel>
 

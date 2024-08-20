@@ -1,0 +1,82 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/reports/index.xhtml">
+            <ui:define name="subcontent">
+
+                <h:form >
+                    <p:panel header="Surgery StatusReport" >
+                        <h:panelGrid columns="5" >
+                           
+                            <p:outputLabel value="OT Room" >
+                            </p:outputLabel>
+                            <p:selectOneMenu value="#{reportController.currentSpeciality}">
+                                <f:selectItem itemLabel="Select OT Room"/>
+                                
+                            </p:selectOneMenu>
+
+                            <p:spacer width="20"></p:spacer>
+                            <p:outputLabel value="Proposed Surgery" >
+                            </p:outputLabel>
+                            <p:selectOneMenu >
+                                <f:selectItem itemLabel="Select Surgery"/>
+                                
+                            </p:selectOneMenu>
+                            
+                            <p:commandButton ajax="false" value="Process" action="null" class="my-2">
+                            </p:commandButton>
+
+                        </h:panelGrid>
+
+                        
+
+
+                        <p:dataTable value="null" var="c">
+                            
+                            <p:column headerText="SL No" style="width: 100px" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="MRN" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Patient Name" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Admission Date" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Propose Surgery" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="OT Room" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Ward" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Surgon" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Consultant" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                           
+                            
+
+                        </p:dataTable>
+
+                    </p:panel>
+
+                </h:form>
+
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

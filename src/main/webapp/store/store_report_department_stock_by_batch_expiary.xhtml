@@ -1,68 +1,57 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:pe="http://primefaces.org/ui/extensions">
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      >
 
     <h:body>
 
-        <ui:composition template="/resources/template/template.xhtml">
+        <ui:composition template="/store/store_reports_index.xhtml">
 
-            <ui:define name="content">
+            <ui:define name="subcontent">
                 <h:form>
-
-
                     <p:panel header="Department Stock Report by Batch Expiry" >
 
-                        <h:panelGrid columns="2" >
+                        <h:panelGrid columns="2" class="my-2" >
                             <h:outputLabel value="Department" ></h:outputLabel>
-                            <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{storeReportsStock.department}" converter="departmentConverter" >
+                            <p:autoComplete class="w-100 mx-4" inputStyleClass="w-100" completeMethod="#{departmentController.completeDept}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{storeReportsStock.department}"  >
                             </p:autoComplete>
-                            <h:outputLabel value="From" ></h:outputLabel>
-                            <p:calendar value="#{storeReportsStock.fromDate}" pattern="dd MM yyyy" ></p:calendar>
+                            <h:outputLabel  value="From" ></h:outputLabel>
+                            <p:calendar class="w-100 mx-4" inputStyleClass="w-100" value="#{storeReportsStock.fromDate}" pattern="#{sessionController.applicationPreference.shortDateFormat}" ></p:calendar>
 
                             <h:outputLabel value="To" ></h:outputLabel>
-                            <p:calendar value="#{storeReportsStock.toDate}" pattern="dd MM yyyy" ></p:calendar>
+                            <p:calendar class="w-100 mx-4" inputStyleClass="w-100" value="#{storeReportsStock.toDate}" pattern="#{sessionController.applicationPreference.shortDateFormat}" ></p:calendar>
                         </h:panelGrid>
-                        <h:panelGrid columns="3" >
-                            <p:commandButton ajax="false" value="Three Months Expiry" actionListener="#{storeReportsStock.fillThreeMonthsExpiary()}" ></p:commandButton>
-                            <p:commandButton ajax="false" value="Six Months Expiry" actionListener="#{storeReportsStock.fillSixMonthsExpiary()}" ></p:commandButton>
-                            <p:commandButton ajax="false" value="One Year Expiry" actionListener="#{storeReportsStock.fillOneYearExpiary()}" ></p:commandButton>
-                        </h:panelGrid>
+                        <h:panelGrid columns="6" class="my-2">
+                            <p:commandButton class="ui-button-outlined" ajax="false" value="Three Months Expiry" actionListener="#{storeReportsStock.fillThreeMonthsExpiary()}" ></p:commandButton>
+                            <p:commandButton class="ui-button-outlined mx-2" ajax="false" value="Six Months Expiry" actionListener="#{storeReportsStock.fillSixMonthsExpiary()}" ></p:commandButton>
+                            <p:commandButton class="ui-button-outlined" ajax="false" value="One Year Expiry" actionListener="#{storeReportsStock.fillOneYearExpiary()}" ></p:commandButton>
 
-
-                        <h:panelGrid columns="3">
-                            <p:commandButton ajax="false" value="Process" actionListener="#{storeReportsStock.fillDepartmentExpiaryStocks()}" ></p:commandButton>
-                            <p:commandButton value="Print" ajax="false" >
+                            <p:commandButton class="ui-button-warning mx-2" icon="fas fa-cogs" ajax="false" value="Process" actionListener="#{storeReportsStock.fillDepartmentExpiaryStocks()}" ></p:commandButton>
+                            <p:commandButton class="ui-button-info" icon="fas fa-print" value="Print" ajax="false" >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
-                            <p:commandButton value="Excel" ajax="false">
-                                <pe:exporter type="xlsx" target="tbl" fileName="Total Stock"
-                                             facetBackground="#008000" facetFontSize="15" 
-                                             facetFontColor="#FFFFFF" facetFontStyle="BOLD" cellFontColor="#0000FF" cellFontSize="12"  cellFontStyle="NORMAL" 
-                                             fontName="Courier New" />
+                            <p:commandButton class="ui-button-success mx-2" icon="fas fa-file-excel" value="Excel" ajax="false">
+                                <p:dataExporter type="xlsx" target="tbl" fileName="Total Stock"/>
                             </p:commandButton>
                         </h:panelGrid>
 
                         <h:panelGroup id="gpBillPreview" >
                             <p:dataTable id="tbl" rowStyleClass="#{i.stock eq 0 ?'noDisplayRow' : ''}" value="#{storeReportsStock.stocks}" var="i"  >
-
-
                                 <f:facet name="header">
                                     <h:outputLabel value="#{storeReportsStock.department.name} : Department Stock By Expiry" />
                                     <h:outputLabel value="&emsp; &emsp;From  :  " style=" white-space:pre-line;"/>
                                     <h:outputLabel value="#{storeReportsStock.fromDate}"  >
-                                        <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a" />
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                                     </h:outputLabel>
                                     <p:spacer width="30" height="1"/>
                                     <h:outputLabel value="&emsp; &emsp;To : "/>
                                     <h:outputLabel value="#{storeReportsStock.toDate}"  >
-                                        <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a" />
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                                     </h:outputLabel>
-
                                 </f:facet>
 
                                 <p:column headerText="Item">

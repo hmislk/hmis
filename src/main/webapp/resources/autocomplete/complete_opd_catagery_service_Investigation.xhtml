@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:cc="http://java.sun.com/jsf/composite"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
       xmlns:p="http://primefaces.org/ui">
 
     <!-- INTERFACE -->
@@ -11,10 +11,9 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <p:autoComplete  forceSelection="true"  value="#{cc.attrs.value}"  id="cat" converter="categoryConverter"
+        <p:autoComplete  class="w-100 mx-4" inputStyleClass="w-100" forceSelection="true"  value="#{cc.attrs.value}"  id="cat" 
                          completeMethod="#{categoryController.completeServiceInvestigationCategory}" var="ix"
                          itemLabel="#{ix.name}" itemValue="#{ix}" >            
         </p:autoComplete> 
-        <p:watermark for="cat" value="Service / Investigation Category"/>
-    </cc:implementation>
+            </cc:implementation>
 </html>

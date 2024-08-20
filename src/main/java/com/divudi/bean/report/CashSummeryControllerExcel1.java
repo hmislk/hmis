@@ -1,6 +1,6 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.report;
 
@@ -20,7 +20,7 @@ import com.divudi.data.table.String1Value1;
 import com.divudi.data.table.String1Value2;
 import com.divudi.data.table.String1Value3;
 import com.divudi.data.table.String6;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.entity.Bill;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
@@ -36,6 +36,7 @@ import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.CategoryFacade;
 import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.ItemFacade;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -63,7 +64,7 @@ public class CashSummeryControllerExcel1 implements Serializable {
     private Date fromDate;
     @Temporal(TemporalType.TIMESTAMP)
     private Date toDate;
-    @EJB
+
     private CommonFunctions commonFunctions;
     @EJB
     private BillItemFacade billItemFacade;
@@ -147,7 +148,7 @@ public class CashSummeryControllerExcel1 implements Serializable {
         temMap.put("billClass", bill.getClass());
         temMap.put("bType", BillType.OpdBill);
         temMap.put("ins", getInstitution());
-        return getBillItemFacade().countBySql(sql, temMap, TemporalType.TIMESTAMP);
+        return getBillItemFacade().countByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
 
@@ -199,7 +200,7 @@ public class CashSummeryControllerExcel1 implements Serializable {
         tmp.add(dd);
 
         dd = new String1Value1();
-        dd.setString("B/F Cash Ballance");
+        dd.setString("B/F Cash Balance");
         tmp.add(dd);
 
         return tmp;
@@ -472,7 +473,7 @@ public class CashSummeryControllerExcel1 implements Serializable {
         temMap.put("btp", BillType.PaymentBill);
         temMap.put("ins", getInstitution());
 
-        return getDepartmentFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        return getDepartmentFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
     }
 
     private double getDepartmentPaymentTotal(Department department) {
@@ -606,7 +607,7 @@ public class CashSummeryControllerExcel1 implements Serializable {
 //        long lng = getCommonFunctions().getDayCount(getFromDate(), getToDate());
 //
 //        if (Math.abs(lng) > 2) {
-//            UtilityController.addErrorMessage("Date Range is too Long");
+//            JsfUtil.addErrorMessage("Date Range is too Long");
 //            return;
 //        }
 //

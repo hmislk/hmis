@@ -1,6 +1,6 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.inward;
 
@@ -41,7 +41,7 @@ public class PatientEncounterReportController implements Serializable {
         
         m.put("pNo", current);
         m.put("bt", BillType.PharmacyBhtPre);
-        billItem = getBillItemFacade().findBySQL(sql, m);
+        billItem = getBillItemFacade().findByJpql(sql, m);
         
     }
     

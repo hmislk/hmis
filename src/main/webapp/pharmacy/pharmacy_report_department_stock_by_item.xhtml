@@ -1,35 +1,35 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:pe="http://primefaces.org/ui/extensions">
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      >
 
     <h:body>
 
-        <ui:composition template="/resources/template/template.xhtml">
+        <ui:composition template="/pharmacy/pharmacy_analytics.xhtml">
 
-            <ui:define name="content">
+            <ui:define name="subcontent">
                 <h:form id="frm">
                     <p:panel header="Stock Report by Item" >
 
-                        <h:panelGrid columns="5" >
+                        <h:panelGrid columns="6" >
                             <h:outputLabel value="Department" ></h:outputLabel>
-                            <p:autoComplete completeMethod="#{departmentController.completeDept}"
+                            <p:autoComplete class=" mx-2"  completeMethod="#{departmentController.completeDept}"
                                             var="dept" itemLabel="#{dept.name}" 
                                             itemValue="#{dept}" forceSelection="true" 
-                                            value="#{reportsStock.department}" converter="departmentConverter" >
+                                            value="#{reportsStock.department}"  >
                             </p:autoComplete>
-                            <p:commandButton ajax="false" value="Process" 
+                            <p:commandButton class="ui-button-warning" icon="fas fa-cogs" ajax="false" value="Process" 
                                              actionListener="#{reportsStock.fillDepartmentNonEmptyItemStocks()}" ></p:commandButton>
-                            <p:commandButton value="Excel" ajax="false">
-                                <pe:exporter type="xlsx" target="tbl" fileName="Total_Stock"
-                                             facetFontStyle="BOLD" 
-                                             fontName="Courier New" />
+                            <p:commandButton class="ui-button-success mx-2" icon="fas fa-file-excel" value="Excel" ajax="false">
+                                <p:dataExporter type="xlsx" target="tbl" fileName="Total_Stock"
+                                              
+                                              />
                             </p:commandButton>
-                            <p:commandButton value="Print" actionListener="#{reportsStock.prepareForPrint()}" 
+                            <p:commandButton class="ui-button-info" icon="fas fa-print" value="Print" actionListener="#{reportsStock.prepareForPrint()}" 
                                              oncomplete="$('#frm\\:print').click()"
                                              update=":frm:tbl"/>
                             <p:commandButton id="print" value="Actual print" style="display: none">
@@ -38,7 +38,7 @@
                             </p:commandButton>
                         </h:panelGrid>
 
-                        <h:panelGroup id="gpBillPreview"  styleClass="noBorder summeryBorder" style="min-width: 100%!important;">
+                        <h:panelGroup id="gpBillPreview"  styleClass="noBorder summeryBorder" class="w-100">
 
                             <p:dataTable id="tbl" rowIndexVar="ii" 
                                          value="#{reportsStock.pharmacyStockRows}" var="i"  

@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:cc="http://java.sun.com/jsf/composite"
-      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:f="http://java.sun.com/jsf/core">
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <!-- INTERFACE -->
     <cc:interface>
@@ -40,11 +40,11 @@
                     <div class="billdatePrinting">                   
                         <h:outputLabel value="#{cc.attrs.bill.cancelledBill.billDate}"
                                        rendered="#{cc.attrs.bill.cancelledBill.insId ne null}"  >
-                            <f:convertDateTime pattern="dd/MM/yy"/>
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                         </h:outputLabel>                      
                         <h:outputLabel value="#{cc.attrs.bill.billDate}"
                                        rendered="#{cc.attrs.bill.cancelledBill.insId eq null }">
-                            <f:convertDateTime pattern="dd/MM/yy"/>
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                         </h:outputLabel>
                     </div>
 
@@ -59,11 +59,11 @@
 
                         <h:outputLabel value="#{cc.attrs.bill.cancelledBill.billTime}"  
                                        rendered="#{cc.attrs.bill.cancelledBill.insId ne null}">
-                            <f:convertDateTime pattern="hh mm a"/>
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortTimeFormat}"/>
                         </h:outputLabel>                        
                         <h:outputLabel value="#{cc.attrs.bill.billTime}" 
                                        rendered="#{cc.attrs.bill.cancelledBill.insId eq null }">
-                            <f:convertDateTime pattern="hh mm a"/>
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortTimeFormat}"/>
                         </h:outputLabel>
                     </div>
 
@@ -84,7 +84,7 @@
 
                     <div class="itemsPrinting">
 
-                        <h:dataTable value="#{cc.attrs.controller.billItems}" var="bip" style="font-size:11px!important;"     >
+                        <h:dataTable value="#{cc.attrs.controller.billItems}" var="bip" style="font-size:11px!important;" >
 
                             <h:column >
                                 <h:outputLabel value="#{bip.referanceBillItem.bill.insId}"  />                                    
@@ -119,7 +119,7 @@
                     
                     <div class="itemsPrintingMid">
 
-                        <h:dataTable value="#{cc.attrs.controller.billItems}" var="bip" style="font-size:11px!important;"     >
+                        <h:dataTable value="#{cc.attrs.controller.billItems}" var="bip" style="font-size:11px!important;" >
 
                             <h:column >
                                 <h:outputLabel value="#{bip.referanceBillItem.bill.patient.person.nameWithTitle}" rendered="#{bf.bill.patientEncounter eq null}" style="margin: 4px;font-size:  11px!important;"  />                                    

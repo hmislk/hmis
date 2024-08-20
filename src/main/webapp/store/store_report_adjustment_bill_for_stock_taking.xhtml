@@ -1,49 +1,52 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:pe="http://primefaces.org/ui/extensions"
-      xmlns:au="http://java.sun.com/jsf/composite/autocomplete">
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      
+      xmlns:au="http://xmlns.jcp.org/jsf/composite/autocomplete">
 
     <h:body>
-        <ui:composition template="/resources/template/template.xhtml">
-            <ui:define name="content">
+        <ui:composition template="/store/store_reports_index.xhtml">
+            <ui:define name="subcontent">
                 <h:form>
                     <p:panel>
                         <f:facet name="header" >
-                            <h:outputLabel value="SEARCH PHARMACY BILL ITEM "/>                                                          
-                            <h:panelGrid columns="2" >
+                            <h:outputLabel value="SEARCH PHARMACY BILL ITEM "/> 
+                        </f:facet>
+                        <h:panelGrid columns="2" class="my-2" >
                                 <h:outputLabel value="From Date"/>
-                                <p:calendar styleClass="dateTimePicker" id="fromDate" 
+                                <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="fromDate" 
                                             value="#{searchController.fromDate}" navigator="false" 
-                                            pattern="dd MMMM yyyy hh mm ss a" >      
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
                                 </p:calendar>
                                 <h:outputLabel value="To Date"/>
-                                <p:calendar styleClass="dateTimePicker" id="toDate"
+                                <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="toDate"
                                             value="#{searchController.toDate}" navigator="false" 
-                                            pattern="dd MMMM yyyy hh mm ss a" >                                                                              
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
                                 </p:calendar>
                                 <h:outputLabel value="Department"/>
                                 <au:department value="#{searchController.reportKeyWord.department}" />
                                 <h:outputLabel value="Category"/>
                                 <p:autoComplete completeMethod="#{pharmaceuticalItemCategoryController.completeCategory}" var="dept" 
                                                 itemLabel="#{dept.name}" itemValue="#{dept}" placeholder="Category"
-                                                forceSelection="true" value="#{searchController.reportKeyWord.category}" />
+                                                forceSelection="true" value="#{searchController.reportKeyWord.category}"
+                                                class="w-100 mx-4" inputStyleClass="w-100"/>
                                 <h:outputLabel value="Only Adjustments"/>
-                                <p:selectBooleanCheckbox value="#{searchController.reportKeyWord.additionalDetails}" />
-                                <p:commandButton id="btnSearch" ajax="false" value="Search" 
+                                <p:selectBooleanCheckbox class="w-100 mx-4" value="#{searchController.reportKeyWord.additionalDetails}" />
+                            </h:panelGrid>
+                            <h:panelGrid columns="6" class="my-2">
+                                <p:commandButton class="ui-button-warning" icon="fas fa-magnifying-glass" id="btnSearch" ajax="false" value="Search" 
                                                  action="#{searchController.createStoreAdjustmentBillItemTableForStockTaking}"/>
-                                <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton">
+                                <p:commandButton class="ui-button-info mx-2" icon="fas fa-print" ajax="false" value="Print" >
                                     <p:printer target="panPrint" />
                                 </p:commandButton>
-                                <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton">
-                                    <pe:exporter type="xlsx" target="tblBills" fileName="Stock_Taking_New_Report"/>
+                                <p:commandButton class="ui-button-success" icon="fas fa-file-excel" value="Excel" ajax="false">
+                                    <p:dataExporter type="xlsx" target="tblBills" fileName="Stock_Taking_New_Report"/>
                                 </p:commandButton>
                             </h:panelGrid>
-                        </f:facet>
 
                         <p:panel id="panPrint" styleClass="noBorder summeryBorder" >
                             <f:facet name="header" >

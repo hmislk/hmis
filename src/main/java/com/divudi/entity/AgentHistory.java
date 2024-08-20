@@ -1,7 +1,7 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Open Hospital Management Information System
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.entity;
 
@@ -53,17 +53,17 @@ public class AgentHistory implements Serializable {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date retiredAt;
     private String retireComments;
-    String referenceNo;
+    String referenceNumber;
     String comment;
     @Transient
     double transCumilativeTotal;
 
-    public String getReferenceNo() {
-        return referenceNo;
+    public String getReferenceNumber() {
+        return referenceNumber;
     }
 
-    public void setReferenceNo(String referenceNo) {
-        this.referenceNo = referenceNo;
+    public void setReferenceNumber(String referenceNumber) {
+        this.referenceNumber = referenceNumber;
     }
 
     public HistoryType getHistoryType() {
@@ -188,11 +188,11 @@ public class AgentHistory implements Serializable {
 
     public Integer getReferenceNoInteger() {
         Integer referenceNoInterger = 0;
-        if (referenceNo == null || referenceNo.isEmpty()) {
+        if (referenceNumber == null || referenceNumber.isEmpty()) {
             return 0;
         }
         try {
-            referenceNoInterger = Integer.parseInt(referenceNo);
+            referenceNoInterger = Integer.parseInt(referenceNumber);
         } catch (Exception e) {
         }
 

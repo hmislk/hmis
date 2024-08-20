@@ -1,7 +1,7 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Open Hospital Management Information System
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.cashTransaction;
 
@@ -138,7 +138,7 @@ public class DrawerAdjustmentController implements Serializable {
 
         double difference = ballance - getValue();
 
-//        System.err.println("Cash Ballance " + cashBallance);
+//        System.err.println("Cash Balance " + cashBallance);
 //        System.err.println("Difference  " + difference);
         CashTransaction cashTransaction = new CashTransaction();
         cashTransaction.setCreatedAt(new Date());

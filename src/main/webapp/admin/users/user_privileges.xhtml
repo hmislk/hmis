@@ -1,0 +1,125 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:p="http://primefaces.org/ui"
+      >
+
+    <h:body>
+
+        <ui:composition template="/admin/users/user_list.xhtml">
+
+            <ui:define name="users">
+
+
+
+                <h:panelGroup rendered="#{!webUserController.hasPrivilege('AdminManagingUsers')}">
+                    <p:outputLabel value="YOU ARE NOT AUTHORIZED." />
+                </h:panelGroup>
+
+                <p:panel header="Manage User Privileges" rendered="#{webUserController.hasPrivilege('AdminManagingUsers')}">
+                    <f:facet name="header">
+                        <i class="fa fa-unlock-alt" aria-hidden="true" />
+                        <h:outputLabel value="Manage User Privileges" class="mx-2" />
+                    </f:facet>
+
+                    <h:panelGrid columns="3">
+                        <p:outputLabel value="User Name" />
+                        <p:outputLabel value=":" style="width: 50px; text-align: center" />
+                        <p:outputLabel class="form-control w-100" value="#{userPrivilageController.currentWebUser.name}" />
+                        <p:outputLabel value="Department" />
+                        <p:outputLabel value=":" style="width: 50px; text-align: center" />
+                        <p:selectOneMenu 
+                            id="cmbDepartment"
+                            placeholder="Department"
+                            value="#{userPrivilageController.department}" 
+                            class="w-100"
+                            required="true"
+                            requiredMessage="Please select a department"
+                            filter="true">
+                            <f:selectItem itemLabel="Select Department" />
+                            <f:selectItems 
+                                value="#{userPrivilageController.departments}"
+                                var="d"
+                                itemLabel="#{d.name}"
+                                itemValue="#{d}" />
+                            <p:ajax event="change" 
+                                    process="cmbDepartment" 
+                                    listener="#{userPrivilageController.makePrivilegesNeededToBeReloaded()}"  
+                                    update="tmp gpDetails" />
+                        </p:selectOneMenu>
+                        <h:outputText id="tmp" value="#{userPrivilageController.department.name}" style="font-weight: bold;" />
+                    </h:panelGrid>
+
+                    <h:panelGroup id="gpDetails" >
+
+                        <div class="w-100 mt-2 mb-2">
+                            <p:commandButton 
+                                value="List Privileges"
+                                process="cmbDepartment"
+                                class="ui-button-success mx-1"
+                                ajax="false"
+                                icon="fa fa-list"
+                                action="#{userPrivilageController.fillUserPrivileges}">
+                            </p:commandButton>
+
+                            <p:commandButton 
+                                value="Update User Privileges"  
+                                action="#{userPrivilageController.savePrivileges}"
+                                class="ui-button-warning"
+                                ajax="false" 
+                                icon="fa fa-save"
+                                style="float: right"
+                                disabled="#{not userPrivilageController.privilegesLoaded}">  
+                            </p:commandButton> 
+                        </div>
+
+                        <h:panelGroup id="warningPanel" rendered="#{not userPrivilageController.privilegesLoaded}">
+                            <p:panelGrid columns="1" style="margin-top: 20px;" styleClass="ui-panelgrid-blank">
+                                <p:messages />
+                                <p:outputPanel styleClass="ui-g ui-widget ui-state-error ui-corner-all" style="padding: 10px; margin: 10px 0;">
+                                    <div class="ui-g-12 ui-md-4">
+                                        <i class="fa fa-exclamation-triangle fa-2x" style="color: #d9534f;"></i>
+                                    </div>
+                                    <div class="ui-g-12 ui-md-8">
+                                        <h:outputText value="Please click the 'List Privileges' button to display the available privileges for this user in the selected department." />
+                                        <h:panelGrid columns="2" style="margin-top: 10px;">
+                                            <h:outputText value="User Name:" />
+                                            <h:outputText value="#{userPrivilageController.currentWebUser.name}" style="font-weight: bold;" />
+                                            <h:outputText value="Department:" />
+                                            <h:outputText value="#{userPrivilageController.department.name}" style="font-weight: bold;" />
+                                        </h:panelGrid>
+                                    </div>
+                                </p:outputPanel>
+                            </p:panelGrid>
+                        </h:panelGroup>
+
+                        <h:panelGroup rendered="#{userPrivilageController.privilegesLoaded}">
+                            <p:tree
+                                id="tree"
+                                selectionMode="checkbox"
+                                datakey="#{node}"
+                                selection="#{userPrivilageController.selectedNodes}"
+                                value="#{userPrivilageController.rootTreeNode}" 
+                                var="node" 
+                                propagateSelectionDown="true"
+                                propagateSelectionUp="true">
+                                <p:treeNode>
+                                    <h:outputText value="#{node}" />
+                                </p:treeNode>
+                            </p:tree>
+                        </h:panelGroup>
+
+                    </h:panelGroup>
+
+                </p:panel>
+
+
+
+
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

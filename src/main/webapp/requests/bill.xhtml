@@ -1,12 +1,12 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
-      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:ez="http://java.sun.com/jsf/composite/ezcomp"
-      xmlns:bi="http://java.sun.com/jsf/composite/bill">
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp"
+      xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill">
 
 
     <f:metadata >
@@ -52,16 +52,15 @@
                                         </h:panelGroup>
 
 
-                                        <h:panelGroup rendered="#{sessionController.currentPreference.opdBillPaperType eq 'FiveFivePrintedPaper'}" >
+                                        <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePrintedPaper'}" >
                                             <div class="nonPrintBlock">
                                                 <p:commandButton value="Print" ajax="false" action="#"  >
                                                     <p:printer target="gpBillPreview" ></p:printer>
                                                 </p:commandButton>
                                             </div>
-                                            <bi:opdBillPrintRuhunu bill="#{billSearch.bill}" dup="true" rendered="#{billSearch.bill.refundedBill eq null}"/>
-
+                                           
                                             <ui:repeat value="#{billSearch.bills}" var="bill" rendered="#{billSearch.bill.refundedBill ne null}">
-                                                <bi:opdBillPrintRuhunu bill="#{bill}" dup="true" />
+                                               
                                             </ui:repeat>
                                             <ui:repeat value="#{billPackageController.bills}" var="bill">
                                                 <bi:opdBillPrintRuhunu_pack bill="#{bill}" dup="false"/>
@@ -75,7 +74,7 @@
 
                                         </h:panelGroup>
 
-                                        <h:panelGroup id="gpBillPreviewRmh" rendered="#{sessionController.currentPreference.institution eq 'Rmh' }">
+                                        <h:panelGroup id="gpBillPreviewRmh" rendered="#{sessionController.departmentPreference.institution eq 'Rmh' }">
                                             <div class="nonPrintBlock">
                                                 <p:commandButton value="Print" ajax="false" action="#"  >
                                                     <p:printer target="gpBillPreviewRmh" ></p:printer>
@@ -119,10 +118,10 @@
                                     </p:panel>
 
                                     <p:panel rendered="#{billSearch.bill.billType eq 'CollectingCentreBill'}">
-                                        <h:panelGroup rendered="#{sessionController.currentPreference.opdBillPaperType eq 'FiveFivePaper'}" >
-                                            <h:panelGroup id="gpBillPreviewCC" rendered="#{sessionController.currentPreference.printLabelForOPdBill eq false
-                                                                                           and sessionController.currentPreference.institution eq 'Ruhuna'
-                                                                                           and sessionController.currentPreference.fiveFivePaperWithHeadings  eq false}">
+                                        <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaper'}" >
+                                            <h:panelGroup id="gpBillPreviewCC" rendered="#{sessionController.departmentPreference.printLabelForOPdBill eq false
+                                                                                           and sessionController.departmentPreference.institution eq 'Ruhuna'
+                                                                                           and sessionController.departmentPreference.fiveFivePaperWithHeadings  eq false}">
                                                 <div class="nonPrintBlock">
                                                     <p:commandButton value="Print" ajax="false" action="#"  >
                                                         <p:printer target="gpBillPreviewCC" ></p:printer>

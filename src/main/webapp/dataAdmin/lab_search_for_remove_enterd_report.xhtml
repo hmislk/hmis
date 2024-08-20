@@ -1,11 +1,10 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:pu="http://primefaces.org/ui/extensions">
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
@@ -17,12 +16,12 @@
                                 <h:panelGrid columns="5" >
 
                                     <h:outputLabel value="From Date"/>
-                                    <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{dataAdministrationController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm a" >      
+                                    <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{dataAdministrationController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >      
                                     </p:calendar>
                                     <h:outputLabel value="To Date"/>
-                                    <p:calendar styleClass="dateTimePicker" id="toDate" value="#{dataAdministrationController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm a" >                                                                              
+                                    <p:calendar styleClass="dateTimePicker" id="toDate" value="#{dataAdministrationController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >                                                                              
                                     </p:calendar>
-                                    <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{dataAdministrationController.createPatientInvestigationsTable()}" onclick="onSubmitButton();" />
+                                    <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{dataAdministrationController.createPatientInvestigationsTable()}"  />
                                 </h:panelGrid>
                                 <h:panelGrid columns="2" >
                                     <h:outputLabel value="Bill No"/>

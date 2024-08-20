@@ -1,12 +1,12 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.store;
 
 import com.divudi.bean.common.InstitutionController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillType;
 import com.divudi.data.DepartmentType;
 import com.divudi.data.InstitutionType;
@@ -35,7 +35,7 @@ import com.divudi.entity.pharmacy.StoreItemCategory;
 import com.divudi.entity.pharmacy.Vmp;
 import com.divudi.entity.pharmacy.Vmpp;
 import com.divudi.entity.pharmacy.Vtm;
-import com.divudi.entity.pharmacy.VtmsVmps;
+import com.divudi.entity.pharmacy.VirtualProductIngredient;
 import com.divudi.facade.AmpFacade;
 import com.divudi.facade.AmppFacade;
 import com.divudi.facade.AtmFacade;
@@ -53,7 +53,7 @@ import com.divudi.facade.StoreItemCategoryFacade;
 import com.divudi.facade.VmpFacade;
 import com.divudi.facade.VmppFacade;
 import com.divudi.facade.VtmFacade;
-import com.divudi.facade.VtmsVmpsFacade;
+import com.divudi.facade.VirtualProductIngredientFacade;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -76,7 +76,7 @@ import jxl.Cell;
 import jxl.Sheet;
 import jxl.Workbook;
 import jxl.read.biff.BiffException;
-import org.primefaces.model.UploadedFile;
+import org.primefaces.model.file.UploadedFile;
 
 /**
  *
@@ -106,7 +106,7 @@ public class StoreItemExcelManager implements Serializable {
     @EJB
     VmppFacade vmppFacade;
     @EJB
-    VtmsVmpsFacade vtmInAmpFacade;
+    VirtualProductIngredientFacade vtmInAmpFacade;
     @EJB
     MeasurementUnitFacade muFacade;
     @EJB
@@ -217,7 +217,7 @@ public class StoreItemExcelManager implements Serializable {
         temMap.put("class", BilledBill.class);
         temMap.put("billType", BillType.StoreGrnBill);
         //temMap.put("dep", getSessionController().getDepartment());
-        List<Bill> bills = getBillFacade().findBySQL(sql, temMap);
+        List<Bill> bills = getBillFacade().findByJpql(sql, temMap);
 
         for (Bill b : bills) {
             if (b.getNetTotal() > 0) {
@@ -233,7 +233,7 @@ public class StoreItemExcelManager implements Serializable {
         temMap.put("class", CancelledBill.class);
         temMap.put("billType", BillType.StoreGrnBill);
         //temMap.put("dep", getSessionController().getDepartment());
-        bills = getBillFacade().findBySQL(sql, temMap);
+        bills = getBillFacade().findByJpql(sql, temMap);
 
         for (Bill b : bills) {
             if (b.getNetTotal() < 0) {
@@ -257,7 +257,7 @@ public class StoreItemExcelManager implements Serializable {
         temMap.put("fd", cal.getTime());
         temMap.put("td", new Date());
         //temMap.put("dep", getSessionController().getDepartment());
-        List<Bill> bills = getBillFacade().findBySQL(sql, temMap);
+        List<Bill> bills = getBillFacade().findByJpql(sql, temMap);
 
         for (Bill b : bills) {
             String str = "";
@@ -289,7 +289,7 @@ public class StoreItemExcelManager implements Serializable {
 
         sql = "select b from Item b where type(b)=:tp ";
         temMap.put("tp", Service.class);
-        List<Item> list = getItemFacade().findBySQL(sql, temMap);
+        List<Item> list = getItemFacade().findByJpql(sql, temMap);
 
         for (Item i : list) {
             i.setSessionNumberType(null);
@@ -303,7 +303,7 @@ public class StoreItemExcelManager implements Serializable {
 
         sql = "select b from Item b where type(b)=:tp ";
         temMap.put("tp", Investigation.class);
-        List<Item> list = getItemFacade().findBySQL(sql, temMap);
+        List<Item> list = getItemFacade().findByJpql(sql, temMap);
 
         for (Item i : list) {
             i.setInwardChargeType(InwardChargeType.Laboratory);
@@ -317,7 +317,7 @@ public class StoreItemExcelManager implements Serializable {
 
         sql = "select b from Bill b where b.paymentMethod is null";
 
-        List<Bill> list = getBillFacade().findBySQL(sql, temMap);
+        List<Bill> list = getBillFacade().findByJpql(sql, temMap);
         //  int ind = 1;
         for (Bill i : list) {
             //   System.err.println("index " + ind++);
@@ -339,7 +339,7 @@ public class StoreItemExcelManager implements Serializable {
 //        temMap.put("class", BilledBill.class);
 //        temMap.put("billType", BillType.PharmacyPurchaseBill);
 //        //temMap.put("dep", getSessionController().getDepartment());
-//        List<Bill> bills = getBillFacade().findBySQL(sql, temMap);
+//        List<Bill> bills = getBillFacade().findByJpql(sql, temMap);
 //
 //        for (Bill b : bills) {
 //            System.err.println("Billed "+b.getPaymentScheme());
@@ -429,7 +429,7 @@ public class StoreItemExcelManager implements Serializable {
         Amp amp;
 //        Ampp ampp;
         Vmpp vmpp;
-        VtmsVmps vtmsvmps;
+        VirtualProductIngredient vtmsvmps;
         MeasurementUnit issueUnit;
         MeasurementUnit strengthUnit;
         MeasurementUnit packUnit;
@@ -449,10 +449,10 @@ public class StoreItemExcelManager implements Serializable {
         Workbook w;
         Cell cell;
         InputStream in;
-        UtilityController.addSuccessMessage(file.getFileName());
+        JsfUtil.addSuccessMessage(file.getFileName());
         try {
-            UtilityController.addSuccessMessage(file.getFileName());
-            in = file.getInputstream();
+            JsfUtil.addSuccessMessage(file.getFileName());
+            in = file.getInputStream();
             File f;
             f = new File(Calendar.getInstance().getTimeInMillis() + file.getFileName());
             FileOutputStream out = new FileOutputStream(f);
@@ -467,7 +467,7 @@ public class StoreItemExcelManager implements Serializable {
 
             inputWorkbook = new File(f.getAbsolutePath());
 
-            UtilityController.addSuccessMessage("Excel File Opened");
+            JsfUtil.addSuccessMessage("Excel File Opened");
             w = Workbook.getWorkbook(inputWorkbook);
             Sheet sheet = w.getSheet(0);
 
@@ -580,7 +580,7 @@ public class StoreItemExcelManager implements Serializable {
                 m.put("n", strAmp.toUpperCase());
                 m.put("t", DepartmentType.Store);
                 if (!strCat.equals("")) {
-                    amp = ampFacade.findFirstBySQL("SELECT c FROM Amp c Where upper(c.name)=:n AND c.departmentType=:t", m);
+                    amp = ampFacade.findFirstByJpql("SELECT c FROM Amp c Where (c.name)=:n AND c.departmentType=:t", m);
                     if (amp == null) {
                         amp = new Amp();
                         amp.setName(strAmp);
@@ -717,10 +717,10 @@ public class StoreItemExcelManager implements Serializable {
                 }
                 getStorePurchaseController().addItem();
             }
-            UtilityController.addSuccessMessage("Succesful. All the data in Excel File Impoted to the database");
+            JsfUtil.addSuccessMessage("Succesful. All the data in Excel File Impoted to the database");
             return "/store/store_purchase";
         } catch (IOException | BiffException ex) {
-            UtilityController.addErrorMessage(ex.getMessage());
+            JsfUtil.addErrorMessage(ex.getMessage());
             return "";
         }
     }
@@ -746,10 +746,10 @@ public class StoreItemExcelManager implements Serializable {
         Workbook w;
         Cell cell;
         InputStream in;
-        UtilityController.addSuccessMessage(file.getFileName());
+        JsfUtil.addSuccessMessage(file.getFileName());
         try {
-            UtilityController.addSuccessMessage(file.getFileName());
-            in = file.getInputstream();
+            JsfUtil.addSuccessMessage(file.getFileName());
+            in = file.getInputStream();
             File f;
             f = new File(Calendar.getInstance().getTimeInMillis() + file.getFileName());
             FileOutputStream out = new FileOutputStream(f);
@@ -764,7 +764,7 @@ public class StoreItemExcelManager implements Serializable {
 
             inputWorkbook = new File(f.getAbsolutePath());
 
-            UtilityController.addSuccessMessage("Excel File Opened");
+            JsfUtil.addSuccessMessage("Excel File Opened");
             w = Workbook.getWorkbook(inputWorkbook);
             Sheet sheet = w.getSheet(0);
 
@@ -807,7 +807,7 @@ public class StoreItemExcelManager implements Serializable {
                 m.put("n", strAmp.toUpperCase());
                 m.put("t", DepartmentType.Store);
                 if (!strCat.equals("")) {
-                    amp = ampFacade.findFirstBySQL("SELECT c FROM Amp c Where upper(c.name)=:n AND c.departmentType=:t", m);
+                    amp = ampFacade.findFirstByJpql("SELECT c FROM Amp c Where (c.name)=:n AND c.departmentType=:t", m);
                     if (amp == null) {
                         amp = new Amp();
                         amp.setName(strAmp);
@@ -847,10 +847,10 @@ public class StoreItemExcelManager implements Serializable {
                 ////System.out.println("amp = " + amp.getName());
             }
             storeAmpController.recreateModel();
-            UtilityController.addSuccessMessage("Succesful. All the data in Excel File Impoted to the database");
+            JsfUtil.addSuccessMessage("Succesful. All the data in Excel File Impoted to the database");
             return "";
         } catch (IOException | BiffException ex) {
-            UtilityController.addErrorMessage(ex.getMessage());
+            JsfUtil.addErrorMessage(ex.getMessage());
             return "";
         }
     }
@@ -872,13 +872,11 @@ public class StoreItemExcelManager implements Serializable {
         temMap.put("class", BilledBill.class);
         temMap.put("billType", BillType.StoreGrnBill);
         //temMap.put("dep", getSessionController().getDepartment());
-        List<Bill> bills = getBillFacade().findBySQL(sql, temMap);
+        List<Bill> bills = getBillFacade().findByJpql(sql, temMap);
         int index = 1;
         for (Bill b : bills) {
             if (b.getReferenceBill().getBillType() == BillType.StoreOrder) {
-                System.err.println("No " + index++);
                 Bill refApproved = b.getReferenceBill().getReferenceBill();
-                System.err.println("Grn No" + b.getDeptId());
 
                 b.setReferenceBill(refApproved);
                 getBillFacade().edit(b);
@@ -898,7 +896,7 @@ public class StoreItemExcelManager implements Serializable {
     public void resetQtyValue() {
         String sql = "Select p from PharmaceuticalBillItem p where p.billItem.retired=false ";
 
-        List<PharmaceuticalBillItem> lis = getPharmaceuticalBillItemFacade().findBySQL(sql);
+        List<PharmaceuticalBillItem> lis = getPharmaceuticalBillItemFacade().findByJpql(sql);
 
         for (PharmaceuticalBillItem ph : lis) {
             if (ph.getBillItem() == null || ph.getBillItem().getBill() == null
@@ -1026,7 +1024,7 @@ public class StoreItemExcelManager implements Serializable {
         temMap.put("billType", BillType.StoreTransferIssue);
         temMap.put("billType2", BillType.StoreTransferReceive);
         //temMap.put("dep", getSessionController().getDepartment());
-        List<Bill> bills = getBillFacade().findBySQL(sql, temMap);
+        List<Bill> bills = getBillFacade().findByJpql(sql, temMap);
 
         for (Bill b : bills) {
             temMap.clear();
@@ -1055,7 +1053,7 @@ public class StoreItemExcelManager implements Serializable {
         hm.put("itmB", itemBatch);
         hm.put("dt", date);
         hm.put("dep", department);
-        return getStockHistoryFacade().findFirstBySQL(sql, hm, TemporalType.TIMESTAMP);
+        return getStockHistoryFacade().findFirstByJpql(sql, hm, TemporalType.TIMESTAMP);
     }
 
     private PharmaceuticalBillItem getPreviousPharmacuticalBillByBatch(ItemBatch itemBatch, Department department, Date date) {
@@ -1070,7 +1068,7 @@ public class StoreItemExcelManager implements Serializable {
         hm.put("dep", department);
         hm.put("btp1", BillType.StoreGrnBill);
         hm.put("btp2", BillType.StorePurchase);
-        return getPharmaceuticalBillItemFacade().findFirstBySQL(sql, hm, TemporalType.TIMESTAMP);
+        return getPharmaceuticalBillItemFacade().findFirstByJpql(sql, hm, TemporalType.TIMESTAMP);
     }
 
     public void resetTransferHistoryValue() {
@@ -1082,7 +1080,7 @@ public class StoreItemExcelManager implements Serializable {
 
         temMap.put("billType", BillType.StoreTransferIssue);
         temMap.put("billType2", BillType.StoreTransferReceive);
-        List<PharmaceuticalBillItem> list = getPharmaceuticalBillItemFacade().findBySQL(sql, temMap);
+        List<PharmaceuticalBillItem> list = getPharmaceuticalBillItemFacade().findByJpql(sql, temMap);
 
         for (PharmaceuticalBillItem b : list) {
             StockHistory sh = getPreviousStockHistoryByBatch(b.getItemBatch(), b.getBillItem().getBill().getDepartment(), b.getBillItem().getCreatedAt());
@@ -1127,7 +1125,7 @@ public class StoreItemExcelManager implements Serializable {
         Amp amp;
         Ampp ampp;
         Vmpp vmpp;
-        VtmsVmps vtmsvmps;
+        VirtualProductIngredient vtmsvmps;
         MeasurementUnit issueUnit;
         MeasurementUnit strengthUnit;
         MeasurementUnit packUnit;
@@ -1141,10 +1139,10 @@ public class StoreItemExcelManager implements Serializable {
         Workbook w;
         Cell cell;
         InputStream in;
-        UtilityController.addSuccessMessage(file.getFileName());
+        JsfUtil.addSuccessMessage(file.getFileName());
         try {
-            UtilityController.addSuccessMessage(file.getFileName());
-            in = file.getInputstream();
+            JsfUtil.addSuccessMessage(file.getFileName());
+            in = file.getInputStream();
             File f;
             f = new File(Calendar.getInstance().getTimeInMillis() + file.getFileName());
             FileOutputStream out = new FileOutputStream(f);
@@ -1159,7 +1157,7 @@ public class StoreItemExcelManager implements Serializable {
 
             inputWorkbook = new File(f.getAbsolutePath());
 
-            UtilityController.addSuccessMessage("Excel File Opened");
+            JsfUtil.addSuccessMessage("Excel File Opened");
             w = Workbook.getWorkbook(inputWorkbook);
             Sheet sheet = w.getSheet(0);
 
@@ -1257,7 +1255,7 @@ public class StoreItemExcelManager implements Serializable {
                 m.put("v", vmp);
                 m.put("n", strAmp);
                 if (!strCat.equals("")) {
-                    amp = ampFacade.findFirstBySQL("SELECT c FROM Amp c Where upper(c.name)=:n AND c.vmp=:v", m);
+                    amp = ampFacade.findFirstByJpql("SELECT c FROM Amp c Where (c.name)=:n AND c.vmp=:v", m);
                     if (amp == null) {
                         amp = new Amp();
                         amp.setName(strAmp);
@@ -1309,13 +1307,13 @@ public class StoreItemExcelManager implements Serializable {
                 }
             }
 
-            UtilityController.addSuccessMessage("Succesful. All the data in Excel File Impoted to the database");
+            JsfUtil.addSuccessMessage("Succesful. All the data in Excel File Impoted to the database");
             return "";
         } catch (IOException ex) {
-            UtilityController.addErrorMessage(ex.getMessage());
+            JsfUtil.addErrorMessage(ex.getMessage());
             return "";
         } catch (BiffException e) {
-            UtilityController.addErrorMessage(e.getMessage());
+            JsfUtil.addErrorMessage(e.getMessage());
             return "";
         }
     }
@@ -1333,10 +1331,10 @@ public class StoreItemExcelManager implements Serializable {
         Workbook w;
         Cell cell;
         InputStream in;
-        UtilityController.addSuccessMessage(file.getFileName());
+        JsfUtil.addSuccessMessage(file.getFileName());
         try {
-            UtilityController.addSuccessMessage(file.getFileName());
-            in = file.getInputstream();
+            JsfUtil.addSuccessMessage(file.getFileName());
+            in = file.getInputStream();
             File f;
             f = new File(Calendar.getInstance().getTimeInMillis() + file.getFileName());
             FileOutputStream out = new FileOutputStream(f);
@@ -1351,7 +1349,7 @@ public class StoreItemExcelManager implements Serializable {
 
             inputWorkbook = new File(f.getAbsolutePath());
 
-            UtilityController.addSuccessMessage("Excel File Opened");
+            JsfUtil.addSuccessMessage("Excel File Opened");
             w = Workbook.getWorkbook(inputWorkbook);
             Sheet sheet = w.getSheet(0);
 
@@ -1391,7 +1389,7 @@ public class StoreItemExcelManager implements Serializable {
                 m.put("dep", DepartmentType.Store);
                 m.put("n", itenName.toUpperCase());
 
-                amp = ampFacade.findFirstBySQL("SELECT c FROM Amp c Where upper(c.name)=:n AND c.departmentType=:dep ", m);
+                amp = ampFacade.findFirstByJpql("SELECT c FROM Amp c Where (c.name)=:n AND c.departmentType=:dep ", m);
 
                 if (amp == null) {
                     amp = new Amp();
@@ -1410,13 +1408,13 @@ public class StoreItemExcelManager implements Serializable {
                 }
             }
 
-            UtilityController.addSuccessMessage("Succesful. All the data in Excel File Impoted to the database");
+            JsfUtil.addSuccessMessage("Succesful. All the data in Excel File Impoted to the database");
             return "";
         } catch (IOException ex) {
-            UtilityController.addErrorMessage(ex.getMessage());
+            JsfUtil.addErrorMessage(ex.getMessage());
             return "";
         } catch (BiffException e) {
-            UtilityController.addErrorMessage(e.getMessage());
+            JsfUtil.addErrorMessage(e.getMessage());
             return "";
         }
     }
@@ -1431,10 +1429,10 @@ public class StoreItemExcelManager implements Serializable {
         Workbook w;
         Cell cell;
         InputStream in;
-        UtilityController.addSuccessMessage(file.getFileName());
+        JsfUtil.addSuccessMessage(file.getFileName());
         try {
-            UtilityController.addSuccessMessage(file.getFileName());
-            in = file.getInputstream();
+            JsfUtil.addSuccessMessage(file.getFileName());
+            in = file.getInputStream();
             File f;
             f = new File(Calendar.getInstance().getTimeInMillis() + file.getFileName());
             FileOutputStream out = new FileOutputStream(f);
@@ -1449,7 +1447,7 @@ public class StoreItemExcelManager implements Serializable {
 
             inputWorkbook = new File(f.getAbsolutePath());
 
-            UtilityController.addSuccessMessage("Excel File Opened");
+            JsfUtil.addSuccessMessage("Excel File Opened");
             w = Workbook.getWorkbook(inputWorkbook);
             Sheet sheet = w.getSheet(0);
 
@@ -1473,9 +1471,9 @@ public class StoreItemExcelManager implements Serializable {
                 String sql;
                 m.put("strAmp", itemName.toUpperCase());
                 //   ////System.out.println("m = " + m);
-                sql = "Select amp from Amp amp where amp.retired=false and upper(amp.name)=:strAmp";
+                sql = "Select amp from Amp amp where amp.retired=false and (amp.name)=:strAmp";
                 //   ////System.out.println("sql = " + sql);
-                Amp amp = getAmpFacade().findFirstBySQL(sql, m);
+                Amp amp = getAmpFacade().findFirstByJpql(sql, m);
                 //   ////System.out.println("amp = " + amp);
                 if (amp != null) {
                     if (amp.getCode() != null) {
@@ -1525,11 +1523,11 @@ public class StoreItemExcelManager implements Serializable {
                 }
 
             }
-            UtilityController.addSuccessMessage("Succesful. All Mismatches listed below.");
+            JsfUtil.addSuccessMessage("Succesful. All Mismatches listed below.");
             return "";
         } catch (IOException | BiffException ex) {
             //   ////System.out.println("ex = " + ex);
-            UtilityController.addErrorMessage(ex.getMessage());
+            JsfUtil.addErrorMessage(ex.getMessage());
             return "";
         }
     }
@@ -1547,10 +1545,10 @@ public class StoreItemExcelManager implements Serializable {
         Workbook w;
         Cell cell;
         InputStream in;
-        UtilityController.addSuccessMessage(file.getFileName());
+        JsfUtil.addSuccessMessage(file.getFileName());
         try {
-            UtilityController.addSuccessMessage(file.getFileName());
-            in = file.getInputstream();
+            JsfUtil.addSuccessMessage(file.getFileName());
+            in = file.getInputStream();
             File f;
             f = new File(Calendar.getInstance().getTimeInMillis() + file.getFileName());
             FileOutputStream out = new FileOutputStream(f);
@@ -1565,7 +1563,7 @@ public class StoreItemExcelManager implements Serializable {
 
             inputWorkbook = new File(f.getAbsolutePath());
 
-            UtilityController.addSuccessMessage("Excel File Opened");
+            JsfUtil.addSuccessMessage("Excel File Opened");
             w = Workbook.getWorkbook(inputWorkbook);
             Sheet sheet = w.getSheet(0);
 
@@ -1580,7 +1578,7 @@ public class StoreItemExcelManager implements Serializable {
                 m = new HashMap();
                 m.put("n", strAmp);
 
-                amp = ampFacade.findFirstBySQL("SELECT c FROM Amp c Where upper(c.name)=:n", m);
+                amp = ampFacade.findFirstByJpql("SELECT c FROM Amp c Where (c.name)=:n", m);
                 if (amp == null) {
 
                 } else {
@@ -1606,13 +1604,13 @@ public class StoreItemExcelManager implements Serializable {
 
             }
 
-            UtilityController.addSuccessMessage("Succesful. All the data in Excel File Impoted to the database");
+            JsfUtil.addSuccessMessage("Succesful. All the data in Excel File Impoted to the database");
             return "";
         } catch (IOException ex) {
-            UtilityController.addErrorMessage(ex.getMessage());
+            JsfUtil.addErrorMessage(ex.getMessage());
             return "";
         } catch (BiffException e) {
-            UtilityController.addErrorMessage(e.getMessage());
+            JsfUtil.addErrorMessage(e.getMessage());
             return "";
         }
     }
@@ -1629,10 +1627,10 @@ public class StoreItemExcelManager implements Serializable {
         Workbook w;
         Cell cell;
         InputStream in;
-        UtilityController.addSuccessMessage(file.getFileName());
+        JsfUtil.addSuccessMessage(file.getFileName());
         try {
-            UtilityController.addSuccessMessage(file.getFileName());
-            in = file.getInputstream();
+            JsfUtil.addSuccessMessage(file.getFileName());
+            in = file.getInputStream();
             File f;
             f = new File(Calendar.getInstance().getTimeInMillis() + file.getFileName());
             FileOutputStream out = new FileOutputStream(f);
@@ -1647,7 +1645,7 @@ public class StoreItemExcelManager implements Serializable {
 
             inputWorkbook = new File(f.getAbsolutePath());
 
-            UtilityController.addSuccessMessage("Excel File Opened");
+            JsfUtil.addSuccessMessage("Excel File Opened");
             w = Workbook.getWorkbook(inputWorkbook);
             Sheet sheet = w.getSheet(0);
 
@@ -1665,7 +1663,7 @@ public class StoreItemExcelManager implements Serializable {
                 }
                 ////System.out.println("cat = " + cat.getName());
                 if (!strCat.equals("")) {
-                    amp = ampFacade.findFirstBySQL("SELECT c FROM Amp c Where upper(c.name)=:n AND c.vmp=:v", m);
+                    amp = ampFacade.findFirstByJpql("SELECT c FROM Amp c Where (c.name)=:n AND c.vmp=:v", m);
                     if (amp == null) {
                         amp = new Amp();
                         amp.setName(strAmp);
@@ -1685,13 +1683,13 @@ public class StoreItemExcelManager implements Serializable {
                 }
             }
 
-            UtilityController.addSuccessMessage("Succesful. All the data in Excel File Impoted to the database");
+            JsfUtil.addSuccessMessage("Succesful. All the data in Excel File Impoted to the database");
             return "";
         } catch (IOException ex) {
-            UtilityController.addErrorMessage(ex.getMessage());
+            JsfUtil.addErrorMessage(ex.getMessage());
             return "";
         } catch (BiffException e) {
-            UtilityController.addErrorMessage(e.getMessage());
+            JsfUtil.addErrorMessage(e.getMessage());
             return "";
         }
     }
@@ -1713,7 +1711,7 @@ public class StoreItemExcelManager implements Serializable {
     public void removeAllPharmaceuticalItems() {
         String sql;
         sql = "select p from PharmaceuticalItem p";
-        List<PharmaceuticalItem> pis = getPharmaceuticalItemFacade().findBySQL(sql);
+        List<PharmaceuticalItem> pis = getPharmaceuticalItemFacade().findByJpql(sql);
         for (PharmaceuticalItem p : pis) {
             getPharmaceuticalItemFacade().remove(p);
         }
@@ -1790,11 +1788,11 @@ public class StoreItemExcelManager implements Serializable {
         this.catCol = catCol;
     }
 
-    public VtmsVmpsFacade getVtmInAmpFacade() {
+    public VirtualProductIngredientFacade getVtmInAmpFacade() {
         return vtmInAmpFacade;
     }
 
-    public void setVtmInAmpFacade(VtmsVmpsFacade vtmInAmpFacade) {
+    public void setVtmInAmpFacade(VirtualProductIngredientFacade vtmInAmpFacade) {
         this.vtmInAmpFacade = vtmInAmpFacade;
     }
 
@@ -1894,11 +1892,11 @@ public class StoreItemExcelManager implements Serializable {
         this.vtmFacade = vtmFacade;
     }
 
-    public VtmsVmpsFacade getVtmsVmpsFacade() {
+    public VirtualProductIngredientFacade getVtmsVmpsFacade() {
         return vtmInAmpFacade;
     }
 
-    public void setVtmsVmpsFacade(VtmsVmpsFacade vtmInAmpFacade) {
+    public void setVtmsVmpsFacade(VirtualProductIngredientFacade vtmInAmpFacade) {
         this.vtmInAmpFacade = vtmInAmpFacade;
     }
 

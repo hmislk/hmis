@@ -1,12 +1,12 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.report;
 
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.bean.lab.InvestigationController;
 import com.divudi.bean.lab.PatientInvestigationController;
 import com.divudi.data.BillType;
@@ -14,7 +14,7 @@ import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.InvestigationSummeryData;
 import com.divudi.data.dataStructure.ItemInstitutionCollectingCentreCountRow;
 import com.divudi.ejb.BillEjb;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
@@ -33,7 +33,8 @@ import com.divudi.facade.InvestigationFacade;
 import com.divudi.facade.ItemFacade;
 import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.ReportItemFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -67,7 +68,7 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
     /**
      * EJBs
      */
-    @EJB
+
     private CommonFunctions commonFunctions;
     @EJB
     private BillFacade billFacade;
@@ -168,7 +169,7 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         investigations.addAll(investigationController.getInvestigationItems());
 
         if (investigations.isEmpty()) {
-            UtilityController.addErrorMessage("No Investigations");
+            JsfUtil.addErrorMessage("No Investigations");
             return;
         }
 
@@ -197,7 +198,7 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
 
         hm.put("itm", investigation);
 
-        if (reportItemFacade.findFirstBySQL(sql, hm) != null) {
+        if (reportItemFacade.findFirstByJpql(sql, hm) != null) {
             exist = true;
         }
 
@@ -292,6 +293,9 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
             }
             progressValue += (int) singleItem;
             InvestigationSummeryData temp = setIxSummeryCountReportedIns(w, reportedInstitution);
+            if(temp.getCount() == 0){
+                continue;
+            }
             if (temp.getCount() != 0) {
                 totalCount += temp.getCount();
                 items.add(temp);
@@ -355,7 +359,7 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
 
         m.put("fd", fromDate);
         m.put("td", toDate);
-        pis = patientInvestigationFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+        pis = patientInvestigationFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
     }
 
     public void createInvestigationTurnoverTime() {
@@ -375,6 +379,10 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
             billTypes=new BillType[]{BillType.OpdBill, BillType.InwardBill,};
         }
         boolean flag=true;
+        if(item == null){
+            JsfUtil.addSuccessMessage("Please Select Investigation");
+            return ;
+        }
         if (department!=null) {
             flag=false;
         }
@@ -457,7 +465,7 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         map.put("fromDate", getFromDate());
         map.put("toDate", getToDate());
 
-        billList = billFacade.findBySQL(sql, map, TemporalType.TIMESTAMP);
+        billList = billFacade.findByJpql(sql, map, TemporalType.TIMESTAMP);
         return billList;
 
     }
@@ -538,13 +546,13 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
 
 
         if (summeryType.equals("3")) {
-            bills = billFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+            bills = billFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
             for (Bill b : bills) {
                 grantTotal += b.getNetTotal();
             }
         }
         if (!summeryType.equals("3")) {
-            List<Object[]> objects = billFacade.findObjectsArrayBySQL(sql, m, TemporalType.TIMESTAMP);
+            List<Object[]> objects = billFacade.findObjectsArrayByJpql(sql, m, TemporalType.TIMESTAMP);
             if (!objects.isEmpty()) {
                 for (Object[] ob : objects) {
                     IncomeSummeryRow row = new IncomeSummeryRow();
@@ -835,7 +843,7 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         m.put("ixbt", Investigation.class);
         insInvestigationCountRows = (List<ItemInstitutionCollectingCentreCountRow>) (Object) billFacade.findAggregates(jpql, m, TemporalType.TIMESTAMP);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/lab Report/Investigation Count/Investigation counts by institution and collecting centers(/faces/reportLab/ix_count_by_institution_and_collecting_centre.xhtml)");
+        
     }
 
 //    public void createIxCountByInstitutionAndCollectingCentreIndividual() {
@@ -884,7 +892,7 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
 //        m.put("ixbt", Investigation.class);
 //
 //        List<Object[]> bojsl = billFacade.findAggregates(jpql, m, TemporalType.DATE);
-//        ////System.out.println("bojsl = " + bojsl);
+//        ////// // System.out.println("bojsl = " + bojsl);
 //        insInvestigationCountRows = new ArrayList<>();
 //
 //        Map<Institution, ItemInstitutionCollectingCentreCountRow> map = new HashMap<>();
@@ -903,9 +911,9 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
 ////            }
 //            insInvestigationCountRows.add(r);
 //        }
-//        ////System.out.println("sql = " + jpql);
-//        ////System.out.println("m = " + m);
-//        ////System.out.println("insInvestigationCountRows.size() = " + insInvestigationCountRows.size());
+//        ////// // System.out.println("sql = " + jpql);
+//        ////// // System.out.println("m = " + m);
+//        ////// // System.out.println("insInvestigationCountRows.size() = " + insInvestigationCountRows.size());
 //    }
     public List<ItemInstitutionCollectingCentreCountRow> getInsInvestigationCountRows() {
         return insInvestigationCountRows;
@@ -928,11 +936,11 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
 //        countTotal = 0;
 //
 //        long billed = getCount2(new BilledBill());
-//        ////System.out.println("billed = " + billed);
+//        ////// // System.out.println("billed = " + billed);
 //        long cancelled = getCount2(new CancelledBill());
-//        ////System.out.println("cancelled = " + cancelled);
+//        ////// // System.out.println("cancelled = " + cancelled);
 //        long refunded = getCount2(new RefundBill());
-//        ////System.out.println("refunded = " + refunded);
+//        ////// // System.out.println("refunded = " + refunded);
 //
 //        countTotal = billed - (refunded + cancelled);
     }
@@ -1011,7 +1019,7 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         temMap.put("ins", getSessionController().getInstitution());
 
         temMap.put("ixtype", com.divudi.entity.lab.Investigation.class);
-        List<BillItem> temps = getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        List<BillItem> temps = getBillItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
         double tot = 0.0;
         int c = 0;
@@ -1079,7 +1087,7 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         temMap.put("itm", item);
         temMap.put("billClass", bill.getClass());
         temMap.put("bTypes", Arrays.asList(bts));
-        return getBillItemFacade().countBySql(sql, temMap, TemporalType.TIMESTAMP);
+        return getBillItemFacade().countByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
 
@@ -1097,7 +1105,7 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         temMap.put("fromDate", getFromDate());
         temMap.put("billClass", bill.getClass());
         temMap.put("bTypes", Arrays.asList(bts));
-        return getBillItemFacade().countBySql(sql, temMap, TemporalType.TIMESTAMP);
+        return getBillItemFacade().countByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
 
@@ -1156,7 +1164,7 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         temMap.put("bType1", BillType.OpdBill);
         temMap.put("bType2", BillType.InwardBill);
         temMap.put("ins", getSessionController().getInstitution());
-        return getBillItemFacade().countBySql(sql, temMap, TemporalType.TIMESTAMP);
+        return getBillItemFacade().countByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
 
@@ -1172,7 +1180,7 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         temMap.put("billClass", bill.getClass());
         temMap.put("bType", BillType.LabBill);
         temMap.put("col", getCollectingIns());
-        return getBillItemFacade().countBySql(sql, temMap, TemporalType.TIMESTAMP);
+        return getBillItemFacade().countByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
 
@@ -1188,7 +1196,7 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         temMap.put("billClass", bill.getClass());
         temMap.put("bType", BillType.LabBill);
         temMap.put("col", getCreditCompany());
-        return getBillItemFacade().countBySql(sql, temMap, TemporalType.TIMESTAMP);
+        return getBillItemFacade().countByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
 
@@ -1204,7 +1212,7 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         temMap.put("billClass", bill.getClass());
         temMap.put("bType", BillType.OpdBill);
         temMap.put("ins", getSessionController().getInstitution());
-        return getBillItemFacade().countBySql(sql, temMap, TemporalType.TIMESTAMP);
+        return getBillItemFacade().countByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
 
@@ -1220,7 +1228,7 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         temMap.put("billClass", bill.getClass());
         temMap.put("bType", BillType.LabBill);
         temMap.put("col", getCollectingIns());
-        return getBillItemFacade().countBySql(sql, temMap, TemporalType.TIMESTAMP);
+        return getBillItemFacade().countByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
 
@@ -1398,7 +1406,7 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         temMap.put("ixtype", com.divudi.entity.lab.Investigation.class);
         temMap.put("bTp", BillType.OpdBill);
         temMap.put("ins", getSessionController().getInstitution());
-        investigations = getItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        investigations = getItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
         return investigations;
     }
@@ -1415,7 +1423,7 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         temMap.put("ixtype", Investigation.class);
         temMap.put("bType", BillType.OpdBill);
         temMap.put("ins", getSessionController().getInstitution());
-        investigations = getItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        investigations = getItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
         return investigations;
     }
@@ -1431,7 +1439,7 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         temMap.put("ixtype", Investigation.class);
         temMap.put("bType", BillType.LabBill);
         temMap.put("col", getCollectingIns());
-        investigations = getItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        investigations = getItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
         return investigations;
     }
@@ -1448,7 +1456,7 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         temMap.put("ixtype", Investigation.class);
         temMap.put("bType", BillType.LabBill);
         temMap.put("col", getCreditCompany());
-        investigations = getItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        investigations = getItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
         return investigations;
     }
@@ -1475,7 +1483,7 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         temMap.put("ixtype", Investigation.class);
         temMap.put("bTypes", Arrays.asList(bts));
 
-        investigations = getItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        investigations = getItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
         return investigations;
     }
@@ -1500,7 +1508,7 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         temMap.put("ixtype", Investigation.class);
         temMap.put("bTypes", Arrays.asList(bts));
 
-        investigations = getItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        investigations = getItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
         return investigations;
     }
@@ -1521,15 +1529,15 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
                 + " and bi.bill.billType in :bTypes "
                 + " and bi.bill.createdAt between :fromDate and :toDate ";
 
-        institutions = institutionFacade.findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        institutions = institutionFacade.findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
         sql = "select distinct(bi.bill.fromInstitution) from BillItem bi join bi.item ix "
                 + " where type(ix) =:ixtype  "
                 + " and bi.bill.billType in :bTypes "
                 + " and bi.bill.createdAt between :fromDate and :toDate ";
 
-        institutionsTemp = institutionFacade.findBySQL(sql, temMap, TemporalType.TIMESTAMP);
-        //System.out.println("institutions.size() = " + institutions.size());
+        institutionsTemp = institutionFacade.findByJpql(sql, temMap, TemporalType.TIMESTAMP);
+        //// // System.out.println("institutions.size() = " + institutions.size());
         for (Institution i : institutionsTemp) {
             for (Institution in : institutions) {
                 if (i.equals(in)) {
@@ -1606,7 +1614,7 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         temMap.put("ins", getSessionController().getInstitution());
         temMap.put("ii", w);
 
-        List<BillItem> temps = getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        List<BillItem> temps = getBillItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
         t.setBillItems(temps);
 
     }
@@ -1625,7 +1633,7 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         temMap.put("bTp", BillType.OpdBill);
         temMap.put("ins", getSessionController().getInstitution());
         temMap.put("itm", w);
-        List<BillItem> temps = getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        List<BillItem> temps = getBillItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
         t.setBillItems(temps);
 
     }

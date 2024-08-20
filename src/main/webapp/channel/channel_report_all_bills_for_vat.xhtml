@@ -1,46 +1,43 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
-                template="/resources/template/template.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
-                xmlns:f="http://java.sun.com/jsf/core"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/reportInstitution/report_own.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:ez="http://java.sun.com/jsf/composite/ezcomp"
-                xmlns:pe="http://primefaces.org/ui/extensions"
-                xmlns:ca="http://java.sun.com/jsf/composite/cashier">
-
-
-    <ui:define name="content">
-
+                xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp"
+                
+                xmlns:ca="http://xmlns.jcp.org/jsf/composite/cashier">
+    <ui:define name="subcontent">
         <h:panelGroup rendered="true" >
             <h:form>
                 <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
                 <p:panel  header="Channel Bill List With VAT 15%">
-                    <h:panelGrid columns="2" styleClass="noPrintButton"> 
+                    <h:panelGrid columns="2" class="my-2"> 
                         <h:outputLabel value="From Date"/>
-                        <p:calendar id="frmDate" value="#{channelReportController.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" ></p:calendar>
+                        <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="frmDate" value="#{channelReportController.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
 
                         <h:outputLabel value="To Date"/>
-                        <p:calendar id="toDate" value="#{channelReportController.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" ></p:calendar>
+                        <p:calendar class="w-100 mx-4" inputStyleClass="w-100 my-1" id="toDate" value="#{channelReportController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                         <h:outputLabel styleClass="noPrintButton" value="User Name"/>
-                        <p:autoComplete converter="webUs" completeMethod="#{webUserController.completeUser}" styleClass="noPrintButton"
+                        <p:autoComplete class="w-100 mx-4" inputStyleClass="w-100"  completeMethod="#{webUserController.completeUser}"
                                         forceSelection="true"
                                         var="w" itemLabel="#{w.webUserPerson.name}" itemValue="#{w}"
                                         value="#{channelReportController.reportKeyWord.webUser}" ></p:autoComplete>
                         <h:outputLabel value="Session Date"/>
-                        <p:selectBooleanCheckbox value="#{channelReportController.sessoinDate}" />
+                        <p:selectBooleanCheckbox class="w-100 mx-4 my-1" value="#{channelReportController.sessoinDate}" />
                         <h:outputLabel value="Without Agency"/>
-                        <p:selectBooleanCheckbox value="#{channelReportController.agncyOnCall}" />
+                        <p:selectBooleanCheckbox class="w-100 mx-4" value="#{channelReportController.agncyOnCall}" />
                     </h:panelGrid>
-                    <h:panelGrid columns="3"> 
-                        <p:commandButton ajax="false" id="btnRefresh" value="Process" action="#{channelReportController.createAllChannelBillReportForVat}">
+                    <h:panelGrid columns="6" class="my-2"> 
+                        <p:commandButton class="ui-button-warning" icon="fas fa-cogs" ajax="false" id="btnRefresh" value="Process" action="#{channelReportController.createAllChannelBillReportForVat}">
                         </p:commandButton>
-                        <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right;" >
+                        <p:commandButton ajax="false" value="Print" class="ui-button-info mx-2" icon="fas fa-print" >
                             <p:printer target="billFeeReport"  />
                         </p:commandButton>
-                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
-                            <pe:exporter type="xlsx" target="tbl1" fileName="channel_report_all_bills_for_vat"  />
+                        <p:commandButton ajax="false" value="Excel" class="ui-button-success" icon="fas fa-file-excel" >
+                            <p:dataExporter type="xlsx" target="tbl1" fileName="channel_report_all_bills_for_vat"  />
                         </p:commandButton>
                     </h:panelGrid>
 
@@ -51,13 +48,13 @@
                     <p:dataTable value="#{channelReportController.channelBills}" var="b" id="tbl1" >
                         <f:facet name="header" >
                             <p:outputLabel value="Channel Bill List With VAT 15%" />
-                            <h:outputLabel value="From : " style=" white-space:pre-line;"/>
+                            <h:outputLabel value="&emsp;From : &nbsp;" style=" white-space:pre-line;"/>
                             <h:outputLabel  value="#{channelReportController.fromDate}" >
-                                <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                             </h:outputLabel>                          
-                            <h:outputLabel value="&emsp;&emsp;To :"/>
+                            <h:outputLabel value="&emsp;&emsp;To : &nbsp;"/>
                             <h:outputLabel  value="#{channelReportController.toDate}" >
-                                <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                             </h:outputLabel>
                         </f:facet>
 
@@ -122,7 +119,7 @@
 
                         <p:column style="text-align: right;" >
                             <f:facet name="header" >
-                                <p:outputLabel value="vat" />
+                                <p:outputLabel value="VAT" />
                             </f:facet>
                             <p:outputLabel value="#{b.vat}" >
                                 <f:convertNumber pattern="#,##0.00" />
@@ -131,7 +128,7 @@
 
                         <p:column style="text-align: right;" >
                             <f:facet name="header" >
-                                <p:outputLabel value="Vat Plus Net Total" />
+                                <p:outputLabel value="VAT Plus Net Total" />
                             </f:facet>
                             <p:outputLabel value="#{b.netTotal+b.vat}" >
                                 <f:convertNumber pattern="#,##0.00" />

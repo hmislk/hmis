@@ -1,11 +1,11 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:ph="http://java.sun.com/jsf/composite/pharmacy">
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ph="http://xmlns.jcp.org/jsf/composite/pharmacy">
 
     <h:body>
 
@@ -16,18 +16,24 @@
                     <p:panel header="Reprint" >
                         <f:facet name="header" >
                             <h:outputLabel value="Reprint Pre Bill" ></h:outputLabel>
-                            <hr/>
-                            <p:commandButton value="Reprint" ajax="false" >
+                            <p:commandButton value="Reprint" ajax="false" style="float: right;" class="ui-button-info mx-1" icon="fas fa-print">
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
                             <p:commandButton ajax="false" value="Cancel" 
-                                            action="pharmacy_cancel_bill_unit_issue" 
+                                             action="pharmacy_cancel_bill_unit_issue" 
+                                             style="float: right;"
                                              disabled="#{pharmacyBillSearch.bill.cancelled}"
                                              rendered="false">                           
                             </p:commandButton>
+                            <p:commandButton action="/pharmacy/pharmacy_search_pre_bill_not_paid?faces-redirect=true" 
+                                             class="ui-button-warning"
+                                             style="float: right;"
+                                             icon="fas fa-arrow-left"
+                                             value="Add To Stock" >                           
+                            </p:commandButton>
                         </f:facet>
 
-                    </p:panel>
+                    
 
 
 
@@ -38,7 +44,7 @@
                                 <ph:saleBill bill="#{pharmacyBillSearch.bill}" duplicate="true"/>
                             </h:panelGroup>
                         </div>
-                        
+
 
                         <div >
                             <h:panelGroup   id="gpBillPreviewPrabodha"   rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq true}"> 
@@ -46,7 +52,7 @@
                             </h:panelGroup>
                         </div>
                     </h:panelGroup>
-
+                    </p:panel>
 
                 </h:form>
             </ui:define>

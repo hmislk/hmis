@@ -1,27 +1,26 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
-                template="/resources/template/template.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
-                xmlns:f="http://java.sun.com/jsf/core"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/store/store_reports_index.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:ez="http://java.sun.com/jsf/composite/ezcomp"
-                xmlns:pe="http://primefaces.org/ui/extensions">
+                xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp"
+                >
 
-
-    <ui:define name="content">
+    <ui:define name="subcontent">
 
         <h:panelGroup rendered="true" >
             <h:form>
-                <p:panel  header="GRN Payment Detail">
-                    <p:panelGrid columns="2" style="noPrintButton">
+                <p:panel  header="GRN Payment Summary By Supplier">
+                    <h:panelGrid columns="2" class="my-2">
                         <h:outputLabel value="From Date"/>
-                        <p:calendar id="frmDate" value="#{commonReport.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" >
+                        <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="frmDate" value="#{commonReport.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                         </p:calendar>
 
                         <h:outputLabel value="To Date"/>
-                        <p:calendar id="toDate" value="#{commonReport.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" >
+                        <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="toDate" value="#{commonReport.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                         </p:calendar>
 
                         <h:outputLabel  value="Department"  ></h:outputLabel>
@@ -29,6 +28,7 @@
                                          completeMethod="#{departmentController.completeDept}" var="dept"
                                          itemValue="#{dept}" itemLabel="#{dept.name}" 
                                          forceSelection="true" rendered="true"
+                                         class="w-100 mx-4" inputStyleClass="w-100"
                                          requiredMessage="You must select a department" >
                         </p:autoComplete>
 
@@ -37,29 +37,22 @@
                                         value="#{commonReport.institution}"
                                         completeMethod="#{storeDealorController.completeDealor}"
                                          forceSelection="true" rendered="true"
+                                         class="w-100 mx-4" inputStyleClass="w-100"
                                         var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" />
 
                         <p:defaultCommand target="btnRefresh"/>
-
-                    </p:panelGrid>
-                    </p:panel>
-                <p:panel id="reportPrint" >
-                    <h:panelGrid columns="4">
-                          <p:spacer width="80" height="1"/>
-                        <p:commandButton id="btnRefresh" ajax="false" value="Fill" 
-                                         styleClass="noPrintButton" 
-                                        actionListener="#{commonReport.createGrnPaymentTable()}"
-                                         style="float: right;" /> 
-                        
-                        <p:commandButton actionListener="#{commonReport.createGrnPaymentTable()}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
-                                <pe:exporter type="xlsx" target="billed,cancelled,refunded,returnCancelled,sum," fileName="report_grn_detail_by_supplier"  />
-                            </p:commandButton>
-
-                        <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" 
-                                         style="float: right;" >
+                    </h:panelGrid>
+                    <h:panelGrid columns="6" class="my-2">
+                        <p:commandButton class="ui-button-warning" icon="fas fa-fill" id="btnRefresh" ajax="false" value="Fill" actionListener="#{commonReport.createGrnPaymentTable()}" /> 
+                        <p:commandButton class="ui-button-info mx-2" icon="fas fa-print" ajax="false" value="Print" >
                             <p:printer target="reportPrint"/>
                         </p:commandButton>
+                        <p:commandButton class="ui-button-success" icon="fas fa-file-excel" actionListener="#{commonReport.createGrnPaymentTable()}" ajax="false" value="Excel" >
+                                <p:dataExporter type="xlsx" target="billed,cancelled,refunded,returnCancelled,sum," fileName="report_grn_detail_by_supplier"  />
+                            </p:commandButton>
                     </h:panelGrid>
+                    </p:panel>
+                <p:panel id="reportPrint" >
                     <p:dataTable id="billed"  value="#{commonReport.grnPaymentBill.bills}" var="b" 
                                  rendered="#{commonReport.grnPaymentBill.bills.size()!=0}" 
                                  sortBy="#{b.billType}"  >
@@ -97,7 +90,7 @@
                                 <h:outputLabel value="Created At"/>
                             </f:facet> 
                             <h:outputLabel value="#{b.createdAt}" >
-                                <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                             </h:outputLabel>
                         </p:column>
 
@@ -189,12 +182,12 @@
                             </h:outputLabel>
                         </p:column>
 
-                        <p:column headerText="Cancelled At"   >
+                        <p:column headerText="Cancelled At">
                             <f:facet name="header">  
                                 <h:outputLabel value="Cancelled At"/>
                             </f:facet> 
                             <h:outputLabel value="#{b1.createdAt}" >
-                                <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                             </h:outputLabel>
                         </p:column>
 
@@ -288,7 +281,7 @@
                                 <h:outputLabel value="Created At"/>
                             </f:facet> 
                             <h:outputLabel value="#{b.createdAt}" >
-                                <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                             </h:outputLabel>
                         </p:column>
 
@@ -373,12 +366,12 @@
                             </h:outputLabel>
                         </p:column>
 
-                        <p:column headerText="Cancelled At"   >
+                        <p:column headerText="Cancelled At">
                             <f:facet name="header">  
                                 <h:outputLabel value="Cancelled At"/>
                             </f:facet> 
                             <h:outputLabel value="#{b1.createdAt}" >
-                                <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                             </h:outputLabel>
                         </p:column>
 

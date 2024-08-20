@@ -1,12 +1,13 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Open Hospital Management Information System
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.store;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.bean.pharmacy.ConsumableCategoryController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
@@ -132,13 +133,13 @@ public class StoreAdjustmentController implements Serializable {
         Map m = new HashMap<>();
         List<Item> items;
         String sql;
-        sql = "select i from Item i where i.retired=false and upper(i.name) like :n and type(i)=:t and i.id not in(select ibs.id from Stock ibs where ibs.stock >:s and ibs.department=:d and upper(ibs.itemBatch.item.name) like :n ) order by i.name ";
+        sql = "select i from Item i where i.retired=false and (i.name) like :n and type(i)=:t and i.id not in(select ibs.id from Stock ibs where ibs.stock >:s and ibs.department=:d and (ibs.itemBatch.item.name) like :n ) order by i.name ";
         m.put("t", Amp.class);
         m.put("d", getSessionController().getLoggedUser().getDepartment());
         m.put("n", "%" + qry + "%");
         double s = 0.0;
         m.put("s", s);
-        items = getItemFacade().findBySQL(sql, m, 10);
+        items = getItemFacade().findByJpql(sql, m, 10);
         return items;
     }
 
@@ -150,8 +151,8 @@ public class StoreAdjustmentController implements Serializable {
         double d = 0.0;
         m.put("s", d);
         m.put("n", "%" + qry.toUpperCase() + "%");
-        sql = "select i from Stock i where i.stock >=:s and i.department=:d and (upper(i.itemBatch.item.name) like :n or upper(i.itemBatch.item.code) like :n or upper(i.itemBatch.item.barcode) like :n ) order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
-        items = getStockFacade().findBySQL(sql, m, 20);
+        sql = "select i from Stock i where i.stock >=:s and i.department=:d and ((i.itemBatch.item.name) like :n or (i.itemBatch.item.code) like :n or (i.itemBatch.item.barcode) like :n ) order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
+        items = getStockFacade().findByJpql(sql, m, 20);
         return items;
     }
 
@@ -163,10 +164,10 @@ public class StoreAdjustmentController implements Serializable {
         double d = 0.0;
         m.put("n", "%" + qry.toUpperCase() + "%");
         sql = "select i from Stock i where i.department=:d and "
-                + " (upper(i.itemBatch.item.name) like :n  or "
-                + " upper(i.itemBatch.item.code) like :n  or  "
-                + " upper(i.itemBatch.item.barcode) like :n ) ";
-        items = getStockFacade().findBySQL(sql, m, 20);
+                + " ((i.itemBatch.item.name) like :n  or "
+                + " (i.itemBatch.item.code) like :n  or  "
+                + " (i.itemBatch.item.barcode) like :n ) ";
+        items = getStockFacade().findByJpql(sql, m, 20);
 
         return items;
     }
@@ -178,8 +179,8 @@ public class StoreAdjustmentController implements Serializable {
         double d = 0.0;
         m.put("s", d);
         m.put("n", "%" + qry.toUpperCase() + "%");
-        sql = "select i from Stock i where i.stock >=:s and (upper(i.staff.code) like :n or upper(i.staff.person.name) like :n or upper(i.itemBatch.item.name) like :n ) order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
-        items = getStockFacade().findBySQL(sql, m, 20);
+        sql = "select i from Stock i where i.stock >=:s and ((i.staff.code) like :n or (i.staff.person.name) like :n or (i.itemBatch.item.name) like :n ) order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
+        items = getStockFacade().findByJpql(sql, m, 20);
 
         return items;
     }
@@ -376,12 +377,12 @@ public class StoreAdjustmentController implements Serializable {
 
     private boolean errorCheck() {
         if (getStock() == null) {
-            UtilityController.addErrorMessage("Please Select Stocke");
+            JsfUtil.addErrorMessage("Please Select Stocke");
             return true;
         }
 
         if (getStock().getItemBatch() == null) {
-            UtilityController.addErrorMessage("Select Item Batch");
+            JsfUtil.addErrorMessage("Select Item Batch");
             return true;
         }
 
@@ -627,5 +628,88 @@ public class StoreAdjustmentController implements Serializable {
     public void setYearMonthDay(YearMonthDay yearMonthDay) {
         this.yearMonthDay = yearMonthDay;
     }
+  
+    private List<Stock> stk;
 
+    public void fillSelectStock() {
+        List<Stock> items = new ArrayList<>();
+        if (stock == null) {
+            stk = items;
+            return;
+        }
+        String sql;
+        Map<String, Object> m = new HashMap<>();
+
+        sql = "select i "
+                + " from Stock i "
+                + " where i.department=:d "
+                + " and i.itemBatch.item.code=:stationary "
+                + " order by i.stock desc";
+
+        m.put("d", sessionController.getDepartment());
+        m.put("stationary", stock.getItemBatch().getItem().getCode());  // Assuming stk contains the item
+
+        items = getStockFacade().findByJpql(sql, m);
+
+        if (items != null) {
+            stk = items;
+        }
+    }
+
+    public List<Stock> getStk() {
+        return stk;
+    }
+
+    public void setStk(List<Stock> stk) {
+        this.stk = stk;
+    }
+
+//    public void fillSelectStock() {
+//        List<Stock> items = new ArrayList<>();
+//        if (stock == null) {
+//            stk = items;
+//            return;
+//        }
+//        String sql;
+//        Map<String, Object> m = new HashMap<>();
+//
+//        sql = "select i "
+//                + " from Stock i "
+//                + " where i.department=:d "
+//                + " and i.itemBatch.item.code=:stationary "
+//                + " order by i.stock desc";
+//
+//        m.put("d", sessionController.getDepartment());
+//        m.put("stationary", stock.getItemBatch().getItem().getCode());  // Assuming stk contains the item
+//
+//        items = getStockFacade().findByJpql(sql, m);
+//
+//        if (items != null) {
+//            stk = items;
+//        }
+//    }
+//
+//    public List<Stock> getStk() {
+//        return stk;
+//    }
+//
+//    public void setStk(List<Stock> stk) {
+//        this.stk = stk;
+//    }
+
+//    public void fillSelectStock(){
+//        List<Stock> items = new ArrayList<>();
+//        
+//        String sql;
+//        Map m = new HashMap();
+//        sql = "select i "
+//                + " from Stock i "
+//                + " where i.department=:d "
+//                + " order by i.stock desc";
+//        m.put("d", sessionController.getDepartment());
+//
+//        items = getStockFacade().findByJpql(sql, m);
+//
+//        
+//    }
 }

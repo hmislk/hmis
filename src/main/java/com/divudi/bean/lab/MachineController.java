@@ -1,13 +1,12 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Open Hospital Management Information System
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
-
 package com.divudi.bean.lab;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.entity.Institution;
 import com.divudi.entity.lab.Machine;
 import com.divudi.facade.MachineFacade;
@@ -24,6 +23,7 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
+
 /**
  *
  * @author Sniper 619
@@ -37,26 +37,24 @@ public class MachineController implements Serializable {
     @Inject
     SessionController sessionController;
     Machine current;
-    List<Machine>items;
+    List<Machine> items;
     private Institution institution;
     private List<Machine> institutionMachines;
-    
+
     public MachineController() {
     }
-    
-    
-    
-    
-    
+
     public List<Machine> getItems() {
-        items = getEjbFacade().findAll("name", true);
+        if (items == null) {
+            items = fillMachines();
+        }
         return items;
     }
-    
+
     public void prepareAdd() {
         current = new Machine();
     }
-    
+
     public void delete() {
 
         if (current != null) {
@@ -64,35 +62,55 @@ public class MachineController implements Serializable {
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getEjbFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
         current = null;
         getCurrent();
     }
-    
+
     private void recreateModel() {
         items = null;
     }
-    
+
     public void saveSelected() {
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getEjbFacade().edit(current);
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getEjbFacade().create(current);
-            UtilityController.addSuccessMessage("Saved Successfully");
+            JsfUtil.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
         getItems();
     }
 
+    public Machine findAndCreateAnalyserByName(String qry) {
+        Machine ma;
+        String jpql;
+        jpql = "select ma from "
+                + " Machine ma "
+                + " where ma.retired=:ret "
+                + " and ma.name=:name "
+                + " order by ma.name";
+        Map m = new HashMap();
+        m.put("ret", false);
+        m.put("name", qry);
+        ma = ejbFacade.findFirstByJpql(jpql, m);
+        if(ma==null){
+            ma = new Machine();
+            ma.setName(qry);
+            ma.setCreatedAt(new Date());
+            ejbFacade.create(ma);
+        }
+        return ma;
+    }
     public MachineFacade getEjbFacade() {
         return ejbFacade;
     }
@@ -110,28 +128,44 @@ public class MachineController implements Serializable {
     }
 
     public Machine getCurrent() {
-        if (current==null) {
-            current=new Machine();
+        if (current == null) {
+            current = new Machine();
         }
         return current;
+    }
+
+    public Machine getAnyMachine() {
+        return getItems().get(0);
     }
 
     public void setCurrent(Machine current) {
         this.current = current;
     }
 
+    @Deprecated
     public List<Machine> getInstitutionMachines() {
-        if(sessionController.getLoggedUser().getInstitution()!= institution){
-            institutionMachines=null;
+        if (sessionController.getLoggedUser().getInstitution() != institution) {
+            institutionMachines = null;
             institution = sessionController.getLoggedUser().getInstitution();
         }
-        if(institutionMachines==null){
+        if (institutionMachines == null) {
             String j = "select m from Machine m where m.institution=:ins order by m.name";
             Map m = new HashMap();
             m.put("ins", institution);
-            institutionMachines = getEjbFacade().findBySQL(j, m);
+            institutionMachines = getEjbFacade().findByJpql(j, m);
         }
         return institutionMachines;
+    }
+    
+    public List<Machine> fillMachines() {
+        String j = "select m "
+                + " from Machine m "
+                + " where m.retired=:ret "
+                + " order by m.name";
+        Map m = new HashMap();
+        m.put("ret", false);
+        return getEjbFacade().findByJpql(j, m);
+
     }
 
     public void setInstitutionMachines(List<Machine> institutionMachines) {
@@ -145,7 +179,7 @@ public class MachineController implements Serializable {
     public void setInstitution(Institution institution) {
         this.institution = institution;
     }
-    
+
     @FacesConverter(forClass = Machine.class)
     public static class MachineControllerConverter implements Converter {
 

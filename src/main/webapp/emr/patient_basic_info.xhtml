@@ -1,0 +1,67 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:em="http://xmlns.jcp.org/jsf/composite/ezcomp/emr">
+
+    <h:body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+
+                <h:form >
+                    <div class="container-fluid">
+                        <div class="row justify-content-center">
+                            <div class="col-md-12 mt-5">
+                                <div class="card">
+                                    <div class="card-header text-center">
+                                        <h4>Patient Profile</h4>
+                                    </div>
+                                    <div class="card-body row">
+                                        <div class="col-md-4">
+                                            <em:patient patient="#{patientController.current}"/>
+                                        </div>
+                                        <div class="col-md-8">
+                                            <div class="card">
+                                                <div class="card-body">
+                                                    <div class="row" >
+                                                        <div class="col-md-4  d-grid gap-2" >
+                                                            <h:commandButton value="OPD Billing" action="#{patientController.toOpdBilling}" styleClass="btn btn-primary btn-block mb-2"/>
+                                                            <h:commandButton value="Pharmacy Billing" action="#{patientController.toPharmacyBilling}" styleClass="btn btn-primary mb-2"/>
+                                                            <h:commandButton value="Admit" action="#{patientController.toAdmit}" styleClass="btn btn-primary mb-2"/>
+                                                            <h:commandButton value="Channelling" action="#{patientController.toChannelling}" styleClass="btn btn-primary mb-2"/>
+                                                        </div>
+                                                        <div class="col-md-4  d-grid gap-2" >
+                                                            <h:commandButton value="Patient Details" action="#{patientController.toEmrPatientProfile()}" styleClass="btn btn-secondary mb-2"/>
+                                                            <h:commandButton value="Edit" action="#{patientController.toChannelling}" styleClass="btn btn-secondary mb-2"/>
+                                                            <h:commandButton value="Visit" action="#{patientController.toEmrPatientProfile}" styleClass="btn btn-secondary mb-2"/>
+                                                            <h:commandButton value="Queue" action="#{patientController.toQueue}" styleClass="btn btn-secondary mb-2"/>
+                                                        </div>
+                                                        <div class="col-md-4  d-grid gap-2" >
+                                                            <h:commandButton value="Lab Tests" action="#{patientController.toRecords}" styleClass="btn btn-info mb-2"/>
+                                                            <h:commandButton value="Radiology" action="#{patientController.toAdmit}" styleClass="btn btn-info mb-2"/>
+                                                            <h:commandButton value="Images" action="#{patientController.toRecords}" styleClass="btn btn-info mb-2"/>
+                                                            <h:commandButton value="History" action="#{patientController.toRecords}" styleClass="btn btn-info mb-2"/>
+
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </h:form>
+
+
+            </ui:define>
+
+        </ui:composition>
+
+    </h:body>
+</html>

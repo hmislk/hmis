@@ -1,210 +1,208 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
-                template="/resources/template/template.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/reportInstitution/report_own.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://java.sun.com/jsf/core"
-                xmlns:ca="http://java.sun.com/jsf/composite/cashSummery"                
-                xmlns:in="http://java.sun.com/jsf/composite/income_report" 
-                xmlns:pe="http://primefaces.org/ui/extensions">
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ca="http://xmlns.jcp.org/jsf/composite/cashSummery"            
+                xmlns:in="http://xmlns.jcp.org/jsf/composite/income_report" 
+                >
 
-    <ui:define name="content">
-        <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
+    <ui:define name="subcontent">
 
-        <h:form id="panelPrint" styleClass="noBorder summeryBorder">
+        <h:form>
 
             <p:panel>
                 <f:facet name="header" >
-                    <h:outputLabel value="Book Keeping Summary With Pro (Month) By Category Month End"  styleClass="noPrintButton" />
-
-
-                    <h:panelGrid columns="2"  styleClass="noPrintButton" >
-                        <h:outputLabel value="From Date"/>
-                        <p:calendar id="frmDate" value="#{bookKeepingSummery.fromDate}" navigator="true"  pattern="dd MM yyyy HH:mm:ss" >
-                        </p:calendar>
-
-                        <h:outputLabel value="To Date"/>
-                        <p:calendar id="toDate" value="#{bookKeepingSummery.toDate}" navigator="true" pattern="dd MM yyyy HH:mm:ss" >
-                        </p:calendar>
-
-                        <h:outputLabel value="Select Institution"/>
-
-                        <p:autoComplete completeMethod="#{institutionController.completeCompany}" required="true" 
-                                        forceSelection="true"
-                                        requiredMessage="Please Select Institution" 
-                                        value="#{bookKeepingSummery.institution}"
-                                        var="pta" itemLabel="#{pta.name}" itemValue="#{pta}" />
-                    </h:panelGrid>
-
-                    <h:panelGrid columns="5">
-                        <p:spacer width="110" height="1"/>
-                        <p:commandButton value="Process" ajax="false"  styleClass="noPrintButton" style="float: right;"
-                                         action="#{bookKeepingSummery.createCashCategoryWithProMonth}"/>
-                        <p:commandButton value="Process OPD Done Only" ajax="false"  styleClass="noPrintButton" style="float: right;" rendered="false"
-                                         action="#{bookKeepingSummery.createCashCategoryWithProMonth2}"/>
-                        <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" style="float: right;" >
-                            <p:printer target="panelPrint" />
-                        </p:commandButton>
-                        <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" style="float: right;">
-                            <pe:exporter type="xlsx" target="opd_new:opd_new,
-                                         colCash,
-                                         opd_new_credit:opd_new_credit,
-                                         colCredit,
-                                         outside:outside,
-                                         pharmacy:pharmacy,
-                                         pharmacyws:pharmacyws,
-                                         inward:inward,                                     
-                                         col,
-                                         opd_professional:opd_professional,
-                                         opd_professional_credit:opd_professional_credit,
-                                         inward_professional:inward_professional,                                     
-                                         finalSum,
-                                         pharmacywsc:pharmacywsc,
-                                         pharmacyc:pharmacyc" 
-                                         fileName="Book_Keeping_Summery_with_pro_day"
-                                         facetFontStyle="BOLD"   cellFontStyle="NORMAL"  
-                                         fontName="Courier New"  />
-                        </p:commandButton>
-                    </h:panelGrid>
+                    <h:outputLabel value="Book Keeping Summary With Pro (Month) By Category Month End"/>
                 </f:facet>
 
+                <h:panelGrid columns="2" class="my-2" >
+                    <h:outputLabel value="From Date"/>
+                    <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="frmDate" value="#{bookKeepingSummery.fromDate}"  pattern="dd MM yyyy HH:mm:ss" >
+                    </p:calendar>
 
-            </p:panel>
-            <!--            <p:spacer height="30" />-->
+                    <h:outputLabel value="To Date"/>
+                    <p:calendar class="w-100 mx-4" inputStyleClass="w-100 my-1" id="toDate" value="#{bookKeepingSummery.toDate}" pattern="dd MM yyyy HH:mm:ss" >
+                    </p:calendar>
 
-            <in:opd_new_with id="opd_new" />
+                    <h:outputLabel value="Select Institution"/>
 
-            <p:spacer height="30"/>
+                    <p:autoComplete class="w-100 mx-4" inputStyleClass="w-100" completeMethod="#{institutionController.completeCompany}" required="true" 
+                                    forceSelection="true"
+                                    requiredMessage="Please Select Institution" 
+                                    value="#{bookKeepingSummery.institution}"
+                                    var="pta" itemLabel="#{pta.name}" itemValue="#{pta}" />
+                </h:panelGrid>
 
-            <p:dataTable id="colCash"  value="#{bookKeepingSummery.vatTableOpdCash}" var="sm">
-                <p:column >
-                    <h:outputLabel value="#{sm.string}" ></h:outputLabel>
-                </p:column>
-                <p:column/>
-                <p:column/>
-                <p:column/>
-                <p:column/>
-                <p:column style="text-align: right;" >
-                    <h:outputLabel value="#{sm.value1}" > 
-                        <f:convertNumber pattern="#,##0.00"/>
-                    </h:outputLabel>
-                </p:column>
-            </p:dataTable>
+                <h:panelGrid columns="6" class="my-2">
+                    <p:commandButton value="Process" ajax="false" class="ui-button-warning" icon="fas fa-cogs"
+                                     action="#{bookKeepingSummery.createCashCategoryWithProMonth}"/>
+                    <p:commandButton value="Process OPD Done Only" ajax="false" class="ui-button-warning" icon="fas fa-cogs"  rendered="false"
+                                     action="#{bookKeepingSummery.createCashCategoryWithProMonth2}"/>
+                    <p:commandButton ajax="false" value="Print" class="ui-button-info mx-2" icon="fas fa-print" >
+                        <p:printer target="panelPrint" />
+                    </p:commandButton>
+                    <p:commandButton value="Excel" ajax="false" class="ui-button-success" icon="fas fa-file-excel" >
+                        <p:dataExporter type="xlsx" target="opd_new:opd_new,
+                                        colCash,
+                                        opd_new_credit:opd_new_credit,
+                                        colCredit,
+                                        outside:outside,
+                                        pharmacy:pharmacy,
+                                        pharmacyws:pharmacyws,
+                                        inward:inward,                                     
+                                        col,
+                                        opd_professional:opd_professional,
+                                        opd_professional_credit:opd_professional_credit,
+                                        inward_professional:inward_professional,                                     
+                                        finalSum,
+                                        pharmacywsc:pharmacywsc,
+                                        pharmacyc:pharmacyc" 
+                                        fileName="Book_Keeping_Summery_with_pro_day"
 
-            <p:spacer height="30"/>
+                                        />
+                    </p:commandButton>
+                </h:panelGrid>
 
-            <in:opd_new_with_1 id="opd_new_credit" />
+                <!--            <p:spacer height="30" />-->
+                <p:panel id="panelPrint" styleClass="noBorder summeryBorder">
+                    <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
+                    <in:opd_new_with id="opd_new" />
 
-            <p:spacer height="30"/>
+                    <p:spacer height="30"/>
 
-            <p:dataTable id="colCredit"  value="#{bookKeepingSummery.vatTableOpdCredit}" var="sm">
-                <p:column >
-                    <h:outputLabel value="#{sm.string}" ></h:outputLabel>
-                </p:column>
-                <p:column/>
-                <p:column/>
-                <p:column/>
-                <p:column/>
-                <p:column style="text-align: right;" >
-                    <h:outputLabel value="#{sm.value1}" > 
-                        <f:convertNumber pattern="#,##0.00"/>
-                    </h:outputLabel>
-                </p:column>
-            </p:dataTable>
+                    <p:dataTable id="colCash"  value="#{bookKeepingSummery.vatTableOpdCash}" var="sm">
+                        <p:column >
+                            <h:outputLabel value="#{sm.string}" ></h:outputLabel>
+                        </p:column>
+                        <p:column/>
+                        <p:column/>
+                        <p:column/>
+                        <p:column/>
+                        <p:column style="text-align: right;" >
+                            <h:outputLabel value="#{sm.value1}" > 
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>
+                        </p:column>
+                    </p:dataTable>
 
-            <p:spacer height="30"/>
+                    <p:spacer height="30"/>
 
-            <in:outside_with id="outside" />
+                    <in:opd_new_with_1 id="opd_new_credit" />
 
-            <p:spacer height="30"/>
+                    <p:spacer height="30"/>
 
-            <in:pharmacy id="pharmacy" pharmacy="#{bookKeepingSummery.pharmacySales}"/>
+                    <p:dataTable id="colCredit"  value="#{bookKeepingSummery.vatTableOpdCredit}" var="sm">
+                        <p:column >
+                            <h:outputLabel value="#{sm.string}" ></h:outputLabel>
+                        </p:column>
+                        <p:column/>
+                        <p:column/>
+                        <p:column/>
+                        <p:column/>
+                        <p:column style="text-align: right;" >
+                            <h:outputLabel value="#{sm.value1}" > 
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>
+                        </p:column>
+                    </p:dataTable>
 
-            <p:spacer height="30"/>
+                    <p:spacer height="30"/>
+
+                    <in:outside_with id="outside" />
+
+                    <p:spacer height="30"/>
+
+                    <in:pharmacy id="pharmacy" pharmacy="#{bookKeepingSummery.pharmacySales}"/>
+
+                    <p:spacer height="30"/>
 
             <!--<in:pharmacy id="pharmacyc" pharmacy="#{bookKeepingSummery.pharmacySalesCredit}" credit="true"/>-->
 
-            <p:spacer height="30"/>
+                    <p:spacer height="30"/>
 
-            <in:pharmacy id="pharmacyws" pharmacy="#{bookKeepingSummery.pharmacyWholeSales}" wholeSale="true"/>
+                    <in:pharmacy id="pharmacyws" pharmacy="#{bookKeepingSummery.pharmacyWholeSales}" wholeSale="true"/>
 
-            <p:spacer height="30"/>
+                    <p:spacer height="30"/>
 
             <!--<in:pharmacy id="pharmacywsc" pharmacy="#{bookKeepingSummery.pharmacyWholeSalesCredit}" wholeSale="true" credit="true"/>-->
 
-            <p:spacer height="30"/>
+                    <p:spacer height="30"/>
 
-            <in:inward_collection_month id="inward"/>
-
-
-            <p:dataTable id="col"  value="#{bookKeepingSummery.collections2Hos}" var="sm">
-                <p:column >
-                    <h:outputLabel value="#{sm.string}" ></h:outputLabel>
-                </p:column>
-                <p:column style="text-align: right;" >
-                    <h:outputLabel value="#{sm.value1}" > 
-                        <f:convertNumber pattern="#,##0.00"/>
-                    </h:outputLabel>
-                </p:column>
-            </p:dataTable>
-
-            <p:spacer height="30"/>
-
-            <in:opd_professional_payment id="opd_professional"/>  
-
-            <p:spacer height="30"/>
-
-            <in:opd_professional_payment_credit id="opd_professional_credit"/>  
-
-            <p:spacer height="30"/>
-
-            <in:inward_professional_payment id="inward_professional"/>
-
-            <p:spacer height="30"/>
-
-            <in:channelling_professional_payment id="channelling_professional"/>  
-
-            <p:spacer height="30"/>
+                    <in:inward_collection_month id="inward"/>
 
 
+                    <p:dataTable id="col"  value="#{bookKeepingSummery.collections2Hos}" var="sm">
+                        <p:column >
+                            <h:outputLabel value="#{sm.string}" ></h:outputLabel>
+                        </p:column>
+                        <p:column style="text-align: right;" >
+                            <h:outputLabel value="#{sm.value1}" > 
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>
+                        </p:column>
+                    </p:dataTable>
 
-            <p:dataTable id="finalSum" value="#{bookKeepingSummery.finalValues}" var="s" >
-                <p:column>
-                    <h:outputLabel value="#{s.string}"/>
-                </p:column>
-                <p:column style="text-align: right;">
-                    <h:outputLabel value="#{s.value1}" rendered="#{s.value1!=0}"> 
-                        <f:convertNumber pattern="#,##0.00"/>
-                    </h:outputLabel>
-                    <h:outputLabel value="................" rendered="#{s.value1 eq 0}"/>
-                </p:column>
-            </p:dataTable>
+                    <p:spacer height="30"/>
 
-            <p:spacer height="30"/>
+                    <in:opd_professional_payment id="opd_professional"/>  
+
+                    <p:spacer height="30"/>
+
+                    <in:opd_professional_payment_credit id="opd_professional_credit"/>  
+
+                    <p:spacer height="30"/>
+
+                    <in:inward_professional_payment id="inward_professional"/>
+
+                    <p:spacer height="30"/>
+
+                    <in:channelling_professional_payment id="channelling_professional"/>  
+
+                    <p:spacer height="30"/>
 
 
-            <p:dataTable value="#{cashSummeryControllerExcel1.bankingData}" var="b">
-                <f:facet name="header">
-                    <h:outputLabel value="Bank Deposit" />
-                </f:facet>
-                <p:column >
-                    <h:outputLabel value="#{b.string}"/>
-                </p:column>
-                <p:column style="text-align: right;" >
-                    <h:outputLabel value="......................." />
-                </p:column>
-            </p:dataTable>
 
-            <!--credit area-->
-            <p:spacer height="30"/>
-            <in:pharmacy id="pharmacyc" pharmacy="#{bookKeepingSummery.pharmacySalesCredit}" credit="true"/>
-            <p:spacer height="30"/>
-            <in:pharmacy id="pharmacywsc" pharmacy="#{bookKeepingSummery.pharmacyWholeSalesCredit}" wholeSale="true" credit="true"/>
+                    <p:dataTable id="finalSum" value="#{bookKeepingSummery.finalValues}" var="s" >
+                        <p:column>
+                            <h:outputLabel value="#{s.string}"/>
+                        </p:column>
+                        <p:column style="text-align: right;">
+                            <h:outputLabel value="#{s.value1}" rendered="#{s.value1!=0}"> 
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>
+                            <h:outputLabel value="................" rendered="#{s.value1 eq 0}"/>
+                        </p:column>
+                    </p:dataTable>
 
-            <f:facet name="footer" >
-                <h:outputLabel value="Printed By : #{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
-            </f:facet>
+                    <p:spacer height="30"/>
+
+
+                    <p:dataTable value="#{cashSummeryControllerExcel1.bankingData}" var="b">
+                        <f:facet name="header">
+                            <h:outputLabel value="Bank Deposit" />
+                        </f:facet>
+                        <p:column >
+                            <h:outputLabel value="#{b.string}"/>
+                        </p:column>
+                        <p:column style="text-align: right;" >
+                            <h:outputLabel value="......................." />
+                        </p:column>
+                    </p:dataTable>
+
+                    <!--credit area-->
+                    <p:spacer height="30"/>
+                    <in:pharmacy id="pharmacyc" pharmacy="#{bookKeepingSummery.pharmacySalesCredit}" credit="true"/>
+                    <p:spacer height="30"/>
+                    <in:pharmacy id="pharmacywsc" pharmacy="#{bookKeepingSummery.pharmacyWholeSalesCredit}" wholeSale="true" credit="true"/>
+
+                    <f:facet name="footer" >
+                        <h:outputLabel value="Printed By : #{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+                    </f:facet>
+                </p:panel>
+            </p:panel>
         </h:form>
     </ui:define>
 

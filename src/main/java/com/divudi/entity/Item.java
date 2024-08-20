@@ -1,12 +1,12 @@
-
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+* Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.entity;
 
 import com.divudi.data.BillType;
 import com.divudi.data.DepartmentType;
+import com.divudi.data.ItemBarcodeGenerationStrategy;
 import com.divudi.data.ItemType;
 import com.divudi.data.SessionNumberType;
 import com.divudi.data.SymanticType;
@@ -32,6 +32,7 @@ import java.util.Date;
 import java.util.List;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
+import javax.persistence.DiscriminatorColumn;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -39,6 +40,8 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Inheritance;
+import javax.persistence.InheritanceType;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
@@ -50,12 +53,14 @@ import javax.persistence.Transient;
  *
  * @author buddhika
  */
+
 @Entity
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE) 
+@DiscriminatorColumn(name = "DTYPE")
 public class Item implements Serializable, Comparable<Item> {
 
     @OneToMany(mappedBy = "item", fetch = FetchType.LAZY)
     List<InvestigationItem> reportItems;
-    //
 
     @OneToMany(mappedBy = "item", fetch = FetchType.LAZY)
     List<WorksheetItem> worksheetItems;
@@ -69,9 +74,20 @@ public class Item implements Serializable, Comparable<Item> {
     @GeneratedValue(strategy = GenerationType.AUTO)
     Long id;
     int orderNo;
+    
+    private boolean canSechduleForOtherDays;
+
+    private Long itemId;
+
+    private boolean isMasterItem;
+    private boolean hasReportFormat;
+    private int numberOfDaysToMarkAsShortExpiary;
+    
 
     @ManyToOne
     Category category;
+    @ManyToOne
+    private Category financialCategory;
     Double total = 0.0;
     private Double totalForForeigner = 0.0;
     Boolean discountAllowed = false;
@@ -82,10 +98,13 @@ public class Item implements Serializable, Comparable<Item> {
     @ManyToOne
     Speciality speciality;
     @ManyToOne
+
     Staff staff;
     @ManyToOne
+
     Institution forInstitution;
     @ManyToOne
+
     Department forDepartment;
     @Enumerated(EnumType.STRING)
     BillType forBillType;
@@ -93,11 +112,15 @@ public class Item implements Serializable, Comparable<Item> {
     Item billedAs;
     @ManyToOne
     Item reportedAs;
+    
+    @ManyToOne
+    private Item masterItemReference;
     String name;
     String sname;
     String tname;
     String code;
     String barcode;
+    private Long lastBarcode;
     String printName;
     String shortName;
     String fullName;
@@ -106,19 +129,24 @@ public class Item implements Serializable, Comparable<Item> {
     WebUser creater;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date createdAt;
-    //Retairing properties
+    //Retairing properties 
     boolean retired;
     @ManyToOne
     WebUser retirer;
+
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date retiredAt;
+
     String retireComments;
     //Editer Properties
     @ManyToOne
+
     WebUser editer;
+
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date editedAt;
     @ManyToOne
+
     Item parentItem;
     boolean userChangable;
     @Enumerated(EnumType.STRING)
@@ -139,6 +167,7 @@ public class Item implements Serializable, Comparable<Item> {
     boolean chargesVisibleForInward;
     boolean requestForQuentity;
     boolean marginNotAllowed;
+    private boolean printSessionNumber;
     @Column
     boolean inactive = false;
     @ManyToOne
@@ -165,6 +194,8 @@ public class Item implements Serializable, Comparable<Item> {
     Date effectiveFrom;
     @Temporal(javax.persistence.TemporalType.DATE)
     private Date effectiveTo;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date expiryDate;
     private boolean scanFee;
     double profitMargin;
 
@@ -174,6 +205,9 @@ public class Item implements Serializable, Comparable<Item> {
 
     @ManyToOne
     private Machine machine;
+
+    @Transient
+    private ItemType medicineType;
 
     String creditNumbers;
     String cashNumbers;
@@ -185,11 +219,23 @@ public class Item implements Serializable, Comparable<Item> {
     private ItemType itemType;
     @Enumerated(EnumType.STRING)
     private Priority priority;
+    @Enumerated
+    private ItemBarcodeGenerationStrategy itemBarcodeGenerationStrategy;
 
     private boolean hasMoreThanOneComponant;
 
     @OneToOne(cascade = CascadeType.ALL)
     private ReportItem reportItem;
+
+    @ManyToOne //Strength Units in VMP & AMP
+    private MeasurementUnit strengthUnit;
+    @ManyToOne
+    private MeasurementUnit baseUnit;
+    @ManyToOne
+    private MeasurementUnit issueUnit;
+    private Double issueUnitsPerPackUnit;
+    private MeasurementUnit packUnit;
+    private Double baseUnitsPerIssueUnit;
 
     @Transient
     double channelStaffFee;
@@ -199,16 +245,24 @@ public class Item implements Serializable, Comparable<Item> {
     double channelAgentFee;
     @Transient
     double channelOnCallFee;
+    
+    @Transient
+    private double totalStockQty;
 
     @Transient
     String transName;
 
-    
-       @Transient
+    @Transient
     private String transCodeFromName;
     
-      
-       
+    @Lob
+    private String forGender;
+
+    @Column(name = "DTYPE", insertable = false, updatable = false)
+    private String clazz;
+    
+     private boolean canRemoveItemfromPackage;
+ 
     public double getVatPercentage() {
         return 0;
     }
@@ -369,6 +423,8 @@ public class Item implements Serializable, Comparable<Item> {
     double totalFfee;
     @Transient
     List<ItemFee> itemFees;
+    private Boolean printFeesForBills;
+    
 
     @Transient
     private List<ItemFee> itemFeesActive;
@@ -768,6 +824,9 @@ public class Item implements Serializable, Comparable<Item> {
     }
 
     public SessionNumberType getSessionNumberType() {
+        if(sessionNumberType==null){
+            sessionNumberType=SessionNumberType.ByBill;
+        }
         return sessionNumberType;
     }
 
@@ -1043,6 +1102,8 @@ public class Item implements Serializable, Comparable<Item> {
 
         return this.name.compareTo(o.name);
     }
+    
+    
 
     public ItemType getItemType() {
         if (itemType == null) {
@@ -1089,6 +1150,35 @@ public class Item implements Serializable, Comparable<Item> {
         this.hasMoreThanOneComponant = hasMoreThanOneComponant;
     }
 
+    public ItemType getMedicineType() {
+
+        if (this instanceof Amp) {
+            medicineType = ItemType.Amp;
+        }
+        if (this instanceof Ampp) {
+            medicineType = ItemType.Ampp;
+        }
+        if (this instanceof Atm) {
+            medicineType = ItemType.Atm;
+        }
+        if (this instanceof Vmp) {
+            medicineType = ItemType.Vmp;
+        }
+        if (this instanceof Vmpp) {
+            medicineType = ItemType.Vmpp;
+        }
+        if (this instanceof Vtm) {
+            medicineType = ItemType.Vtm;
+        }
+        if (this instanceof Service) {
+            medicineType = ItemType.Service;
+        }
+        if (this instanceof Investigation) {
+            medicineType = ItemType.Investigation;
+        }
+        return medicineType;
+    }
+
     public ReportItem getReportItem() {
         if (reportItem == null) {
             reportItem = new ReportItem();
@@ -1127,12 +1217,205 @@ public class Item implements Serializable, Comparable<Item> {
     }
 
     public String getTransCodeFromName() {
+        if (name == null) {
+            name = "";
+        }
         transCodeFromName = name.trim().toLowerCase().replace(" ", "_");
         return transCodeFromName;
     }
 
     public void setTransCodeFromName(String transCodeFromName) {
         this.transCodeFromName = transCodeFromName;
+    }
+
+    public Long getItemId() {
+        return itemId;
+    }
+
+    public void setItemId(Long itemId) {
+        this.itemId = itemId;
+    }
+
+    public MeasurementUnit getStrengthUnit() {
+        return strengthUnit;
+    }
+
+    public void setStrengthUnit(MeasurementUnit strengthUnit) {
+        this.strengthUnit = strengthUnit;
+    }
+
+    public Double getIssueUnitsPerPackUnit() {
+        return issueUnitsPerPackUnit;
+    }
+
+    public void setIssueUnitsPerPackUnit(Double issueUnitsPerPackUnit) {
+        this.issueUnitsPerPackUnit = issueUnitsPerPackUnit;
+    }
+
+    public MeasurementUnit getPackUnit() {
+        return packUnit;
+    }
+
+    public void setPackUnit(MeasurementUnit packUnit) {
+        this.packUnit = packUnit;
+    }
+    
+    
+
+    public MeasurementUnit getBaseUnit() {
+        return baseUnit;
+    }
+
+    public void setBaseUnit(MeasurementUnit baseUnit) {
+        this.baseUnit = baseUnit;
+    }
+
+    public MeasurementUnit getIssueUnit() {
+        return issueUnit;
+    }
+
+    public void setIssueUnit(MeasurementUnit issueUnit) {
+        this.issueUnit = issueUnit;
+    }
+
+    public Double getBaseUnitsPerIssueUnit() {
+        return baseUnitsPerIssueUnit;
+    }
+
+    public void setBaseUnitsPerIssueUnit(Double baseUnitsPerIssueUnit) {
+        this.baseUnitsPerIssueUnit = baseUnitsPerIssueUnit;
+    }
+
+    public String getClazz() {
+        return clazz;
+    }
+
+    public void setClazz(String clazz) {
+        this.clazz = clazz;
+    }
+
+    public boolean isIsMasterItem() {
+        return isMasterItem;
+    }
+
+    public void setIsMasterItem(boolean isMasterItem) {
+        this.isMasterItem = isMasterItem;
+    }
+
+    public boolean isHasReportFormat() {
+        return hasReportFormat;
+    }
+
+    public void setHasReportFormat(boolean hasReportFormat) {
+        this.hasReportFormat = hasReportFormat;
+    }
+
+    public Item getMasterItemReference() {
+        return masterItemReference;
+    }
+
+    public void setMasterItemReference(Item masterItemReference) {
+        this.masterItemReference = masterItemReference;
+    }
+
+    public Boolean getPrintFeesForBills() {
+        return printFeesForBills;
+    }
+
+    public void setPrintFeesForBills(Boolean printFeesForBills) {
+        this.printFeesForBills = printFeesForBills;
+    }
+
+    public int getNumberOfDaysToMarkAsShortExpiary() {
+        if(numberOfDaysToMarkAsShortExpiary==0){
+            numberOfDaysToMarkAsShortExpiary = 30;
+        }
+        return numberOfDaysToMarkAsShortExpiary;
+    }
+
+    public void setNumberOfDaysToMarkAsShortExpiary(int numberOfDaysToMarkAsShortExpiary) {
+        this.numberOfDaysToMarkAsShortExpiary = numberOfDaysToMarkAsShortExpiary;
+    }
+
+    public Category getFinancialCategory() {
+        return financialCategory;
+    }
+
+    public void setFinancialCategory(Category financialCategory) {
+        this.financialCategory = financialCategory;
+    }
+
+    public double getTotalStockQty() {
+        return totalStockQty;
+    }
+
+    public void setTotalStockQty(double totalStockQty) {
+        this.totalStockQty = totalStockQty;
+    }
+
+    public ItemBarcodeGenerationStrategy getItemBarcodeGenerationStrategy() {
+        if(itemBarcodeGenerationStrategy==null){
+            itemBarcodeGenerationStrategy=ItemBarcodeGenerationStrategy.BY_ITEM;
+        }
+        return itemBarcodeGenerationStrategy;
+    }
+
+    public void setItemBarcodeGenerationStrategy(ItemBarcodeGenerationStrategy itemBarcodeGenerationStrategy) {
+        this.itemBarcodeGenerationStrategy = itemBarcodeGenerationStrategy;
+    }
+
+    public Long getLastBarcode() {
+        if(lastBarcode==null){
+            lastBarcode=0l;
+        }
+        return lastBarcode;
+    }
+
+    public void setLastBarcode(Long lastBarcode) {
+        this.lastBarcode = lastBarcode;
+    }
+
+    public boolean isPrintSessionNumber() {
+        return printSessionNumber;
+    }
+
+    public void setPrintSessionNumber(boolean printSessionNumber) {
+        this.printSessionNumber = printSessionNumber;
+    }
+
+    public boolean isCanSechduleForOtherDays() {
+        return canSechduleForOtherDays;
+    }
+
+    public void setCanSechduleForOtherDays(boolean canSechduleForOtherDays) {
+        this.canSechduleForOtherDays = canSechduleForOtherDays;
+    }
+
+    public boolean isCanRemoveItemfromPackage() {
+        return canRemoveItemfromPackage;
+    }
+
+    public void setCanRemoveItemfromPackage(boolean canRemoveItemfromPackage) {
+        this.canRemoveItemfromPackage = canRemoveItemfromPackage;
+    }
+
+    public String getForGender() {
+        if(forGender==null||forGender.trim().equals("")){
+            forGender = "Both";
+        }
+        return forGender;
+    }
+
+    public void setForGender(String forGender) {
+        this.forGender = forGender;
+    }
+
+    public Date getExpiryDate() {
+        return expiryDate;
+    }
+
+    public void setExpiryDate(Date expiryDate) {
+        this.expiryDate = expiryDate;
     }
 
     static class ReportItemComparator implements Comparator<ReportItem> {

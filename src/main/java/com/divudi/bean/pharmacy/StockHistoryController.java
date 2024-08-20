@@ -1,7 +1,7 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Open Hospital Management Information System
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.pharmacy;
 
@@ -14,7 +14,8 @@ import com.divudi.ejb.StockHistoryRecorder;
 import com.divudi.entity.Department;
 import com.divudi.entity.pharmacy.StockHistory;
 import com.divudi.facade.StockHistoryFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.entity.Item;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
@@ -64,17 +65,46 @@ public class StockHistoryController implements Serializable {
                 + " and s.createdAt between :fd and :td "
                 + " order by s.createdAt desc ";
 
-//        List<StockHistory> historys=facade.findBySQL(jpql, m,TemporalType.TIMESTAMP);
+//        List<StockHistory> historys=facade.findByJpql(jpql, m,TemporalType.TIMESTAMP);
 //        for (StockHistory history : historys) {
-//            //System.out.println("history.getStockAt() = " + history.getStockAt());
-//            //System.out.println("history.getStockAt() = " + history.getCreatedAt());
+//            //// // System.out.println("history.getStockAt() = " + history.getStockAt());
+//            //// // System.out.println("history.getStockAt() = " + history.getCreatedAt());
 //        }
-        ////System.out.println("m = " + m);
-        pharmacyStockHistoryDays = facade.findDateListBySQL(jpql, m, TemporalType.TIMESTAMP);
+        ////// // System.out.println("m = " + m);
+        pharmacyStockHistoryDays = facade.findDateListByJpql(jpql, m, TemporalType.TIMESTAMP);
         for (Date d : pharmacyStockHistoryDays) {
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Stock Reports/Stock history(Display Available Days)(/faces/pharmacy/pharmacy_department_stock_history.xhtml)");
+        
+    }
+
+    public List<StockHistory> findStockHistories(Date fd, Date td, HistoryType ht, Department dep, Item i) {
+        String jpql;
+        Map m = new HashMap();
+        m.put("fd", fd);
+        m.put("td", td);
+
+        jpql = "select s"
+                + " from StockHistory s "
+                + " where s.createdAt between :fd and :td ";
+        if (ht != null) {
+            jpql += " and s.historyType=:ht ";
+            m.put("ht", ht);
+        }
+        if (dep != null) {
+            jpql += " and s.department=:dep ";
+            m.put("dep", dep);
+        }
+        if (i != null) {
+            jpql += " and s.item=:i ";
+            m.put("i", i);
+        }
+
+        jpql += " order by s.createdAt ";
+        List<StockHistory> shxs = facade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
+        if (shxs != null) {
+        }
+        return shxs;
     }
 
     public void fillStockHistories(boolean withoutZeroStock) {
@@ -114,7 +144,7 @@ public class StockHistoryController implements Serializable {
 
         jpql += " order by s.item.name";
 
-        pharmacyStockHistories = facade.findBySQL(jpql, m, TemporalType.TIMESTAMP);
+        pharmacyStockHistories = facade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
         totalStockPurchaseValue = 0.0;
         totalStockSaleValue = 0.0;
         for (StockHistory psh : pharmacyStockHistories) {
@@ -122,7 +152,7 @@ public class StockHistoryController implements Serializable {
             totalStockSaleValue += psh.getStockSaleValue();
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Stock Reports/Stock history(Display History)(/faces/pharmacy/pharmacy_department_stock_history.xhtml)");
+        
     }
 
     public void fillStockHistoriesWithZero() {
@@ -165,7 +195,7 @@ public class StockHistoryController implements Serializable {
         getFromDate();
         getToDate();
         fillHistoryAvailableDays();
-        return "/pharmacy/pharmacy_department_stock_history";
+        return "/pharmacy/pharmacy_department_stock_history?faces-redirect=true";
     }
 
     public void setToDate(Date toDate) {
@@ -185,7 +215,7 @@ public class StockHistoryController implements Serializable {
             JsfUtil.addErrorMessage("Failed due to " + e.getMessage());
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Stock Reports/Stock history(Record History Now)(/faces/pharmacy/pharmacy_department_stock_history.xhtml)");
+        
     }
 
     public List<Date> getPharmacyStockHistoryDays() {

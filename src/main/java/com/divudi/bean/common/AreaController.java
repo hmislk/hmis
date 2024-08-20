@@ -1,13 +1,13 @@
 /*
- * MSc(Biomedical Informatics) Project
+ * Open Hospital Management Information System
  *
- * Development and Implementation of a Web-based Combined Data Repository of
- Genealogical, Clinical, Laboratory and Genetic Data
- * and
- * a Set of Related Tools
+ * Dr M H B Ariyaratne
+ * Acting Consultant (Health Informatics)
+ * (94) 71 5812399
+ * (94) 71 5812399
  */
 package com.divudi.bean.common;
-
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.entity.Area;
 import com.divudi.facade.AreaFacade;
 import java.io.Serializable;
@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -26,8 +27,8 @@ import javax.inject.Named;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- * Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
+ * Acting Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -40,17 +41,50 @@ public class AreaController implements Serializable {
     private AreaFacade ejbFacade;
     private Area current;
     private List<Area> items = null;
+    
+      public void save(Area area) {
+        if (area == null) {
+            return;
+        }
+        if (area.getId() != null) {
+            getFacade().edit(area);
+            JsfUtil.addSuccessMessage("Updated Successfully.");
+        } else {
+            area.setCreatedAt(new Date());
+            area.setCreater(getSessionController().getLoggedUser());
+            getFacade().create(area);
+            JsfUtil.addSuccessMessage("Saved Successfully");
+        }
+    }
+    
+     public Area findAreaByName(String name) {
+         
+        if (name == null) {
+            return null;
+        }
+        if (name.trim().equals("")) {
+            return null;
+        }
+        String jpql = "select a "
+                + " from Area a "
+                + " where a.retired=:ret "
+                + " and a.name=:n";
+        Map m = new HashMap<>();
+        m.put("ret", false);
+        m.put("n", name);
+        return getFacade().findFirstByJpql(jpql, m);
+    }
 
     public List<Area> completeArea(String qry) {
         List<Area> list;
-        String sql;
-        HashMap hm = new HashMap();
-        sql = "select c from Area c "
+        String jpql;
+        HashMap params = new HashMap();
+        jpql = "select c from Area c "
                 + " where c.retired=false "
-                + " and upper(c.name) like :q "
+                + " and (c.name) like :q "
                 + " order by c.name";
-        hm.put("q", "%" + qry.toUpperCase() + "%");
-        list = getFacade().findBySQL(sql, hm);
+        params.put("q", "%" + qry.toUpperCase() + "%");
+        list = getFacade().findByJpql(jpql, params);
 
         if (list == null) {
             list = new ArrayList<>();
@@ -62,24 +96,24 @@ public class AreaController implements Serializable {
         current = new Area();
     }
 
-    private void recreateModel() {
+    public void recreateModel() {
         items = null;
     }
 
     public void saveSelected() {
         if (getCurrent().getName().isEmpty() || getCurrent().getName() == null) {
-            UtilityController.addErrorMessage("Please enter Value");
+            JsfUtil.addErrorMessage("Please enter Value");
             return;
         }
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            UtilityController.addSuccessMessage("Saved Successfully");
+            JsfUtil.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
         getItems();
@@ -122,9 +156,9 @@ public class AreaController implements Serializable {
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
@@ -143,7 +177,7 @@ public class AreaController implements Serializable {
                     + " from Area a "
                     + " where a.retired=false "
                     + " order by a.name";
-            items = getFacade().findBySQL(j);
+            items = getFacade().findByJpql(j);
         }
         return items;
     }
@@ -191,43 +225,4 @@ public class AreaController implements Serializable {
         }
     }
 
-    @FacesConverter("areaCon")
-    public static class AreaControllerConverter implements Converter {
-
-        @Override
-        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
-                return null;
-            }
-            AreaController controller = (AreaController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "areaController");
-            return controller.getEjbFacade().find(getKey(value));
-        }
-
-        java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
-            return key;
-        }
-
-        String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
-        }
-
-        @Override
-        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
-            if (object == null) {
-                return null;
-            }
-            if (object instanceof Area) {
-                Area o = (Area) object;
-                return getStringKey(o.getId());
-            } else {
-                throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + AreaController.class.getName());
-            }
-        }
-    }
 }

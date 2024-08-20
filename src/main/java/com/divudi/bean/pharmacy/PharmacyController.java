@@ -1,10 +1,10 @@
 /*
- * MSc(Biomedical Informatics) Project
+ * Open Hospital Management Information System
  *
- * Development and Implementation of a Web-based Combined Data Repository of
- Genealogical, Clinical, Laboratory and Genetic Data
- * and
- * a Set of Related Tools
+ * Dr M H B Ariyaratne
+ * Acting Consultant (Health Informatics)
+ * (94) 71 5812399
+ * (94) 71 5812399
  */
 package com.divudi.bean.pharmacy;
 
@@ -20,7 +20,8 @@ import com.divudi.data.dataStructure.InstitutionStock;
 import com.divudi.data.dataStructure.ItemQuantityAndValues;
 import com.divudi.data.dataStructure.ItemTransactionSummeryRow;
 import com.divudi.data.dataStructure.StockAverage;
-import com.divudi.ejb.CommonFunctions;
+
+import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.Category;
@@ -29,10 +30,16 @@ import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.pharmacy.Amp;
 import com.divudi.entity.pharmacy.Ampp;
+import com.divudi.entity.pharmacy.Atm;
+import com.divudi.entity.pharmacy.MeasurementUnit;
 import com.divudi.entity.pharmacy.PharmaceuticalItem;
 import com.divudi.entity.pharmacy.Stock;
+import com.divudi.entity.pharmacy.Vmp;
+import com.divudi.entity.pharmacy.Vmpp;
+import com.divudi.entity.pharmacy.Vtm;
 import com.divudi.facade.AmpFacade;
 import com.divudi.facade.AmppFacade;
+import com.divudi.facade.AtmFacade;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.DepartmentFacade;
@@ -41,7 +48,12 @@ import com.divudi.facade.ItemFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
 import com.divudi.facade.PharmaceuticalItemFacade;
 import com.divudi.facade.StockFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.facade.VmpFacade;
+import com.divudi.facade.VmppFacade;
+import com.divudi.facade.VtmFacade;
+import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.CommonFunctions;
+import com.divudi.light.pharmacy.PharmaceuticalItemLight;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -59,43 +71,70 @@ import javax.persistence.TemporalType;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- * Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
 public class PharmacyController implements Serializable {
 
-    private static final long serialVersionUID = 1L;
-    /////
+    // <editor-fold defaultstate="collapsed" desc="Controllers">
     @Inject
     private SessionController sessionController;
     @Inject
     CommonController commonController;
     @Inject
-    AmpController ampController;
-    //////////
+    private AmpController ampController;
+    @Inject
+    VtmController vtmController;
+    @Inject
+    AtmController atmController;
+    @Inject
+    ManufacturerController manufaturerController;
+    @Inject
+    ImporterController importerController;
+    @Inject
+    DiscardCategoryController discardCategoryController;
+    @Inject
+    VmpController vmpController;
+    // </editor-fold>
+
+    // <editor-fold defaultstate="collapsed" desc="EJBs">
     @EJB
-    AmppFacade AmppFacade;
+    ItemFacade itemFacade;
+    @EJB
+    VtmFacade vtmFacade;
+    @EJB
+    AtmFacade atmFacade;
+    @EJB
+    VmpFacade vmpFacade;
+    @EJB
+    AmpFacade ampFacade;
+    @EJB
+    VmppFacade vmppFacade;
+    @EJB
+    AmppFacade amppFacade;
     @EJB
     PharmaceuticalItemFacade piFacade;
     @EJB
     private DepartmentFacade departmentFacade;
     @EJB
-    private BillItemFacade billItemFacade;
-    @EJB
     private StockFacade stockFacade;
     @EJB
     private BillFacade billFacade;
     @EJB
+    private BillItemFacade billItemFacade;
+
     private CommonFunctions commonFunctions;
     @EJB
     private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
-    @EJB
-    private AmpFacade ampFacade;
-    @EJB
-    ItemFacade itemFacade;
-    ///////////
+    // </editor-fold>
+
+    // <editor-fold defaultstate="collapsed" desc="Class Variables">
+    private static final long serialVersionUID = 1L;
+    private int pharmacyAdminIndex;
+    private int pharmacySummaryIndex;
+
     private Item pharmacyItem;
     private Date fromDate;
     private Date toDate;
@@ -113,9 +152,554 @@ public class PharmacyController implements Serializable {
     private List<BillItem> grns;
     private List<BillItem> pos;
     private List<BillItem> directPurchase;
+    private List<Bill> bills;
     List<ItemTransactionSummeryRow> itemTransactionSummeryRows;
+    private int managePharamcyReportIndex = -1;
     double persentage;
     Category category;
+
+    private PharmaceuticalItemLight selectedLight;
+    private List<PharmaceuticalItemLight> selectedLights;
+    private List<PharmaceuticalItemLight> allLights;
+
+    private List<Atm> atms;
+    private List<Vtm> vtms;
+    private List<Vmp> vmps;
+    private List<Amp> amps;
+    private List<Vmpp> vmpps;
+    private List<Ampp> ampps;
+
+    private List<Atm> atmsSelected;
+    private List<Vtm> vtmsSelected;
+    private List<Vmp> vmpsSelected;
+    private List<Amp> ampsSelected;
+    private List<Vmpp> vmppsSelected;
+    private List<Ampp> amppsSelected;
+
+    private Atm atm;
+    private Vtm vtm;
+    private Vmp vmp;
+    private Amp amp;
+    private Vmpp vmpp;
+    private Ampp ampp;
+
+    private MeasurementUnit issueUnit;
+    // </editor-fold>
+
+    // <editor-fold defaultstate="collapsed" desc="Methods - Fill Data">
+    private void fillVtms() {
+        String j = "select i "
+                + " from Vtm i "
+                + " where i.retired != true "
+                + " order by i.name";
+        vtms = vtmFacade.findByJpql(j);
+    }
+
+    private void fillAtms() {
+        String j = "select i "
+                + " from Atm i "
+                + " where i.retired != true "
+                + " order by i.name";
+        atms = atmFacade.findByJpql(j);
+    }
+
+    private void fillVmps() {
+        String j = "select i "
+                + " from Vmp i "
+                + " where i.retired != true "
+                + " order by i.name";
+        vmps = vmpFacade.findByJpql(j);
+    }
+
+    private void fillAmps() {
+        String j = "select i "
+                + " from Amp i "
+                + " where i.retired != true "
+                + " order by i.name";
+        amps = ampFacade.findByJpql(j);
+    }
+
+    private void fillVmpps() {
+        String j = "select i "
+                + " from Vmpp i "
+                + " where i.retired != true "
+                + " order by i.name";
+        vmpps = vmppFacade.findByJpql(j);
+    }
+
+    private void fillAmpps() {
+        String j = "select i "
+                + " from Ampp i "
+                + " where i.retired != true "
+                + " order by i.name";
+        ampps = amppFacade.findByJpql(j);
+    }
+
+    public void listPharmacyPurchaseBills() {
+        try {
+            StringBuilder jpql = new StringBuilder("select b from Bill b where b.retired=:ret");
+            Map<String, Object> parameters = new HashMap<>();
+            parameters.put("ret", false);
+
+            List<BillType> billTypes = new ArrayList<>();
+            billTypes.add(BillType.PharmacyGrnReturn);
+            billTypes.add(BillType.PharmacyGrnBill);
+            billTypes.add(BillType.PharmacyPurchaseBill);
+            jpql.append(" and b.billType in :bts");
+            parameters.put("bts", billTypes);
+
+            if (fromDate != null && toDate != null) {
+                jpql.append(" and b.createdAt between :fd and :td");
+                parameters.put("fd", fromDate);
+                parameters.put("td", toDate);
+            }
+
+            if (institution != null) {
+                jpql.append(" and b.fromInstitution=:fi");
+                parameters.put("fi", institution);
+            }
+
+            bills = billFacade.findByJpql(jpql.toString(), parameters, TemporalType.TIMESTAMP);
+        } catch (Exception e) {
+            e.printStackTrace();
+            // Handle the exception appropriately
+        }
+    }
+
+    // </editor-fold> 
+    // <editor-fold defaultstate="collapsed" desc="Methods - Navigation">
+    
+    
+    public String navigateToBinCard() {
+        return "/pharmacy/bin_card?faces-redirect=true";
+    }
+    
+    public String navigateToItemsList() {
+        return "/pharmacy/list_amps?faces-redirect=true";
+    }
+    
+    public String navigateToMedicineList() {
+        return "/pharmacy/list_medicines?faces-redirect=true";
+    }
+    
+    public String navigateToItemsWithoutDistributor() {
+        return "/pharmacy/pharmacy_report_list_amps_with_out_distributor?faces-redirect=true";
+    }
+    
+    public String navigateToItemsWithSuppliersAndPrices() {
+        return "/pharmacy/item_supplier_prices?faces-redirect=true";
+    }
+    
+    public String navigateToItemsWithDistributor() {
+        return "/pharmacy/pharmacy_report_list_distributor_with_distributor_items?faces-redirect=true";
+    }
+    
+    public String navigateToItemsWithMultipleDistributorsItemsOnly() {
+        return "/pharmacy/pharmacy_report_list_grater_than_one_distributor?faces-redirect=true";
+    }
+    
+    public String navigateToItemWithMultipleDistributors() {
+        return "/pharmacy/pharmacy_report_list_item_with_multiple_dealor?faces-redirect=true";
+    }
+    
+    public String navigateToReorderAnalysis() {
+        return "/pharmacy/ordering_data?faces-redirect=true";
+    }
+    
+    
+    public String navigateToReorderManagement() {
+        return "/pharmacy/reorder_management?faces-redirect=true";
+    }
+    
+    public String navigateToAllItemsTransactionSummary() {
+        return "/pharmacy/raport_all_item_transaction_summery?faces-redirect=true";
+    }
+    
+    public String navigateToItemTransactionDetails() {
+        return "/pharmacy/pharmacy_item_transactions?faces-redirect=true";
+    }
+    
+    public String navigateToListPharmaceuticals() {
+        fillPharmaceuticalLights();
+        return "/pharmacy/admin/items?faces-redirect=true";
+    }
+
+    public String navigateToPharmacyAnalytics() {
+        return "/pharmacy/pharmacy_analytics?faces-redirect=true";
+    }
+
+    public String navigateToManagePharmaceuticals() {
+        return "/pharmacy/admin/index?faces-redirect=true";
+    }
+
+    public String navigateToListAllPharmaceuticalItemsLight() {
+        return "/pharmacy/admin/items?faces-redirect=true";
+    }
+
+    public String navigateToDosageForms() {
+        return "/pharmacy/admin/dosage_forms?faces-redirect=true";
+    }
+
+    public String navigateToPharmaceuticalItemCategories() {
+        return "/pharmacy/admin/pharmaceutical_item_category?faces-redirect=true";
+    }
+
+    public String navigateToAtc() {
+        return "/pharmacy/admin/atc?faces-redirect=true";
+    }
+
+    public String navigateToAmp() {
+        ampController.setItems(null);
+        return "/pharmacy/admin/amp?faces-redirect=true";
+    }
+
+    public String navigateToAmpp() {
+        return "/pharmacy/admin/ampp?faces-redirect=true";
+    }
+
+    public String navigateToAtm() {
+        atmController.getItems();
+        atmController.getCurrent();
+        return "/pharmacy/admin/atm?faces-redirect=true";
+    }
+
+    public String navigateToManufacturers() {
+        manufaturerController.getItems();
+        manufaturerController.getCurrent();
+        return "/pharmacy/pharmacy_manufacturer?faces-redirect=true";
+    }
+
+    public String navigateToDiscardCategory() {
+        discardCategoryController.fillDiscardCategories();
+        discardCategoryController.getItems();
+        discardCategoryController.getCurrent();
+        return "/pharmacy/pharmacy_discard_category?faces-redirect=true";
+    }
+
+    public String navigateToImporters() {
+        importerController.getItems();
+        importerController.getCurrent();
+        return "/pharmacy/pharmacy_importer?faces-redirect=true";
+    }
+    
+    public String navigateToSuppliers(){
+        return "/pharmacy/pharmacy_dealer?faces-redirect=true";
+    }
+    
+    public String navigateToItemSuppliers(){
+        return "/pharmacy/pharmacy_items_distributors?faces-redirect=true";
+    }
+
+    public String navigateToVmp() {
+        return "/pharmacy/admin/vmp?faces-redirect=true";
+    }
+
+    public String navigateToVtm() {
+        vtmController.fillItems();
+        return "/pharmacy/admin/vtm?faces-redirect=true";
+    }
+
+    public String navigateToVmpp() {
+        return "/pharmacy/admin/vmpp?faces-redirect=true";
+    }
+
+    public String navigateToDosageFormsMultiple() {
+        return "/pharmacy/admin/dosage_forms_multiple?faces-redirect=true";
+    }
+
+    public String navigateToAtcMultiple() {
+        return "/pharmacy/admin/atc_multiple?faces-redirect=true";
+    }
+
+    public String navigateToAmpMultiple() {
+        fillAmps();
+        return "/pharmacy/admin/amp_multiple?faces-redirect=true";
+    }
+
+    public String navigateToAmppMultiple() {
+        fillAmpps();
+        return "/pharmacy/admin/ampp_multiple?faces-redirect=true";
+    }
+
+    public String navigateToAtmMultiple() {
+        fillAtms();
+        return "/pharmacy/admin/atm_multiple?faces-redirect=true";
+    }
+
+    public String navigateToVmpMultiple() {
+        fillVmps();
+        return "/pharmacy/admin/vmp_multiple?faces-redirect=true";
+    }
+
+    public String navigateToVtmMultiple() {
+        fillVtms();
+        return "/pharmacy/admin/vtm_multiple?faces-redirect=true";
+    }
+
+    public String navigateToVmppMultiple() {
+        fillVmpps();
+        return "/pharmacy/admin/vmpp_multiple?faces-redirect=true";
+    }
+
+    // </editor-fold>
+    // <editor-fold defaultstate="collapsed" desc="Methods - Data Maniulation">
+    public void deleteSingleVtm() {
+        if (vtm == null) {
+            JsfUtil.addErrorMessage("Nothing Selected");
+            return;
+        }
+        vtm.setRetired(true);
+        vtmFacade.edit(vtm);
+        fillVtms();
+    }
+
+    public void deleteSingleAtm() {
+        if (atm == null) {
+            JsfUtil.addErrorMessage("Nothing Selected");
+            return;
+        }
+        atm.setRetired(true);
+        atmFacade.edit(atm);
+        fillAtms();
+    }
+
+    public void deleteSingleVmp() {
+        if (vmp == null) {
+            JsfUtil.addErrorMessage("Nothing Selected");
+            return;
+        }
+        vmp.setRetired(true);
+        vmpFacade.edit(vmp);
+        fillVmps();
+    }
+
+    public void deleteSingleAmp() {
+        if (amp == null) {
+            JsfUtil.addErrorMessage("Nothing Selected");
+            return;
+        }
+        amp.setRetired(Boolean.TRUE);
+        ampFacade.edit(amp);
+        fillAmps();
+    }
+
+    public void deleteSingleVmpp() {
+        if (vmpp == null) {
+            JsfUtil.addErrorMessage("Nothing Selected");
+            return;
+        }
+        vmpp.setRetired(true);
+        vmppFacade.edit(vmpp);
+        fillVmpps();
+    }
+
+    public void deleteSingleAmpp() {
+        if (ampp == null) {
+            JsfUtil.addErrorMessage("Nothing Selected");
+            return;
+        }
+        ampp.setRetired(true);
+        amppFacade.edit(ampp);
+        fillAmpps();
+    }
+
+    public void deleteMultipleVtms() {
+        if (vtmsSelected == null) {
+            JsfUtil.addErrorMessage("Nothing Selected");
+            return;
+        }
+        if (vtmsSelected.isEmpty()) {
+            JsfUtil.addErrorMessage("Nothing Selected");
+            return;
+        }
+        for (Vtm i : vtmsSelected) {
+            i.setRetired(true);
+            //TODO: Write to AuditEvent
+        }
+        vtmFacade.batchEdit(vtmsSelected);
+        fillVtms();
+    }
+
+    public void deleteMultipleVmps() {
+        if (vmpsSelected == null) {
+            JsfUtil.addErrorMessage("Nothing Selected");
+            return;
+        }
+        if (vmpsSelected.isEmpty()) {
+            JsfUtil.addErrorMessage("Nothing Selected");
+            return;
+        }
+        for (Vmp i : vmpsSelected) {
+            i.setRetired(true);
+            //TODO: Write to AuditEvent
+        }
+        vmpFacade.batchEdit(vmpsSelected);
+        fillVmps();
+    }
+
+    public void assignIssueUnitToMultipleVmps() {
+        if (issueUnit == null) {
+            JsfUtil.addErrorMessage("No Issue Unit Selected");
+            return;
+        }
+        if (vmpsSelected == null) {
+            JsfUtil.addErrorMessage("Nothing Selected");
+            return;
+        }
+        if (vmpsSelected.isEmpty()) {
+            JsfUtil.addErrorMessage("Nothing Selected");
+            return;
+        }
+        for (Vmp i : vmpsSelected) {
+            i.setIssueUnit(issueUnit);
+            //TODO: Write to AuditEvent
+        }
+        vmpFacade.batchEdit(vmpsSelected);
+        fillVmps();
+    }
+
+    public void deleteMultipleVmpps() {
+        if (vmppsSelected == null) {
+            JsfUtil.addErrorMessage("Nothing Selected");
+            return;
+        }
+        if (vmppsSelected.isEmpty()) {
+            JsfUtil.addErrorMessage("Nothing Selected");
+            return;
+        }
+        for (Vmpp i : vmppsSelected) {
+            i.setRetired(true);
+            //TODO: Write to AuditEvent
+        }
+        vmppFacade.batchEdit(vmppsSelected);
+        fillVmpps();
+    }
+
+    public void deleteMultipleAmps() {
+        if (ampsSelected == null) {
+            JsfUtil.addErrorMessage("Nothing Selected");
+            return;
+        }
+        if (ampsSelected.isEmpty()) {
+            JsfUtil.addErrorMessage("Nothing Selected");
+            return;
+        }
+        for (Amp i : ampsSelected) {
+            i.setRetired(true);
+            //TODO: Write to AuditEvent
+        }
+        ampFacade.batchEdit(ampsSelected);
+        fillAmps();
+    }
+
+    public void deleteMultipleAtms() {
+        if (atmsSelected == null) {
+            JsfUtil.addErrorMessage("Nothing Selected");
+            return;
+        }
+        if (atmsSelected.isEmpty()) {
+            JsfUtil.addErrorMessage("Nothing Selected");
+            return;
+        }
+        for (Atm i : atmsSelected) {
+            i.setRetired(true);
+            //TODO: Write to AuditEvent
+        }
+        atmFacade.batchEdit(atmsSelected);
+        fillAtms();
+    }
+
+    public void deleteMultipleAmpps() {
+        if (amppsSelected == null) {
+            JsfUtil.addErrorMessage("Nothing Selected");
+            return;
+        }
+        if (amppsSelected.isEmpty()) {
+            JsfUtil.addErrorMessage("Nothing Selected");
+            return;
+        }
+        for (Ampp i : amppsSelected) {
+            i.setRetired(true);
+            //TODO: Write to AuditEvent
+        }
+        amppFacade.batchEdit(amppsSelected);
+        fillAmpps();
+    }
+
+    // </editor-fold>
+    public void clearItemHistory() {
+
+        grantStock = 0.00;
+        grantSaleQty = 0.00;
+        grantSaleValue = 0.00;
+        grantWholeSaleQty = 0.00;
+        grantWholeSaleValue = 0.00;
+        grantBhtIssueQty = 0.00;
+        grantBhtValue = 0.00;
+        grantTransferIssueQty = 0.00;
+        grantTransferIssueValue = 0.00;
+        grantTransferReceiveQty = 0.00;
+        grantTransferReceiveValue = 0.00;
+        grantIssueQty = 0.00;
+        grantIssueValue = 0.00;
+
+        fromDate = CommonFunctions.getStartOfMonth();
+        toDate = CommonFunctions.getEndOfDay(new Date());
+
+        pharmacyItem = null;
+        institutionStocks = null;
+        institutionSales = null;
+        grns = null;
+        institutionWholeSales = null;
+        institutionBhtIssue = null;
+        institutionTransferIssue = null;
+        institutionTransferReceive = null;
+        institutionIssue = null;
+        pos = null;
+        directPurchase = null;
+        ampps = null;
+
+    }
+
+    public void deleteSelectedPharmaceuticalLight() {
+        if (selectedLights == null || selectedLights.isEmpty()) {
+            JsfUtil.addErrorMessage("Nothing selected");
+            return;
+        }
+        List<Item> itemsToUpdate = new ArrayList<>();
+        for (PharmaceuticalItemLight l : selectedLights) {
+            if (l.getId() == null) {
+                continue;
+            }
+            Item i = itemFacade.find(l.getId());
+            if (i == null) {
+                continue;
+            }
+            i.setRetired(true);
+            i.setRetirer(sessionController.getLoggedUser());
+            i.setRetiredAt(new Date());
+            itemsToUpdate.add(i);
+        }
+        itemFacade.batchEdit(itemsToUpdate);
+        fillPharmaceuticalLights();
+    }
+
+    public void fillPharmaceuticalLights() {
+        String jpql = "select new com.divudi.bean.pharmacy.PharmaceuticalItemLight(p.id, p.name, p.clazz) "
+                + " from PharmaceuticalItem p "
+                + " where p.retired != true "
+                + " order by p.name";
+        jpql = "select new com.divudi.bean.pharmacy.PharmaceuticalItemLight(p.id, p.name, p.clazz) "
+                + " from PharmaceuticalItem p ";
+//        Map m = new HashMap();
+//        m.put("ret", Boolean.TRUE);
+//        allLights = (List<PharmaceuticalItemLight>) itemFacade.findLightsByJpql(jpql, m);
+//        Map m = new HashMap();
+//        m.put("ret", Boolean.TRUE);
+//        allLights = (List<PharmaceuticalItemLight>) itemFacade.findLightsByJpql(jpql, m);
+        allLights = (List<PharmaceuticalItemLight>) itemFacade.findLightsByJpql(jpql);
+
+    }
 
     public void makeNull() {
         departmentSale = null;
@@ -137,33 +721,33 @@ public class PharmacyController implements Serializable {
         double d = 0.0;
         m.put("n", "%" + qry.toUpperCase() + "%");
         sql = "select i from Stock i where i.department=:d and "
-                + " (upper(i.itemBatch.item.name) like :n  or "
-                + " upper(i.itemBatch.item.code) like :n  or  "
-                + " upper(i.itemBatch.item.barcode) like :n ) "
+                + " ((i.itemBatch.item.name) like :n  or "
+                + " (i.itemBatch.item.code) like :n  or  "
+                + " (i.itemBatch.item.barcode) like :n ) "
                 + " order by i.stock desc";
-        items = getStockFacade().findBySQL(sql, m, 30);
+        items = getStockFacade().findByJpql(sql, m, 30);
 
         return items;
     }
 
     public List<Item> completeAllStockItems(String qry) {
-        List<Item> items;
+        List<Item> items = null;
         String sql;
         Map m = new HashMap();
         m.put("d", getSessionController().getLoggedUser().getDepartment());
         double d = 0.0;
         m.put("n", "%" + qry.toUpperCase() + "%");
         sql = "select distinct(i.itemBatch.item) from Stock i where i.department=:d and "
-                + " (upper(i.itemBatch.item.name) like :n  or "
-                + " upper(i.itemBatch.item.code) like :n  or  "
-                + " upper(i.itemBatch.item.barcode) like :n ) "
+                + " ((i.itemBatch.item.name) like :n  or "
+                + " (i.itemBatch.item.code) like :n  or  "
+                + " (i.itemBatch.item.barcode) like :n ) "
                 + " and i.stock>0 ";
         if (getCategory() != null) {
             sql += " and i.itemBatch.item.category=:cat ";
             m.put("cat", getCategory());
         }
         sql += " order by i.itemBatch.item.name ";
-        items = getItemFacade().findBySQL(sql, m);
+        items = getItemFacade().findByJpql(sql, m);
         return items;
     }
 
@@ -175,11 +759,11 @@ public class PharmacyController implements Serializable {
         m.put("s", d);
         m.put("n", "%" + qry.toUpperCase() + "%");
         sql = "select i from Stock i where i.stock >:s and "
-                + "(upper(i.staff.code) like :n or "
-                + "upper(i.staff.person.name) like :n or "
-                + "upper(i.itemBatch.item.name) like :n ) "
+                + "((i.staff.code) like :n or "
+                + "(i.staff.person.name) like :n or "
+                + "(i.itemBatch.item.name) like :n ) "
                 + "order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
-        items = getStockFacade().findBySQL(sql, m, 20);
+        items = getStockFacade().findByJpql(sql, m, 20);
 
         return items;
     }
@@ -189,7 +773,7 @@ public class PharmacyController implements Serializable {
         HashMap hm = new HashMap();
         String sql = "Select d From Department d where d.retired=false and d.institution=:ins";
         hm.put("ins", ins);
-        d = getDepartmentFacade().findBySQL(sql, hm);
+        d = getDepartmentFacade().findByJpql(sql, hm);
 
         return d;
     }
@@ -222,7 +806,7 @@ public class PharmacyController implements Serializable {
         p.put("dep", department);
         p.put("bts", Arrays.asList(abts));
 
-        List<Amp> allAmps = ampFacade.findBySQL(s, p);
+        List<Amp> allAmps = ampFacade.findByJpql(s, p);
 
         Map<Long, ItemTransactionSummeryRow> m = new HashMap();
 
@@ -346,7 +930,7 @@ public class PharmacyController implements Serializable {
 
         Collections.sort(itemTransactionSummeryRows);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Transaction reports/All item transaction summery(/faces/pharmacy/raport_all_item_transaction_summery.xhtml)");
+        
 
     }
 
@@ -538,10 +1122,10 @@ public class PharmacyController implements Serializable {
     }
 
     public void makeAllPharmaceuticalItemsToAllowDiscounts() {
-        List<PharmaceuticalItem> pis = getPiFacade().findAll();
+        List<PharmaceuticalItem> pis = piFacade.findAll();
         for (PharmaceuticalItem pi : pis) {
             pi.setDiscountAllowed(true);
-            getPiFacade().edit(pi);
+            piFacade.edit(pi);
         }
         JsfUtil.addSuccessMessage("All Pharmaceutical Items were made to allow discounts");
 
@@ -648,7 +1232,7 @@ public class PharmacyController implements Serializable {
         hm.put("type", InstitutionType.Company);
         sql = "select c from Institution c where c.retired=false and c.institutionType=:type order by c.name";
 
-        return getInstitutionFacade().findBySQL(sql, hm);
+        return getInstitutionFacade().findByJpql(sql, hm);
     }
 
     private List<InstitutionStock> institutionStocks;
@@ -830,6 +1414,134 @@ public class PharmacyController implements Serializable {
 
     }
 
+    public double findAllOutTransactions(Item item) {
+        if (item instanceof Amp) {
+            return findAllOutTransactions((Amp) amp);
+        } else if (item instanceof Vmp) {
+            List<Amp> amps = vmpController.ampsOfVmp((Vmp) item);
+            return findAllOutTransactions(amps);
+        } else {
+            return 0.0;
+        }
+    }
+
+    public double findAllOutTransactions(Amp item) {
+        List<Amp> amps = new ArrayList<>();
+        amps.add(item);
+        return findAllOutTransactions(amps);
+    }
+
+    public double findAllOutTransactions(List<Amp> amps) {
+        List<BillType> bts = new ArrayList<>();
+        bts.add(BillType.PharmacyBhtPre);
+        bts.add(BillType.PharmacyPre);
+        return findTransactionStocks(null, null, bts, amps, fromDate, toDate);
+    }
+
+    public double findTransactionStocks(Department dep, Institution ins, List<BillType> billTypes, List<Amp> amps, Date fd, Date td) {
+        StringBuilder jpqlBuilder = new StringBuilder();
+        Map<String, Object> parameters = new HashMap<>();
+
+        jpqlBuilder.append("select sum(abs(i.pharmaceuticalBillItem.qty)) from BillItem i where i.retired = false");
+
+        if (dep != null) {
+            jpqlBuilder.append(" and i.bill.department = :dep");
+            parameters.put("dep", dep);
+        }
+        if (ins != null) {
+            jpqlBuilder.append(" and i.bill.department.institution = :ins");
+            parameters.put("ins", ins);
+        }
+        if (billTypes != null && !billTypes.isEmpty()) {
+            jpqlBuilder.append(" and i.bill.billType in :btp");
+            parameters.put("btp", billTypes);
+        }
+        if (amps != null && !amps.isEmpty()) {
+            jpqlBuilder.append(" and i.item in :itm");
+            parameters.put("itm", amps);
+        }
+        if (fd != null && td != null) {
+            jpqlBuilder.append(" and i.createdAt between :frm and :to");
+            parameters.put("frm", fd);
+            parameters.put("to", td);
+        }
+
+        jpqlBuilder.append(" group by i.bill.department");
+
+        String jpql = jpqlBuilder.toString();
+        double qty = getBillItemFacade().findDoubleByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+        return qty;
+    }
+
+    public double findTransactionQuentity(Item item) {
+        //TO DO Senula
+        List<BillType> billTypes = new ArrayList<>();
+        billTypes.add(BillType.PharmacySale);
+        billTypes.add(BillType.InwardPharmacyRequest);
+        return 0.0;
+    }
+
+    public double findTransactionQuentity(Institution institution, Amp item, List<BillType> billTypes) {
+        //TO DO Senula
+        return 0.0;
+    }
+
+    public double findTransactionQuentity(Institution institution, Item item, List<BillType> billTypes, Date fromDate, Date toDate) {
+        //TO DO Senula
+        if (pharmacyItem instanceof Ampp) {
+            item = ((Ampp) pharmacyItem).getAmp();
+        } else {
+            item = pharmacyItem;
+        }
+        String sql;
+
+//        sql = "select i "
+//                + " from BillItem i "
+//                + " where i.bill.department.institution=:ins"
+//                + " and i.bill.referenceBill.billType=:refType "
+//                + " and i.bill.referenceBill.cancelled=false "
+//                + " and i.item=:itm "
+//                + " and i.bill.billType=:btp "
+//                + " and i.createdAt between :frm and :to  "
+//                + " order by i.bill.department.name,i.bill.insId ";
+        Map m = new HashMap();
+
+        m.put("itm", item);
+        m.put("ins", institution);
+        m.put("frm", getFromDate());
+        m.put("to", getToDate());
+        m.put("btp", BillType.PharmacyPre);
+        m.put("refType", BillType.PharmacySale);
+//        
+//        List<BillItem> billItems=getBillItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
+//        if (billItems!=null) {
+//            grns.addAll(billItems);
+//        }
+//        //System.out.println("billItems = " + billItems);
+//        //System.out.println("institution.getName() = " + institution.getName());
+
+//        for (BillItem bi : billItems) {
+//            //System.out.println("bi.getBill().getDepartment().getName() = " + bi.getBill().getDepartment().getName());
+//            //System.out.println("bi.getInsId() = " + bi.getInsId());
+//            //System.out.println("bi.getDeptId() = " + bi.getDeptId());
+//            //System.out.println("bi.getPharmaceuticalBillItem().getQty() = " + bi.getPharmaceuticalBillItem().getQty());
+//        }
+        sql = "select i.bill.department,"
+                + " sum(i.netValue),"
+                + " sum(i.pharmaceuticalBillItem.qty) "
+                + " from BillItem i "
+                + " where i.bill.department.institution=:ins"
+                + " and i.bill.referenceBill.billType=:refType "
+                + " and i.bill.referenceBill.cancelled=false "
+                + " and i.item=:itm "
+                + " and i.bill.billType=:btp "
+                + " and i.createdAt between :frm and :to  "
+                + " group by i.bill.department";
+
+        return 0.0;
+
+    }
+
     public List<Object[]> calDepartmentSale(Institution institution) {
         Item item;
 
@@ -859,7 +1571,7 @@ public class PharmacyController implements Serializable {
         m.put("btp", BillType.PharmacyPre);
         m.put("refType", BillType.PharmacySale);
 //        
-//        List<BillItem> billItems=getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+//        List<BillItem> billItems=getBillItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 //        if (billItems!=null) {
 //            grns.addAll(billItems);
 //        }
@@ -966,7 +1678,7 @@ public class PharmacyController implements Serializable {
 
         createStockAverage(dayCount);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Sale Reports/Institution Item moment(Average By Date)(/faces/pharmacy/pharmacy_report_institution_movement.xhtml)");
+        
 
     }
 
@@ -1002,7 +1714,7 @@ public class PharmacyController implements Serializable {
 
         createStockAverage(Math.abs(monthCount));
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Sale Reports/Institution Item moment(Average By Month)(/faces/pharmacy/pharmacy_report_institution_movement.xhtml)");
+        
 
     }
 
@@ -1066,7 +1778,6 @@ public class PharmacyController implements Serializable {
         //   //System.err.println("Institution Stock");
         List<Institution> insList = getCompany();
 
-
         institutionStocks = new ArrayList<>();
         grantStock = 0;
 
@@ -1081,7 +1792,6 @@ public class PharmacyController implements Serializable {
                 r.setDepartment((Department) obj[0]);
                 r.setStock((Double) obj[1]);
                 list.add(r);
-
 
                 //Total Institution Stock
                 totalStock += r.getStock();
@@ -1435,15 +2145,17 @@ public class PharmacyController implements Serializable {
         createDirectPurchaseTable();
         createInstitutionIssue();
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Transaction reports/Item transaction details(/faces/pharmacy/pharmacy_item_transactions.xhtml)");
+        
     }
 
     public void createTable() {
-        createGrnTable();
-        createPoTable();
-        createDirectPurchaseTable();
+        createInstitutionSale();
+        createInstitutionWholeSale();
+        createInstitutionBhtIssue();
+        createInstitutionStock();
+        createInstitutionTransferIssue();
         createInstitutionIssue();
-
+        createInstitutionTransferReceive();
     }
 
     public void createGrnTable() {
@@ -1460,7 +2172,7 @@ public class PharmacyController implements Serializable {
         hm.put("btp", BillType.PharmacyGrnBill);
         hm.put("btp2", BillType.PharmacyGrnReturn);
 
-        grns = getBillItemFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        grns = getBillItemFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
 
     }
 
@@ -1477,7 +2189,7 @@ public class PharmacyController implements Serializable {
 //        hm.put("class", BilledBill.class);
 //        hm.put("btp", BillType.PharmacyIssue);
 //
-//        institutionIssue = getBillItemFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
+//        institutionIssue = getBillItemFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
 //
 //    }
     public void createDirectPurchaseTable() {
@@ -1492,7 +2204,7 @@ public class PharmacyController implements Serializable {
         hm.put("to", getToDate());
         hm.put("btp", BillType.PharmacyPurchaseBill);
         hm.put("class", BilledBill.class);
-        directPurchase = getBillItemFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        directPurchase = getBillItemFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
 
     }
 
@@ -1512,7 +2224,7 @@ public class PharmacyController implements Serializable {
         hm.put("frm", getFromDate());
         hm.put("to", getToDate());
         hm.put("class", BilledBill.class);
-        pos = getBillItemFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        pos = getBillItemFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
 
         for (BillItem t : pos) {
             //   t.setPharmaceuticalBillItem(getPoQty(t));
@@ -1527,7 +2239,7 @@ public class PharmacyController implements Serializable {
 //        HashMap hm = new HashMap();
 //        hm.put("bt", b);
 //
-//        return getPharmaceuticalBillItemFacade().findFirstBySQL(sql, hm);
+//        return getPharmaceuticalBillItemFacade().findFirstByJpql(sql, hm);
 //    }
     private double getGrnQty(BillItem b) {
         String sql = "Select sum(b.pharmaceuticalBillItem.qty) From BillItem b where b.retired=false and b.creater is not null"
@@ -1561,39 +2273,16 @@ public class PharmacyController implements Serializable {
     }
 
     public Item getPharmacyItem() {
-
         return pharmacyItem;
     }
 
-    public List<Ampp> getAmpps() {
-        if (pharmacyItem == null) {
-            return new ArrayList<>();
-        }
-        String sql;
-        Map m = new HashMap();
-        sql = "select p from Ampp p where p.retired=false and p.amp=:a order by p.dblValue";
-        m.put("a", pharmacyItem);
-        List<Ampp> list = getAmppFacade().findBySQL(sql, m);
-
-        if (list == null) {
-            return new ArrayList<>();
-        } else {
-            return list;
-        }
-    }
-
     public void setPharmacyItem(Item pharmacyItem) {
-
         makeNull();
         grns = new ArrayList<>();
         this.pharmacyItem = pharmacyItem;
-        //System.out.println("Time 1 = " + new Date());
         createInstitutionSale();
-        //System.out.println("Time 2 = " + new Date());
         createInstitutionWholeSale();
-        //System.out.println("Time 3 = " + new Date());
         createInstitutionBhtIssue();
-        //System.out.println("Time 4 = " + new Date());
         createInstitutionStock();
         createInstitutionTransferIssue();
         createInstitutionIssue();
@@ -1648,7 +2337,7 @@ public class PharmacyController implements Serializable {
                 + " and i.bill.billType in :bts "
                 + " and i.bill.createdAt between :frm and :to  "
                 + " order by i.id";
-        BillItem d = getBillItemFacade().findFirstBySQL(sql, m, TemporalType.TIMESTAMP);
+        BillItem d = getBillItemFacade().findFirstByJpql(sql, m, TemporalType.TIMESTAMP);
         if (d == null) {
             return fd;
         } else if (d.getBill() != null && d.getBill().getCreatedAt() != null) {
@@ -1872,22 +2561,6 @@ public class PharmacyController implements Serializable {
         this.itemController = itemController;
     }
 
-    public PharmaceuticalItemFacade getPiFacade() {
-        return piFacade;
-    }
-
-    public void setPiFacade(PharmaceuticalItemFacade piFacade) {
-        this.piFacade = piFacade;
-    }
-
-    public AmppFacade getAmppFacade() {
-        return AmppFacade;
-    }
-
-    public void setAmppFacade(AmppFacade AmppFacade) {
-        this.AmppFacade = AmppFacade;
-    }
-
     public double getPersentage() {
         return persentage;
     }
@@ -1993,6 +2666,222 @@ public class PharmacyController implements Serializable {
 
     public void setCategory(Category category) {
         this.category = category;
+    }
+
+    public int getPharmacyAdminIndex() {
+        return pharmacyAdminIndex;
+    }
+
+    public void setPharmacyAdminIndex(int pharmacyAdminIndex) {
+        this.pharmacyAdminIndex = pharmacyAdminIndex;
+    }
+
+    public int getPharmacySummaryIndex() {
+        return pharmacySummaryIndex;
+    }
+
+    public void setPharmacySummaryIndex(int pharmacySummaryIndex) {
+        this.pharmacySummaryIndex = pharmacySummaryIndex;
+    }
+
+    public int getManagePharamcyReportIndex() {
+        return managePharamcyReportIndex;
+    }
+
+    public void setManagePharamcyReportIndex(int managePharamcyReportIndex) {
+        this.managePharamcyReportIndex = managePharamcyReportIndex;
+    }
+
+    public PharmaceuticalItemLight getSelectedLight() {
+        return selectedLight;
+    }
+
+    public void setSelectedLight(PharmaceuticalItemLight selectedLight) {
+        this.selectedLight = selectedLight;
+    }
+
+    public List<PharmaceuticalItemLight> getSelectedLights() {
+        return selectedLights;
+    }
+
+    public void setSelectedLights(List<PharmaceuticalItemLight> selectedLights) {
+        this.selectedLights = selectedLights;
+    }
+
+    public List<PharmaceuticalItemLight> getAllLights() {
+        return allLights;
+    }
+
+    public void setAllLights(List<PharmaceuticalItemLight> allLights) {
+        this.allLights = allLights;
+    }
+
+    public AmpController getAmpController() {
+        return ampController;
+    }
+
+    public void setAmpController(AmpController ampController) {
+        this.ampController = ampController;
+    }
+
+    public List<Atm> getAtms() {
+        return atms;
+    }
+
+    public void setAtms(List<Atm> atms) {
+        this.atms = atms;
+    }
+
+    public List<Vtm> getVtms() {
+        return vtms;
+    }
+
+    public void setVtms(List<Vtm> vtms) {
+        this.vtms = vtms;
+    }
+
+    public List<Vmp> getVmps() {
+        return vmps;
+    }
+
+    public void setVmps(List<Vmp> vmps) {
+        this.vmps = vmps;
+    }
+
+    public List<Amp> getAmps() {
+        return amps;
+    }
+
+    public void setAmps(List<Amp> amps) {
+        this.amps = amps;
+    }
+
+    public List<Vmpp> getVmpps() {
+        return vmpps;
+    }
+
+    public void setVmpps(List<Vmpp> vmpps) {
+        this.vmpps = vmpps;
+    }
+
+    public List<Atm> getAtmsSelected() {
+        return atmsSelected;
+    }
+
+    public void setAtmsSelected(List<Atm> atmsSelected) {
+        this.atmsSelected = atmsSelected;
+    }
+
+    public List<Vtm> getVtmsSelected() {
+        return vtmsSelected;
+    }
+
+    public void setVtmsSelected(List<Vtm> vtmsSelected) {
+        this.vtmsSelected = vtmsSelected;
+    }
+
+    public List<Vmp> getVmpsSelected() {
+        return vmpsSelected;
+    }
+
+    public void setVmpsSelected(List<Vmp> vmpsSelected) {
+        this.vmpsSelected = vmpsSelected;
+    }
+
+    public List<Amp> getAmpsSelected() {
+        return ampsSelected;
+    }
+
+    public void setAmpsSelected(List<Amp> ampsSelected) {
+        this.ampsSelected = ampsSelected;
+    }
+
+    public List<Vmpp> getVmppsSelected() {
+        return vmppsSelected;
+    }
+
+    public void setVmppsSelected(List<Vmpp> vmppsSelected) {
+        this.vmppsSelected = vmppsSelected;
+    }
+
+    public List<Ampp> getAmppsSelected() {
+        return amppsSelected;
+    }
+
+    public void setAmppsSelected(List<Ampp> amppsSelected) {
+        this.amppsSelected = amppsSelected;
+    }
+
+    public Atm getAtm() {
+        return atm;
+    }
+
+    public void setAtm(Atm atm) {
+        this.atm = atm;
+    }
+
+    public Vtm getVtm() {
+        return vtm;
+    }
+
+    public void setVtm(Vtm vtm) {
+        this.vtm = vtm;
+    }
+
+    public Vmp getVmp() {
+        return vmp;
+    }
+
+    public void setVmp(Vmp vmp) {
+        this.vmp = vmp;
+    }
+
+    public Amp getAmp() {
+        return amp;
+    }
+
+    public void setAmp(Amp amp) {
+        this.amp = amp;
+    }
+
+    public Vmpp getVmpp() {
+        return vmpp;
+    }
+
+    public void setVmpp(Vmpp vmpp) {
+        this.vmpp = vmpp;
+    }
+
+    public Ampp getAmpp() {
+        return ampp;
+    }
+
+    public void setAmpp(Ampp ampp) {
+        this.ampp = ampp;
+    }
+
+    public List<Ampp> getAmpps() {
+        return ampps;
+    }
+
+    public void setAmpps(List<Ampp> ampps) {
+        this.ampps = ampps;
+    }
+
+    public MeasurementUnit getIssueUnit() {
+        return issueUnit;
+    }
+
+    public void setIssueUnit(MeasurementUnit issueUnit) {
+        this.issueUnit = issueUnit;
+    }
+
+    public List<Bill> getBills() {
+        return bills;
+    }
+
+    public void setBills(List<Bill> bills) {
+        this.bills = bills;
     }
 
 }

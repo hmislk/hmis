@@ -1,16 +1,16 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Open Hospital Management Information System
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.hr;
 
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.dataStructure.ShiftTable;
 import com.divudi.data.hr.DayType;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.ejb.HumanResourceBean;
 import com.divudi.entity.Staff;
 import com.divudi.entity.hr.Roster;
@@ -21,6 +21,7 @@ import com.divudi.entity.hr.StaffShiftHistory;
 import com.divudi.facade.StaffFacade;
 import com.divudi.facade.StaffShiftFacade;
 import com.divudi.facade.StaffShiftHistoryFacade;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -51,7 +52,7 @@ public class ShiftTableController implements Serializable {
     List<ShiftTable> shiftTables;
     @EJB
     HumanResourceBean humanResourceBean;
-    @EJB
+
     CommonFunctions commonFunctions;
     @EJB
     StaffShiftFacade staffShiftFacade;
@@ -254,7 +255,7 @@ public class ShiftTableController implements Serializable {
         Long range = getCommonFunctions().getDayCount(getFromDate(), getToDate());
         setDateRange(range + 1);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Working Time/Roster table(Fill New)(/faces/hr/hr_shift_table.xhtml)");
+        
     }
 
     public void fetchShiftTable() {
@@ -343,7 +344,7 @@ public class ShiftTableController implements Serializable {
         Long range = getCommonFunctions().getDayCount(getFromDate(), getToDate());
         setDateRange(range + 1);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Working Time/Roster table(Fill Old Roster)(/faces/hr/hr_shift_table.xhtml)");
+        
     }
 
     public void fetchShiftTableByStaff() {
@@ -351,7 +352,7 @@ public class ShiftTableController implements Serializable {
             return;
         }
         if (staff == null) {
-            UtilityController.addErrorMessage("Plaese Select Staff");
+            JsfUtil.addErrorMessage("Plaese Select Staff");
             return;
         }
 
@@ -391,7 +392,7 @@ public class ShiftTableController implements Serializable {
 //            }
             List<StaffShift> ss = getHumanResourceBean().fetchStaffShift(nowDate, staff);
             if (ss == null) {
-                UtilityController.addErrorMessage("No Staff Shift");
+                JsfUtil.addErrorMessage("No Staff Shift");
                 return;
             } else {
                 netT.getStaffShift().addAll(ss);
@@ -507,7 +508,7 @@ public class ShiftTableController implements Serializable {
                         if (s.getShift().getDurationMin() > 0) {
                             s.setTransWorkTime(fetchWorkTime(staff, nowDate));
                             if (b) {
-                                //System.out.println("b = " + b);
+                                //// // System.out.println("b = " + b);
                                 summeryTable.getStaffShift().get(a).setTransWorkTime(summeryTable.getStaffShift().get(a).getTransWorkTime() + s.getTransWorkTime());
                                 summeryTable.getStaffShift().get(a).setTransShiftTime(summeryTable.getStaffShift().get(a).getTransShiftTime() + s.getShift().getDurationMin());
                                 a++;
@@ -519,7 +520,7 @@ public class ShiftTableController implements Serializable {
                             }
                         } else {
                             if (b) {
-                                //System.out.println("b = " + b);
+                                //// // System.out.println("b = " + b);
                                 summeryTable.getStaffShift().get(a).setTransWorkTime(summeryTable.getStaffShift().get(a).getTransWorkTime() + s.getTransWorkTime());
                                 summeryTable.getStaffShift().get(a).setTransShiftTime(summeryTable.getStaffShift().get(a).getTransShiftTime() + s.getShift().getDurationMin());
                                 a++;
@@ -543,7 +544,7 @@ public class ShiftTableController implements Serializable {
                         newStaffShift.setCreatedAt(new Date());
                         newStaffShift.setCreater(sessionController.getLoggedUser());
                         if (b) {
-                            //System.out.println("b = " + b);
+                            //// // System.out.println("b = " + b);
                             summeryTable.getStaffShift().get(a).setTransWorkTime(summeryTable.getStaffShift().get(a).getTransWorkTime() + 0);
                             summeryTable.getStaffShift().get(a).setTransShiftTime(summeryTable.getStaffShift().get(a).getTransShiftTime() + 0);
                             a++;
@@ -572,30 +573,30 @@ public class ShiftTableController implements Serializable {
 //        List<Staff> staffs = getHumanResourceBean().fetchStaffShift(fromDate, toDate, roster);
 //
 //        for (Staff staff : staffs) {
-//            //System.out.println("staff.getPerson().getName() = " + staff.getPerson().getName());
+//            //// // System.out.println("staff.getPerson().getName() = " + staff.getPerson().getName());
 //
 //            double timeRoster = 0.0;
 //            double timeWork = 0.0;
-//            //System.out.println("shiftTables = " + shiftTables);
+//            //// // System.out.println("shiftTables = " + shiftTables);
 //            for (ShiftTable st : shiftTables) {
-//                //System.out.println("st.getStaffShift() = " + st.getStaffShift());
+//                //// // System.out.println("st.getStaffShift() = " + st.getStaffShift());
 //                List<StaffShift> ss = getHumanResourceBean().fetchStaffShift(st.getDate(), staff);
-//                //System.out.println("ss.size() = " + ss.size());
+//                //// // System.out.println("ss.size() = " + ss.size());
 //                for (StaffShift s : ss) {
 //                    if (s.getStaff() == staff) {
-//                        //System.out.println("s.getStaff() = " + s.getStaff().getPerson().getName());
-//                        //System.out.println("staff = " + staff.getPerson().getName());
-//                        //System.out.println("timeRoster = " + timeRoster);
-//                        //System.out.println("timeWork = " + timeWork);
+//                        //// // System.out.println("s.getStaff() = " + s.getStaff().getPerson().getName());
+//                        //// // System.out.println("staff = " + staff.getPerson().getName());
+//                        //// // System.out.println("timeRoster = " + timeRoster);
+//                        //// // System.out.println("timeWork = " + timeWork);
 //                        timeRoster += s.getShift().getDurationHour();
 //                        timeWork += s.getTransWorkTime();
-//                        //System.out.println("timeRoster = " + timeRoster);
-//                        //System.out.println("timeWork = " + timeWork);
+//                        //// // System.out.println("timeRoster = " + timeRoster);
+//                        //// // System.out.println("timeWork = " + timeWork);
 //                    }
 //                }
 //            }
-//            //System.out.println("Total timeRoster = " + timeRoster);
-//            //System.out.println("Total timeWork = " + timeWork);
+//            //// // System.out.println("Total timeRoster = " + timeRoster);
+//            //// // System.out.println("Total timeWork = " + timeWork);
 //            StaffShift nss = new StaffShift();
 //            nss.setTransWorkTime(timeWork);
 //            nss.setTransShiftTime(timeRoster);
@@ -607,7 +608,7 @@ public class ShiftTableController implements Serializable {
         Long range = getCommonFunctions().getDayCount(getFromDate(), getToDate());
         setDateRange(range + 1);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Shift/Roster table and vertify time(/faces/hr/hr_report_shift_table.xhtml)");
+        
     }
 
     public double fetchWorkTime(Staff staff, Date date) {
@@ -673,13 +674,13 @@ public class ShiftTableController implements Serializable {
                 + " where ss.retired=false "
                 + " order by ss.staff.codeInterger ";
 
-        List<Staff> staffs = staffFacade.findBySQL(sql);
+        List<Staff> staffs = staffFacade.findByJpql(sql);
 
 //        sql = "Select ss from StaffShift ss "
 //                + " where ss.retired=false "
 //                + " and ss.shiftDate is not null";
 //
-//        StaffShift staffShift = staffShiftFacade.findFirstBySQL(sql);
+//        StaffShift staffShift = staffShiftFacade.findFirstByJpql(sql);
         Calendar nc = Calendar.getInstance();
         nc.setTime(new Date());
         nc.set(2015, 00, 01, 00, 00, 00);

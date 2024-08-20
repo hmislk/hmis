@@ -1,17 +1,18 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Open Hospital Management Information System
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.hr;
 
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.entity.hr.Roster;
 import com.divudi.entity.hr.Shift;
 import com.divudi.facade.RosterFacade;
 import com.divudi.facade.ShiftFacade;
+import com.divudi.bean.common.util.JsfUtil;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
@@ -48,39 +49,39 @@ public class ShiftController implements Serializable {
 
     private boolean errorCheck() {
         if (getCurrent().getRoster() == null) {
-            UtilityController.addErrorMessage("Select Roster");
+            JsfUtil.addErrorMessage("Select Roster");
             return true;
         }
 
         if (getCurrent().getName().trim().isEmpty() && getCurrent().getName().equals("")) {
-            UtilityController.addErrorMessage("Enter Name");
+            JsfUtil.addErrorMessage("Enter Name");
             return true;
         }
 
         if (getCurrent().getDayType() == null) {
-            UtilityController.addErrorMessage("Select Day Type");
+            JsfUtil.addErrorMessage("Select Day Type");
             return true;
         }
 
 //        if (getCurrent().getStartingTime() == null) {
-//            UtilityController.addErrorMessage("Set Start Time");
+//            JsfUtil.addErrorMessage("Set Start Time");
 //            return true;
 //        }
 //
 //        if (getCurrent().getEndingTime() == null) {
-//            UtilityController.addErrorMessage("Set End Time");
+//            JsfUtil.addErrorMessage("Set End Time");
 //            return true;
 //        }
 //        if (getCurrent().getCount() == 0) {
-//            UtilityController.addErrorMessage("Set Staff count correctly");
+//            JsfUtil.addErrorMessage("Set Staff count correctly");
 //            return true;
 //        }
 //        if(getCurrentDayShift().getRepeatedDay()!=0 && getCurrentDayShift().isDayOff()){
-//            UtilityController.addErrorMessage("Repeated day & dayoff can't active at Same  time");
+//            JsfUtil.addErrorMessage("Repeated day & dayoff can't active at Same  time");
 //            return true;
 //        }
 //        if (checkTimeLimit()) {
-//            UtilityController.addErrorMessage("You Cant add more than 24h per Roster");
+//            JsfUtil.addErrorMessage("You Cant add more than 24h per Roster");
 //            return true;
 //        }
         return false;
@@ -94,7 +95,7 @@ public class ShiftController implements Serializable {
         HashMap hm = new HashMap();
         sql = "select c from Shift c "
                 + " where c.retired=false "
-                + " and upper(c.name) like :q "
+                + " and (c.name) like :q "
                 + " and (c.hideShift=false or c.hideShift is null) ";
 
         if (getCurrentRoster() != null) {
@@ -104,7 +105,7 @@ public class ShiftController implements Serializable {
 
         sql += " order by c.name";
         hm.put("q", "%" + qry.toUpperCase() + "%");
-        shifts = getFacade().findBySQL(sql, hm);
+        shifts = getFacade().findByJpql(sql, hm);
 
         return shifts;
     }
@@ -115,7 +116,7 @@ public class ShiftController implements Serializable {
         HashMap hm = new HashMap();
         sql = "select c from Shift c "
                 + " where c.retired=false "
-                + " and upper(c.name) like :q ";
+                + " and (c.name) like :q ";
 
         if (getCurrentRoster() != null) {
             sql += " and c.roster=:rs";
@@ -124,28 +125,24 @@ public class ShiftController implements Serializable {
 
         sql += " order by c.name";
         hm.put("q", "%" + qry.toUpperCase() + "%");
-        shifts = getFacade().findBySQL(sql, hm);
+        shifts = getFacade().findByJpql(sql, hm);
 
         return shifts;
     }
 
     public void saveSelected() {
-
         if (errorCheck()) {
             return;
         }
-
-        if (getCurrent().getId() != null && getCurrent().getId() > 0) {
+        if (getCurrent().getId() != null) {
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            UtilityController.addSuccessMessage("Saved Successfully");
+            JsfUtil.addSuccessMessage("Saved Successfully");
         }
-
-        //     recreateModel();
         createShiftList();
         current = null;
     }
@@ -162,26 +159,20 @@ public class ShiftController implements Serializable {
     }
 
     public void delete() {
-
-        if (current != null) {
-            // removeAll();
+        if (current == null) {
+            JsfUtil.addErrorMessage("Nothing Seleced");
+            return;
+        } else {
             current.setRetired(true);
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
-
             getFacade().edit(current);
-
-//            getFacade().remove(current);
-//            getCurrentRoster().getShiftList().remove(getCurrent());
+            getCurrentRoster().getShiftList().remove(getCurrent());
             getRosterFacade().edit(getCurrentRoster());
-            UtilityController.addSuccessMessage("Deleted Successfully");
-        } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         }
-        //   recreateModel();
-
+        createShiftList();
         current = null;
-
     }
 
     public Shift getCurrent() {
@@ -239,15 +230,14 @@ public class ShiftController implements Serializable {
     }
 
     public void createShiftList() {
-        String sql = "Select s From Shift s "
+        String jpql = "Select s "
+                + " From Shift s "
                 + " where s.retired=false "
                 + " and s.roster=:rs ";
-        //   + " order by s.shiftOrder ";
-        ////System.out.println("sql = " + sql);
-        HashMap hm = new HashMap();
-        hm.put("rs", getCurrentRoster());
-
-        shiftList = getFacade().findBySQL(sql, hm);
+        HashMap m = new HashMap();
+        m.put("rs", getCurrentRoster());
+        shiftList = getFacade().findByJpql(jpql, m);
+        JsfUtil.addSuccessMessage("Listed");
     }
 
     public void createShiftListReport() {
@@ -264,9 +254,9 @@ public class ShiftController implements Serializable {
 
         sql += " order by s.roster.name ";
 
-        shiftList = getFacade().findBySQL(sql);
+        shiftList = getFacade().findByJpql(sql);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Shift/Entered shift report(/faces/hr/hr_shift_report.xhtml)");
+        
     }
 
     public List<Shift> getShiftList() {
@@ -297,46 +287,6 @@ public class ShiftController implements Serializable {
             } catch (NumberFormatException exception) {
                 key = 0l;
             }
-            return key;
-        }
-
-        String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
-        }
-
-        @Override
-        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
-            if (object == null) {
-                return null;
-            }
-            if (object instanceof Shift) {
-                Shift o = (Shift) object;
-                return getStringKey(o.getId());
-            } else {
-                throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + ShiftController.class.getName());
-            }
-        }
-    }
-
-    @FacesConverter("shift")
-    public static class ShiftControllerConverter implements Converter {
-
-        @Override
-        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
-                return null;
-            }
-            ShiftController controller = (ShiftController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "shiftController");
-            return controller.getFacade().find(getKey(value));
-        }
-
-        java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
             return key;
         }
 

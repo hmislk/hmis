@@ -1,0 +1,219 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body class="w-100 border">
+
+        <ui:composition template="/reports/index.xhtml" class="w-100 border">
+            <ui:define name="subcontent">
+                <h:form class="w-100">
+                    <p:panel header="Professional Fee Payment Report" class="w-100">
+                        <h:panelGrid columns="5" class="w-100 ">
+                            <p:outputLabel value="Consultant Speciality" >
+                            </p:outputLabel>
+                            <p:selectOneMenu >
+                                <f:selectItem itemLabel="Select speciality"/>
+                                <f:selectItems value="#{specialityController.items}" var="i" itemLabel="#{i.name}" itemValue="#{i}"/>
+
+                            </p:selectOneMenu>
+                            
+                            <p:spacer/>
+                            
+                            <p:outputLabel value="Report Type"></p:outputLabel>
+                            <p:selectOneMenu required="true">
+                                <f:selectItem itemLabel="Select Report Type"/>
+                            </p:selectOneMenu>
+                            
+                            <p:outputLabel value="Admission Type" ></p:outputLabel>
+                            <p:selectOneMenu id="institutionMenu" required="true">
+                                <f:selectItem itemLabel="Select Institution Type"/>
+                                <f:selectItems value="#{admissionController.items}" var="i" itemLabel="#{i.name}" itemValue="#{i}"/>
+                                <!--                               <p:ajax process="@this" update="cmdDepartment"></p:ajax>-->
+                            </p:selectOneMenu>
+                            
+                            <p:spacer/>
+                            
+                            <p:outputLabel value="Room Category" ></p:outputLabel>
+                            <p:selectOneMenu required="true">
+                                <f:selectItem itemLabel="Select Institution Type"/>
+                                <f:selectItems value="#{roomCategoryController.items}" var="i" itemLabel="#{i.name}" itemValue="#{i}"/>
+                             
+                            </p:selectOneMenu>
+
+
+                            
+                            <p:outputLabel value="Invoice Type">
+                            </p:outputLabel>
+                            <p:selectOneMenu 
+                                id="cmdDepartment"
+                                filter="true"
+                                >
+                                <f:selectItem itemLabel="Select Type"></f:selectItem>
+                                
+                            </p:selectOneMenu>
+
+                            
+                            <p:spacer/>
+                            
+                            <p:outputLabel value="Visit Type" >
+                            </p:outputLabel>
+                            <p:selectOneMenu >
+                                <f:selectItem itemLabel="Select visit type"/>
+
+                            </p:selectOneMenu>
+                            
+                            <p:commandButton ajax="false" value="Process" action="null" >
+                            </p:commandButton>
+                        </h:panelGrid><br />
+
+                        <p:dataTable value="#{searchController.telephoneNumbers}" var="b" id="tb1" rowIndexVar="i"
+                                     rowKey="#{b}" 
+                                     rows="#{searchController.rows}"
+                                     selection="#{searchController.selectedTelephoneNumbers}"
+                                     paginator="true"
+                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     rowsPerPageTemplate="20, 50, 100, 1000, 1500" class="w-100">
+
+
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="S No" >
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="BHT No" >
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Consultant" >
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Created By" >
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Created Date" >
+                                    </p:outputLabel>
+                                </f:facet> 
+                            </p:column>
+
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Documented Date" >
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Original Doc No" >
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Cancel Doc Date" >
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Cancel Doc No" >
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Speciality" >
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="MRN" >
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Invoice No" >
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Invoice Date" >
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Patient Name" >
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Main Service Name" >
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Linked Service Name" >
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Linked Service Amount" >
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Tax Amount" >
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Net Amount" >
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+                        </p:dataTable>
+
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

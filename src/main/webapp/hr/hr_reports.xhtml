@@ -1,8 +1,8 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
-      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui">
 
     <h:body>
@@ -11,7 +11,7 @@
 
             <ui:define name="content">
                 <h:form>
-                    <p:panel header="HR Reports">
+                    <p:panel header="HR Analytics">
                         <p:tabView orientation="left">
 
                             <p:tab title="(1) Salary Report">
@@ -232,7 +232,7 @@
                                                      actionListener="#{hrReportController.makeNull()}" 
                                                      styleClass="linkButton" ajax="false" />
                                     <p:commandButton value="(3.2) Month End Employee Working Time + 
-                                                     Over Time Report-By Minute(Minute) Summery (New)" 
+                                                     Over Time Report-By Minute(Minute) Summary (New)" 
                                                      action="hr_report_month_end_work_time_miniuts_summery" 
                                                      actionListener="#{hrReportController.makeNull()}" 
                                                      styleClass="linkButton" ajax="false" />

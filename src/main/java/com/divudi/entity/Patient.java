@@ -1,12 +1,14 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+* Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.entity;
 
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Basic;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -15,6 +17,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
+import javax.persistence.PostLoad;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Transient;
@@ -33,15 +36,17 @@ public class Patient implements Serializable {
     static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    //Main Properties
     Long id;
-    @ManyToOne
+
+    private Long patientPhoneNumber;
+    private Long patientMobileNumber;
+    @ManyToOne(cascade = CascadeType.ALL)
     Person person;
-    //personaI dentification Number
+
     Integer pinNo;
-    //healthdentification Number
+
     Integer hinNo;
-    //Created Properties
+
     @ManyToOne
     Institution createdInstitution;
     @ManyToOne
@@ -59,6 +64,7 @@ public class Patient implements Serializable {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date retiredAt;
     String retireComments;
+
     @Transient
     String age;
     @Transient
@@ -69,6 +75,8 @@ public class Patient implements Serializable {
     private Long ageInDaysOnBilledDate;
     @Transient
     private Date billedDate;
+    @Transient
+    private boolean editingMode;
     @Lob
     @Column(columnDefinition = "LONGBLOB")
     @Basic(fetch = FetchType.LAZY)
@@ -95,11 +103,37 @@ public class Patient implements Serializable {
     Date fromDate;
     @Temporal(TemporalType.TIMESTAMP)
     Date toDate;
-    @Size(max = 10)
+    @Size(max = 15)
     String phn;
+
+    private Boolean hasAnAccount;
+    private Double runningBalance;
+    private Double creditLimit;
+
+    private Long patientId;
 
     @Transient
     Bill bill;
+
+            
+    @Transient
+    private String phoneNumberStringTransient;
+    
+    @Transient
+    private String mobileNumberStringTransient;
+
+    private Boolean cardIssues;
+
+    @Temporal(javax.persistence.TemporalType.DATE)
+    private Date cardIssuedDate;
+
+    public Patient() {
+        editingMode = true;
+    }
+
+    public void toggleEditMode() {
+        editingMode = !editingMode;
+    }
 
     public Institution getCreatedInstitution() {
         return createdInstitution;
@@ -143,6 +177,13 @@ public class Patient implements Serializable {
         this.code = code;
     }
 
+    @PostLoad
+    @Deprecated
+    private void onLoad() {
+        calAgeFromDob();
+    }
+
+    @Deprecated
     public void calAgeFromDob() {
         age = "";
         ageInDays = 0l;
@@ -183,7 +224,8 @@ public class Patient implements Serializable {
         period = new Period(dob, date, PeriodType.days());
         ageInDays = (long) period.getDays();
     }
-    
+
+    @Deprecated
     public void calAgeFromDob(Date billedDate) {
         this.billedDate = billedDate;
         ageOnBilledDate = "";
@@ -230,6 +272,7 @@ public class Patient implements Serializable {
         return serialVersionUID;
     }
 
+    @Deprecated
     public String getAge() {
         calAgeFromDob();
         return age;
@@ -245,11 +288,18 @@ public class Patient implements Serializable {
         return ageMonths;
     }
 
+    public String getIdStr() {
+        String formatted = String.format("%07d", id);
+        return formatted;
+    }
+
+    @Deprecated
     public int getAgeDays() {
         calAgeFromDob();
         return ageDays;
     }
 
+    @Deprecated
     public int getAgeYears() {
         calAgeFromDob();
         return ageYears;
@@ -262,9 +312,6 @@ public class Patient implements Serializable {
     public void setId(Long id) {
         this.id = id;
     }
-    
-    
-    
 
     @Override
     public int hashCode() {
@@ -292,6 +339,9 @@ public class Patient implements Serializable {
     }
 
     public Person getPerson() {
+        if (person == null) {
+            person = new Person();
+        }
         return person;
     }
 
@@ -299,6 +349,8 @@ public class Patient implements Serializable {
         this.person = person;
     }
 
+    
+    
     public Integer getPinNo() {
         return pinNo;
     }
@@ -423,12 +475,12 @@ public class Patient implements Serializable {
         calAgeFromDob(billedDate);
         return ageOnBilledDate;
     }
-    
+
     public String getAgeOnBilledDate(Date billedDate) {
         calAgeFromDob(billedDate);
         return ageOnBilledDate;
     }
-    
+
     public String ageOnBilledDate(Date billedDate) {
         calAgeFromDob(billedDate);
         return ageOnBilledDate;
@@ -473,5 +525,123 @@ public class Patient implements Serializable {
     public void setBilledDate(Date billedDate) {
         this.billedDate = billedDate;
     }
+
+    public Boolean getCardIssues() {
+        return cardIssues;
+    }
+
+    public void setCardIssues(Boolean cardIssues) {
+        this.cardIssues = cardIssues;
+    }
+
+    public Date getCardIssuedDate() {
+        return cardIssuedDate;
+    }
+
+    public void setCardIssuedDate(Date cardIssuedDate) {
+        this.cardIssuedDate = cardIssuedDate;
+    }
+
+    public Long getPatientId() {
+        return patientId;
+    }
+
+    public void setPatientId(Long patientId) {
+        this.patientId = patientId;
+    }
+
+    public Boolean getHasAnAccount() {
+        return hasAnAccount;
+    }
+
+    public void setHasAnAccount(Boolean hasAnAccount) {
+        this.hasAnAccount = hasAnAccount;
+    }
+
+    public Double getRunningBalance() {
+        return runningBalance;
+    }
+
+    public void setRunningBalance(Double runningBalance) {
+        this.runningBalance = runningBalance;
+    }
+
+    public Double getCreditLimit() {
+        return creditLimit;
+    }
+
+    public void setCreditLimit(Double creditLimit) {
+        this.creditLimit = creditLimit;
+    }
+
+    public boolean isEditingMode() {
+        return editingMode;
+    }
+
+    public void setEditingMode(boolean editingMode) {
+        this.editingMode = editingMode;
+    }
+
+    public String getPhoneNumberStringTransient() {
+        if (this.getPerson() == null) {
+            return null;
+        }
+        phoneNumberStringTransient = this.getPerson().getPhone();
+        return phoneNumberStringTransient;
+    }
+    
+    public String getMobileNumberStringTransient() {
+        if (this.getPerson() == null) {
+            return null;
+        }
+        mobileNumberStringTransient = this.getPerson().getMobile();
+        return mobileNumberStringTransient;
+    }
+
+    @Transient
+    public void setPhoneNumberStringTransient(String phoneNumberStringTransient) {
+        try {
+            if (this.getPerson() == null) {
+                return;
+            }
+            this.getPerson().setPhone(phoneNumberStringTransient);
+            this.patientPhoneNumber = CommonFunctions.removeSpecialCharsInPhonenumber(phoneNumberStringTransient);  
+            this.phoneNumberStringTransient = phoneNumberStringTransient;
+        } catch (Exception e) {
+        }
+    }
+    
+    
+    @Transient
+    public void setMobileNumberStringTransient(String mobileNumberStringTransient) {
+        try {
+            if (this.getPerson() == null) {
+                return;
+            }
+            this.getPerson().setMobile(mobileNumberStringTransient);
+            this.patientMobileNumber = CommonFunctions.removeSpecialCharsInPhonenumber(mobileNumberStringTransient);  
+            this.mobileNumberStringTransient = mobileNumberStringTransient;
+        } catch (Exception e) {
+        }
+    }
+    
+
+    public Long getPatientPhoneNumber() {
+        return patientPhoneNumber;
+    }
+
+    public void setPatientPhoneNumber(Long patientPhoneNumber) {
+        this.patientPhoneNumber = patientPhoneNumber;
+    }
+
+    public Long getPatientMobileNumber() {
+        return patientMobileNumber;
+    }
+
+    public void setPatientMobileNumber(Long patientMobileNumber) {
+        this.patientMobileNumber = patientMobileNumber;
+    }
+    
+    
 
 }

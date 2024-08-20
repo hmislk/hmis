@@ -1,7 +1,7 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Open Hospital Management Information System
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.data.hr;
 
@@ -9,7 +9,7 @@ import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.Sex;
 import com.divudi.data.MessageType;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.entity.Area;
 import com.divudi.entity.Category;
 import com.divudi.entity.Department;
@@ -29,8 +29,8 @@ import com.divudi.entity.hr.StaffCategory;
 import com.divudi.entity.hr.StaffShift;
 import com.divudi.entity.inward.AdmissionType;
 import com.divudi.entity.membership.MembershipScheme;
+import com.divudi.java.CommonFunctions;
 import java.util.Date;
-import javax.inject.Inject;
 import javax.persistence.Transient;
 
 /**
@@ -39,7 +39,7 @@ import javax.persistence.Transient;
  */
 public class ReportKeyWord {
 
-    @Inject
+
     CommonFunctions commonFunctions;
 
     DayType[] dayTypes;
@@ -367,7 +367,7 @@ public class ReportKeyWord {
         }
 
         String arr[] = address.split(",");
-        ////System.out.println(arr);
+        ////// // System.out.println(arr);
         if (arr == null) {
             return;
         }
@@ -377,7 +377,7 @@ public class ReportKeyWord {
             transAddress3 = arr[2];
             transAddress4 = arr[3];
         } catch (Exception e) {
-            ////System.out.println(e.getMessage());
+            ////// // System.out.println(e.getMessage());
         }
 
     }

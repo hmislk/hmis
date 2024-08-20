@@ -1,17 +1,16 @@
 /*
- * MSc(Biomedical Informatics) Project
+ * Open Hospital Management Information System
  *
- * Development and Implementation of a Web-based Combined Data Repository of
- Genealogical, Clinical, Laboratory and Genetic Data
- * and
- * a Set of Related Tools
+ * Dr M H B Ariyaratne
+ * Acting Consultant (Health Informatics)
+ * (94) 71 5812399
+ * (94) 71 5812399
  */
 package com.divudi.bean.inward;
 import com.divudi.bean.common.BillBeanController;
-import com.divudi.bean.common.ServiceController;
 import com.divudi.bean.common.ServiceSubCategoryController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.FeeType;
 import com.divudi.data.SessionNumberType;
 import com.divudi.data.dataStructure.ServiceFee;
@@ -45,7 +44,7 @@ import javax.persistence.TemporalType;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
  Informatics)
  */
 @Named
@@ -100,12 +99,12 @@ public class InwardServiceController implements Serializable {
 
     public List<Department> getInstitutionDepatrments() {
         List<Department> d;
-        //////System.out.println("gettin ins dep ");
+        //////// // System.out.println("gettin ins dep ");
         if (getCurrent().getInstitution() == null) {
             return new ArrayList<>();
         } else {
             String sql = "Select d From Department d where d.retired=false and d.institution.id=" + getCurrent().getInstitution().getId();
-            d = getDepartmentFacade().findBySQL(sql);
+            d = getDepartmentFacade().findByJpql(sql);
         }
 
         return d;
@@ -117,18 +116,18 @@ public class InwardServiceController implements Serializable {
         if (query == null) {
             suggestions = new ArrayList<>();
         } else {
-            sql = "select c from InwardService c where c.retired=false and upper(c.name) like '%" + query.toUpperCase() + "%' order by c.name";
-            //////System.out.println(sql);
-            suggestions = getFacade().findBySQL(sql);
+            sql = "select c from InwardService c where c.retired=false and (c.name) like '%" + query.toUpperCase() + "%' order by c.name";
+            //////// // System.out.println(sql);
+            suggestions = getFacade().findByJpql(sql);
         }
         return suggestions;
     }
 
     public List<InwardService> getSelectedItems() {
         if (selectText.trim().equals("")) {
-            selectedItems = getFacade().findBySQL("select c from InwardService c where c.retired=false order by c.name");
+            selectedItems = getFacade().findByJpql("select c from InwardService c where c.retired=false order by c.name");
         } else {
-            selectedItems = getFacade().findBySQL("select c from InwardService c where c.retired=false and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+            selectedItems = getFacade().findByJpql("select c from InwardService c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         }
         return selectedItems;
     }
@@ -149,30 +148,6 @@ public class InwardServiceController implements Serializable {
         this.reportedAs = reportedAs;
     }
 
-    public void correctIx() {
-        List<InwardService> allItems = getEjbFacade().findAll();
-        for (InwardService i : allItems) {
-            i.setPrintName(i.getName());
-            i.setFullName(i.getName());
-            i.setShortName(i.getName());
-            i.setDiscountAllowed(Boolean.TRUE);
-            i.setUserChangable(false);
-            i.setTotal(getBillBean().totalFeeforItem(i));
-            getEjbFacade().edit(i);
-        }
-
-    }
-
-    public void correctIx1() {
-        List<InwardService> allItems = getEjbFacade().findAll();
-        for (InwardService i : allItems) {
-            i.setBilledAs(i);
-            i.setReportedAs(i);
-            getEjbFacade().edit(i);
-        }
-
-    }
-
     public String getBulkText() {
 
         return bulkText;
@@ -183,7 +158,7 @@ public class InwardServiceController implements Serializable {
     }
 
     public List<InwardService> completeItem(String qry) {
-        List<InwardService> completeItems = getFacade().findBySQL("select c from Item c where ( type(c) = InwardService or type(c) = Packege ) and c.retired=false and upper(c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
+        List<InwardService> completeItems = getFacade().findByJpql("select c from Item c where ( type(c) = InwardService or type(c) = Packege ) and c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
         return completeItems;
     }
 
@@ -200,7 +175,7 @@ public class InwardServiceController implements Serializable {
                 String ix = w.get(1);
                 String ic = w.get(2);
                 String f = w.get(4);
-                //////System.out.println(code + " " + ix + " " + ic + " " + f);
+                //////// // System.out.println(code + " " + ix + " " + ic + " " + f);
 
                 InwardService tix = new InwardService();
                 tix.setCode(code);
@@ -228,7 +203,7 @@ public class InwardServiceController implements Serializable {
 
     private boolean errorCheck() {
         if (getCurrent().isUserChangable() && getCurrent().isDiscountAllowed() == true) {
-            UtilityController.addErrorMessage("Cant tick both User can Change & Discount Allowed");
+            JsfUtil.addErrorMessage("Cant tick both User can Change & Discount Allowed");
             return true;
         }
         return false;
@@ -237,11 +212,11 @@ public class InwardServiceController implements Serializable {
     public void saveSelected() {
 
         if (getCurrent().getDepartment() == null) {
-               UtilityController.addErrorMessage("Please Select Department");
+               JsfUtil.addErrorMessage("Please Select Department");
             return;
         }
         if (getCurrent().getInwardChargeType() == null) {
-            UtilityController.addErrorMessage("Please Select Inward Charge type");
+            JsfUtil.addErrorMessage("Please Select Inward Charge type");
             return;
         }
 
@@ -252,33 +227,33 @@ public class InwardServiceController implements Serializable {
 //            getCurrent().setCategory(getServiceSubCategoryController().getParentCategory());
 //        }
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
-            //////System.out.println("1");
+            //////// // System.out.println("1");
             if (billedAs == false) {
-                //////System.out.println("2");
+                //////// // System.out.println("2");
                 getCurrent().setBilledAs(getCurrent());
 
             }
             if (reportedAs == false) {
-                //////System.out.println("3");
+                //////// // System.out.println("3");
                 getCurrent().setReportedAs(getCurrent());
             }
             getFacade().edit(getCurrent());
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
-            //////System.out.println("4");
+            //////// // System.out.println("4");
             getCurrent().setCreatedAt(new Date());
             getCurrent().setCreater(getSessionController().getLoggedUser());
             getFacade().create(getCurrent());
             if (billedAs == false) {
-                //////System.out.println("5");
+                //////// // System.out.println("5");
                 getCurrent().setBilledAs(getCurrent());
             }
             if (reportedAs == false) {
-                //////System.out.println("6");
+                //////// // System.out.println("6");
                 getCurrent().setReportedAs(getCurrent());
             }
             getFacade().edit(getCurrent());
-            UtilityController.addSuccessMessage("Saved Successfully");
+            JsfUtil.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
         getItems();
@@ -333,23 +308,20 @@ public class InwardServiceController implements Serializable {
 
     public void delete() {
 
-        for (ItemFee it : getFees(current)) {
-            it.setRetired(true);
-            it.setRetiredAt(new Date());
-            it.setRetirer(getSessionController().getLoggedUser());
-            getItemFeeFacade().edit(it);
-        }
 
         if (current != null) {
             current.setRetired(true);
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
+        getItems();
+        current = null;
+        getCurrent();
 
     }
 
@@ -364,7 +336,7 @@ public class InwardServiceController implements Serializable {
         HashMap hash = new HashMap();
         String sql = "select c from ItemFee c where c.retired = false and type(c.item) = :ser order by c.item.name";
         hash.put("ser", InwardService.class);
-        temp = getItemFeeFacade().findBySQL(sql, hash, TemporalType.TIMESTAMP);
+        temp = getItemFeeFacade().findByJpql(sql, hash, TemporalType.TIMESTAMP);
 
         if (temp == null) {
             return new ArrayList<ItemFee>();
@@ -383,7 +355,7 @@ public class InwardServiceController implements Serializable {
 
             String sql = "select c from ItemFee c where c.retired = false and c.item.id =" + s.getId();
 
-            si.setItemFees(getItemFeeFacade().findBySQL(sql));
+            si.setItemFees(getItemFeeFacade().findByJpql(sql));
 
             temp.add(si);
         }
@@ -392,33 +364,27 @@ public class InwardServiceController implements Serializable {
     }
 
     public List<InwardService> getItems() {
-        String sql = "select c from InwardService c where c.retired=false order by c.category.name,c.department.name";
-        //////System.out.println(sql);
-        items = getFacade().findBySQL(sql);
-
-        for (InwardService i : items) {
-
-            List<ItemFee> tmp = getFees(i);
-            for (ItemFee itf : tmp) {
-                i.setItemFee(itf);
-            }
-        }
-
         if (items == null) {
-            items = new ArrayList<InwardService>();
+            items = findInwardServices();
         }
         return items;
     }
+    
+    public List<InwardService> findInwardServices() {
+        String sql = "select c from InwardService c where c.retired=false order by c.name";
+        return getFacade().findByJpql(sql);
+    }
+    
 
     public List<InwardService> getItem() {
         String sql;
         if (selectText.isEmpty()) {
             sql = "select c from InwardService c where c.retired=false order by c.category.name,c.name";
         } else {
-            sql = "select c from InwardService c where c.retired=false and upper(c.name) like '%" + selectText.toUpperCase() + "%' order by c.category.name,c.name";
+            sql = "select c from InwardService c where c.retired=false and (c.name) like '%" + selectText.toUpperCase() + "%' order by c.category.name,c.name";
         }
-        //////System.out.println(sql);
-        items = getFacade().findBySQL(sql);
+        //////// // System.out.println(sql);
+        items = getFacade().findByJpql(sql);
 
         if (items == null) {
             items = new ArrayList<InwardService>();
@@ -431,8 +397,8 @@ public class InwardServiceController implements Serializable {
             String sql;
             sql = "select c from InwardService c where c.retired=false order by c.category.name,c.name";
 
-            //////System.out.println(sql);
-            items = getFacade().findBySQL(sql);
+            //////// // System.out.println(sql);
+            items = getFacade().findByJpql(sql);
 
             for (InwardService i : items) {
 
@@ -460,7 +426,7 @@ public class InwardServiceController implements Serializable {
     private List<ItemFee> getFees(Item i) {
         String sql = "Select f From ItemFee f where f.retired=false and f.item.id=" + i.getId();
 
-        return getItemFeeFacade().findBySQL(sql);
+        return getItemFeeFacade().findByJpql(sql);
     }
 
     public SpecialityFacade getSpecialityFacade() {
@@ -547,9 +513,9 @@ public class InwardServiceController implements Serializable {
      *
      */
     @FacesConverter(forClass = InwardService.class)
-    public static class ServiceControllerConverter implements Converter {
+    public static class InwardServiceControllerConverter implements Converter {
 
-        public ServiceControllerConverter() {
+        public InwardServiceControllerConverter() {
         }
 
         @Override
@@ -557,50 +523,7 @@ public class InwardServiceController implements Serializable {
             if (value == null || value.length() == 0) {
                 return null;
             }
-            ServiceController controller = (ServiceController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "inwardServiceController");
-            return controller.getEjbFacade().find(getKey(value));
-        }
-
-        java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
-            return key;
-        }
-
-        String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
-        }
-
-        @Override
-        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
-            if (object == null) {
-                return null;
-            }
-            if (object instanceof InwardService) {
-                InwardService o = (InwardService) object;
-                return getStringKey(o.getId());
-            } else {
-                throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + InwardServiceController.class.getName());
-            }
-        }
-    }
-
-    @FacesConverter("inwServ")
-    public static class ServiceConverter implements Converter {
-
-        public ServiceConverter() {
-        }
-
-        @Override
-        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
-                return null;
-            }
-            ServiceController controller = (ServiceController) facesContext.getApplication().getELResolver().
+            InwardServiceController controller = (InwardServiceController) facesContext.getApplication().getELResolver().
                     getValue(facesContext.getELContext(), null, "inwardServiceController");
             return controller.getEjbFacade().find(getKey(value));
         }

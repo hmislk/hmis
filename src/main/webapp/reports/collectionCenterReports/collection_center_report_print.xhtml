@@ -1,0 +1,291 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/reports/index.xhtml">
+            <ui:define name="subcontent">
+
+                <h:form >
+
+                    <div class="container">
+                        <div class="row mb-2">
+                            <div class="col-12">
+                                <h2>Collection Center Reports Print</h2>
+                            </div>
+                        </div>
+
+                        <div class="row mb-2">
+                            <div class="col-md-2">
+                                <p:outputLabel value="From Date" />
+                            </div>
+                            <div class="col-md-4">
+                                <p:datePicker
+                                    style=" max-width: 100%; overflow-x: auto; "
+                                    class="w-100"
+                                    value="#{reportController.fromDate}" 
+                                    pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                            </div>
+                            <div class="col-md-2">
+                                <p:outputLabel value="To Date" />
+                            </div>
+                            <div class="col-md-4">
+                                <p:datePicker 
+                                    style=" max-width: 100%; overflow-x: auto; "
+                                    class="w-100"
+                                    value="#{reportController.toDate}" 
+                                    pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                            </div>
+                        </div>
+
+                        <div class="row mb-2">
+                            <div class="col-md-2">
+                                <p:outputLabel value="Institution/Branch" />
+                            </div>
+                            <div class="col-md-4">
+                                <p:selectOneMenu filter="true" id="cmdInstitution" 
+                                                 style=" max-width: 100%; overflow-x: auto; "
+                                                 class="w-100"
+                                                 value="#{reportController.institution}">
+                                    <f:selectItem itemLabel="All" />
+                                    <f:selectItems value="#{institutionController.companies}"
+                                                   var="i"
+                                                   itemLabel="#{i.name}"
+                                                   itemValue="#{i}" />
+                                </p:selectOneMenu>
+                            </div>
+                            <div class="col-md-2">
+                                <p:outputLabel value="Collection Center Name" />
+                            </div>
+                            <div class="col-md-4">
+                                <p:selectOneMenu 
+                                    style=" max-width: 100%; overflow-x: auto; "
+                                    class="w-100"
+                                    value="#{reportController.collectingCentre}"
+                                    filter="true">
+                                    <f:selectItem itemLabel="Select Collecting Centre"/>
+                                    <f:selectItems var="r" itemLabel="#{r.name}" 
+                                                   value="#{collectingCentreController.items}" 
+                                                   itemValue="#{r}" />
+                                </p:selectOneMenu>
+                            </div>
+                        </div>
+
+                        <div class="row mb-2">
+                            <div class="col-md-2">
+                                <p:outputLabel value="Collecting Centre Route" />
+                            </div>
+                            <div class="col-md-4">
+                                <p:selectOneMenu 
+                                    style=" max-width: 100%; overflow-x: auto; "
+                                    class="w-100"
+                                    value="#{reportController.route}"
+                                    filter="true"
+                                    filterMatchMode="contains">
+                                    <f:selectItem itemLabel="All" />
+                                    <f:selectItems value="#{routeController.items}"
+                                                   var="r"
+                                                   itemLabel="#{r.name}"
+                                                   itemValue="#{r}" />
+                                </p:selectOneMenu>
+                            </div>
+                            <div class="col-md-2">
+                                <p:outputLabel value="Patient MRN" />
+                            </div>
+                            <div class="col-md-4">
+                                <p:inputText value="#{reportController.phn}" />
+                            </div>
+                        </div>
+
+                        <div class="row mb-2">
+                            <div class="col-md-2">
+                                <p:outputLabel value="Invoice Number" />
+                            </div>
+                            <div class="col-md-4">
+                                <p:inputText  style=" max-width: 100%; overflow-x: auto; "
+                                              class="w-100"
+                                              value="#{reportController.invoiceNumber}" />
+                            </div>
+                            <div class="col-md-2">
+                                <p:outputLabel value="Investigation" />
+                            </div>
+                            <div class="col-md-4">
+                                <p:selectOneMenu 
+                                    filter="true"
+                                    id="acIx"
+                                    class="w-100"
+                                    converter="itemLightConverter"
+                                    value="#{reportController.itemLight}" var="ix" >
+                                    <f:selectItems value="#{reportController.investigationsAndServices}"
+                                                   var="item" 
+                                                   itemLabel="#{item.name}"
+                                                   itemValue="#{item}" >
+                                    </f:selectItems>
+                                    <p:column  headerText="Name">
+                                        <f:facet name="header" >
+                                            Name
+                                        </f:facet>
+                                        <h:outputText value="#{ix.name}" ></h:outputText>
+                                        <h:panelGroup rendered="#{ix.name ne ix.fullName}" >
+                                            <h:outputText value=" (#{ix.fullName})" ></h:outputText>
+                                        </h:panelGroup>
+                                    </p:column>
+                                    <p:column  headerText="Dept">
+                                        <h:outputText value="#{ix.departmentName}"></h:outputText>
+                                    </p:column>
+                                    <p:column  headerText="Code">
+                                        <h:outputText value="#{ix.code}"></h:outputText>
+                                    </p:column>
+                                    <p:column style="text-align: right;" headerText="Value">
+                                        <h:outputText value="#{ix.total}"></h:outputText>
+                                    </p:column>
+                                </p:selectOneMenu>
+                            </div>
+                        </div>
+
+                        <div class="row mb-2">
+                            <div class="col-md-2">
+                                <p:outputLabel value="Laboratory" />
+                            </div>
+                            <div class="col-md-4">
+                                <p:selectOneMenu 
+                                    style=" max-width: 100%; overflow-x: auto; "
+                                    class="w-100"
+                                    value="#{reportController.toDepartment}">
+                                    <f:selectItem itemLabel="Select Laboratory" />
+                                    <f:selectItems var="r" itemLabel="#{r.name}" 
+                                                   value="#{departmentController.labs}" 
+                                                   itemValue="#{r}" />
+                                </p:selectOneMenu>
+                            </div>
+                            <div class="col-md-2">
+                                <p:outputLabel value="Referring Doctor" />
+                            </div>
+                            <div class="col-md-4">
+                                <p:autoComplete forceSelection="true" 
+                                                id="cmbDoc" 
+                                                value="#{reportController.referringDoctor}" 
+                                                completeMethod="#{doctorController.completeDoctor}" var="ix" 
+                                                minQueryLength="4"
+                                                placeholder="Type at least 4 letters to search"
+                                                itemLabel="#{ix.person.name}" 
+                                                itemValue="#{ix}" 
+                                                inputStyleClass="form-control"
+                                                class="w-100" 
+                                                size="10">
+                                    <p:column headerText="Name" >
+                                        <h:outputText value="#{ix.person.nameWithTitle}" ></h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Code" >
+                                        <h:outputText value="#{ix.code}" ></h:outputText>
+                                    </p:column>
+                                </p:autoComplete>
+                            </div>
+                        </div>
+
+                        <div class="row mb-2">
+                            <div class="col-md-2">
+                                <p:outputLabel value="Status" />
+                            </div>
+                            <div class="col-md-4">
+                                <p:selectOneMenu
+                                    value="${reportController.status}"
+                                    style=" max-width: 100%; overflow-x: auto; "
+                                    class="w-100">
+                                    <f:selectItem itemLabel="Select Status" />
+                                    <f:selectItems value="#{enumController.billItemStatuses}" var="sts" itemLabel="#{sts.label}" itemValue="#{sts}" ></f:selectItems>
+                                </p:selectOneMenu>
+                            </div>
+                            <div class="col-md-6">
+                                <p:commandButton ajax="false"
+                                                 value="Process"
+                                                 action="#{reportController.processCollectingCentreReportsToPrint()}" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <p:dataTable value="#{reportController.billItems}" var="bi">
+                        <!--                        //Mandatory filters
+                        #{bi.bill.retired} - boolean - false
+                        #{bi.retired} - boolean - false
+                        #{bi.bill.billType} - public enum BillType - CollectingCentreBill
+
+                        //For User input Filters
+                        #{bi.bill.billDate} - Date - for user input from and to
+                        #{bi.bill.institution} - Institution - for Instituion or branch
+                        #{bi.bill.fromInstitution} - Institution - COllecting Centre
+                        #{bi.bill.fromInstitution.route} - Route - Route
+
+
+                        #{bi.bill.patient.phn}    Patient MRN
+                        #{bi.bill.deptId} Invoice Number
+                        #{bi.item} - Investigation
+                        #{bi.bill.toDepartment} - Laboratory
+
+                        #{bi.bill.referredBy} Referring Doctor Name
+
+                        #{bi.billItemStatus} - Status
+
+                        -->
+
+
+
+                        <p:column headerText="S. No" >
+                            <h:outputText value="#{bi.id}" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="CC Code" >
+                            <h:outputText value="#{bi.bill.fromInstitution.code}" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="Leaf No" >
+                            <h:outputText value="#{bi.bill.referenceNumber}" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="MRN" >
+                            <h:outputText value="#{bi.bill.patient.phn}" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="Patient Name" >
+                            <h:outputText value="#{bi.bill.patient.person.nameWithTitle}" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="Invoice Number" >
+                            <h:outputText value="#{bi.bill.deptId}" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="Order Date" >
+                            <h:outputText value="#{bi.bill.billDate}" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="CC Route" >
+                            <h:outputText value="#{bi.bill.fromInstitution.route.name}" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="Referring Doctor Name" >
+                            <h:outputText value="#{bi.bill.referredInstituteOrDoctor}" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="Service Name" >
+                            <h:outputText value="#{bi.item.name}" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="Result Status" >
+                            <h:outputText value="#{bi.billItemStatus.label}" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="Last printing time" >
+                            <h:outputText value="Will Be Done Later" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="Print" >
+                            <h:outputText value="Will Be Done Later" ></h:outputText>
+                        </p:column>
+
+                    </p:dataTable>
+
+
+
+
+
+
+
+                </h:form>
+
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

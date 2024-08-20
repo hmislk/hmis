@@ -1,16 +1,16 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Open Hospital Management Information System
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.hr;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.data.hr.DayType;
 import com.divudi.data.hr.LeaveType;
 import com.divudi.data.hr.ReportKeyWord;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.ejb.FinalVariables;
 import com.divudi.ejb.HumanResourceBean;
 import com.divudi.entity.Form;
@@ -27,7 +27,8 @@ import com.divudi.facade.LeaveFormFacade;
 import com.divudi.facade.StaffLeaveEntitleFacade;
 import com.divudi.facade.StaffLeaveFacade;
 import com.divudi.facade.StaffShiftFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
@@ -58,7 +59,7 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
     @Inject
     SessionController sessionController;
 
-    @EJB
+
     CommonFunctions commonFunctions;
     List<LeaveForm> leaveForms;
     Staff approvedStaff;
@@ -166,7 +167,7 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
             hm.put("toTime", getReportKeyWord().getTo() * 60);
         }
 
-        staffShifts = staffShiftFacade.findBySQL(sql, hm, 10);
+        staffShifts = staffShiftFacade.findByJpql(sql, hm, 10);
 
     }
 
@@ -198,9 +199,9 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
                 + " order by ss.shiftDate ";
         hm.put("frmTime", from);
         hm.put("toTime", to);
-        //System.out.println("sql = " + sql);
+        //// // System.out.println("sql = " + sql);
 
-        return staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE, count);
+        return staffShiftFacade.findByJpql(sql, hm, TemporalType.DATE, count);
     }
 
     public List<StaffShift> fetchStaffShiftLateIn(Staff staff, double from) {
@@ -220,7 +221,7 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
         hm.put("frmTime", from);
 //        hm.put("toTime", to);
 
-        return staffShiftFacade.findBySQL(sql, hm);
+        return staffShiftFacade.findByJpql(sql, hm);
     }
 
     public List<StaffShift> fetchStaffShiftEarlyOut(StaffShift staffShift, double from, double to, int count) {
@@ -252,9 +253,9 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
         hm.put("frmTime", from);
         hm.put("toTime", to);
 
-        //System.out.println("sql = " + sql);
+        //// // System.out.println("sql = " + sql);
 
-        return staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE, count);
+        return staffShiftFacade.findByJpql(sql, hm, TemporalType.DATE, count);
     }
 
     public FinalVariables getFinalVariables() {
@@ -295,26 +296,26 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
         hm.put("stf", staff);
         hm.put("ltp", list);
 
-        return staffLeaveEntitleFacade.findFirstBySQL(sql, hm);
+        return staffLeaveEntitleFacade.findFirstByJpql(sql, hm);
     }
 
     public void calLeaveCount() {
         if (getCurrentLeaveForm().getStaff() == null) {
-            UtilityController.addErrorMessage("Please Select Staff");
+            JsfUtil.addErrorMessage("Please Select Staff");
             return;
         }
 
         LeaveType leaveTypeLocal = getCurrentLeaveForm().getLeaveType();
 
         if (leaveTypeLocal == null) {
-            UtilityController.addErrorMessage("Please Select Leave Type");
+            JsfUtil.addErrorMessage("Please Select Leave Type");
             return;
         }
 
         StaffLeaveEntitle staffLeaveEntitle = fetchLeaveEntitle(getCurrentLeaveForm().getStaff(), getCurrentLeaveForm().getLeaveType());
 
         if (!leaveTypeLocal.isExceptionalLeave() && staffLeaveEntitle == null) {
-            UtilityController.addErrorMessage("Please Set Leave Enttile count for this Staff in Administration");
+            JsfUtil.addErrorMessage("Please Set Leave Enttile count for this Staff in Administration");
             return;
         }
 
@@ -427,7 +428,7 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
         hm.put("dt", date);
         hm.put("st", staff);
 
-        return staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
+        return staffShiftFacade.findByJpql(sql, hm, TemporalType.DATE);
     }
 
     public void addLeaveDataToStaffShift(StaffShift ss, LeaveType leaveType) {
@@ -534,7 +535,7 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
         hm.put("fd", fromDate);
         hm.put("td", toDate);
 
-        LeaveForm lf = leaveFormFacade.findFirstBySQL(sql, hm, TemporalType.DATE);
+        LeaveForm lf = leaveFormFacade.findFirstByJpql(sql, hm, TemporalType.DATE);
         return lf != null ? (LeaveFormSystem) lf : null;
 
     }
@@ -564,7 +565,7 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
         hm.put("stf", staffShift);
         hm.put("fr", form);
 
-        StaffLeave staffLeave = staffLeaveFacade.findFirstBySQL(sql, hm, TemporalType.DATE);
+        StaffLeave staffLeave = staffLeaveFacade.findFirstByJpql(sql, hm, TemporalType.DATE);
         return staffLeave != null ? (StaffLeaveSystem) staffLeave : null;
     }
 
@@ -576,7 +577,7 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
         HashMap hm = new HashMap();
         hm.put("stf", staffShift);
 
-        StaffLeave staffLeave = staffLeaveFacade.findFirstBySQL(sql, hm, TemporalType.DATE);
+        StaffLeave staffLeave = staffLeaveFacade.findFirstByJpql(sql, hm, TemporalType.DATE);
         return staffLeave != null ? (StaffLeaveSystem) staffLeave : null;
     }
 
@@ -636,7 +637,7 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
         m.put("fd", fromDate);
         m.put("td", toDate);
 
-        leaveForms = getLeaveFormFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        leaveForms = getLeaveFormFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
 
@@ -660,7 +661,7 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
         m.put("fd", fromDate);
         m.put("td", toDate);
 
-        leaveForms = getLeaveFormFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        leaveForms = getLeaveFormFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
 
@@ -668,14 +669,14 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
         String sql = "Select l from StaffShift l where l.leaveFrom=:frm ";
         HashMap nm = new HashMap();
         nm.put("frm", form);
-        return staffShiftFacade.findBySQL(sql, nm);
+        return staffShiftFacade.findByJpql(sql, nm);
     }
 
     public void deleteStaffLeave(LeaveForm form) {
         String sql = "Select l from StaffLeave l where l.form=:frm ";
         HashMap nm = new HashMap();
         nm.put("frm", form);
-        List<StaffLeave> list = staffLeaveFacade.findBySQL(sql, nm);
+        List<StaffLeave> list = staffLeaveFacade.findByJpql(sql, nm);
 
         for (StaffLeave stf : list) {
             stf.setRetired(true);

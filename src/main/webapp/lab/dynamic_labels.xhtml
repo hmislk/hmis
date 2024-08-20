@@ -1,20 +1,35 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
-      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:pe="http://primefaces.org/ui/extensions">
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      >
 
     <h:body>
 
-        <ui:composition template="/resources/template/template.xhtml">
+        <ui:composition template="/lab/administration.xhtml">
 
-            <ui:define name="content">
+            <ui:define name="subcontent">
                 <h:form>
                     <p:panelGrid columns="1" >
                         <p:panel header="Select Investigation and Field" >
+                            <f:facet name="header">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div>
+                                        
+                                    </div>
+                                    <div>
+                                        <p:commandButton 
+                                            value="Back" 
+                                            class="my-1"
+                                            icon="fas fa-arrow-left"
+                                            action="#{investigationController.navigateToManageInvestigation}" ajax="false" ></p:commandButton> 
+                                    </div>
+                                </div>
+                                
+                            </f:facet>
                             <p:panelGrid columns="2" >
 
 
@@ -83,7 +98,7 @@
                                 <h:outputLabel value="Label" ></h:outputLabel>
                                 <p:inputTextarea value="#{investigationItemDynamicLabelController.flagMessage}" ></p:inputTextarea>
                                 <h:outputLabel value="Label" ></h:outputLabel>
-                                <p:commandButton value="Save" ajax="false" action="#{investigationItemDynamicLabelController.saveForDynamicLabel()}" onclick="onSubmitButton();"  >
+                                <p:commandButton value="Save" ajax="false" action="#{investigationItemDynamicLabelController.saveForDynamicLabel()}"   >
                                 </p:commandButton>
 
 
@@ -93,7 +108,7 @@
                             <p:panelGrid columns="1" >
                                 <f:facet name="header" >
                                     <p:commandButton value="Excel" ajax="false">
-                                        <pe:exporter type="xlsx" target="tbl" fileName="/lab/dianamic_lables"  />
+                                        <p:dataExporter type="xlsx" target="tbl" fileName="/lab/dianamic_lables"  />
                                     </p:commandButton>
                                 </f:facet>
                                 <p:dataTable id="tbl" value="#{investigationItemDynamicLabelController.dynamicLabels}" var="f" >
@@ -135,7 +150,7 @@
                                     </p:column>
 
                                     <p:column headerText="Remove" exportable="false">
-                                        <p:commandButton ajax="false" value="Remove" action="#{investigationItemDynamicLabelController.removeDynamicLabelValue()}" onclick="onSubmitButton();"  >
+                                        <p:commandButton ajax="false" value="Remove" action="#{investigationItemDynamicLabelController.removeDynamicLabelValue()}"   >
                                             <f:setPropertyActionListener value="#{f}" target="#{investigationItemDynamicLabelController.removingInvestigationItemofDynamicLabelType}" />
                                         </p:commandButton>
                                     </p:column>

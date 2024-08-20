@@ -1,7 +1,7 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Open Hospital Management Information System
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.inward;
 
@@ -13,7 +13,7 @@ import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.inward.InwardChargeType;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
@@ -22,7 +22,6 @@ import com.divudi.entity.PatientEncounter;
 import com.divudi.entity.PatientItem;
 import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
-import com.divudi.entity.inward.Admission;
 import com.divudi.entity.inward.AdmissionType;
 import com.divudi.entity.inward.PatientRoom;
 import com.divudi.facade.BillFacade;
@@ -34,6 +33,7 @@ import com.divudi.facade.PatientItemFacade;
 import com.divudi.facade.PatientRoomFacade;
 import com.divudi.facade.SpecialityFacade;
 import com.divudi.facade.StaffFacade;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -138,7 +138,7 @@ public class BhtSummeryFinalizedController implements Serializable {
     private Date fromDate;
     @Temporal(TemporalType.TIMESTAMP)
     private Date toDate;
-    @EJB
+
     private CommonFunctions commonFunctions;
 
     AdmissionType admissionType;
@@ -461,7 +461,7 @@ public class BhtSummeryFinalizedController implements Serializable {
             totalNet += bi.getNetValue();
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "BHT inward charged category report(/faces/inward/inward_report_bht_inward_charge_category.xhtml)");
+        
 
     }
 
@@ -527,7 +527,7 @@ public class BhtSummeryFinalizedController implements Serializable {
             totalRoom += room;
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "BHT inward charged category report(/faces/inward/inward_report_bht_inward_charge_category.xhtml)");
+        
 
     }
 
@@ -547,7 +547,7 @@ public class BhtSummeryFinalizedController implements Serializable {
         m.put("fd", fromDate);
         m.put("td", toDate);
 
-        return patientEncounterFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+        return patientEncounterFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
     }
 
     public List<PatientEncounter> patientEncounters(AdmissionType admissionType,PaymentMethod paymentMethod) {
@@ -574,7 +574,7 @@ public class BhtSummeryFinalizedController implements Serializable {
         m.put("fd", fromDate);
         m.put("td", toDate);
 
-        return patientEncounterFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+        return patientEncounterFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
     }
 
     public void createCreditPayment() {
@@ -589,7 +589,7 @@ public class BhtSummeryFinalizedController implements Serializable {
         m.put("bty", BillType.CashRecieveBill);
         m.put("bhtno", patientEncounter);
 
-        billItems = billItemFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+        billItems = billItemFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
         billItemNetValue = 0;
         for (BillItem bi : billItems) {
             if (billItems == null) {
@@ -612,7 +612,7 @@ public class BhtSummeryFinalizedController implements Serializable {
         m.put("bty", BillType.InwardPaymentBill);
         m.put("bhtno", patientEncounter);
 
-        paidbyPatientBillList = billfacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+        paidbyPatientBillList = billfacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
         paidbyPatientTotalValue = 0.0;
         for (Bill b : paidbyPatientBillList) {
             if (paidbyPatientBillList == null) {
@@ -791,7 +791,7 @@ public class BhtSummeryFinalizedController implements Serializable {
                 + " and b.bill.billType=:btp";
         HashMap hm = new HashMap();
         hm.put("btp", BillType.InwardBill);
-        List<BillItem> list = billItemFacade.findBySQL(sql, hm);
+        List<BillItem> list = billItemFacade.findByJpql(sql, hm);
 
         int i = 0;
         for (BillItem b : list) {
@@ -829,7 +829,7 @@ public class BhtSummeryFinalizedController implements Serializable {
                 sql = "Select bf from BillFee bf where bf.retired=false and  bf.billItem=:bt";
                 hm = new HashMap();
                 hm.put("bt", b);
-                List<BillFee> bfList = billFeeFacade.findBySQL(sql, hm);
+                List<BillFee> bfList = billFeeFacade.findByJpql(sql, hm);
                 if (bfList == null || bfList.isEmpty()) {
                     continue;
                 }
@@ -880,14 +880,14 @@ public class BhtSummeryFinalizedController implements Serializable {
         hm.put("refType1", BillType.InwardBill);
         hm.put("refType2", BillType.InwardProfessional);
 
-        return staffFacade.findBySQL(sql, hm);
+        return staffFacade.findByJpql(sql, hm);
 
     }
 
     public void errorCheck2() {
         String sql = "Select s from Speciality s where s.retired=false "
                 + " and s.name like '%Nurse%' ";
-        Speciality speciality = specialityFacade.findFirstBySQL(sql);
+        Speciality speciality = specialityFacade.findFirstByJpql(sql);
 
         for (Staff staff : fetchStaff()) {
             staff.setSpeciality(speciality);
@@ -937,7 +937,7 @@ public class BhtSummeryFinalizedController implements Serializable {
                 + " and s.feeType is null "
                 + " and s.speciality is null "
                 + " and s.staff is null";
-        List<ItemFee> itemFee = itemFeeFacade.findBySQL(sql);
+        List<ItemFee> itemFee = itemFeeFacade.findByJpql(sql);
 //        System.err.println(itemFee.size());
         for (ItemFee i : itemFee) {
             i.setFeeType(FeeType.OwnInstitution);
@@ -949,7 +949,7 @@ public class BhtSummeryFinalizedController implements Serializable {
                 + " and s.feeType is null "
                 + " and ( s.speciality is not null "
                 + " or s.staff is not null)";
-        itemFee = itemFeeFacade.findBySQL(sql);
+        itemFee = itemFeeFacade.findByJpql(sql);
 //        System.err.println(itemFee.size());
         for (ItemFee i : itemFee) {
             i.setFeeType(FeeType.Staff);
@@ -1079,7 +1079,7 @@ public class BhtSummeryFinalizedController implements Serializable {
                 + " and b.bill.billType=:btp";
         HashMap hm = new HashMap();
         hm.put("btp", BillType.InwardBill);
-        List<BillItem> list = billItemFacade.findBySQL(sql, hm);
+        List<BillItem> list = billItemFacade.findByJpql(sql, hm);
 
         int i = 0;
         boolean flag = false;
@@ -1103,7 +1103,7 @@ public class BhtSummeryFinalizedController implements Serializable {
                         + " and  bf.billItem=:bt";
                 hm = new HashMap();
                 hm.put("bt", b);
-                List<BillFee> bfList = billFeeFacade.findBySQL(sql, hm);
+                List<BillFee> bfList = billFeeFacade.findByJpql(sql, hm);
 
                 if (bfList == null || bfList.isEmpty()) {
                     continue;
@@ -1135,7 +1135,7 @@ public class BhtSummeryFinalizedController implements Serializable {
                 + " and b.bill.billType=:btp";
         HashMap hm = new HashMap();
         hm.put("btp", BillType.InwardBill);
-        List<BillItem> list = billItemFacade.findBySQL(sql, hm);
+        List<BillItem> list = billItemFacade.findByJpql(sql, hm);
 
         int i = 0;
         for (BillItem b : list) {
@@ -1157,7 +1157,7 @@ public class BhtSummeryFinalizedController implements Serializable {
                         + " and  bf.billItem=:bt";
                 hm = new HashMap();
                 hm.put("bt", b);
-                List<BillFee> bfList = billFeeFacade.findBySQL(sql, hm);
+                List<BillFee> bfList = billFeeFacade.findByJpql(sql, hm);
 
                 if (bfList == null || bfList.isEmpty()) {
                     continue;

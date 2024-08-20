@@ -2,8 +2,8 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:cc="http://java.sun.com/jsf/composite">
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite">
 
     <!-- INTERFACE -->
     <cc:interface>
@@ -12,7 +12,7 @@
 
     <!-- IMPLEMENTATION -->        
     <cc:implementation>
-        <p:dataTable value="#{cc.attrs.bill.billFees}" var="bi" id="tbl">
+        <p:dataTable value="#{cc.attrs.bill.billFeesWIthoutZeroValue}" var="bi" id="tbl" rendered="#{cc.attrs.bill.billFeesWIthoutZeroValue ne null}">
 
             <p:column headerText="Fee Name">
                 <p:outputLabel value="#{bi.fee.name}"/>
@@ -25,13 +25,13 @@
                     <f:convertNumber pattern="#,###0.00"  />
                 </p:outputLabel> 
             </p:column>
-            <p:column headerText="Vat Value" styleClass="numberCol" >
+            <p:column headerText="VAT Value" styleClass="numberCol" >
                 <p:outputLabel value="#{bi.feeVat}" id="col2" >
                     <f:convertNumber pattern="#,###0.00"  />
                 </p:outputLabel> 
             </p:column>
             <p:column headerText="Net Value" styleClass="numberCol" >
-                <p:outputLabel value="#{bi.feeVatPlusValue}" id="col3" > 
+                <p:outputLabel value="#{bi.feeValue + bi.feeVat}" id="col3" >
                     <f:convertNumber pattern="#,###0.00"  />
                 </p:outputLabel> 
             </p:column>

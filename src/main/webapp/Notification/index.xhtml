@@ -1,0 +1,45 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+
+                <p:panel style="height: 100vh">
+                    <f:facet name="header">
+                        <h:outputText value="Request Management" />
+                    </f:facet>
+                    <div class="row">
+                        <div class="col-2">
+                            <h:form>
+                                <div class="d-grid gap-2 m-1">
+                                    <p:commandButton  
+                                        ajax="false" 
+                                        value="Received Messages" 
+                                        action="#{userNotificationController.navigateToRecivedNotification}"/>
+                                    
+
+                                </div>
+                            </h:form>
+                        </div>
+                        <div class="col-10">
+                            <ui:insert name="subcontent">
+
+                            </ui:insert>
+                        </div>
+                    </div>
+                </p:panel>
+
+            </ui:define>
+
+        </ui:composition>
+
+    </h:body>
+</html>

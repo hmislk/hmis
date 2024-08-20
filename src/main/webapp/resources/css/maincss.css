@@ -84,8 +84,8 @@ body {
 @media screen{
     .myDivToPrint{
         min-width:800px;
-        min-height: 1100px; 
-        position: relative; 
+        min-height: 1100px;
+        position: relative;
         font-size: 150%;
     }
 
@@ -544,7 +544,7 @@ body {
 {
     text-wrap:none!important;
     white-space:nowrap!important;
-    
+
     text-overflow:clip!important ;
     word-wrap: break-word;
 }
@@ -555,7 +555,7 @@ body {
 
 .firstOfTitleAndThreeColumns{
     width: 55%!important;
-    font-weight: bolder!important; 
+    font-weight: bolder!important;
 }
 
 .othersOfTitleAndThreeColumns{
@@ -591,8 +591,13 @@ body {
     vertical-align: top;
 }
 
-#centrewrapper {display:table;}
-#centrecell {display:table-cell; vertical-align:middle;}
+#centrewrapper {
+    display:table;
+}
+#centrecell {
+    display:table-cell;
+    vertical-align:middle;
+}
 
 
 .pageWithBreaks
@@ -621,14 +626,14 @@ body {
 }
 
 
-.ui-autocomplete-input.ui-inputfield { 
+/*.ui-autocomplete-input.ui-inputfield {
     width : 400px;
-}
+}*/
 
 
-.mediumAutocomplete.ui-autocomplete-input.ui-inputfield { 
+/*.mediumAutocomplete.ui-autocomplete-input.ui-inputfield {
     width : 200px;
-}
+}*/
 
 
 .labPanel .ui-panel-titlebar {
@@ -658,15 +663,15 @@ body {
     display: none;
 }
 
-.redText{    
+.redText{
     color: red;
 }
 
-.greenText{    
+.greenText{
     color: green;
 }
 
-.blueText{    
+.blueText{
     color: blue;
 }
 
@@ -690,14 +695,14 @@ body {
 }
 
 
-.exist{    
+.exist{
     background-color: red;
 }
 
 
 @media screen{
     .printBlock{
-        display: none;        
+        display: none;
     }
 
     .nonPrintBlock{
@@ -771,15 +776,15 @@ body {
     color: red;
 }
 
-.autoComplete75px .ui-autocomplete-input.ui-inputfield{
+/*.autoComplete75px .ui-autocomplete-input.ui-inputfield{
     width : 75px !important;
 
-}
+}*/
 
 
 
 .crossLine{
-    text-decoration: line-through; 
+    text-decoration: line-through;
 
 }
 
@@ -838,22 +843,6 @@ body {
     font-weight: bold!important;
 }
 
-.standedicon{
-    width: 30px;
-    height: 30px;
-
-    border: 1px #888888 solid;
-
-    -webkit-border-radius: 5px;
-    -moz-border-radius: 5px;
-    border-radius: 5px;
-
-    -moz-box-shadow: 1px 1px 1px 1px #888888;
-    -webkit-box-shadow: 1px 1px 1px 1px #888888;
-    box-shadow: 1px 1px 1px 1px #888888;
-
-
-}
 
 .backButton{
     height: 30px;
@@ -890,14 +879,14 @@ body {
     border-width: 0px;
     border-style: dashed!important;
     margin: 1px !Important;
-    padding: 1px!important; 
+    padding: 1px!important;
 }
 
 .mediuminput .ui-autocomplete-input {
     width: 300px!important;
 }
 
-.mediuminput .ui-autocomplete-input.ui-inputfield { 
+.mediuminput .ui-autocomplete-input.ui-inputfield {
     width : 300px!important;
 }
 
@@ -909,7 +898,7 @@ body {
     width: 100px!important;
 }
 
-.shortinput .ui-autocomplete-input.ui-inputfield { 
+.shortinput .ui-autocomplete-input.ui-inputfield {
     width : 100px!important;
 }
 
@@ -923,14 +912,14 @@ body {
     width: 320px!important;
 }
 
-.shortinputOpd .ui-autocomplete-input.ui-inputfield { 
+.shortinputOpd .ui-autocomplete-input.ui-inputfield {
     width : 320px!important;
 }
 
 
 
 
-.shortinput2 .ui-autocomplete-input.ui-inputfield { 
+.shortinput2 .ui-autocomplete-input.ui-inputfield {
     width : 200px!important;
 }
 

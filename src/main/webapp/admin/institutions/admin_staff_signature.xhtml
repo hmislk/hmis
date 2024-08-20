@@ -1,0 +1,93 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:autocomplete="http://xmlns.jcp.org/jsf/composite/autocomplete">
+
+    <h:body>
+
+        <ui:composition template="/admin/institutions/admin_institutions_index.xhtml">
+
+            <ui:define name="admin">
+                <p:panel  >
+                    <f:facet name="header" >
+                        <h:form >
+                            <i class="fa fa-signature"/>
+                            <p:outputLabel value="Add Staff Signature" class="mx-2 mt-2" ></p:outputLabel>
+                            <p:commandButton ajax="false" value="Back" 
+                                             action="#{webUserController.backToViewUsers()}"
+                                             style="float: right;"
+                                             icon="fa fa-arrow-left"
+                                             >
+                            </p:commandButton>
+                        </h:form>
+                    </f:facet>
+                    
+                    <div class="row">
+                        
+                        <div class="col-6">
+                            <p:panel header="Add New Signature" >
+                                <h:form enctype="multipart/form-data" >
+                                    <div class="row my-1">
+                                        <div class="col-6 d-flex align-items-center">
+                                            <h:outputLabel value="Name" >
+                                            </h:outputLabel>
+                                        </div>
+                                        <div class="col-6 d-flex justify-content-end">
+                                            <autocomplete:completeStaff value="#{staffController.current}"/>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <p:fileUpload value="#{staffImageController.file}" class="my-1" mode="simple"/>
+                                        </div>
+                                        <div class="col-6 d-flex justify-content-end">
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                id="btnSave" 
+                                                value="Save" 
+                                                icon="fas fa-save"
+                                                class="my-1 ui-button-warning w-50 float-right"
+                                                action="#{staffImageController.saveSignature()}"/>
+                                            <p:defaultCommand target="btnSave"/>
+                                        </div>
+                                    </div>
+                                </h:form>
+                            </p:panel>
+                        </div>
+
+                        <div class="col-6">
+                            <h:form >
+                                <p:panel class="w-100">
+                                    <f:facet name="header" >
+                                        <div class="row">
+                                            <div class="col-6 d-flex align-items-center">
+                                                <p:outputLabel value="Current Signature" ></p:outputLabel>
+                                            </div>
+                                            <div class="col-6  d-flex align-items-center justify-content-end">
+                                                <p:commandButton 
+                                                    ajax="false" id="btnSave2" 
+                                                    value="Remove" 
+                                                    class="m-1 ui-button-danger w-50" 
+                                                    icon="fa-solid fa-trash" 
+                                                    action="#{staffImageController.removeSignature()}"/>
+                                            </div>
+                                        </div>
+                                    </f:facet>
+                                    <div class="w-100">
+                                        <p:graphicImage cache="false" value="#{staffImageController.signatureFromStaffController}" class="w-100">
+                                        </p:graphicImage>
+                                    </div>
+                                </p:panel>
+                            </h:form>
+                        </div>
+                    </div>
+                </p:panel>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

@@ -1,11 +1,11 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Open Hospital Management Information System
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.store;
 
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.pharmacy.DealerController;
 import com.divudi.data.BillType;
@@ -99,7 +99,7 @@ public class StoreReportsStock implements Serializable {
      */
     public void fillDepartmentNonEmptyItemStocks() {
         if (department == null) {
-            UtilityController.addErrorMessage("Please select a department");
+            JsfUtil.addErrorMessage("Please select a department");
             return;
         }
         Map m = new HashMap();
@@ -128,7 +128,7 @@ public class StoreReportsStock implements Serializable {
 
     public void fillDepartmentStocks() {
         if (department == null) {
-            UtilityController.addErrorMessage("Please select a department");
+            JsfUtil.addErrorMessage("Please select a department");
             return;
         }
         Map m = new HashMap();
@@ -150,7 +150,7 @@ public class StoreReportsStock implements Serializable {
 
         m.put("depty", DepartmentType.Store);
         m.put("d", department);
-        stocks = getStockFacade().findBySQL(sql, m);
+        stocks = getStockFacade().findByJpql(sql, m);
         stockPurchaseValue = 0.0;
         stockSaleValue = 0.0;
         for (Stock ts : stocks) {
@@ -161,7 +161,7 @@ public class StoreReportsStock implements Serializable {
 
     public void fillDepartmentStocksWithOutStockZero() {
         if (department == null) {
-            UtilityController.addErrorMessage("Please select a department");
+            JsfUtil.addErrorMessage("Please select a department");
             return;
         }
         Map m = new HashMap();
@@ -184,7 +184,7 @@ public class StoreReportsStock implements Serializable {
 
         m.put("depty", DepartmentType.Store);
         m.put("d", department);
-        stocks = getStockFacade().findBySQL(sql, m);
+        stocks = getStockFacade().findByJpql(sql, m);
         stockPurchaseValue = 0.0;
         stockSaleValue = 0.0;
         for (Stock ts : stocks) {
@@ -195,7 +195,7 @@ public class StoreReportsStock implements Serializable {
 
     public void fillInventoryAssets() {
         if (department == null) {
-            UtilityController.addErrorMessage("Please select a department");
+            JsfUtil.addErrorMessage("Please select a department");
             return;
         }
         Map m = new HashMap();
@@ -206,7 +206,7 @@ public class StoreReportsStock implements Serializable {
 
         m.put("depty", DepartmentType.Inventry);
         m.put("d", department);
-        stocks = getStockFacade().findBySQL(sql, m);
+        stocks = getStockFacade().findByJpql(sql, m);
         stockPurchaseValue = 0.0;
         stockSaleValue = 0.0;
         for (Stock ts : stocks) {
@@ -217,7 +217,7 @@ public class StoreReportsStock implements Serializable {
 
     public void fillDepartmentInventryStocks() {
         if (institution == null) {
-            UtilityController.addErrorMessage("Please select a department");
+            JsfUtil.addErrorMessage("Please select a department");
             return;
         }
         Map m = new HashMap();
@@ -247,7 +247,7 @@ public class StoreReportsStock implements Serializable {
 
         m.put("depty", DepartmentType.Inventry);
         m.put("i", institution);
-        stocks = getStockFacade().findBySQL(sql, m);
+        stocks = getStockFacade().findByJpql(sql, m);
         stockPurchaseValue = 0.0;
         stockSaleValue = 0.0;
         for (Stock ts : stocks) {
@@ -258,14 +258,14 @@ public class StoreReportsStock implements Serializable {
 
     public void fillDepartmentStocksMinus() {
         if (department == null) {
-            UtilityController.addErrorMessage("Please select a department");
+            JsfUtil.addErrorMessage("Please select a department");
             return;
         }
         Map m = new HashMap();
         String sql;
         sql = "select s from Stock s where s.stock<0 and s.department=:d order by s.itemBatch.item.name";
         m.put("d", department);
-        stocks = getStockFacade().findBySQL(sql, m);
+        stocks = getStockFacade().findByJpql(sql, m);
         stockPurchaseValue = 0.0;
         stockSaleValue = 0.0;
         for (Stock ts : stocks) {
@@ -295,7 +295,7 @@ public class StoreReportsStock implements Serializable {
         hm.put("dep", department);
         hm.put("btp1", BillType.StoreGrnBill);
         hm.put("btp2", BillType.StorePurchase);
-        return getPharmaceuticalBillItemFacade().findFirstBySQL(sql, hm, TemporalType.TIMESTAMP);
+        return getPharmaceuticalBillItemFacade().findFirstByJpql(sql, hm, TemporalType.TIMESTAMP);
     }
 
     private StockHistory getPreviousStockHistoryByBatch(ItemBatch itemBatch, Department department, Date date) {
@@ -306,7 +306,7 @@ public class StoreReportsStock implements Serializable {
         hm.put("itmB", itemBatch);
         hm.put("dt", date);
         hm.put("dep", department);
-        return getStockHistoryFacade().findFirstBySQL(sql, hm, TemporalType.TIMESTAMP);
+        return getStockHistoryFacade().findFirstByJpql(sql, hm, TemporalType.TIMESTAMP);
     }
 
     public void fillDepartmentStocksError() {
@@ -322,7 +322,7 @@ public class StoreReportsStock implements Serializable {
         temMap.put("dep", department);
         temMap.put("date", date);
 
-        List<PharmaceuticalBillItem> list = getPharmaceuticalBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        List<PharmaceuticalBillItem> list = getPharmaceuticalBillItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
         for (PharmaceuticalBillItem b : list) {
             StockHistory sh = getPreviousStockHistoryByBatch(b.getItemBatch(), b.getBillItem().getBill().getDepartment(), b.getBillItem().getCreatedAt());
@@ -357,14 +357,14 @@ public class StoreReportsStock implements Serializable {
 
     public void fillDepartmentStocksError2() {
         if (department == null) {
-            UtilityController.addErrorMessage("Please select a department");
+            JsfUtil.addErrorMessage("Please select a department");
             return;
         }
         Map m = new HashMap();
         String sql;
         sql = "select s from Stock s where s.department=:d order by s.itemBatch.item.name";
         m.put("d", department);
-        stocks = getStockFacade().findBySQL(sql, m);
+        stocks = getStockFacade().findByJpql(sql, m);
         Set<Stock> tmpStockList = new HashSet<>();
 
         for (Stock st : stocks) {
@@ -377,7 +377,7 @@ public class StoreReportsStock implements Serializable {
             m.put("st", st);
             m.put("date", date);
 
-            List<PharmaceuticalBillItem> phList = getPharmaceuticalBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+            List<PharmaceuticalBillItem> phList = getPharmaceuticalBillItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
             PharmaceuticalBillItem previousPh = null;
             double calculatedStock = 0;
@@ -440,7 +440,6 @@ public class StoreReportsStock implements Serializable {
                 }
 
                 if (calcualtedQty != curHistory) {
-                    System.err.println("Itm " + ph.getBillItem().getItem().getName());
                     st.setCalculated(calculatedStock);
                     tmpStockList.add(st);
                 } else {
@@ -470,7 +469,7 @@ public class StoreReportsStock implements Serializable {
 
     public void fillDepartmentExpiaryStocks() {
         if (department == null) {
-            UtilityController.addErrorMessage("Please select a department");
+            JsfUtil.addErrorMessage("Please select a department");
             return;
         }
         Map m = new HashMap();
@@ -479,7 +478,7 @@ public class StoreReportsStock implements Serializable {
         m.put("d", department);
         m.put("fd", getFromDate());
         m.put("td", getToDate());
-        stocks = getStockFacade().findBySQL(sql, m);
+        stocks = getStockFacade().findByJpql(sql, m);
         stockPurchaseValue = 0.0;
         stockSaleValue = 0.0;
         for (Stock ts : stocks) {
@@ -491,7 +490,7 @@ public class StoreReportsStock implements Serializable {
 
     public void fillDepartmentNonmovingStocks() {
         if (department == null) {
-            UtilityController.addErrorMessage("Please select a department");
+            JsfUtil.addErrorMessage("Please select a department");
             return;
         }
         Map m = new HashMap();
@@ -502,7 +501,7 @@ public class StoreReportsStock implements Serializable {
         m.put("t2", BillType.StorePre);
         m.put("fd", getFromDateE());
         m.put("td", getToDateE());
-        stocks = getStockFacade().findBySQL(sql, m);
+        stocks = getStockFacade().findByJpql(sql, m);
         stockPurchaseValue = 0.0;
         stockSaleValue = 0.0;
         for (Stock ts : stocks) {
@@ -514,14 +513,14 @@ public class StoreReportsStock implements Serializable {
 
     public void fillStaffStocks() {
         if (staff == null) {
-            UtilityController.addErrorMessage("Please select a staff member");
+            JsfUtil.addErrorMessage("Please select a staff member");
             return;
         }
         Map m = new HashMap();
         String sql;
         sql = "select s from Stock s where s.staff=:d order by s.itemBatch.item.name";
         m.put("d", staff);
-        stocks = getStockFacade().findBySQL(sql, m);
+        stocks = getStockFacade().findByJpql(sql, m);
         stockPurchaseValue = 0.0;
         stockSaleValue = 0.0;
         for (Stock ts : stocks) {
@@ -532,7 +531,7 @@ public class StoreReportsStock implements Serializable {
 
     public void fillDistributorStocks() {
         if (department == null || institution == null) {
-            UtilityController.addErrorMessage("Please select a department && Dealor");
+            JsfUtil.addErrorMessage("Please select a department && Dealor");
             return;
         }
         Map m;
@@ -544,7 +543,7 @@ public class StoreReportsStock implements Serializable {
         m.put("dep", department);
         sql = "select s from Stock s where s.department=:dep and s.itemBatch.item.id in "
                 + "(select item.id from ItemsDistributors id join id.item as item where id.retired=false and id.institution=:ins)";
-        stocks = getStockFacade().findBySQL(sql, m);
+        stocks = getStockFacade().findByJpql(sql, m);
         stockPurchaseValue = 0.0;
         stockSaleValue = 0.0;
 
@@ -557,7 +556,7 @@ public class StoreReportsStock implements Serializable {
 
     public void fillCategoryStocks() {
         if (department == null || category == null) {
-            UtilityController.addErrorMessage("Please select a department && Category");
+            JsfUtil.addErrorMessage("Please select a department && Category");
             return;
         }
         Map m;
@@ -573,7 +572,7 @@ public class StoreReportsStock implements Serializable {
                 + " and s.itemBatch.item.category=:cat "
                 + " and s.itemBatch.item.departmentType=:depty "
                 + " order by s.itemBatch.item.name";
-        stocks = getStockFacade().findBySQL(sql, m);
+        stocks = getStockFacade().findByJpql(sql, m);
         stockPurchaseValue = 0.0;
         stockSaleValue = 0.0;
 
@@ -586,7 +585,7 @@ public class StoreReportsStock implements Serializable {
 
     public void fillAllDistributorStocks() {
         if (department == null) {
-            UtilityController.addErrorMessage("Please select a department");
+            JsfUtil.addErrorMessage("Please select a department");
             return;
         }
         Map m;

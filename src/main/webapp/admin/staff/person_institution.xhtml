@@ -1,0 +1,146 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:au="http://xmlns.jcp.org/jsf/composite/autocomplete"
+
+                template="/admin/staff/admin_manage_staff_index.xhtml">
+
+    <ui:define name="subcontent">
+        <h:form>
+            <p:panel header="Manage Person Institutions(Channeling)" >
+                <p:panel header="Manage Doctors">
+                <h:panelGrid columns="5">
+                    <p:outputLabel class="mx-2" value="Instituion" />
+                    <au:institution value="#{personInstitutionController.institution}"></au:institution>
+                    &nbsp;&nbsp;
+                    <au:completeDoctorSpeciality value="#{personInstitutionController.speciality}" />
+                    
+                </h:panelGrid>
+                <div class="w-25">
+                    <p:commandButton icon="fa-solid fa-fill"
+                                     class="ui-button-warning w-50 m-1" value="Fill Doctors" 
+                                     action="#{personInstitutionController.createWithOutInstitutionPersonsStaffs}" ajax="false" />
+                </div>
+                
+                
+                    <p:dataTable  value="#{personInstitutionController.withOutInstitutionPersonsStaffs}" 
+                                  var="s" 
+                                  rowKey="#{s.id}" 
+                                  selection="#{personInstitutionController.selectedList}"
+                                  rowIndexVar="i"
+                                  scrollable="true"
+                                  scrollHeight="250">
+                        <p:column  selectionMode="multiple" >                            
+                        </p:column>
+                        <p:column >
+                            <f:facet name="header" >
+                                <h:outputLabel value="No" />
+                            </f:facet>
+                            <h:outputLabel value="#{i+1}" />
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header" >
+                                <h:outputLabel value="Doctor Name"  />
+                            </f:facet>
+                            <h:outputLabel value="#{s.person.name}"/>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header" >
+                                <h:outputLabel value="Speciality"  />
+                            </f:facet>
+                            <h:outputLabel value="#{s.speciality.name}"/>
+                        </p:column>
+                    </p:dataTable>
+                    <div class="w-25">
+                    <p:commandButton value="Add Doctors" icon="fa-solid fa-plus"
+                                                     class="ui-button-success w-75 mx-1" action="#{personInstitutionController.addStaffToInstitutionPersons}" ajax="false" />
+                </div>
+                    
+                </p:panel>
+                <p:panel header="Person Institutions Search">
+                    <h:panelGrid columns="2" class="w-100">
+                        <p:outputLabel value="Instituion" />
+                        <au:institution value="#{personInstitutionController.reportKeyWord.institution}" />
+                        <p:outputLabel value="Speciality" />
+                        <au:completeDoctorSpeciality value="#{personInstitutionController.reportKeyWord.speciality}" />
+                        <p:outputLabel value="Staff" />
+                        <au:completeConsultant value="#{personInstitutionController.reportKeyWord.staff}" />
+                        
+                    </h:panelGrid>
+                    <div class="w-50 m-1">
+                        <p:commandButton value="Fill Person Institutions" 
+                                         action="#{personInstitutionController.fillStaffInstitutionPersons}" 
+                                         icon="fa-solid fa-fill"
+                                          class="ui-button-warning w-50 mx-1"
+                                         ajax="false" />
+                        <p:commandButton  ajax="false" value="Excel" icon="fa fa-file-excel"
+                                                     class="ui-button-success w-25 mx-1" >
+                            <p:dataExporter type="xlsx" target="tb1" fileName="Channel_Doctor_List"/>
+                        </p:commandButton>
+                    </div>
+                    
+                    <p:dataTable  value="#{personInstitutionController.institutionPersons}" 
+                                  var="pi" 
+                                  id="tb1" styleClass="noBorder summeryBorder"
+                                  rowKey="#{pi.id}" 
+                                  rowIndexVar="i"
+                                  scrollable="true"
+                                  scrollHeight="250">
+                        <p:column >
+                            <f:facet name="header" >
+                                <h:outputLabel value="No" />
+                            </f:facet>
+                            <h:outputLabel value="#{i+1}" />
+                        </p:column>
+                        <p:column >
+                            <f:facet name="header" >
+                                <h:outputLabel value="Doctor Name" />
+                            </f:facet>
+                            <h:outputLabel value="#{pi.staff.person.name}"/>
+                        </p:column>
+                        <p:column >
+                            <f:facet name="header" >
+                                <h:outputLabel value="Speciality"  />
+                            </f:facet>
+                            <h:outputLabel value="#{pi.staff.speciality.name}"/>
+                        </p:column>
+                        <p:column rendered="#{personInstitutionController.reportKeyWord.institution eq null}" >
+                            <f:facet name="header" >
+                                <h:outputLabel value="Institution Name" />
+                            </f:facet>
+                            <h:outputLabel value="#{pi.institution.name}"/>
+                        </p:column>
+                        <p:column >
+                            <f:facet name="header" >
+                                <h:outputLabel value="Code" />
+                            </f:facet>
+                            <h:outputLabel value="#{pi.staff.code}"/>
+                        </p:column>
+                        <p:column >
+                            <f:facet name="header" >
+                                <h:outputLabel value="phone" />
+                            </f:facet>
+                            <h:outputLabel value="#{pi.staff.person.phone}"/>
+                        </p:column>
+                        <p:column >
+                            <f:facet name="header" >
+                                <h:outputLabel value="Mobile" />
+                            </f:facet>
+                            <h:outputLabel value="#{pi.staff.person.mobile}"/>
+                        </p:column>
+                        <p:column >
+                            <f:facet name="header" >
+                                <h:outputLabel value="Remove" />
+                            </f:facet>
+                            <p:commandButton action="#{personInstitutionController.removeStaffToInstitutionPersons(pi)}" value="Remove" ajax="false" />
+                        </p:column>
+                    </p:dataTable>
+                </p:panel>
+            </p:panel>
+        </h:form>
+    </ui:define>
+
+</ui:composition>

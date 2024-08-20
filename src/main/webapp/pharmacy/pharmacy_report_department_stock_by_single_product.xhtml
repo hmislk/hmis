@@ -1,38 +1,41 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:pe="http://primefaces.org/ui/extensions">
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      >
 
     <h:body>
-        <ui:composition template="/resources/template/template.xhtml">
-            <ui:define name="content">
+        <ui:composition template="/pharmacy/pharmacy_analytics.xhtml">
+            <ui:define name="subcontent">
                 <h:form>
                     <p:panel header="Stock Report of Single Product" >
-                        <h:panelGrid columns="2" >
+                        <h:panelGrid columns="8" class="my-2" >
                             <h:outputLabel value="Department" ></h:outputLabel>
-                            <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{reportsStock.department}" converter="departmentConverter" >
+                            <p:autoComplete class="mx-2" completeMethod="#{departmentController.completeDept}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{reportsStock.department}"  >
                             </p:autoComplete>
-                            <h:outputLabel value="Product" ></h:outputLabel>
-                            <p:autoComplete completeMethod="#{vmpController.completeVmp}" var="vmp"
+                            <h:outputLabel  value="Product" ></h:outputLabel>
+                            <p:autoComplete class="mx-2" completeMethod="#{vmpController.completeVmp}" var="vmp"
                                             itemLabel="#{vmp.name}" itemValue="#{vmp}"
                                             value="#{reportsStock.vmp}"></p:autoComplete>
-                        </h:panelGrid>
-                        <h:panelGrid columns="4" >
-                            <p:commandButton ajax="false" value="Process" 
+                            
+                            <p:commandButton class="ui-button-warning" icon="fas fa-cogs" ajax="false" value="Process" 
                                             actionListener="#{reportsStock.fillDepartmentNonEmptyStocksByVmp()}" ></p:commandButton>
-                            <p:commandButton value="Print" ajax="false" >
+                                            <p:commandButton value="Print" class="ui-button-info mx-2" icon="fas fa-print" ajax="false" >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
-                            <p:commandButton value="Excel" ajax="false">
-                                <pe:exporter type="xlsx" target="tbl" fileName="Total_Stock"
-                                             facetBackground="#008000" facetFontSize="15" 
-                                             facetFontColor="#FFFFFF" facetFontStyle="BOLD" cellFontColor="#0000FF" cellFontSize="12"  cellFontStyle="NORMAL" 
-                                             fontName="Courier New" />
+                            <p:commandButton class="ui-button-success" icon="fas fa-file-excel" value="Excel" ajax="false">
+                                <p:dataExporter type="xlsx" target="tbl" fileName="Total_Stock"
+                                               
+                                                   
+                                              />
                             </p:commandButton>
+                        </h:panelGrid>
+                        
+                        <h:panelGrid columns="4" >
+                            
                         </h:panelGrid>
 
                         <h:panelGroup id="gpBillPreview"  styleClass="noBorder summeryBorder" style="min-width: 100%!important;">
@@ -40,6 +43,7 @@
                             <p:dataTable id="tbl" rowIndexVar="ii" 
                                          value="#{reportsStock.stocks}" var="i"  
                                          paginator="true" paginatorAlwaysVisible="true"
+                                         paginatorPosition="bottom"
                                          paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                          rowsPerPageTemplate="5,10,15"
                                          rows="10"

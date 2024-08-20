@@ -1,313 +1,553 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/resources/template/template.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
-                xmlns:in="http://java.sun.com/jsf/composite/inward"
-                xmlns:bi="http://java.sun.com/jsf/composite/bill">
-
-
+                xmlns:print="http://xmlns.jcp.org/jsf/composite/ezcomp/prints"
+                xmlns:in="http://xmlns.jcp.org/jsf/composite/inward"
+                xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill">
 
     <ui:define name="content">
+        <h:form id="form">
 
+            <h:panelGroup class="row" rendered="#{billBhtController.patientEncounter eq null}"> 
+                <div class="col-12">
+                    <h:panelGroup>
+                        <p:panel >
+                            <f:facet name="header">
+                                <h:outputText styleClass="fa-solid fa-address-card fa-lg" /> <!-- FontAwesome Icon -->
+                                <p:outputLabel value="Patient Details" class="m-2"/>
+                            </f:facet>
+                            <h:outputLabel value="Type Patient Name or BHT : "/>
 
-        <h:panelGroup rendered="true" styleClass="opdPanel" >
-            <h:form id="form">     
-                <p:panel rendered="#{!billBhtController.printPreview}">
-                    <p:commandButton id="btnSettle" value="Settle" 
-                                     action="#{billBhtController.settleBill}" 
-                                     ajax="false" onclick="onSubmitButton();">
-                    </p:commandButton>
-                    <p:defaultCommand target="btnSettle"/>
+                            <p:autoComplete widgetVar="aPt2"  id="acPt2" forceSelection="true" 
+                                            value="#{billBhtController.patientEncounter}" 
+                                            completeMethod="#{admissionController.completePatient}"
+                                            var="apt2" itemLabel="#{apt2.bhtNo}"
+                                            itemValue="#{apt2}" size="30"  class="mx-2"
+                                            >
+                                <!--<p:ajax event="itemSelect" process="@this" update="@all"/>-->
+                                <p:column headerText="BHT No" style="padding: 8px;">
+                                    <h:outputLabel value="#{apt2.bhtNo}"/> 
+                                </p:column>
+                                <p:column headerText="Name" style="padding: 8px;">
+                                    <h:outputLabel value="#{apt2.patient.person.name}"/> 
+                                </p:column>
+                                <p:column headerText="Room No" style="padding: 8px;">
+                                    <h:outputLabel value="#{apt2.currentPatientRoom.roomFacilityCharge.name}"/>
+                                </p:column>
+                            </p:autoComplete> 
 
-                    <p:commandButton action="#{billBhtController.makeNull}" ajax="false" value="New Bill" onclick="onSubmitButton();"/>
-                    <p:commandButton value="Go To Add Outside" ajax="false" action="/inward/inward_bill_outside_charge" onclick="onSubmitButton();"/>
+                            <p:commandButton value="Select" ajax="false" ></p:commandButton>
 
+                        </p:panel>
+                    </h:panelGroup>
+                </div>
 
-                    <h:panelGrid columns="2" styleClass="alignTop" >
-                        <h:panelGrid columns="1" >
-                            <h:panelGroup id="panelPatient" >
-                                <p:panel header="Patient Details">
-                                    <h:outputLabel value="Referring Doctor : "/>
-                                    <p:autoComplete forceSelection="true" id="cmbDoc" value="#{billBhtController.referredBy}" 
-                                                    completeMethod="#{doctorController.completeDoctor}" var="ix" 
-                                                    itemLabel="#{ix.person.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
-                                        <p:column headerText="Name" >
-                                            <h:outputLabel value="#{ix.person.nameWithTitle}" ></h:outputLabel>
-                                        </p:column>
-                                        <p:column headerText="Code" >
-                                            <h:outputLabel value="#{ix.code}" ></h:outputLabel>
-                                        </p:column>
-                                    </p:autoComplete>
+                <br/><br/>
 
-                                    <h:outputLabel value="Type Patient Name or BHT : "/>
-                                    <p:autoComplete widgetVar="aPt2"  id="acPt2" forceSelection="true" 
-                                                    converter="admis"
-                                                    value="#{billBhtController.patientEncounter}" 
-                                                    completeMethod="#{admissionController.completePatient}"
-                                                    var="apt2" itemLabel="#{apt2.bhtNo}"
-                                                    itemValue="#{apt2}" size="30"  style="width: 400px;" >
-                                        <!--<p:ajax event="itemSelect" process="@this" update="@all"/>-->
-                                        <p:column >
-                                            <h:outputLabel value="#{apt2.bhtNo}"/> 
-                                        </p:column>
-                                        <p:column >
-                                            <h:outputLabel value="#{apt2.patient.person.name}"/> 
-                                        </p:column>
-                                        <p:column>
-                                            <h:outputLabel value="#{apt2.currentPatientRoom.roomFacilityCharge.name}"/>
-                                        </p:column>
-                                    </p:autoComplete>  
-                                    <p:commandButton value="Select" ajax="false"  >
+            </h:panelGroup>
 
-                                    </p:commandButton>
-                                    <br/><br/>
-                                    <h:panelGroup id="panSearch2">
-                                        <in:bhtDetail admission="#{billBhtController.patientEncounter}"/>
-                                    </h:panelGroup>
-                                </p:panel>
-                            </h:panelGroup>
-                            <h:panelGroup id="panelIx" >
-                                <p:panel id='pIxAdd' header="Item Requests"   >
-                                    <p:panelGrid columns="2" >
-                                        <h:outputLabel value="Category"/>
-                                        <p:autoComplete value="#{itemController.category}" id="ct" 
-                                                        forceSelection="true"
-                                                        completeMethod="#{categoryController.completeCategoryService}"
-                                                        converter="categoryConverter"
-                                                        var="cat" itemLabel="#{cat.name}" 
-                                                        itemValue="#{cat}" >
-                                            <p:column headerText="Category">
-                                                <h:outputLabel value="#{cat.name}"/>
-                                            </p:column>
-                                            <p:column headerText="Parent Category">
-                                                <h:outputLabel value="#{cat.parentCategory.name}"/>
-                                            </p:column> 
-                                            <p:column headerText="TYPE">
-                                                <h:outputLabel value="Parent Category" 
-                                                               rendered="#{cat.categoryClass eq 'class com.divudi.entity.ServiceCategory'}"/>
-                                                <h:outputLabel value="Child Category" 
-                                                               rendered="#{cat.categoryClass eq 'class com.divudi.entity.ServiceSubCategory'}"/>
-                                            </p:column> 
-                                        </p:autoComplete>
-
-                                        <h:outputLabel value="Department"/>
-                                        <p:selectOneMenu value="#{itemController.reportKeyWord.department}">     
-                                            <f:selectItem itemLabel="Select Department"/>
-                                            <f:selectItems value="#{departmentController.labs}" 
-                                                           var="paysch" itemLabel="#{paysch.name}" itemValue="#{paysch}"  />
-                                            <p:ajax process="@this" update="acIx" event="change"/>
-                                        </p:selectOneMenu>
-
-                                        <h:outputLabel value="Investigation"/>
-                                        <p:autoComplete  widgetVar="aIx" id="acIx" forceSelection="true" 
-                                                         value="#{billBhtController.currentBillItem.item}"
-                                                         completeMethod="#{itemController.completeInwardItemsCategoryNew}"
-                                                         var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" 
-                                                         size="30"  style="width: 400px;">
-                                            <p:column>
-                                                <h:outputLabel value="#{ix.name}"/>
-                                            </p:column>
-                                            <p:column>
-                                                <h:outputLabel value="#{ix.department.name}"/>
-                                            </p:column>  
-                                            <p:column>
-                                                <h:outputLabel value="#{ix.total}" 
-                                                               rendered="#{ix.chargesVisibleForInward or (webUserController.hasPrivilege('ShowInwardFee'))}">
-                                                    <f:convertNumber pattern="#,##0.00" />
-                                                </h:outputLabel>
-                                            </p:column>  
-                                            <p:ajax event="itemSelect" process="acIx ct" update="gpQtyLbl gpQtyTxt" />
-                                            <p:ajax event="focus" process="ct"/>
-                                        </p:autoComplete>
-
-
-                                        <h:panelGroup id="gpQtyLbl">
-                                            <h:outputLabel id="lblQty" value="Quentity" rendered="#{billBhtController.currentBillItem.item.requestForQuentity}"/>
-                                        </h:panelGroup>
-
-                                        <h:panelGroup id="gpQtyTxt">
-                                            <h:inputText autocomplete="off" id="txtQty"
-                                                         rendered="#{billBhtController.currentBillItem.item.requestForQuentity}"
-                                                         value="#{billBhtController.currentBillItem.qty}" >
-                                            </h:inputText> </h:panelGroup>
-
-                                        <h:outputLabel value="Details"/>
-                                        <p:inputTextarea id="txtDesc" value="#{billBhtController.currentBillItem.descreption}" ></p:inputTextarea>
-
-
-                                        <p:calendar value="#{billBhtController.currentBillItem.billTime}" 
-                                                    id="billedTimeStamp"
-                                                    pattern="dd/MMM/yyyy - hh:mm:ss a" >                               
-                                        </p:calendar>
-                                        <p:commandButton id="btnAddIx" ajax="false" value="Add" action="#{billBhtController.addToBill()}" onclick="onSubmitButton();"/>
-
-
-                                    </p:panelGrid>
-
-
-
-
-
-
-
-                                </p:panel>
-
-
-                            </h:panelGroup>
-                        </h:panelGrid>
-
-                        <h:panelGrid columns="1">
-                            <h:panelGroup id="panelBillItems" >
-                                <p:tabView id="tblBillItem" >
-                                    <p:tab id="tabBillItems" title="Bill Items" >
-                                        <p:dataTable id="tblRequests" rowIndexVar="rowIndex" value="#{billBhtController.lstBillEntries}" var="bi" >
-                                            <p:column>
-                                                <f:facet name="header">No</f:facet>
-                                                <h:outputLabel value="#{rowIndex+1}"/>
-                                            </p:column>
-                                            <p:column>
-                                                <f:facet name="header">Item</f:facet>
-                                                <h:outputLabel value="#{bi.billItem.item.name}"/>
-                                            </p:column>                                       
-                                            <p:column>
-                                                <f:facet name="header">Department</f:facet>
-                                                <h:outputLabel value="#{bi.billItem.item.department.name}"/>
-                                            </p:column>
-
-                                            <p:column>
-                                                <f:facet name="header">Category</f:facet>
-                                                <h:outputLabel value="#{bi.billItem.item.category.name}"/>
-
-                                            </p:column>
-
-                                            <p:column>
-                                                <h:commandButton id="btnRemove" value="X" action="#{billBhtController.removeBillItem}" >
-                                                    <f:setPropertyActionListener  value="#{rowIndex}" target="#{billBhtController.index}" />
-                                                    <p:ajax  process="btnRemove" update="@form" />
-                                                </h:commandButton>
-                                            </p:column>
-                                        </p:dataTable>
-                                    </p:tab>
-                                    <p:tab id="tabBillIx" title="Tests" >
-                                        <p:dataTable rowIndexVar="rowIndex" value="#{billBhtController.lstBillComponents}" var="bix" >
-                                            <p:column>
-                                                <f:facet name="header">No</f:facet>
-                                                <h:outputLabel value="#{rowIndex+1}"/>
-                                            </p:column>
-                                            <p:column>
-                                                <f:facet name="header">Name</f:facet>
-                                                <h:outputLabel value="#{bix.item.name}"/>
-                                            </p:column>
-
-                                        </p:dataTable>
-                                    </p:tab>
-                                    <p:tab id="tabBillFee" title="Fees" >
-                                        <p:dataTable rowIndexVar="rowIndex" value="#{billBhtController.lstBillFees}" var="bif" 
-                                                     rowStyleClass="#{(bif.billItem.item.chargesVisibleForInward) 
-                                                                      or (webUserController.hasPrivilege('ShowInwardFee'))
-                                                                      ? '':'noDisplayRow'}">
-                                            <p:column>
-                                                <f:facet name="header">No</f:facet>
-                                                <h:outputLabel value="#{rowIndex+1}"/>
-                                            </p:column>
-
-                                            <p:column>
-                                                <f:facet name="header">Item Name</f:facet>  
-                                                <h:outputLabel value="#{bif.billItem.item.name}"/>
-                                            </p:column>
-
-                                            <p:column >
-                                                <f:facet name="header">Fee Gross Value</f:facet>
-                                                <h:inputText autocomplete="off" value="#{bif.feeGrossValue}" 
-                                                             disabled="#{!bif.billItem.item.userChangable
-                                                                         or(!webUserController.hasPrivilege('ShowInwardFee'))}" >
-                                                    <f:convertNumber pattern="#,##0.00" />
-                                                    <f:ajax event="keyup" execute="@this" 
-                                                            render=" :#{p:component('tblRequests')}  
-                                                            :#{p:component('pBillDetails')} matrix feeValue" 
-                                                            listener="#{billBhtController.feeChanged(bif)}" />
-                                                </h:inputText>
-                                            </p:column>
-
-                                            <p:column>
-                                                <f:facet name="header">Matrix Value</f:facet>  
-                                                <h:outputLabel id="matrix" value="#{bif.feeMargin}">
-                                                    <f:convertNumber pattern="#,##0.00" />
-                                                </h:outputLabel>
-                                            </p:column>
-
-                                            <p:column >
-                                                <f:facet name="header">Fee Value</f:facet>
-                                                <h:outputLabel id="feeValue"  value="#{bif.feeValue}"  >
-                                                    <f:convertNumber pattern="#,##0.00" />
-                                                </h:outputLabel>
-                                            </p:column>
-
-                                            <p:column >
-                                                <f:facet name="header">Speciality</f:facet>
-                                                <h:outputLabel value="#{bif.speciality.name}"/>
-                                            </p:column>
-                                            <p:column>
-                                                <f:facet name="header">Payee</f:facet>
-                                                <h:outputLabel value="#{bif.fee.name}" rendered="#{bif.staff eq null}" ></h:outputLabel>
-                                                <p:selectOneMenu value="#{bif.staff}" rendered="#{bif.fee.speciality!=null}" >
-                                                    <f:selectItem itemLabel="Select Staff" />
-                                                    <f:selectItems  value="#{staffController.getSpecialityStaff(bif.fee.speciality)}" 
-                                                                    var="bifs" itemLabel="#{bifs.person.name}" itemValue="#{bifs}" />
-                                                </p:selectOneMenu>
-
-                                            </p:column>
-
-                                        </p:dataTable>
-                                    </p:tab>
-                                </p:tabView>
-                            </h:panelGroup>
-
-                            <h:panelGroup id="panelBillTotals" rendered="false" >
-
-                                <p:panel header="Bill Details" id="pBillDetails" style="padding: 5px; margin: 10px;" >
-                                    <p:panelGrid columns="2" columnClasses="numberCol, textCol"  >
-                                        <h:outputLabel value="Total" ></h:outputLabel>
-                                        <h:outputLabel id="tot" value="#{billBhtController.total}" >
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>
-                                    </p:panelGrid>
-                                </p:panel>
-                            </h:panelGroup>
-                        </h:panelGrid>
-                    </h:panelGrid>
-                </p:panel>
-
-                <h:panelGroup rendered="#{billBhtController.printPreview}" >
-
-
-                    <h:panelGroup >
-
-                        <div class="nonPrintBlock">
-                            <p:commandButton value="Print" ajax="false" action="#"  >
-                                <p:printer target="gpBillPreview" ></p:printer>
-                            </p:commandButton>
-
-                            <p:commandButton value="New Bill" ajax="false" action="#{billBhtController.makeNull()}" >
-                            </p:commandButton>
+            <h:panelGroup  rendered="#{billBhtController.patientEncounter ne null}">  
+                <p:panel>
+                    <f:facet name="header">
+                        <div class="d-flex justify-content-between">
+                            <div >
+                                <h:outputText styleClass=" fa-solid fa-screwdriver-wrench fa-lg" /> <!-- FontAwesome Icon -->
+                                <p:outputLabel value="Inward Add Services" class="mx-2 mt-1"/>
+                            </div>
+                            <div>
+                                <p:commandButton 
+                                    value="New Bill"
+                                    icon="fa fa-plus"
+                                    class="ui-button-success m-1"  
+                                    ajax="false"
+                                    action="#{billBhtController.resetBillData()}" >
+                                </p:commandButton>
+                                <p:commandButton 
+                                    style="float: right;"
+                                    ajax="false"
+                                    value="Inpatient Dashboard"
+                                    icon="fa fa-id-card"
+                                    class="ui-button-warning m-1" 
+                                    action="#{bhtSummeryController.navigateToInpatientProfile()}" 
+                                    >
+                                    <f:setPropertyActionListener 
+                                        value="#{billBhtController.patientEncounter}" 
+                                        target="#{admissionController.current}" ></f:setPropertyActionListener>
+                                </p:commandButton>
+                            </div>
 
                         </div>
 
+                    </f:facet>
 
-                        <h:panelGroup id="gpBillPreview">
-                            <ui:repeat value="#{billBhtController.bills}" var="b" >
-                                <bi:inwardBillPrintFiveFive bill="#{b}" dup="false"/>   
-                            </ui:repeat>
+                    <div class="col-12">
+                        <h:panelGroup rendered="true" styleClass="opdPanel" >
+
+                            <h:panelGroup rendered="#{!billBhtController.printPreview}" >
+                                <div class="row">
+                                    <div class="col-md-4">
+                                    </div>
+                                    <div class="col-md-8">
+                                        <div class="d-flex justify-content-end align-items-center mb-2" >
+
+                                            <h:panelGrid columns="7">
+                                                <p:commandButton class="w-100 ui-button-success" id="btnSettle" 
+                                                                 value="Settle" 
+                                                                 style="float: right"
+                                                                 icon="fa fa-check"
+                                                                 action="#{billBhtController.settleBill}" 
+                                                                 ajax="false" >
+                                                </p:commandButton>
+                                                <p:spacer width="5"/>
+                                                <p:defaultCommand target="btnSettle"/>
+
+                                                <p:commandButton class="w-100 ui-button-warning" 
+                                                                 action="#{billBhtController.resetBillData}" 
+                                                                 style="float: right"
+                                                                 icon="fa fa-plus"
+                                                                 ajax="false" 
+                                                                 value="New Bill" />
+                                                <p:spacer width="5"/>
+                                                <p:commandButton class="w-100 ui-button-warning" 
+                                                                 value="Go To Add Outside" 
+                                                                 ajax="false" 
+                                                                 icon="fa fa-arrow-right"
+                                                                 style="float: right"
+                                                                 action="/inward/inward_bill_outside_charge" />
+                                                <p:spacer width="5"/>
+                                            </h:panelGrid>
+                                            <p:spacer width="35"/>
+                                            <h:panelGrid columns="5">
+
+                                                <p:commandButton 
+                                                    style="float: right;"
+                                                    ajax="false"
+                                                    icon="fa fa-search"
+                                                    class="ui-button-warning " 
+                                                    action="#{patientController.navigateToSearchPatients()}" 
+                                                    >
+                                                </p:commandButton>
+                                                <p:spacer width="5"/>
+                                                <p:commandButton 
+                                                    style="float: right;"
+                                                    ajax="false"
+                                                    icon="fa fa-user"
+                                                    class="ui-button-warning" 
+                                                    action="#{patientController.navigateToOpdPatientProfile()}" 
+                                                    >
+                                                    <f:setPropertyActionListener 
+                                                        value="#{billBhtController.patientEncounter.patient}" 
+                                                        target="#{patientController.current}" ></f:setPropertyActionListener>
+                                                </p:commandButton>
+                                                <p:spacer width="5"/>
+                                                <p:commandButton 
+                                                    style="float: right;"
+                                                    ajax="false"
+                                                    icon="fa fa-id-card"
+                                                    class="ui-button-secondary " 
+                                                    action="#{bhtSummeryController.navigateToInpatientProfile()}" 
+                                                    >
+                                                    <f:setPropertyActionListener 
+                                                        value="#{billBhtController.patientEncounter}" 
+                                                        target="#{admissionController.current}" ></f:setPropertyActionListener>
+                                                </p:commandButton>
+                                            </h:panelGrid>
+
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-5">
+                                        <h:panelGroup id="panSearch2" class="d-flex align-items-center justify-content-center p-1 w-100" >
+                                            <p:panel class="w-100">
+                                                <f:facet name="header">
+                                                    <h:outputText styleClass="fas fa-id-card-alt"></h:outputText>
+                                                    <h:outputLabel value="Patient Details" class="mx-4"></h:outputLabel>
+                                                </f:facet>
+                                                <in:bhtDetail admission="#{billBhtController.patientEncounter}"/>
+                                            </p:panel>
+
+                                        </h:panelGroup>
+
+                                        <h:panelGroup id="refdoc" class="d-flex align-items-center justify-content-center p-1 w-100" >
+                                            <p:panel class="w-100">
+                                                <f:facet name="header">
+                                                    <h:outputText styleClass="fas fa-id-card-alt"></h:outputText>
+                                                    <h:outputLabel value="Select Referring Doctor" class="mx-4"></h:outputLabel>
+                                                </f:facet>
+                                                <div class="d-flex gap-3">
+                                                    <h:outputLabel value="Referring Doctor" style="width: 200px;" class="mt-2"/>
+                                                    <p:autoComplete 
+                                                        forceSelection="true" 
+                                                        id="cmbDoc" 
+                                                        value="#{billBhtController.referredBy}" 
+                                                        completeMethod="#{doctorController.completeDoctor}" var="ix" 
+                                                        itemLabel="#{ix.person.name}" 
+                                                        itemValue="#{ix}" 
+                                                        inputStyleClass="form-control"
+                                                        class="w-100" 
+                                                        size="10">
+
+                                                        <p:column headerText="Name" style="padding: 5px;" filterBy="#{ix.person.nameWithTitle}" filterMatchMode="contains">
+                                                            <h:outputText value="#{ix.person.nameWithTitle}"  ></h:outputText>
+                                                        </p:column>
+                                                        <p:column headerText="Speciality" style="padding: 5px;">
+                                                            <h:outputText value="#{ix.speciality.name}" ></h:outputText>
+                                                        </p:column>
+
+                                                    </p:autoComplete>
+                                                </div>
+                                            </p:panel>
+
+                                        </h:panelGroup>
+                                    </div>
+                                    <div class="col-md-7">
+
+                                        <div class="row">
+                                            <p:panel class="w-100">
+                                                <f:facet name="header">
+                                                    <h:outputText styleClass="fas fa-list-alt"></h:outputText>
+                                                    <h:outputLabel value="Item Requests" class="mx-2"></h:outputLabel>
+                                                </f:facet>
+                                                <div class="row">
+                                                    <!--                                                    <div class="row m-1">
+                                                                                                            <div class="col-4">
+                                                                                                                <h:outputLabel value="Category"/>
+                                                                                                            </div>
+                                                                                                            <div class="col-8">
+                                                                                                                <p:autoComplete value="#{itemController.category}" id="ct" size="75"
+                                                                                                                                forceSelection="true"
+                                                                                                                                completeMethod="#{categoryController.completeCategoryService}"
+                                                                                                                                var="cat" itemLabel="#{cat.name}" 
+                                                                                                                                itemValue="#{cat}" >
+                                                                                                                    <p:column headerText="Category">
+                                                                                                                        <h:outputLabel value="#{cat.name}"/>
+                                                                                                                    </p:column>
+                                                                                                                    <p:column headerText="Parent Category">
+                                                                                                                        <h:outputLabel value="#{cat.parentCategory.name}"/>
+                                                                                                                    </p:column> 
+                                                                                                                    <p:column headerText="TYPE">
+                                                                                                                        <h:outputLabel value="Parent Category" 
+                                                                                                                                       rendered="#{cat.categoryClass eq 'class com.divudi.entity.ServiceCategory'}"/>
+                                                                                                                        <h:outputLabel value="Child Category" 
+                                                                                                                                       rendered="#{cat.categoryClass eq 'class com.divudi.entity.ServiceSubCategory'}"/>
+                                                                                                                    </p:column> 
+                                                                                                                </p:autoComplete>
+                                                                                                            </div>
+                                                                                                        </div>
+                                                    
+                                                                                                        <div class="row m-1">
+                                                                                                            <div class="col-4">
+                                                                                                                <h:outputLabel value="Department"/>
+                                                                                                            </div>
+                                                                                                            <div class="col-8">
+                                                                                                                <p:selectOneMenu value="#{itemController.reportKeyWord.department}" class="w-100">     
+                                                                                                                    <f:selectItem itemLabel="Select Department"/>
+                                                                                                                    <f:selectItems value="#{departmentController.labs}" 
+                                                                                                                                   var="paysch" itemLabel="#{paysch.name}" itemValue="#{paysch}"  />
+                                                                                                                    <p:ajax process="@this" update="acIx" event="change"/>
+                                                                                                                </p:selectOneMenu>
+                                                                                                            </div>
+                                                                                                        </div>-->
+
+                                                    <div class="row m-1">
+                                                        <div class="col-4">
+                                                            <h:outputLabel value="Investigation or Service"/>
+                                                        </div>
+                                                        <div class="col-8">
+                                                            <p:selectOneListbox 
+                                                                value="#{billBhtController.itemLight}" 
+                                                                filter="true" 
+                                                                var="t" 
+                                                                id="itm" 
+                                                                class="w-100" 
+                                                                converter="itemLightConverter">
+                                                                <f:selectItems value="#{billBhtController.inwardItems}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" />
+                                                                <p:column>
+                                                                    <h:outputLabel value="#{t.name}"/>
+                                                                </p:column>
+                                                                <p:column>
+                                                                    <h:outputLabel value="#{t.departmentName}"/>
+                                                                </p:column>  
+                                                                <p:column>
+                                                                    <h:outputLabel value="#{t.total}" >
+                                                                        <f:convertNumber pattern="#,##0.00" />
+                                                                    </h:outputLabel>
+                                                                </p:column>  
+                                                                <p:ajax process="itm" update="gpQtyLbl gpQtyTxt" />
+                                                            </p:selectOneListbox>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="row m-1">
+                                                        <div class="col-4">
+                                                            <h:panelGroup id="gpQtyLbl">
+                                                                <h:outputLabel id="lblQty" value="Quantity" rendered="#{billBhtController.currentBillItem.item.requestForQuentity}"/>
+                                                            </h:panelGroup>
+                                                        </div>
+                                                        <div class="col-8">
+                                                            <h:panelGroup id="gpQtyTxt">
+                                                                <h:inputText autocomplete="off" id="txtQty"
+                                                                             rendered="#{billBhtController.currentBillItem.item.requestForQuentity}"
+                                                                             value="#{billBhtController.currentBillItem.qty}" >
+                                                                </h:inputText> </h:panelGroup>
+                                                        </div>
+                                                    </div>
+
+
+                                                    <div class="row m-1">
+                                                        <div class="col-4">
+                                                            <h:outputLabel value="Details"/>
+                                                        </div>
+                                                        <div class="col-8">
+                                                            <p:inputTextarea id="txtDesc" value="#{billBhtController.currentBillItem.descreption}" class="w-100" ></p:inputTextarea>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="row m-1">
+                                                        <div class="col-4">
+                                                            <h:outputLabel value="Date"/>
+                                                        </div>
+                                                        <div class="col-8">
+
+                                                            <p:datePicker 
+                                                                value="#{billBhtController.currentBillItem.billTime}" 
+                                                                id="billedTimeStamp"
+                                                                pattern="dd MMM yyyy HH:mm:ss"
+                                                                showTime="true"
+                                                                showButtonBar="true"
+                                                                timeInput="true">                               
+                                                            </p:datePicker>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row m-1">
+                                                        <div class="col-2">
+                                                            <p:commandButton
+                                                                id="btnAddIx" 
+                                                                ajax="false" 
+                                                                class="w-100 mt-2 ui-button-success" 
+                                                                value="Add" 
+                                                                action="#{billBhtController.addToBill()}" />
+                                                        </div>
+                                                    </div>
+
+                                                </div>
+                                            </p:panel>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row w-100 my-2">
+                                    <div class="col-12">
+                                        <div>
+                                            <h:panelGroup id="panelBillItems" >
+                                                <p:tabView id="tblBillItem" >
+                                                    <p:tab id="tabBillItems" title="Bill Items" >
+                                                        <p:dataTable id="tblRequests" rowIndexVar="rowIndex" value="#{billBhtController.lstBillEntries}" var="bi" >
+                                                            <p:column width="5em">
+                                                                <f:facet name="header">No</f:facet>
+                                                                <h:outputLabel value="#{rowIndex+1}"/>
+                                                            </p:column>
+                                                            <p:column>
+                                                                <f:facet name="header">Item</f:facet>
+                                                                <h:outputLabel value="#{bi.billItem.item.name}"/>
+                                                            </p:column>                                       
+                                                            <p:column>
+                                                                <f:facet name="header">Department</f:facet>
+                                                                <h:outputLabel value="#{bi.billItem.item.department.name}"/>
+                                                            </p:column>
+
+                                                            <p:column >
+                                                                <f:facet name="header">Category</f:facet>
+                                                                <h:outputLabel value="#{bi.billItem.item.category.name}"/>
+
+                                                            </p:column>
+
+                                                            <p:column width="5em">
+                                                                <p:commandButton 
+                                                                    id="btnRemove" 
+                                                                    icon="fa fa-times"
+                                                                    title="Remove"
+                                                                    class="ui-button-danger"
+                                                                    action="#{billBhtController.removeBillItem}" >
+                                                                    <f:setPropertyActionListener  value="#{rowIndex}" target="#{billBhtController.index}" />
+                                                                    <p:ajax  process="btnRemove" update="@form" />
+                                                                </p:commandButton>
+                                                            </p:column>
+                                                        </p:dataTable>
+                                                    </p:tab>
+                                                    <p:tab id="tabBillIx" title="Tests" >
+                                                        <p:dataTable rowIndexVar="rowIndex" value="#{billBhtController.lstBillComponents}" var="bix" >
+                                                            <p:column>
+                                                                <f:facet name="header">No</f:facet>
+                                                                <h:outputLabel value="#{rowIndex+1}"/>
+                                                            </p:column>
+                                                            <p:column>
+                                                                <f:facet name="header">Name</f:facet>
+                                                                <h:outputLabel value="#{bix.item.name}"/>
+                                                            </p:column>
+
+                                                        </p:dataTable>
+                                                    </p:tab>
+                                                    <p:tab id="tabBillFee" title="Fees" >
+                                                        <p:dataTable 
+                                                            rowIndexVar="rowIndex" 
+                                                            value="#{billBhtController.lstBillFees}" 
+                                                            var="bif" 
+                                                            rowStyleClass="#{(bif.billItem.item.chargesVisibleForInward) 
+                                                                             or (webUserController.hasPrivilege('ShowInwardFee'))
+                                                                             ? '':'noDisplayRow'}">
+                                                            <p:column>
+                                                                <f:facet name="header">No</f:facet>
+                                                                <h:outputLabel value="#{rowIndex+1}"/>
+                                                            </p:column>
+
+                                                            <p:column>
+                                                                <f:facet name="header">Item Name</f:facet>  
+                                                                <h:outputLabel value="#{bif.billItem.item.name}"/>
+                                                            </p:column>
+
+                                                            <p:column >
+                                                                <f:facet name="header">Fee Gross Value</f:facet>
+                                                                <h:inputText autocomplete="off" value="#{bif.feeGrossValue}" 
+                                                                             disabled="#{!bif.billItem.item.userChangable
+                                                                                         or(!webUserController.hasPrivilege('ShowInwardFee'))}" >
+                                                                    <f:convertNumber pattern="#,##0.00" />
+                                                                    <f:ajax 
+                                                                        event="keyup" 
+                                                                        execute="@this" 
+                                                                        render=" :#{p:resolveFirstComponentWithId('tblRequests',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} matrix feeValue" 
+                                                                        listener="#{billBhtController.feeChanged(bif)}" />
+                                                                </h:inputText>
+                                                            </p:column>
+
+                                                            <p:column>
+                                                                <f:facet name="header">Matrix Value</f:facet>  
+                                                                <h:outputLabel id="matrix" value="#{bif.feeMargin}">
+                                                                    <f:convertNumber pattern="#,##0.00" />
+                                                                </h:outputLabel>
+                                                            </p:column>
+
+                                                            <p:column >
+                                                                <f:facet name="header">Fee Value</f:facet>
+                                                                <h:outputLabel id="feeValue"  value="#{bif.feeValue}"  >
+                                                                    <f:convertNumber pattern="#,##0.00" />
+                                                                </h:outputLabel>
+                                                            </p:column>
+
+                                                            <p:column >
+                                                                <f:facet name="header">Speciality</f:facet>
+                                                                <h:outputLabel value="#{bif.speciality.name}"/>
+                                                            </p:column>
+                                                            <p:column>
+                                                                <f:facet name="header">Payee</f:facet>
+                                                                <h:outputLabel value="#{bif.fee.name}" rendered="#{bif.staff eq null}" ></h:outputLabel>
+                                                                <p:selectOneMenu value="#{bif.staff}" rendered="#{bif.fee.speciality!=null}" >
+                                                                    <f:selectItem itemLabel="Select Staff" />
+                                                                    <f:selectItems  
+                                                                        value="#{staffController.getSpecialityStaff(bif.fee.speciality)}" 
+                                                                        var="bifs" 
+                                                                        itemLabel="#{bifs.person.name}" 
+                                                                        itemValue="#{bifs}" />
+                                                                </p:selectOneMenu>
+                                                            </p:column>
+                                                        </p:dataTable>
+                                                    </p:tab>
+                                                </p:tabView>
+                                            </h:panelGroup>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <h:panelGroup id="panelBillTotals" rendered="false" >
+                                    <p:panel header="Bill Details" id="pBillDetails" style="padding: 5px; margin: 10px;" >
+                                        <p:panelGrid columns="2" columnClasses="numberCol, textCol"  >
+                                            <h:outputLabel value="Total" ></h:outputLabel>
+                                            <h:outputLabel id="tot" value="#{billBhtController.total}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                        </p:panelGrid>
+                                    </p:panel>
+                                </h:panelGroup>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{billBhtController.printPreview}" >
+                                <div class="d-flex justify-content-end gap-2 mb-2">
+                                    <h:panelGrid columns="3">
+                                        <p:outputLabel value="Paper Type" class="fa-1x m-2"></p:outputLabel>
+                                        <p:selectOneMenu value="#{sessionController.departmentPreference.inwardServiceBillPaperType}" class="mx-2" style="width: 13em;">
+                                            <f:selectItem itemLabel="Please Select Paper Type" />
+                                            <f:selectItems value="#{enumController.paperTypes}" />
+                                        </p:selectOneMenu>
+                                        <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button " title="Redraw Bill"></p:commandButton>
+                                    </h:panelGrid>
+                                    <p:commandButton 
+                                        value="Print" 
+                                        class="ui-button-info" 
+                                        ajax="false" 
+                                        action="#" 
+                                        icon="fa-solid fa-print" >
+                                        <p:printer target="gpBillPreview" ></p:printer>
+                                    </p:commandButton>
+                                    <p:commandButton 
+                                        value="To Print Labels" 
+                                        class="ui-button-info" 
+                                        ajax="false" 
+                                        action="#{billBhtController.navigateToPrintLabelsForInvestigations}" icon="fa-solid fa-print" >
+                                    </p:commandButton>
+                                </div>
+
+                                <h:panelGroup >                      
+                                    <h:panelGroup id="gpBillPreview" >
+
+                                        <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveFivePaper'}" >
+                                            <ui:repeat value="#{billBhtController.bills}" var="ffb">
+                                                <print:five_five_paper_with_headings_inward_service bill="#{ffb}"/>      
+                                                <br/>
+                                            </ui:repeat>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveFivePrintedPaper'}" >
+                                            <ui:repeat value="#{billBhtController.bills}" var="ffpp">
+                                                <print:five_five_paper_without_headings_inward_service bill="#{ffpp}" dup="false"/>
+                                                <br/>
+                                            </ui:repeat>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'PosPaper'}" >
+                                            <ui:repeat value="#{billBhtController.bills}" var="pp">
+                                                <print:posOpdBill_inward_service bill="#{pp}" duplicate="false"/>
+                                                <br/>
+                                            </ui:repeat>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'A4Paper'}" >
+                                            <ui:repeat value="#{billBhtController.bills}" var="pp">
+                                                <print:A4_paper_with_headings bill="#{pp}" duplicate="false"/>
+                                                <br/>
+                                            </ui:repeat>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'A4PrintedPaper'}" >
+                                            <ui:repeat value="#{billBhtController.bills}" var="pp">
+                                                <print:A4_paper_without_headings bill="#{pp}" duplicate="false"/>
+                                                <br/>
+                                            </ui:repeat>
+                                        </h:panelGroup>
+
+                                    </h:panelGroup>
+                                </h:panelGroup>
+                            </h:panelGroup>
                         </h:panelGroup>
+                    </div>
+                </p:panel>
+            </h:panelGroup>
 
-                    </h:panelGroup>
-
-                </h:panelGroup>
-            </h:form>
-        </h:panelGroup>
+        </h:form>
     </ui:define>
 </ui:composition>

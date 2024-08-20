@@ -377,9 +377,9 @@ root {
 
 .phonePrinting{
     position: absolute;
-    left: 32%;
-    top: 16%;
-    font-size: 15px;
+    left: 32% !important;
+    top: 16% !important;
+    font-size: 18px;
 
 }
 

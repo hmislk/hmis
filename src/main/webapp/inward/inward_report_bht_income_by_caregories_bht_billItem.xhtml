@@ -1,11 +1,11 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
-      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:f="http://java.sun.com/jsf/core" 
-      xmlns:pe="http://primefaces.org/ui/extensions">
+      xmlns:f="http://xmlns.jcp.org/jsf/core" 
+      >
 
     <h:body>
 
@@ -51,7 +51,7 @@
                         </p:commandButton>
 
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton">
-                            <pe:exporter type="xlsx" target="tb1,tb2,tb3,tb4,tb5" fileName="newly_added_report"  />
+                            <p:dataExporter type="xlsx" target="tb1,tb2,tb3,tb4,tb5" fileName="newly_added_report"  />
                         </p:commandButton>  
                         <p:panel id="gpBillPreview">
                             <p:panelGrid columns="2" style="width: 100%;">
@@ -67,15 +67,15 @@
                                         <h:outputLabel value="#{inwardReportControllerBht.patientEncounter.patient.age}"  />
                                         <h:outputLabel value="Dob" />
                                         <h:outputLabel value="#{inwardReportControllerBht.patientEncounter.patient.person.dob}" >
-                                            <f:convertDateTime pattern="dd MM yyyy"/>
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                                         </h:outputLabel>                                    
                                         <h:outputLabel value="Date Of Admission"/>
                                         <h:outputLabel value="#{inwardReportControllerBht.patientEncounter.dateOfAdmission}">
-                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </h:outputLabel>
                                         <h:outputLabel value="Date Of Discharge"/>
                                         <h:outputLabel value="#{inwardReportControllerBht.patientEncounter.dateOfDischarge}">
-                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </h:outputLabel>
                                         <h:outputLabel value="BHT Type"/>
                                         <h:outputLabel value="#{inwardReportControllerBht.patientEncounter.paymentMethod}"/>
@@ -316,7 +316,7 @@
                                 </p:column>
                                 <p:column headerText="Bill Date">
                                     <h:outputLabel value="#{pay.createdAt}">
-                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                     </h:outputLabel>                                
                                 </p:column>
                                 <p:column headerText="Amount">

@@ -1,9 +1,9 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/resources/template/template.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
-                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui">
 
@@ -28,8 +28,8 @@
                         <h:outputLabel rendered="#{patientHistoryController.searchedPatient!=null}" value="#{patientHistoryController.searchedPatient.person.sex}" ></h:outputLabel>
                         <h:outputLabel  rendered="#{patientHistoryController.searchedPatient!=null}" value="DOB"  />
 
-                        <h:outputLabel rendered="#{patientHistoryController.searchedPatient!=null}" value="#{patientHistoryController.searchedPatient.person.dob}"   >
-                            <f:convertDateTime pattern="dd/MM/yy" />
+                        <h:outputLabel rendered="#{patientHistoryController.searchedPatient!=null}" value="#{patientHistoryController.searchedPatient.person.dob}">
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                         </h:outputLabel>
 
                         <h:outputLabel  rendered="#{patientHistoryController.searchedPatient!=null}" value="Adress" />
@@ -45,13 +45,13 @@
 
                         <p:column headerText="Admitted At" >
                             <p:outputLabel value="#{pe.dateOfAdmission}">
-                                <f:convertDateTime pattern="dd/MM/yy" />
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                             </p:outputLabel>
                         </p:column>
 
                         <p:column headerText="Discharge At" >
                             <p:outputLabel value="#{pe.dateOfDischarge}">
-                                <f:convertDateTime pattern="dd/MM/yy" />
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                             </p:outputLabel>
                         </p:column>
 

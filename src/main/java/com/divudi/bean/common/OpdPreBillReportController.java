@@ -1,7 +1,7 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Open Hospital Management Information System
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.common;
 
@@ -10,7 +10,8 @@ import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.BillsTotals;
 import com.divudi.data.dataStructure.WebUserBillsTotal;
-import com.divudi.ejb.CommonFunctions;
+
+import com.divudi.entity.AuditEvent;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
@@ -19,7 +20,8 @@ import com.divudi.entity.RefundBill;
 import com.divudi.entity.WebUser;
 import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.WebUserFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -29,9 +31,12 @@ import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  *
@@ -43,7 +48,6 @@ public class OpdPreBillReportController implements Serializable {
 
     @EJB
     PaymentFacade paymentFacade;
-    @EJB
     CommonFunctions commonFunctions;
     @EJB
     WebUserFacade webUserFacade;
@@ -58,6 +62,8 @@ public class OpdPreBillReportController implements Serializable {
     EnumController enumController;
     @Inject
     CommonController commonController1; 
+    @Inject
+    AuditEventApplicationController auditEventApplicationController;
 
             
 
@@ -149,7 +155,7 @@ public class OpdPreBillReportController implements Serializable {
         userRefundedBillsPharmacy = createBillsTotals(new RefundBill(), BillType.PharmacySale, getWebUser(), getDepartment(), getToDepartment());
 
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "Cashier Report(/reportCashierBillFeePayment/report_cashier_detailed_by_user.xhtml or /reportCashierBillFeePayment/report_cashier_summery_by_user.xhtml)");
+        
     }
 
     public void createCashierTableByUserPayment() {
@@ -213,7 +219,7 @@ public class OpdPreBillReportController implements Serializable {
 
         calTotals(billsTotalses);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Cashier reports(Payments)/Cashier Report(/reportCashierBillFeePayment/report_cashier_detailed_by_user_payment.xhtml/ /reportCashierBillFeePayment/report_cashier_summery_by_user_payment.xhtml)");
+        
     }
 
     public String createCashierTableByUserPaymentForDetail() {
@@ -223,19 +229,184 @@ public class OpdPreBillReportController implements Serializable {
         return "/reportCashierBillFeePayment/report_cashier_detailed_by_user_payment";
 
     }
+    
+    public String navigateToReportCashierDetailedByUserPayment(){
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+        
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
+        Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("navigateToReportCashierDetailedByUserPayment()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+
+        
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        
+        
+        return "/reportCashierBillFeePayment/report_cashier_detailed_by_user_payment.xhtml?faces-redirect=true";
+    }
+    
+    public String navigateToReportCashierSummeryByUserPayment(){
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+        
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
+        Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("navigateToReportCashierSummeryByUserPayment()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+
+        
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        
+        
+        return "/reportCashierBillFeePayment/report_cashier_summery_by_user_payment.xhtml?faces-redirect=true";
+    }
+    
+    
+    
+            
+    public String navigateToReportCashierSummeryAllTotalOnly(){
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+        
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
+        Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("navigateToReportCashierSummeryAllTotalOnly()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+
+        
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        
+        
+        return "/reportCashierBillFeePayment/report_cashier_summery_all_total_only.xhtml?faces-redirect=true";
+    }
+    
+    public String navigateToReportCashierSummeryAll(){
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+        
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
+        Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("navigateToReportCashierSummeryAll()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+
+        
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        
+        
+        return "/reportCashierBillFeePayment/report_cashier_summery_all.xhtml?faces-redirect=true";
+    }
+    
+            
 
     public void createCashierTableByAllUserPaymentDetail() {
         Date startTime = new Date();
         createCashierTableByAllUserPayment(true);
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "Cashier reports(Payments)/ All cashier report(/reportCashierBillFeePayment/report_cashier_summery_all.xhtml)");
+        
     }
 
     public void createCashierTableByAllUserPaymentSummery() {
         Date startTime  = new Date();
         createCashierTableByAllUserPayment(false);
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "Cashier reports(Payments)/ All cashier summery( /reportCashierBillFeePayment/report_cashier_summery_all_total_only.xhtml)");
+        
     }
 
     public void createCashierTableByAllUserPayment(boolean detail) {
@@ -601,7 +772,7 @@ public class OpdPreBillReportController implements Serializable {
         temMap.put("fromDate", getFromDate());
         temMap.put("btp", btpList);
         temMap.put("ins", sessionController.getInstitution());
-        cashiers = getWebUserFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        cashiers = getWebUserFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
         if (cashiers == null) {
             cashiers = new ArrayList<>();
         }

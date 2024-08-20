@@ -1,13 +1,13 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Open Hospital Management Information System
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.store;
 
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
@@ -37,7 +37,8 @@ import com.divudi.facade.ItemFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
 import com.divudi.facade.StockFacade;
 import com.divudi.facade.StockHistoryFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.BillTypeAtomic;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -189,7 +190,7 @@ public class StoreIssueController implements Serializable {
             setZeroToQty(tmp);
             onEditCalculation(tmp);
             errorMessage = "Can not enter a minus value as quentity";
-            UtilityController.addErrorMessage("Can not enter a minus value");
+            JsfUtil.addErrorMessage("Can not enter a minus value");
             return true;
         }
 
@@ -199,7 +200,7 @@ public class StoreIssueController implements Serializable {
             setZeroToQty(tmp);
             onEditCalculation(tmp);
             errorMessage = "No enough stocks.";
-            UtilityController.addErrorMessage("No Sufficient Stocks?");
+            JsfUtil.addErrorMessage("No Sufficient Stocks?");
             return true;
         }
 
@@ -209,7 +210,7 @@ public class StoreIssueController implements Serializable {
             setZeroToQty(tmp);
             onEditCalculation(tmp);
             errorMessage = "This available stock is already added to another bill by another user";
-            UtilityController.addErrorMessage("Another User On Change Bill Item Qty value is resetted");
+            JsfUtil.addErrorMessage("Another User On Change Bill Item Qty value is resetted");
             return true;
         }
 
@@ -259,7 +260,7 @@ public class StoreIssueController implements Serializable {
     public void setQty(Double qty) {
         if (qty != null && qty <= 0) {
             errorMessage = "Can not enter minus values as the quentity";
-            UtilityController.addErrorMessage("Can not enter a minus value");
+            JsfUtil.addErrorMessage("Can not enter a minus value");
             return;
         }
         this.qty = qty;
@@ -299,7 +300,7 @@ public class StoreIssueController implements Serializable {
         m.put("s", d);
         m.put("vmp", amp.getVmp());
         sql = "select i from Stock i join treat(i.itemBatch.item as Amp) amp where i.stock >:s and i.department=:d and amp.vmp=:vmp order by i.itemBatch.item.name";
-        replaceableStocks = getStockFacade().findBySQL(sql, m);
+        replaceableStocks = getStockFacade().findByJpql(sql, m);
     }
 
     public List<Item> getItemsWithoutStocks() {
@@ -329,14 +330,14 @@ public class StoreIssueController implements Serializable {
         List<Item> items;
         String sql;
         sql = "select i from Item i where i.retired=false "
-                + " and upper(i.name) like :n and type(i)=:t "
-                + " and i.id not in(select ibs.id from Stock ibs where ibs.stock >:s and ibs.department=:d and upper(ibs.itemBatch.item.name) like :n ) order by i.name ";
+                + " and (i.name) like :n and type(i)=:t "
+                + " and i.id not in(select ibs.id from Stock ibs where ibs.stock >:s and ibs.department=:d and (ibs.itemBatch.item.name) like :n ) order by i.name ";
         m.put("t", Amp.class);
         m.put("d", getSessionController().getLoggedUser().getDepartment());
         m.put("n", "%" + qry + "%");
         double s = 0.0;
         m.put("s", s);
-        items = getItemFacade().findBySQL(sql, m, 10);
+        items = getItemFacade().findByJpql(sql, m, 10);
         return items;
     }
 
@@ -352,11 +353,11 @@ public class StoreIssueController implements Serializable {
         m.put("dep", DepartmentType.Store);
         m.put("n", "%" + qry.toUpperCase() + "%");
         if (qry.length() > 4) {
-            sql = "select i from Stock i where i.itemBatch.item.departmentType=:dep and i.stock >:s and i.department=:d and (upper(i.itemBatch.item.name) like :n or upper(i.itemBatch.item.code) like :n or upper(i.itemBatch.item.barcode) like :n )  order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
+            sql = "select i from Stock i where i.itemBatch.item.departmentType=:dep and i.stock >:s and i.department=:d and ((i.itemBatch.item.name) like :n or (i.itemBatch.item.code) like :n or (i.itemBatch.item.barcode) like :n )  order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
         } else {
-            sql = "select i from Stock i where i.itemBatch.item.departmentType=:dep and i.stock >:s and i.department=:d and (upper(i.itemBatch.item.name) like :n or upper(i.itemBatch.item.code) like :n)  order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
+            sql = "select i from Stock i where i.itemBatch.item.departmentType=:dep and i.stock >:s and i.department=:d and ((i.itemBatch.item.name) like :n or (i.itemBatch.item.code) like :n)  order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
         }
-        stockList = getStockFacade().findBySQL(sql, m, 20);
+        stockList = getStockFacade().findByJpql(sql, m, 20);
         itemsWithoutStocks = completeIssueItems(qry);
         //////System.out.println("selectedSaleitems = " + itemsWithoutStocks);
         return stockList;
@@ -380,7 +381,7 @@ public class StoreIssueController implements Serializable {
 
     private boolean errorCheckForPreBill() {
         if (getPreBill().getBillItems().isEmpty()) {
-            UtilityController.addErrorMessage("No Items added to bill to sale");
+            JsfUtil.addErrorMessage("No Items added to bill to sale");
             errorMessage = "You can not settle without adding any item to the bill";
             return true;
         }
@@ -414,6 +415,8 @@ public class StoreIssueController implements Serializable {
         getPreBill().setBillTime(new Date());
         getPreBill().setFromDepartment(getSessionController().getLoggedUser().getDepartment());
         getPreBill().setFromInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
+        getPreBill().setBillType(BillType.StoreIssue);
+        getPreBill().setBillTypeAtomic(BillTypeAtomic.STORE_ORDER);
 
         if (getPreBill().getId() == null) {
             getBillFacade().create(getPreBill());
@@ -526,12 +529,8 @@ public class StoreIssueController implements Serializable {
     public void settleBill() {
 
         editingQty = null;
-        //   ////System.out.println("editingQty = " + editingQty);
         errorMessage = null;
-        //   ////System.out.println("errorMessage = " + errorMessage);
-        
          if(checkIssue()){
-            
             return;
         }
         
@@ -545,16 +544,8 @@ public class StoreIssueController implements Serializable {
             return;
         }
         
-        if (errorCheckForSaleBill()) {
-               ////System.out.println("Error for sale bill");
-            return;
-        }
-       //storeIssueController.toDepartment
-        
-        
-        
         getPreBill().setPaidAmount(getPreBill().getTotal());
-        //   ////System.out.println("getPreBill().getPaidAmount() = " + getPreBill().getPaidAmount());
+        
         List<BillItem> tmpBillItems = getPreBill().getBillItems();
         getPreBill().setBillItems(null);
 
@@ -597,13 +588,13 @@ public class StoreIssueController implements Serializable {
         ////System.out.println("toDepartment = " + toDepartment.getName());
         ////System.out.println("sessionController.getLoggedUser().getDepartment() = " + sessionController.getLoggedUser().getDepartment().getName());
         if (toDepartment.equals(sessionController.getLoggedUser().getDepartment())) {
-            UtilityController.addErrorMessage("Please Select Deferent Department");
+            JsfUtil.addErrorMessage("Please Select Deferent Department");
             errorMessage = "Please select Deferent Department to send items";
             return;
         }
         
         if (getToDepartment() == null) {
-            UtilityController.addErrorMessage("Please Select To Department");
+            JsfUtil.addErrorMessage("Please Select To Department");
             errorMessage = "Please select the department to send items";
             return;
         }
@@ -612,18 +603,18 @@ public class StoreIssueController implements Serializable {
 
         if (issueRateMargins == null) {
             errorMessage = "Error in setting margins for issue to other departments. Contact www.lakmedi.com";
-            UtilityController.addErrorMessage("Set Issue Margin");
+            JsfUtil.addErrorMessage("Set Issue Margin");
             return;
         }
 
         if (getStock() == null) {
             errorMessage = "Select an item. If the item is not listed, there is no stocks from that item. Check the department you are logged and the stock.";
-            UtilityController.addErrorMessage("Item?");
+            JsfUtil.addErrorMessage("Item?");
             return;
         }
         if (getQty() == null) {
             errorMessage = "Please enter a quentity";
-            UtilityController.addErrorMessage("Quentity?");
+            JsfUtil.addErrorMessage("Quentity?");
             return;
         }
 
@@ -631,19 +622,19 @@ public class StoreIssueController implements Serializable {
 
         if (getQty() > fetchStock.getStock()) {
             errorMessage = "No sufficient stocks. Please enter a quentity which is qeual or less thatn the available stock quentity.";
-            UtilityController.addErrorMessage("No Sufficient Stocks?");
+            JsfUtil.addErrorMessage("No Sufficient Stocks?");
             return;
         }
 
         if (checkItemBatch()) {
             errorMessage = "Items from this batch is already added.";
-            UtilityController.addErrorMessage("Already added this item batch");
+            JsfUtil.addErrorMessage("Already added this item batch");
             return;
         }
         //Checking User Stock Entity
         if (!getStoreBean().isStockAvailable(getStock(), getQty(), getSessionController().getLoggedUser())) {
             errorMessage = "Sorry. Another user is already billed that item so that there is no sufficient stocks for you. Please check.";
-            UtilityController.addErrorMessage("Sorry Already Other User Try to Billing This Stock You Cant Add");
+            JsfUtil.addErrorMessage("Sorry Already Other User Try to Billing This Stock You Cant Add");
             return;
         }
 
@@ -725,10 +716,10 @@ public class StoreIssueController implements Serializable {
         if (getPreBill() == null) {
             return;
         }
-        if (billItem == null) {
+        if (getBillItem() == null) {
             return;
         }
-        if (billItem.getPharmaceuticalBillItem() == null) {
+        if (getBillItem().getPharmaceuticalBillItem() == null) {
             return;
         }
         if (billItem.getPharmaceuticalBillItem().getStock() == null) {
@@ -741,13 +732,16 @@ public class StoreIssueController implements Serializable {
         //Bill Item
 //        billItem.setInwardChargeType(InwardChargeType.Medicine);
         billItem.setItem(getStock().getItemBatch().getItem());
+        System.out.println("billItem.getItem() = " + billItem.getItem());
         billItem.setQty(qty);
+        System.out.println("billItem.getQty() = " + billItem.getQty());
 
         //pharmaceutical Bill Item
         billItem.getPharmaceuticalBillItem().setDoe(getStock().getItemBatch().getDateOfExpire());
         billItem.getPharmaceuticalBillItem().setFreeQty(0.0f);
         billItem.getPharmaceuticalBillItem().setItemBatch(getStock().getItemBatch());
         billItem.getPharmaceuticalBillItem().setQtyInUnit((double) (0 - qty));
+        System.out.println("billItem.getPharmaceuticalBillItem().getQtyInUnit = " + billItem.getPharmaceuticalBillItem().getQtyInUnit());
 
         //Rates
         //Values
@@ -755,6 +749,10 @@ public class StoreIssueController implements Serializable {
         billItem.setDiscount(0);
         billItem.setMarginValue(billItem.getMarginRate() * qty);
         billItem.setNetValue(billItem.getNetRate() * qty);
+        System.out.println("billItem.getRate() = " + billItem.getRate());
+        System.out.println("billItem.getMarginRate() = " + billItem.getMarginRate());
+        System.out.println("billItem.getReatilRate() = " + billItem.getPharmaceuticalBillItem().getRetailRate());
+        System.out.println("billItem.setNetValue = " + billItem.getNetValue());
 
     }
 
@@ -795,15 +793,14 @@ public class StoreIssueController implements Serializable {
     }
 
     public void calculateRates(BillItem bi) {
-        //   ////System.out.println("calculating rates");
         if (bi.getPharmaceuticalBillItem().getStock() == null) {
-            //////System.out.println("stock is null");
+            System.out.println("stock is null");
             return;
         }
         
         if (getToDepartment() == null) {
             errorMessage = "Please select a department to issue.";
-            UtilityController.addErrorMessage("Please select to department");
+            JsfUtil.addErrorMessage("Please select to department");
             return;
         }
 
@@ -811,7 +808,7 @@ public class StoreIssueController implements Serializable {
 
         if (issueRateMargins == null) {
             errorMessage = "Error in issue rate calculator. Contact www.lakmedi.com.";
-            UtilityController.addErrorMessage("Please select to department");
+            JsfUtil.addErrorMessage("Please select to department");
             return;
         }
 
@@ -979,7 +976,6 @@ public class StoreIssueController implements Serializable {
         if (preBill == null) {
             preBill = new PreBill();
             preBill.setBillType(BillType.StoreIssue);
-            //   preBill.setPaymentScheme(getPaymentSchemeController().getItems().get(0));
         }
         return preBill;
     }

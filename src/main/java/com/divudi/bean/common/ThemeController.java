@@ -1,18 +1,19 @@
 /*
  * Author : Dr. M H B Ariyaratne, MO(Health Information), email : buddhika.ari@gmail.com
- * and open the template in the editor.
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.common;
 
 import com.divudi.facade.WebUserFacade;
 import java.io.Serializable;
-import java.util.Map; import java.util.TreeMap;
+import java.util.Map;
+import java.util.TreeMap;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-
+import com.divudi.bean.common.util.JsfUtil;
 /**
  *
  * @author Buddhika
@@ -42,6 +43,36 @@ public class ThemeController implements Serializable {
     }
 
     public String getTheme() {
+        if (getSessionController().getLoggedUser() != null) {
+            theme = getSessionController().getLoggedUser().getPrimeTheme();
+        }
+        if (theme == null) {
+            theme = "material-light-outlined"; // Default theme
+            return theme;
+        }
+
+        switch (theme) {
+            case "material-light-outlined":
+            case "material-light-filled":
+            case "material-dark-outlined":
+            case "material-dark-filled":
+            case "bootstrap-light-outlined":
+            case "bootstrap-light-filled":
+            case "bootstrap-dark-outlined":
+            case "bootstrap-dark-filled":
+            case "primeone-light-outlined":
+            case "primeone-light-filled":
+            case "primeone-dim-outlined":
+            case "primeone-dim-filled":
+            case "primeone-dark-outlined":
+            case "primeone-dark-filled":
+            case "saga":
+            case "vela":
+            case "arya":
+                return theme;
+            default:
+                theme = "material-light-outlined"; // Default theme
+        }
         return theme;
     }
 
@@ -53,19 +84,16 @@ public class ThemeController implements Serializable {
         if (getSessionController().getLoggedUser() != null) {
             getSessionController().getLoggedUser().setPrimeTheme(theme);
             getFacade().edit(getSessionController().getLoggedUser());
-            UtilityController.addSuccessMessage("Theme updated");
-        } else {
-            getSessionController().setPrimeTheme(theme);
-            UtilityController.addErrorMessage("Theme NOT updated. Please login before you change the theme permamtely");
+            JsfUtil.addSuccessMessage("Theme updated");
         }
     }
-
+    
+    public String navigateToChangeOwnTheme(){
+        return "/user_theme?faces-redirect=true";
+    }
+    
     public WebUserFacade getFacade() {
         return facade;
-    }
-
-    public void setFacade(WebUserFacade facade) {
-        this.facade = facade;
     }
 
     public SessionController getSessionController() {
@@ -79,36 +107,23 @@ public class ThemeController implements Serializable {
     @PostConstruct
     public void init() {
         themes = new TreeMap<String, String>();
-        themes.put("Aristo", "aristo");
-        themes.put("Black-Tie", "black-tie");
-        themes.put("Blitzer", "blitzer");
-        themes.put("Bluesky", "bluesky");
-        themes.put("Casablanca", "casablanca");
-        themes.put("Cupertino", "cupertino");
-        themes.put("Dark-Hive", "dark-hive");
-        themes.put("Dot-Luv", "dot-luv");
-        themes.put("Eggplant", "eggplant");
-        themes.put("Excite-Bike", "excite-bike");
-        themes.put("Flick", "flick");
-        themes.put("Glass-X", "glass-x");
-        themes.put("Hot-Sneaks", "hot-sneaks");
-        themes.put("Humanity", "humanity");
-        themes.put("Le-Frog", "le-frog");
-        themes.put("Midnight", "midnight");
-        themes.put("Mint-Choc", "mint-choc");
-        themes.put("Overcast", "overcast");
-        themes.put("Pepper-Grinder", "pepper-grinder");
-        themes.put("Redmond", "redmond");
-        themes.put("Rocket", "rocket");
-        themes.put("Sam", "sam");
-        themes.put("Smoothness", "smoothness");
-        themes.put("South-Street", "south-street");
-        themes.put("Start", "start");
-        themes.put("Sunny", "sunny");
-        themes.put("Swanky-Purse", "swanky-purse");
-        themes.put("Trontastic", "trontastic");
-        themes.put("UI-Darkness", "ui-darkness");
-        themes.put("UI-Lightness", "ui-lightness");
-        themes.put("Vader", "vader");
+        themes.put("saga", "saga");
+        themes.put("vela", "vela");
+        themes.put("arya", "arya");
+        themes.put("material-light-outlined", "Material Light Outlined");
+        themes.put("material-light-filled", "Material Light Filled");
+        themes.put("material-dark-outlined", "Material Dark Outlined");
+        themes.put("material-dark-filled", "Material Dark Filled");
+        themes.put("bootstrap-light-outlined", "Bootstrap Light Outlined");
+        themes.put("bootstrap-light-filled", "Bootstrap Light Filled");
+        themes.put("bootstrap-dark-outlined", "Bootstrap Dark Outlined");
+        themes.put("bootstrap-dark-filled", "Bootstrap Dark Filled");
+        themes.put("primeone-light-outlined", "PrimeOne Light Outlined");
+        themes.put("primeone-light-filled", "PrimeOne Light Filled");
+        themes.put("primeone-dim-outlined", "PrimeOne Dim Outlined");
+        themes.put("primeone-dim-filled", "PrimeOne Dim Filled");
+        themes.put("primeone-dark-outlined", "PrimeOne Dark Outlined");
+        themes.put("primeone-dark-filled", "PrimeOne Dark Filled");
     }
+
 }

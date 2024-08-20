@@ -1,15 +1,15 @@
 /*
- * MSc(Biomedical Informatics) Project
+ * Open Hospital Management Information System
  *
- * Development and Implementation of a Web-based Combined Data Repository of
- Genealogical, Clinical, Laboratory and Genetic Data
- * and
- * a Set of Related Tools
+ * Dr M H B Ariyaratne
+ * Acting Consultant (Health Informatics)
+ * (94) 71 5812399
+ * (94) 71 5812399
  */
 package com.divudi.bean.store;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.entity.pharmacy.AssetCategory;
 import com.divudi.entity.pharmacy.StoreItemCategory;
 import com.divudi.facade.AssetCategoryFacade;
@@ -31,8 +31,8 @@ import javax.inject.Named;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- * Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
+ * Acting Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -53,10 +53,10 @@ public class StoreItemCategoryController implements Serializable {
         Map m = new HashMap();
         m.put("n", "%" + qry + "%");
         String sql = "select c from StoreItemCategory c where "
-                + " c.retired=false and (upper(c.name) like :n) order by c.name";
+                + " c.retired=false and ((c.name) like :n) order by c.name";
 
-        a = getFacade().findBySQL(sql, m, 20);
-        //////System.out.println("a size is " + a.size());
+        a = getFacade().findByJpql(sql, m, 20);
+        //////// // System.out.println("a size is " + a.size());
 
         if (a == null) {
             a = new ArrayList<>();
@@ -69,10 +69,10 @@ public class StoreItemCategoryController implements Serializable {
         Map m = new HashMap();
         m.put("n", "%" + qry + "%");
         String sql = "select c from AssetCategory c where "
-                + " c.retired=false and (upper(c.name) like :n) order by c.name";
+                + " c.retired=false and ((c.name) like :n) order by c.name";
 
-        a = getAssetCategoryFacade().findBySQL(sql, m, 20);
-        //////System.out.println("a size is " + a.size());
+        a = getAssetCategoryFacade().findByJpql(sql, m, 20);
+        //////// // System.out.println("a size is " + a.size());
 
         if (a == null) {
             a = new ArrayList<>();
@@ -92,12 +92,12 @@ public class StoreItemCategoryController implements Serializable {
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            UtilityController.addSuccessMessage("Saved Successfully");
+            JsfUtil.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
         getItems();
@@ -148,9 +148,9 @@ public class StoreItemCategoryController implements Serializable {
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
@@ -166,7 +166,7 @@ public class StoreItemCategoryController implements Serializable {
         if (items == null) {
             String j;
             j = "select c from StoreItemCategory c where c.retired=false order by c.name";
-            items = getFacade().findBySQL(j);
+            items = getFacade().findByJpql(j);
         }
         return items;
     }

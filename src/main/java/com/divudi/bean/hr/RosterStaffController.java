@@ -1,11 +1,11 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Open Hospital Management Information System
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.hr;
 
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.ejb.HumanResourceBean;
 import com.divudi.entity.Staff;
 import com.divudi.entity.hr.Roster;
@@ -48,12 +48,12 @@ public class RosterStaffController implements Serializable {
     public void add() {
 
         if (currentStaff == null) {
-            UtilityController.addErrorMessage("Select Staff");
+            JsfUtil.addErrorMessage("Select Staff");
             return;
         }
 
         if (currentStaff.getRoster() != null) {
-            UtilityController.addErrorMessage("This staff already in other roster");
+            JsfUtil.addErrorMessage("This staff already in other roster");
             return;
         }
 

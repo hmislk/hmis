@@ -1,14 +1,14 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Open Hospital Management Information System
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.ws.inward;
 
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.InstitutionController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.inward.InwardBeanController;
 import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.data.BillClassType;
@@ -276,8 +276,8 @@ public class ApiInward {
                 + " and pe.discharged!=true "
                 + " order by pe.id desc";
         m.put("class", Admission.class);
-        suggestions = getPatientEncounterFacade().findBySQL(sql, m, 20);
-//        //System.out.println("1.suggestions.size() = " + suggestions.size());
+        suggestions = getPatientEncounterFacade().findByJpql(sql, m, 20);
+//        //// // System.out.println("1.suggestions.size() = " + suggestions.size());
 
         sql = "select pe from PatientEncounter pe where pe.retired=false "
                 + " and type(pe)=:class "
@@ -288,26 +288,26 @@ public class ApiInward {
                 + " order by pe.id desc";
 
         m.put("d", 0.1);
-        List<PatientEncounter> temps = getPatientEncounterFacade().findBySQL(sql, m, 20);
-//        //System.out.println("temps.size() = " + temps.size());
+        List<PatientEncounter> temps = getPatientEncounterFacade().findByJpql(sql, m, 20);
+//        //// // System.out.println("temps.size() = " + temps.size());
         List<PatientEncounter> removeTemps = new ArrayList<>();
         for (PatientEncounter p : temps) {
-//            //System.out.println("p.getFinalBill().getNetTotal() = " + p.getFinalBill().getNetTotal());
-//            //System.out.println("p.getFinalBill().getPaidAmount() = " + p.getFinalBill().getPaidAmount());
+//            //// // System.out.println("p.getFinalBill().getNetTotal() = " + p.getFinalBill().getNetTotal());
+//            //// // System.out.println("p.getFinalBill().getPaidAmount() = " + p.getFinalBill().getPaidAmount());
             double d = fetchCreditPaymentTotal(p);
             if (p.getFinalBill().getNetTotal() - (p.getFinalBill().getPaidAmount() + d) < 0.1) {
                 removeTemps.add(p);
             }
             p.getFinalBill().setPaidAmount(d + p.getFinalBill().getPaidAmount());
         }
-//        //System.out.println("removeTemps.size() = " + removeTemps.size());
+//        //// // System.out.println("removeTemps.size() = " + removeTemps.size());
         temps.removeAll(removeTemps);
-//        //System.out.println("temps.size() = " + temps.size());
+//        //// // System.out.println("temps.size() = " + temps.size());
 
         suggestions.addAll(temps);
-//        //System.out.println("2.suggestions.size() = " + suggestions.size());
+//        //// // System.out.println("2.suggestions.size() = " + suggestions.size());
 //        for (PatientEncounter pe : suggestions) {
-//            //System.out.println("pe.getBhtNo() = " + pe.getBhtNo());
+//            //// // System.out.println("pe.getBhtNo() = " + pe.getBhtNo());
 //        }
 
         return suggestions;
@@ -332,8 +332,8 @@ public class ApiInward {
                 + " order by pe.bhtNo";
         m.put("class", Admission.class);
         m.put("bht", bhtNo);
-        List<PatientEncounter> temps = getPatientEncounterFacade().findBySQL(sql, m);
-//        //System.out.println("1.temps.size() = " + temps.size());
+        List<PatientEncounter> temps = getPatientEncounterFacade().findByJpql(sql, m);
+//        //// // System.out.println("1.temps.size() = " + temps.size());
         if (temps.size() > 0) {
             return true;
         }
@@ -346,8 +346,8 @@ public class ApiInward {
                 + " order by pe.bhtNo ";
 
         m.put("d", 0.1);
-        temps = getPatientEncounterFacade().findBySQL(sql, m);
-//        //System.out.println("2.temps.size() = " + temps.size());
+        temps = getPatientEncounterFacade().findByJpql(sql, m);
+//        //// // System.out.println("2.temps.size() = " + temps.size());
         if (temps.size() > 0) {
             return true;
         }
@@ -388,7 +388,7 @@ public class ApiInward {
     private BilledBill saveBill(BilledBill b, PaymentMethodData pmd) {
         getBillBeanController().setPaymentMethodData(b, b.getPaymentMethod(), pmd);
         Bill temp = findLastPaymentBill();
-//        //System.out.println("temp = " + temp);
+//        //// // System.out.println("temp = " + temp);
         if (temp == null) {
             return null;
         }
@@ -434,16 +434,16 @@ public class ApiInward {
 
     private boolean errorCheck(Bill bill, PaymentMethodData pmd) {
         if (bill.getPatientEncounter() == null) {
-            UtilityController.addErrorMessage("Select BHT");
+            JsfUtil.addErrorMessage("Select BHT");
             return true;
         }
 
         if (bill.getPaymentMethod() == null) {
-            UtilityController.addErrorMessage("Select Payment Method");
+            JsfUtil.addErrorMessage("Select Payment Method");
             return true;
         }
 
-        if (getPaymentSchemeController().errorCheckPaymentMethod(bill.getPaymentMethod(), pmd)) {
+        if (getPaymentSchemeController().checkPaymentMethodError(bill.getPaymentMethod(), pmd)) {
             return true;
         }
 
@@ -460,19 +460,19 @@ public class ApiInward {
                 + " and pe.bhtNo=:bht ";
         m.put("class", Admission.class);
         m.put("bht", bht_no);
-        PatientEncounter temp = getPatientEncounterFacade().findFirstBySQL(sql, m);
-//        //System.out.println("temp = " + temp);
+        PatientEncounter temp = getPatientEncounterFacade().findFirstByJpql(sql, m);
+//        //// // System.out.println("temp = " + temp);
         return temp;
     }
 
     private Institution fetchBank(Long id) {
-//        //System.out.println("id = " + id);
+//        //// // System.out.println("id = " + id);
         String sql;
         HashMap m = new HashMap();
         sql = "SELECT i FROM Institution i where i.retired=false "
                 + " and i.id=" + id;
-        Institution bank = getInstitutionFacade().findFirstBySQL(sql);
-//        //System.out.println("bank = " + bank);
+        Institution bank = getInstitutionFacade().findFirstByJpql(sql);
+//        //// // System.out.println("bank = " + bank);
         return bank;
     }
 
@@ -487,9 +487,9 @@ public class ApiInward {
         m.put("bTp", BillType.InwardPaymentBill);
         m.put("class", BilledBill.class);
 
-        Bill b = getBillFacade().findFirstBySQL(sql, m);
+        Bill b = getBillFacade().findFirstByJpql(sql, m);
 
-//        //System.out.println("b = " + b);
+//        //// // System.out.println("b = " + b);
 
         return b;
     }
@@ -508,7 +508,7 @@ public class ApiInward {
 
         double d = getBillItemFacade().findDoubleByJpql(sql, m);
 
-//        //System.out.println("d = " + d);
+//        //// // System.out.println("d = " + d);
 
         return d;
 
@@ -573,10 +573,6 @@ public class ApiInward {
 
     public BillNumberGenerator getBillNumberGenerator() {
         return billNumberGenerator;
-    }
-
-    public void setBillNumberGenerator(BillNumberGenerator billNumberGenerator) {
-        this.billNumberGenerator = billNumberGenerator;
     }
 
     public BilledBillFacade getBilledBillFacade() {

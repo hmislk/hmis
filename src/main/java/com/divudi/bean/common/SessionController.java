@@ -1,14 +1,16 @@
 /*
  * Author : Dr. M H B Ariyaratne
  *
- * MO(Health Information), Department of Health Services, Southern Province
- * and
+ * Consultant (Health Informatics)
+ * (94) 71 5812399
  * Email : buddhika.ari@gmail.com
  */
 package com.divudi.bean.common;
 
+import com.divudi.bean.channel.BookingController;
+import com.divudi.bean.collectingCentre.CourierController;
 import com.divudi.bean.pharmacy.PharmacySaleController;
-import com.divudi.data.DepartmentType;
+import com.divudi.data.InstitutionType;
 import com.divudi.data.Privileges;
 import com.divudi.ejb.ApplicationEjb;
 import com.divudi.ejb.CashTransactionBean;
@@ -17,12 +19,15 @@ import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Logins;
 import com.divudi.entity.Person;
+import com.divudi.entity.UserIcon;
 import com.divudi.entity.UserPreference;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.WebUserDashboard;
+import com.divudi.entity.WebUserDepartment;
 import com.divudi.entity.WebUserPrivilege;
 import com.divudi.entity.WebUserRole;
 import com.divudi.facade.DepartmentFacade;
+import com.divudi.facade.InstitutionFacade;
 import com.divudi.facade.LoginsFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.UserPreferenceFacade;
@@ -31,7 +36,11 @@ import com.divudi.facade.WebUserDepartmentFacade;
 import com.divudi.facade.WebUserFacade;
 import com.divudi.facade.WebUserPrivilegeFacade;
 import com.divudi.facade.WebUserRoleFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.entity.Route;
+import com.divudi.entity.Staff;
+import com.divudi.facade.StaffFacade;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -43,25 +52,19 @@ import java.util.Map;
 import javax.annotation.PreDestroy;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
-import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSessionEvent;
 import javax.servlet.http.HttpSessionListener;
-
-import org.primefaces.event.CloseEvent;
-import org.primefaces.event.DashboardReorderEvent;
-import org.primefaces.event.ToggleEvent;
-import org.primefaces.model.DashboardColumn;
-import org.primefaces.model.DashboardModel;
-import org.primefaces.model.DefaultDashboardColumn;
-import org.primefaces.model.DefaultDashboardModel;
+import javax.faces.context.FacesContext;
+import javax.faces.event.ComponentSystemEvent;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.ServletContext;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- * Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -83,9 +86,13 @@ public class SessionController implements Serializable, HttpSessionListener {
     @EJB
     PersonFacade personFacade;
     @EJB
+    StaffFacade staffFacade;
+    @EJB
     WebUserFacade webUserFacade;
     @EJB
     WebUserDashboardFacade webUserDashboardFacade;
+    @EJB
+    InstitutionFacade institutionFacade;
     /**
      * Controllers
      */
@@ -95,25 +102,51 @@ public class SessionController implements Serializable, HttpSessionListener {
     ApplicationController applicationController;
     @Inject
     SearchController searchController;
-
+    @Inject
+    InstitutionController institutionController;
+    @Inject
+    DepartmentController departmentController;
     @Inject
     WebUserController webUserController;
+    @Inject
+    PersonController personController;
+    @Inject
+    UserIconController userIconController;
+    @Inject
+    TokenController tokenController;
+    @Inject
+    OpdTokenController opdTokenController;
+    @Inject
+    BookingController bookingController;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    CourierController courierController;
     /**
      * Properties
      */
+
     private static final long serialVersionUID = 1L;
     WebUser loggedUser = null;
     private UserPreference loggedPreference;
     private UserPreference applicationPreference;
     private UserPreference institutionPreference;
-    UserPreference userPreference;
+    private UserPreference departmentPreference;
+    private UserPreference userPreference;
     boolean logged = false;
     boolean activated = false;
-    String primeTheme;
+    private String primeTheme;
     String defLocale;
     private List<Privileges> privilegeses;
     Department department;
     List<Department> departments;
+
+    private List<Department> loggableDepartments;
+    private List<Department> loggableSubDepartments;
+    private List<Institution> loggableInstitutions;
+    private List<Institution> loggableCollectingCentres;
+    private List<UserIcon> userIcons;
+
     Institution institution;
     private List<WebUserDashboard> dashboards;
     boolean paginator;
@@ -122,8 +155,222 @@ public class SessionController implements Serializable, HttpSessionListener {
     String phoneNo;
     UserPreference currentPreference;
     Bill bill;
-    private DashboardModel dashboardModel;
+//    private DashboardModel dashboardModel;
     String loginRequestResponse;
+    private Boolean firstLogin;
+
+    private boolean websiteUserGoingToLog = false;
+
+    private String institutionName;
+    private String departmentName;
+    private String adminName;
+
+    // A field to store the landing page
+    private String landingPage;
+
+    public String navigateToLoginPage() {
+
+        return "/index1.xhtml";
+    }
+
+    public void redirectToIndex1(ComponentSystemEvent event) {
+        if (!FacesContext.getCurrentInstance().isPostback()) {
+            try {
+                FacesContext.getCurrentInstance().getExternalContext().redirect("/index1.xhtml");
+            } catch (IOException e) {
+                // Handle the exception (e.g., logging)
+            }
+        }
+    }
+
+    public String getLandingPageOld() {
+        if (landingPage == null) {
+            FacesContext context = FacesContext.getCurrentInstance();
+            HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+            ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+            String url = request.getRequestURL().toString();
+
+            if (url.endsWith("/")) {
+                url = url.substring(0, url.length() - 1);
+            }
+            landingPage = url;
+
+            // Get the correct FacesServletMapping from the web.xml context-param
+            String facesServletMapping = servletContext.getInitParameter("FacesServletMapping");
+            if (facesServletMapping == null) {
+                facesServletMapping = "/faces/"; // Default value
+            }
+
+            landingPage += facesServletMapping;
+
+            if (getApplicationPreference().getThemeName() == null || getApplicationPreference().getThemeName().trim().equals("")) {
+                landingPage += "index.xhtml";
+            } else {
+                landingPage += "themes/";
+                landingPage += getApplicationPreference().getThemeName() + "/index.xhtml";
+            }
+
+        }
+        return landingPage;
+    }
+
+    public String getLandingPage() {
+        if (landingPage == null) {
+            if (getApplicationPreference().getThemeName() == null || getApplicationPreference().getThemeName().trim().equals("")) {
+                landingPage = "index";
+            } else {
+                landingPage = "themes/";
+                landingPage += getApplicationPreference().getThemeName() + "/index";
+            }
+        }
+        return landingPage;
+    }
+
+//    public void redirectToLandingPage() {
+//        FacesContext context = FacesContext.getCurrentInstance();
+//
+//        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+//
+//        String applicationName = servletContext.getServletContextName();
+//
+//        String facesServletMapping = servletContext.getInitParameter("FacesServletMapping");
+//        if (facesServletMapping == null) {
+//            facesServletMapping = "/faces/"; // Default value
+//        }
+//        String redirectPath;
+//        redirectPath = applicationName + facesServletMapping;
+//        if (getApplicationPreference().getThemeName() == null || getApplicationPreference().getThemeName().trim().equals("")) {
+//            redirectPath += "index1.xhtml";
+//        } else {
+//            redirectPath += "themes/";
+//            redirectPath += getApplicationPreference().getThemeName() + "/index.xhtml";
+//        }
+//        try {
+//            context.getExternalContext().redirect(redirectPath);
+//
+//        } catch (IOException e) {
+//            System.out.println("e = " + e);
+//        }
+//    }
+//
+//    public void redirectToLandingPage1() {
+//        FacesContext context = FacesContext.getCurrentInstance();
+//        String redirectPath;
+//        if (getApplicationPreference().getThemeName() == null || getApplicationPreference().getThemeName().trim().equals("")) {
+//            redirectPath = "/index1.xhtml";
+//        } else {
+//            redirectPath = "/themes/" + getApplicationPreference().getThemeName() + "/index.xhtml";
+//        }
+//        try {
+//            context.getExternalContext().redirect(context.getExternalContext().getRequestContextPath() + redirectPath);
+//        } catch (IOException e) {
+//            System.out.println("e = " + e);
+//        }
+//    }
+    public void redirectToLandingPage() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+        String facesServletMapping = servletContext.getInitParameter("FacesServletMapping");
+        if (facesServletMapping == null) {
+            facesServletMapping = "/faces/"; // Default value
+        }
+        String redirectPath;
+        if (getApplicationPreference().getThemeName() == null || getApplicationPreference().getThemeName().trim().equals("")) {
+            redirectPath = facesServletMapping + "index1.xhtml";
+        } else {
+            redirectPath = facesServletMapping + "themes/" + getApplicationPreference().getThemeName() + "/index.xhtml";
+        }
+        try {
+            context.getExternalContext().redirect(context.getExternalContext().getRequestContextPath() + redirectPath);
+        } catch (IOException e) {
+        }
+    }
+
+//    public void redirectToLandingPage3() {
+//        FacesContext context = FacesContext.getCurrentInstance();
+//        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+//        String facesServletMapping = servletContext.getInitParameter("FacesServletMapping");
+//        System.out.println("facesServletMapping = " + facesServletMapping);
+//        if (facesServletMapping == null) {
+//            facesServletMapping = "/faces/"; // Default value
+//        }
+//        System.out.println("facesServletMapping = " + facesServletMapping);
+//        String redirectPath;
+//        if (getApplicationPreference().getThemeName() == null || !getApplicationPreference().getThemeName().trim().equals("")) {
+//            redirectPath = facesServletMapping + "index1.xhtml";
+//        } else {
+//            redirectPath = facesServletMapping + "themes/" + getApplicationPreference().getThemeName() + "/index.xhtml";
+//        }
+//        try {
+//            context.getExternalContext().redirect(context.getExternalContext().getRequestContextPath() + redirectPath);
+//        } catch (IOException e) {
+//            System.out.println("e = " + e);
+//        }
+//    }
+    public Date currentTime() {
+        return new Date();
+    }
+
+    public String createFirstLogin() {
+        Institution ins = new Institution();
+        ins.setName(institutionName);
+        ins.setInstitutionCode(institutionName);
+        ins.setCreatedAt(new Date());
+        ins.setInstitutionType(InstitutionType.Company);
+        institutionController.save(ins);
+        Department dep = new Department();
+        dep.setInstitution(ins);
+        dep.setName(departmentName);
+        dep.setPrintingName(departmentName);
+        dep.setDepartmentCode(departmentName);
+        departmentController.save(dep);
+
+        Person p = new Person();
+        p.setName(userName);
+        p.setCreatedAt(new Date());
+        personController.save(p);
+
+        Staff staff = new Staff();
+        staff.setPerson(p);
+        staffFacade.create(staff);
+
+        WebUser wu = new WebUser();
+        wu.setWebUserPerson(p);
+        wu.setStaff(staff);
+        wu.setInstitution(ins);
+        wu.setDepartment(dep);
+        wu.setCreatedAt(new Date());
+        wu.setActivated(true);
+        wu.setActivatedAt(new Date());
+        wu.setName(userName);
+        wu.setWebUserPassword(getSecurityController().hashAndCheck(password));
+        webUserController.save(wu);
+
+        for (Privileges pv : Privileges.values()) {
+            WebUserPrivilege wup = new WebUserPrivilege();
+            wup.setWebUser(wu);
+            wup.setPrivilege(pv);
+            wup.setCreatedAt(new Date());
+            webUserPrivilegeFacade.create(wup);
+        }
+
+        WebUserDepartment wud = new WebUserDepartment();
+        wud.setCreatedAt(new Date());
+        wud.setDepartment(dep);
+        wud.setWebUser(wu);
+        webUserDepartmentFacade.create(wud);
+
+        firstLogin = null;
+
+        return "/index";
+
+    }
+
+    public String toLoginFromWeb() {
+        websiteUserGoingToLog = true;
+        return "";
+    }
 
     public UserPreference getCurrentPreference() {
         return currentPreference;
@@ -137,7 +384,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         String jpql;
         Map m = new HashMap();
         jpql = "select p from UserPreference p where p.institution is null and p.department is null and p.webUser is null order by p.id desc";
-        currentPreference = getUserPreferenceFacade().findFirstBySQL(jpql);
+        currentPreference = getUserPreferenceFacade().findFirstByJpql(jpql);
         if (currentPreference == null) {
             currentPreference = new UserPreference();
 
@@ -146,7 +393,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         currentPreference.setWebUser(null);
         currentPreference.setDepartment(null);
         currentPreference.setInstitution(null);
-        return "/admin_mange_application_preferences";
+        return "/admin/institutions/admin_mange_application_preferences?faces-redirect=true";
     }
 
     public String toManageIntitutionPreferences() {
@@ -154,7 +401,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         Map m = new HashMap();
         jpql = "select p from UserPreference p where p.institution=:ins order by p.id desc";
         m.put("ins", loggedUser.getInstitution());
-        currentPreference = getUserPreferenceFacade().findFirstBySQL(jpql, m);
+        currentPreference = getUserPreferenceFacade().findFirstByJpql(jpql, m);
         if (currentPreference == null) {
             currentPreference = new UserPreference();
             currentPreference.setInstitution(loggedUser.getInstitution());
@@ -163,7 +410,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         currentPreference.setWebUser(null);
         currentPreference.setDepartment(null);
 
-        return "/admin_mange_institutions_preferences";
+        return "/admin/institutions/admin_mange_institutions_preferences";
     }
 
     public String toManageDepartmentPreferences() {
@@ -171,14 +418,52 @@ public class SessionController implements Serializable, HttpSessionListener {
         Map m = new HashMap();
         jpql = "select p from UserPreference p where p.department=:dep order by p.id desc";
         m.put("dep", loggedUser.getDepartment());
-        currentPreference = getUserPreferenceFacade().findFirstBySQL(jpql, m);
+        currentPreference = getUserPreferenceFacade().findFirstByJpql(jpql, m);
         if (currentPreference == null) {
             currentPreference = new UserPreference();
             currentPreference.setDepartment(loggedUser.getDepartment());
         }
         currentPreference.setWebUser(null);
         currentPreference.setInstitution(null);
-        return "/admin_mange_department_preferences";
+        return "/admin/institutions/admin_mange_department_preferences?faces-redirect=true";
+    }
+
+    public String navigateToManageWebUserPreferences(WebUser preferenceUser) {
+        String jpql;
+        Map m = new HashMap();
+        jpql = "select p "
+                + " from UserPreference p "
+                + " where p.webUser=:wu order by p.id desc";
+        m.put("wu", preferenceUser);
+        currentPreference = getUserPreferenceFacade().findFirstByJpql(jpql, m);
+        if (currentPreference == null) {
+            currentPreference = new UserPreference();
+            currentPreference.setWebUser(preferenceUser);
+        }
+        currentPreference.setDepartment(null);
+        currentPreference.setInstitution(null);
+        return "/admin/users/user_preferences?faces-redirect=true";
+    }
+
+    public String navigateToManageOwnWebUserPreferences() {
+        if (loggedUser == null) {
+            JsfUtil.addErrorMessage("User?");
+            return "";
+        }
+        String jpql;
+        Map m = new HashMap();
+        jpql = "select p "
+                + " from UserPreference p "
+                + " where p.webUser=:wu order by p.id desc";
+        m.put("wu", loggedUser);
+        currentPreference = getUserPreferenceFacade().findFirstByJpql(jpql, m);
+        if (currentPreference == null) {
+            currentPreference = new UserPreference();
+            currentPreference.setWebUser(loggedUser);
+        }
+        currentPreference.setDepartment(null);
+        currentPreference.setInstitution(null);
+        return "/user_own_preferances?faces-redirect=true";
     }
 
     public void updateUserPreferences() {
@@ -195,6 +480,50 @@ public class SessionController implements Serializable, HttpSessionListener {
         }
     }
 
+    public void generateOpdBillTemplate() {
+        if (currentPreference == null) {
+            return;
+        }
+        String opdBillTemplate;
+        opdBillTemplate = " <div class=\"container text-center mb-4\">\n"
+                + "        <h1>{institution_name}</h1>\n"
+                + "        <p>{institution_address}</p>\n"
+                + "        <p>{institution_phone}</p>\n"
+                + "        <p>{institution_email}</p>\n"
+                + "        <p>{institution_website}</p>\n"
+                + "    </div>\n"
+                + "    <hr />\n"
+                + "    <div class=\"container\">\n"
+                + "        <div class=\"row\">\n"
+                + "            <div class=\"col-6\">\n"
+                + "                <p>Name: {name}</p>\n"
+                + "                <p>Age: {age}</p>\n"
+                + "                <p>Gender: {gender}</p>\n"
+                + "            </div>\n"
+                + "\n"
+                + "            <div class=\"col-6\">\n"
+                + "                <p>Bill Number: {id}</p>\n"
+                + "                <p>Bill Date: {bill_date}</p>\n"
+                + "                <p>Bill Time: {bill_time}</p>\n"
+                + "            </div>\n"
+                + "        </div>\n"
+                + "    </div>\n"
+                + "    <hr />\n"
+                + "    <div class=\"container mt-4\">\n"
+                + "            {item_value_table}\n"
+                + "    </div>\n"
+                + "    <hr />\n"
+                + "    <div class=\"container mt-4\">\n"
+                + "        <p>Gross Total: {gross_total}</p>\n"
+                + "        <p>Discount: {discount}</p>\n"
+                + "        <p>Net Total: {net_total}</p>\n"
+                + "        <p>Items Count: {count_of_items}</p>\n"
+                + "        <p>Cashier Name: {cashier_name}</p>\n"
+                + "    </div>";
+        currentPreference.setOpdBillTemplate(opdBillTemplate);
+        saveUserPreferences();
+    }
+
     public void saveUserPreferences() {
         if (currentPreference != null) {
             if (currentPreference.getId() == null || currentPreference.getId() == 0) {
@@ -205,6 +534,16 @@ public class SessionController implements Serializable, HttpSessionListener {
                 JsfUtil.addSuccessMessage("Preferences Updated");
             }
 
+        }
+    }
+
+    public void savePreferences(UserPreference uf) {
+        if (uf != null) {
+            if (uf.getId() == null || uf.getId() == 0) {
+                userPreferenceFacade.create(uf);
+            } else {
+                userPreferenceFacade.edit(uf);
+            }
         }
     }
 
@@ -263,6 +602,13 @@ public class SessionController implements Serializable, HttpSessionListener {
     }
 
     public Department getDepartment() {
+        if (department == null) {
+            if (loggedUser == null) {
+                if (loggedUser.getDepartment() != null) {
+                    department = loggedUser.getDepartment();
+                }
+            }
+        }
         return department;
     }
 
@@ -311,7 +657,7 @@ public class SessionController implements Serializable, HttpSessionListener {
     //
     WebUser current;
     String userName;
-    String passord;
+    String password;
     String newPassword;
     String newPasswordConfirm;
     String newPersonName;
@@ -354,9 +700,9 @@ public class SessionController implements Serializable, HttpSessionListener {
 
     public String loginAction() {
         if (login()) {
-            return "/index.xhtml";
+            return "/index1.xhtml";
         } else {
-            UtilityController.addErrorMessage("Login Failure. Please try again");
+            JsfUtil.addErrorMessage("Login Failure. Please try again");
             return "";
         }
     }
@@ -364,78 +710,49 @@ public class SessionController implements Serializable, HttpSessionListener {
     public String loginActionWithoutDepartment() {
         department = null;
         institution = null;
-        if (loginWithoutDepartment()) {
-            return "/index.xhtml";
+        boolean l = checkUsersWithoutDepartment();
+        if (l) {
+            return "/index1.xhtml?faces-redirect=true";
         } else {
-            UtilityController.addErrorMessage("Invalid User! Login Failure. Please try again");
+            JsfUtil.addErrorMessage("Invalid User! Login Failure. Please try again");
+            return "";
+        }
+    }
+    
+    public String getLogoutPageUrl() {
+        String contextPath = FacesContext.getCurrentInstance().getExternalContext().getRequestContextPath();
+        return contextPath + "/faces/logout.xhtml"; // Adjust the path as needed
+    }
+
+    
+
+    public String loginForChannelingTabView() {
+        department = null;
+        institution = null;
+        boolean l = checkUsersWithoutDepartment();
+        if (l) {
+            return "/index1.xhtml?faces-redirect=true";
+        } else {
+            JsfUtil.addErrorMessage("Invalid User! Login Failure. Please try again");
             return "";
         }
     }
 
     private boolean login() {
-
         getApplicationEjb().recordAppStart();
-
         if (userName.trim().equals("")) {
-            UtilityController.addErrorMessage("Please enter a username");
+            JsfUtil.addErrorMessage("Please enter a username");
             return false;
         }
-
-        if (false) {
-            Calendar calendar = Calendar.getInstance();
-            calendar.set(2015, 05, 17, 23, 59, 59);//2015/june/17/23:00:00
-            calendar.set(Calendar.MILLISECOND, 999);
-
-            Date expired = calendar.getTime();
-            Date nowDate = new Date();
-
-            if (nowDate.after(expired)) {
-                UtilityController.addErrorMessage("Your Application has Expired");
-                return false;
-            }
-        }
-        // password
         if (isFirstVisit()) {
             prepareFirstVisit();
             return true;
         } else {
             if (department == null) {
-                UtilityController.addErrorMessage("Please select a department");
+                JsfUtil.addErrorMessage("Please select a department");
                 return false;
             }
             return checkUsers();
-        }
-    }
-
-    private boolean loginWithoutDepartment() {
-
-        getApplicationEjb().recordAppStart();
-
-        if (userName.trim().equals("")) {
-            UtilityController.addErrorMessage("Please enter a username");
-            return false;
-        }
-
-        if (false) {
-            Calendar calendar = Calendar.getInstance();
-            calendar.set(2015, 05, 17, 23, 59, 59);//2015/june/17/23:00:00
-            calendar.set(Calendar.MILLISECOND, 999);
-
-            Date expired = calendar.getTime();
-            Date nowDate = new Date();
-
-            if (nowDate.after(expired)) {
-                UtilityController.addErrorMessage("Your Application has Expired");
-                return false;
-            }
-        }
-        // password
-        if (isFirstVisit()) {
-            prepareFirstVisit();
-            return true;
-        } else {
-
-            return checkUsersWithoutDepartment();
         }
     }
 
@@ -463,7 +780,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         rFacade.create(myRole);
 
         user.setName(userName);
-        user.setWebUserPassword(getSecurityController().hash(passord));
+        user.setWebUserPassword(getSecurityController().hashAndCheck(password));
         user.setWebUserPerson(person);
         user.setActivated(true);
         user.setRole(myRole);
@@ -472,11 +789,11 @@ public class SessionController implements Serializable, HttpSessionListener {
 
     public String registeUser() {
         if (!userNameAvailable(newUserName)) {
-            UtilityController.addErrorMessage("User name already exists. Plese enter another user name");
+            JsfUtil.addErrorMessage("User name already exists. Plese enter another user name");
             return "";
         }
         if (!newPassword.equals(newPasswordConfirm)) {
-            UtilityController.addErrorMessage("Password and Re-entered password are not matching");
+            JsfUtil.addErrorMessage("Password and Re-entered password are not matching");
             return "";
         }
 
@@ -489,50 +806,50 @@ public class SessionController implements Serializable, HttpSessionListener {
 
         pFacade.create(person);
         user.setName(newUserName);
-        user.setWebUserPassword(getSecurityController().hash(newPassword));
+        user.setWebUserPassword(getSecurityController().hashAndCheck(newPassword));
         user.setWebUserPerson(person);
         user.setTelNo(telNo);
         user.setEmail(email);
         user.setActivated(Boolean.TRUE);
 
         uFacade.create(user);
-        UtilityController.addSuccessMessage("New User Registered.");
+        JsfUtil.addSuccessMessage("New User Registered.");
         return "";
     }
 
     public void changePassword() {
         WebUser user = getLoggedUser();
-        if (!getSecurityController().matchPassword(passord, user.getWebUserPassword())) {
-            UtilityController.addErrorMessage("The old password you entered is incorrect");
+        if (!getSecurityController().matchPassword(password, user.getWebUserPassword())) {
+            JsfUtil.addErrorMessage("The old password you entered is incorrect");
             return;
         }
         if (!newPassword.equals(newPasswordConfirm)) {
-            UtilityController.addErrorMessage("Password and Re-entered password are not maching");
+            JsfUtil.addErrorMessage("Password and Re-entered password are not maching");
             return;
         }
 
-        user.setWebUserPassword(getSecurityController().hash(newPassword));
+        user.setWebUserPassword(getSecurityController().hashAndCheck(newPassword));
         uFacade.edit(user);
         //
-        UtilityController.addSuccessMessage("Password changed");
+        JsfUtil.addSuccessMessage("Password changed");
 
     }
 
     public void changeCurrentUserPassword() {
         if (getCurrent() == null) {
-            UtilityController.addErrorMessage("Select a User");
+            JsfUtil.addErrorMessage("Select a User");
             return;
         }
         WebUser user = getCurrent();
 
         if (!newPassword.equals(newPasswordConfirm)) {
-            UtilityController.addErrorMessage("Password and Re-entered password are not maching");
+            JsfUtil.addErrorMessage("Password and Re-entered password are not maching");
             return;
         }
 
-        user.setWebUserPassword(getSecurityController().hash(newPassword));
+        user.setWebUserPassword(getSecurityController().hashAndCheck(newPassword));
         uFacade.edit(user);
-        UtilityController.addSuccessMessage("Password changed");
+        JsfUtil.addSuccessMessage("Password changed");
     }
 
     public Boolean userNameAvailable(String userName) {
@@ -547,38 +864,29 @@ public class SessionController implements Serializable, HttpSessionListener {
     }
 
     private boolean isFirstVisit() {
-        if (getFacede().count() <= 0) {
-            UtilityController.addSuccessMessage("First Visit");
-            return true;
-        } else {
-//            UtilityController.addSuccessMessage("Welcome back");
-            return false;
-        }
-
-    }
-
-    public boolean isFirstLogin() {
-        if (getFacede().count() <= 1) {
+        String j = "Select w from WebUser w order by w.id";
+        WebUser ws = getFacede().findFirstByJpql(j);
+        if (ws == null) {
+            JsfUtil.addSuccessMessage("First Visit");
             return true;
         } else {
             return false;
         }
-
     }
 
     private boolean checkUsers() {
         String temSQL;
         temSQL = "SELECT u FROM WebUser u WHERE u.retired = false";
-        List<WebUser> allUsers = getFacede().findBySQL(temSQL);
+        List<WebUser> allUsers = getFacede().findByJpql(temSQL);
         for (WebUser u : allUsers) {
             if ((u.getName()).equalsIgnoreCase(userName)) {
-                if (getSecurityController().matchPassword(passord, u.getWebUserPassword())) {
+                if (getSecurityController().matchPassword(password, u.getWebUserPassword())) {
                     if (!canLogToDept(u, department)) {
-                        UtilityController.addErrorMessage("No privilage to Login This Department");
+                        JsfUtil.addErrorMessage("No privilage to Login This Department");
                         return false;
                     }
                     if (getApplicationController().isLogged(u) != null) {
-                        UtilityController.addErrorMessage("This user already logged. Other instances will be logged out now.");
+                        JsfUtil.addErrorMessage("This user already logged. Other instances will be logged out now.");
                     }
 
                     u.setDepartment(department);
@@ -587,6 +895,10 @@ public class SessionController implements Serializable, HttpSessionListener {
                     getFacede().edit(u);
 
                     setLoggedUser(u);
+                    loggableDepartments = fillLoggableDepts();
+//                    loggableSubDepartments = fillLoggableSubDepts(loggableDepartments);
+                    loggableInstitutions = fillLoggableInstitutions();
+                    userIcons = userIconController.fillUserIcons(u, department);
                     setLogged(Boolean.TRUE);
                     setActivated(u.isActivated());
                     setRole(u.getRole());
@@ -597,7 +909,7 @@ public class SessionController implements Serializable, HttpSessionListener {
                     sql = "select p from UserPreference p where p.webUser=:u order by p.id desc";
                     Map m = new HashMap();
                     m.put("u", u);
-                    uf = getUserPreferenceFacade().findFirstBySQL(sql, m);
+                    uf = getUserPreferenceFacade().findFirstByJpql(sql, m);
                     if (uf == null) {
                         uf = new UserPreference();
                         uf.setWebUser(u);
@@ -611,18 +923,18 @@ public class SessionController implements Serializable, HttpSessionListener {
                     m = new HashMap();
                     m.put("dep", department);
 
-                    insPre = getUserPreferenceFacade().findFirstBySQL(sql, m);
+                    insPre = getUserPreferenceFacade().findFirstByJpql(sql, m);
 
                     if (insPre == null) {
 
                         sql = "select p from UserPreference p where p.institution =:ins order by p.id desc";
                         m = new HashMap();
                         m.put("ins", institution);
-                        insPre = getUserPreferenceFacade().findFirstBySQL(sql, m);
+                        insPre = getUserPreferenceFacade().findFirstByJpql(sql, m);
 
                         if (insPre == null) {
                             sql = "select p from UserPreference p where p.institution is null and p.department is null and p.webUser is null order by p.id desc";
-                            insPre = getUserPreferenceFacade().findFirstBySQL(sql);
+                            insPre = getUserPreferenceFacade().findFirstByJpql(sql);
 
                         }
 
@@ -639,7 +951,7 @@ public class SessionController implements Serializable, HttpSessionListener {
 
                     recordLogin();
 
-                    UtilityController.addSuccessMessage("Logged successfully");
+                    JsfUtil.addSuccessMessage("Logged successfully");
                     return true;
                 }
             }
@@ -650,7 +962,7 @@ public class SessionController implements Serializable, HttpSessionListener {
     public void decryptAllUsers() {
         String temSQL;
         temSQL = "SELECT u FROM WebUser u";
-        List<WebUser> allUsers = getFacede().findBySQL(temSQL);
+        List<WebUser> allUsers = getFacede().findByJpql(temSQL);
         int i = 1;
         for (WebUser u : allUsers) {
             try {
@@ -668,14 +980,12 @@ public class SessionController implements Serializable, HttpSessionListener {
     }
 
     public boolean loginForRequests() {
-        return loginForRequests(userName, passord);
+        return loginForRequests(userName, password);
     }
 
     public boolean loginForRequestsForDoctors() {
-        return loginForRequestsForDoctors(userName, passord);
+        return loginForRequestsForDoctors(userName, password);
     }
-
-    
 
     public boolean loginForRequests(String temUserName, String temPassword) {
         logged = false;
@@ -688,14 +998,13 @@ public class SessionController implements Serializable, HttpSessionListener {
         }
         String temSQL;
         loginRequestResponse = "#{";
-        temSQL = "SELECT u FROM WebUser u WHERE u.retired = false and lower(u.name)=:n order by u.id desc";
+        temSQL = "SELECT u FROM WebUser u WHERE u.retired = false and (u.name)=:n order by u.id desc";
         Map m = new HashMap();
 
         m.put("n", temUserName.trim().toLowerCase());
-        WebUser u = getFacede().findFirstBySQL(temSQL, m);
+        WebUser u = getFacede().findFirstByJpql(temSQL, m);
 
-        //System.out.println("temSQL = " + temSQL);
-
+        //// // System.out.println("temSQL = " + temSQL);
         if (u == null) {
             return false;
         }
@@ -703,6 +1012,9 @@ public class SessionController implements Serializable, HttpSessionListener {
         if (getSecurityController().matchPassword(temPassword, u.getWebUserPassword())) {
 
             setLoggedUser(u);
+            loggableDepartments = fillLoggableDepts();
+//            loggableSubDepartments = fillLoggableSubDepts(loggableDepartments);
+            loggableInstitutions = fillLoggableInstitutions();
             setLogged(Boolean.TRUE);
             setActivated(u.isActivated());
             setRole(u.getRole());
@@ -730,11 +1042,11 @@ public class SessionController implements Serializable, HttpSessionListener {
         }
         String temSQL;
         loginRequestResponse = "#{";
-        temSQL = "SELECT u FROM WebUser u WHERE u.retired = false and lower(u.name)=:n order by u.id desc";
+        temSQL = "SELECT u FROM WebUser u WHERE u.retired = false and (u.name)=:n order by u.id desc";
         Map m = new HashMap();
 
         m.put("n", temUserName.trim().toLowerCase());
-        WebUser u = getFacede().findFirstBySQL(temSQL, m);
+        WebUser u = getFacede().findFirstByJpql(temSQL, m);
 
         if (u == null) {
             return false;
@@ -742,6 +1054,9 @@ public class SessionController implements Serializable, HttpSessionListener {
 
         if (getSecurityController().matchPassword(temPassword, u.getWebUserPassword())) {
             setLoggedUser(u);
+            loggableDepartments = fillLoggableDepts();
+//            loggableSubDepartments = fillLoggableSubDepts(loggableDepartments);
+            loggableInstitutions = fillLoggableInstitutions();
             setLogged(Boolean.TRUE);
             setActivated(u.isActivated());
             setRole(u.getRole());
@@ -756,28 +1071,35 @@ public class SessionController implements Serializable, HttpSessionListener {
     }
 
     private boolean checkUsersWithoutDepartment() {
-        String temSQL;
-        temSQL = "SELECT u FROM WebUser u WHERE u.retired = false and lower(u.name)=:un";
+        String jpql;
+        jpql = "SELECT u FROM WebUser u WHERE u.retired = false and (u.name)=:un";
         Map m = new HashMap();
         m.put("un", userName.toLowerCase());
-        List<WebUser> allUsers = getFacede().findBySQL(temSQL, m);
+        List<WebUser> allUsers = getFacede().findByJpql(jpql, m);
         for (WebUser u : allUsers) {
+            System.out.println("u = " + u.getName());
+            System.out.println("u = " + u.getId());
             if ((u.getName()).equalsIgnoreCase(userName)) {
-                if (getSecurityController().matchPassword(passord, u.getWebUserPassword())) {
+                boolean passwordIsOk = SecurityController.matchPassword(password, u.getWebUserPassword());
+                if (passwordIsOk) {
+                    System.out.println("password ok");
+
                     departments = listLoggableDepts(u);
-                    if (departments.isEmpty()) {
-                        UtilityController.addErrorMessage("This user has no privilage to login to any Department. Please conact system administrator.");
-                        return false;
+
+                    if (webUserController.grantAllPrivilegesToAllUsersForTesting) {
+                        departments = departmentController.fillAllItems();
                     }
 
+                    if (departments.isEmpty()) {
+                        JsfUtil.addErrorMessage("This user has no privilage to login to any Department. Please conact system administrator.");
+                        return false;
+                    }
                     boolean f = false;
-
                     for (Department d : departments) {
                         if (d.equals(u.getDepartment())) {
                             f = true;
                         }
                     }
-
                     if (f) {
                         List<Department> tds = new ArrayList<>();
                         tds.add(u.getDepartment());
@@ -791,19 +1113,28 @@ public class SessionController implements Serializable, HttpSessionListener {
 
                     getFacede().edit(u);
                     setLoggedUser(u);
-                    dashboards = webUserController.listWebUserDashboards(u);
+                    loggableDepartments = fillLoggableDepts();
+                    loggableCollectingCentres = fillLoggableCollectingCentres();
+                    if (webUserController.grantAllPrivilegesToAllUsersForTesting) {
+                        loggableDepartments = departmentController.fillAllItems();
+                    }
+//                    loggableSubDepartments = fillLoggableSubDepts(loggableDepartments);
+                    loggableInstitutions = fillLoggableInstitutions();
+
+                    if (webUserController.grantAllPrivilegesToAllUsersForTesting) {
+                        loggableInstitutions = institutionController.fillAllItems();
+                    }
                     loadDashboards();
-                    setLogged(Boolean.TRUE);
+                    setLogged(true);
                     setActivated(u.isActivated());
                     setRole(u.getRole());
 
                     String sql;
-
                     UserPreference uf;
                     sql = "select p from UserPreference p where p.webUser=:u order by p.id desc";
                     m = new HashMap();
                     m.put("u", u);
-                    uf = getUserPreferenceFacade().findFirstBySQL(sql, m);
+                    uf = getUserPreferenceFacade().findFirstByJpql(sql, m);
                     if (uf == null) {
                         uf = new UserPreference();
                         uf.setWebUser(u);
@@ -811,21 +1142,11 @@ public class SessionController implements Serializable, HttpSessionListener {
                     }
                     setUserPreference(uf);
 
-                    if (departments.size() == 1) {
-                        department = departments.get(0);
-                        selectDepartment();
-                        UtilityController.addSuccessMessage("Logged successfully. Department is " + department.getName());
-                    } else {
-
-                        UtilityController.addSuccessMessage("Logged successfully!!!." + "\n Please select a department.");
-
-                        UtilityController.addSuccessMessage(setGreetingMsg() + " " + loggedUser.getWebUserPerson().getName());
-
-                    }
+                    JsfUtil.addSuccessMessage("Logged successfully!!!." + "\n Please select a department.");
+                    JsfUtil.addSuccessMessage(setGreetingMsg());
                     if (getApplicationController().isLogged(u) != null) {
-                        UtilityController.addErrorMessage("This user is already logged.");
+                        JsfUtil.addErrorMessage("This user is already logged.");
                     }
-
                     return true;
                 }
             }
@@ -834,37 +1155,138 @@ public class SessionController implements Serializable, HttpSessionListener {
     }
 
     public void loadDashboards() {
-        dashboardModel = new DefaultDashboardModel();
-        DashboardColumn column1 = new DefaultDashboardColumn();
-        DashboardColumn column2 = new DefaultDashboardColumn();
-        DashboardColumn column3 = new DefaultDashboardColumn();
-
-        int i = 0;
-
-        for (WebUserDashboard d : dashboards) {
-            int n = i % 3;
-            switch (n) {
-                case 1:
-                    column1.addWidget(d.getDashboard().toString());
-                    break;
-                case 2:
-                    column2.addWidget(d.getDashboard().toString());
-                    break;
-                case 0:
-                    column3.addWidget(d.getDashboard().toString());
-                    break;
-            }
-            i++;
-        }
-
-        dashboardModel.addColumn(column1);
-        dashboardModel.addColumn(column2);
-        dashboardModel.addColumn(column3);
+//        dashboardModel = new DefaultDashboardModel();
+//        DashboardColumn column1 = new DefaultDashboardColumn();
+//        DashboardColumn column2 = new DefaultDashboardColumn();
+//        DashboardColumn column3 = new DefaultDashboardColumn();
+//
+//        int i = 0;
+//
+//        for (WebUserDashboard d : getDashboards()) {
+//            int n = i % 3;
+//            switch (n) {
+//                case 1:
+//                    column1.addWidget(d.getDashboard().toString());
+//                    break;
+//                case 2:
+//                    column2.addWidget(d.getDashboard().toString());
+//                    break;
+//                case 0:
+//                    column3.addWidget(d.getDashboard().toString());
+//                    break;
+//            }
+//            i++;
+//        }
+//
+//        dashboardModel.addColumn(column1);
+//        dashboardModel.addColumn(column2);
+//        dashboardModel.addColumn(column3);
     }
 
     public String selectDepartment() {
+        System.out.println("loggedUser = " + loggedUser);
         if (loggedUser == null) {
-            return "/index";
+            JsfUtil.addErrorMessage("No User logged");
+            return "/login?faces-redirect=true";
+        }
+        System.out.println("loggedUser.getId() = " + loggedUser.getId());
+        if (loggedUser.getWebUserPerson() == null) {
+            JsfUtil.addErrorMessage("No person");
+            return "";
+//            Person p = new Person();
+//            p.setName(loggedUser.getName());
+//            personFacade.create(p);
+//            loggedUser.setWebUserPerson(p);
+//            webUserFacade.edit(loggedUser);
+        }
+
+        loggedUser.setDepartment(department);
+        loggedUser.setInstitution(department.getInstitution());
+        getFacede().edit(loggedUser);
+
+        userIcons = userIconController.fillUserIcons(loggedUser, department);
+        dashboards = webUserController.listWebUserDashboards(loggedUser);
+
+        userPrivilages = fillUserPrivileges(loggedUser, department, false);
+        loggableSubDepartments = fillLoggableSubDepts(department);
+//        if (userPrivilages == null || userPrivilages.isEmpty()) {
+//            userPrivilages = fillUserPrivileges(loggedUser, null, true);
+//            createUserPrivilegesForAllDepartments(loggedUser, department, loggableDepartments);
+//            logout();
+//        }
+
+        String sql;
+        Map m;
+
+//        UserPreference preferances;
+        sql = "select p from UserPreference p where p.department =:dep order by p.id desc";
+        m = new HashMap();
+        m.put("dep", department);
+        departmentPreference = getUserPreferenceFacade().findFirstByJpql(sql, m);
+
+//        if (getDepartment().getDepartmentType() == DepartmentType.Pharmacy) {
+//            long i = searchController.createInwardBHTForIssueBillCount();
+//            if (i > 0) {
+//                JsfUtil.addSuccessMessage("This Phrmacy Has " + i + " BHT Request Today.");
+//            }
+//        }
+        sql = "select p from UserPreference p where p.institution =:ins order by p.id desc";
+        m = new HashMap();
+        m.put("ins", institution);
+        institutionPreference = getUserPreferenceFacade().findFirstByJpql(sql, m);
+
+        sql = "select p from UserPreference p where p.institution is null and p.department is null and p.webUser is null order by p.id desc";
+        applicationPreference = getUserPreferenceFacade().findFirstByJpql(sql);
+
+        if (applicationPreference == null) {
+            applicationPreference = new UserPreference();
+            applicationPreference.setWebUser(null);
+            applicationPreference.setDepartment(null);
+            applicationPreference.setInstitution(null);
+            getUserPreferenceFacade().create(applicationPreference);
+        }
+
+        if (institutionPreference == null) {
+            institutionPreference = applicationPreference;
+        }
+        if (departmentPreference == null) {
+            departmentPreference = institutionPreference;
+        }
+
+        setLoggedPreference(departmentPreference);
+        recordLogin();
+        return navigateToLoginPageByUsersDefaultLoginPage();
+    }
+
+    public String navigateToLoginPageByUsersDefaultLoginPage() {
+        if (loggedUser == null) {
+            return null;
+        }
+        if (loggedUser.getLoginPage() == null) {
+            return "/home?faces-redirect=true";
+        }
+        switch (loggedUser.getLoginPage()) {
+            case CHANNELLING_QUEUE_PAGE:
+                return bookingController.navigateToChannelQueueFromMenu();
+            case CHANNELLING_TV_DISPLAY:
+                return bookingController.navigateToChannelDisplayFromMenu();
+            case OPD_QUEUE_PAGE:
+                return opdTokenController.navigateToOpdQueue();
+            case OPD_TOKEN_DISPLAY:
+                return opdTokenController.navigateToManageOpdTokensCalled();
+            case PHARMACY_TOKEN_DISPLAY:
+                return tokenController.navigateToManagePharmacyTokensCalled();
+            case COURIER_LANDING_PAGE:
+                return courierController.navigateToCourierIndex();
+            case HOME:
+            default:
+                return "/home?faces-redirect=true";
+        }
+    }
+
+    public String selectDepartmentForChannelingTabView() {
+        if (loggedUser == null) {
+            return "/login?faces-redirect=true";
         }
         if (loggedUser.getWebUserPerson() == null) {
             Person p = new Person();
@@ -877,50 +1299,71 @@ public class SessionController implements Serializable, HttpSessionListener {
         loggedUser.setDepartment(department);
         loggedUser.setInstitution(department.getInstitution());
         getFacede().edit(loggedUser);
+
+        userIcons = userIconController.fillUserIcons(loggedUser, department);
+        dashboards = webUserController.listWebUserDashboards(loggedUser);
+
+        userPrivilages = fillUserPrivileges(loggedUser, department, false);
+        loggableSubDepartments = fillLoggableSubDepts(department);
+//        if (userPrivilages == null || userPrivilages.isEmpty()) {
+//            userPrivilages = fillUserPrivileges(loggedUser, null, true);
+//            createUserPrivilegesForAllDepartments(loggedUser, department, loggableDepartments);
+//            logout();
+//        }
+
         String sql;
         Map m;
 
-        UserPreference insPre;
+//        UserPreference preferances;
         sql = "select p from UserPreference p where p.department =:dep order by p.id desc";
         m = new HashMap();
         m.put("dep", department);
-        insPre = getUserPreferenceFacade().findFirstBySQL(sql, m);
+        departmentPreference = getUserPreferenceFacade().findFirstByJpql(sql, m);
 
-        if (getDepartment().getDepartmentType() == DepartmentType.Pharmacy) {
-            long i = searchController.createInwardBHTForIssueBillCount();
-            if (i > 0) {
-                UtilityController.addSuccessMessage("This Phrmacy Has " + i + " BHT Request Today.");
-            }
-        }
-
-        if (insPre == null) {
-            sql = "select p from UserPreference p where p.institution =:ins order by p.id desc";
-            m = new HashMap();
-            m.put("ins", institution);
-            insPre = getUserPreferenceFacade().findFirstBySQL(sql, m);
-            if (insPre == null) {
-                sql = "select p from UserPreference p where p.institution is null and p.department is null and p.webUser is null order by p.id desc";
-                insPre = getUserPreferenceFacade().findFirstBySQL(sql);
-            }
-            if (insPre == null) {
-                insPre = new UserPreference();
-                insPre.setWebUser(null);
-                insPre.setDepartment(null);
-                insPre.setInstitution(null);
-                getUserPreferenceFacade().create(insPre);
-            }
-        }
+//        if (getDepartment().getDepartmentType() == DepartmentType.Pharmacy) {
+//            long i = searchController.createInwardBHTForIssueBillCount();
+//            if (i > 0) {
+//                JsfUtil.addSuccessMessage("This Phrmacy Has " + i + " BHT Request Today.");
+//            }
+//        }
+        sql = "select p from UserPreference p where p.institution =:ins order by p.id desc";
+        m = new HashMap();
+        m.put("ins", institution);
+        institutionPreference = getUserPreferenceFacade().findFirstByJpql(sql, m);
 
         sql = "select p from UserPreference p where p.institution is null and p.department is null and p.webUser is null order by p.id desc";
-        applicationPreference = getUserPreferenceFacade().findFirstBySQL(sql);
+        applicationPreference = getUserPreferenceFacade().findFirstByJpql(sql);
+
         if (applicationPreference == null) {
             applicationPreference = new UserPreference();
+            applicationPreference.setWebUser(null);
+            applicationPreference.setDepartment(null);
+            applicationPreference.setInstitution(null);
             getUserPreferenceFacade().create(applicationPreference);
         }
 
-        setLoggedPreference(insPre);
+        if (institutionPreference == null) {
+            institutionPreference = applicationPreference;
+        }
+        if (departmentPreference == null) {
+            departmentPreference = institutionPreference;
+        }
+
+        setLoggedPreference(departmentPreference);
         recordLogin();
-        return "/index";
+        return "/channel/channel_queue.xhtml?faces-redirect=true";
+    }
+
+    private void loadApplicationPreferances() {
+        String sql = "select p from UserPreference p where p.institution is null and p.department is null and p.webUser is null order by p.id desc";
+        applicationPreference = getUserPreferenceFacade().findFirstByJpql(sql);
+        if (applicationPreference == null) {
+            applicationPreference = new UserPreference();
+            applicationPreference.setWebUser(null);
+            applicationPreference.setDepartment(null);
+            applicationPreference.setInstitution(null);
+            getUserPreferenceFacade().create(applicationPreference);
+        }
     }
 
     //get Current hour
@@ -937,13 +1380,21 @@ public class SessionController implements Serializable, HttpSessionListener {
     public String setGreetingMsg() {
         getCurrentHour();
         String msg = "";
-        if (getCurrentHour() < 12 || getCurrentHour() == 12) {
-            msg = "Good Morning !";
-        } else if (getCurrentHour() > 12 && getCurrentHour() < 15) {
 
-            msg = "Good Afternoon !";
+        if (getCurrentHour() < 12 || getCurrentHour() == 12) {
+            msg = "Good Morning !, ";
+        } else if (getCurrentHour() > 12 && getCurrentHour() < 15) {
+            msg = "Good Afternoon !, ";
         } else if (getCurrentHour() > 14 && getCurrentHour() < 19) {
-            msg = "Good Evening !";
+            msg = "Good Evening !, ";
+        } else {
+            msg = "Good Day !, ";
+        }
+
+        if (getLoggedUser() != null) {
+            if (getLoggedUser().getWebUserPerson() != null) {
+                msg += getLoggedUser().getWebUserPerson().getName();
+            }
         }
         return msg;
     }
@@ -951,7 +1402,7 @@ public class SessionController implements Serializable, HttpSessionListener {
     private boolean canLogToDept(WebUser e, Department d) {
         String sql;
         sql = "select wd from WebUserDepartment wd where wd.retired=false and wd.webUser.id=" + e.getId() + " and wd.department.id = " + d.getId();
-        return !getWebUserDepartmentFacade().findBySQL(sql).isEmpty();
+        return !getWebUserDepartmentFacade().findByJpql(sql).isEmpty();
     }
 
     private List<Department> listLoggableDepts(WebUser e) {
@@ -961,13 +1412,87 @@ public class SessionController implements Serializable, HttpSessionListener {
         String sql;
         Map m = new HashMap();
         m.put("wu", e);
-        sql = "select distinct(wd.department) "
+        sql = "select wd.department "
                 + " from WebUserDepartment wd "
                 + " where wd.retired=false "
                 + " and wd.department.retired=false "
                 + " and wd.webUser=:wu "
                 + " order by wd.department.name";
-        return departmentFacade.findBySQL(sql, m);
+        return departmentFacade.findByJpql(sql, m);
+    }
+
+    private List<Department> fillLoggableDepts() {
+        WebUser e = getLoggedUser();
+        if (e == null) {
+            return new ArrayList<>();
+        }
+        String sql;
+        Map m = new HashMap();
+        m.put("wu", e);
+        sql = "select distinct wd.department "
+                + " from WebUserDepartment wd "
+                + " where wd.retired=false "
+                + " and wd.department.retired=false "
+                + " and wd.webUser=:wu "
+                + " order by wd.department.name";
+        return departmentFacade.findByJpql(sql, m);
+    }
+
+    private List<Department> fillLoggableSubDepts(Department loggableDept) {
+        List<Department> ds = new ArrayList<>();
+        ds.add(loggableDept);
+        return fillLoggableSubDepts(ds);
+    }
+
+    private List<Department> fillLoggableSubDepts(List<Department> loggableDepts) {
+        if (loggableDepts == null || loggableDepts.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        String sql;
+        Map m = new HashMap();
+        m.put("loggableDepts", loggableDepts);
+        sql = "select distinct d "
+                + " from Department d "
+                + " where d.retired=false "
+                + " and d.superDepartment in :loggableDepts "
+                + " order by d.name";
+        return departmentFacade.findByJpql(sql, m);
+    }
+
+    public List<Institution> fillLoggableInstitutions() {
+        WebUser e = getLoggedUser();
+        if (e == null) {
+            return new ArrayList<>();
+        }
+        String jpql;
+        Map m = new HashMap();
+        m.put("wu", e);
+        jpql = "select DISTINCT wd.department.institution "
+                + " from WebUserDepartment wd "
+                + " where wd.retired=false "
+                + " and wd.department.retired=false "
+                + " and wd.webUser=:wu "
+                + " order by wd.department.institution.name";
+        return institutionFacade.findByJpql(jpql, m);
+    }
+    
+    public List<Institution> fillLoggableCollectingCentres() {
+        WebUser e = getLoggedUser();
+        if (e == null) {
+            return new ArrayList<>();
+        }
+        String jpql;
+        Map m = new HashMap();
+        jpql = "select i "
+                + " from Institution i "
+                + " where i.retired<>:ret "
+                + " and i.route in :lds "
+                + " and i.institutionType=:cc ";
+         m.put("ret", true);
+         m.put("cc", InstitutionType.CollectingCentre);
+         m.put("lds", loggableDepartments);
+        return institutionFacade.findByJpql(jpql, m);
     }
 
     public ApplicationEjb getApplicationEjb() {
@@ -991,8 +1516,14 @@ public class SessionController implements Serializable, HttpSessionListener {
 
     public void logout() {
         userPrivilages = null;
+        websiteUserGoingToLog = false;
         recordLogout();
         setLoggedUser(null);
+        loggableDepartments = null;
+        loggableSubDepartments = null;
+        loggableInstitutions = null;
+        loggableCollectingCentres=null;
+        userIcons = null;
         setLogged(false);
         setActivated(false);
         getPharmacySaleController().clearForNewBill();
@@ -1020,12 +1551,12 @@ public class SessionController implements Serializable, HttpSessionListener {
         this.uFacade = ejbFacade;
     }
 
-    public String getPassord() {
-        return passord;
+    public String getPassword() {
+        return password;
     }
 
-    public void setPassord(String passord) {
-        this.passord = passord;
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public String getUserName() {
@@ -1141,7 +1672,7 @@ public class SessionController implements Serializable, HttpSessionListener {
      * Creates a new instance of SessionController
      */
     public SessionController() {
-        //////System.out.println("session started");
+        //////// // System.out.println("session started");
     }
 
     public String getDefLocale() {
@@ -1162,7 +1693,7 @@ public class SessionController implements Serializable, HttpSessionListener {
 
     public String getPrimeTheme() {
         if (primeTheme == null || primeTheme.equals("")) {
-            primeTheme = "hot-sneaks";
+            primeTheme = "material-light-outlined";
         }
         if (getLoggedUser() != null) {
             if (getLoggedUser().getPrimeTheme() != null) {
@@ -1191,6 +1722,7 @@ public class SessionController implements Serializable, HttpSessionListener {
      * @param loggedUser
      */
     public void setLoggedUser(WebUser loggedUser) {
+        System.out.println("loggedUser = " + loggedUser);
         this.loggedUser = loggedUser;
     }
 
@@ -1204,17 +1736,52 @@ public class SessionController implements Serializable, HttpSessionListener {
     @EJB
     private WebUserPrivilegeFacade webUserPrivilegeFacade;
 
+    public List<WebUserPrivilege> fillUserPrivileges(WebUser twu, Department tdept, boolean deptIsNull) {
+        String sql;
+        Map m = new HashMap();
+        sql = "select w "
+                + " from WebUserPrivilege w "
+                + " where w.retired<>:ret "
+                + " and w.webUser=:wu ";
+        if (tdept != null) {
+            sql += " and w.department=:dep ";
+            m.put("dep", tdept);
+        }
+        if (deptIsNull) {
+            sql += " and w.department is null ";
+        }
+        m.put("ret", true);
+        m.put("wu", twu);
+        System.out.println("m = " + m);
+        System.out.println("sql = " + sql);
+        List<WebUserPrivilege> twups = getWebUserPrivilegeFacade().findByJpql(sql, m);
+        System.out.println("twups = " + twups);
+        return twups;
+    }
+
     public List<WebUserPrivilege> getUserPrivileges() {
         if (userPrivilages == null) {
-            String sql;
-            sql = "select w from WebUserPrivilege w where w.retired=false and w.webUser.id = " + getLoggedUser().getId();
-            //////System.out.println("5");
-            userPrivilages = getWebUserPrivilegeFacade().findBySQL(sql);
+            userPrivilages = fillUserPrivileges(getLoggedUser(), getLoggedUser().getDepartment(), false);
         }
         if (userPrivilages == null) {
             userPrivilages = new ArrayList<>();
         }
         return userPrivilages;
+    }
+
+    public void fillCurrentPreferences() {
+        String jpql;
+        Map m = new HashMap();
+        jpql = "select p from UserPreference p where p.department=:dep order by p.id desc";
+        m.put("dep", getDepartment());
+        currentPreference = getUserPreferenceFacade().findFirstByJpql(jpql, m);
+        if (currentPreference == null) {
+            currentPreference = new UserPreference();
+            currentPreference.setDepartment(loggedUser.getDepartment());
+        }
+        currentPreference.setWebUser(null);
+        currentPreference.setInstitution(null);
+
     }
 
     public String getBillNo() {
@@ -1301,14 +1868,19 @@ public class SessionController implements Serializable, HttpSessionListener {
 
         thisLogin.setIpaddress(ip);
         thisLogin.setComputerName(host);
+        // This should print null if the ID is not set.
 
-        getLoginsFacade().create(thisLogin);
+        if (thisLogin.getId() == null) {
+            getLoginsFacade().create(thisLogin);
+        } else {
+            getLoginsFacade().edit(thisLogin);
+        }
         getApplicationController().addToLoggins(this);
     }
 
     @PreDestroy
     private void recordLogout() {
-        //////System.out.println("session distroyed " + thisLogin);
+        //////// // System.out.println("session distroyed " + thisLogin);
         if (thisLogin == null) {
             return;
         }
@@ -1319,12 +1891,12 @@ public class SessionController implements Serializable, HttpSessionListener {
 
     @Override
     public void sessionCreated(HttpSessionEvent se) {
-        //////System.out.println("starting session");
+        //////// // System.out.println("starting session");
     }
 
     @Override
     public void sessionDestroyed(HttpSessionEvent se) {
-        //////System.out.println("recording logout as session is distroid");
+        //////// // System.out.println("recording logout as session is distroid");
         recordLogout();
     }
 
@@ -1344,10 +1916,12 @@ public class SessionController implements Serializable, HttpSessionListener {
         this.cashTransactionBean = cashTransactionBean;
     }
 
+    @Deprecated
     public UserPreference getLoggedPreference() {
         return loggedPreference;
     }
 
+    
     public void setLoggedPreference(UserPreference loggedPreference) {
         this.loggedPreference = loggedPreference;
     }
@@ -1403,13 +1977,13 @@ public class SessionController implements Serializable, HttpSessionListener {
         this.bill = bill;
     }
 
-    public DashboardModel getDashboardModel() {
-        return dashboardModel;
-    }
-
-    public void setDashboardModel(DashboardModel dashboardModel) {
-        this.dashboardModel = dashboardModel;
-    }
+//    public DashboardModel getDashboardModel() {
+//        return dashboardModel;
+//    }
+//
+//    public void setDashboardModel(DashboardModel dashboardModel) {
+//        this.dashboardModel = dashboardModel;
+//    }
 
     public DepartmentFacade getDepartmentFacade() {
         return departmentFacade;
@@ -1460,6 +2034,9 @@ public class SessionController implements Serializable, HttpSessionListener {
     }
 
     public List<WebUserDashboard> getDashboards() {
+        if (dashboards == null) {
+            dashboards = new ArrayList<>();
+        }
         return dashboards;
     }
 
@@ -1474,20 +2051,11 @@ public class SessionController implements Serializable, HttpSessionListener {
     public void setLoginRequestResponse(String loginRequestResponse) {
         this.loginRequestResponse = loginRequestResponse;
     }
-    
-    
 
     public UserPreference getApplicationPreference() {
         if (applicationPreference == null) {
-            String sql = "";
-            sql = "select p from UserPreference p where p.institution is null and p.department is null and p.webUser is null order by p.id desc";
-            applicationPreference = getUserPreferenceFacade().findFirstBySQL(sql);
-            if (applicationPreference == null) {
-                applicationPreference = new UserPreference();
-                getUserPreferenceFacade().create(applicationPreference);
-            }
+            loadApplicationPreferances();
         }
-
         return applicationPreference;
     }
 
@@ -1495,16 +2063,140 @@ public class SessionController implements Serializable, HttpSessionListener {
         this.applicationPreference = applicationPreference;
     }
 
+    @Deprecated
     public UserPreference getInstitutionPreference() {
         institutionPreference = getApplicationPreference();
         return institutionPreference;
     }
 
+    @Deprecated
     public void setInstitutionPreference(UserPreference institutionPreference) {
         this.institutionPreference = institutionPreference;
         setApplicationPreference(institutionPreference);
     }
 
+    public boolean isWebsiteUserGoingToLog() {
+        return websiteUserGoingToLog;
+    }
+
+    public void setWebsiteUserGoingToLog(boolean websiteUserGoingToLog) {
+        this.websiteUserGoingToLog = websiteUserGoingToLog;
+    }
+
+    public UserPreference getDepartmentPreference() {
+        //System.out.println("getting departmentPreference = " + departmentPreference);
+        return departmentPreference;
+    }
+
+    public void setDepartmentPreference(UserPreference departmentPreference) {
+        System.out.println("setting departmentPreference = " + departmentPreference);
+        this.departmentPreference = departmentPreference;
+    }
+
+    public Boolean getFirstLogin() {
+        if (firstLogin == null) {
+            firstLogin = isFirstVisit();
+        }
+        return firstLogin;
+    }
+
+    public void setFirstLogin(Boolean firstLogin) {
+        this.firstLogin = firstLogin;
+    }
+
+    public String getInstitutionName() {
+        return institutionName;
+    }
+
+    public void setInstitutionName(String institutionName) {
+        this.institutionName = institutionName;
+    }
+
+    public String getDepartmentName() {
+        return departmentName;
+    }
+
+    public void setDepartmentName(String departmentName) {
+        this.departmentName = departmentName;
+    }
+
+    public String getAdminName() {
+        return adminName;
+    }
+
+    public void setAdminName(String adminName) {
+        this.adminName = adminName;
+    }
+
+    public List<Department> getLoggableDepartments() {
+        if (loggableDepartments == null) {
+            loggableDepartments = fillLoggableDepts();
+        }
+        return loggableDepartments;
+    }
+
+    public List<Institution> getLoggableInstitutions() {
+        if (loggableInstitutions == null) {
+            loggableInstitutions = fillLoggableInstitutions();
+        }
+        return loggableInstitutions;
+    }
+
+    
+    public List<UserIcon> getUserIcons() {
+        return userIcons;
+    }
+
+    public void setUserIcons(List<UserIcon> userIcons) {
+        this.userIcons = userIcons;
+    }
     
     
+//
+//    private void createUserPrivilegesForAllDepartments(WebUser tmpLoggedUser, Department loggedDept, List<Department> tmpLoggableDeps) {
+//        List<WebUserPrivilege> twups = fillUserPrivileges(tmpLoggedUser, null, true);
+//        if (tmpLoggedUser == null) {
+//            return;
+//        }
+//        if (loggedDept == null) {
+//            return;
+//        }
+//        if (tmpLoggableDeps == null) {
+//            return;
+//        }
+//        if (tmpLoggableDeps.isEmpty()) {
+//            return;
+//        }
+//        List<Department> tds = tmpLoggableDeps;
+//        tds.remove(loggedDept);
+//        for (WebUserPrivilege twup : twups) {
+//            twup.setDepartment(loggedDept);
+//            getWebUserPrivilegeFacade().edit(twup);
+//            for (Department d : tds) {
+//                WebUserPrivilege nwup = new WebUserPrivilege();
+//                nwup.setWebUser(tmpLoggedUser);
+//                nwup.setDepartment(d);
+//                nwup.setPrivilege(twup.getPrivilege());
+//                getWebUserPrivilegeFacade().create(nwup);
+//            }
+//        }
+//
+//    }
+
+    public List<Department> getLoggableSubDepartments() {
+        return loggableSubDepartments;
+    }
+
+    public void setLoggableSubDepartments(List<Department> loggableSubDepartments) {
+        this.loggableSubDepartments = loggableSubDepartments;
+    }
+
+    public List<Institution> getLoggableCollectingCentres() {
+        return loggableCollectingCentres;
+    }
+
+    public void setLoggableCollectingCentres(List<Institution> loggableCollectingCentres) {
+        this.loggableCollectingCentres = loggableCollectingCentres;
+    }
+
 }

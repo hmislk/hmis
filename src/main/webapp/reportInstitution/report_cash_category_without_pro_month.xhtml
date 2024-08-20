@@ -1,48 +1,46 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
-                template="/resources/template/template.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/reportInstitution/report_own.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://java.sun.com/jsf/core"
-                xmlns:ca="http://java.sun.com/jsf/composite/cashSummery"   
-                xmlns:in="http://java.sun.com/jsf/composite/income_report"
-                xmlns:pe="http://primefaces.org/ui/extensions">
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ca="http://xmlns.jcp.org/jsf/composite/cashSummery"   
+                xmlns:in="http://xmlns.jcp.org/jsf/composite/income_report"
+                >
 
-    <ui:define name="content">
-        <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
-        <h:form id="panelPrint" styleClass="noBorder summeryBorder">
+    <ui:define name="subcontent">
+        <h:form>
 
             <p:panel>
                 <f:facet name="header" >
-                    <h:outputLabel value="Book Keeping Summary Without Pro (Month)"  styleClass="noPrintButton" />
-
-                    <h:panelGrid columns="2"  styleClass="noPrintButton"  >
+                    <h:outputLabel value="Book Keeping Summary Without Pro (Month)" />
+                </f:facet>
+                <h:panelGrid columns="2" class="my-2" >
                         <h:outputLabel value="From Date"/>
-                        <p:calendar id="frmDate" value="#{bookKeepingSummery.fromDate}" navigator="true"  pattern="dd MM yyyy HH:mm:ss" >
+                        <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="frmDate" value="#{bookKeepingSummery.fromDate}" pattern="dd MM yyyy HH:mm:ss" >
                         </p:calendar>
 
                         <h:outputLabel value="To Date"/>
-                        <p:calendar id="toDate" value="#{bookKeepingSummery.toDate}" navigator="true" pattern="dd MM yyyy HH:mm:ss" >
+                        <p:calendar class="w-100 mx-4" inputStyleClass="w-100 my-1" id="toDate" value="#{bookKeepingSummery.toDate}" pattern="dd MM yyyy HH:mm:ss" >
                         </p:calendar>
 
                         <h:outputLabel value="Select Institution"/>
 
-                        <p:autoComplete completeMethod="#{institutionController.completeCompany}" required="true" 
+                        <p:autoComplete class="w-100 mx-4" inputStyleClass="w-100" completeMethod="#{institutionController.completeCompany}" required="true" 
                                         forceSelection="true"
                                         requiredMessage="Please Select Institution" value="#{bookKeepingSummery.institution}"
                                         var="pta" itemLabel="#{pta.name}" itemValue="#{pta}" />
                     </h:panelGrid>
 
-                    <h:panelGrid columns="5">
-                        <p:spacer width="110" height="1"/>
-                        <p:commandButton value="Refresh" ajax="false"  styleClass="noPrintButton" style="float: right;"
+                <h:panelGrid columns="6" class="my-2">
+                        <p:commandButton value="Process" ajax="false" class="ui-button-warning" icon="fas fa-cogs"
                                          action="#{bookKeepingSummery.createCashCategoryWithoutProMonth}"/>
-                        <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" style="float: right;" >
+                        <p:commandButton ajax="false" value="Print"  class="ui-button-info mx-2" icon="fas fa-print" >
                             <p:printer target="panelPrint" />
                         </p:commandButton>
-                        <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" style="float: right;">
-                            <pe:exporter type="xlsx" target="opd_new:opd_new, 
+                        <p:commandButton value="Excel" ajax="false" class="ui-button-success" icon="fas fa-file-excel" >
+                            <p:dataExporter type="xlsx" target="opd_new:opd_new, 
                                          colCash,
                                          colCredit,
                                          outside:outside,
@@ -57,15 +55,14 @@
                                          pharmacyc:pharmacyc,
                                          pharmacyws:pharmacyws" 
                                          fileName="Book_Keeping_Summery_without_pro_month_by_category_month_end"
-                                         facetFontStyle="BOLD"   cellFontStyle="NORMAL"  
-                                         fontName="Courier New"  />
+                                              
+                                           />
                         </p:commandButton>
                     </h:panelGrid>
-
-                </f:facet>
-            </p:panel>
+                    
             <!--            <p:spacer height="30" />-->
-
+             <p:panel id="panelPrint" styleClass="noBorder summeryBorder">
+                 <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
             <in:opd_new id="opd_new"/>
 
             <p:spacer height="30"/>
@@ -217,7 +214,8 @@
                 <h:outputLabel value="Printed By : #{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
             </f:facet>
 
-
+            </p:panel>
+          </p:panel>
         </h:form>
     </ui:define>
 

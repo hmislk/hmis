@@ -1,20 +1,20 @@
 /*
- * MSc(Biomedical Informatics) Project
+ * Open Hospital Management Information System
  *
- * Development and Implementation of a Web-based Combined Data Repository of
- Genealogical, Clinical, Laboratory and Genetic Data
- * and
- * a Set of Related Tools
+ * Dr M H B Ariyaratne
+ * Acting Consultant (Health Informatics)
+ * (94) 71 5812399
+ * (94) 71 5812399
  */
 package com.divudi.bean.store;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.data.DepartmentType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.entity.pharmacy.Amp;
 import com.divudi.facade.AmpFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -33,8 +33,8 @@ import javax.inject.Named;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- * Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
+ * Acting Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -52,7 +52,7 @@ public class StoreAmpController implements Serializable {
 
     public List<Amp> getItemsByCode() {
         if (itemsByCode == null) {
-            itemsByCode = getFacade().findBySQL("select a from Amp a where a.retired=false order by a.code");
+            itemsByCode = getFacade().findByJpql("select a from Amp a where a.retired=false order by a.code");
         }
         return itemsByCode;
     }
@@ -77,12 +77,12 @@ public class StoreAmpController implements Serializable {
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             getCurrent().setCreatedAt(new Date());
             getCurrent().setCreater(getSessionController().getLoggedUser());
             getFacade().create(getCurrent());
-            UtilityController.addSuccessMessage("Saved Successfully");
+            JsfUtil.addSuccessMessage("Saved Successfully");
         }
         items = null;
         // getItems();
@@ -128,9 +128,9 @@ public class StoreAmpController implements Serializable {
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
@@ -148,7 +148,7 @@ public class StoreAmpController implements Serializable {
             Map m = new HashMap();
             m.put("dt", DepartmentType.Store);
             String sql = "Select a from Item a where a.retired=false and a.departmentType=:dt order by a.name";
-            items = getFacade().findBySQL(sql, m);
+            items = getFacade().findByJpql(sql, m);
         }
         return items;
     }
@@ -160,7 +160,7 @@ public class StoreAmpController implements Serializable {
         Map m = new HashMap();
         m.put("dt", DepartmentType.Store);
         String sql = "Select a from Item a where a.retired=true and a.departmentType=:dt order by a.name";
-        itemsAll.addAll(getFacade().findBySQL(sql, m));
+        itemsAll.addAll(getFacade().findByJpql(sql, m));
     }
 
     public List<Amp> getFilteredItems() {
@@ -199,12 +199,12 @@ public class StoreAmpController implements Serializable {
         m.put("dep", DepartmentType.Store);
         m.put("cat", getCurrent().getCategory());
 
-        Amp amp = getFacade().findFirstBySQL(sql, m);
+        Amp amp = getFacade().findFirstByJpql(sql, m);
 
 
         DecimalFormat df = new DecimalFormat("0000");
         if (amp != null && !amp.getCode().equals("")) {
-            //System.out.println("amp.getCode() = " + amp.getCode());
+            //// // System.out.println("amp.getCode() = " + amp.getCode());
 
             String s = amp.getCode().substring(getCurrent().getCategory().getCode().length());
 

@@ -1,7 +1,7 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Open Hospital Management Information System
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.data.clinical;
 
@@ -9,11 +9,16 @@ package com.divudi.data.clinical;
  *
  * @author buddhika
  */
+@Deprecated
 public enum ItemUsageType {
-    FavoutireMedicine,
+    EncounterDiagnosis,
     FavouriteDiagnosis,
     Allergies,
     EncounterItems,
     PatientItems,
     PatientAllergies,
+    FavouriteMedicine,
+    @Deprecated
+    FavoutireMedicine,
+
 }

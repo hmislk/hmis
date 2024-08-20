@@ -1,0 +1,40 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <!-- Modified by Dr M H B Ariyaratne with assistance from ChatGPT from OpenAI -->
+
+        <h:panelGroup rendered="#{sessionController.userIcons ne null}" >
+
+            <h:form>
+                <div class="container-fluid">
+                    <div class="row">
+                        <ul class="list-group list-group-horizontal">
+                            <ui:repeat value="#{sessionController.userIcons}" var="i">
+                                <p:commandLink
+                                    title="#{i.icon}"
+                                    ajax="false"
+                                    class="list-group-item shadow-sm p-0 m-2" 
+                                    style="height: 50px;"
+                                    action="#{sessionController.getActionForIcon(i.icon)}">
+                                    <h:graphicImage library="icons" name="#{i.icon.image}" style="max-height: 100%; width: auto;"/>
+                                </p:commandLink>
+                            </ui:repeat>
+                        </ul>
+                    </div>
+                </div>
+            </h:form>
+        </h:panelGroup>
+
+    </cc:implementation>
+</html>

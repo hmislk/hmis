@@ -12,30 +12,30 @@
     padding: 0px;
 }
 
-root { 
+root {
     display: block;
 }
 
 
 @media print{
     .fiveinchbill{
-        page-break-after:always!important; 
-        font-family: sans-serif!important; 
-        font-size: 11px!important; 
-        position: relative!important;  
-        margin: 1%!important; 
-        width: 95%;
+        page-break-after:always!important;
+        font-family: sans-serif!important;
+        font-size: 11px!important;
+        position: relative!important;
+        margin: 1%!important;
+        width: 100%;
         height: 95%;
         padding: 1%;
         font-size: 180%;
     }
 
     .fiveinchbillBreak{
-        page-break-after:always!important; 
-        font-family: sans-serif!important; 
-        font-size: 11px!important; 
-        position: relative!important;  
-        margin: 0px!important; 
+        page-break-after:always!important;
+        font-family: sans-serif!important;
+        font-size: 11px!important;
+        position: relative!important;
+        margin: 0px!important;
         width: 12cm!important;
         height: 14cm!important;
         padding: 1px;
@@ -43,12 +43,12 @@ root {
     }
 
     .fiveinchbillNoBreak{
-        page-break-after:always!important; 
+        page-break-after:always!important;
         font-family: sans-serif!important;
         page-break-inside: avoid;
-        font-size: 11px!important; 
-        position: relative!important;  
-        margin: 0px!important; 
+        font-size: 11px!important;
+        position: relative!important;
+        margin: 0px!important;
         width: 12cm!important;
         height: 14cm!important;
         padding: 1px;
@@ -70,12 +70,12 @@ root {
         padding: 5px!important;
         width: 12cm!important;
         height: 14cm!important;
-        font-family: sans-serif!important; 
-        font-size: 11px!important; 
-        margin: auto!important; 
-        background-size: 100% auto!important; 
+        font-family: sans-serif!important;
+        font-size: 11px!important;
+        margin: auto!important;
+        background-size: 100% auto!important;
         border: 1px solid!important;
-        font-size: 130%;
+        font-size: 200%;
         text-transform: capitalize!important;
     }
 
@@ -84,11 +84,11 @@ root {
         padding: 5px!important;
         width: 12cm!important;
         height: 14cm!important;
-         
-        font-family: sans-serif!important; 
-        font-size: 11px!important; 
-        margin: auto!important; 
-        background-size: 100% auto!important; 
+
+        font-family: sans-serif!important;
+        font-size: 11px!important;
+        margin: auto!important;
+        background-size: 100% auto!important;
         border: 1px solid!important;
         font-size: 130%;
 
@@ -111,10 +111,10 @@ root {
 
 
     .summery{
-        font-family: sans-serif!important; 
-        font-size: 11px!important; 
-        position: relative!important;  
-        margin: 0px!important; 
+        font-family: sans-serif!important;
+        font-size: 11px!important;
+        position: relative!important;
+        margin: 0px!important;
         padding: 0px!important;
         font-size: 100%!important;
     }
@@ -127,8 +127,8 @@ root {
 @media screen{
     .summery{
         position: relative!important;
-        font-family: sans-serif!important; 
-        font-size: 11px!important; 
+        font-family: sans-serif!important;
+        font-size: 11px!important;
         font-size: 100%!important;
     }
 
@@ -145,12 +145,12 @@ root {
         position: relative!important;
         padding: 5px!important;
         height:800px!important;
-        width:1100px!important; 
-         
-        font-family: sans-serif!important; 
-        font-size: 11px!important; 
-        margin: auto!important; 
-        background-size: 100% auto!important; 
+        width:1100px!important;
+
+        font-family: sans-serif!important;
+        font-size: 11px!important;
+        margin: auto!important;
+        background-size: 100% auto!important;
         border: 1px solid!important;
         font-size: 100%;
     }
@@ -162,12 +162,12 @@ root {
         position: relative!important;
         padding: 5px!important;
         height:550px!important;
-        width:550px!important; 
-         
-        font-family: sans-serif!important; 
-        font-size: 11px!important; 
-        margin: auto!important; 
-        background-size: 100% auto!important; 
+        width:550px!important;
+
+        font-family: sans-serif!important;
+        font-size: 11px!important;
+        margin: auto!important;
+        background-size: 100% auto!important;
         border: 1px solid!important;
         font-size: 130%;
     }
@@ -178,10 +178,10 @@ root {
 
 @media print{
     .staffFive{
-        font-family: sans-serif!important; 
-        font-size: 11px!important; 
-        position: relative!important;  
-        margin: 0px!important; 
+        font-family: sans-serif!important;
+        font-size: 11px!important;
+        position: relative!important;
+        margin: 0px!important;
         width: 95%;
         height: 95%;
         padding: 0px;
@@ -193,11 +193,11 @@ root {
 
 @media print{
     .a4bill{
-        page-break-after:always!important; 
-        font-family: sans-serif!important; 
-        font-size: 11px!important; 
-        position: relative!important;  
-        margin: 0px!important; 
+        page-break-after:always!important;
+        font-family: sans-serif!important;
+        font-size: 11px!important;
+        position: relative!important;
+        margin: 0px!important;
         width: 95%;
         height: 95%;
         padding: 0px;
@@ -209,34 +209,34 @@ root {
 }
 
 .headingPrintingCoop{
-    text-align: center!important; 
-    min-width: 90%!important; 
-    /*padding: 5px!important;*/ 
-    margin: auto!important; 
+    text-align: center!important;
+    min-width: 90%!important;
+    /*padding: 5px!important;*/
+    margin: auto!important;
     font-size: 16px!important;
     font-weight: bold;
     text-decoration: underline;
     text-transform: uppercase;
-    
-    
+
+
 }
 .headingPrinting{
-    text-align: center!important; 
-    min-width: 90%!important; 
-    /*padding: 5px!important;*/ 
+    text-align: center!important;
+    min-width: 90%!important;
+    /*padding: 5px!important;*/
     padding-top: 30%!important;
-    margin: auto!important; 
+    margin: auto!important;
     font-size: 14px!important;
     font-weight: bold;
     text-transform: uppercase!important;
 }
 
 .headingBhtP{
-    text-align: center!important; 
-    min-width: 90%!important; 
-    /*padding: 5px!important;*/ 
+    text-align: center!important;
+    min-width: 90%!important;
+    /*padding: 5px!important;*/
     padding-top: 20%!important;
-    margin: auto!important; 
+    margin: auto!important;
     font-size: 13px!important;
 }
 
@@ -250,10 +250,10 @@ root {
 .tbl{
     text-align: center!important;
     min-width: 90%!important;
-    padding: 5px!important; 
+    padding: 5px!important;
     padding-top: 10%!important;
-    margin: auto!important; 
-    border: 1px!important;    
+    margin: auto!important;
+    border: 1px!important;
 }
 
 .cashierPrinting{
@@ -265,21 +265,21 @@ root {
 }
 
 .institutionName{
-        text-align: center!important;
-        font-weight: bold!important;
-        font-size: 16px!important;
-        font-weight: bolder;
-        font-family: monospace;
-        text-transform: capitalize!important;
+    text-align: center!important;
+    font-weight: bold!important;
+    font-size: 16px!important;
+    font-weight: bolder;
+    font-family: monospace;
+    text-transform: capitalize!important;
 
-    }
+}
 
-    .institutionContact{
-        position: relative!important;
-        text-align: center!important;   
-        font-size: 12px!important;
-        font-family:monospace;
-    }
+.institutionContact{
+    position: relative!important;
+    text-align: center!important;
+    font-size: 12px!important;
+    font-family:monospace;
+}
 
 .cashierGSPrinting{
     text-decoration: overline;
@@ -329,10 +329,10 @@ root {
                 background-size: 100% auto!important; 
                 border: 1px solid!important;
                 font-size: 100%;*/
-        font-family: sans-serif!important; 
-        font-size: 11px!important; 
-        position: relative!important;  
-        margin: 0px!important; 
+        font-family: sans-serif!important;
+        font-size: 11px!important;
+        position: relative!important;
+        margin: 0px!important;
         width: 95%;
         height: 95%;
         padding: 0px;
@@ -522,7 +522,7 @@ root {
     position: absolute;
     left: 27%;
     top: 17.5%;
-    font-size: 15px; 
+    font-size: 15px;
 
 }
 
@@ -536,11 +536,11 @@ root {
 }
 
 .totalCoop{
-text-decoration: underline!important;
-text-decoration-style: double!important;
-font-weight: bold!important;
-text-align: right!important;
-font-size: 15px!important;
+    text-decoration: underline!important;
+    text-decoration-style: double!important;
+    font-weight: bold!important;
+    text-align: right!important;
+    font-size: 15px!important;
 }
 
 .totallabel{
@@ -561,7 +561,7 @@ font-size: 15px!important;
     position: absolute;
     left: 27%;
     top: 21%;
-    font-size: 15px; 
+    font-size: 15px;
 
 }
 
@@ -576,7 +576,7 @@ font-size: 15px!important;
 
 .cashier{
     position: inherit;
-    
+
     left: 10%;
     text-decoration: overline;
     font-size: 12px;
@@ -587,8 +587,8 @@ font-size: 15px!important;
     position: absolute;
     bottom: 3%;
     left: 0%;
-    text-decoration: overline; 
-    margin-left: 70%; 
+    text-decoration: overline;
+    margin-left: 70%;
     font-size: 12px;
 
 }
@@ -597,14 +597,14 @@ font-size: 15px!important;
     position: absolute;
     left: 36%;
     top: 17.8%;
-    
+
 }
 
 .collectingCenterPrinting{
     position: absolute;
     left:81%;
     top: 16%;
-    font-size: 15px!important;    
+    font-size: 15px!important;
 }
 
 .consult2{
@@ -624,7 +624,7 @@ font-size: 15px!important;
 
 
 .itemsPrinting{
-    
+
     font-size: 12px!important;
     position: absolute;
     left: 10%;
@@ -633,7 +633,7 @@ font-size: 15px!important;
 }
 
 .disLabel{
-    
+
     font-size: 14px;
     font-weight: bold;
     position: absolute;
@@ -643,7 +643,7 @@ font-size: 15px!important;
 }
 
 .itemsGSPrinting{
-    
+
     font-size: 11px;
     position: absolute;
     left: 7%;
@@ -651,7 +651,7 @@ font-size: 15px!important;
 
 }
 
-.ratesPrinting{    
+.ratesPrinting{
     position: absolute;
     left: 82%;
     top: 37%;
@@ -912,12 +912,12 @@ font-size: 15px!important;
         position: relative!important;
         padding: 5px!important;
         height:550px!important;
-        width:550px!important; 
-         
-        font-family: sans-serif!important; 
-        font-size: 11px!important; 
-        margin: auto!important; 
-        background-size: 100% auto!important; 
+        width:550px!important;
+
+        font-family: sans-serif!important;
+        font-size: 11px!important;
+        margin: auto!important;
+        background-size: 100% auto!important;
         border: 1px solid!important;
         font-size: 130%;
     }
@@ -928,11 +928,11 @@ font-size: 15px!important;
 @media print{
 
     .fiveinchbillPharmacy{
-        page-break-after:always!important; 
-        font-family: sans-serif!important; 
-        font-size: 11px!important; 
-        position: relative!important;  
-        margin: 0px!important; 
+        page-break-after:always!important;
+        font-family: sans-serif!important;
+        font-size: 11px!important;
+        position: relative!important;
+        margin: 0px!important;
         width: 95%;
         height: 95%;
         padding: 0px;
@@ -943,6 +943,9 @@ font-size: 15px!important;
 }
 
 .summeryBorder{
-    width: 100%!important; margin:0px!important;padding:0px!important;border:none!important;
+    width: 100%!important;
+    margin:0px!important;
+    padding:0px!important;
+    border:none!important;
 
 }

@@ -1,0 +1,124 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:p="http://primefaces.org/ui"
+      >
+    <h:body>
+        <ui:composition template="/admin/users/user_roles.xhtml">
+            <ui:define name="users">
+                <h:panelGroup rendered="#{not webUserController.hasPrivilege('AdminManagingUsers') and not sessionController.firstLogin}" >
+                    <h:outputLabel value="You are NOT authorized"/>
+                </h:panelGroup>
+
+                <p:panel
+                    class="w-100"
+                    rendered="#{webUserController.hasPrivilege('AdminManagingUsers') or sessionController.firstLogin}">
+                    <f:facet name="header">
+                        <i class="fa fa-icons" />
+                        <h:outputLabel class="mx-2" value="Manage User Role Users"/>
+                    </f:facet>
+
+                    <p:panelGrid
+                        class="w-100 my-2"
+                        columns="3">
+                        <p:outputLabel  value="User Role" ></p:outputLabel>
+                        <p:outputLabel class="form-control w-100" value="#{webUserRoleUserController.current.webUserRole.name}"></p:outputLabel>
+                        <p:commandButton
+                            id="btnList"
+                            title="List Users for the User Roles"
+                            value="List Users"
+                            process="btnList cmbDepartment"
+                            class="ui-button-warning w-100"
+                            ajax="false"
+                            icon="fa fa-list"
+                            update="tbl"
+                            action="#{webUserRoleUserController.fillUsers}"
+                            >
+                        </p:commandButton>
+                        <p:outputLabel value="Users to Add" ></p:outputLabel>
+                        <p:selectOneMenu
+                            value="#{webUserRoleUserController.current.webUser}"
+                            filter="true"
+                            filterMatchMode="contains"
+                            class="w-100"
+                            autoWidth="false">
+                            <f:selectItems value="#{webUserRoleUserController.users}"
+                                           var="i"
+                                           itemLabel="#{i.name}"
+                                           itemValue="#{i}"/>
+                        </p:selectOneMenu>
+                        <p:commandButton
+                            value="List Department"
+                            icon="fa fa-list"
+                            class="ui-button-warning w-100"
+                            action="#{webUserRoleUserController.fillDepartment}"
+                            ajax="false"
+                            update="tbl"
+                            />
+
+                        <p:outputLabel  value="Department" ></p:outputLabel>
+                        <p:selectOneMenu
+                            id="cmbDepartment"
+                            placeholder="Department"
+                            class="w-100"
+                            value="#{webUserRoleUserController.department}"
+                            filter="true"
+                            autoWidth="false">
+                            <f:selectItem itemLabel="All" ></f:selectItem>
+                            <f:selectItems
+                                value="#{webUserRoleUserController.departments}"
+                                var="d"
+                                itemLabel="#{d.name}"
+                                itemValue="#{d}" ></f:selectItems>
+                        </p:selectOneMenu>
+                        <p:commandButton
+                            value="Add User"
+                            icon="fa fa-plus"
+                            class="ui-button-success w-100"
+                            action="#{webUserRoleUserController.addUsers}"
+                            ajax="false"
+                            update="tbl"
+                            />
+
+
+
+
+                    </p:panelGrid>
+                </p:panel>
+
+                <p:dataTable
+                    var="user"
+                    value="#{webUserRoleUserController.roleUsers}"
+                    rowKey="#{user.id}"
+                    id="tbl">
+                    <p:column headerText="User">
+                        <h:outputText value="#{user.webUser.name}" />
+                    </p:column>
+                    <p:column headerText="Department">
+                        <h:outputText value="#{user.webUser.department.name}" />
+                    </p:column>
+                    <p:column headerText="Actions" style="text-align: center; width: 200px;" >
+                        <h:panelGroup id="combinedActions" class="d-flex justify-content-end">
+                            <p:commandButton
+                                id="remove"
+                                icon="fa fa-trash"
+                                action="#{webUserRoleUserController.removeUser()}"
+                                class="ui-button-danger"
+                                update="tbl" >
+                                <f:setPropertyActionListener
+                                    value="#{user}"
+                                    target="#{webUserRoleUserController.current}" >
+                                </f:setPropertyActionListener>
+                                <p:ajax process="@this" update="tbl"/>
+                            </p:commandButton>
+                            <p:tooltip for="remove" value="Remove"  showDelay="0" hideDelay="0"></p:tooltip>
+                        </h:panelGroup>
+                    </p:column>
+                </p:dataTable>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

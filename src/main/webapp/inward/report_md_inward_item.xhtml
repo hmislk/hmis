@@ -1,46 +1,56 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
-                template="/resources/template/template.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/inward/inward_reports.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://java.sun.com/jsf/core"
-                xmlns:pe="http://primefaces.org/ui/extensions">
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                >
 
-    <ui:define name="content">
+    <ui:define name="subcontent">
         <h:form>
-            <p:panel>
 
-                <p:panel header="Item Report (Count)">                    
-                    <h:outputLabel value="From"/>
-                    <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{mdInwardReportController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
-                        <f:ajax event="dateSelect"   render="tbl" execute="@this toDate" listener="#{mdInwardReportController.makeBillNull}"/>
-                    </p:calendar>
+            <p:panel header="Item Report (Count)">                    
+                <h:panelGrid columns="4"  class="my-2">
 
-                    <h:outputLabel value="To"/>
-                    <p:calendar id="toDate" value="#{mdInwardReportController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
-                        <f:ajax event="dateSelect"   render="tbl" execute="@this fromDate" listener="#{mdInwardReportController.makeBillNull}"/>
-                    </p:calendar>
-                    <h:panelGrid columns="2" >
+
+
+                </h:panelGrid>
+
+                <h:panelGrid columns="2" class="w-100 my-2">
+                    <h:panelGrid columns="2" class="" >
+                        <h:outputLabel value="From"/>
+                        <p:calendar class="mx-4" id="fromDate" value="#{mdInwardReportController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                            <f:ajax event="dateSelect"   render="tbl" execute="@this toDate" listener="#{mdInwardReportController.makeBillNull}"/>
+                        </p:calendar>
+
+                        <h:outputLabel value="To"/>
+                        <p:calendar class="mx-4" id="toDate" value="#{mdInwardReportController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                            <f:ajax event="dateSelect"   render="tbl" execute="@this fromDate" listener="#{mdInwardReportController.makeBillNull}"/>
+                        </p:calendar>
+
+                        <p:outputLabel value="Institution" />
                         <p:autoComplete id="ins" value="#{mdInwardReportController.institution}"
                                         completeMethod="#{institutionController.completeIns}"
-                                        var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
+                                        var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" class="w-100 mx-4">
                             <p:column>
                                 #{ix.name}
                             </p:column>
                         </p:autoComplete>
-                        <p:autoComplete id="dept" completeMethod="#{departmentController.completeDept}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{mdInwardReportController.dept}" converter="departmentConverter" >
+                        <p:outputLabel value="Department" />
+                        <p:autoComplete class="mx-4" id="dept" completeMethod="#{departmentController.completeDept}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{mdInwardReportController.dept}"  >
                         </p:autoComplete>
+                        <p:outputLabel value="Category" />
                         <p:autoComplete value="#{mdInwardReportController.category}" id="ct" 
                                         forceSelection="true"
                                         completeMethod="#{categoryController.completeCategoryService}"
-                                        converter="categoryConverter"
                                         var="cat" itemLabel="#{cat.name}" 
-                                        itemValue="#{cat}" >
+                                        itemValue="#{cat}"
+                                        class="mx-4 w-100">
                             <p:column headerText="Category">
                                 <h:outputLabel value="#{cat.name}"/>
                             </p:column>
-                            <p:column headerText="Parent Category">
+                            <p:column headerText="Parent Category" class="mx-4">
                                 <h:outputLabel value="#{cat.parentCategory.name}"/>
                             </p:column> 
                             <p:column headerText="TYPE">
@@ -52,11 +62,12 @@
                             </p:column> 
 
                         </p:autoComplete>
+                        <p:outputLabel value="Item" />
                         <p:autoComplete  widgetVar="aIx" id="acIx" forceSelection="true" 
                                          value="#{mdInwardReportController.item}"
-                                         completeMethod="#{itemController.completeInwardItemsCategory}"
+                                         completeMethod="#{itemController.completeAllServicesAndInvestigationsCategory}"
                                          var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" 
-                                         size="30"  style="width: 400px;">
+                                          class="mx-4 w-100">
                             <p:column>
                                 <h:outputLabel value="#{ix.name}"/>
                             </p:column>
@@ -72,88 +83,103 @@
                             <p:ajax event="itemSelect" process="acIx ct" update="@all" />
                             <p:ajax event="focus" process="ct"/>
                         </p:autoComplete>
-                        <p:watermark for="ct" value="Category"/>
-                        <p:watermark for="acIx" value="Item"/>
-                        <p:watermark for="dept" value="Department"/>
-                        <p:watermark for="ins" value="Institution"/>
-
-
-                        <p:panelGrid columns="2">
-                            <p:commandButton ajax="false" value="Process by Added Date" 
-                                             action="#{mdInwardReportController.createItemWithFeeByAddedDate}" style="float: right;" onclick="onSubmitButton();" />
-                            <p:commandButton ajax="false" value="Process by Discharge Date" 
-                                             action="#{mdInwardReportController.createItemWithFeeByDischargeDate}" style="float: right;" onclick="onSubmitButton();" />
-                            <p:commandButton ajax="false" value="Excel Admit Date" styleClass="noPrintButton" onclick="onSubmitButton();"
-                                             actionListener="#{mdInwardReportController.createItemWithFeeByAddedDate}">
-                                <pe:exporter type="xlsx" target="tbl" fileName="report_md_inward_item" />
-                            </p:commandButton>
-                            <p:commandButton ajax="false" value="Excel Discharge Date" styleClass="noPrintButton" onclick="onSubmitButton();" 
-                                             actionListener="#{mdInwardReportController.createItemWithFeeByDischargeDate}">
-                                <pe:exporter type="xlsx" target="tbl" fileName="report_md_inward_item" />
-                            </p:commandButton>
-                            <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" >
-                                <p:printer target="reportPrint"/>
-                            </p:commandButton>
-                        </p:panelGrid>
+                        
                     </h:panelGrid>
+                </h:panelGrid>
+                <div class="d-flex justify-content-between my-2">
+                    <p:commandButton 
+                        ajax="false" 
+                        value="Process by Added Date" 
+                        icon="fas fa-cogs"
+                        class="ui-button-warning w-100"     
+                        action="#{mdInwardReportController.createItemWithFeeByAddedDate}" />
+                    <p:commandButton 
+                        ajax="false" 
+                        value="Process by Discharge Date" 
+                        icon="fas fa-cogs"
+                        action="#{mdInwardReportController.createItemWithFeeByDischargeDate}" 
+                        class="ui-button-warning w-100 mx-2"  />
+                    <p:commandButton 
+                        ajax="false" 
+                        icon="fas fa-file-excel"
+                        value="Excel Admit Date"
+                        actionListener="#{mdInwardReportController.createItemWithFeeByAddedDate}" 
+                        class="w-100 ui-button-success">
+                        <p:dataExporter type="xlsx" target="tbl" fileName="report_md_inward_item" />
+                    </p:commandButton>
 
-                </p:panel>   
+                    <p:commandButton 
+                        ajax="false" 
+                        icon="fas fa-file-excel"
+                        value="Excel Discharge Date" 
+                        class="w-100 ui-button-success mx-2"  
+                        actionListener="#{mdInwardReportController.createItemWithFeeByDischargeDate}">
+                        <p:dataExporter type="xlsx" target="tbl" fileName="report_md_inward_item" />
+                    </p:commandButton>
+                    <p:commandButton 
+                        icon="fas fa-print"
+                        ajax="false" 
+                        value="Print" 
+                        class="w-100 ui-button-info" >
+                        <p:printer target="reportPrint"/>
+                    </p:commandButton>
+                </div>
+            </p:panel>   
 
-                <p:panel id="reportPrint">
-                    <p:dataTable id="tbl" value="#{mdInwardReportController.itemWithFees}" rowIndexVar="i" var="iwf" >
-                        <p:column headerText="No">
-                            <h:outputLabel value="#{i+1}"/>
-                        </p:column>
-                        <p:column headerText="Institution" >
-                            <h:outputLabel value="#{iwf.item.institution.name}"/>
-                        </p:column>
-                        <p:column headerText="Department" >
-                            <h:outputLabel value="#{iwf.item.department.name}"/>
-                        </p:column>    
-                        <p:column headerText="Parent Categoy" >
-                            <h:outputLabel value="#{iwf.item.category.parentCategory.name}"/>
-                        </p:column>   
-                        <p:column headerText="Categoy" >
-                            <h:outputLabel value="#{iwf.item.category.name}"/>
-                        </p:column>   
-                        <p:column headerText="Name" >
-                            <h:outputLabel value="#{iwf.item.name}"/>
-                        </p:column>
-                        <p:column headerText="Count">
-                            <h:outputLabel value="#{iwf.count}"/>
-                        </p:column>
-                        <p:column styleClass="averageNumericColumn" headerText="Hospital Fee">
-                            <h:outputLabel value="#{iwf.hospitalFee}">
+            <p:panel id="reportPrint">
+                <p:dataTable id="tbl" value="#{mdInwardReportController.itemWithFees}" rowIndexVar="i" var="iwf" >
+                    <p:column headerText="No">
+                        <h:outputLabel value="#{i+1}"/>
+                    </p:column>
+                    <p:column headerText="Institution" >
+                        <h:outputLabel value="#{iwf.item.institution.name}"/>
+                    </p:column>
+                    <p:column headerText="Department" >
+                        <h:outputLabel value="#{iwf.item.department.name}"/>
+                    </p:column>    
+                    <p:column headerText="Parent Categoy" >
+                        <h:outputLabel value="#{iwf.item.category.parentCategory.name}"/>
+                    </p:column>   
+                    <p:column headerText="Categoy" >
+                        <h:outputLabel value="#{iwf.item.category.name}"/>
+                    </p:column>   
+                    <p:column headerText="Name" >
+                        <h:outputLabel value="#{iwf.item.name}"/>
+                    </p:column>
+                    <p:column headerText="Count">
+                        <h:outputLabel value="#{iwf.count}"/>
+                    </p:column>
+                    <p:column styleClass="averageNumericColumn" headerText="Hospital Fee">
+                        <h:outputLabel value="#{iwf.hospitalFee}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputLabel>
+                        <f:facet name="footer">
+                            <h:outputLabel value="#{mdInwardReportController.itemHospitalTotal}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
-                            <f:facet name="footer">
-                                <h:outputLabel value="#{mdInwardReportController.itemHospitalTotal}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
-                            </f:facet>
-                        </p:column>
-                        <p:column styleClass="averageNumericColumn" headerText="Professional Fee">
-                            <h:outputLabel value="#{iwf.proFee}">
+                        </f:facet>
+                    </p:column>
+                    <p:column styleClass="averageNumericColumn" headerText="Professional Fee">
+                        <h:outputLabel value="#{iwf.proFee}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputLabel>
+                        <f:facet name="footer">
+                            <h:outputLabel value="#{mdInwardReportController.itemProfessionalTotal}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
-                            <f:facet name="footer">
-                                <h:outputLabel value="#{mdInwardReportController.itemProfessionalTotal}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
-                            </f:facet>
-                        </p:column>
-                        <p:column styleClass="averageNumericColumn" headerText="Total">
-                            <h:outputLabel value="#{iwf.hospitalFee+iwf.proFee}">
+                        </f:facet>
+                    </p:column>
+                    <p:column styleClass="averageNumericColumn" headerText="Total">
+                        <h:outputLabel value="#{iwf.hospitalFee+iwf.proFee}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputLabel>
+                        <f:facet name="footer">
+                            <h:outputLabel value="#{mdInwardReportController.itemHospitalTotal+mdInwardReportController.itemProfessionalTotal}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
-                            <f:facet name="footer">
-                                <h:outputLabel value="#{mdInwardReportController.itemHospitalTotal+mdInwardReportController.itemProfessionalTotal}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
-                            </f:facet>
-                        </p:column>                 
-                    </p:dataTable>
-                </p:panel>
+                        </f:facet>
+                    </p:column>                 
+                </p:dataTable>
             </p:panel>
 
         </h:form>

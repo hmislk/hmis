@@ -1,0 +1,52 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="patient" type="com.divudi.entity.Patient" />
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+
+
+        <p:outputPanel class="text-center">
+            <h:panelGroup rendered="#{cc.attrs.patient.baImage eq null}"  >
+                <p:graphicImage rendered="#{cc.attrs.patient.person.sex eq 'Male'}" 
+                                class="w-100 m-1 img-thumbnail"
+                                cache="true"
+                                library="image" name="male.jpg">
+                </p:graphicImage>
+                <p:graphicImage rendered="#{cc.attrs.patient.person.sex eq 'Female'}" 
+                                class="w-100 m-1 img-thumbnail"
+                                cache="true"
+                                library="image" name="female.png">
+                </p:graphicImage>
+            </h:panelGroup>
+            <!--photo 1-->
+            <p:graphicImage  
+                value="#{imageController.photoById}"
+                class="w-100 m-1 img-thumbnail" 
+                id="photos" 
+                cache="false"
+                rendered="#{cc.attrs.patient.baImage ne null}"     >
+                <f:param name="id" value="#{cc.attrs.patient.id}" />
+            </p:graphicImage>
+            
+            
+            <!--Photo 2-->
+<!--            <p:graphicImage class="w-100 m-1 img-thumbnail" 
+                            id="photos1" 
+                            cache="false"
+                            rendered="#{cc.attrs.patient.baImage ne null}"    
+                            value="/image/#{cc.attrs.patient.id}">
+            </p:graphicImage>-->
+            
+        </p:outputPanel>
+    </cc:implementation>
+</html>

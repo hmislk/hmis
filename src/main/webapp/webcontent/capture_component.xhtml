@@ -1,0 +1,195 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui">
+
+    <h:body>
+
+        <ui:composition template="./index.xhtml">
+
+            <ui:define name="contents">
+
+                <h1>Capture Component</h1>
+
+
+                <h:form class="form" >
+
+                    <h:commandButton value="Submit" ></h:commandButton>
+
+                    <p:dataTable value="#{captureComponentController.dataEntryItems}" var="d">
+                        <p:column>
+                            <p:outputLabel value="#{d.name}"></p:outputLabel>
+                        </p:column>
+                        <p:column>
+
+                            <h:panelGroup rendered="#{d.componentPresentationType eq 'Input_text'}">
+                                <p:inputText id="txtInputTextShortText" value="#{d.shortTextValue}">
+                                    <p:ajax event="blur" process="txtInputTextShortText" 
+                                            listener="#{captureComponentController.saveByAjax(d)}" ></p:ajax>
+                                </p:inputText>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{d.componentPresentationType eq 'Input_text_Area'}">
+                                <p:inputTextarea id="txtInputTextLongText" value="#{d.longTextValue}">
+                                    <p:ajax event="blur" process="txtInputTextLongText" 
+                                            listener="#{captureComponentController.saveByAjax(d)}" ></p:ajax>
+                                </p:inputTextarea>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{d.componentPresentationType eq 'Input_Number'}">
+                                <p:inputNumber value="#{d.longValue}"
+                                               id="txtInputNumberLong"
+                                               placeholder="Enter the Long Value"
+                                               rendered="#{d.componentDataType eq 'Long'}">
+                                    <p:ajax event="blur" process="txtInputNumberLong" 
+                                            listener="#{captureComponentController.saveByAjax(d)}" ></p:ajax>
+                                </p:inputNumber>
+                                <p:inputNumber value="#{d.doubleValue}" 
+                                               id="txtInputNumberDouble"
+                                               placeholder="Enter the Double Value"
+                                               rendered="#{d.componentDataType eq 'Double'}">
+                                    <p:ajax event="blur" process="txtInputNumberDouble" 
+                                            listener="#{captureComponentController.saveByAjax(d)}" ></p:ajax>
+                                </p:inputNumber>
+                                <p:inputNumber value="#{d.intValue}" 
+                                               placeholder="Enter the Integer Value"
+                                               rendered="#{d.componentDataType eq 'Integer'}"
+                                               id="txtInputNumberInteger">
+
+                                    <p:ajax event="blur" process="txtInputNumberInteger" 
+                                            listener="#{captureComponentController.saveByAjax(d)}" ></p:ajax>     
+                                </p:inputNumber>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{d.componentPresentationType eq 'Rating'}">
+                                <p:rating value="#{d.intValue}" 
+                                          id="ratingInputNumberInteger">
+                                    <p:ajax event="rate" process="ratingInputNumberInteger" 
+                                            listener="#{captureComponentController.saveByAjax(d)}" ></p:ajax>
+                                    <p:ajax event="cancel" process="ratingInputNumberInteger" 
+                                            listener="#{captureComponentController.saveByAjax(d)}" ></p:ajax>
+                                </p:rating>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{d.componentPresentationType eq 'MultiSelectListBox'}">
+                                <p:outputLabel>Not implemented</p:outputLabel>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{d.componentPresentationType eq 'SelectBooleanButton'}">
+                                <p:selectBooleanButton value="#{d.booleanValue}" 
+                                                       id="booleanValue">
+                                    <p:ajax event="blur" process="booleanValue" 
+                                            listener="#{captureComponentController.saveByAjax(d)}" ></p:ajax>
+                                </p:selectBooleanButton>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{d.componentPresentationType eq 'SelectBooleanCheckBox'}">
+                                <p:selectBooleanCheckbox value="#{d.booleanValue}" 
+                                                         id="booleanCheckBoxValue">
+                                    <p:ajax event="blur" process="booleanCheckBoxValue" 
+                                            listener="#{captureComponentController.saveByAjax(d)}" ></p:ajax>
+                                </p:selectBooleanCheckbox>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{d.componentPresentationType eq 'SelectOneRadio'}">
+                                <p:selectOneRadio value="#{d.booleanValue}" 
+                                                  id="stringSelectRadio">
+                                    <p:ajax event="blur" process="stringSelectRadio" 
+                                            listener="#{captureComponentController.saveByAjax(d)}" ></p:ajax>
+                                </p:selectOneRadio>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{d.componentPresentationType eq 'SelectCheckBoxMenu'}">
+                                <p:selectCheckboxMenu></p:selectCheckboxMenu>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{d.componentPresentationType eq 'SelectOneMenu'}">
+                                <p:selectOneMenu value="#{d.itemValue}" id="selectOneValue">
+                                    <p:ajax event="blur" process="selectOneValue" 
+                                            listener="#{captureComponentController.saveByAjax(d)}" ></p:ajax>
+                                </p:selectOneMenu>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{d.componentPresentationType eq 'SelectOneListBox'}">
+                                <p:selectOneListbox value="#{d.itemValue}" id="selectOneListValue">
+                                    <p:ajax event="blur" process="selectOneListValue" 
+                                            listener="#{captureComponentController.saveByAjax(d)}" ></p:ajax></p:selectOneListbox>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{d.componentPresentationType eq 'SelectManyButton'}">
+                                <p:selectManyButton></p:selectManyButton>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{d.componentPresentationType eq 'Signature'}">
+                                
+                                <p:signature style="width:400px;height:200px" widgetVar="sig" value="#{d.byteArrayValue}" required="true" guideline="true"/>
+
+                                <div style="margin:20px 0">
+                                    <p:commandButton value="Submit" icon="pi pi-check" update="output"/>
+                                    <p:commandButton value="Clear" icon="pi pi-times" type="button" onclick="PF('sig').clear()"/>
+                                </div>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{d.componentPresentationType eq 'Slider'}">
+                                <p:inputText id="txtSlider" value="#{d.doubleValue}">
+                                    <p:ajax process="txtSlider" listener="#{captureComponentController.saveByAjax(d)}"/>
+                                </p:inputText>
+                                <p:slider for="txtSlider" minValue="0.2" maxValue="7.1" step="0.1" />
+                                
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{d.componentPresentationType eq 'Spinner'}">
+                                <p:spinner value="#{d.intValue}" 
+                                           id="integerSpinnerValue">
+                                    <p:ajax event="blur" process="integerSpinnerValue" 
+                                            listener="#{captureComponentController.saveByAjax(d)}" ></p:ajax>
+                                </p:spinner>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{d.componentPresentationType eq 'TextEditor'}">
+                                <p:textEditor value="#{d.longTextValue}" 
+                                              id="txtTextEditorValue" secure="false">
+                                    <p:ajax event="blur" process="txtTextEditorValue" 
+                                            listener="#{captureComponentController.saveByAjax(d)}" ></p:ajax></p:textEditor>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{d.componentPresentationType eq 'ToggleSwitch'}">
+                                <p:toggleSwitch value="#{d.booleanValue}" 
+                                                id="booleanToggleSwitch">
+                                </p:toggleSwitch>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{d.componentPresentationType eq 'TriStateCheckBox'}">
+                                <p:triStateCheckbox value="#{d.booleanValue}" 
+                                                    id="booleanTriStateCheckBox">
+                                    <p:ajax event="blur" process="booleanTriStateCheckBox" 
+                                            listener="#{captureComponentController.saveByAjax(d)}" ></p:ajax></p:triStateCheckbox>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{d.componentPresentationType eq 'AutoComplete'}">
+                                <p:autoComplete></p:autoComplete>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{d.componentPresentationType eq 'Calendar'}">
+                                <p:datePicker value="#{d.dateValue}" 
+                                              id="date">
+                                    <p:ajax></p:ajax>
+                                </p:datePicker>
+                            </h:panelGroup>
+
+                        </p:column>
+                    </p:dataTable>
+
+
+                </h:form>
+
+
+
+            </ui:define>
+
+        </ui:composition>
+
+    </h:body>
+</html>

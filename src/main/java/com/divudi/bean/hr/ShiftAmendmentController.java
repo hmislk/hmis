@@ -1,12 +1,12 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Open Hospital Management Information System
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.hr;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.entity.Staff;
 import com.divudi.entity.hr.Shift;
 import com.divudi.entity.hr.ShiftAmendment;
@@ -48,7 +48,7 @@ public class ShiftAmendmentController implements Serializable {
         hm.put("dt", date);
         hm.put("sh", shift);
 
-        StaffShift staffShift = staffShiftFacade.findFirstBySQL(sql, hm, TemporalType.DATE);
+        StaffShift staffShift = staffShiftFacade.findFirstByJpql(sql, hm, TemporalType.DATE);
 
         return staffShift != null;
     }
@@ -64,7 +64,7 @@ public class ShiftAmendmentController implements Serializable {
         hm.put("sh", shift);
         hm.put("stf", staff);
 
-        StaffShift staffShift = staffShiftFacade.findFirstBySQL(sql, hm, TemporalType.DATE);
+        StaffShift staffShift = staffShiftFacade.findFirstByJpql(sql, hm, TemporalType.DATE);
 
         return staffShift != null;
     }
@@ -72,22 +72,22 @@ public class ShiftAmendmentController implements Serializable {
     public void change() {
         if (shiftAmendment2 == null) {
             if (getShiftAmendment1().getFromDate() == null || getShiftAmendment1().getFromShift() == null) {
-                UtilityController.addErrorMessage("Check FromShift");
+                JsfUtil.addErrorMessage("Check FromShift");
                 return;
             }
 
             if (getShiftAmendment1().getToDate() == null || getShiftAmendment1().getToShift() == null) {
-                UtilityController.addErrorMessage("Check To Shift");
+                JsfUtil.addErrorMessage("Check To Shift");
                 return;
             }
 
             if (!checkShiftExist(getShiftAmendment1().getFromDate(), getShiftAmendment1().getFromShift(), getShiftAmendment1().getStaff())) {
-                UtilityController.addErrorMessage("There is No Shift Defined");
+                JsfUtil.addErrorMessage("There is No Shift Defined");
                 return;
             }
 
             if (checkShiftExist(getShiftAmendment1().getToDate(), getShiftAmendment1().getToShift())) {
-                UtilityController.addErrorMessage("There is Already Staff Shift There");
+                JsfUtil.addErrorMessage("There is Already Staff Shift There");
                 return;
             }
 

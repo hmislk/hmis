@@ -1,10 +1,11 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+* Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.entity.lab;
 
 import com.divudi.entity.WebUser;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.CascadeType;
@@ -13,6 +14,7 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Inheritance;
 import javax.persistence.ManyToOne;
 import javax.persistence.Temporal;
 
@@ -21,31 +23,39 @@ import javax.persistence.Temporal;
  * @author Buddhika
  */
 @Entity
+@Inheritance
 public class InvestigationItemValue implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @JsonIgnore
     //Main Properties
     Long id;
-    @ManyToOne(cascade= CascadeType.ALL,fetch= FetchType.LAZY)
+    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
     InvestigationItem investigationItem;
     String name;
     String code;
     //Created Properties
     @ManyToOne
+    @JsonIgnore
     WebUser creater;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    @JsonIgnore
     Date createdAt;
     //Retairing properties
+    @JsonIgnore
     boolean retired;
     @ManyToOne
+    @JsonIgnore
     WebUser retirer;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    @JsonIgnore
     Date retiredAt;
+    @JsonIgnore
     String retireComments;
     Integer orderNo;
-    
 
     public Long getId() {
         return id;
@@ -64,7 +74,7 @@ public class InvestigationItemValue implements Serializable {
 
     @Override
     public boolean equals(Object object) {
-        
+
         if (!(object instanceof InvestigationItemValue)) {
             return false;
         }
@@ -88,8 +98,6 @@ public class InvestigationItemValue implements Serializable {
         this.code = code;
     }
 
-    
-    
     public WebUser getCreater() {
         return creater;
     }

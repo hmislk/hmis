@@ -1,0 +1,64 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:fn="http://java.sun.com/jsp/jstl/functions">
+
+    <h:body>
+
+        <ui:composition template="./index.xhtml">
+
+            <ui:define name="contents">
+
+                <h:form >
+                    <p:panel >
+                            <f:facet name="header" >
+                                <h:outputLabel value="List Web Contents"></h:outputLabel>
+                            </f:facet>
+                    <p:dataTable class="table table-striped"
+                                 value="#{webContentController.items}" 
+                                 var="u"
+                                 paginator="true" rows="10" 
+                                 paginatorPosition="bottom"
+                                 rowsPerPageTemplate="5,10,15">
+
+                        <p:column headerText="Name" sortBy="#{u.name}" filterBy="#{u.name}" filterMatchMode="contains">
+                            <h:outputText value="#{u.name}"/>
+                        </p:column>
+
+                        <p:column headerText="Type" filterBy="#{u.type}" filterMatchMode="contains">
+                            <h:outputText value="#{u.type}"/>
+                        </p:column>
+
+                        <p:column headerText="Contents" filterBy="#{u.shortContext}" filterMatchMode="contains">
+                            <h:outputText value="#{u.shortContext}"/>
+                            <h:outputText value="#{fn:length(u.longContext) > 30 ? u.longContext.substring(0, 30) : u.longContext}"/>
+                        </p:column>
+
+                        <p:column headerText="Language" filterBy="#{u.webLanguage.name}" filterMatchMode="contains">
+                            <h:outputText value="#{u.webLanguage.name}"/>
+                        </p:column>
+
+                        <p:column headerText="Actions">
+                            <p:commandButton 
+                                icon="fas fa-pencil"
+                                class="ui-button-success"
+                                action="#{webContentController.toEditWebContent()}">
+                                <f:setPropertyActionListener value="#{u}" target="#{webContentController.selected}"/>
+                            </p:commandButton>
+                        </p:column>
+
+                    </p:dataTable>
+                    </p:panel>
+                </h:form>
+
+
+            </ui:define>
+
+        </ui:composition>
+
+    </h:body>
+</html>

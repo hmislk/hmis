@@ -1,0 +1,28 @@
+/*
+Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+Click nbfs://nbhost/SystemFileSystem/Templates/Other/CascadeStyleSheet.css to edit this template
+*/
+/* 
+    Created on : Oct 4, 2022, 12:27:24 PM
+    Author     : dilunda
+*/
+.gradient-custom-2 {
+    /*background: rgb(0,23,36);*/
+/*    background: -moz-linear-gradient(90deg, rgba(0,23,36,1) 0%, rgba(0,125,21,0.7399334733893557) 55%, rgba(0,212,255,1) 100%);
+    background: -webkit-linear-gradient(90deg, rgba(0,23,36,1) 0%, rgba(0,125,21,0.7399334733893557) 55%, rgba(0,212,255,1) 100%);
+    background: linear-gradient(90deg, rgba(0,23,36,1) 0%, rgba(0,125,21,0.7399334733893557) 55%, rgba(0,212,255,1) 100%);
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#001724",endColorstr="#00d4ff",GradientType=1);*/
+background:#2196F3;
+}
+
+@media (min-width: 768px) {
+    .gradient-form {
+        height: 100vh !important;
+    }
+}
+@media (min-width: 769px) {
+    .gradient-custom-2 {
+        border-top-right-radius: .3rem;
+        border-bottom-right-radius: .3rem;
+    }
+}

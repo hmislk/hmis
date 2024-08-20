@@ -1,20 +1,23 @@
 /*
- * MSc(Biomedical Informatics) Project
+ * Open Hospital Management Information System
  * 
- * Development and Implementation of a Web-based Combined Data Repository of 
- Genealogical, Clinical, Laboratory and Genetic Data 
- * and
- * a Set of Related Tools
+ * Dr M H B Ariyaratne 
+ * Acting Consultant (Health Informatics) 
+ * (94) 71 5812399
+ * (94) 71 5812399
  */
 package com.divudi.bean.lab;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.entity.lab.Sample;
 import com.divudi.facade.SampleFacade;
+import com.divudi.bean.common.util.JsfUtil;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -26,8 +29,8 @@ import javax.inject.Named;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- * Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -37,27 +40,21 @@ public class SampleController implements Serializable {
     SessionController sessionController;
     @EJB
     private SampleFacade ejbFacade;
-    List<Sample> selectedItems;
     private Sample current;
     private List<Sample> items = null;
-    String selectText = "";
-  
 
-    public List<Sample> getSelectedItems() {
-        selectedItems = getFacade().findBySQL("select c from Sample c where c.retired=false and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
-        return selectedItems;
+    public List<Sample> fillAllItems() {
+        String j = "select s "
+                + " from Sample s "
+                + " where s.retired=:ret "
+                + " order by s.name";
+        Map m = new HashMap();
+        m.put("ret", false);
+        return getFacade().findByJpql(j,m);
     }
 
     public void prepareAdd() {
         current = new Sample();
-    }
-
-    public void setSelectedItems(List<Sample> selectedItems) {
-        this.selectedItems = selectedItems;
-    }
-
-    public String getSelectText() {
-        return selectText;
     }
 
     private void recreateModel() {
@@ -65,45 +62,60 @@ public class SampleController implements Serializable {
     }
 
     public void saveSelected() {
-
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            UtilityController.addSuccessMessage("Saved Successfully");
+            JsfUtil.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
         getItems();
     }
-
-    public void setSelectText(String selectText) {
-        this.selectText = selectText;
+    
+    public Sample findAndCreateSampleByName(String qry) {
+        Sample s;
+        String jpql;
+        jpql = "select s from "
+                + " Sample s "
+                + " where s.retired=:ret "
+                + " and s.name=:name "
+                + " order by s.name";
+        Map m = new HashMap();
+        m.put("ret", false);
+        m.put("name", qry);
+        s = getFacade().findFirstByJpql(jpql, m);
+        if(s==null){
+            s = new Sample();
+            s.setName(qry);
+            s.setCreatedAt(new Date());
+            getFacade().create(s);
+        }
+        return s;
     }
 
-    public SampleFacade getEjbFacade() {
+    private SampleFacade getEjbFacade() {
         return ejbFacade;
     }
 
-    public void setEjbFacade(SampleFacade ejbFacade) {
-        this.ejbFacade = ejbFacade;
-    }
-
-    public SessionController getSessionController() {
+    private SessionController getSessionController() {
         return sessionController;
-    }
-
-    public void setSessionController(SessionController sessionController) {
-        this.sessionController = sessionController;
     }
 
     public SampleController() {
     }
 
     public Sample getCurrent() {
+        if(current == null){
+            current = new Sample();
+        }
         return current;
+    }
+
+    public Sample getAnySample() {
+        return getItems().get(0);
     }
 
     public void setCurrent(Sample current) {
@@ -111,20 +123,40 @@ public class SampleController implements Serializable {
     }
 
     public void delete() {
-
         if (current != null) {
             current.setRetired(true);
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
         current = null;
-        getCurrent();
+    }
+
+    public String navigateToManageSpecimens() {
+        prepareAdd();
+        return "/admin/lims/manage_specimens?faces-redirect=true";
+    }
+    
+    public String navigateToListItems() {
+        return "/admin/lims/speciman_list?faces-redirect=true";
+    }
+
+    public String navigateToAddItem() {
+        prepareAdd();
+        return "/admin/lims/speciman?faces-redirect=true";
+    }
+
+    public String navigateToEditItem() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Nothing selected");
+            return null;
+        }
+        return "/admin/lims/speciman?faces-redirect=true";
     }
 
     private SampleFacade getFacade() {
@@ -132,7 +164,9 @@ public class SampleController implements Serializable {
     }
 
     public List<Sample> getItems() {
-        items = getFacade().findAll("name", true);
+        if (items == null) {
+            items = fillAllItems();
+        }
         return items;
     }
 

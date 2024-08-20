@@ -1,17 +1,17 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:pe="http://primefaces.org/ui/extensions">
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      >
 
     <h:body>
 
-        <ui:composition template="/resources/template/template.xhtml">
+        <ui:composition template="/pharmacy/pharmacy_analytics.xhtml">
 
-            <ui:define name="content">
+            <ui:define name="subcontent">
 
                 <h:form>
 
@@ -19,28 +19,39 @@
 
                         <h:panelGrid columns="5" >
                             <h:outputLabel value="Department" ></h:outputLabel>
-                            <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{reportsStock.department}" converter="departmentConverter" >
+                            <p:autoComplete class="mx-2" completeMethod="#{departmentController.completeDept}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{reportsStock.department}"  >
                             </p:autoComplete>
-                            <p:commandButton ajax="false"  value="Fill" action="#{reportsStock.fillDepartmentStocks}" >
-                               
+                            <p:commandButton
+                                ajax="false"  
+                                value="Fill"
+                                icon="fas fa-fill"
+                                class="ui-button-warning"
+                                action="#{reportsStock.fillDepartmentStocks}" >
                             </p:commandButton>
-                            <p:commandButton value="Print" action="#" ajax="false">
+                            <p:commandButton 
+                                value="Excel" 
+                                ajax="false"
+                                icon="fas fa-file-excel"
+                                class="ui-button-success mx-2">
+                                <p:dataExporter type="xlsx" target="tbl" fileName="Total Stock"/>                               
+                            </p:commandButton>
+                            <p:commandButton 
+                                value="Print" 
+                                action="#" 
+                                ajax="false"
+                                icon="fas fa-print"
+                                class="ui-button-info">
                                 <p:printer target="gpBillPreview" ></p:printer>
-                                
                             </p:commandButton>
-                            <p:commandButton value="Excel" ajax="false">
-                                <pe:exporter type="xlsx" target="tbl" fileName="Total Stock"
-                                             facetBackground="#008000" facetFontSize="15" 
-                                             facetFontColor="#FFFFFF" facetFontStyle="BOLD" cellFontColor="#0000FF" cellFontSize="12"  cellFontStyle="NORMAL" 
-                                             fontName="Courier New" />                               
-                            </p:commandButton>
+                            
                         </h:panelGrid>
 
                         <h:panelGroup id="gpBillPreview">
                             <p:dataTable id="tbl" rowStyleClass="#{i.stock eq 0 ?'noDisplayRow' : ''}" 
                                          value="#{reportsStock.stocks}" var="i"
-                                         rows="20"
+                                         rows="20" class="my-2"
                                          paginator="true"
+                                         paginatorPosition="bottom"
                                          paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                          rowsPerPageTemplate="20, 50, 100" 
                                          >
@@ -175,9 +186,9 @@
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Quentity">
+                                <p:column headerText="Quantity">
                                     <f:facet name="header">
-                                        <h:outputLabel value="Quentity"/>
+                                        <h:outputLabel value="Quantity"/>
                                     </f:facet>
                                     <h:outputLabel value="#{i.stock}"  >
                                         <f:convertNumber pattern="#,###" ></f:convertNumber>

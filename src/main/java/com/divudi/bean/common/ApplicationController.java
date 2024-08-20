@@ -1,6 +1,6 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.common;
 
@@ -8,16 +8,19 @@ import com.divudi.ejb.EmailManagerEjb;
 import com.divudi.entity.AppEmail;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Logins;
+import com.divudi.entity.Patient;
 import com.divudi.entity.Sms;
+import com.divudi.entity.UserPreference;
 import com.divudi.entity.WebUser;
 import com.divudi.facade.PatientFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.facade.UserPreferenceFacade;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.enterprise.context.ApplicationScoped;
@@ -35,6 +38,10 @@ public class ApplicationController {
     private PatientFacade patientFacade;
     @EJB
     private EmailManagerEjb eejb;
+    @EJB
+    private UserPreferenceFacade userPreferenceFacade;
+
+    private UserPreference applicationPreference;
 
     String personalHealthNumber;
     Long personalHealthNumberCount;
@@ -50,9 +57,19 @@ public class ApplicationController {
     private String subject;
     private String body;
 
-    public void sendEmail() {
-        eejb.sendEmail("arogyafirst","arogya123@","arogyafirst@gmail.com","buddhika.ari@gmail.com", subject, body, null);
-        JsfUtil.addSuccessMessage("Check Mail");
+    private boolean hasAwebsiteAsFrontEnd = false;
+    private String themeName;
+
+    private void loadApplicationPreferances() {
+        String sql = "select p from UserPreference p where p.institution is null and p.department is null and p.webUser is null order by p.id desc";
+        applicationPreference = userPreferenceFacade.findFirstByJpql(sql);
+        if (applicationPreference == null) {
+            applicationPreference = new UserPreference();
+            applicationPreference.setWebUser(null);
+            applicationPreference.setDepartment(null);
+            applicationPreference.setInstitution(null);
+            userPreferenceFacade.create(applicationPreference);
+        }
     }
 
     public Date getStartTime() {
@@ -85,10 +102,15 @@ public class ApplicationController {
     }
 
     public Logins isLogged(WebUser u) {
+        if (u == null) {
+            return null;
+        }
         Logins tl = null;
         for (Logins l : getLoggins()) {
-            if (l.getWebUser().equals(u)) {
-                tl = l;
+            if (l.getWebUser() != null) {
+                if (l.getWebUser().equals(u)) {
+                    tl = l;
+                }
             }
         }
         return tl;
@@ -103,7 +125,7 @@ public class ApplicationController {
             loggins.add(login);
 //            for (SessionController s : getSessionControllers()) {
 //                if (s.getLoggedUser().equals(login.getWebUser())) {
-//                    //////System.out.println("making log out");
+//                    //////// // System.out.println("making log out");
 //                    s.logout();
 //                }
 //            }
@@ -113,10 +135,14 @@ public class ApplicationController {
     }
 
     public void removeLoggins(SessionController sc) {
-        Logins login = sc.getThisLogin();
-        //////System.out.println("sessions logged before removing is " + getLoggins().size());
-        loggins.remove(login);
-//        sessionControllers.remove(sc);
+        try {
+            Logins login = sc.getThisLogin();
+            if(login==null){
+                return;
+            }
+            loggins.remove(login);
+        } catch (Exception e) {
+        }
     }
 
     /**
@@ -140,7 +166,7 @@ public class ApplicationController {
         this.storesExpiery = storesExpiery;
     }
 
-    public String createNewPersonalHealthNumber(Institution ins) {
+    public String createNewPersonalHealthNumber(Institution ins, boolean old) {
         InstitutionLastPhn iln = null;
         for (InstitutionLastPhn p : getInsPhns()) {
             if (p.institution.equals(ins)) {
@@ -154,7 +180,7 @@ public class ApplicationController {
             Map m = new HashMap();
             m.put("ins", ins);
             iln.institution = ins;
-            iln.patientCount = patientFacade.countBySql(j, m);
+            iln.patientCount = patientFacade.countByJpql(j, m);
         }
         iln.patientCount++;
         String poi = ins.getPointOfIssueNo();
@@ -162,6 +188,50 @@ public class ApplicationController {
         String checkDigit = calculateCheckDigit(poi + num);
         String phn = poi + num + checkDigit;
         return phn;
+    }
+
+    public String createNewPersonalHealthNumber(Institution ins) {
+        if (ins == null) {
+            return null;
+        }
+        String alpha = "BCDFGHJKMPQRTVWXY";
+        String numeric = "23456789";
+        String alphanum = alpha + numeric;
+        Random random = new Random();
+        int length = 6;
+        String poi = ins.getPointOfIssueNo();
+
+        for (int attempt = 0; attempt < 5; attempt++) {
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < length; i++) {
+                int index = random.nextInt(alphanum.length());
+                char randomChar = alphanum.charAt(index);
+                sb.append(randomChar);
+            }
+            String randomString = sb.toString();
+            String checkDigit = calculateCheckDigit(poi + randomString);
+            String phn = poi + randomString + checkDigit;
+
+            if (!thePhnNumberAlreadyExsists(phn)) {
+                return phn;
+            }
+        }
+        return null;
+    }
+
+    public boolean thePhnNumberAlreadyExsists(String phn) {
+        String jpql = "select p "
+                + " from Patient p "
+                + " where p.retired=:ret "
+                + " and p.phn=:phn";
+        Map m = new HashMap();
+        m.put("ret", false);
+        m.put("phn", phn);
+        Patient p = patientFacade.findFirstByJpql(jpql, m);
+        if (p != null) {
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -265,6 +335,47 @@ public class ApplicationController {
 
     public void setBody(String body) {
         this.body = body;
+    }
+
+    public boolean isHasAwebsiteAsFrontEnd() {
+        boolean w = getApplicationPreference().isHasAwebsiteAsFrontEnd();
+        hasAwebsiteAsFrontEnd = w;
+        return hasAwebsiteAsFrontEnd;
+    }
+
+    public void setHasAwebsiteAsFrontEnd(boolean hasAwebsiteAsFrontEnd) {
+        getApplicationPreference().setHasAwebsiteAsFrontEnd(hasAwebsiteAsFrontEnd);
+        this.hasAwebsiteAsFrontEnd = hasAwebsiteAsFrontEnd;
+    }
+
+    public UserPreference getApplicationPreference() {
+        if (applicationPreference == null) {
+            loadApplicationPreferances();
+        }
+        return applicationPreference;
+    }
+
+    public void setApplicationPreference(UserPreference applicationPreference) {
+        this.applicationPreference = applicationPreference;
+    }
+
+    public UserPreferenceFacade getUserPreferenceFacade() {
+        return userPreferenceFacade;
+    }
+
+    public void setUserPreferenceFacade(UserPreferenceFacade userPreferenceFacade) {
+        this.userPreferenceFacade = userPreferenceFacade;
+    }
+
+    public String getThemeName() {
+        String w = getApplicationPreference().getThemeName();
+        themeName = w;
+        return themeName;
+    }
+
+    public void setThemeName(String themeName) {
+        getApplicationPreference().setThemeName(themeName);
+        this.themeName = themeName;
     }
 
     class InstitutionLastPhn {

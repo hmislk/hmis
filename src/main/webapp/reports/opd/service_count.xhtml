@@ -1,0 +1,138 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+
+        <ui:composition template="/analytics/opd/index.xhtml">
+            <ui:define name="subcontent">
+                <h:form >
+                    <p:panel header="Test Counts" >
+
+                        <h:panelGrid columns="2" class="mb-2">
+
+                            <p:outputLabel value="Billing Institution/Branch" ></p:outputLabel>
+                            <p:selectOneMenu 
+                                id="cmdFromInstitution"
+                                class="mx-2 w-100"
+                                value="#{reportController.fromInstitution}"
+                                filter="true"
+                                >
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value="#{institutionController.collectingCentresAndManagedInstitutions}"
+                                               var="i"
+                                               itemLabel="#{i.name}"
+                                               itemValue="#{i}" ></f:selectItems>
+                                <p:ajax process="cmdFromInstitution" update="cmdFromDepartment" ></p:ajax>
+                            </p:selectOneMenu>
+
+
+                            <p:outputLabel value="Billing Department" ></p:outputLabel>
+                            <p:selectOneMenu 
+                                id="cmdFromDepartment"
+                                value="#{reportController.fromDepartment}" 
+                                class="w-100 mt-1 mx-2"
+                                filter="true">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value="#{departmentController.getInsDepartments(reportController.fromInstitution)}"
+                                               var="d"
+                                               itemLabel="#{d.name}"
+                                               itemValue="#{d}" ></f:selectItems>
+                            </p:selectOneMenu>
+
+                            <p:outputLabel value="Peformed Institution" ></p:outputLabel>
+                            <p:selectOneMenu 
+                                value="#{reportController.toInstitution}"
+                                filter="true" 
+                                class="mt-1 mx-2 w-100"
+                                id="cmdToInstitution" >
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value="#{institutionController.collectingCentresAndManagedInstitutions}"
+                                               var="i"
+                                               itemLabel="#{i.name}"
+                                               itemValue="#{i}" ></f:selectItems>
+                                <p:ajax process="cmdToInstitution" update="cmdToDepartment" ></p:ajax>
+                            </p:selectOneMenu>
+
+                            <p:outputLabel value="Performed Department" ></p:outputLabel>
+                            <p:selectOneMenu 
+                                id="cmdToDepartment"
+                                class="w-100 mt-1 mx-2"
+                                value="#{reportController.toDepartment}" 
+                                filter="true">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value="#{departmentController.getInsDepartments(reportController.toInstitution)}"
+                                               var="d"
+                                               itemLabel="#{d.name}"
+                                               itemValue="#{d}" ></f:selectItems>
+                            </p:selectOneMenu>
+
+                            <p:outputLabel value="Bill Date From" ></p:outputLabel>
+                            <p:datePicker 
+                                class="mt-1 mx-2"
+                                showTime="true"
+                                showButtonBar="true"
+                                value="#{reportController.fromDate}" 
+                                pattern="#{sessionController.applicationPreference.longDateFormat}">
+                            </p:datePicker>
+
+                            <p:outputLabel value="Bill Date To" ></p:outputLabel>
+                            <p:datePicker 
+                                class="mt-1 mx-2"
+                                showTime="true"
+                                showButtonBar="true"
+                                value="#{reportController.toDate}"
+                                pattern="#{sessionController.applicationPreference.longDateFormat}">
+                            </p:datePicker>
+
+                        </h:panelGrid>
+
+                        <p:commandButton 
+                            ajax="false" 
+                            icon="fa fa-refresh"
+                            class=""
+                            value="Process" 
+                            action="#{reportController.processOpdServiceCount()}" >
+                        </p:commandButton>
+
+                        <p:commandButton 
+                            ajax="false" 
+                            icon="fa fa-download"
+                            class="ui-button-warning mx-2"
+                            value="Download"
+                            action="#{reportController.downloadOpdServiceCount()}">
+                        </p:commandButton>
+
+                        <p:dataTable id="tbl" 
+                                     value="#{reportController.reportList}" 
+                                     var="catReport"
+                                     paginatorPosition="bottom"
+                                     paginator="true"
+                                     class="mt-3"
+                                     rows="10"
+
+                                     >
+                            <p:subTable var="item" value="#{catReport.items}">
+                                <f:facet name="header">
+                                    <h:outputText value="Total for #{catReport.category} : #{catReport.total}" />
+                                </f:facet>
+
+                                <p:column headerText="Test Name">
+                                    <h:outputText value="#{item.testName}" />
+                                </p:column>
+
+                                <p:column headerText="Test Count">
+                                    <h:outputText value="#{item.testCount}" />
+                                </p:column>
+
+                            </p:subTable>
+                        </p:dataTable>
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

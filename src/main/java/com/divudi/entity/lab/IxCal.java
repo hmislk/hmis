@@ -10,6 +10,7 @@ import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.Temporal;
 
@@ -25,20 +26,22 @@ public class IxCal implements Serializable {
     @GeneratedValue(strategy = GenerationType.AUTO)
     Long id;
     @ManyToOne
-    InvestigationItem calIxItem;
+    private InvestigationItem calIxItem;
     @Enumerated(EnumType.STRING)
     private CalculationType calculationType;
     private Double constantValue;
-    Double maleConstantValue;
-    Double femaleConstantValue;
+    private Double maleConstantValue;
+    private Double femaleConstantValue;
+    @Lob
+    private String javascript;
     @ManyToOne
-    InvestigationItem valIxItem;
-    Integer orderNo;
-    Boolean retired;
+    private InvestigationItem valIxItem;
+    private Integer orderNo;
+    private Boolean retired;
     @ManyToOne
-    WebUser retirer;
+    private WebUser retirer;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-    Date retiredAt;
+    private Date retiredAt;
 
     public Boolean isRetired() {
         return retired;
@@ -150,5 +153,13 @@ public class IxCal implements Serializable {
     @Override
     public String toString() {
         return "com.divudi.entity.lab.IxCal[ id=" + id + " ]";
+    }
+
+    public String getJavascript() {
+        return javascript;
+    }
+
+    public void setJavascript(String javascript) {
+        this.javascript = javascript;
     }
 }

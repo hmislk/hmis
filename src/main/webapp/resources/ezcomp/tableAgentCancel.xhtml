@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:cc="http://java.sun.com/jsf/composite"
-      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:f="http://java.sun.com/jsf/core">
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <!-- INTERFACE -->
     <cc:interface>
@@ -22,7 +22,7 @@
                     <h:outputLabel value="Time"/>
                 </f:facet>
                 <h:outputLabel value="#{b7.createdAt}" >
-                    <f:convertDateTime pattern="hh:mm a"/>
+                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" />
                 </h:outputLabel>
             </p:column>
 
@@ -39,7 +39,7 @@
                 <h:outputLabel value="#{b7.fromInstitution.name}" />
             </p:column>
 
-            <p:column headerText="Cash" style="text-align: right;"   >
+            <p:column headerText="Cash" style="text-align: right;">
                 <f:facet name="header">  
                     <h:outputLabel value="Cash"/>
                 </f:facet>
@@ -49,7 +49,7 @@
                 <h:outputLabel rendered="#{b7.paymentMethod!='Cash'}" value="0.00"/>
             </p:column>    
 
-            <p:column headerText="Cheque" style="text-align: right;"   >
+            <p:column headerText="Cheque" style="text-align: right;">
                 <f:facet name="header">  
                     <h:outputLabel value="Cheque"/>
                 </f:facet>
@@ -59,7 +59,7 @@
                 <h:outputLabel rendered="#{b7.paymentMethod!='Cheque'}" value="0.00"/>
             </p:column> 
 
-            <p:column headerText="Slip" style="text-align: right;"   >
+            <p:column headerText="Slip" style="text-align: right;">
                 <f:facet name="header">  
                     <h:outputLabel value="Slip"/>
                 </f:facet>

@@ -1,0 +1,169 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/dataAdmin/admin_data_administration.xhtml">
+            <ui:define name="subcontent">
+                <h:form>
+                    <p:panel class="m-1 ">
+                        <f:facet name="header">
+                            <i class="fa fa-list"/>
+                            <h:outputLabel value="List All Bills" class="mx-2"/>
+                        </f:facet>
+
+                        <div class="d-flex justify-content-between mb-2">
+                            <div class="d-flex gap-3">
+                                <h:panelGrid columns="10" >
+                                    <p:outputLabel value="From Date : "/>
+                                    <p:datePicker showTime="true" value="#{searchController.fromDate}" pattern="dd MM yyyy hh:mm" class="mx-2" ></p:datePicker>
+
+                                    <p:outputLabel value="To Date : " class="mx-2"/>
+                                    <p:datePicker showTime="true" value="#{searchController.toDate}" pattern="dd MM yyyy hh:mm" class="mx-2" ></p:datePicker>
+                                </h:panelGrid>
+                            </div>
+                            <div >
+                                <p:commandButton id="btnSearch" ajax="false" value="Search" 
+                                                 action="#{searchController.listAllBills()}"
+                                                 icon="fa fa-search"
+                                                 class="mx-2 ui-button-primary"/>
+                                <p:commandButton 
+                                    id="btnRetire" ajax="false" value="Retire All Listed Bills" 
+                                    action="#{searchController.retireAlllistedBills()}"
+                                    icon="fa fa-search"
+                                    onclick="if (!confirm('Are you sure you want to delete this record?'))
+                                                return false;"
+                                    class="mx-2 ui-button-danger"/>
+                                <p:commandButton 
+                                    value="Download Excel" 
+                                    ajax="false" 
+                                    class="ui-button-success" 
+                                    icon="fa fa-file-excel">
+                                    <p:dataExporter target="tblBills" fileName="bills" type="xlsx" ></p:dataExporter>
+                                </p:commandButton>
+                            </div>
+                            <p:defaultCommand target="btnSearch" />
+                        </div>
+
+                        <p:dataTable 
+                            rowIndexVar="i" 
+                            id="tblBills" 
+                            value="#{searchController.bills}" 
+                            var="bill" 
+                            class="w-100"
+                            rows="10"
+                            paginator="true" 
+                            paginatorPosition="bottom"
+                            paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                            currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
+                            rowsPerPageTemplate="5,10,{ShowAll|'All'}"
+                            scrollable="true"
+                            scrollWidth="95%">
+
+                            <p:column headerText="ID" width="60" style="text-align: right;">
+                                <p:outputLabel value="#{bill.id}" />
+                            </p:column>
+
+                            <p:column headerText="Retired" width="60" style="text-align: right;">
+                                <p:outputLabel value="#{bill.retired?'Yes':''}" class="text-danger"/>
+                            </p:column>
+
+                            <p:column headerText="Bill Type" width="120">
+                                <p:outputLabel value="#{bill.billType}" />
+                            </p:column>
+
+                            <p:column headerText="Bill Type Atomic" width="280">
+                                <p:outputLabel value="#{bill.billTypeAtomic}" />
+                            </p:column>
+
+                            <p:column headerText="Class" width="150">
+                                <p:outputLabel value="#{bill.billClassType}" />
+                            </p:column>
+
+                            <p:column headerText="Ins ID" width="100" style="text-align: right;">
+                                <p:outputLabel value="#{bill.insId}" />
+                            </p:column>
+
+                            <p:column headerText="Dept ID" width="100" style="text-align: right;">
+                                <p:outputLabel value="#{bill.deptId}" />
+                            </p:column>
+
+                            <p:column 
+                                headerText="Dept ID" 
+                                sortBy="#{bill.patient.person.name}"
+                                filterBy="#{bill.patient.person.name}"
+                                filterMatchMode="contains"
+                                width="100"
+                                style="text-align: right;">
+                                <p:outputLabel value="#{bill.patient.person.name}" />
+                            </p:column>
+
+                            <p:column headerText="Institution" width="200">
+                                <p:outputLabel value="#{bill.institution.name}" />
+                            </p:column>
+
+                            <p:column headerText="Department" width="200">
+                                <p:outputLabel value="#{bill.department.name}" />
+                            </p:column>
+
+                            <p:column headerText="Billed at" width="200">
+                                <p:outputLabel value="#{bill.createdAt}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                </p:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Billed by" width="200">
+                                <p:outputLabel value="#{bill.creater.webUserPerson.name}" />
+                            </p:column>
+
+                            <p:column headerText="Payment Method" width="150">
+                                <p:outputLabel value="#{bill.paymentMethod}" />
+                            </p:column>
+
+                            <p:column headerText="Total" width="120" style="text-align: right;">
+                                <p:outputLabel value="#{bill.total}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </p:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Gross Total" width="120" style="text-align: right;">
+                                <p:outputLabel value="#{bill.grantTotal}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </p:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Discount" width="120" style="text-align: right;">
+                                <p:outputLabel value="#{bill.discount}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </p:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Margin" width="120" style="text-align: right;">
+                                <p:outputLabel value="#{bill.margin}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </p:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Bill Total" width="120" style="text-align: right;">
+                                <p:outputLabel value="#{bill.billTotal}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </p:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Net Value" width="120" style="text-align: right;">
+                                <p:outputLabel value="#{bill.netTotal}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </p:outputLabel>
+                            </p:column>
+
+                        </p:dataTable>
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

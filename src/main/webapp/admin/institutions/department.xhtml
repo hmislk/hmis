@@ -1,0 +1,88 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+
+        <ui:composition template="/admin/institutions/admin_institutions_index.xhtml">
+
+            <ui:define name="admin">
+
+
+                <h:form style="width: 1050px">
+                    <p:commandButton ajax="false" id="btnSave" value="Save" 
+                                     icon="fas fa-save"
+                                     class="ui-button-success my-2"
+                                     action="#{departmentController.saveSelectedDepartment()}"
+                                     style="float: right;">
+                    </p:commandButton>
+                    <h:panelGrid id="gpDetail" columns="1">
+
+                        <p:tabView >
+                            <p:tab title="Basic Details">
+                                <h:panelGrid id="gpDetailText" columns="2"  style="width: 1000px">
+                                    <h:outputText id="lblName" value="Name"  ></h:outputText>
+                                    <p:inputText autocomplete="off" 
+                                                 id="txtName" value="#{departmentController.current.name}" 
+                                                 styleClass="longText" style="width: 650px"></p:inputText>
+                                    <h:outputText id="lblTName" value="Code"  ></h:outputText>
+                                    <p:inputText autocomplete="off" 
+                                                 id="txtTName" value="#{departmentController.current.code}" 
+                                                 styleClass="longText" style="width: 650px"></p:inputText>
+                                    <h:outputText value="Code" />                                   
+                                    <p:inputText autocomplete="off"  value="#{departmentController.current.departmentCode}"  style="width: 650px"/>
+
+                                    <h:outputText  value="Printing Name" ></h:outputText>
+                                    <p:inputText autocomplete="off"  styleClass="longText"
+                                                 value="#{departmentController.current.printingName}" style="width: 650px" ></p:inputText>
+                                    <h:outputText  value="Adress" ></h:outputText>
+                                    <p:inputTextarea styleClass="longText" value="#{departmentController.current.address}"  style="width: 650px"></p:inputTextarea>
+                                    <h:outputText  value="Tel. No. 1" ></h:outputText>
+                                    <p:inputText autocomplete="off"  value="#{departmentController.current.telephone1}"  style="width: 650px"></p:inputText>
+                                    <h:outputText  value="Tel. No. 2" ></h:outputText>
+                                    <p:inputText autocomplete="off"  value="#{departmentController.current.telephone2}"  style="width: 650px"></p:inputText>
+                                    <h:outputText  value="Fax" ></h:outputText>
+                                    <p:inputText autocomplete="off"  value="#{departmentController.current.fax}" style="width: 650px" ></p:inputText>
+                                    <h:outputText  value="Email" ></h:outputText>
+                                    <p:inputText autocomplete="off"  value="#{departmentController.current.email}" style="width: 650px" ></p:inputText>
+                                    <h:outputText id="lblDept" value="Department Type" ></h:outputText>
+                                    <h:outputText id="lblDeptTem" value="Department Type" rendered="#{departmentController.current eq null}" ></h:outputText>
+                                    <p:selectOneMenu id="cmbDept" value="#{departmentController.current.departmentType}" rendered="#{departmentController.current ne null}" style="width: 650px">
+                                        <f:selectItem itemLabel="Select the Department Type" />
+                                        <f:selectItems value="#{departmentController.departmentType}"/>                                        
+                                    </p:selectOneMenu>
+
+                                    <h:outputText id="lblIns" value="Institution" ></h:outputText>
+                                    <p:autoComplete  completeMethod="#{institutionController.completeIns}" 
+                                                     inputStyleClass="w-100"
+                                                     style="width: 650px" 
+                                                     var="pta" itemLabel="#{pta.name}" itemValue="#{pta}" forceSelection="true" value="#{departmentController.current.institution}" ></p:autoComplete>
+
+
+                                </h:panelGrid>
+
+
+
+                            </p:tab>
+                            <p:tab title="Editing Details" >
+                                <h:panelGrid columns="2" style="width: 1000px">
+                                    <h:outputText id="lblcre" value="Creator" ></h:outputText>
+                                    <p:outputLabel value="#{institutionController.current.creater.webUserPerson.name}"/>
+
+                                </h:panelGrid>
+                            </p:tab>
+                        </p:tabView>
+                    </h:panelGrid>
+                </h:form>
+
+
+            </ui:define>
+
+        </ui:composition>
+
+    </h:body>
+</html>

@@ -1,10 +1,10 @@
 package com.divudi.data;
 
 /**
- *
  * @author Buddhika
  */
 public enum InvestigationItemType {
+
     Label,
     Value,
     Calculation,
@@ -13,10 +13,13 @@ public enum InvestigationItemType {
     Css,
     Barcode,
     BarcodeVertical,
+    QrCode,
     Investigation,
     Template,
     AntibioticList,
     Antibiotic,
+    Image,
+    Html,
     @Deprecated
     List,
     @Deprecated

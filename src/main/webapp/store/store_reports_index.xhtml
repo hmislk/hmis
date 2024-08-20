@@ -1,91 +1,225 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html">
+      xmlns:h="http://xmlns.jcp.org/jsf/html">
 
     <h:body>
 
         <ui:composition template="/resources/template/template.xhtml">
 
             <ui:define name="content" >
-                <h:form >
-                    <p:panel header="Store Reports" >
-                        <p:tabView orientation="left">
-                            <p:tab title="1) Stock Reports">
-                                <h:panelGrid columns="1">
-                                    <p:commandButton styleClass="linkButton" value="Department Stock By Batch" action="store_report_department_stock_by_batch" ajax="false"></p:commandButton>                            
-                                    <p:commandButton styleClass="linkButton" value="Department Stock By Expiry" action="store_report_department_stock_by_batch_expiary" ajax="false" ></p:commandButton>                                                               
-                                    <p:commandButton styleClass="linkButton" value="Department Stock By Item" action="store_report_department_stock_by_item" ajax="false" ></p:commandButton>                                                               
+                <p:panel header="Store Analytics" >
+                    <div class="row">
+                        <div class="col-md-3">
+                            <h:form>
+                                <p:accordionPanel activeIndex="#{storeController1.manageStoreReportIndex}">
+                                    <p:ajax process="@this"></p:ajax>
+                                    <p:tab title=" Cashier">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton class="w-100" styleClass="linkButton" ajax="false" value="Cashier Detailed Report" action="#{commonReport.navigateToCashierDetailedReport}" actionListener="#{commonReport.recreteModal}"></p:commandButton>
+                                            <p:commandButton class="w-100" styleClass="linkButton" ajax="false" value="Cashier Summary" action="store_report_cashier_summery_by_user" actionListener="#{commonReport.recreteModal}"/>
+                                        </div>
+                                    </p:tab>
+                                    <p:tab title=" Sale Report All">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton class="w-100" styleClass="linkButton" ajax="false" value="Sale Summary Report By Date" action="store_report_sale_by_date_summery" actionListener="#{storeSaleReport.makeNull}"/>
+                                            <p:commandButton class="w-100" styleClass="linkButton" ajax="false" value="Sale Detail Report By Date" action="store_report_sale_by_date_detail" actionListener="#{storeSaleReport.makeNull}"/>
+                                        </div>
+                                    </p:tab>
+                                    <p:tab title=" Sale Report By Payment Method ">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton class="w-100" styleClass="linkButton" ajax="false" value="Sale Summary Report By Date" action="store_report_sale_by_date_summery_payment_method" actionListener="#{storeSaleReport.makeNull}"/>
+                                            <p:commandButton class="w-100" styleClass="linkButton" ajax="false" value="Sale Detail Report By Date" action="store_report_sale_by_date_detail_payment_method" actionListener="#{storeSaleReport.makeNull}"/>
+                                        </div>
+                                    </p:tab>
+                                    <p:tab title=" GRN ">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton class="w-100" styleClass="linkButton" ajax="false" value="GRN Summary" action="store_report_grn_detail" actionListener="#{storeSaleReport.makeNull}"/>
+                                            <p:commandButton class="w-100" styleClass="linkButton" ajax="false" value="GRN Expenses" action="store_report_grn_detail_expencess" actionListener="#{storeSaleReport.makeNull}"/>
+                                            <p:commandButton class="w-100" styleClass="linkButton" ajax="false" value="GRN Summary By Supplier" action="store_report_grn_detail_by_supplier" actionListener="#{storeSaleReport.makeNull}"/>
+                                        </div>
+                                    </p:tab>
+                                    <p:tab title=" Purchase ">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton class="w-100" styleClass="linkButton" ajax="false" value="Purchase Summary" action="store_report_purchase_detail" actionListener="#{storeSaleReport.makeNull}"/>
+                                            <p:commandButton class="w-100" styleClass="linkButton" ajax="false" value="Purchase Summary By Supplier" action="store_report_purchase_detail_by_supplier" actionListener="#{storeSaleReport.makeNull}"/>
+                                        </div>
+                                    </p:tab>
+                                    <p:tab title=" GRN Payment ">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton class="w-100" styleClass="linkButton" ajax="false" value="GRN Payment Summary" action="store_report_grnPayment_detail" actionListener="#{storeSaleReport.makeNull}"/>
+                                            <p:commandButton class="w-100" styleClass="linkButton" ajax="false" value="GRN Payment Summary By Supplier" action="store_report_grnPayment_detail_by_supplier" actionListener="#{storeSaleReport.makeNull}"/>
+                                        </div>
+                                    </p:tab>
+                                    <p:tab title=" Issue Report ">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton class="w-100" styleClass="linkButton" ajax="false" value="Department Unit Issue by bill" action="store_report_unit_issue_bill.xhtml" actionListener="#{storeSaleReport.makeNull}"/>
+                                            <p:commandButton class="w-100" styleClass="linkButton" ajax="false" value="Department Unit by Department" action="store_report_unit_issue_department.xhtml" actionListener="#{storeSaleReport.makeNull}"/>
+                                            <p:commandButton class="w-100" styleClass="linkButton" ajax="false" value="Department Unit Issue by Department - Summary" action="store_report_unit_issue_department_by_departmaent" actionListener="#{storeSaleReport.makeNull}"/>
+                                            <p:commandButton class="w-100" styleClass="linkButton" ajax="false" value="Department Unit Issue by Department - Detailed" action="store_report_unit_issue_department_by_departmaent_item_vice" actionListener="#{storeSaleReport.makeNull}"/>
 
-                                    <p:commandButton styleClass="linkButton" value="Staff Stock By Batch" action="store_report_staff_stock_by_batch" ajax="false" ></p:commandButton>                            
-                                    <p:commandButton styleClass="linkButton" value="Suppliers' Stock" action="store_report_supplier_stock_by_batch" ajax="false" ></p:commandButton>       
-                                    <p:commandButton styleClass="linkButton" value="Category Stock" action="store_report_category_stock_by_batch" ajax="false" ></p:commandButton>                            
-                                    <p:commandButton styleClass="linkButton" value="All Suppliers' Stock" action="store_report_all_supplier_stock" ajax="false" ></p:commandButton>                            
-                                    <p:commandButton styleClass="linkButton" value="Department Stock By Batch minus" action="store_report_department_stock_by_batch_minus" ajax="false" ></p:commandButton>                            
-                                </h:panelGrid>
-                            </p:tab>
-                            <p:tab title="2) Transfer Reports">
-                                <h:panelGrid columns="1" >
-                                    <p:commandButton styleClass="linkButton" value="Transfer Issue By Bill Item" action="store_report_transfer_issue_bill_item" ajax="false" ></p:commandButton>                            
-                                    <p:commandButton styleClass="linkButton" value="Transfer Receive By Bill Item" action="store_report_transfer_receive_bill_item" ajax="false" ></p:commandButton>                            
-                                    <p:commandButton styleClass="linkButton" value="Transfer Issue by Bill" action="store_report_transfer_issue_bill" ajax="false" ></p:commandButton>                            
-                                    <p:commandButton styleClass="linkButton" value="Transfer Receive by Bill" action="store_report_transfer_receive_bill" ajax="false" ></p:commandButton>                            
-                                    <p:commandButton styleClass="linkButton" value="Asset Transfer List" action="store_report_asset_transfer_list" ajax="false" ></p:commandButton>
-                                    <p:commandButton styleClass="linkButton" value="Transfer Issue Not Recieved" action="store_transfer_issued_list_report" ajax="false" ></p:commandButton> 
-                                </h:panelGrid>
-                            </p:tab>
-                            <p:tab title="3) Inventory Report">
-                                <h:panelGrid columns="1" >
-                                    <p:commandButton styleClass="linkButton" value="Department Assets" action="inventory_report_department_assets" ajax="false" ></p:commandButton>
-                                    <p:commandButton styleClass="linkButton" value="Department Assets By Bill Item" action="store_report_grn_billitem_store_asset" ajax="false" ></p:commandButton>
-                                    <p:commandButton styleClass="linkButton" value="Department Grn Bill Item" action="store_report_grn_billitem_store" ajax="false" ></p:commandButton>
-                                </h:panelGrid>
-                            </p:tab>
-                            <p:tab title="4) Purchase Reports">
-                                <h:panelGrid columns="1" >
-                                    <p:commandButton styleClass="linkButton" value="Department Stock By Batch" action="store_department_stock_report_by_batch" ajax="false" ></p:commandButton>
-                                    <p:commandButton styleClass="linkButton" value="Expencess Report" action="store_report_purchase_expenses" ajax="false" ></p:commandButton>
-                                    <p:commandButton styleClass="linkButton" value="Purchase Request Not Approved" action="store_transfer_issued_list_not_approve_report" ajax="false" ></p:commandButton> 
-                                </h:panelGrid>
-                            </p:tab>
-                            <p:tab title="5) Sale Reports">
-                                <h:panelGrid columns="1" >
-                                    <p:commandButton styleClass="linkButton" value="Institution Item Movement" action="store_report_institution_movement" ajax="false" ></p:commandButton>                            
-                                    <p:commandButton styleClass="linkButton" value="Fast Moving" action="store_report_department_fast_moving" ajax="false" ></p:commandButton>                            
-                                    <p:commandButton styleClass="linkButton" value="Slow Moving" action="store_report_department_slow_moving" ajax="false" ></p:commandButton>                            
-                                    <p:commandButton styleClass="linkButton" value="Non Moving" action="store_report_department_non_moving" ajax="false" ></p:commandButton>                            
-                                </h:panelGrid>
-                            </p:tab>
-                            <p:tab title="6) Item Reports">
-                                <h:panelGrid columns="1" >
-                                    <p:commandButton styleClass="linkButton" value="Items by name" action="store_report_amp_by_name" ajax="false" ></p:commandButton>                            
-                                    <p:commandButton styleClass="linkButton" value="Items by code" action="store_report_amp_by_code" ajax="false" ></p:commandButton>                            
-                                </h:panelGrid>
-                            </p:tab>
-                            <p:tab title="7) Item Reports">
-                                <h:panelGrid columns="1" >
-                                    <p:commandButton styleClass="linkButton" value="Items by name" action="store_report_amp_by_name" ajax="false" ></p:commandButton>                            
-                                    <p:commandButton styleClass="linkButton" value="Items by code" action="store_report_amp_by_code" ajax="false" ></p:commandButton>                            
-                                    <p:commandButton styleClass="linkButton" value="Items Report" action="/dataAdmin/store_item_list" ajax="false" ></p:commandButton>                            
-                                </h:panelGrid>
-                            </p:tab>
-                            <p:tab title="8) Stock Taking Reports">
-                                <h:panelGrid columns="1" >
-                                    <p:commandButton styleClass="linkButton" value="Before Stock Taking Report" action="store_report_before_stock_taking" ajax="false" ></p:commandButton>                            
-                                    <p:commandButton styleClass="linkButton" value="After Stock Taking Report" action="store_report_after_stock_taking" ajax="false" ></p:commandButton>                            
-                                    <p:commandButton styleClass="linkButton" value="Stock Taking Report(New)" action="store_report_adjustment_bill_for_stock_taking" ajax="false" ></p:commandButton>                            
-                                </h:panelGrid>
-                            </p:tab>
-                            <p:tab title="9) Asset Registry">
-                                <h:panelGrid columns="1" >
-                                    <p:commandButton styleClass="linkButton" value="Department Asset Registry" action="store_asset_registry" ajax="false" ></p:commandButton>                            
-                                </h:panelGrid>
-                            </p:tab>
-                        </p:tabView>
-                    </p:panel>
-                </h:form>
+                                            <p:commandButton class="w-100" styleClass="linkButton" ajax="false"
+                                                             value="Department Unit Issue by Bill Item"
+                                                             action="store_report_unit_issue_bill_item.xhtml" disabled="false"/>
+
+                                            <p:commandButton class="w-100" styleClass="linkButton" ajax="false"
+                                                             value="Department Unit Issue by Item(Batch)"
+                                                             action="store_unit_report_by_item.xhtml"/>
+                                            <p:commandButton class="w-100" styleClass="linkButton" ajax="false"
+                                                             value="Department Unit Issue by Item"
+                                                             action="store_unit_report_by_item_1.xhtml"/>
+                                            <p:commandButton class="w-100" styleClass="linkButton" ajax="false"
+                                                             value="BHT Issue by Item"
+                                                             action="store_report_bht_issue_by_item.xhtml" disabled="true"/>
+                                            <p:commandButton class="w-100" styleClass="linkButton" ajax="false" value="Unit Issue Category Wise Summary" action="store_report_unit_issue_bill_1.xhtml" actionListener="#{storeSaleReport.makeNull}"/>
+                                        </div>
+                                    </p:tab>
+                                    <p:tab title=" Transfer Report ">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton class="w-100" styleClass="linkButton" ajax="false" value="Transfer Issue Summary Report By Date" action="store_report_issue_by_date_summery.xhtml" actionListener="#{storeSaleReport.makeNull}" disabled="true"/>
+                                        </div>
+                                    </p:tab>
+                                    <p:tab title=" Asset Transfer Report ">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton class="w-100" styleClass="linkButton" ajax="false" value="Transfer Issue Summary Report By Date" action="store_report_asset_issue_summery.xhtml" actionListener="#{storeSaleReport.makeNull}" disabled="fasle"/>
+                                        </div>
+                                    </p:tab>
+                                    <p:tab title="Stock Reports">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton class="w-100" styleClass="linkButton" value="Department Stock By Batch" action="store_report_department_stock_by_batch" ajax="false"></p:commandButton>                            
+                                            <p:commandButton class="w-100" styleClass="linkButton" value="Department Stock By Expiry" action="store_report_department_stock_by_batch_expiary" ajax="false" ></p:commandButton>                                                               
+                                            <p:commandButton class="w-100" styleClass="linkButton" value="Department Stock By Item" action="store_report_department_stock_by_item" ajax="false" ></p:commandButton>                                                               
+                                            <p:commandButton class="w-100" styleClass="linkButton" value="Staff Stock By Batch" action="store_report_staff_stock_by_batch" ajax="false" ></p:commandButton>                            
+                                            <p:commandButton class="w-100" styleClass="linkButton" value="Suppliers' Stock" action="store_report_supplier_stock_by_batch" ajax="false" ></p:commandButton>       
+                                            <p:commandButton class="w-100" styleClass="linkButton" value="Category Stock" action="store_report_category_stock_by_batch" ajax="false" ></p:commandButton>                            
+                                            <p:commandButton class="w-100" styleClass="linkButton" value="All Suppliers' Stock" action="store_report_all_supplier_stock" ajax="false" ></p:commandButton>                            
+                                            <p:commandButton class="w-100" styleClass="linkButton" value="Department Stock By Batch minus" action="store_report_department_stock_by_batch_minus" ajax="false" ></p:commandButton>                            
+                                        </div>
+                                    </p:tab>
+                                    <p:tab title="Transfer Reports">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton class="w-100" styleClass="linkButton" value="Transfer Issue By Bill Item" action="store_report_transfer_issue_bill_item" ajax="false" ></p:commandButton>                            
+                                            <p:commandButton class="w-100" styleClass="linkButton" value="Transfer Receive By Bill Item" action="store_report_transfer_receive_bill_item" ajax="false" ></p:commandButton>                            
+                                            <p:commandButton class="w-100" styleClass="linkButton" value="Transfer Issue by Bill" action="store_report_transfer_issue_bill" ajax="false" ></p:commandButton>                            
+                                            <p:commandButton class="w-100" styleClass="linkButton" value="Transfer Receive by Bill" action="store_report_transfer_receive_bill" ajax="false" ></p:commandButton>                            
+                                            <p:commandButton class="w-100" styleClass="linkButton" value="Asset Transfer List" action="store_report_asset_transfer_list" ajax="false" ></p:commandButton>
+                                            <p:commandButton class="w-100" styleClass="linkButton" value="Transfer Issue Not Recieved" action="store_transfer_issued_list_report" ajax="false" ></p:commandButton>
+                                        </div>
+                                    </p:tab>
+                                    <p:tab title="Inventory Report">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton class="w-100" styleClass="linkButton" value="Department Assets" action="inventory_report_department_assets" ajax="false" ></p:commandButton>
+                                            <p:commandButton class="w-100" styleClass="linkButton" value="Department Assets By Bill Item" action="store_report_grn_billitem_store_asset" ajax="false" ></p:commandButton>
+                                            <p:commandButton class="w-100" styleClass="linkButton" value="Department Grn Bill Item" action="store_report_grn_billitem_store" ajax="false" ></p:commandButton>
+                                        </div>
+                                    </p:tab>
+                                    <p:tab title="Purchase Reports">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton class="w-100" styleClass="linkButton" value="Department Stock By Batch" action="store_department_stock_report_by_batch" ajax="false" ></p:commandButton>
+                                            <p:commandButton class="w-100" styleClass="linkButton" value="Expencess Report" action="store_report_purchase_expenses" ajax="false" ></p:commandButton>
+                                            <p:commandButton class="w-100" styleClass="linkButton" value="Purchase Request Not Approved" action="store_transfer_issued_list_not_approve_report" ajax="false" ></p:commandButton> 
+                                        </div>
+                                    </p:tab>
+                                    <p:tab title="Sale Reports">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton class="w-100" styleClass="linkButton" value="Institution Item Movement" action="store_report_institution_movement" ajax="false" ></p:commandButton>                            
+                                            <p:commandButton class="w-100" styleClass="linkButton" value="Fast Moving" action="store_report_department_fast_moving" ajax="false" ></p:commandButton>                            
+                                            <p:commandButton class="w-100" styleClass="linkButton" value="Slow Moving" action="store_report_department_slow_moving" ajax="false" ></p:commandButton>                            
+                                            <p:commandButton class="w-100" styleClass="linkButton" value="Non Moving" action="store_report_department_non_moving" ajax="false" ></p:commandButton>                            
+                                        </div>
+                                    </p:tab>
+                                    <p:tab title="Item Reports">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton class="w-100" styleClass="linkButton" value="Items by name" action="store_report_amp_by_name" ajax="false" ></p:commandButton>                            
+                                            <p:commandButton class="w-100" styleClass="linkButton" value="Items by code" action="store_report_amp_by_code" ajax="false" ></p:commandButton>                            
+                                        </div>
+                                    </p:tab>
+                                    <p:tab title="Item Reports">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton class="w-100" styleClass="linkButton" value="Items by name" action="store_report_amp_by_name" ajax="false" ></p:commandButton>                            
+                                            <p:commandButton class="w-100" styleClass="linkButton" value="Items by code" action="store_report_amp_by_code" ajax="false" ></p:commandButton>                            
+                                            <p:commandButton class="w-100" styleClass="linkButton" value="Items Report" action="/dataAdmin/store_item_list" ajax="false" ></p:commandButton>                            
+                                        </div>
+                                    </p:tab>
+                                    <p:tab title="Stock Taking Reports">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton class="w-100" styleClass="linkButton" value="Before Stock Taking Report" action="store_report_before_stock_taking" ajax="false" ></p:commandButton>                            
+                                            <p:commandButton class="w-100" styleClass="linkButton" value="After Stock Taking Report" action="store_report_after_stock_taking" ajax="false" ></p:commandButton>                            
+                                            <p:commandButton class="w-100" styleClass="linkButton" value="Stock Taking Report(New)" action="store_report_adjustment_bill_for_stock_taking" ajax="false" ></p:commandButton>                            
+                                        </div>
+                                    </p:tab>
+                                    <p:tab title="Asset Registry">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton class="w-100" styleClass="linkButton" value="Department Asset Registry" action="store_asset_registry" ajax="false" ></p:commandButton>                            
+                                        </div>
+                                    </p:tab>
+                                </p:accordionPanel>
+                            </h:form>
+                        </div>
+                        <div class="col-md-9">
+                            <ui:insert name="subcontent">
+
+                            </ui:insert>
+                        </div>
+                    </div>
+
+
+                </p:panel>
+
+
+                <!--                <h:form >
+                                    <p:panel header="Store Reports" >
+                                        <p:tabView orientation="left">
+                                            <p:tab title="1) Stock Reports">
+                                                <h:panelGrid columns="1">
+                                                                                
+                                                </h:panelGrid>
+                                            </p:tab>
+                                            <p:tab title="2) Transfer Reports">
+                                                <h:panelGrid columns="1" >
+                                                     
+                                                </h:panelGrid>
+                                            </p:tab>
+                                            <p:tab title="3) Inventory Report">
+                                                <h:panelGrid columns="1" >
+                                                    
+                                                </h:panelGrid>
+                                            </p:tab>
+                                            <p:tab title="4) Purchase Reports">
+                                                <h:panelGrid columns="1" >
+                                                    
+                                                </h:panelGrid>
+                                            </p:tab>
+                                            <p:tab title="5) Sale Reports">
+                                                <h:panelGrid columns="1" >
+                                                                                
+                                                </h:panelGrid>
+                                            </p:tab>
+                                            <p:tab title="6) Item Reports">
+                                                <h:panelGrid columns="1" >
+                                                                                
+                                                </h:panelGrid>
+                                            </p:tab>
+                                            <p:tab title="7) Item Reports">
+                                                <h:panelGrid columns="1" >
+                                                                                
+                                                </h:panelGrid>
+                                            </p:tab>
+                                            <p:tab title="8) Stock Taking Reports">
+                                                <h:panelGrid columns="1" >
+                                                                                
+                                                </h:panelGrid>
+                                            </p:tab>
+                                            <p:tab title="9) Asset Registry">
+                                                <h:panelGrid columns="1" >
+                                                                                
+                                                </h:panelGrid>
+                                            </p:tab>
+                                        </p:tabView>
+                                    </p:panel>
+                                </h:form>-->
             </ui:define>
 
 

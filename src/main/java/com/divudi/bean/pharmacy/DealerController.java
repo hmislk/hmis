@@ -1,16 +1,16 @@
 /*
- * MSc(Biomedical Informatics) Project
+ * Open Hospital Management Information System
  *
- * Development and Implementation of a Web-based Combined Data Repository of
- Genealogical, Clinical, Laboratory and Genetic Data
- * and
- * a Set of Related Tools
+ * Dr M H B Ariyaratne
+ * Acting Consultant (Health Informatics)
+ * (94) 71 5812399
+ * (94) 71 5812399
  */
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.InstitutionType;
 import com.divudi.entity.Institution;
 import com.divudi.facade.InstitutionFacade;
@@ -31,8 +31,8 @@ import javax.inject.Named;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- * Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
+ * Acting Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -57,12 +57,12 @@ public class DealerController implements Serializable {
         Map m = new HashMap();
 
         sql = "select c from Institution c where c.retired=false and "
-                + " c.institutionType =:t and upper(c.name) like :q order by c.name";
-        //////System.out.println(sql);
+                + " c.institutionType =:t and (c.name) like :q order by c.name";
+        //////// // System.out.println(sql);
         m.put("t", InstitutionType.Dealer);
         m.put("q", "%" + query.toUpperCase() + "%");
-        institutionList = getEjbFacade().findBySQL(sql, m);
-        //////System.out.println("suggestions = " + suggestions);
+        institutionList = getEjbFacade().findByJpql(sql, m);
+        //////// // System.out.println("suggestions = " + suggestions);
 
         return institutionList;
     }
@@ -80,15 +80,15 @@ public class DealerController implements Serializable {
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            UtilityController.addSuccessMessage("Saved Successfully");
+            JsfUtil.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
-        //     getItems();
+             getItems();
     }
 
     public InstitutionFacade getEjbFacade() {
@@ -128,9 +128,9 @@ public class DealerController implements Serializable {
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         //      getItems();
@@ -148,9 +148,9 @@ public class DealerController implements Serializable {
         String sql = "SELECT i FROM Institution i where i.retired=true and i.institutionType =:tp"
                 + " order by i.name";
         m.put("tp", InstitutionType.Dealer);
-        dealor = getEjbFacade().findBySQL(sql, m);
+        dealor = getEjbFacade().findByJpql(sql, m);
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Check Entered Data/Check deleted data/Dealor list(/faces/dataAdmin/deleted_distributors.xhtml)");
+        
 
     }
 
@@ -172,7 +172,7 @@ public class DealerController implements Serializable {
                 + " order by i.name";
         HashMap hm = new HashMap();
         hm.put("tp", InstitutionType.Dealer);
-        items = getEjbFacade().findBySQL(sql, hm);
+        items = getEjbFacade().findByJpql(sql, hm);
         if (items == null) {
             items = new ArrayList<>();
         }

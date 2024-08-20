@@ -1,18 +1,19 @@
 /*
- * MSc(Biomedical Informatics) Project
+ * Open Hospital Management Information System
  *
- * Development and Implementation of a Web-based Combined Data Repository of
- Genealogical, Clinical, Laboratory and Genetic Data
- * and
- * a Set of Related Tools
+ * Dr M H B Ariyaratne
+ * Acting Consultant (Health Informatics)
+ * (94) 71 5812399
+ * (94) 71 5812399
  */
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.entity.pharmacy.DiscardCategory;
 import com.divudi.facade.DiscardCategoryFacade;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import javax.ejb.EJB;
@@ -26,8 +27,8 @@ import javax.inject.Named;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- * Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -63,14 +64,15 @@ public class DiscardCategoryController implements Serializable {
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            UtilityController.addSuccessMessage("Saved Successfully");
+            JsfUtil.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
+        fillDiscardCategories();
         getItems();
     }
 
@@ -98,6 +100,9 @@ public class DiscardCategoryController implements Serializable {
     }
 
     public DiscardCategory getCurrent() {
+        if (current == null) {
+            current = new DiscardCategory();
+        }
         return current;
     }
 
@@ -112,13 +117,14 @@ public class DiscardCategoryController implements Serializable {
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
         current = null;
+        fillDiscardCategories();
         getCurrent();
     }
 
@@ -126,14 +132,24 @@ public class DiscardCategoryController implements Serializable {
         return ejbFacade;
     }
 
+    public void fillDiscardCategories() {
+        String j;
+        j = "select c "
+                + " from DiscardCategory c "
+                + " where c.retired=false "
+                + " order by c.name";
+        items = getFacade().findByJpql(j);
+        if (items!=null && !items.isEmpty()){
+            current = items.get(0);
+        }
+        if (items == null){
+            items = new ArrayList<>();
+        }
+    }
+
     public List<DiscardCategory> getItems() {
-        if (items == null) {
-            String j;
-            j = "select c "
-                    + " from DiscardCategory c "
-                    + " where c.retired=false "
-                    + " order by c.name";
-            items = getFacade().findBySQL(j);
+        if(items == null){
+            items = new ArrayList<>();
         }
         return items;
     }

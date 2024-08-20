@@ -1,56 +1,56 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
-                template="/resources/template/template.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
-                xmlns:f="http://java.sun.com/jsf/core"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/inward/inward_reports.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:pe="http://primefaces.org/ui/extensions">
+                >
 
 
-    <ui:define name="content">
+    <ui:define name="subcontent">
 
         <h:panelGroup >
             <h:form  >
                 <p:panel >
-                    <f:facet name="header" >
-                        <h:panelGrid columns="10"  >
-                            <h:outputLabel value="Inward Timed Service" />
 
+                    <p:panel class="mt-2" header="Timed Sevice" id="gpBillPreview">       
+                       
+                            <h:panelGrid columns="2">
+                                <h:outputLabel value="From" ></h:outputLabel>
+                                <p:calendar class="mx-4" id="fd" value="#{inwardTimedItemController.frmDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
+                                <h:outputLabel value="To" ></h:outputLabel>
+                                <p:calendar class="mx-4" id="td" value="#{inwardTimedItemController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
+                                <h:outputLabel value="Timed Item" ></h:outputLabel>
+                                <p:autoComplete class="mx-4" id="it" forceSelection="false" 
+                                                value="#{inwardTimedItemController.current.item}"
+                                                completeMethod="#{timedItemController.completeInvest}" var="ix" 
+                                                itemLabel="#{ix.name}" itemValue="#{ix}" >
+                                    <p:column>
+                                        #{ix.name}
+                                    </p:column>
+                                    <p:column>
+                                        #{ix.total}
+                                    </p:column>
+                                </p:autoComplete>
+                               
+                                
+                            </h:panelGrid>
 
-                        </h:panelGrid>
-                    </f:facet>
-                    <p:panel>
-                        <h:outputLabel value="From" ></h:outputLabel>
-                        <p:calendar id="fd" value="#{inwardTimedItemController.frmDate}" pattern="dd/MMM/yyyy - hh:mm:ss a" ></p:calendar>
-                        <h:outputLabel value="From" ></h:outputLabel>
-                        <p:calendar id="td" value="#{inwardTimedItemController.toDate}" pattern="dd/MMM/yyyy - hh:mm:ss a" ></p:calendar>
-                        <p:autoComplete converter="timedIt" id="it" forceSelection="false" 
-                                        value="#{inwardTimedItemController.current.item}"
-                                        completeMethod="#{timedItemController.completeInvest}" var="ix" 
-                                        itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
-                            <p:column>
-                                #{ix.name}
-                            </p:column>
-                            <p:column>
-                                #{ix.total}
-                            </p:column>
+                            <div class="my-4">
+                                <p:commandButton ajax="false" class="ui-button-warning" icon="fas fa-fill" value="Fill" action="#{inwardTimedItemController.createTimeServiceList}"   />
+                                
+                                <p:commandButton ajax="false" icon="fas fa-file-excel" value="Excel" class="ui-button-success mx-1 " actionListener="#{inwardTimedItemController.createTimeServiceList}">
+                                    <p:dataExporter type="xlsx" target="tbl" fileName="inward_report_timed_service" />
+                                </p:commandButton>
+                                
+                                <p:commandButton value="Print" ajax="false" action="#" icon="fas fa-print" class="ui-button-info" >
+                                    <p:printer target="gpBillPreview" ></p:printer>
+                                </p:commandButton>
+                            </div>
+                      
 
-                        </p:autoComplete>
-                        <p:watermark for="it" value="Timed Item"/>
-
-
-                        <p:commandButton ajax="false" value="Fill" action="#{inwardTimedItemController.createTimeServiceList}" onclick="onSubmitButton();"  />
-                        <p:commandButton value="Print" ajax="false" action="#" >
-                            <p:printer target="gpBillPreview" ></p:printer>
-                        </p:commandButton>
-
-                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" actionListener="#{inwardTimedItemController.createTimeServiceList}">
-                            <pe:exporter type="xlsx" target="tbl" fileName="inward_report_timed_service" />
-                        </p:commandButton>
-                    </p:panel>
-                    <p:panel header="Timed Sevice" id="gpBillPreview">                          
                         <p:dataTable id="tbl" value="#{inwardTimedItemController.items}" var="ti">
 
 
@@ -58,11 +58,11 @@
                                 <h:outputLabel value="#{inwardTimedItemController.current.item.name}"/>
                                 <h:outputLabel value=" : "/>
                                 <h:outputLabel value="#{inwardTimedItemController.frmDate}">
-                                    <f:convertDateTime pattern="dd MMMM yyyy"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                                 </h:outputLabel>
                                 <h:outputLabel value="--"/>
                                 <h:outputLabel value="#{inwardTimedItemController.toDate}">
-                                    <f:convertDateTime pattern="dd MMMM yyyy"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                                 </h:outputLabel>
                             </f:facet>
 
@@ -95,7 +95,7 @@
                                 <f:facet name="header">
                                     <p:outputLabel value="Start Time"/>
                                 </f:facet>
-                                <h:outputLabel value="#{ti.fromTime}"   >
+                                <h:outputLabel value="#{ti.fromTime}">
                                     <f:convertDateTime pattern="yy/MM/dd hh:mm:ss a" />
                                 </h:outputLabel>
                             </p:column>                               
@@ -103,13 +103,13 @@
                                 <f:facet name="header">
                                     <p:outputLabel value="Stopped Time"/>
                                 </f:facet>
-                                <h:outputLabel value="#{ti.toTime}"   >
+                                <h:outputLabel value="#{ti.toTime}">
                                     <f:convertDateTime pattern="yy/MM/dd hh:mm:ss a" />
                                 </h:outputLabel>
                             </p:column>
                             <p:column headerText="Time(Minutes)" styleClass="averageNumericColumn">
                                 <f:facet name="header">
-                                    <p:outputLabel value="Time"/>
+                                    <p:outputLabel value="Time(Min.)"/>
                                 </f:facet>
                                 <h:outputLabel value="#{ti.tmpConsumedTime}" >
                                     <f:convertNumber pattern="##0.0"/>
@@ -139,7 +139,7 @@
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>
-                            <p:column headerText="Creater">
+                            <p:column headerText="Creator">
                                 <f:facet name="header">
                                     <p:outputLabel value="Creator"/>
                                 </f:facet>
@@ -160,7 +160,7 @@
                                             <p:outputLabel value="Total"></p:outputLabel>
                                         </f:facet>
                                     </p:column>
-                                    <p:column footerText="#{inwardTimedItemController.totalMins}" style="text-align: right;" >
+                                    <p:column footerText="#{inwardTimedItemController.totalMins}" style="text-align: right;" colspan="2">
                                         <f:facet name="footer" >
                                             <p:outputLabel value="#{inwardTimedItemController.totalMins}"></p:outputLabel>
                                         </f:facet>

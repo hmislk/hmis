@@ -1,16 +1,16 @@
 /*
- * MSc(Biomedical Informatics) Project
+ * Open Hospital Management Information System
  *
- * Development and Implementation of a Web-based Combined Data Repository of
- Genealogical, Clinical, Laboratory and Genetic Data
- * and
- * a Set of Related Tools
+ * Dr M H B Ariyaratne
+ * Acting Consultant (Health Informatics)
+ * (94) 71 5812399
+ * (94) 71 5812399
  */
 package com.divudi.bean.lab;
 
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
@@ -19,7 +19,7 @@ import com.divudi.data.Sex;
 import com.divudi.data.Title;
 import com.divudi.data.dataStructure.YearMonthDay;
 import com.divudi.ejb.BillNumberGenerator;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillComponent;
 import com.divudi.entity.BillEntry;
@@ -42,6 +42,7 @@ import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PersonFacade;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -51,18 +52,14 @@ import java.util.Objects;
 import java.util.Set;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
-import javax.faces.component.UIComponent;
-import javax.faces.context.FacesContext;
-import javax.faces.convert.Converter;
-import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
 import org.primefaces.event.TabChangeEvent;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- * Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
+ * Acting Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -107,7 +104,7 @@ public class LabBillCollectingController implements Serializable {
     private PatientInvestigationFacade patientInvestigationFacade;
     @Inject
     private BillBeanController billBean;
-    @EJB
+
     CommonFunctions commonFunctions;
     @EJB
     private PersonFacade personFacade;
@@ -231,16 +228,16 @@ public class LabBillCollectingController implements Serializable {
         int c = 0;
         Department tdep = new Department();
         tdep.setId(0L);
-        // //////System.out.println("Check Dept 1 " + c);
+        // //////// // System.out.println("Check Dept 1 " + c);
         //Createa a list of bills
         for (BillEntry be : getLstBillEntries()) {
             if (be.getBillItem().getItem().getDepartment().getId() != tdep.getId()) {
                 tdep = be.getBillItem().getItem().getDepartment();
                 c++;
-                //  //////System.out.println("Check Dept  " + be.getBillItem().getItem().getDepartment().getName());
+                //  //////// // System.out.println("Check Dept  " + be.getBillItem().getItem().getDepartment().getName());
             }
         }
-        //////System.out.println("Check Dept 4 " + c);
+        //////// // System.out.println("Check Dept 4 " + c);
 
         return c;
     }
@@ -275,7 +272,7 @@ public class LabBillCollectingController implements Serializable {
             putToBills();
         }
 
-        UtilityController.addSuccessMessage("Bill Saved");
+        JsfUtil.addSuccessMessage("Bill Saved");
         printPreview = true;
     }
 
@@ -355,11 +352,11 @@ public class LabBillCollectingController implements Serializable {
         ptIx.setPerformDepartment(e.getBillItem().getItem().getDepartment());
 
         if (e.getBillItem().getItem() == null) {
-            UtilityController.addErrorMessage("No Bill Item Selected");
+            JsfUtil.addErrorMessage("No Bill Item Selected");
         } else if (e.getBillItem().getItem().getDepartment() == null) {
-            UtilityController.addErrorMessage("Under administration, add a Department for this investigation " + e.getBillItem().getItem().getName());
+            JsfUtil.addErrorMessage("Under administration, add a Department for this investigation " + e.getBillItem().getItem().getName());
         } else if (e.getBillItem().getItem().getDepartment().getInstitution() == null) {
-            UtilityController.addErrorMessage("Under administration, add an Institution for the department " + e.getBillItem().getItem().getDepartment());
+            JsfUtil.addErrorMessage("Under administration, add an Institution for the department " + e.getBillItem().getItem().getDepartment());
         } else if (e.getBillItem().getItem().getDepartment().getInstitution() != getSessionController().getLoggedUser().getInstitution()) {
             ptIx.setOutsourcedInstitution(e.getBillItem().getItem().getInstitution());
         }
@@ -395,7 +392,7 @@ public class LabBillCollectingController implements Serializable {
         //  e.getBillItem().setDeptId(e.getBillItem().getItem().getDepartment().getId());
         e.getBillItem().setBill(b);
         getBillItemFacade().create(e.getBillItem());
-        ////////System.out.println("Saving Bill Item : " + temBi.getItem().getName());
+        ////////// // System.out.println("Saving Bill Item : " + temBi.getItem().getName());
 
         saveBillComponent(e, b);
         saveBillFee(e, b);
@@ -411,7 +408,7 @@ public class LabBillCollectingController implements Serializable {
             e.getBillItem().setCreater(getSessionController().getLoggedUser());
             e.getBillItem().setBill(b);
             getBillItemFacade().create(e.getBillItem());
-            ////////System.out.println("Saving Bill Item : " + e.getBillItem().getItem().getName());
+            ////////// // System.out.println("Saving Bill Item : " + e.getBillItem().getItem().getName());
 
             saveBillComponent(e, b);
             saveBillFee(e, b);
@@ -477,29 +474,29 @@ public class LabBillCollectingController implements Serializable {
         if (getPatientTabId().toString().equals("tabNewPt")) {
 
             if (getNewPatient().getPerson().getName() == null || getNewPatient().getPerson().getName().trim().equals("") || getNewPatient().getPerson().getSex() == null || getNewPatient().getPerson().getDob() == null) {
-                UtilityController.addErrorMessage("Can not bill without Patient Name, Age or Sex.");
+                JsfUtil.addErrorMessage("Can not bill without Patient Name, Age or Sex.");
                 return true;
             }
 
             if (!com.divudi.java.CommonFunctions.checkAgeSex(getNewPatient().getPerson().getDob(), getNewPatient().getPerson().getSex(), getNewPatient().getPerson().getTitle())) {
-                UtilityController.addErrorMessage("Check Title,Age,Sex");
+                JsfUtil.addErrorMessage("Check Title,Age,Sex");
                 return true;
             }
 
             if (getNewPatient().getPerson().getPhone().length() < 1) {
-                UtilityController.addErrorMessage("Phone Number is Required it should be fill");
+                JsfUtil.addErrorMessage("Phone Number is Required it should be fill");
                 return true;
             }
 
         }
         if (getLstBillEntries().isEmpty()) {
 
-            UtilityController.addErrorMessage("No investigations are added to the bill to settle");
+            JsfUtil.addErrorMessage("No investigations are added to the bill to settle");
             return true;
         }
 
         if (collectingCentre == null) {
-            UtilityController.addErrorMessage("Please Select Collecting Centre or Credit company");
+            JsfUtil.addErrorMessage("Please Select Collecting Centre or Credit company");
             return true;
 
         }
@@ -510,11 +507,11 @@ public class LabBillCollectingController implements Serializable {
     public void addToBill() {
 
         if (getCurrentBillItem() == null) {
-            UtilityController.addErrorMessage("Nothing to add");
+            JsfUtil.addErrorMessage("Nothing to add");
             return;
         }
         if (getCurrentBillItem().getItem() == null) {
-            UtilityController.addErrorMessage("Please select an investigation");
+            JsfUtil.addErrorMessage("Please select an investigation");
             return;
         }
 
@@ -533,11 +530,11 @@ public class LabBillCollectingController implements Serializable {
 
         calTotals();
         if (getCurrentBillItem().getNetValue() == 0.0) {
-            UtilityController.addErrorMessage("Please enter the rate");
+            JsfUtil.addErrorMessage("Please enter the rate");
             return;
         }
         clearBillItemValues();
-        //UtilityController.addSuccessMessage("Item Added");
+        //JsfUtil.addSuccessMessage("Item Added");
     }
 
     public void clearBillItemValues() {
@@ -569,14 +566,14 @@ public class LabBillCollectingController implements Serializable {
 
             for (BillFee bf : be.getLstBillFees()) {
                 if (bf.getBillItem().getItem().isUserChangable() && bf.getBillItem().getItem().isDiscountAllowed() != true) {
-                    //////System.out.println("Total is " + tot);
-                    //       //////System.out.println("Bill Fee value is " + bf.getFeeValue());
+                    //////// // System.out.println("Total is " + tot);
+                    //       //////// // System.out.println("Bill Fee value is " + bf.getFeeValue());
                     tot += bf.getFeeValue();
-                    //////System.out.println("After addition is " + tot);
+                    //////// // System.out.println("After addition is " + tot);
                     bf.getBillItem().setNetValue(bf.getBillItem().getNetValue() + bf.getFeeValue());
                     bf.getBillItem().setGrossValue(bf.getBillItem().getGrossValue() + bf.getFeeValue());
 
-                } else //////System.out.println("12");
+                } else //////// // System.out.println("12");
                 {
                     if (bf.getBillItem().getItem().isDiscountAllowed() != null && bf.getBillItem().getItem().isDiscountAllowed() == true) {
                         if (getPaymentScheme() == null) {
@@ -584,7 +581,7 @@ public class LabBillCollectingController implements Serializable {
                             dis = 0.0;
                             bf.getBillItem().setDiscount(0.0);
                         } else {
-                            //    bf.setFeeValue(bf.getFee().getFee() / 100 * (100 - getPaymentScheme().getDiscountPercent()));
+                            //    bf.setFeeValueBoolean(bf.getFee().getFee() / 100 * (100 - getPaymentScheme().getDiscountPercent()));
                             //     dis += (bf.getFee().getFee() / 100 * (getPaymentScheme().getDiscountPercent()));
                             //              bf.getBillItem().setDiscount(bf.getBillItem().getDiscount() + bf.getFee().getFee() / 100 * (getPaymentScheme().getDiscountPercent()));
                         }
@@ -593,7 +590,7 @@ public class LabBillCollectingController implements Serializable {
 
                         bf.getBillItem().setNetValue(bf.getBillItem().getNetValue() + bf.getBillItem().getGrossValue() - bf.getBillItem().getDiscount());
                     } else {
-                        //////System.out.println("13");
+                        //////// // System.out.println("13");
                         tot = tot + bf.getFeeValue();
                         bf.setFeeValue(bf.getFee().getFee());
                         bf.getBillItem().setGrossValue(bf.getBillItem().getGrossValue() + bf.getFee().getFee());
@@ -630,16 +627,16 @@ public class LabBillCollectingController implements Serializable {
     public void removeBillItem() {
 
         //TODO: Need to add Logic
-        //////System.out.println(getIndex());
+        //////// // System.out.println(getIndex());
         if (getIndex() != null) {
             boolean remove;
             BillEntry temp = getLstBillEntries().get(getIndex());
-            //////System.out.println("Removed Item:" + temp.getBillItem().getNetValue());
+            //////// // System.out.println("Removed Item:" + temp.getBillItem().getNetValue());
             recreateList(temp);
             // remove = getLstBillEntries().remove(getIndex());
 
             //  getLstBillEntries().remove(index);
-            ////////System.out.println("Is Removed:" + remove);
+            ////////// // System.out.println("Is Removed:" + remove);
             calTotals();
 
         }
@@ -651,7 +648,7 @@ public class LabBillCollectingController implements Serializable {
         for (BillEntry b : getLstBillEntries()) {
             if (b.getBillItem().getItem() != r.getBillItem().getItem()) {
                 temp.add(b);
-                //////System.out.println(b.getBillItem().getNetValue());
+                //////// // System.out.println(b.getBillItem().getNetValue());
             }
         }
         lstBillEntries = temp;
@@ -1001,48 +998,4 @@ public class LabBillCollectingController implements Serializable {
         this.vatPlusNetTotal = vatPlusNetTotal;
     }
 
-    
-    
-    /**
-     *
-     */
-    @FacesConverter(forClass = Bill.class)
-    public static class BillControllerConverter implements Converter {
-
-        @Override
-        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
-                return null;
-            }
-            LabBillCollectingController controller = (LabBillCollectingController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "labBillCollectingController");
-            return controller.getBillFacade().find(getKey(value));
-        }
-
-        java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
-            return key;
-        }
-
-        String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
-        }
-
-        @Override
-        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
-            if (object == null) {
-                return null;
-            }
-            if (object instanceof Bill) {
-                Bill o = (Bill) object;
-                return getStringKey(o.getId());
-            } else {
-                throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + LabBillCollectingController.class.getName());
-            }
-        }
-    }
 }

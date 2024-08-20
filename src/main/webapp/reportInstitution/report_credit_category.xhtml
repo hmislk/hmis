@@ -1,78 +1,75 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
-                template="/resources/template/template.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/reportInstitution/report_own.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://java.sun.com/jsf/core"
-                xmlns:in="http://java.sun.com/jsf/composite/income_report" 
-                xmlns:pe="http://primefaces.org/ui/extensions">
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:in="http://xmlns.jcp.org/jsf/composite/income_report" 
+                >
 
-    <ui:define name="content">
+    <ui:define name="subcontent">
         <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
 
-        <h:form id="panelPrint" styleClass="noBorder summeryBorder">
+        <h:form>
 
             <p:panel>
                 <f:facet name="header" >
-                    <h:outputLabel value="Book Keeping Summary With Pro (DAY)"  styleClass="noPrintButton" />
-                   
-                    <h:panelGrid columns="2"  styleClass="noPrintButton">
+                    <h:outputLabel value="Book Keeping Summary With Pro (DAY)" />
+                </f:facet>
+                    <h:panelGrid columns="2" class="my-2" >
                         <h:outputLabel value="From Date"/>
-                        <p:calendar id="frmDate" value="#{bookKeepingSummery.fromDate}" navigator="true"  pattern="dd MM yyyy HH:mm:ss" >
+                        <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="frmDate" value="#{bookKeepingSummery.fromDate}"  pattern="dd MM yyyy HH:mm:ss" >
                         </p:calendar>
 
                         <h:outputLabel value="To Date"/>
-                        <p:calendar id="toDate" value="#{bookKeepingSummery.toDate}" navigator="true" pattern="dd MM yyyy HH:mm:ss" >
+                        <p:calendar class="w-100 mx-4" inputStyleClass="w-100 my-1" id="toDate" value="#{bookKeepingSummery.toDate}" pattern="dd MM yyyy HH:mm:ss" >
                         </p:calendar>
 
                         <h:outputLabel value="Select Billed Institution"/>
 
-                        <p:autoComplete completeMethod="#{institutionController.completeCompany}" 
+                        <p:autoComplete class="w-100 mx-4" inputStyleClass="w-100" completeMethod="#{institutionController.completeCompany}" 
                                         forceSelection="true"
                                         value="#{bookKeepingSummery.institution}"
                                         var="pta" itemLabel="#{pta.name}" itemValue="#{pta}" />
 
                         <h:outputLabel value="Select Income Institution"/>
 
-                        <p:autoComplete completeMethod="#{institutionController.completeCompany}"
+                        <p:autoComplete class="w-100 mx-4" inputStyleClass="w-100 my-1" completeMethod="#{institutionController.completeCompany}"
                                         forceSelection="true"
                                         value="#{bookKeepingSummery.incomeInstitution}"
                                         var="pta" itemLabel="#{pta.name}" itemValue="#{pta}" />
 
                         <h:outputLabel value="Select Credit Company"/>
 
-                        <p:autoComplete completeMethod="#{institutionController.completeCreditCompany}" 
+                        <p:autoComplete class="w-100 mx-4" inputStyleClass="w-100" completeMethod="#{institutionController.completeCreditCompany}" 
                                         forceSelection="true"
                                         value="#{bookKeepingSummery.creditCompany}"
                                         var="pta" itemLabel="#{pta.name}" itemValue="#{pta}" />
                     </h:panelGrid>
-                     <h:panelGrid columns="5"  styleClass="noPrintButton">
-                         <p:spacer width="160" height="1"/>
+                <h:panelGrid columns="6" class="my-2" >
                         <p:commandButton value="Process Credit Items" ajax="false" 
-                                         styleClass="noPrintButton" style="float: right;"
+                                         class="ui-button-warning" icon="fas fa-cogs"
                                          action="#{bookKeepingSummery.processCreditItems()}"/>
 
                         <p:commandButton value="Process Credit Items Paid" ajax="false" 
-                                         styleClass="noPrintButton" style="float: right;"
+                                         class="ui-button-warning mx-2" icon="fas fa-cogs"
                                          action="#{bookKeepingSummery.processCreditPaidItems()}"/>
 
-                        <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" style="float: right;" >
+                        <p:commandButton ajax="false" value="Print"  class="ui-button-info" icon="fas fa-print" >
                             <p:printer target="panelPrint" />
                         </p:commandButton>
 
-                        <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" style="float: right;">
-                            <pe:exporter type="xlsx" target="opd_new:opd_new"
+                        <p:commandButton value="Excel" ajax="false" class="ui-button-success mx-2" icon="fas fa-file-excel">
+                            <p:dataExporter type="xlsx" target="opd_new:opd_new"
                                          fileName="Book_Keeping_Summery_with_pro_day"
-                                         facetFontStyle="BOLD"   cellFontStyle="NORMAL"  
-                                         fontName="Courier New"  />
+                                              
+                                           />
                         </p:commandButton>
                     </h:panelGrid>
-
-                </f:facet>
-            </p:panel>
+            
             <!--            <p:spacer height="30" />-->
-
+            <p:panel id="panelPrint" styleClass="noBorder summeryBorder">
             <in:opd_new_with_credit id="opd_new" />
 
             <p:spacer height="30"/>
@@ -91,7 +88,8 @@
                     </h:outputLabel>
                 </p:column>
             </p:dataTable>
-
+            </p:panel>
+            </p:panel>
         </h:form>
     </ui:define>
 

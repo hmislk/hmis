@@ -1,11 +1,11 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.store;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.pharmacy.PharmaceuticalItemController;
 import com.divudi.bean.pharmacy.PharmacyController;
 import com.divudi.data.BillClassType;
@@ -119,7 +119,7 @@ public class StorePurchaseReturnController implements Serializable {
         double remain = getRemainingQty(tmp.getReferanceBillItem());
         if (tmp.getQty() > remain) {
             tmp.setQty(remain);
-            UtilityController.addErrorMessage("You cant return over than ballanced Qty ");
+            JsfUtil.addErrorMessage("You cant return over than ballanced Qty ");
         }
 
         calTotal();
@@ -219,7 +219,7 @@ public class StorePurchaseReturnController implements Serializable {
 
     public void settle() {
         if (checkGrnItems()) {
-            UtilityController.addErrorMessage("ITems for this GRN Already issued so you can't cancel ");
+            JsfUtil.addErrorMessage("ITems for this GRN Already issued so you can't cancel ");
             return;
 
         }
@@ -229,7 +229,7 @@ public class StorePurchaseReturnController implements Serializable {
         getBillFacade().edit(getReturnBill());
 
         printPreview = true;
-        UtilityController.addSuccessMessage("Successfully Returned");
+        JsfUtil.addSuccessMessage("Successfully Returned");
 
     }
 
@@ -249,7 +249,7 @@ public class StorePurchaseReturnController implements Serializable {
 
     public void createBillItems() {
         String sql = "Select p from PharmaceuticalBillItem p where p.billItem.bill.id=" + getBill().getId();
-        List<PharmaceuticalBillItem> tmp2 = getPharmaceuticalBillItemFacade().findBySQL(sql);
+        List<PharmaceuticalBillItem> tmp2 = getPharmaceuticalBillItemFacade().findByJpql(sql);
 
         for (PharmaceuticalBillItem i : tmp2) {
             BillItem bi = new BillItem();

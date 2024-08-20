@@ -1,0 +1,137 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body class="w-100 border">
+
+        <ui:composition template="/reports/index.xhtml" class="w-100 border">
+            <ui:define name="subcontent">
+                <h:form class="w-100">
+                    <p:panel header="Daily Return" class="w-100">
+                        <h:panelGrid columns="5" class="w-100 ">
+                            <p:outputLabel value="From (Billed) Date" >
+                            </p:outputLabel>
+                            <p:datePicker value="#{reportController.fromDate}" 
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
+                            <p:spacer width="20"></p:spacer>
+                            <p:outputLabel value="To (Billed) Date" >
+                            </p:outputLabel>
+                            <p:datePicker value="#{reportController.toDate}"
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
+
+
+                            <p:outputLabel value="Institution/Branch" for="institutionMenu"></p:outputLabel>
+                            <p:selectOneMenu value="#{reportController.institution}" id="institutionMenu" required="true">
+                                <f:selectItem itemLabel="Select Institution Type"/>
+                                <f:selectItems value="#{institutionController.items}" var="i" itemLabel="#{i.name}" itemValue="#{i}"/>
+                               <p:ajax process="@this" update="cmdDepartment"></p:ajax>
+                            </p:selectOneMenu>
+                            <p:spacer/>
+                            <p:outputLabel value="Department">
+                            </p:outputLabel>
+                            <p:selectOneMenu 
+                                id="cmdDepartment"
+                                value="#{reportController.department}" 
+                                filter="true"
+                                >
+                                <f:selectItem itemLabel="All"></f:selectItem>
+                                <f:selectItems value="#{departmentController.getInsDepartments(reportController.institution)}"
+                                               var="d"
+                                               itemLabel="#{d.name}"
+                                               itemValue="#{d}"></f:selectItems>
+                            </p:selectOneMenu>
+
+                            
+                           
+                            
+                            <p:outputLabel value="Professionality" for="institutionMenu"></p:outputLabel>
+                            <p:selectOneRadio>
+                                <f:selectItem itemLabel="With Professional"></f:selectItem>
+                                <f:selectItem itemLabel="Without Professional"></f:selectItem>
+                            </p:selectOneRadio>
+                            
+                           <p:outputLabel value="Type" for=""></p:outputLabel>
+                            <p:selectOneRadio>
+                                <f:selectItem itemLabel="Summary"></f:selectItem>
+                                <f:selectItem itemLabel="Detail"></f:selectItem>
+                            </p:selectOneRadio>
+                           <p:spacer/>
+                           <p:commandButton ajax="false" value="Process" action="null" >
+                            </p:commandButton>
+                        </h:panelGrid><br />
+                        
+                        <p:dataTable value="#{searchController.telephoneNumbers}" var="b" id="tb1" rowIndexVar="i"
+                                     rowKey="#{b}" 
+                                     rows="#{searchController.rows}"
+                                     selection="#{searchController.selectedTelephoneNumbers}"
+                                     paginator="true"
+                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     rowsPerPageTemplate="20, 50, 100, 1000, 1500" class="w-100">
+
+                            <f:facet name="header" >
+                                <p:outputLabel value="Asset Register Reports" />                                
+                            </f:facet>
+                            
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Item Service" >
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Item Count" >
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Hospital Fee" >
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Discount Amount" >
+                                    </p:outputLabel>
+                                </f:facet> 
+                            </p:column>
+                            
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Total Hospital Fee" >
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Professional Fee" >
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Total Amount" >
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            
+                           
+                            
+                        </p:dataTable>
+
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

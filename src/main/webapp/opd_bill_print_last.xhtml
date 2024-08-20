@@ -1,15 +1,15 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/resources/template/template.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
-                xmlns:phi="http://java.sun.com/jsf/composite/pharmacy"
-                xmlns:bi="http://java.sun.com/jsf/composite/bill"
-                xmlns:pa="http://java.sun.com/jsf/composite/paymentMethod"
-                xmlns:pat="http://java.sun.com/jsf/composite/patient">
+                xmlns:phi="http://xmlns.jcp.org/jsf/composite/pharmacy"
+                xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill"
+                xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
+                xmlns:pat="http://xmlns.jcp.org/jsf/composite/patient">
 
 
 
@@ -38,7 +38,7 @@
                     <div >
 
 
-                        <h:panelGroup   id="gpBillPreview"   >
+                        <h:panelGroup   id="gpBillPreview">
 
                             <div>
 
@@ -56,7 +56,7 @@
 
                                             <div class="billdatePrinting" >
                                                 <h:outputLabel value="#{bill.billDate}">
-                                                    <f:convertDateTime pattern="dd/MM/yy"/>
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                                                 </h:outputLabel>
                                             </div>
 
@@ -71,7 +71,7 @@
                                             <div class="billtimePrinting" >
                                                 <h:outputLabel value="#{bill.billTime}"
                                                                >
-                                                    <f:convertDateTime pattern="hh:mm a"/>
+                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" />
                                                 </h:outputLabel>
                                             </div>
 
@@ -100,7 +100,7 @@
 
 
                                             <div class="itemsPrinting" >
-                                                <h:dataTable value="#{billController.lstBillEntriesPrint}" var="bip"   >
+                                                <h:dataTable value="#{billController.lstBillEntriesPrint}" var="bip">
                                                     <h:column >
                                                         <h:outputLabel rendered="#{bip.billItem.item.department.id eq bill.toDepartment.id}" value="#{bip.billItem.item.printName}" style="margin: 4px; font-size: 11px!important;" >
                                                         </h:outputLabel>

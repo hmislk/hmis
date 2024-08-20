@@ -1,12 +1,12 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
-      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:bi="http://java.sun.com/jsf/composite/bill"
-      xmlns:pe="http://primefaces.org/ui/extensions">
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill"
+      >
 
     <h:body>
 
@@ -18,13 +18,13 @@
                         <p:panel>
                             <h:panelGrid columns="2">
                                 <p:outputLabel value="From" />
-                                <p:calendar id="fdate" pattern="dd MMMM yyyy hh:mm:ss a" value="#{inwardStaffPaymentBillController.fromDate}"></p:calendar>
+                                <p:calendar id="fdate" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  value="#{inwardStaffPaymentBillController.fromDate}"></p:calendar>
                                 <p:outputLabel value="To" />
-                                <p:calendar id="tdate" pattern="dd MMMM yyyy hh:mm:ss a" value="#{inwardStaffPaymentBillController.toDate}"></p:calendar>
+                                <p:calendar id="tdate" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  value="#{inwardStaffPaymentBillController.toDate}"></p:calendar>
                                 <h:outputLabel  value="Speciality" ></h:outputLabel>
                                 <p:autoComplete style="min-width: 400px!important;" forceSelection="true" value="#{inwardStaffPaymentBillController.speciality}" id="acSpeciality"
                                                 completeMethod="#{specialityController.completeSpeciality}" var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
-                                                converter="specilityCon"   >
+                                                >
                                 </p:autoComplete>
                                 <h:outputLabel value="Admission Type : " ></h:outputLabel>
                                 <p:selectOneMenu  id="lstAdmissionType"   
@@ -44,18 +44,15 @@
                                                     itemValue="#{ccc}" itemLabel="#{ccc.name}"></f:selectItems>
                                 </p:selectOneMenu>   
                             </h:panelGrid>
-                            <p:watermark for="fdate" value="From Date" />
-                            <p:watermark for="tdate" value="To Date" />
-                            <p:watermark for="acSpeciality" value="Speciality" />
-                        </p:panel>
+                                                                                                            </p:panel>
                         <p:panel>
-                            <p:commandButton ajax="false" value="Fill" action="#{inwardStaffPaymentBillController.fillDocPayDischargeAndNotDischarge()}" onclick="onSubmitButton();"  ></p:commandButton>
+                            <p:commandButton ajax="false" value="Fill" action="#{inwardStaffPaymentBillController.fillDocPayDischargeAndNotDischarge()}"   ></p:commandButton>
                             <p:commandButton value="Print" ajax="false" action="#"  >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
 
-                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
-                                <pe:exporter type="xlsx" target="tb" fileName="Doctor_Payment"  />
+                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton"  >
+                                <p:dataExporter type="xlsx" target="tb" fileName="Doctor_Payment"  />
                             </p:commandButton>
                         </p:panel>
                         <p:panel id="gpBillPreview">

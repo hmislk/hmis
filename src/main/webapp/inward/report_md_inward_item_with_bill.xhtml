@@ -1,93 +1,128 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
-                template="/resources/template/template.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/inward/inward_reports.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://java.sun.com/jsf/core"
-                xmlns:pe="http://primefaces.org/ui/extensions">
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                >
 
-    <ui:define name="content">
+    <ui:define name="subcontent">
         <h:form>
             <p:panel>
 
-                <p:panel header="Item Report">                    
-                    <h:outputLabel value="From"/>
-                    <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{mdInwardReportController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
-                        <f:ajax event="dateSelect"   render="tbl" execute="@this toDate" listener="#{mdInwardReportController.makeBillNull}"/>
-                    </p:calendar>
+                <p:panel header="Item Report">   
 
-                    <h:outputLabel value="To"/>
-                    <p:calendar id="toDate" value="#{mdInwardReportController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
-                        <f:ajax event="dateSelect"   render="tbl" execute="@this fromDate" listener="#{mdInwardReportController.makeBillNull}"/>
-                    </p:calendar>
-                    <h:panelGrid columns="2" >
-                        <p:autoComplete id="ins" value="#{mdInwardReportController.institution}"
-                                        completeMethod="#{institutionController.completeIns}"
-                                        var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
-                            <p:column>
-                                #{ix.name}
-                            </p:column>
-                        </p:autoComplete>
-                        <p:autoComplete id="dept" completeMethod="#{departmentController.completeDept}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{mdInwardReportController.dept}" converter="departmentConverter" >
-                        </p:autoComplete>
-                        <p:autoComplete value="#{mdInwardReportController.category}" id="ct" 
-                                        forceSelection="true"
-                                        completeMethod="#{categoryController.completeCategoryService}"
-                                        converter="categoryConverter"
-                                        var="cat" itemLabel="#{cat.name}" 
-                                        itemValue="#{cat}" >
-                            <p:column headerText="Category">
-                                <h:outputLabel value="#{cat.name}"/>
-                            </p:column>
-                            <p:column headerText="Parent Category">
-                                <h:outputLabel value="#{cat.parentCategory.name}"/>
-                            </p:column> 
-                            <p:column headerText="TYPE">
-                                <h:outputLabel value="Parent Category" 
-                                               rendered="#{cat.categoryClass eq 'class com.divudi.entity.ServiceCategory'}"/>
-                                <h:outputLabel value="Child Category" 
-                                               rendered="#{cat.categoryClass eq 'class com.divudi.entity.ServiceSubCategory'}"/>
+                    <h:panelGrid columns="4" class="my-2">
 
-                            </p:column> 
-
-                        </p:autoComplete>
-                        <p:autoComplete  widgetVar="aIx" id="acIx" forceSelection="true" 
-                                         value="#{mdInwardReportController.item}"
-                                         completeMethod="#{itemController.completeInwardItemsCategory}"
-                                         var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" 
-                                         size="30"  style="width: 400px;">
-                            <p:column>
-                                <h:outputLabel value="#{ix.name}"/>
-                            </p:column>
-                            <p:column>
-                                <h:outputLabel value="#{ix.department.name}"/>
-                            </p:column>  
-                            <p:column>
-                                <h:outputLabel value="#{ix.total}" 
-                                               rendered="#{ix.chargesVisibleForInward or (webUserController.hasPrivilege('ShowInwardFee'))}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
-                            </p:column>  
-                            <p:ajax event="itemSelect" process="acIx ct" update="@all" />
-                            <p:ajax event="focus" process="ct"/>
-                        </p:autoComplete>
-                        <p:watermark for="ct" value="Category"/>
-                        <p:watermark for="acIx" value="Item"/>
-                        <p:watermark for="dept" value="Department"/>
-                        <p:watermark for="ins" value="Institution"/>
                     </h:panelGrid>
-                    <p:panelGrid columns="3">
-                        <p:commandButton ajax="false" value="Process by Bill Created Date" 
-                                        action="#{mdInwardReportController.createItemWithFeeWithBillByBillDate}" style="float: right;" onclick="onSubmitButton();" />
-                        <p:commandButton ajax="false" value="Process by Discharge Date" 
-                                        action="#{mdInwardReportController.createItemWithFeeWithBillByDischargeDate}" style="float: right;" onclick="onSubmitButton();" />
-                        <p:commandButton ajax="false" value="Process by Added Date" 
-                                        action="#{mdInwardReportController.createItemWithFeeWithBillByAddedDate}" style="float: right;" onclick="onSubmitButton();" />
-                        <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" >
+
+
+                    <h:panelGrid columns="2" class="w-100">
+                        <h:panelGrid columns="2" >
+                            <h:outputLabel value="From"/>
+                            <p:calendar class="mx-4" id="fromDate" value="#{mdInwardReportController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                                <f:ajax event="dateSelect"   render="tbl" execute="@this toDate" listener="#{mdInwardReportController.makeBillNull}"/>
+                            </p:calendar>
+
+                            <h:outputLabel value="To"/>
+                            <p:calendar class="mx-4" id="toDate" value="#{mdInwardReportController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                                <f:ajax event="dateSelect"   render="tbl" execute="@this fromDate" listener="#{mdInwardReportController.makeBillNull}"/>
+                            </p:calendar>
+                            <h:outputLabel value="Institute"/>
+                            <p:autoComplete id="ins" 
+                                            class="mx-4"
+                                            value="#{mdInwardReportController.institution}"
+                                            completeMethod="#{institutionController.completeIns}"
+                                            var="ix" 
+                                            itemLabel="#{ix.name}" 
+                                            itemValue="#{ix}">
+                                <p:column>
+                                    #{ix.name}
+                                </p:column>
+                            </p:autoComplete>
+                            <h:outputLabel value="Department"/>
+                            <p:autoComplete 
+                                class="mx-4"
+                                id="dept" 
+                                completeMethod="#{departmentController.completeDept}" 
+                                var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" 
+                                forceSelection="true" 
+                                value="#{mdInwardReportController.dept}"  >
+                            </p:autoComplete>
+                            <h:outputLabel value="Category"/>
+                            <p:autoComplete value="#{mdInwardReportController.category}" id="ct" 
+                                            forceSelection="true"
+                                            completeMethod="#{categoryController.completeCategoryService}"
+                                            var="cat" itemLabel="#{cat.name}" 
+                                            itemValue="#{cat}"
+                                            class="mx-4">
+                                <p:column headerText="Category">
+                                    <h:outputLabel value="#{cat.name}"/>
+                                </p:column>
+                                <p:column headerText="Parent Category">
+                                    <h:outputLabel value="#{cat.parentCategory.name}"/>
+                                </p:column> 
+                                <p:column headerText="TYPE">
+                                    <h:outputLabel value="Parent Category" 
+                                                   rendered="#{cat.categoryClass eq 'class com.divudi.entity.ServiceCategory'}"/>
+                                    <h:outputLabel value="Child Category" 
+                                                   rendered="#{cat.categoryClass eq 'class com.divudi.entity.ServiceSubCategory'}"/>
+
+                                </p:column> 
+
+                            </p:autoComplete>
+                            <h:outputLabel value="Item"/>
+                            <p:autoComplete  widgetVar="aIx" id="acIx" forceSelection="true" 
+                                             value="#{mdInwardReportController.item}"
+                                             completeMethod="#{itemController.completeAllServicesAndInvestigationsCategory}"
+                                             var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" class="mx-4"
+                                             >
+                                <p:column>
+                                    <h:outputLabel value="#{ix.name}"/>
+                                </p:column>
+                                <p:column>
+                                    <h:outputLabel value="#{ix.department.name}"/>
+                                </p:column>  
+                                <p:column>
+                                    <h:outputLabel value="#{ix.total}" 
+                                                   rendered="#{ix.chargesVisibleForInward or (webUserController.hasPrivilege('ShowInwardFee'))}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </p:column>  
+                                <p:ajax event="itemSelect" process="acIx ct" update="@all" />
+                                <p:ajax event="focus" process="ct"/>
+                            </p:autoComplete>
+                            
+                        </h:panelGrid>
+                    </h:panelGrid>              
+                    <h:panelGrid columns="12" class="my-4" >
+                        <p:commandButton ajax="false"
+                                         value="Process by Bill Created Date" 
+                                         action="#{mdInwardReportController.createItemWithFeeWithBillByBillDate}"
+                                         icon="fas fa-cogs"
+                                         class="w-100 ui-button-warning "
+                                         />
+                        <p:commandButton ajax="false" 
+                                         value="Process by Discharge Date" 
+                                         icon="fas fa-cogs"
+                                         action="#{mdInwardReportController.createItemWithFeeWithBillByDischargeDate}" 
+                                         class="w-100 my-2 ui-button-warning"    />
+                        
+                        <p:commandButton ajax="false" 
+                                         value="Process by Added Date" 
+                                         icon="fas fa-cogs"
+                                         class="ui-button-warning w-100"
+                                         action="#{mdInwardReportController.createItemWithFeeWithBillByAddedDate}" 
+                                         />
+                        
+                        <p:commandButton ajax="false" 
+                                         value="Print" 
+                                         icon="fas fa-print"
+                                         class="w-100 my-2 ui-button-info"   >
                             <p:printer target="reportPrint"/>
                         </p:commandButton>
-                    </p:panelGrid>                    
+                    </h:panelGrid>  
 
                 </p:panel>   
 
@@ -97,11 +132,11 @@
                             <h:outputLabel value="Inward Service Details - " />
                             <h:outputLabel value="From Date - " />
                             <h:outputLabel value="#{mdInwardReportController.fromDate}">
-                                <f:convertDateTime pattern="yyyy/MM/dd hh:mm:ss a"/>
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                             </h:outputLabel>
                             <h:outputLabel value="  To Date - " />
                             <h:outputLabel value="#{mdInwardReportController.toDate}">
-                                <f:convertDateTime pattern="yyyy/MM/dd hh:mm:ss a"/>
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                             </h:outputLabel>
                             <h:outputLabel value=" - Institution - #{mdInwardReportController.institution.name}" rendered="#{mdInwardReportController.institution ne null}"/>
                         </f:facet>
@@ -145,7 +180,7 @@
                                     <p:outputLabel value="Bill Time" />
                                 </f:facet>
                                 <h:outputLabel value="#{i.billItem.billTime}">
-                                    <f:convertDateTime pattern="dd/MM/yyyy"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                                 </h:outputLabel>
                             </p:column>   
                             <p:column headerText="Categoy" >

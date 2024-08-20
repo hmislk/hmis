@@ -1,7 +1,7 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Open Hospital Management Information System
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.store;
 
@@ -16,7 +16,7 @@ import com.divudi.data.dataStructure.PharmacyPaymetMethodSummery;
 import com.divudi.data.dataStructure.PharmacySummery;
 import com.divudi.data.table.String1Value3;
 import com.divudi.data.table.String2Value4;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
@@ -27,6 +27,7 @@ import com.divudi.entity.PreBill;
 import com.divudi.entity.RefundBill;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -81,7 +82,7 @@ public class StoreSaleReport implements Serializable {
     Department toDepartment;
 
     /////
-    @EJB
+
     private CommonFunctions commonFunctions;
     @EJB
     private BillItemFacade billItemFacade;
@@ -352,7 +353,7 @@ public class StoreSaleReport implements Serializable {
         sql = "select i from Bill i where i.referenceBill.department=:d  "
                 + " and i.billType=:btp and type(i)=:class and"
                 + " i.createdAt between :fd and :td order by i.deptId ";
-        return getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        return getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
 
@@ -734,7 +735,7 @@ public class StoreSaleReport implements Serializable {
         grantCashTotal = calGrantTotalByPaymentMethod(PaymentMethod.Cash);
         grantCreditTotal = calGrantTotalByPaymentMethod(PaymentMethod.Credit);
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "Store/Summery/Sale report by payment method/Sale summery report by date(/faces/store/store_report_sale_by_date_summery_payment_method.xhtml)");
+        
     }
 
     public void createSaleReportByDateDetail() {
@@ -808,7 +809,7 @@ public class StoreSaleReport implements Serializable {
         grantNetTotal = calGrantNetTotalByDepartment();
         grantDiscount = calGrantDiscountByDepartment();
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "Store/Summery/Sale report all/sale detail report by date(/faces/store/store_report_transfer_receive_bill_item.xhtml)");
+        
 
     }
 
@@ -905,7 +906,7 @@ public class StoreSaleReport implements Serializable {
         grantCreditTotal = calGrantTotalByPaymentMethod(PaymentMethod.Credit);
         grantDiscount = calGrantDiscountByDepartment();
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "Store/Summery/Sale report all/sale detail report by date(/faces/store/store_report_sale_by_date_detail_payment_method.xhtml)");
+        
 
     }
     
@@ -998,7 +999,7 @@ public class StoreSaleReport implements Serializable {
         m.put("dty", DepartmentType.Inventry);
         m.put("tdep", getToDepartment());
         
-        return getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        return getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
     
@@ -1033,13 +1034,13 @@ public class StoreSaleReport implements Serializable {
         m.put("dty", DepartmentType.Inventry);
         
         
-        billItem = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        billItem = getBillItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
         grantTotal = 0.0;
 //        for (BillItem bi:billItem){
 //            grantTotal+=getGrantTotal();
 //        }
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "Store/Summery/Assest transfer report/transfer issue  summery  report by  date(/faces/store/store_report_asset_issue_summery.xhtml)");
+        
 
     }
     

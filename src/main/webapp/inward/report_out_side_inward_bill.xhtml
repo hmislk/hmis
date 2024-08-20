@@ -1,52 +1,66 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
-                template="/resources/template/template.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/inward/inward_reports.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://java.sun.com/jsf/core"
-                xmlns:pe="http://primefaces.org/ui/extensions">
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                >
 
-    <ui:define name="content">
+    <ui:define name="subcontent">
         <h:form>
             <p:panel>
                 <f:facet name="header">
-                    <p:outputLabel value="Out Side Service Bill reoprt" />
+                    <p:outputLabel value="Outside Service Bill reoprt" />
                 </f:facet>
-                <h:panelGrid columns="2">                    
+
+                <h:panelGrid columns="2" class="my-2">
                     <h:outputLabel value="From"/>
-                    <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{inwardReportController.fromDate}" 
-                                navigator="false" pattern="dd MMMM yyyy hh mm ss a" />
+                    <p:calendar 
+                        styleClass="dateTimePicker mx-2" 
+                        id="fromDate" 
+                        value="#{inwardReportController.fromDate}" 
+                        navigator="false" 
+                        class="mx-4"
+                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
 
                     <h:outputLabel value="To"/>
-                    <p:calendar styleClass="dateTimePicker" id="toDate" value="#{inwardReportController.toDate}" 
-                                navigator="false" pattern="dd MMMM yyyy hh mm ss a" />
+                    <p:calendar 
+                        styleClass="dateTimePicker mx-4" 
+                        id="toDate" 
+                        value="#{inwardReportController.toDate}"   
+                        navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
 
                     <h:outputLabel value="Institution"/>
                     <p:autoComplete id="ins" value="#{inwardReportController.institution}"
                                     completeMethod="#{institutionController.completeIns}"
                                     var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" placeholder="Institution"
-                                    size="30"  style="width: 400px;">
+                                    class="mx-4">
                         <p:column>
                             #{ix.name}
                         </p:column>
                     </p:autoComplete>
 
-                    <h:outputLabel value="Date"/>
-                    <p:selectOneRadio value="#{inwardReportController.reportKeyWord.string}">
+                </h:panelGrid>
+                <h:panelGrid columns="2" class="my-2">                    
+                    <h:outputLabel value="Date" class="my-4"/>
+                    <p:selectOneRadio class="mx-4" value="#{inwardReportController.reportKeyWord.string}">
                         <f:selectItem itemLabel="Discharge Date" itemValue="0" />
                         <f:selectItem itemLabel="Added Date" itemValue="1" />
                     </p:selectOneRadio>
 
                     <h:outputLabel value="Paid Type"/>
-                    <p:selectOneRadio value="#{inwardReportController.reportKeyWord.string1}">
+                    <p:selectOneRadio class="mx-4" value="#{inwardReportController.reportKeyWord.string1}">
                         <f:selectItem itemLabel="Not Paid" itemValue="0" />
                         <f:selectItem itemLabel="Paid" itemValue="1" />
                         <f:selectItem itemLabel="All" itemValue="2" />
                     </p:selectOneRadio>
-
-                    <p:commandButton ajax="false" value="Process" 
-                                     action="#{inwardReportController.createOutSideBills()}"/>
+                </h:panelGrid>
+                
+                <h:panelGrid columns="3" class="my-4">
+                    <p:commandButton ajax="false" icon="fas fa-cogs" value="Process" 
+                                     action="#{inwardReportController.createOutSideBills()}"
+                                     class="ui-button-warning"/>
                     <!--                    <p:commandButton ajax="false" value="Process By Added Date" 
                                                          action="#{inwardReportController.createOutSideBillsByAddedDate()}"
                                                          />
@@ -54,20 +68,20 @@
                                                          action="#{inwardReportController.createOutSideBillsByDischargeDate()}"
                                                          />-->
 
-                    <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();">
-                        <pe:exporter type="xlsx" target="tbl" fileName="report_out_side_inward_bill" />
+                    <p:commandButton ajax="false" icon="fas fa-file-excel" value="Excel" class="ui-button-success" >
+                        <p:dataExporter type="xlsx" target="tbl" fileName="report_out_side_inward_bill" />
                     </p:commandButton>
-<!--                    <p:commandButton ajax="false" value="Excel Admit Date" styleClass="noPrintButton" onclick="onSubmitButton();" actionListener="#{inwardReportController.createOutSideBillsByAddedDate()}">
-                        <pe:exporter type="xlsx" target="tbl" fileName="report_out_side_inward_bill_discharge" />
+<!--                    <p:commandButton ajax="false" value="Excel Admit Date" styleClass="noPrintButton"  actionListener="#{inwardReportController.createOutSideBillsByAddedDate()}">
+                        <p:dataExporter type="xlsx" target="tbl" fileName="report_out_side_inward_bill_discharge" />
                     </p:commandButton>
-                    <p:commandButton ajax="false" value="Excel Discharge Date" styleClass="noPrintButton" onclick="onSubmitButton();" actionListener="#{inwardReportController.createOutSideBillsByDischargeDate()}">
-                        <pe:exporter type="xlsx" target="tbl" fileName="report_out_side_inward_bill_admit" />
+                    <p:commandButton ajax="false" value="Excel Discharge Date" styleClass="noPrintButton"  actionListener="#{inwardReportController.createOutSideBillsByDischargeDate()}">
+                        <p:dataExporter type="xlsx" target="tbl" fileName="report_out_side_inward_bill_admit" />
                     </p:commandButton>-->
 
-                    <p:commandButton value="Print" ajax="false" action="#" >
+                    <p:commandButton value="Print" ajax="false" action="#"  icon="fas fa-print" class="ui-button-info" >
                         <p:printer target="gpBillPreview" ></p:printer>
                     </p:commandButton>
-                </h:panelGrid>   
+                </h:panelGrid>
 
                 <p:panel id="gpBillPreview" styleClass="noBorder summeryBorder">
                     <p:dataTable id="tbl" value="#{inwardReportController.billItems}" rowIndexVar="i" var="bi">
@@ -126,9 +140,9 @@
                                 <f:convertDateTime pattern="yyyy MM dd hh mm ss a" />
                             </p:outputLabel>
                         </p:column>
-                        <p:column headerText="Creater Name">     
+                        <p:column headerText="Creator Name">     
                             <f:facet name="header">
-                                <p:outputLabel value="Creater Name" />
+                                <p:outputLabel value="Creator Name" />
                             </f:facet>
                             <p:outputLabel value="#{bi.creater.webUserPerson.nameWithTitle}" />
                         </p:column>

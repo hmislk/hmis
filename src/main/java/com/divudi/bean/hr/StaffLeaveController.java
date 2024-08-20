@@ -1,17 +1,18 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Open Hospital Management Information System
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.hr;
 
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.data.hr.LeaveType;
-import com.divudi.ejb.CommonFunctions;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.ejb.HumanResourceBean;
 import com.divudi.entity.hr.Grade;
 import com.divudi.entity.hr.StaffLeave;
 import com.divudi.facade.StaffLeaveFacade;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
@@ -35,7 +36,7 @@ public class StaffLeaveController implements Serializable {
     List<StaffLeave> staffLeaves;
     @EJB
     private StaffLeaveFacade staffLeaveFacade;
-    @EJB
+
     private CommonFunctions commonFunctions;
     @EJB
     private HumanResourceBean humanResourceBean;
@@ -52,7 +53,7 @@ public class StaffLeaveController implements Serializable {
 
     private boolean errorCheck() {
         if (getCurrent().getLeaveType() == null) {
-            UtilityController.addErrorMessage("Please select Leave Type");
+            JsfUtil.addErrorMessage("Please select Leave Type");
             return true;
         }
 
@@ -66,7 +67,7 @@ public class StaffLeaveController implements Serializable {
 
         getStaffLeaveFacade().create(getCurrent());
         current = null;
-        UtilityController.addSuccessMessage("Staff Leave Added");
+        JsfUtil.addSuccessMessage("Staff Leave Added");
     }
 
     public void clear() {

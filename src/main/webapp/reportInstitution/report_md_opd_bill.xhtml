@@ -1,50 +1,48 @@
- <?xml version='1.0' encoding='UTF-8' ?>
+<?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
-                template="/resources/template/template.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/reportInstitution/report_own.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://java.sun.com/jsf/core"
-                xmlns:pe="http://primefaces.org/ui/extensions"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                
                 >
 
-    <ui:define name="content">
-        <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
+    <ui:define name="subcontent">
+        <!--<h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>-->
         <h:form>
-            <p:panel id="gpBillPreview">
+            <p:panel>
                 <f:facet name="header">
-                    <h:outputLabel value="6) Managing Director"/>
+                    <h:outputLabel value="Managing Director"/>
                 </f:facet>
 
-                <h:panelGrid columns="2" styleClass="noPrintButton">                    
+                <h:panelGrid columns="2" class="my-2" >                    
                     <h:outputLabel value="From Date"/>
-                    <p:calendar id="fromDate" value="#{mdReportController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
+                    <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="fromDate" value="#{mdReportController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" maxdate="#{commonController.endOfDayOnCurrentDate}" >
                         <f:ajax event="dateSelect"  listener="#{mdReportController.makeBillNull}"/>
                     </p:calendar>
 
                     <h:outputLabel value="To Date"/>
-                    <p:calendar id="toDate" value="#{mdReportController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
+                    <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="toDate" value="#{mdReportController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" maxdate="#{commonController.endOfDayOnCurrentDate}" >
                         <f:ajax event="dateSelect"   listener="#{mdReportController.makeBillNull}"/>
                     </p:calendar>
 
                 </h:panelGrid>   
-                <h:panelGrid columns="5" styleClass="noPrintButton">
-                    <p:spacer width="60" height="1"/>
-                    <p:commandButton id="btnRefresh" ajax="false" value="Refresh" style="float: right;"/>
+                <h:panelGrid columns="6" class="my-2" >
+                    <p:commandButton class="ui-button-warning" icon="fas fa-cogs" id="btnRefresh" ajax="false" value="Process" />
                     <p:defaultCommand target="btnRefresh"/>
-                    <p:commandButton value="Print" ajax="false" >
-                        <p:printer target="gpBillPreview" ></p:printer>
+                    <p:commandButton class="ui-button-info mx-2" icon="fas fa-print" value="Print" ajax="false" >
+                        <p:printer target="tbl" ></p:printer>
                     </p:commandButton>
-                    <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" style="float:right;">
-                        <pe:exporter type="xlsx" target="tbl" fileName="Report_by_Bill_OPD_From_#{mdReportController.fromDate} To #{mdReportController.toDate}"
-                                     facetBackground="#008000" facetFontSize="15" 
-                                     facetFontColor="#FFFFFF" facetFontStyle="BOLD" cellFontColor="#0000FF" cellFontSize="12"  cellFontStyle="NORMAL"  
-                                     fontName="Courier New"  />
+                    <p:commandButton class="ui-button-success" icon="fas fa-file-excel" value="Excel" ajax="false" >
+                        <p:dataExporter type="xlsx" target="tbl" fileName="Report_by_Bill_OPD_From_#{mdReportController.fromDate} To #{mdReportController.toDate}"
+                                       
+                                            
+                                       />
                     </p:commandButton>
 
 
                 </h:panelGrid>
-
 
 
                 <p:dataTable id="tbl" value="#{mdReportController.bills}"  
@@ -57,12 +55,12 @@
 
 
                     <f:facet name="header">
-                        <h:outputLabel value="REPORT BY BILL(OPD)"/>
-                        <h:outputLabel value=" From : " style="white-space: pre-line"/>
+                        <h:outputLabel value="REPORT BY BILL (OPD) &emsp;"/>
+                        <h:outputLabel value=" From : &nbsp;" style="white-space: pre-line"/>
                         <h:outputLabel  value="#{mdReportController.fromDate}">
                             <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
                         </h:outputLabel>
-                        <h:outputLabel value="&emsp;&emsp;To :"/>
+                        <h:outputLabel value="&emsp;&emsp;To : &nbsp;"/>
                         <h:outputLabel  value="#{mdReportController.toDate}" >
                             <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
                         </h:outputLabel>
@@ -156,7 +154,6 @@
                 </p:dataTable>
 
             </p:panel>
-
         </h:form>
     </ui:define>
 

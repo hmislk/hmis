@@ -1,12 +1,13 @@
 /*
- * MSc(Biomedical Informatics) Project
+ * Open Hospital Management Information System
  *
- * Development and Implementation of a Web-based Combined Data Repository of
+ * Dr M H B Ariyaratne
  Genealogical, Clinical, Storeoratory and Genetic Data
- * and
- * a Set of Related Tools
+ * (94) 71 5812399
+ * (94) 71 5812399
  */
 package com.divudi.bean.common;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.WebUser;
@@ -24,19 +25,20 @@ import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
-import javax.faces.context.FacesContext; import javax.faces.convert.Converter;
+import javax.faces.context.FacesContext;
+import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
+ * Informatics)
  */
 @Named
 @SessionScoped
-public  class UserDepartmentController implements Serializable {
+public class UserDepartmentController implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Inject
@@ -88,12 +90,12 @@ public  class UserDepartmentController implements Serializable {
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getEjbFacade().edit(current);
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getEjbFacade().create(current);
-            UtilityController.addSuccessMessage("Saved Successfully");
+            JsfUtil.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
         getItems();
@@ -132,9 +134,9 @@ public  class UserDepartmentController implements Serializable {
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getEjbFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
@@ -144,11 +146,11 @@ public  class UserDepartmentController implements Serializable {
 
     public void addDepartmentForUser() {
         if (selectedUser == null) {
-            UtilityController.addSuccessMessage("Select A User");
+            JsfUtil.addSuccessMessage("Select A User");
             return;
         }
         if (currentDepartment == null) {
-            UtilityController.addSuccessMessage("Select a Department");
+            JsfUtil.addSuccessMessage("Select a Department");
             return;
         }
         WebUserDepartment d = new WebUserDepartment();
@@ -156,9 +158,44 @@ public  class UserDepartmentController implements Serializable {
         ///other properties
         d.setDepartment(currentDepartment);
         d.setWebUser(selectedUser);
-
         getEjbFacade().create(d);
+        items=null;
         currentDepartment = null;
+        
+    }
+    
+    
+    public void addRouteForUser() {
+        if (selectedUser == null) {
+            JsfUtil.addSuccessMessage("Select A User");
+            return;
+        }
+        if (currentDepartment == null) {
+            JsfUtil.addSuccessMessage("Select a Route");
+            return;
+        }
+        WebUserDepartment d = new WebUserDepartment();
+        d.setCreatedAt(Calendar.getInstance().getTime());
+        d.setDepartment(currentDepartment);
+        d.setWebUser(selectedUser);
+        getEjbFacade().create(d);
+        items=null;
+        currentDepartment = null;
+        
+    }
+
+    public List<WebUserDepartment> fillWebUserDepartments(WebUser wu) {
+        List<WebUserDepartment> tis = new ArrayList<>();
+        String sql = "SELECT i "
+                + " FROM WebUserDepartment i "
+                + " where i.retired=:ret "
+                + " and i.webUser=:wu "
+                + "  order by i.department.name";
+        Map m = new HashMap();
+        m.put("ret", false);
+        m.put("wu", wu);
+        tis = getEjbFacade().findByJpql(sql, m);
+        return tis;
     }
 
     public List<WebUserDepartment> getItems() {
@@ -166,13 +203,13 @@ public  class UserDepartmentController implements Serializable {
             items = new ArrayList<>();
             return items;
         }
-        String sql = "SELECT i FROM WebUserDepartment i where i.retired=false and i.webUser.id = " + selectedUser.getId() + "  order by i.department.name";
-        items = getEjbFacade().findBySQL(sql);
         if (items == null) {
-            items = new ArrayList<>();
+            items = fillWebUserDepartments(selectedUser);
         }
         return items;
     }
+    
+    
 
     public WebUserDepartmentFacade getEjbFacade() {
         return ejbFacade;
@@ -187,7 +224,7 @@ public  class UserDepartmentController implements Serializable {
     }
 
     public void setSelectedUser(WebUser selectedUser) {
-        //////System.out.println("Setting user");
+        //////// // System.out.println("Setting user");
         this.selectedUser = selectedUser;
     }
 
@@ -197,7 +234,7 @@ public  class UserDepartmentController implements Serializable {
         }
 
         String sql = "SELECT i.department FROM WebUserDepartment i where i.retired=false and i.webUser=" + getSelectedUser() + "order by i.name";
-        selectedUserDeparment = getDepartmentFacade().findBySQL(sql);
+        selectedUserDeparment = getDepartmentFacade().findByJpql(sql);
 
         if (selectedUserDeparment == null) {
             selectedUserDeparment = new ArrayList<Department>();
@@ -224,7 +261,7 @@ public  class UserDepartmentController implements Serializable {
         }
 
         String sql = "SELECT i.institution FROM WebUserDepartment i where i.retired=false and i.webUser=" + getSelectedUser() + "order by i.name";
-        selectedInstitutions = getInstitutionFacade().findBySQL(sql);
+        selectedInstitutions = getInstitutionFacade().findByJpql(sql);
 
         if (selectedInstitutions == null) {
             selectedInstitutions = new ArrayList<Institution>();
@@ -251,27 +288,26 @@ public  class UserDepartmentController implements Serializable {
 
     public void setCurrentInstituion(Institution currentInstituion) {
         this.currentInstituion = currentInstituion;
-        getCurrentInsDepartments();
+//        getCurrentInsDepartments();
     }
 
-    public List<Department> getCurrentInsDepartments() {
-        if (currentInstituion == null) {
-            //////System.out.println("1");
-            return new ArrayList<>();
-        }
-        //////System.out.println("2");
-        Map m = new HashMap();
-        m.put("ins", currentInstituion);
-        String sql = "SELECT i FROM Department i where i.retired=false and i.institution=:ins order by i.name";
-        currentInsDepartments = getDepartmentFacade().findBySQL(sql,m);
-        //////System.out.println("3");
-        if (currentInsDepartments == null) {
-            //////System.out.println("4");
-            currentInsDepartments = new ArrayList<>();
-        }
-        return currentInsDepartments;
-    }
-
+//    public List<Department> getCurrentInsDepartments() {
+//        if (currentInstituion == null) {
+//            //////// // System.out.println("1");
+//            return new ArrayList<>();
+//        }
+//        //////// // System.out.println("2");
+//        Map m = new HashMap();
+//        m.put("ins", currentInstituion);
+//        String sql = "SELECT i FROM Department i where i.retired=false and i.institution=:ins order by i.name";
+//        currentInsDepartments = getDepartmentFacade().findByJpql(sql,m);
+//        //////// // System.out.println("3");
+//        if (currentInsDepartments == null) {
+//            //////// // System.out.println("4");
+//            currentInsDepartments = new ArrayList<>();
+//        }
+//        return currentInsDepartments;
+//    }
     public void setCurrentInsDepartments(List<Department> currentInsDepartments) {
         this.currentInsDepartments = currentInsDepartments;
     }
@@ -282,6 +318,10 @@ public  class UserDepartmentController implements Serializable {
 
     public void setLstDep(List<Department> lstDep) {
         this.lstDep = lstDep;
+    }
+
+    public void setItems(List<WebUserDepartment> items) {
+        this.items = items;
     }
 
     /**

@@ -1,0 +1,99 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+
+    <h:body>
+
+        <ui:composition template="/admin/users/user_list.xhtml">
+
+            <ui:define name="users"> 
+                <f:view>
+                    <p:panel >
+                        <f:facet name="header" >
+                            <i class="fa fa-user-cog"></i>
+                            <h:outputLabel class="mx-2 mt-2" value="Manage User"/>
+                            <p:commandButton 
+                                ajax="false" value="Save" style="float: right;" 
+                                action="#{webUserController.saveUser()}" 
+                                icon="fa fa-save"
+                                class="ui-button-warning">
+                            </p:commandButton>
+                        </f:facet>
+
+                        <h:panelGrid columns="3">
+
+                            <p:outputLabel value="User Name " style="width: 100px;" for="name" class="mb-2" />
+                            <p:outputLabel value=":" style="width: 20px;" class="mb-2"/>
+                            <p:outputLabel  id="name" value="#{webUserController.current.name}" class="mb-2 form-control" style="width: 300px;"/>
+
+                            <p:outputLabel value="Staff " style="width: 100px;" for="staff" />
+                            <p:outputLabel value=":" style="width: 20px;"/>
+                            <p:autoComplete  forceSelection="true" id="staff"
+                                             value="#{webUserController.current.staff}" 
+                                             completeMethod="#{staffController.completeStaff}" 
+                                             var="mys" class="w-100" inputStyleClass="w-100"
+                                             itemLabel="#{mys.person.nameWithTitle}" 
+                                             itemValue="#{mys}"
+                                             >
+                            </p:autoComplete>
+
+                            <p:outputLabel value="Institution " style="width: 100px;" for="institution" />
+                            <p:outputLabel value=":" style="width: 20px;"/>
+                            <p:autoComplete forceSelection="true" value="#{webUserController.current.institution}"
+                                            completeMethod="#{institutionController.completeIns}" id="institution"
+                                            var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30" 
+                                            class="w-100" inputStyleClass="w-100">
+                                <f:ajax event="itemSelect" execute="@this" render="department" ></f:ajax>
+                                <f:ajax event="change" execute="@this" render="department" ></f:ajax>
+                            </p:autoComplete>
+
+                            <p:outputLabel value="Department " style="width: 100px;" for="department" />
+                            <p:outputLabel value=":" style="width: 20px;"/>
+                            <p:selectOneMenu id="department" value="#{webUserController.current.department}" style="width: 300px;" >
+                                <f:selectItem itemLabel="Select Department"/>
+                                <f:selectItems value="#{webUserController.departmentsOfSelectedUsersInstitution}"/>
+                            </p:selectOneMenu>
+
+                            <p:outputLabel for="loginPage" value="Login Page" />
+                            <p:outputLabel value=":" style="width: 20px;"/>
+                            <p:selectOneMenu 
+                                id="loginPage"
+                                filterMatchMode="contains"
+                                styleClass="w-100 mt-1 form-control"
+                                value="#{webUserController.current.loginPage}"
+                                rendered="#{!webUserController.createOnlyUserForExsistingUser}">
+                                <f:selectItem itemLabel="-- Select Login Page --" itemValue="" />
+                                <f:selectItems value="#{enumController.loginPages}"
+                                               var="lp"
+                                               itemLabel="#{lp.label}"
+                                               itemValue="#{lp}" />
+                            </p:selectOneMenu>
+
+                            <p:outputLabel value="Email " style="width: 100px;" for="email" />
+                            <p:outputLabel value=":" style="width: 20px;"/>
+                            <p:inputText id="email" value="#{webUserController.current.email}" title="Email" style="width: 300px;"/>
+
+                            <p:outputLabel value="Mobile " style="width: 100px;" for="telNo" />
+                            <p:outputLabel value=":" style="width: 20px;"/>
+                            <p:inputText id="telNo" value="#{webUserController.current.telNo}" title="TelNo" style="width: 300px;"/>
+
+                            <p:outputLabel value="Code " style="width: 100px;" for="code" />
+                            <p:outputLabel value=":" style="width: 20px;"/>
+                            <p:inputText id="code" value="#{webUserController.current.code}" title="Code" style="width: 300px;" />
+
+                            <p:outputLabel value="User is Active" class=" m-1"></p:outputLabel>
+                            <p:outputLabel value=":" style="width: 20px;"/>
+                            <p:selectBooleanCheckbox value="#{webUserController.current.activated}" >
+                            </p:selectBooleanCheckbox>
+
+                        </h:panelGrid>
+                    </p:panel>
+                </f:view>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

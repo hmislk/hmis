@@ -1,11 +1,11 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.hr;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.data.hr.PaysheetComponentType;
 import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.ejb.HumanResourceBean;
@@ -14,7 +14,7 @@ import com.divudi.entity.hr.PaysheetComponent;
 import com.divudi.entity.hr.StaffPaysheetComponent;
 import com.divudi.facade.PaysheetComponentFacade;
 import com.divudi.facade.StaffPaysheetComponentFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Date;
@@ -99,10 +99,10 @@ public class StaffPaySheetComponentController implements Serializable {
 //        hm.put("tp", getCurrent().getPaysheetComponent());
 //        hm.put("st", getCurrent().getStaff());
 //        hm.put("cu", getCurrent().getToDate());
-//        List<StaffPaysheetComponent> tmp = getStaffPaysheetComponentFacade().findBySQL(sql, hm, TemporalType.DATE);
+//        List<StaffPaysheetComponent> tmp = getStaffPaysheetComponentFacade().findByJpql(sql, hm, TemporalType.DATE);
 //
 //        if (!tmp.isEmpty()) {
-//            UtilityController.addErrorMessage("There is already Component define for " + getCurrent().getStaff().getPerson().getNameWithTitle() + " for this date range u can edit or remove add new one ");
+//            JsfUtil.addErrorMessage("There is already Component define for " + getCurrent().getStaff().getPerson().getNameWithTitle() + " for this date range u can edit or remove add new one ");
 //            return true;
 //        }
 //
@@ -111,16 +111,16 @@ public class StaffPaySheetComponentController implements Serializable {
     private boolean errorCheck() {
 
         if (getCurrent().getPaysheetComponent() == null) {
-            UtilityController.addErrorMessage("Check Component Name");
+            JsfUtil.addErrorMessage("Check Component Name");
             return true;
         }
         if (getCurrent().getToDate() == null || getCurrent().getFromDate() == null) {
-            UtilityController.addErrorMessage("Check Date");
+            JsfUtil.addErrorMessage("Check Date");
             return true;
         }
 
         if (getCurrent().getStaff() == null) {
-            UtilityController.addErrorMessage("Check Staff");
+            JsfUtil.addErrorMessage("Check Staff");
             return true;
         }
 
@@ -131,7 +131,7 @@ public class StaffPaySheetComponentController implements Serializable {
        
 
         if (humanResourceBean.checkStaff(getCurrent(), getCurrent().getPaysheetComponent(), getCurrent().getStaff(), getCurrent().getFromDate(), getCurrent().getToDate())) {
-            UtilityController.addErrorMessage("There is Some component in Same Date Range");
+            JsfUtil.addErrorMessage("There is Some component in Same Date Range");
             return true;
         }
 
@@ -166,7 +166,7 @@ public class StaffPaySheetComponentController implements Serializable {
         Date fd = getCurrent().getFromDate();
         Date td = getCurrent().getToDate();
 
-        UtilityController.addSuccessMessage("Succesfully Saved");
+        JsfUtil.addSuccessMessage("Succesfully Saved");
         makeItemNull();
         getCurrent(s, fd, td);
     }
@@ -239,12 +239,12 @@ public class StaffPaySheetComponentController implements Serializable {
         }
 
         sql += " order by ss.staff.codeInterger";
-        items = getStaffPaysheetComponentFacade().findBySQL(sql, hm, TemporalType.DATE);
+        items = getStaffPaysheetComponentFacade().findByJpql(sql, hm, TemporalType.DATE);
     }
 
     public List<StaffPaysheetComponent> getItems() {
-        //   //////System.out.println("getting Lst ");
-        //   //////System.out.println("Staff  : " + getCurrent().getStaff());
+        //   //////// // System.out.println("getting Lst ");
+        //   //////// // System.out.println("Staff  : " + getCurrent().getStaff());
         if (items == null) {
 
         }
@@ -265,7 +265,7 @@ public class StaffPaySheetComponentController implements Serializable {
         HashMap hm = new HashMap();
         hm.put("tp1", PaysheetComponentType.addition.getSystemDefinedComponents());
         hm.put("tp2", Arrays.asList(new PaysheetComponentType[]{PaysheetComponentType.LoanInstallemant, PaysheetComponentType.LoanNetSalary, PaysheetComponentType.Advance_Payment_Deduction}));
-        return getPaysheetComponentFacade().findBySQL(sql, hm);
+        return getPaysheetComponentFacade().findByJpql(sql, hm);
 
     }
 

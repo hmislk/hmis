@@ -1,33 +1,33 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:au="http://java.sun.com/jsf/composite/autocomplete"
-      xmlns:pe="http://primefaces.org/ui/extensions">
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:au="http://xmlns.jcp.org/jsf/composite/autocomplete"
+      >
 
     <h:body>
 
-        <ui:composition template="/resources/template/template.xhtml">
+        <ui:composition template="/store/store_reports_index.xhtml">
 
-            <ui:define name="content">
+            <ui:define name="subcontent">
                 <h:form>
 
 
                     <p:panel header="Department Stock Report by Batch" >
 
-                        <h:panelGrid columns="2" >
+                        <h:panelGrid columns="2" class="my-2">
                             <h:outputLabel value="Institution" ></h:outputLabel>
                             <au:institution value="#{storeReportsStock.institution}" />
                             <h:outputLabel value="Department" ></h:outputLabel>
-                            <p:autoComplete completeMethod="#{departmentController.completeDept}" 
+                            <p:autoComplete class="mx-2 w-100" inputStyleClass="w-100" completeMethod="#{departmentController.completeDept}" 
                                             var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" 
-                                            forceSelection="true" value="#{storeReportsStock.department}" converter="departmentConverter" >
+                                            forceSelection="true" value="#{storeReportsStock.department}"  >
                             </p:autoComplete>
                             <h:outputLabel value="Item"/>                             
-                            <p:autoComplete   value="#{storeReportsStock.item}" 
+                            <p:autoComplete   class="mx-2 w-100" inputStyleClass="w-100" value="#{storeReportsStock.item}" 
                                               forceSelection="true"
                                               completeMethod="#{itemController.completeStoreInventryItem}" 
                                               var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
@@ -42,30 +42,29 @@
                                 </p:column>
                             </p:autoComplete>
                             <h:outputLabel value="Tag Serial No"/>
-                            <p:inputText value="#{storeReportsStock.reportKeyWord.address}" autocomplete="off" />
+                            <p:inputText class="mx-2 w-100" value="#{storeReportsStock.reportKeyWord.address}" autocomplete="off" />
                             <h:outputLabel value="Consider Date Range"/>
-                            <p:selectBooleanCheckbox value="#{storeReportsStock.reportKeyWord.bool1}" >
+                            <p:selectBooleanCheckbox class="mx-2 w-100" value="#{storeReportsStock.reportKeyWord.bool1}" >
                                 <f:ajax render="fdate tdate" event="change" execute="@this" />
                             </p:selectBooleanCheckbox>
                             <h:outputLabel value="From Date"/>
-                            <p:calendar id="fdate" disabled="#{!storeReportsStock.reportKeyWord.bool1}"
-                                        value="#{storeReportsStock.fromDate}" pattern="yyyy MM dd hh:mm:ss a" />
+                            <p:calendar class="mx-2 w-100" inputStyleClass="w-100" id="fdate" disabled="#{!storeReportsStock.reportKeyWord.bool1}"
+                                        value="#{storeReportsStock.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                             <h:outputLabel value="To Date"/>
-                            <p:calendar id="tdate" disabled="#{!storeReportsStock.reportKeyWord.bool1}"
-                                        value="#{storeReportsStock.toDate}" pattern="yyyy MM dd hh:mm:ss a" />
+                            <p:calendar class="mx-2 w-100" inputStyleClass="w-100" id="tdate" disabled="#{!storeReportsStock.reportKeyWord.bool1}"
+                                        value="#{storeReportsStock.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                         </h:panelGrid>
-                        <h:panelGrid columns="4" > 
-                            <p:spacer width="80" height="1"/>
-                            <p:commandButton ajax="false" value="Process" 
+                        <h:panelGrid columns="6" class="my-2">
+                            <p:commandButton class="ui-button-warning" icon="fas fa-cogs" ajax="false" value="Process" 
                                              actionListener="#{storeReportsStock.fillDepartmentInventryStocks()}" ></p:commandButton>
-                            <p:commandButton value="Print" ajax="false" >
+                            <p:commandButton class="ui-button-info mx-2" icon="fas fa-print" value="Print" ajax="false" >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
-                            <p:commandButton value="Excel" ajax="false">
-                                <pe:exporter type="xlsx" target="tbl" fileName="Total_Stock"
-                                             facetBackground="#008000" facetFontSize="15" 
-                                             facetFontColor="#FFFFFF" facetFontStyle="BOLD" cellFontColor="#0000FF" cellFontSize="12"  cellFontStyle="NORMAL" 
-                                             fontName="Courier New" />
+                            <p:commandButton class="ui-button-success" icon="fas fa-file-excel" value="Excel" ajax="false">
+                                <p:dataExporter type="xlsx" target="tbl" fileName="Total_Stock"
+                                               
+                                                   
+                                              />
                             </p:commandButton>
                         </h:panelGrid>
 
@@ -157,7 +156,7 @@
                                         <h:outputLabel value="GRN Date"/>                                     
                                     </f:facet>
                                     <h:outputLabel value="#{i.itemBatch.lastPurchaseBillItem.bill.createdAt}" >
-                                        <f:convertDateTime pattern="dd/MM/yyyy" />
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                                     </h:outputLabel>
                                 </p:column>
 <!--                                <p:column style="text-align: right;">

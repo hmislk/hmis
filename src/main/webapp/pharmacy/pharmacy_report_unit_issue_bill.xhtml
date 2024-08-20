@@ -1,48 +1,67 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:pe="http://primefaces.org/ui/extensions">
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      >
 
     <h:body>
 
-        <ui:composition template="/resources/template/template.xhtml">
+        <ui:composition template="/pharmacy/pharmacy_analytics.xhtml">
 
-            <ui:define name="content">
+            <ui:define name="subcontent">
                 <h:form>
 
                     <p:panel header="Unit Issue Report" >
 
-                        <h:panelGrid columns="4" >
+                        <h:panelGrid columns="4" class="w-100">
+                            <h:outputLabel value="From" ></h:outputLabel>
+                            <p:calendar value="#{reportsTransfer.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
+                            <h:outputLabel value="To" ></h:outputLabel>
+                            <p:calendar value="#{reportsTransfer.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                             <h:outputLabel value="Issue From" ></h:outputLabel>
                             <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" 
                                             itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
-                                            value="#{reportsTransfer.fromDepartment}" converter="departmentConverter" >
+                                            value="#{reportsTransfer.fromDepartment}"  >
                             </p:autoComplete>
                             <h:outputLabel value="Issue To" ></h:outputLabel>
                             <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" 
                                             itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
-                                            value="#{reportsTransfer.toDepartment}" converter="departmentConverter" >
+                                            value="#{reportsTransfer.toDepartment}"  >
                             </p:autoComplete>
-                            <h:outputLabel value="From" ></h:outputLabel>
-                            <p:calendar value="#{reportsTransfer.fromDate}" pattern="dd MM yyyy hh:mm:ss a" ></p:calendar>
-                            <h:outputLabel value="To" ></h:outputLabel>
-                            <p:calendar value="#{reportsTransfer.toDate}" pattern="dd MM yyyy hh:mm:ss a" ></p:calendar>
+                            
                         </h:panelGrid>
 
-                        <h:panelGrid columns="3">
-                            <p:commandButton ajax="false" value="Fill" action="#{reportsTransfer.fillDepartmentUnitIssueByBill}" ></p:commandButton>
+                        <h:panelGrid columns="3" class="my-2">
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Fill" 
+                                icon="fa-solid fa-fill"
+                                class="ui-button-warning"
+                                action="#{reportsTransfer.fillDepartmentUnitIssueByBill}" >
+                            </p:commandButton>
+                            
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Excel" 
+                                icon="fa-solid fa-file-excel"
+                                class="ui-button-success mx-2"  
+                                style="float: right;" >
+                                <p:dataExporter type="xlsx" target="tbl" fileName="Unit_Issue_Report"  />
+                            </p:commandButton> 
 
-                            <p:commandButton value="Print" ajax="false" action="#" >
+                            <p:commandButton 
+                                value="Print" 
+                                ajax="false" 
+                                icon="fa-solid fa-print"
+                                class="ui-button-info"   
+                                action="#" >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
 
-                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
-                                <pe:exporter type="xlsx" target="tbl" fileName="Unit_Issue_Report"  />
-                            </p:commandButton>  
+
                         </h:panelGrid>
 
 
@@ -53,17 +72,17 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="Unit Issue From "/>&#13;&nbsp;
                                     <h:outputLabel value="#{reportsTransfer.fromDepartment.name}"/> 
-                                    <h:outputLabel value=" To "/>
+                                    <h:outputLabel class="mx-3" value=" To "/>
                                     <h:outputLabel value="#{reportsTransfer.toDepartment.name}"/>
                                     &#13;&nbsp;
-                                        <h:outputLabel value="From  "/>
-                                        <h:outputLabel value="#{reportsTransfer.fromDate}">
-                                            <f:convertDateTime pattern="dd/MM/yy" ></f:convertDateTime>
-                                        </h:outputLabel>
-                                        <h:outputLabel value="To  "/>
-                                        <h:outputLabel value="#{reportsTransfer.toDate}">
-                                            <f:convertDateTime pattern="dd/MM/yy" ></f:convertDateTime>
-                                        </h:outputLabel>
+                                    <h:outputLabel value="From  "/>
+                                    <h:outputLabel class="mx-2" value="#{reportsTransfer.fromDate}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
+                                    </h:outputLabel>
+                                    <h:outputLabel value="To  "/>
+                                    <h:outputLabel class="mx-2" value="#{reportsTransfer.toDate}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
+                                    </h:outputLabel>
                                 </f:facet>
 
                                 <p:column headerText="Bill No">
@@ -72,7 +91,7 @@
                                     </f:facet>
                                     <h:outputLabel value="#{i.deptId}" ></h:outputLabel>                                    
                                 </p:column>
-                                
+
                                 <p:column headerText="Bill No">
                                     <f:facet name="header">
                                         <h:outputLabel value="Bill No"/>
@@ -92,7 +111,7 @@
                                         <h:outputLabel value="Date"/>
                                     </f:facet>                                    
                                     <h:outputLabel value="#{i.createdAt}"  >
-                                        <f:convertDateTime pattern="dd/MM/yy" ></f:convertDateTime>
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
                                     </h:outputLabel>
                                 </p:column>
 
@@ -127,7 +146,7 @@
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
-  
+
                             </p:dataTable>
                         </h:panelGroup>
                     </p:panel>

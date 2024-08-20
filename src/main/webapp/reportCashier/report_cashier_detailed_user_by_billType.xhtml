@@ -5,13 +5,13 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
-      xmlns:pe="http://primefaces.org/ui/extensions">
+      >
 
     <h:body>
 
-        <ui:composition template="/resources/template/template.xhtml">
+        <ui:composition template="/analytics/opd/index.xhtml">
 
-            <ui:define name="content">
+            <ui:define name="subcontent">
 
 
 
@@ -19,51 +19,50 @@
 
                     <p:panel header="Summary By Bill Type">
 
-                        <p:panelGrid columns="2" styleClass="alignTop" >
-                            <h:panelGrid columns="2">
+                            <h:panelGrid columns="2" class="my-2" >
                                 <h:outputLabel value="From"/>
-                                <p:calendar id="frmDate" value="#{commonReport.fromDate}" navigator="true"  pattern="dd MM yy HH:mm:ss a" >
+                                <p:calendar id="frmDate" value="#{commonReport.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  class="w-100 mx-4" inputStyleClass="w-100">
                                 </p:calendar>
 
                                 <h:outputLabel value="To"/>
-                                <p:calendar id="toDate" value="#{commonReport.toDate}" navigator="true" pattern="dd MM yy HH:mm:ss a" >
+                                <p:calendar id="toDate" value="#{commonReport.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  class="w-100 mx-4" inputStyleClass="w-100">
                                 </p:calendar>
 
                                 <h:outputLabel value="Billed Department"/>
                                 <p:autoComplete id="frmdep" completeMethod="#{departmentController.completeDept}" 
                                                 var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" 
                                                 forceSelection="true" 
-                                                value="#{commonReport.fromDepartment}" />
+                                                value="#{commonReport.fromDepartment}" class="w-100 mx-4" inputStyleClass="w-100"/>
 
                                 <h:outputLabel value="For Department"/>
                                 <p:autoComplete id="todep" completeMethod="#{departmentController.completeDept}" 
                                                 var="tdept" itemLabel="#{tdept.name}" itemValue="#{tdept}" 
                                                 forceSelection="true" 
-                                                value="#{commonReport.toDepartment}" />
+                                                value="#{commonReport.toDepartment}" class="w-100 mx-4" inputStyleClass="w-100"/>
 
 
                                 <h:outputLabel value="Select Bill Type" for="cmdBillType"/>
-                                <p:selectOneMenu id="cmdBillType" value="#{commonReport.billType}"
-                                                 required="true"
+                                <p:selectOneMenu id="cmdBillType" value="#{commonReport.billType}" class="w-100 mx-4"
+                                                 required="true" 
                                                  requiredMessage="Please select a bill type">
                                     <f:selectItem itemLabel="Select Bill Type"/>
-                                    <f:selectItems value="#{enumController.cashFlowBillTypes}" var="i" itemLabel="#{i.label}" itemValue="#{i}" />
+                                    <f:selectItems value="#{enumController.cashFlowBillTypes}" var="i" itemLabel="#{i.label}" itemValue="#{i}" class="w-100 mx-4" />
                                 </p:selectOneMenu>
                             </h:panelGrid>
 
-                            <h:panelGrid columns="1" style="min-width: 30em;" >
+                            <h:panelGrid columns="6" class="my-2" >
                                 <p:commandButton  id="btnRefresh" ajax="false" value="Process" 
-                                                  style="width: 90%; margin: auto;"
+                                                  class="ui-button-warning" icon="fas fa-cogs"
                                                   actionListener="#{commonReport.fillBillTypeBills()}" />  
                                 <p:commandButton ajax="false" value="Print"
-                                                 style="width: 90%; margin: auto;"
-                                                 styleClass="noPrintButton">
+                                                 class="ui-button-info mx-2" icon="fas fa-print"
+                                                 >
                                     <p:printer target="reportPrint"/>
                                 </p:commandButton>  
                                 <p:commandButton ajax="false"  
-                                                 style="width: 90%; margin: auto;"
-                                                 value="Excel"  styleClass="noPrintButton" >
-                                    <pe:exporter type="xlsx" 
+                                                 class="ui-button-success" icon="fas fa-file-excel"
+                                                 value="Excel" >
+                                    <p:dataExporter type="xlsx" 
                                                  target="#{commonReport.billType}billed,
                                                  #{commonReport.billType}cancelled,
                                                  #{commonReport.billType}refunded,
@@ -73,8 +72,6 @@
 
                                 </p:commandButton>
                             </h:panelGrid>
-
-                        </p:panelGrid>
 
 
 
@@ -93,20 +90,20 @@
 
                                         <h:outputLabel value="#{commonReport.webUser.webUserPerson.name} " style="float: left"/>
                                         <h:outputLabel value="Summary By Bill Type"/><br/> 
-                                        <h:outputLabel value="From : "/>
+                                        <h:outputLabel value="From : &emsp;"/>
                                         <h:outputLabel value="#{searchController.fromDate}">
                                             <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
                                         </h:outputLabel><p:spacer width="30" height="1"/>
-                                        <h:outputLabel value="To : "/>
+                                        <h:outputLabel value="&emsp;To :&emsp; "/>
                                         <h:outputLabel value="#{searchController.toDate}">
                                             <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
                                         </h:outputLabel>
-                                        <h:outputLabel value="Bill Type : #{commonReport.billType} " style="float: left"/>
+                                        <h:outputLabel value="Bill Type : #{commonReport.billType} &emsp;" style="float: left"/>
                                     </f:facet>
 
                                     <p:column headerText="Id" >
                                         <f:facet name="header">  
-                                            <h:outputLabel value="Id"/>
+                                            <h:outputLabel value="ID"/>
                                         </f:facet> 
                                         <h:outputLabel value="#{b.insId}"/>
                                         <!--<h:outputLabel value="#{b.paymentMethod}"/>-->
@@ -197,7 +194,7 @@
 
                                     <p:column headerText="Checque" styleClass="averageNumericColumn">
                                         <f:facet name="header">  
-                                            <h:outputLabel value="Checque"/>
+                                            <h:outputLabel value="Cheque"/>
                                         </f:facet> 
                                         <h:outputLabel rendered="#{b.paymentMethod=='Cheque'}" value="#{b.netTotal}" >
                                             <f:convertNumber pattern="#,##0.00"/>
@@ -278,12 +275,12 @@
                                         <h:outputLabel value="Cancelled"/>
                                     </f:facet> 
 
-                                    <p:column headerText="Time"   >
+                                    <p:column headerText="Time">
                                         <f:facet name="header">  
                                             <h:outputLabel value="Time"/>
                                         </f:facet> 
                                         <h:outputLabel value="#{b1.createdAt}" >
-                                            <f:convertDateTime pattern="HH:mm:ss a"/>
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
                                         </h:outputLabel>
                                     </p:column>
 
@@ -296,14 +293,14 @@
 
                                     <p:column headerText="Cancelled Id" >
                                         <f:facet name="header">  
-                                            <h:outputLabel value="Cancelled Id"/>
+                                            <h:outputLabel value="Cancelled ID"/>
                                         </f:facet> 
                                         <h:outputLabel value="#{b1.insId}"/>
                                     </p:column>
 
                                     <p:column headerText="Billed Id" >
                                         <f:facet name="header">  
-                                            <h:outputLabel value="Billed Id"/>
+                                            <h:outputLabel value="Billed ID"/>
                                         </f:facet> 
                                         <h:outputLabel value="#{b1.billedBill.insId}" >
                                         </h:outputLabel>
@@ -355,7 +352,7 @@
 
                                     <p:column headerText="Checque" styleClass="averageNumericColumn" >
                                         <f:facet name="header">  
-                                            <h:outputLabel value="Checque"/>
+                                            <h:outputLabel value="Cheque"/>
                                         </f:facet> 
                                         <h:outputLabel rendered="#{b1.paymentMethod=='Cheque'}" value="#{b1.netTotal}" >
                                             <f:convertNumber pattern="#,##0.00"/>
@@ -431,17 +428,17 @@
                                 <p:spacer height="30"/>
 
                                 <p:dataTable id="OpdBillrefunded" value="#{commonReport.refundedBills.bills}" var="b"
-                                             sortBy="#{b.billType}"   >
+                                             sortBy="#{b.billType}">
                                     <f:facet name="header">  
                                         <h:outputLabel value="Refunded" />
                                     </f:facet> 
 
-                                    <p:column headerText="Time"   >
+                                    <p:column headerText="Time">
                                         <f:facet name="header">  
                                             <h:outputLabel value="Time"/>
                                         </f:facet> 
                                         <h:outputLabel value="#{b.createdAt}" >
-                                            <f:convertDateTime pattern="HH:mm:ss a"/>
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
                                         </h:outputLabel>
                                     </p:column>
 
@@ -455,14 +452,14 @@
 
                                     <p:column headerText="Refunded Id" >
                                         <f:facet name="header">  
-                                            <h:outputLabel value="Refunded Id"/>
+                                            <h:outputLabel value="Refunded ID"/>
                                         </f:facet> 
                                         <h:outputLabel value="#{b.insId}" ></h:outputLabel>
                                     </p:column>
 
                                     <p:column headerText="Billed Id" >
                                         <f:facet name="header">  
-                                            <h:outputLabel value="Billed Id"/>
+                                            <h:outputLabel value="Billed ID"/>
                                         </f:facet> 
                                         <h:outputLabel value="#{b.billedBill.insId}" >
                                         </h:outputLabel>
@@ -515,7 +512,7 @@
 
                                     <p:column headerText="Checque" styleClass="averageNumericColumn" >
                                         <f:facet name="header">  
-                                            <h:outputLabel value="Checque"/>
+                                            <h:outputLabel value="Cheque"/>
                                         </f:facet> 
                                         <h:outputLabel rendered="#{b.paymentMethod=='Cheque'}" value="#{b.netTotal}" >
                                             <f:convertNumber pattern="#,##0.00"/>
@@ -616,7 +613,7 @@
 
                                     <p:column headerText="Id" >
                                         <f:facet name="header">  
-                                            <h:outputLabel value="Id"/>
+                                            <h:outputLabel value="ID"/>
                                         </f:facet> 
                                         <h:outputLabel value="#{b.insId}"/>
                                     </p:column>
@@ -677,7 +674,7 @@
 
                                     <p:column headerText="Checque" styleClass="averageNumericColumn">
                                         <f:facet name="header">  
-                                            <h:outputLabel value="Checque"/>
+                                            <h:outputLabel value="Cheque"/>
                                         </f:facet> 
                                         <h:outputLabel rendered="#{b.paymentMethod=='Cheque'}" value="#{b.netTotal}" >
                                             <f:convertNumber pattern="#,##0.00"/>
@@ -759,12 +756,12 @@
                                     <f:facet name="header">  
                                         <h:outputLabel value="Cancelled"/>
                                     </f:facet> 
-                                    <p:column headerText="Time"   >
+                                    <p:column headerText="Time">
                                         <f:facet name="header">  
                                             <h:outputLabel value="Time"/>
                                         </f:facet> 
                                         <h:outputLabel value="#{b1.createdAt}" >
-                                            <f:convertDateTime pattern="HH:mm:ss a"/>
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
                                         </h:outputLabel>
                                     </p:column>
                                     <p:column headerText="Cashier"  >
@@ -776,14 +773,14 @@
                                     </p:column>
                                     <p:column headerText="Cancelled Id" >
                                         <f:facet name="header">  
-                                            <h:outputLabel value="Cancelled Id"/>
+                                            <h:outputLabel value="Cancelled ID"/>
                                         </f:facet> 
                                         <h:outputLabel value="#{b1.insId}"/>
                                     </p:column>
 
                                     <p:column headerText="Billed Id" >
                                         <f:facet name="header">  
-                                            <h:outputLabel value="Billed Id"/>
+                                            <h:outputLabel value="Billed ID"/>
                                         </f:facet> 
                                         <h:outputLabel value="#{b1.billedBill.insId}" >
                                         </h:outputLabel>
@@ -834,7 +831,7 @@
                                     </p:column>
                                     <p:column headerText="Checque" styleClass="averageNumericColumn" >
                                         <f:facet name="header">  
-                                            <h:outputLabel value="Checque"/>
+                                            <h:outputLabel value="Cheque"/>
                                         </f:facet> 
                                         <h:outputLabel rendered="#{b1.paymentMethod=='Cheque'}" value="#{b1.netTotal}" >
                                             <f:convertNumber pattern="#,##0.00"/>
@@ -909,12 +906,12 @@
                                     <f:facet name="header">  
                                         <h:outputLabel value="Refunded" />
                                     </f:facet> 
-                                    <p:column headerText="Time"   >
+                                    <p:column headerText="Time">
                                         <f:facet name="header">  
                                             <h:outputLabel value="Time"/>
                                         </f:facet> 
                                         <h:outputLabel value="#{b.createdAt}" >
-                                            <f:convertDateTime pattern="HH:mm:ss a"/>
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
                                         </h:outputLabel>
                                     </p:column>
 
@@ -928,14 +925,14 @@
 
                                     <p:column headerText="Refunded Id" >
                                         <f:facet name="header">  
-                                            <h:outputLabel value="Refunded Id"/>
+                                            <h:outputLabel value="Refunded ID"/>
                                         </f:facet> 
                                         <h:outputLabel value="#{b.insId}" ></h:outputLabel>
                                     </p:column>
 
                                     <p:column headerText="Billed Id" >
                                         <f:facet name="header">  
-                                            <h:outputLabel value="Billed Id"/>
+                                            <h:outputLabel value="Billed ID"/>
                                         </f:facet> 
                                         <h:outputLabel value="#{b.billedBill.insId}" >
                                         </h:outputLabel>
@@ -988,7 +985,7 @@
 
                                     <p:column headerText="Checque" styleClass="averageNumericColumn">
                                         <f:facet name="header">  
-                                            <h:outputLabel value="Checque"/>
+                                            <h:outputLabel value="Cheque"/>
                                         </f:facet> 
                                         <h:outputLabel rendered="#{b.paymentMethod=='Cheque'}" value="#{b.netTotal}" >
                                             <f:convertNumber pattern="#,##0.00"/>
@@ -1069,7 +1066,7 @@
                                             <h:outputLabel value="Time"/>
                                         </f:facet> 
                                         <h:outputLabel value="#{b.createdAt}"  >
-                                            <f:convertDateTime pattern="HH:mm:ss a"/>
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
                                         </h:outputLabel>
                                     </p:column>   
 
@@ -1089,7 +1086,7 @@
 
                                     <p:column headerText="Paid to"  >
                                         <f:facet name="header">  
-                                            <h:outputLabel value="Paid to"/>
+                                            <h:outputLabel value="Paid To"/>
                                         </f:facet> 
                                         <h:outputLabel value="#{b.staff.person.nameWithTitle}"/>
                                     </p:column>
@@ -1129,15 +1126,15 @@
                                              value="#{commonReport.cancellededBills.bills}"
                                              var="b"   sortBy="#{b.billType}"  >
                                     <f:facet name="header">  
-                                        <h:outputLabel value="PaymentsCancel" />
+                                        <h:outputLabel value="Payments Cancel" />
                                     </f:facet> 
 
                                     <p:column headerText="Time" rendered="#{commonReport.fromDate ne commonReport.toDate}"  >
                                         <f:facet name="header">  
-                                            <h:outputLabel value="PaymentsCancel" />
+                                            <h:outputLabel value="Payments Cancel" />
                                         </f:facet>
                                         <h:outputLabel value="#{b.createdAt}"  >
-                                            <f:convertDateTime pattern="HH:mm:ss a"/>
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
                                         </h:outputLabel>
                                     </p:column>
 
@@ -1157,7 +1154,7 @@
 
                                     <p:column headerText="For Wich Staff"  >
                                         <f:facet name="header">  
-                                            <h:outputLabel value="For Wich Staff" />
+                                            <h:outputLabel value="For Which Staff" />
                                         </f:facet>
                                         <h:outputLabel value="#{b.staff.person.nameWithTitle}"/>
                                     </p:column>
@@ -1212,7 +1209,7 @@
                                             <h:outputLabel value="Time"/>
                                         </f:facet> 
                                         <h:outputLabel value="#{b4.createdAt}" >
-                                            <f:convertDateTime pattern="HH:mm:ss a"/>
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
                                         </h:outputLabel>
                                     </p:column>
 
@@ -1232,7 +1229,7 @@
 
                                     <p:column headerText="For Whome"  >
                                         <f:facet name="header">  
-                                            <h:outputLabel value="For Whome"/>
+                                            <h:outputLabel value="For Whom"/>
                                         </f:facet> 
                                         <h:outputLabel value="#{b4.staff.person.nameWithTitle}" rendered="#{b4.person eq null}"/>
                                         <h:outputLabel value="#{b4.person.nameWithTitle}" rendered="#{b4.person ne null}"/>
@@ -1250,7 +1247,7 @@
 
                                     <p:column headerText="Cheque" styleClass="averageNumericColumn"  >
                                         <f:facet name="header">  
-                                            <h:outputLabel value="Checque"/>
+                                            <h:outputLabel value="Cheque"/>
                                         </f:facet> 
                                         <h:outputLabel rendered="#{b4.paymentMethod=='Cheque'}" value="#{b4.netTotal}" >
                                             <f:convertNumber pattern="#,##0.00"/>
@@ -1260,7 +1257,7 @@
 
                                     <p:column headerText="Descripion"  >
                                         <f:facet name="header">  
-                                            <h:outputLabel value="Descripion"/>
+                                            <h:outputLabel value="Description"/>
                                         </f:facet>
                                         <h:outputLabel value="#{b4.comments}"/>
                                     </p:column>
@@ -1314,7 +1311,7 @@
                                             <h:outputLabel value="Time"/>
                                         </f:facet> 
                                         <h:outputLabel value="#{b4.createdAt}" >
-                                            <f:convertDateTime pattern="HH:mm:ss a"/>
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
                                         </h:outputLabel>
                                     </p:column>
 
@@ -1327,20 +1324,20 @@
 
                                     <p:column headerText="Id" >
                                         <f:facet name="header">  
-                                            <h:outputLabel value="Id"/>
+                                            <h:outputLabel value="ID"/>
                                         </f:facet> 
                                         <h:outputLabel value="#{b4.insId}"/>
                                     </p:column>
 
                                     <p:column headerText="For Whome" >
                                         <f:facet name="header">  
-                                            <h:outputLabel value="For Whome"/>
+                                            <h:outputLabel value="For Whom"/>
                                         </f:facet> 
                                         <h:outputLabel value="#{b4.staff.person.nameWithTitle}" rendered="#{b4.person eq null}"/>
                                         <h:outputLabel value="#{b4.person.nameWithTitle}" rendered="#{b4.person ne null}"/>
                                     </p:column>
 
-                                    <p:column headerText="Cash" styleClass="averageNumericColumn"   >
+                                    <p:column headerText="Cash" styleClass="averageNumericColumn">
                                         <f:facet name="header">  
                                             <h:outputLabel value="Cash"/>
                                         </f:facet> 
@@ -1350,7 +1347,7 @@
                                         <h:outputLabel rendered="#{b4.paymentMethod!='Cash'}" value="0.00"/>
                                     </p:column>
 
-                                    <p:column headerText="Cheque" styleClass="averageNumericColumn"   >
+                                    <p:column headerText="Cheque" styleClass="averageNumericColumn">
                                         <f:facet name="header">  
                                             <h:outputLabel value="Cheque"/>
                                         </f:facet> 
@@ -1362,14 +1359,14 @@
 
                                     <p:column headerText="Descripion" >
                                         <f:facet name="header">  
-                                            <h:outputLabel value="Descripion"/>
+                                            <h:outputLabel value="Description"/>
                                         </f:facet> 
                                         <h:outputLabel value="#{b4.comments}"/>
                                     </p:column>
 
                                     <p:column headerText="Billed Id"  >
                                         <f:facet name="header">  
-                                            <h:outputLabel value="Billed Id"/>
+                                            <h:outputLabel value="Billed ID"/>
                                         </f:facet> 
                                         <h:outputLabel value="#{b4.billedBill.insId}" >
                                         </h:outputLabel>
@@ -1380,7 +1377,7 @@
                                             <h:outputLabel value="Billed Date/Time"/>
                                         </f:facet> 
                                         <h:outputLabel value="#{b4.billedBill.createdAt}" >
-                                            <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </h:outputLabel>
                                     </p:column>
 
@@ -1423,7 +1420,7 @@
                                             <h:outputLabel value="Time"/>
                                         </f:facet> 
                                         <h:outputLabel value="#{b7.createdAt}" >
-                                            <f:convertDateTime pattern="HH:mm:ss a"/>
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
                                         </h:outputLabel>
                                     </p:column>
 
@@ -1436,7 +1433,7 @@
 
                                     <p:column headerText="Id"  >
                                         <f:facet name="header">  
-                                            <h:outputLabel value="Id"/>
+                                            <h:outputLabel value="ID"/>
                                         </f:facet> 
                                         <h:outputLabel value="#{b7.insId}" />
                                     </p:column>
@@ -1448,7 +1445,7 @@
                                         <h:outputLabel value="#{b7.fromInstitution.name}" />
                                     </p:column>
 
-                                    <p:column headerText="Cash" styleClass="averageNumericColumn"   >
+                                    <p:column headerText="Cash" styleClass="averageNumericColumn">
                                         <f:facet name="header">  
                                             <h:outputLabel value="Cash"/>
                                         </f:facet> 
@@ -1458,7 +1455,7 @@
                                         <h:outputLabel rendered="#{b7.paymentMethod!='Cash'}" value="0.00"/>
                                     </p:column>
 
-                                    <p:column headerText="Cheque" styleClass="averageNumericColumn"   >
+                                    <p:column headerText="Cheque" styleClass="averageNumericColumn">
                                         <f:facet name="header">  
                                             <h:outputLabel value="Cheque"/>
                                         </f:facet> 
@@ -1529,7 +1526,7 @@
                                             <h:outputLabel value="Time"/>
                                         </f:facet> 
                                         <h:outputLabel value="#{b7.createdAt}" >
-                                            <f:convertDateTime pattern="HH:mm:ss a"/>
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
                                         </h:outputLabel>
                                     </p:column>
 
@@ -1543,7 +1540,7 @@
 
                                     <p:column headerText="Id" >
                                         <f:facet name="header">  
-                                            <h:outputLabel value="Id"/>
+                                            <h:outputLabel value="ID"/>
                                         </f:facet> 
                                         <h:outputLabel value="#{b7.insId}"/>
                                     </p:column>
@@ -1593,7 +1590,7 @@
                                     </p:column>    
                                     <p:column headerText="Billed Id" style="" >
                                         <f:facet name="header">  
-                                            <h:outputLabel value="Billed Id"/>
+                                            <h:outputLabel value="Billed ID"/>
                                         </f:facet> 
                                         <h:outputLabel value="#{b7.billedBill.insId}" >
                                         </h:outputLabel>
@@ -1603,7 +1600,7 @@
                                             <h:outputLabel value="Billed Date/Time"/>
                                         </f:facet> 
                                         <h:outputLabel value="#{b7.billedBill.createdAt}" >
-                                            <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </h:outputLabel>
                                     </p:column>
                                     <p:column exportable="false">
@@ -1670,7 +1667,7 @@
 
                                     <p:column headerText="Id"  style="">
                                         <f:facet name="header">  
-                                            <h:outputLabel value="Id"/>
+                                            <h:outputLabel value="ID"/>
                                         </f:facet>
                                         <h:outputLabel value="#{b7.insId}"/>
                                     </p:column>
@@ -1680,7 +1677,7 @@
                                             <h:outputLabel value="Date And Time"/>
                                         </f:facet>
                                         <h:outputLabel value="#{b7.createdAt}" >
-                                            <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss"/>
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </h:outputLabel>
                                     </p:column>
 
@@ -1772,7 +1769,7 @@
                                             <h:outputLabel value="Time"/>
                                         </f:facet>
                                         <h:outputLabel value="#{b7.createdAt}" >
-                                            <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss"/>
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </h:outputLabel>
                                     </p:column>
 
@@ -1785,7 +1782,7 @@
 
                                     <p:column headerText="Id"  style="">
                                         <f:facet name="header">  
-                                            <h:outputLabel value="Id"/>
+                                            <h:outputLabel value="ID"/>
                                         </f:facet>
                                         <h:outputLabel value="#{b7.insId}"/>
                                     </p:column>
@@ -1836,7 +1833,7 @@
 
                                     <p:column headerText="Billed Id" style="" >
                                         <f:facet name="header">  
-                                            <h:outputLabel value="Billed Id"/>
+                                            <h:outputLabel value="Billed ID"/>
                                         </f:facet>
                                         <h:outputLabel value="#{b7.billedBill.insId}" >
                                         </h:outputLabel>
@@ -1847,7 +1844,7 @@
                                             <h:outputLabel value="Billed Date/Time"/>
                                         </f:facet>
                                         <h:outputLabel value="#{b7.billedBill.createdAt}" >
-                                            <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </h:outputLabel>
                                     </p:column>
 
@@ -1909,7 +1906,7 @@
                                             <h:outputLabel value="Time"/>
                                         </f:facet>
                                         <h:outputLabel value="#{b.createdAt}"  >
-                                            <f:convertDateTime pattern="HH:mm:ss a"/>
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
                                         </h:outputLabel>
                                     </p:column>     
                                     <p:column headerText="Cashier"  >
@@ -1921,25 +1918,25 @@
                                     </p:column>
                                     <p:column headerText="Id" >
                                         <f:facet name="header">  
-                                            <h:outputLabel value="Time"/>
+                                            <h:outputLabel value="ID"/>
                                         </f:facet>
                                         <h:outputLabel value="#{b.insId}"/>
                                     </p:column>
                                     <p:column headerText="Bht No"  >
                                         <f:facet name="header">  
-                                            <h:outputLabel value="Time"/>
+                                            <h:outputLabel value="BHT No"/>
                                         </f:facet>
                                         <h:outputLabel  value="#{b.patientEncounter.bhtNo}"/>
                                     </p:column>
                                     <p:column headerText="Patient"  >
                                         <f:facet name="header">  
-                                            <h:outputLabel value="Time"/>
+                                            <h:outputLabel value="Patient"/>
                                         </f:facet>
                                         <h:outputLabel value="#{b.patient.person.nameWithTitle}"/>
                                     </p:column>
                                     <p:column headerText="Cash" styleClass="averageNumericColumn" >
                                         <f:facet name="header">  
-                                            <h:outputLabel value="Time"/>
+                                            <h:outputLabel value="Cash"/>
                                         </f:facet>
                                         <h:outputLabel rendered="#{b.paymentMethod=='Cash'}" value="#{b.netTotal}" >
                                             <f:convertNumber pattern="#,##0.00"/>
@@ -1972,7 +1969,7 @@
                                             <h:outputLabel value="Time"/>
                                         </f:facet>
                                         <h:outputLabel value="#{b.createdAt}"  >
-                                            <f:convertDateTime pattern="HH:mm:ss a"/>
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
                                         </h:outputLabel>
                                     </p:column>
 
@@ -1986,14 +1983,14 @@
 
                                     <p:column headerText="Id" >
                                         <f:facet name="header">  
-                                            <h:outputLabel value="Id"/>
+                                            <h:outputLabel value="ID"/>
                                         </f:facet>
                                         <h:outputLabel value="#{b.insId}"/>
                                     </p:column>
 
                                     <p:column headerText="Bht No"  >
                                         <f:facet name="header">  
-                                            <h:outputLabel value="Bht No"/>
+                                            <h:outputLabel value="BHT No"/>
                                         </f:facet>
                                         <h:outputLabel value="#{b.patientEncounter.bhtNo}"/>
                                     </p:column>

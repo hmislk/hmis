@@ -1,12 +1,12 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/resources/template/template.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://java.sun.com/jsf/core"
-                xmlns:ca="http://java.sun.com/jsf/composite/cashSummery"                
-                xmlns:pe="http://primefaces.org/ui/extensions">
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ca="http://xmlns.jcp.org/jsf/composite/cashSummery"            
+                >
 
     <ui:define name="content">
         <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
@@ -15,14 +15,14 @@
             <p:panel>
                 <f:facet name="header" >
                     <h:outputLabel value="Book Keeping Summary Without Pro (DAY - CREDIT)"  styleClass="noPrintButton" />
-                    <p:commandButton value="Refresh" ajax="false"  styleClass="noPrintButton" style="float: right;"
+                    <p:commandButton value="Process" ajax="false"  styleClass="noPrintButton" style="float: right;"
                                     action="#{bookKeepingSummery.createCashCategoryWithoutProDay}"/>
 
                     <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" style="float: right;" >
                         <p:printer target="panelPrint" />
                     </p:commandButton>
                     <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" style="float: right;">
-                        <pe:exporter type="xlsx" target="
+                        <p:dataExporter type="xlsx" target="
                                      opd,outSide,
                                      pharmacy,inward,
                                      agent,creditCompany,
@@ -30,8 +30,8 @@
                                      slip,cheque,
                                      finalSum" 
                                      fileName="Book_Keeping_Summery_without_pro_day"
-                                     facetFontStyle="BOLD"   cellFontStyle="NORMAL"  
-                                     fontName="Courier New"  />
+                                          
+                                       />
                     </p:commandButton>
 
                     <h:panelGrid columns="6"  styleClass="noPrintButton" style="min-width: 100%;" >
@@ -68,13 +68,13 @@
                         <h:panelGroup>
                             <h:outputLabel value="From : "  />
                             <h:outputLabel  value="#{bookKeepingSummery.fromDate}" >
-                                <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                             </h:outputLabel>
                         </h:panelGroup>
                         <h:panelGroup>
                             <h:outputLabel value="To : "/> 
                             <h:outputLabel  value="#{bookKeepingSummery.toDate}" style="float: right" >
-                                <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                             </h:outputLabel>
                         </h:panelGroup>
                     </h:panelGrid>

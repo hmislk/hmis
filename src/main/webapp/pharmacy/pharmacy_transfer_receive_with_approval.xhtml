@@ -1,0 +1,151 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ph="http://xmlns.jcp.org/jsf/composite/pharmacy">
+
+    <ui:define name="content">
+        <h:form>
+            <h:outputStylesheet library="css" name="pharmacyA4.css"/>
+            <p:panel rendered="#{!transferReceiveController.printPreview}">
+                <p:panel>
+
+                    <f:facet name="header" >                                  
+                                              
+                            <p:outputLabel value="Staff : &nbsp;#{transferReceiveController.issuedBill.toStaff.person.nameWithTitle}" />
+
+                            <p:commandButton
+                                ajax="false"
+                                action="#{transferReceiveController.navigateBackToRecieveList()}"
+                                class="ui-button-secondary mx-1"
+                                icon="fa fa-arrow-left"
+                                style="float: right;"
+                                value="Back to Recieve List">
+                            </p:commandButton>
+                            <p:commandButton
+                                value="Finalize"
+                                action="#{transferReceiveController.finalizeRequest()}"
+                                class="ui-button-warning mx-1"
+                                icon="fas fa-check"
+                                ajax="false"
+                                disabled="#{transferReceiveController.receivedBill.checkedBy ne null}"
+                                style="float: right;">
+                            </p:commandButton>
+                            <p:commandButton
+                                value="Save"
+                                action="#{transferReceiveController.saveRequest()}"
+                                class="ui-button-success mx-1"
+                                icon="fas fa-floppy-disk"
+                                disabled="#{transferReceiveController.receivedBill.checkedBy ne null}"
+                                ajax="false"
+                                style="float: right;">
+                            </p:commandButton>
+
+                      
+                    </f:facet>
+                
+
+                <p:panel>
+                    <f:facet name="header">
+                        <h:outputLabel styleClass="fas fa-list" />
+                        <h:outputLabel value="Requested Item " class="mx-4" />
+                    </f:facet>
+                    <p:dataTable styleClass="noBorder" var="ph" value="#{transferReceiveController.billItems}" 
+                                 id="itemList" scrollable="true" scrollHeight="250" sortBy="#{ph.searialNo}"
+                                 editable="true">  
+
+                        <p:ajax event="rowEdit" listener="#{transferReceiveController.onEdit}" />  
+                        <p:ajax event="rowEditCancel" listener="#{transferReceiveController.onEdit}"/> 
+
+
+
+
+                        <p:column headerText="Item Name"  style="width:25px!important;">  
+                            <h:outputText id="item" value="#{ph.item.name}" >                                   
+                            </h:outputText>
+                        </p:column>  
+                        
+                        <p:column headerText="Batch No"  style="width:25px!important;">  
+                            <h:outputText id="batchNo" value="#{ph.pharmaceuticalBillItem.itemBatch.batchNo}" >                                   
+                            </h:outputText>
+                        </p:column>  
+                        
+                        <p:column headerText="Purchase Rate"  style="width:25px!important;">  
+                            <h:outputText id="purchasePrice" value="#{ph.pharmaceuticalBillItem.itemBatch.purcahseRate}" >                                   
+                            </h:outputText>
+                        </p:column> 
+                        
+                        <p:column headerText="Sale Rate"  style="width:25px!important;">  
+                            <h:outputText id="retailPrice" value="#{ph.pharmaceuticalBillItem.itemBatch.retailsaleRate}" >                                   
+                            </h:outputText>
+                        </p:column> 
+                        
+                        <p:column headerText="Expiry Date"  style="width:25px!important;">  
+                            <h:outputText id="doe" value="#{ph.pharmaceuticalBillItem.stock.itemBatch.dateOfExpire}" >  
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                            </h:outputText>
+                        </p:column>  
+
+                        <p:column style="width:6%">  
+                            <p:rowEditor />  
+                        </p:column>
+
+                        <p:column headerText="Qty" style="width:25px!important;">                      
+                            <p:cellEditor>  
+                                <f:facet name="output">  
+                                    <h:outputLabel value="#{ph.pharmaceuticalBillItem.qtyInUnit}" />                               
+                                </f:facet>                        
+                                <f:facet name="input">  
+                                    <p:inputText autocomplete="off" id="qty" value="#{ph.tmpQty}" >
+                                        <f:ajax event="focus" render=":#{p:resolveFirstComponentWithId('tab',view).clientId}" execute="@this" listener="#{transferReceiveController.onFocus(ph)}"/>
+                                    </p:inputText>
+                                </f:facet>
+                            </p:cellEditor>
+                        </p:column>  
+
+                    </p:dataTable>  
+                </p:panel>
+
+                <ph:history/>
+                </p:panel>
+            </p:panel>
+            <p:panel rendered="#{transferReceiveController.printPreview}">
+                <p:commandButton 
+                    ajax="false" 
+                    icon="fas fa-list"
+                    class="ui-button-warning"
+                    action="pharmacy_transfer_issued_list" 
+                    actionListener="#{transferReceiveController.makeNull()}" 
+                    value="Issued List"/>                    
+                <p:commandButton 
+                    value="Print" 
+                    icon="fas fa-print"
+                    class="ui-button-info mx-2 mb-2"
+                    ajax="false" 
+                    action="#" >
+                    <p:printer target="gpBillPreview" ></p:printer>
+                </p:commandButton>
+
+                <h:panelGroup   id="gpBillPreview">
+
+<!--                    <ph:transferReceive bill="#{transferReceiveController.receivedBill}" />-->
+
+                    <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq false}" >
+                        <ph:transferReceive bill="#{transferReceiveController.receivedBill}" />
+                    </h:panelGroup>
+
+                    <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq true}" >
+                        <ph:transfeRecieve_detailed bill="#{transferReceiveController.receivedBill}"/>
+                    </h:panelGroup>
+
+                </h:panelGroup>
+
+            </p:panel>
+
+        </h:form>
+    </ui:define>  
+
+</ui:composition>

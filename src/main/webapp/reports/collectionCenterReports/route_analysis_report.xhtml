@@ -1,0 +1,119 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/reports/index.xhtml">
+            <ui:define name="subcontent">
+
+                <h:form >
+                    <p:panel header="Route Analysis Report" >
+                        <h:panelGrid columns="5" >
+                            <p:outputLabel value="From Date" >
+                            </p:outputLabel>
+                            <p:datePicker value="#{reportController.fromDate}" 
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
+                            <p:spacer width="20"></p:spacer>
+                            <p:outputLabel value="To Date" >
+                            </p:outputLabel>
+                            <p:datePicker value="#{reportController.toDate}"
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
+
+                            <p:outputLabel value="Institution/Branch" >
+                            </p:outputLabel>
+                            <p:selectOneMenu 
+                                id="cmdInstitution"
+                                value="#{reportController.institution}"
+                                filter="true"
+                                >
+                                <f:selectItem itemLabel="All"></f:selectItem>
+                                <f:selectItems value="#{institutionController.items}"
+                                               var="i"
+                                               itemLabel="#{i.name}"
+                                               itemValue="#{i}"></f:selectItems>
+
+                            </p:selectOneMenu>
+
+                            <p:spacer></p:spacer>
+                             <p:outputLabel value="Collecting Centre Route"></p:outputLabel>
+                            <p:selectOneMenu value="#{reportController.route}"
+                                             filter="true"
+                                             filterMatchMode="contains">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value="#{routeController.items}"
+                                               var="r"
+                                               itemLabel="#{r.name}"
+                                               itemValue="#{r}"
+                                              />
+                            </p:selectOneMenu>
+                            <p:outputLabel value="Report Type"></p:outputLabel>
+                            <p:selectOneMenu>
+                                <f:selectItem itemLabel="Select Type"/>
+                            </p:selectOneMenu>
+                            
+                            <p:spacer width="20"></p:spacer>
+                            
+                            <p:outputLabel value="Collection center " >
+                            </p:outputLabel>
+                            <p:selectOneMenu value="#{reportController.collectingCentre}" filter="true"  class="w-100" >
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value="#{collectingCentreController.items}"
+                                               var="i"
+                                               itemLabel="#{i.name}"
+                                               itemValue="#{i}" ></f:selectItems>
+                            </p:selectOneMenu>
+                            
+                            
+                            
+                            
+                            <p:commandButton ajax="false" value="Process" action="null" >
+                            </p:commandButton>
+
+                        </h:panelGrid>
+                        
+                        
+                        <p:spacer height="5"></p:spacer>
+                        
+                        <h:panelGrid columns="2">
+                            <h:outputLabel value="From Date :  "/>
+                            <h:outputLabel value="#{reportController.fromDate}"  >
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                            </h:outputLabel>
+                            
+                            <h:outputLabel value="To Date :  "/>
+                            <h:outputLabel value="#{reportController.toDate}"  >
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                            </h:outputLabel>
+                            
+                            <h:outputLabel value="Collection Center Name :  "/>
+                            <h:outputLabel value="#{reportController.collectingCentre.name}"  >
+                                        
+                            </h:outputLabel>
+                        </h:panelGrid>
+                        
+                        <p:spacer height="5"></p:spacer>
+
+                        <p:dataTable value="null" var="c">
+                            <p:column colspan="2" headerText=""></p:column>
+                            <p:column colspan="2" headerText="2023/07/08"></p:column>
+                           
+                            
+                        </p:dataTable>
+                        
+                        <p:spacer height="5"></p:spacer>
+                        
+                
+
+                    </p:panel>
+
+                </h:form>
+
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

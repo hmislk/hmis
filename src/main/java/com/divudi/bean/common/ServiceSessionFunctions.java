@@ -1,18 +1,19 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Open Hospital Management Information System
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.common;
 
 import com.divudi.data.SessionNumberType;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BillSession;
 import com.divudi.entity.Category;
 import com.divudi.entity.Item;
 import com.divudi.entity.ServiceSession;
 import com.divudi.facade.BillSessionFacade;
+import com.divudi.java.CommonFunctions;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -46,28 +47,28 @@ public class ServiceSessionFunctions {
     // Add business logic below. (Right-click in editor and choose
     // "Insert Code > Add Business Method")
     public List<BillSession> getBillSessions(Item i, Date d) {
-        //   ////System.out.println("getting bill sessions");
+        //   ////// // System.out.println("getting bill sessions");
         if (i == null || i.getSessionNumberType() == null) {
             return null;
         }
         switch (i.getSessionNumberType()) {
             case ByCategory:
-                //   ////System.out.println("by cat");
+                //   ////// // System.out.println("by cat");
                 if (i.getCategory().getParentCategory() == null) {
-                    //   ////System.out.println("by cat 2");
+                    //   ////// // System.out.println("by cat 2");
                     billSessions = getBillSessionsByCat(i.getCategory(), d);
                     return billSessions;
                 } else {
-                    //   ////System.out.println("by cat 3");
+                    //   ////// // System.out.println("by cat 3");
                     billSessions = getBillSessionsByCat(i.getCategory().getParentCategory(), d);
                     return billSessions;
                 }
             case BySubCategory:
-                //   ////System.out.println("by sc");
+                //   ////// // System.out.println("by sc");
                 billSessions = getBillSessionsByCat(i.getCategory(), d);
                 return billSessions;
             case ByItem:
-                //   ////System.out.println("by items 3");
+                //   ////// // System.out.println("by items 3");
                 billSessions = getBillSessionsByItem(i, d);
                 return billSessions;
             case ByBill:
@@ -80,28 +81,31 @@ public class ServiceSessionFunctions {
     }
 
     public Long calBillSessions(Item i, Date d) {
-        //   ////System.out.println("getting bill sessions");
+        System.out.println("calBillSessions");
+        System.out.println("d = " + d);
+        System.out.println("i = " + i);
+        //   ////// // System.out.println("getting bill sessions");
         if (i == null || i.getSessionNumberType() == null) {
             return null;
         }
         switch (i.getSessionNumberType()) {
             case ByCategory:
-                //   ////System.out.println("by cat");
+                //   ////// // System.out.println("by cat");
                 if (i.getCategory().getParentCategory() == null) {
-                    //   ////System.out.println("by cat 2");
+                    //   ////// // System.out.println("by cat 2");
                     countLong = calBillSessionsByCat(i.getCategory(), d);
                     return countLong;
                 } else {
-                    //   ////System.out.println("by cat 3");
+                    //   ////// // System.out.println("by cat 3");
                     countLong = calBillSessionsByCat(i.getCategory().getParentCategory(), d);
                     return countLong;
                 }
             case BySubCategory:
-                //   ////System.out.println("by sc");
+                //   ////// // System.out.println("by sc");
                 countLong = calBillSessionsByCat(i.getCategory(), d);
                 return countLong;
             case ByItem:
-                //   ////System.out.println("by items 3");
+                //   ////// // System.out.println("by items 3");
                 countLong = calBillSessionsByItem(i, d);
                 return countLong;
             case ByBill:
@@ -130,9 +134,9 @@ public class ServiceSessionFunctions {
 //        }
 //    }
     public BillSession createBillSession(BillItem bi) {
-        //   ////System.out.println("Going to saving bill item sessions");
+        System.out.println("Going to saving bill item sessions");
         if (bi == null || bi.getItem() == null || bi.getItem().getSessionNumberType() == null) {
-            //   ////System.out.println("Bil items sessions not save because of null values");
+               System.out.println("Bil items sessions not save because of null values");
             return null;
         }
         Item i = bi.getItem();
@@ -154,7 +158,7 @@ public class ServiceSessionFunctions {
         bi.setSessionDate(sessDate);
         bs.setSessionDate(sessDate);
 //        bs.setSessionDate(CommonFunctions.removeTime(bi.getSessionDate()));
-        // //////System.out.println("bill item session switch - pre");
+        // //////// // System.out.println("bill item session switch - pre");
         Long count = calBillSessions(i, bi.getSessionDate());
         if (count != null) {
             bs.setSerialNo(count.intValue() + 1);
@@ -179,7 +183,7 @@ public class ServiceSessionFunctions {
         Map m = new HashMap();
         m.put("catId", c.getId());
         m.put("sd", d);
-        billSessions = getBillSessionFacade().findBySQL(s, m, TemporalType.DATE);
+        billSessions = getBillSessionFacade().findByJpql(s, m, TemporalType.DATE);
         return billSessions;
     }
 
@@ -210,7 +214,7 @@ public class ServiceSessionFunctions {
         Map m = new HashMap();
         m.put("item", i);
         m.put("sd", d);
-        billSessions = getBillSessionFacade().findBySQL(s, m, TemporalType.DATE);
+        billSessions = getBillSessionFacade().findByJpql(s, m, TemporalType.DATE);
         return billSessions;
     }
 
@@ -231,6 +235,8 @@ public class ServiceSessionFunctions {
     }
 
     public Long calBillSessionsByBill(Item i, Date d) {
+        System.out.println("calBillSessionsByBill" );
+        System.out.println("d = " + d);
         if (i == null || i.getId() == null) {
             return null;
         }
@@ -242,7 +248,10 @@ public class ServiceSessionFunctions {
         Map m = new HashMap();
         m.put("stp", SessionNumberType.ByBill);
         m.put("sd", d);
+        System.out.println("m = " + m);
+        System.out.println("s = " + s);
         countLong = getBillSessionFacade().findLongByJpql(s, m, TemporalType.DATE);
+        System.out.println("countLong = " + countLong);
         return countLong;
     }
 
@@ -259,7 +268,7 @@ public class ServiceSessionFunctions {
 //        try {
 //            return sn.intValue();
 //        } catch (Exception e) {
-//            //////System.out.println("Error in converting double to int is" + e.getMessage());
+//            //////// // System.out.println("Error in converting double to int is" + e.getMessage());
 //            return 0;
 //        }
 //    }
@@ -276,12 +285,12 @@ public class ServiceSessionFunctions {
 //        m.put("catId", c.getId());
 //        m.put("sd", d);
 //        Double sn = getBillSessionFacade().findDoubleByJpql(s, m, TemporalType.DATE);
-//        //////System.out.println("id by cat count is " + sn );
+//        //////// // System.out.println("id by cat count is " + sn );
 //        try {
-//            //////System.out.println("int val of ount is " + sn.intValue());
+//            //////// // System.out.println("int val of ount is " + sn.intValue());
 //            return sn.intValue();
 //        } catch (Exception e) {
-//            //////System.out.println("Error in converting double to int is" + e.getMessage());
+//            //////// // System.out.println("Error in converting double to int is" + e.getMessage());
 //            return 0;
 //        }
 //    }
@@ -299,7 +308,7 @@ public class ServiceSessionFunctions {
         HashMap hh = new HashMap();
         hh.put("ssDate", sessionDate);
         hh.put("ss", serviceSession);
-        tmp = getBillSessionFacade().findBySQL(sql, hh, TemporalType.DATE);
+        tmp = getBillSessionFacade().findByJpql(sql, hh, TemporalType.DATE);
         return tmp.size() + 1;
     }
 

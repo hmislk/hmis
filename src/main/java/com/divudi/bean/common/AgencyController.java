@@ -1,10 +1,10 @@
 /*
- * MSc(Biomedical Informatics) Project
+ * Open Hospital Management Information System
  *
- * Development and Implementation of a Web-based Combined Data Repository of
- Genealogical, Clinical, Laboratory and Genetic Data
- * and
- * a Set of Related Tools
+ * Dr M H B Ariyaratne
+ * Acting Consultant (Health Informatics)
+ * (94) 71 5812399
+ * (94) 71 5812399
  */
 package com.divudi.bean.common;
 
@@ -25,11 +25,11 @@ import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-
+import com.divudi.bean.common.util.JsfUtil;
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- * Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
+ * Acting Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -58,7 +58,7 @@ public class AgencyController implements Serializable {
                 + "  p.retired=false and "
                 + " p.institutionType=:it "
                 + " order by p.name";
-        suggestions = getFacade().findBySQL(sql, m);
+        suggestions = getFacade().findByJpql(sql, m);
 
         Collections.shuffle(suggestions);
         List<Institution> b1s = suggestions.subList(0, suggestions.size() / 2);
@@ -106,17 +106,17 @@ public class AgencyController implements Serializable {
             sql = "select p from Institution p where"
                     + "  p.retired=false and "
                     + " p.institutionType=:it "
-                    + " and ((upper(p.name) like '%" + query.toUpperCase() + "%') "
-                    + " or (upper(p.institutionCode) like '%" + query.toUpperCase() + "%') ) "
+                    + " and (((p.name) like '%" + query.toUpperCase() + "%') "
+                    + " or ((p.institutionCode) like '%" + query.toUpperCase() + "%') ) "
                     + " order by p.name";
-            //////System.out.println(sql);
-            suggestions = getFacade().findBySQL(sql, m, 20);
+            //////// // System.out.println(sql);
+            suggestions = getFacade().findByJpql(sql, m, 20);
         }
         return suggestions;
     }
 
     public List<Institution> getSelectedItems() {
-        selectedItems = getFacade().findBySQL("select c from Institution c where c.retired=false and i.institutionType = com.divudi.data.InstitutionType.Agency and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+        selectedItems = getFacade().findByJpql("select c from Institution c where c.retired=false and i.institutionType = com.divudi.data.InstitutionType.Agency and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
     }
 
@@ -141,12 +141,12 @@ public class AgencyController implements Serializable {
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            UtilityController.addSuccessMessage("Saved Successfully");
+            JsfUtil.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
         getItems();
@@ -190,9 +190,9 @@ public class AgencyController implements Serializable {
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
@@ -207,7 +207,7 @@ public class AgencyController implements Serializable {
     public List<Institution> getItems() {
         if (items == null) {
             String sql = "SELECT i FROM Institution i where i.retired=false and i.institutionType = com.divudi.data.InstitutionType.Agency order by i.name";
-            items = getEjbFacade().findBySQL(sql);
+            items = getEjbFacade().findByJpql(sql);
         }
         return items;
     }

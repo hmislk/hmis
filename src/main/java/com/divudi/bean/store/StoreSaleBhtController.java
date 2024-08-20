@@ -1,14 +1,14 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Open Hospital Management Information System
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.store;
 
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.inward.InwardBeanController;
 import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.data.BillClassType;
@@ -166,7 +166,7 @@ public class StoreSaleBhtController implements Serializable {
             setZeroToQty(tmp);
             onEditCalculation(tmp);
 
-            UtilityController.addErrorMessage("Can not enter a minus value");
+            JsfUtil.addErrorMessage("Can not enter a minus value");
             return true;
         }
 
@@ -174,7 +174,7 @@ public class StoreSaleBhtController implements Serializable {
             setZeroToQty(tmp);
             onEditCalculation(tmp);
 
-            UtilityController.addErrorMessage("No Sufficient Stocks?");
+            JsfUtil.addErrorMessage("No Sufficient Stocks?");
             return true;
         }
 
@@ -184,7 +184,7 @@ public class StoreSaleBhtController implements Serializable {
             setZeroToQty(tmp);
             onEditCalculation(tmp);
 
-            UtilityController.addErrorMessage("Another User On Change Bill Item "
+            JsfUtil.addErrorMessage("Another User On Change Bill Item "
                     + " Qty value is resetted");
             return true;
         }
@@ -224,7 +224,7 @@ public class StoreSaleBhtController implements Serializable {
 
     public void setQty(Double qty) {
         if (qty != null && qty <= 0) {
-            UtilityController.addErrorMessage("Can not enter a minus value");
+            JsfUtil.addErrorMessage("Can not enter a minus value");
             return;
         }
         this.qty = qty;
@@ -263,7 +263,7 @@ public class StoreSaleBhtController implements Serializable {
         m.put("s", d);
         m.put("vmp", amp.getVmp());
         sql = "select i from Stock i join treat(i.itemBatch.item as Amp) amp where i.stock >:s and i.department=:d and amp.vmp=:vmp order by i.itemBatch.item.name";
-        replaceableStocks = getStockFacade().findBySQL(sql, m);
+        replaceableStocks = getStockFacade().findByJpql(sql, m);
     }
 
     public List<Item> getItemsWithoutStocks() {
@@ -297,19 +297,19 @@ public class StoreSaleBhtController implements Serializable {
         String sql;
         sql = "select i from Item i"
                 + " where i.retired=false "
-                + " and upper(i.name) like :n "
+                + " and (i.name) like :n "
                 + " and type(i)=:t and i.id not "
                 + " in(select ibs.id from Stock ibs "
                 + " where ibs.stock >:s "
                 + " and ibs.department=:d "
-                + " and upper(ibs.itemBatch.item.name) like :n )"
+                + " and (ibs.itemBatch.item.name) like :n )"
                 + " order by i.name ";
         m.put("t", Amp.class);
         m.put("d", getSessionController().getLoggedUser().getDepartment());
         m.put("n", "%" + qry + "%");
         double s = 0.0;
         m.put("s", s);
-        items = getItemFacade().findBySQL(sql, m, 10);
+        items = getItemFacade().findByJpql(sql, m, 10);
         return items;
     }
 
@@ -328,9 +328,9 @@ public class StoreSaleBhtController implements Serializable {
                     + " and i.department=:d "
                     + " and i.itemBatch.item.departmentType is null "
                     + " or i.itemBatch.item.departmentType!=:depTp "
-                    + " and (upper(i.itemBatch.item.name) like :n "
-                    + " or upper(i.itemBatch.item.code) like :n "
-                    + " or upper(i.itemBatch.item.barcode) like :n )  "
+                    + " and ((i.itemBatch.item.name) like :n "
+                    + " or (i.itemBatch.item.code) like :n "
+                    + " or (i.itemBatch.item.barcode) like :n )  "
                     + " order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
         } else {
             sql = "select i from Stock i "
@@ -338,13 +338,14 @@ public class StoreSaleBhtController implements Serializable {
                     + " and i.department=:d"
                     + " and i.itemBatch.item.departmentType is null "
                     + " or i.itemBatch.item.departmentType!=:depTp "
-                    + "  and (upper(i.itemBatch.item.name) like :n "
-                    + " or upper(i.itemBatch.item.code) like :n)  "
+                    + "  and ((i.itemBatch.item.name) like :n "
+                    + " or (i.itemBatch.item.code) like :n)  "
                     + " order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
         }
-        items = getStockFacade().findBySQL(sql, m, 20);
+        items = getStockFacade().findByJpql(sql, m, 20);
         itemsWithoutStocks = completeRetailSaleItems(qry);
-        //////System.out.println("selectedSaleitems = " + itemsWithoutStocks);
+//        System.out.println("Items  = " + items);
+//        System.out.println("selectedSaleitems = " + itemsWithoutStocks);
         return items;
     }
 
@@ -362,22 +363,23 @@ public class StoreSaleBhtController implements Serializable {
                     + " where i.stock >:s"
                     + " and i.department=:d "
                     + " and i.itemBatch.item.departmentType=:depTp "
-                    + " and (upper(i.itemBatch.item.name) like :n "
-                    + " or upper(i.itemBatch.item.code) like :n "
-                    + " or upper(i.itemBatch.item.barcode) like :n )  "
+                    + " and ((i.itemBatch.item.name) like :n "
+                    + " or (i.itemBatch.item.code) like :n "
+                    + " or (i.itemBatch.item.barcode) like :n )  "
                     + " order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
         } else {
             sql = "select i from Stock i "
                     + " where i.stock >:s "
                     + " and i.department=:d"
                     + " and i.itemBatch.item.departmentType=:depTp "
-                    + "  and (upper(i.itemBatch.item.name) like :n "
-                    + " or upper(i.itemBatch.item.code) like :n)  "
+                    + "  and ((i.itemBatch.item.name) like :n "
+                    + " or (i.itemBatch.item.code) like :n)  "
                     + " order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
         }
-        items = getStockFacade().findBySQL(sql, m, 20);
-        //  itemsWithoutStocks = completeRetailSaleItems(qry);
-        //////System.out.println("selectedSaleitems = " + itemsWithoutStocks);
+        items = getStockFacade().findByJpql(sql, m, 20);
+        itemsWithoutStocks = completeRetailSaleItems(qry);
+//        System.out.println("Items = " + items);
+//        System.out.println("selectedSaleitems = " + itemsWithoutStocks);
         return items;
     }
 
@@ -487,12 +489,12 @@ public class StoreSaleBhtController implements Serializable {
     private void settleBhtIssue(BillType btp, BillNumberSuffix billNumberSuffix) {
 
         if (getPatientEncounter() == null || getPatientEncounter().getPatient() == null) {
-            UtilityController.addErrorMessage("Please Select a BHT");
+            JsfUtil.addErrorMessage("Please Select a BHT");
             return;
         }
         
         if(getPatientEncounter().isDischarged()){
-            UtilityController.addErrorMessage("Sorry Patient is Discharged!!!");
+            JsfUtil.addErrorMessage("Sorry Patient is Discharged!!!");
             return;
         }
 
@@ -608,26 +610,26 @@ public class StoreSaleBhtController implements Serializable {
             return;
         }
         if (getStock() == null) {
-            UtilityController.addErrorMessage("Item?");
+            JsfUtil.addErrorMessage("Item?");
             return;
         }
         if (getQty() == null) {
-            UtilityController.addErrorMessage("Quentity?");
+            JsfUtil.addErrorMessage("Quentity?");
             return;
         }
 
         if (getQty() > getStock().getStock()) {
-            UtilityController.addErrorMessage("No Sufficient Stocks?");
+            JsfUtil.addErrorMessage("No Sufficient Stocks?");
             return;
         }
 
         if (checkItemBatch()) {
-            UtilityController.addErrorMessage("Already added this item batch");
+            JsfUtil.addErrorMessage("Already added this item batch");
             return;
         }
         //Checking User Stock Entity
         if (!getStoreBean().isStockAvailable(getStock(), getQty(), getSessionController().getLoggedUser())) {
-            UtilityController.addErrorMessage("Sorry Already Other User Try to Billing This Stock You Cant Add");
+            JsfUtil.addErrorMessage("Sorry Already Other User Try to Billing This Stock You Cant Add");
             return;
         }
 
@@ -736,18 +738,18 @@ public class StoreSaleBhtController implements Serializable {
     }
 
     public void calculateBillItemForEditing(BillItem bi) {
-        //////System.out.println("calculateBillItemForEditing");
-        //////System.out.println("bi = " + bi);
+        //////// // System.out.println("calculateBillItemForEditing");
+        //////// // System.out.println("bi = " + bi);
         if (getPreBill() == null || bi == null || bi.getPharmaceuticalBillItem() == null || bi.getPharmaceuticalBillItem().getStock() == null) {
-            //////System.out.println("calculateItemForEditingFailedBecause of null");
+            //////// // System.out.println("calculateItemForEditingFailedBecause of null");
             return;
         }
-        //////System.out.println("bi.getQty() = " + bi.getQty());
-        //////System.out.println("bi.getRate() = " + bi.getRate());
+        //////// // System.out.println("bi.getQty() = " + bi.getQty());
+        //////// // System.out.println("bi.getRate() = " + bi.getRate());
         bi.setGrossValue(bi.getPharmaceuticalBillItem().getStock().getItemBatch().getRetailsaleRate() * bi.getQty());
         bi.setNetValue(bi.getQty() * bi.getNetRate());
         bi.setDiscount(bi.getGrossValue() - bi.getNetValue());
-        //////System.out.println("bi.getNetValue() = " + bi.getNetValue());
+        //////// // System.out.println("bi.getNetValue() = " + bi.getNetValue());
 
     }
 
@@ -761,7 +763,7 @@ public class StoreSaleBhtController implements Serializable {
     }
 
     public void calculateAllRates() {
-        //////System.out.println("calculating all rates");
+        //////// // System.out.println("calculating all rates");
         for (BillItem tbi : getPreBill().getBillItems()) {
             calculateRates(tbi);
             calculateBillItemForEditing(tbi);
@@ -774,9 +776,9 @@ public class StoreSaleBhtController implements Serializable {
     }
 
     public void calculateRates(BillItem bi) {
-        //////System.out.println("calculating rates");
+        //////// // System.out.println("calculating rates");
         if (bi.getPharmaceuticalBillItem().getStock() == null) {
-            //////System.out.println("stock is null");
+            //////// // System.out.println("stock is null");
             return;
         }
         getBillItem();

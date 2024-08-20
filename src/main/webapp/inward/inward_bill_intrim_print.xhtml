@@ -1,13 +1,13 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/resources/template/template.xhtml"
-                xmlns:in="http://java.sun.com/jsf/composite/inward"
-                xmlns:bi="http://java.sun.com/jsf/composite/inward/bill"
-                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:in="http://xmlns.jcp.org/jsf/composite/inward"
+                xmlns:bi="http://xmlns.jcp.org/jsf/composite/inward/bill"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://java.sun.com/jsf/core"
-                xmlns:credit="http://java.sun.com/jsf/composite/inward/creditCompany">
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:credit="http://xmlns.jcp.org/jsf/composite/inward/creditCompany">
 
 
 
@@ -16,17 +16,38 @@
         <h:panelGroup >
             <h:form  >
                 <p:panel >
-                    <f:facet name="header" >
-                        <h:panelGrid columns="15"  >
-                            <h:outputLabel value="Inward Final Bill" />                          
-                            <p:commandButton  value="Save Intrim" action="#{intrimPrintController.saveIntrimBill}" ajax="false"
-                                              style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;" onclick="onSubmitButton();">
-                            </p:commandButton>
-                            <p:commandButton value="Print Intrim" ajax="false" disabled="#{intrimPrintController.currentBill.id eq null}" >
-                                <p:printer target="intrim" ></p:printer>
-                            </p:commandButton>
-                        </h:panelGrid>
-                    </f:facet>       
+                    <f:facet name="header">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <h:outputLabel value="Inward Final Bill" />
+                            <div>
+                                <p:commandButton value="Save Interim" action="#{intrimPrintController.saveIntrimBill}" ajax="false"
+                                                 icon="pi pi-save" styleClass="ui-button-info  mx-1">
+                                </p:commandButton>
+                                <p:commandButton value="Print Interim" ajax="false" disabled="#{intrimPrintController.currentBill.id eq null}"
+                                                 icon="pi pi-print" styleClass="ui-button-info  mx-1">
+                                    <p:printer target="Interim"></p:printer>
+                                </p:commandButton>
+                                <p:commandButton 
+                                    ajax="false"
+                                    icon="fa fa-search"
+                                    class="ui-button-warning  mx-1" 
+                                    action="#{patientController.navigateToSearchPatients()}"
+                                    />
+                                <p:commandButton 
+                                    ajax="false"
+                                    icon="fa fa-user"
+                                    class="ui-button-warning mx-1" 
+                                    action="#{patientController.navigateToOpdPatientProfile()}"
+                                    />
+                                <p:commandButton 
+                                    ajax="false"
+                                    icon="fas fa-id-card"
+                                    class="ui-button-secondary  mx-1" 
+                                    action="#{bhtSummeryController.navigateToInpatientProfile()}"
+                                    />
+                            </div>
+                        </div>
+                    </f:facet>  
 
                     <h:panelGrid columns="3">
                         <h:panelGroup id="panSearch2">
@@ -58,10 +79,10 @@
                         </h:panelGroup>
                         <h:panelGrid columns="2">
                             <h:outputLabel value="Printing Admission Time"/>
-                            <p:calendar value="#{intrimPrintController.currentBill.patientEncounter.printingAdmissionTime}" pattern="dd MMMM yyyy hh mm ss a" >                               
+                            <p:calendar value="#{intrimPrintController.currentBill.patientEncounter.printingAdmissionTime}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                               
                             </p:calendar>     
                             <h:outputLabel value="Printing Discharge Time"/>
-                            <p:calendar value="#{intrimPrintController.currentBill.patientEncounter.printingDischargeTime}" pattern="dd MMMM yyyy hh mm ss a" >                               
+                            <p:calendar value="#{intrimPrintController.currentBill.patientEncounter.printingDischargeTime}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                               
                             </p:calendar>    
                         </h:panelGrid>
                     </h:panelGrid>
@@ -79,7 +100,7 @@
                         <p:column headerText="Adjusted Value">
                             <p:inputText autocomplete="off" id="catAdj" value="#{c.adjustedValue}">
                                 <f:convertNumber pattern="#,##0.00" />  
-                                <p:ajax event="blur" update=":#{p:component('tot')} :#{p:component('intrim')}" listener="#{intrimPrintController.calAdjustedTotal()}"/>
+                                <p:ajax event="blur" update=":#{p:resolveFirstComponentWithId('tot',view).clientId} :#{p:resolveFirstComponentWithId('Interim',view).clientId}" listener="#{intrimPrintController.calAdjustedTotal()}"/>
                             </p:inputText>
                         </p:column>
                         <p:column headerText="Previous Print Adjusted Value">
@@ -90,7 +111,7 @@
                     </p:dataTable> 
 
 
-                    <h:panelGroup id="intrim" styleClass="noBorder">                  
+                    <h:panelGroup id="Interim" styleClass="noBorder">                  
                         <bi:intrimBill  bill="#{intrimPrintController.currentBill}"/>
                     </h:panelGroup>
 

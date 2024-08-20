@@ -1,63 +1,61 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core">
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <h:body>
 
-        <ui:composition template="/resources/template/template.xhtml">
-
-            <ui:define name="content">
+        <ui:composition template="/store/store_reports_index.xhtml">
+            <ui:define name="subcontent">
                 <h:form>
                     <p:panel header=" Issue Report">
-                        <h:panelGrid columns="2" >
+                        <h:panelGrid columns="2" class="my-2" >
                             <h:outputLabel value="From Department" />
-                            <p:autoComplete completeMethod="#{departmentController.completeDept}" 
+                            <p:autoComplete class="w-100 mx-4" inputStyleClass="w-100" completeMethod="#{departmentController.completeDept}" 
                                             var="dept" itemLabel="#{dept.name}"
                                             itemValue="#{dept}" forceSelection="true" 
-                                            value="#{reportsTransfer.fromDepartment}" converter="departmentConverter" >
+                                            value="#{reportsTransfer.fromDepartment}"  >
                             </p:autoComplete>
 
                             <h:outputLabel value="To Department" />
-                            <p:autoComplete completeMethod="#{departmentController.completeDept}" 
+                            <p:autoComplete class="w-100 mx-4" inputStyleClass="w-100" completeMethod="#{departmentController.completeDept}" 
                                             var="dept" itemLabel="#{dept.name}"
                                             itemValue="#{dept}" forceSelection="true" 
-                                            value="#{reportsTransfer.toDepartment}" converter="departmentConverter" >
+                                            value="#{reportsTransfer.toDepartment}"  >
                             </p:autoComplete>
 
                             <h:outputLabel value="From" ></h:outputLabel>
-                            <p:calendar value="#{reportsTransfer.fromDate}" pattern="dd MMMM yyyy HH:mm:ss" ></p:calendar>
+                            <p:calendar class="w-100 mx-4" inputStyleClass="w-100" value="#{reportsTransfer.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                             <h:outputLabel value="To" ></h:outputLabel>
-                            <p:calendar value="#{reportsTransfer.toDate}" pattern="dd MMMM yyyy HH:mm:ss" ></p:calendar>
-                        </h:panelGrid>
-
-                        <h:outputLabel value="Category" />
-                        <p:autoComplete completeMethod="#{categoryController.completeConsumableAndAssetCategory}" 
+                            <p:calendar class="w-100 mx-4" inputStyleClass="w-100" value="#{reportsTransfer.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
+                            <h:outputLabel value="Category" />
+                            <p:autoComplete class="w-100 mx-4" inputStyleClass="w-100" completeMethod="#{categoryController.completeConsumableAndAssetCategory}" 
                                         var="cat" itemLabel="#{cat.name}"
                                         itemValue="#{cat}" forceSelection="true" 
-                                        value="#{reportsTransfer.category}" converter="categoryConverter" >
-                        </p:autoComplete>
-
-                        <p:commandButton ajax="false" value="Fill" 
+                                        value="#{reportsTransfer.category}"  >
+                            </p:autoComplete>
+                        </h:panelGrid>
+                        <h:panelGrid columns="6" class="my-2" >
+                            <p:commandButton class="ui-button-warning" icon="fas fa-fill" ajax="false" value="Fill" 
                                          action="#{reportsTransfer.fillItemCountsStore}" />
-
+                        </h:panelGrid>
 
                         <p:dataTable id="tbl"  value="#{reportsTransfer.itemCounts}"  var="i"  >
                             <f:facet name="header">
                                 <h:outputLabel value="DEPARTMENT UNIT ISSUE BY ITEM(BATCH)"/>
                                 <h:outputLabel value="&emsp; From : #{reportsTransfer.fromDepartment.name}"  />
                                 <h:outputLabel value="&emsp; To : #{reportsTransfer.toDepartment.name}"  />
-                                <h:outputLabel value="From :  " style="white-space:  pre-line"/>
+                                <h:outputLabel value="&emsp;From : &nbsp;" style="white-space:  pre-line"/>
                                 <h:outputLabel value="#{reportsTransfer.fromDate}"  >
                                     <p:spacer width="30" height="1"/>
-                                    <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a" />
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                                 </h:outputLabel>
-                                <h:outputLabel value="To : "/>
+                                <h:outputLabel value="To : &nbsp;"/>
                                 <h:outputLabel value="#{reportsTransfer.toDate}"  >
-                                    <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a" />
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                                 </h:outputLabel>
                             </f:facet>
                             <p:column headerText="Item">

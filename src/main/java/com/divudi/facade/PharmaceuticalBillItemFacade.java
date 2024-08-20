@@ -1,6 +1,6 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+* Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.facade;
 
@@ -34,10 +34,15 @@ public class PharmaceuticalBillItemFacade extends AbstractFacade<PharmaceuticalB
     }
 
     public List<PharmaceuticalBillItem> getPharmaceuticalBillItems(Bill bill) {
-        String sql = "Select p from PharmaceuticalBillItem p where p.billItem.bill=:b and p.billItem.retired=false";
+//        System.out.println("getPharmaceuticalBillItems method bill = " + bill);
+        String sql = "Select p "
+                + " from PharmaceuticalBillItem p "
+                + " where p.billItem.bill=:b "
+                + " and p.billItem.retired=false";
         HashMap hm = new HashMap();
         hm.put("b", bill);
-        List<PharmaceuticalBillItem> btm = findBySQL(sql, hm);
+        List<PharmaceuticalBillItem> btm = findByJpql(sql, hm);
+//        System.out.println("btm = " + btm.size());
         return btm;
     }
 

@@ -1,15 +1,15 @@
 /*
- * MSc(Biomedical Informatics) Project
+ * Open Hospital Management Information System
  *
- * Development and Implementation of a Web-based Combined Data Repository of
- Genealogical, Clinical, Laboratory and Genetic Data
- * and
- * a Set of Related Tools
+ * Dr M H B Ariyaratne
+ * Acting Consultant (Health Informatics)
+ * (94) 71 5812399
+ * (94) 71 5812399
  */
 package com.divudi.bean.lab;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.InvestigationItemType;
 import com.divudi.data.Sex;
 import com.divudi.entity.lab.Investigation;
@@ -20,6 +20,7 @@ import com.divudi.facade.InvestigationItemFacade;
 import com.divudi.facade.TestFlagFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
@@ -41,8 +42,8 @@ import org.primefaces.event.RowEditEvent;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- * Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
+ * Acting Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -62,6 +63,7 @@ public class TestFlagController implements Serializable {
     private List<TestFlag> items = null;
     Investigation investigation;
     List<InvestigationItem> investigationItemsOfValueType;
+    private List<InvestigationItem> investigationItemsOfValueandFlagType;
     List<InvestigationItem> investigationItemsOfFlagType;
     InvestigationItem investigationItemOfValueType;
     InvestigationItem investigationItemofFlagType;
@@ -96,12 +98,12 @@ public class TestFlagController implements Serializable {
 
     public void removeFlag() {
         if (removingFlag == null) {
-            UtilityController.addErrorMessage("Nothing to remove");
+            JsfUtil.addErrorMessage("Nothing to remove");
             return;
         }
         getFacade().remove(removingFlag);
         items = null;
-        UtilityController.addSuccessMessage("Removed");
+        JsfUtil.addSuccessMessage("Removed");
     }
 
     public void setFromValue(double fromValue) {
@@ -159,17 +161,17 @@ public class TestFlagController implements Serializable {
     }
 
     public void addFlag() {
-        //////System.out.println("adding flag");
+        //////// // System.out.println("adding flag");
         if (investigation == null) {
-            UtilityController.addErrorMessage("Select an investigation");
+            JsfUtil.addErrorMessage("Select an investigation");
             return;
         }
         if (investigationItemOfValueType == null) {
-            UtilityController.addErrorMessage("Select a field");
+            JsfUtil.addErrorMessage("Select a field");
             return;
         }
         if (investigationItemofFlagType == null) {
-            UtilityController.addErrorMessage("Select a flag");
+            JsfUtil.addErrorMessage("Select a flag");
             return;
         }
 
@@ -204,7 +206,7 @@ public class TestFlagController implements Serializable {
         f.setToVal(toValue);
         getEjbFacade().create(f);
         clearForNew();
-        UtilityController.addErrorMessage("Added");
+        JsfUtil.addSuccessMessage("Added Successfully");
     }
 
     private void clearForNew() {
@@ -292,7 +294,7 @@ public class TestFlagController implements Serializable {
         if (investigation != null) {
             Map m = new HashMap();
             m.put("iit", InvestigationItemType.Value);
-            investigationItemsOfValueType = getInvestigationItemFacade().findBySQL("select i from InvestigationItem i where i.retired=false and i.item.id = " + investigation.getId() + " and i.ixItemType =:iit", m, TemporalType.TIMESTAMP);
+            investigationItemsOfValueType = getInvestigationItemFacade().findByJpql("select i from InvestigationItem i where i.retired=false and i.item.id = " + investigation.getId() + " and i.ixItemType =:iit", m, TemporalType.TIMESTAMP);
         }
         if (investigationItemsOfValueType == null) {
             investigationItemsOfValueType = new ArrayList<InvestigationItem>();
@@ -305,7 +307,7 @@ public class TestFlagController implements Serializable {
         if (investigation != null) {
             Map m = new HashMap();
             m.put("iit", InvestigationItemType.Flag);
-            investigationItemsOfFlagType = getInvestigationItemFacade().findBySQL("select i from InvestigationItem i where i.retired=false and i.item.id = " + investigation.getId() + " and i.ixItemType=:iit", m, TemporalType.DATE);
+            investigationItemsOfFlagType = getInvestigationItemFacade().findByJpql("select i from InvestigationItem i where i.retired=false and i.item.id = " + investigation.getId() + " and i.ixItemType=:iit", m, TemporalType.DATE);
         }
         if (investigationItemsOfFlagType == null) {
             investigationItemsOfFlagType = new ArrayList<InvestigationItem>();
@@ -367,9 +369,9 @@ public class TestFlagController implements Serializable {
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
@@ -384,14 +386,14 @@ public class TestFlagController implements Serializable {
     public List<TestFlag> getItems() {
         if (items == null) {
             String sql;
-            //////System.out.println("getting items");
+            //////// // System.out.println("getting items");
             Map m = new HashMap();
             m.put("ix", getInvestigation());
             if (investigation != null) {
                 sql = "select i from TestFlag i where i.retired=false and i.item =:ix ";
-                items = getFacade().findBySQL(sql, m);
+                items = getFacade().findByJpql(sql, m);
             }
-            //////System.out.println("item are " + items);
+            //////// // System.out.println("item are " + items);
             if (items == null) {
                 items = new ArrayList<>();
             }
@@ -405,7 +407,7 @@ public class TestFlagController implements Serializable {
         Map m = new HashMap();
         m.put("ix", ix);
         sql = "select i from TestFlag i where i.retired=false and i.investigationItemOfFlagType =:ix ";
-        f = getFacade().findBySQL(sql, m);
+        f = getFacade().findByJpql(sql, m);
         if (f == null) {
             f = new ArrayList<>();
         }
@@ -424,6 +426,30 @@ public class TestFlagController implements Serializable {
         List<String> sortedList = new ArrayList(tfss);
         Collections.sort(sortedList);
         return sortedList;
+    }
+
+    public List<InvestigationItem> getInvestigationItemsOfValueandFlagType() {
+        List<InvestigationItemType> iit = Arrays.asList(InvestigationItemType.Calculation, InvestigationItemType.Value);
+    
+        if (investigation != null) {
+            Map<String, Object> m = new HashMap<>();
+            String jpql = "select i from InvestigationItem i where "
+                    + " i.retired=false"
+                    + " and i.item.id=:id "
+                    + " and i.ixItemType in :itemType";
+           
+            m.put("itemType", iit);
+            m.put("id", investigation.getId());
+            investigationItemsOfValueandFlagType = getInvestigationItemFacade().findByJpql(jpql, m, TemporalType.TIMESTAMP);
+        }
+        if (investigationItemsOfValueandFlagType == null) {
+            investigationItemsOfValueandFlagType = new ArrayList<InvestigationItem>();
+        }
+        return investigationItemsOfValueandFlagType;
+    }
+
+    public void setInvestigationItemsOfValueandFlagType(List<InvestigationItem> investigationItemsOfValueandFlagType) {
+        this.investigationItemsOfValueandFlagType = investigationItemsOfValueandFlagType;
     }
 
     /**

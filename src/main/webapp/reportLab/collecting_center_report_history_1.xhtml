@@ -1,12 +1,12 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/resources/template/template.xhtml"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://java.sun.com/jsf/core"
-                xmlns:h="http://java.sun.com/jsf/html"
-                xmlns:ch="http://java.sun.com/jsf/composite/channel"
-                xmlns:pe="http://primefaces.org/ui/extensions">
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:ch="http://xmlns.jcp.org/jsf/composite/channel"
+                >
 
     <ui:define name="content">
 
@@ -44,7 +44,7 @@
                                 <p:printer target="reportPrint"  />
                             </p:commandButton>
                             <p:commandButton  ajax="false" value="Excel" styleClass="noPrintButton" >
-                                <pe:exporter type="xlsx" target="tbl1" fileName="channel_report_agent_balance" subTable="true" />
+                                <p:dataExporter type="xlsx" target="tbl1" fileName="channel_report_agent_balance"  />
                             </p:commandButton>
                         </h:panelGrid>
                     </h:panelGrid> 
@@ -82,7 +82,7 @@
                         <p:subTable value="#{ahwd.ahs}" var="a" >
                             <f:facet name="header">
                                 <p:outputLabel value="#{ahwd.date}" >
-                                    <f:convertDateTime pattern="yyyy MMMM dd" />
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                                 </p:outputLabel>
                             </f:facet>
                             <p:column>

@@ -1,43 +1,39 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:pe="http://primefaces.org/ui/extensions">
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      >
 
     <h:body>
-        <ui:composition template="/resources/template/template.xhtml">
-            <ui:define name="content">
+        <ui:composition template="/store/store_reports_index.xhtml">
+            <ui:define name="subcontent">
                 <h:form>
                     <p:panel>
                         <f:facet name="header" >
                             <h:outputLabel value="Store Asset BillItems "/> 
                         </f:facet>
-                        <h:panelGrid columns="2" >
+                        
+                        <h:panelGrid columns="2" class="my-2" >
                             <h:outputLabel value="From Date"/>
-                            <p:calendar  id="fromDate" value="#{commonReport1.fromDate}" navigator="true" pattern="dd MMMM yyyy hh mm ss a" >      
+                            <p:calendar  class="w-100 mx-4" inputStyleClass="w-100"  id="fromDate" value="#{commonReport1.fromDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
                             </p:calendar>
-                            <h:outputLabel value="To Date"/>
-                            <p:calendar id="toDate" value="#{commonReport1.toDate}" navigator="true" pattern="dd MMMM yyyy hh mm ss a" >                                                                              
+                            <h:outputLabel value="To Date" />
+                            <p:calendar  class="w-100 mx-4" inputStyleClass="w-100" id="toDate" value="#{commonReport1.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
                             </p:calendar>
-                            <h:outputLabel/>
                         </h:panelGrid>
-                        <h:panelGrid columns="4" >
-                            <p:spacer width="70" height="1"/>
-                            <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{commonReport1.createGRNBillItemForAsset()}"/>
-                            <p:commandButton value="Print" ajax="false">
+                        <h:panelGrid columns="6" class="my-2">
+                            <p:commandButton id="btnSearch" class="ui-button-warning" icon="fa-solid fa-magnifying-glass" ajax="false" value="Search" action="#{commonReport1.createGRNBillItemForAsset()}"/>
+                            <p:commandButton class="ui-button-info mx-2" icon="fas fa-print" value="Print" ajax="false">
                                 <p:printer target="billPrint"></p:printer>
                             </p:commandButton>
-                            <p:commandButton value="Excel" ajax="false" action="#{commonReport1.createGRNBillItemForAsset()}" >
-                                <pe:exporter type="xlsx" target="tblBills" fileName="Department_asset_by_bill_item"
-                                             facetBackground="#008000" facetFontSize="15" 
-                                             facetFontColor="#FFFFFF" facetFontStyle="BOLD"
-                                             cellFontColor="#0000FF" cellFontSize="12" cellFontStyle="NORMAL"
-                                             fontName="Courier New"></pe:exporter>
+                            <p:commandButton class="ui-button-success" icon="fas fa-file-excel" value="Excel" ajax="false" action="#{commonReport1.createGRNBillItemForAsset()}" >
+                                <p:dataExporter type="xlsx" target="tblBills" fileName="Department_asset_by_bill_item"></p:dataExporter>
                             </p:commandButton>
                         </h:panelGrid>
+  
                         <p:panel>
                             <h:panelGroup id="billPrint">
                                 <p:dataTable rowIndexVar="i" 

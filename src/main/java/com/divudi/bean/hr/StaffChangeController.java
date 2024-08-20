@@ -1,11 +1,11 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.hr;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.ejb.HumanResourceBean;
 import com.divudi.entity.Department;
 import com.divudi.entity.Staff;
@@ -86,7 +86,7 @@ public class StaffChangeController implements Serializable {
     
     public void update() {
         if (getFromDate() == null) {
-            UtilityController.addErrorMessage("Select Active Date");
+            JsfUtil.addErrorMessage("Select Active Date");
             return;
         }
         getStaffFacade().edit(getStaff());
@@ -208,7 +208,7 @@ public class StaffChangeController implements Serializable {
 
         String sql = "Select d From Department d where d.retired=false and d.institution.id=" + getSessionController().getInstitution().getId();
 
-        return getDepartmentFacade().findBySQL(sql);
+        return getDepartmentFacade().findByJpql(sql);
     }
 
     public StaffChangeController() {

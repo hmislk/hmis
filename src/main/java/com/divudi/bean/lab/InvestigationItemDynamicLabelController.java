@@ -1,15 +1,15 @@
 /*
- * MSc(Biomedical Informatics) Project
+ * Open Hospital Management Information System
  *
- * Development and Implementation of a Web-based Combined Data Repository of
- Genealogical, Clinical, Laboratory and Genetic Data
- * and
- * a Set of Related Tools
+ * Dr M H B Ariyaratne
+ * Acting Consultant (Health Informatics)
+ * (94) 71 5812399
+ * (94) 71 5812399
  */
 package com.divudi.bean.lab;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.data.InvestigationItemType;
 import com.divudi.data.Sex;
 import com.divudi.entity.lab.Investigation;
@@ -18,7 +18,7 @@ import com.divudi.entity.lab.InvestigationItemValueFlag;
 import com.divudi.facade.InvestigationFacade;
 import com.divudi.facade.InvestigationItemFacade;
 import com.divudi.facade.InvestigationItemValueFlagFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -38,8 +38,8 @@ import javax.persistence.TemporalType;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- * Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -85,7 +85,7 @@ public class InvestigationItemDynamicLabelController implements Serializable {
         removingInvestigationItemofDynamicLabelType.setRetiredAt(new Date());
         getFacade().edit(removingInvestigationItemofDynamicLabelType);
         JsfUtil.addSuccessMessage("Removed");
-        dynamicLabels=null;
+        dynamicLabels = null;
     }
 
     public double getFromValue() {
@@ -139,7 +139,7 @@ public class InvestigationItemDynamicLabelController implements Serializable {
 
     public List<InvestigationItem> getInvestigationItemsOfDynamicLabelType() {
         if (investigation != null) {
-            investigationItemsOfDynamicLabelType = getInvestigationItemFacade().findBySQL("select i from InvestigationItem i where i.retired=false and i.item.id = " + investigation.getId() + " and i.ixItemType = com.divudi.data.InvestigationItemType.DynamicLabel");
+            investigationItemsOfDynamicLabelType = getInvestigationItemFacade().findByJpql("select i from InvestigationItem i where i.retired=false and i.item.id = " + investigation.getId() + " and i.ixItemType = com.divudi.data.InvestigationItemType.DynamicLabel");
         }
         if (investigationItemsOfDynamicLabelType == null) {
             investigationItemsOfDynamicLabelType = new ArrayList<InvestigationItem>();
@@ -242,7 +242,7 @@ public class InvestigationItemDynamicLabelController implements Serializable {
         if (investigation != null) {
             Map m = new HashMap();
             m.put("iit", InvestigationItemType.Value);
-            investigationItemsOfValueType = getInvestigationItemFacade().findBySQL("select i from InvestigationItem i where i.retired=false and i.item.id = " + investigation.getId() + " and i.ixItemType =:iit", m, TemporalType.TIMESTAMP);
+            investigationItemsOfValueType = getInvestigationItemFacade().findByJpql("select i from InvestigationItem i where i.retired=false and i.item.id = " + investigation.getId() + " and i.ixItemType =:iit", m, TemporalType.TIMESTAMP);
         }
         if (investigationItemsOfValueType == null) {
             investigationItemsOfValueType = new ArrayList<InvestigationItem>();
@@ -263,7 +263,7 @@ public class InvestigationItemDynamicLabelController implements Serializable {
     }
 
     public List<InvestigationItemValueFlag> getSelectedItems() {
-        selectedItems = getFacade().findBySQL("select c from InvestigationItemValueFlag c where c.retired=false and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+        selectedItems = getFacade().findByJpql("select c from InvestigationItemValueFlag c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
     }
 
@@ -285,15 +285,15 @@ public class InvestigationItemDynamicLabelController implements Serializable {
     }
 
     public void saveSelected() {
-        //////System.out.println("going to save");
+        //////// // System.out.println("going to save");
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            UtilityController.addSuccessMessage("Saved Successfully");
+            JsfUtil.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
         getItems();
@@ -337,9 +337,9 @@ public class InvestigationItemDynamicLabelController implements Serializable {
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
@@ -355,7 +355,7 @@ public class InvestigationItemDynamicLabelController implements Serializable {
         String sql;
         if (investigation != null) {
             sql = "select i from InvestigationItemValueFlag i where i.retired=false and i.item.id = " + investigation.getId();
-            items = getFacade().findBySQL(sql);
+            items = getFacade().findByJpql(sql);
         }
         if (items == null) {
             items = new ArrayList<InvestigationItemValueFlag>();
@@ -365,19 +365,19 @@ public class InvestigationItemDynamicLabelController implements Serializable {
 
     public void saveForDynamicLabel() {
         if (investigation == null) {
-            UtilityController.addErrorMessage("Please select an investigation");
+            JsfUtil.addErrorMessage("Please select an investigation");
             return;
         }
         if (investigationItemofDynamicLabelType == null) {
-            UtilityController.addErrorMessage("Please select a dynamic label");
+            JsfUtil.addErrorMessage("Please select a dynamic label");
             return;
         }
         if (sex == null) {
-            UtilityController.addErrorMessage("Please select a sex");
+            JsfUtil.addErrorMessage("Please select a sex");
             return;
         }
         if (toAge == 0) {
-            UtilityController.addErrorMessage("Please select a dynamic label");
+            JsfUtil.addErrorMessage("Please select a dynamic label");
             return;
         }
         InvestigationItemValueFlag i = new InvestigationItemValueFlag();
@@ -406,7 +406,7 @@ public class InvestigationItemDynamicLabelController implements Serializable {
         } else {
             getEjbFacade().edit(i);
         }
-        UtilityController.addSuccessMessage("Saved");
+        JsfUtil.addSuccessMessage("Saved");
     }
 
     public void saveFlags() {
@@ -417,22 +417,19 @@ public class InvestigationItemDynamicLabelController implements Serializable {
 
     public List<InvestigationItemValueFlag> getDynamicLabels() {
         String sql;
-        //////System.out.println("getting dynamic labels");
         if (dynamicLabels == null) {
             if (investigation != null && investigationItemofDynamicLabelType != null) {
 
-                sql = "select i from InvestigationItemValueFlag i where i.retired=false and  "
+                sql = "select i "
+                        + " from InvestigationItemValueFlag i "
+                        + " where i.retired=false and  "
                         + " i.investigationItemOfLabelType.id = " + investigationItemofDynamicLabelType.getId();
-                //////System.out.println("sql is " + sql);
-                dynamicLabels = getFacade().findBySQL(sql);
-                //////System.out.println("size is " + dynamicLabels.size());
+                dynamicLabels = getFacade().findByJpql(sql);
             } else {
-                //////System.out.println("no sql");
                 dynamicLabels = null;
             }
         }
         if (dynamicLabels == null) {
-            //////System.out.println("null");
             dynamicLabels = new ArrayList<InvestigationItemValueFlag>();
         }
         return dynamicLabels;
@@ -444,7 +441,7 @@ public class InvestigationItemDynamicLabelController implements Serializable {
         if (ii != null) {
             sql = "select i from InvestigationItemValueFlag i where i.retired=false and  "
                     + " i.investigationItemOfLabelType.id = " + ii.getId();
-            d = getFacade().findBySQL(sql);
+            d = getFacade().findByJpql(sql);
         } else {
             d = null;
         }

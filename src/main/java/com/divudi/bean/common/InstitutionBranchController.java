@@ -1,13 +1,13 @@
 /*
- * MSc(Biomedical Informatics) Project
+ * Open Hospital Management Information System
  *
- * Development and Implementation of a Web-based Combined Data Repository of
- Genealogical, Clinical, Laboratory and Genetic Data
- * and
- * a Set of Related Tools
+ * Dr M H B Ariyaratne
+ * Acting Consultant (Health Informatics)
+ * (94) 71 5812399
+ * (94) 71 5812399
  */
 package com.divudi.bean.common;
-
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.InstitutionType;
 import com.divudi.entity.Institution;
 import com.divudi.facade.InstitutionFacade;
@@ -24,8 +24,8 @@ import javax.persistence.TemporalType;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- * Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
+ * Acting Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -50,27 +50,27 @@ public class InstitutionBranchController implements Serializable {
         if (selectText.trim().equals("")) {
             sql = "select c from Institution c where c.institutionType=:tp and c.retired=false order by c.name";
         } else {
-            sql = "select c from Institution c where c.institutionType=:tp and c.retired=false and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name";
+            sql = "select c from Institution c where c.institutionType=:tp and c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name";
         }
 
         hm.put("tp", InstitutionType.branch);
 
-        selectedItems = getFacade().findBySQL(sql, hm, TemporalType.DATE);
+        selectedItems = getFacade().findByJpql(sql, hm, TemporalType.DATE);
 
         return selectedItems;
     }
 
-    public List<Institution> completeIns(String qry) {
-        String sql;
-        sql = "select c from Institution c where c.retired=false and upper(c.name) like '%" + qry.toUpperCase() + "%' order by c.name";
-        return getFacade().findBySQL(sql);
-    }
+//    public List<Institution> completeIns(String qry) {
+//        String sql;
+//        sql = "select c from Institution c where c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name";
+//        return getFacade().findByJpql(sql);
+//    }
 
-    public List<Institution> completeCompany(String qry) {
-        String sql;
-        sql = "select c from Institution c where c.retired=false and c.institutionType=com.divudi.data.InstitutionType.Company and upper(c.name) like '%" + qry.toUpperCase() + "%' order by c.name";
-        return getFacade().findBySQL(sql);
-    }
+//    public List<Institution> completeCompany(String qry) {
+//        String sql;
+//        sql = "select c from Institution c where c.retired=false and c.institutionType=com.divudi.data.InstitutionType.Company and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name";
+//        return getFacade().findByJpql(sql);
+//    }
 
     public List<Institution> completeCredit(String query) {
         List<Institution> suggestions;
@@ -78,9 +78,9 @@ public class InstitutionBranchController implements Serializable {
         if (query == null) {
             suggestions = new ArrayList<>();
         } else {
-            sql = "select p from Institution p where p.retired=false and p.institutionType=com.divudi.data.InstitutionType.CreditCompany and upper(p.name) like '%" + query.toUpperCase() + "%' order by p.name";
-            //////System.out.println(sql);
-            suggestions = getFacade().findBySQL(sql);
+            sql = "select p from Institution p where p.retired=false and p.institutionType=com.divudi.data.InstitutionType.CreditCompany and (p.name) like '%" + query.toUpperCase() + "%' order by p.name";
+            //////// // System.out.println(sql);
+            suggestions = getFacade().findByJpql(sql);
         }
         return suggestions;
     }
@@ -104,16 +104,18 @@ public class InstitutionBranchController implements Serializable {
 
     public void saveSelected() {
         if (getCurrent().getInstitutionType() == null) {
-            UtilityController.addErrorMessage("Select Instituion Type");
+            JsfUtil.addErrorMessage("Select Instituion Type");
             return;
         }
         if (getCurrent().getInstitution() == null) {
-            UtilityController.addErrorMessage("Select Main Institution");
+            JsfUtil.addErrorMessage("Select Main Institution");
             return;
         }
         getCurrent().getInstitution().getBranch().add(getCurrent());
         getEjbFacade().edit(getCurrent().getInstitution());
         recreateModel();
+        getItems();
+        current=null;
     }
 
     public void setSelectText(String selectText) {
@@ -158,9 +160,9 @@ public class InstitutionBranchController implements Serializable {
             getCurrent().setRetiredAt(new Date());
             getCurrent().setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(getCurrent());
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         current = null;

@@ -1,25 +1,26 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core">
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <h:body>
-        <ui:composition template="/resources/template/template.xhtml">
-            <ui:define name="content">
+        <ui:composition template="/reportLab/lab_summeries_index.xhtml">
+            <ui:define name="subcontent">
                 <h:form>
                     <p:panel header="Search Cancelled Bills of Approved Reports" >
 
                         <h:panelGrid columns="2" >
 
                             <h:outputLabel value="From Date"/>
-                            <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm a" >      
+                            <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >      
                             </p:calendar>
 
                             <h:outputLabel value="To Date"/>
-                            <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm a" >                                                                              
+                            <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" 
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >                                                                              
                             </p:calendar>
 
                             <p:commandButton 
@@ -59,7 +60,7 @@
 
                             <p:column  headerText="Bill Date" styleClass="alignTop" >
                                 <h:outputLabel value="#{pi.patientInvestigation.billItem.bill.billDate}"  >
-                                    <f:convertDateTime pattern="dd/MMM/yyyy"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                                 </h:outputLabel>
                             </p:column>
                             <p:column  headerText="Billed By" styleClass="alignTop" >
@@ -69,7 +70,7 @@
                             
                             <p:column  headerText="Approved at" styleClass="alignTop" >
                                 <h:outputLabel value="#{pi.approveAt}"  >
-                                    <f:convertDateTime pattern="dd/MMM/yyyy hh:mm"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                             </p:column>
                             
@@ -83,7 +84,7 @@
                             </p:column>
                             <p:column  headerText="Cancelled at" styleClass="alignTop" >
                                 <h:outputLabel value="#{pi.patientInvestigation.billItem.bill.cancelledBill.billTime}"  >
-                                    <f:convertDateTime pattern="dd/MMM/yyyy hh:mm"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                             </p:column>
 

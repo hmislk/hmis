@@ -1,0 +1,185 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/reports/index.xhtml">
+            <ui:define name="subcontent">
+                <h:form >
+                    <p:panel header="Late In and Early Out Report" >
+
+                        <p:panelGrid columns="4" class="w-100">
+                            <p:outputLabel value="From Date" class="mx-2" >
+                            </p:outputLabel>
+                            <p:datePicker value="" 
+                                          class="w-100"
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
+
+                            
+
+                            <p:outputLabel value="To Date" class="mx-2" >
+                            </p:outputLabel>
+                            <p:datePicker value=""
+                                          class="w-100"
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
+
+                            <p:outputLabel value="Institution" class="mx-2" >
+                            </p:outputLabel>
+                            <p:selectOneMenu
+                                value="#{reportController.fromInstitution}" 
+                                filter="true"
+                                class="w-100 ">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value="#{institutionController.collectingCentresAndManagedInstitutions}"
+                                               var="d"
+                                               itemLabel="#{d.name}"
+                                               itemValue="#{d}" ></f:selectItems>
+                            </p:selectOneMenu>
+                            
+                            
+                            
+                            <p:outputLabel value="Department" class="mx-2" >
+                            </p:outputLabel>
+                            <p:selectOneMenu
+                                value="#{reportController.fromDepartment}" 
+                                filter="true"
+                                class="w-100 ">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value="#{departmentController.getInsDepartments(reportController.fromInstitution)}"
+                                               var="d"
+                                               itemLabel="#{d.name}"
+                                               itemValue="#{d}" ></f:selectItems>
+                            </p:selectOneMenu>
+
+                            <p:outputLabel value="Employee" class="mx-2" >
+                            </p:outputLabel>
+                            <p:selectOneMenu class="w-100">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems ></f:selectItems>
+                            </p:selectOneMenu>
+                            
+                            
+
+                            <p:outputLabel value="Staff Category" class="mx-2" >
+                            </p:outputLabel>
+                            <p:selectOneMenu class="w-100">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems></f:selectItems>
+                            </p:selectOneMenu>
+
+                            <p:outputLabel value="Designation" class="mx-2" >
+                            </p:outputLabel>
+                            <p:selectOneMenu class="w-100">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems ></f:selectItems>
+                            </p:selectOneMenu>
+                            
+                            
+
+                            <p:outputLabel value="Roster" class="mx-2" >
+                            </p:outputLabel>
+                            <p:selectOneMenu class="w-100">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems></f:selectItems>
+                            </p:selectOneMenu>
+
+                            <p:outputLabel value="Shift" class="mx-2" >
+                            </p:outputLabel>
+                            <p:selectOneMenu class="w-100">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems ></f:selectItems>
+                            </p:selectOneMenu>
+
+                            
+                            <p:spacer ></p:spacer>
+                            <p:spacer ></p:spacer>
+                            
+                            <p:outputLabel value="In Minute" class="mx-2" >
+                            </p:outputLabel>
+                            <p:selectOneMenu class="w-100">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems ></f:selectItems>
+                            </p:selectOneMenu>
+                            
+                            
+
+                            <p:outputLabel value="Out Minute" class="mx-2" >
+                            </p:outputLabel>
+                            <p:selectOneMenu class="w-100">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems></f:selectItems>
+                            </p:selectOneMenu>
+
+                        </p:panelGrid>
+
+                        <div class="d-flex align-items-center my-2">
+                            <p:commandButton class="m-2" ajax="false" value="Process" action="null" >
+                            </p:commandButton>
+                            <p:commandButton class="m-2" ajax="false" value="Download"
+                                             action="null">
+                            </p:commandButton>
+                        </div>
+
+                        <p:dataTable id="tbl" value="" 
+                                     paginator="true"
+                                     rows="10">
+
+                            <p:column headerText="EMP No">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="EMP Name">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Department Name ">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Shift In Time ">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="In Checked ">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Late In Minute Varified  ">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Late In Minute Varified(With in 10 Mins) ">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Late In Minute Varified(Aftre 10 Mins) ">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Shift Out Time ">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Out Checked  ">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Early Out Minute Varified ">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Early Out Minute Varified(With in 10 Mins)  ">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Early Out Minute Varified(Aftre 10 Mins) ">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Late In Seconds Varified ">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Early Out Minute Varified (Seconds)">
+                                <h:outputText value="" />
+                            </p:column>
+
+                        </p:dataTable>
+                    </p:panel>
+
+                </h:form>
+
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

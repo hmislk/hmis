@@ -1,16 +1,16 @@
 /*
- * MSc(Biomedical Informatics) Project
+ * Open Hospital Management Information System
  *
- * Development and Implementation of a Web-based Combined Data Repository of
- Genealogical, Clinical, Laboratory and Genetic Data
- * and
- * a Set of Related Tools
+ * Dr M H B Ariyaratne
+ * Acting Consultant (Health Informatics)
+ * (94) 71 5812399
+ * (94) 71 5812399
  */
 package com.divudi.bean.lab;
 
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.entity.lab.Antibiotic;
 import com.divudi.facade.AntibioticFacade;
 import com.divudi.facade.SpecialityFacade;
@@ -30,8 +30,8 @@ import javax.inject.Named;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- * Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
+ * Acting Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -62,14 +62,19 @@ public class AntibioticController implements Serializable {
     boolean billedAs;
     boolean reportedAs;
 
+    public String navigateToManageAntibiotics() {
+        prepareAdd();
+        return "/admin/lims/manage_antibiotics?faces-redirect=true";
+    }
+    
     public List<Antibiotic> completeAntibiotic(String query) {
         List<Antibiotic> suggestions;
         String sql;
         if (query == null) {
             suggestions = new ArrayList<>();
         } else {
-            sql = "select c from Antibiotic c where c.retired=false and upper(c.name) like '%" + query.toUpperCase() + "%' order by c.name";
-            suggestions = getFacade().findBySQL(sql);
+            sql = "select c from Antibiotic c where c.retired=false and (c.name) like '%" + query.toUpperCase() + "%' order by c.name";
+            suggestions = getFacade().findByJpql(sql);
         }
         return suggestions;
     }
@@ -98,29 +103,6 @@ public class AntibioticController implements Serializable {
         this.billBean = billBean;
     }
 
-    public void correctIx() {
-        List<Antibiotic> allItems = getEjbFacade().findAll();
-        for (Antibiotic i : allItems) {
-            i.setPrintName(i.getName());
-            i.setFullName(i.getName());
-            i.setShortName(i.getName());
-            i.setDiscountAllowed(Boolean.TRUE);
-            i.setUserChangable(false);
-            i.setTotal(getBillBean().totalFeeforItem(i));
-            getEjbFacade().edit(i);
-        }
-
-    }
-
-    public void correctIx1() {
-        List<Antibiotic> allItems = getEjbFacade().findAll();
-        for (Antibiotic i : allItems) {
-            i.setBilledAs(i);
-            i.setReportedAs(i);
-            getEjbFacade().edit(i);
-        }
-
-    }
 
     public String getBulkText() {
         return bulkText;
@@ -132,10 +114,10 @@ public class AntibioticController implements Serializable {
 
     public List<Antibiotic> getSelectedItems() {
         if (selectText.trim().equals("")) {
-            selectedItems = getFacade().findBySQL("select c from Antibiotic c where c.retired=false order by c.name");
+            selectedItems = getFacade().findByJpql("select c from Antibiotic c where c.retired=false order by c.name");
         } else {
-            String sql = "select c from Antibiotic c where c.retired=false and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name";
-            selectedItems = getFacade().findBySQL(sql);
+            String sql = "select c from Antibiotic c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name";
+            selectedItems = getFacade().findByJpql(sql);
         }
         return selectedItems;
     }
@@ -179,7 +161,7 @@ public class AntibioticController implements Serializable {
     public void saveSelected() {
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             if (billedAs == false) {
-                //////System.out.println("2");
+                //////// // System.out.println("2");
                 getCurrent().setBilledAs(getCurrent());
 
             }
@@ -187,7 +169,7 @@ public class AntibioticController implements Serializable {
                 getCurrent().setReportedAs(getCurrent());
             }
             getFacade().edit(getCurrent());
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             getCurrent().setCreatedAt(new Date());
             getCurrent().setCreater(getSessionController().getLoggedUser());
@@ -199,7 +181,7 @@ public class AntibioticController implements Serializable {
                 getCurrent().setReportedAs(getCurrent());
             }
             getFacade().edit(getCurrent());
-            UtilityController.addSuccessMessage("Saved Successfully");
+            JsfUtil.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
         getItems();
@@ -251,9 +233,9 @@ public class AntibioticController implements Serializable {
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
@@ -269,7 +251,7 @@ public class AntibioticController implements Serializable {
         if (items == null) {
             String j;
             j = "select an from Antibiotic an where an.retired=false order by an.name";
-            items = getFacade().findBySQL(j);
+            items = getFacade().findByJpql(j);
         }
         return items;
     }

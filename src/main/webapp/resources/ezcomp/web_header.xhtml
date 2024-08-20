@@ -1,0 +1,305 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:a="http://xmlns.jcp.org/jsf/passthrough"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <link rel="stylesheet" type="text/css" href="#{request.contextPath}/resources/css/html5up-hyperspace/main.css" />
+
+        <!-- Include JavaScript files -->
+        <h:outputScript library="js/html5up-hyperspace" name="jquery.min.js" />
+        <h:outputScript library="js/html5up-hyperspace" name="jquery.scrollex.min.js" />
+        <h:outputScript library="js/html5up-hyperspace" name="jquery.scrolly.min.js" />
+        <h:outputScript library="js/html5up-hyperspace" name="browser.min.js" />
+        <h:outputScript library="js/html5up-hyperspace" name="breakpoints.min.js" />
+        <h:outputScript library="js/html5up-hyperspace" name="util.js" />
+        <h:outputScript library="js/html5up-hyperspace" name="main.js" />
+
+        <h:body>
+            <!-- Sidebar -->
+            <div id="sidebar">
+                <div class="inner">
+                    <h:form>
+                        <nav>
+                            <ul>
+                                <li><a href="#intro">#{webContentController.findSingleText('home')}</a></li>
+                                <li><a href="#one">#{webContentController.findSingleText('services')}</a></li>
+                                <li><a href="#two">#{webContentController.findSingleText('channel_doctor')}</a></li>
+                                <li><a href="#three">#{webContentController.findSingleText('view_my_reports')}</a></li>
+                                <li><a href="#four">#{webContentController.findSingleText('login')}</a></li>
+                                <li><a href="#five">#{webContentController.findSingleText('about_us')}</a></li>
+                            </ul>
+                        </nav>
+                    </h:form>
+                </div>
+            </div>
+
+            <!-- Wrapper -->
+            <div id="wrapper">
+                <!-- Intro -->
+                <div id="intro" class="wrapper style1 fullscreen fade-up">
+                    <h:outputText value="#{webContentController.findSingleText('site_title')}" />
+                    <h:outputText value="Just another fine responsive site template designed by HTML5 UP and released for free under the Creative Commons." />
+                    <h:commandLink value="Learn more" action="#one" />
+                    <h:form >
+                        <h:selectOneMenu id="cmbLang" value="#{webContentController.language}" >
+                            <f:selectItems value="#{webLanguageController.items}" var="l" itemLabel="#{l.name}" itemValue="#{l}" ></f:selectItems>
+                            <f:ajax event="change" execute="cmbLang" render="@all" ></f:ajax>
+                        </h:selectOneMenu>
+
+
+                        <h:commandLink class="nav-link link-dark px-2" action="#{sessionController.toLoginFromWeb()}" >
+                            <h:outputLabel value="#{webContentController.findSingleText('login')}" escape="false" ></h:outputLabel>
+                        </h:commandLink>
+
+
+
+                    </h:form>
+
+
+                    
+                </div>
+
+                <!-- One -->
+                <div id="one" class="wrapper style2 spotlights">
+                    <!-- First Section -->
+
+                    <h:graphicImage library="images/html5up-hyperspace" name="pic01.jpg" />
+                    <div class="content">
+                        <div class="inner">
+                            <h:outputText value="#{webContentController.findSingleText('service1_details')}" />
+                            <h:outputText value="#{webContentController.findSingleText('service2_details')}" />
+                            <h:commandLink value="Learn more" action="generic.html" />
+                        </div>
+                    </div>
+
+                    <!-- Second Section -->
+
+                    <h:graphicImage library="images/html5up-hyperspace" name="pic02.jpg" />
+                    <div class="content">
+                        <div class="inner">
+                            <h:outputText value="Feugiat consequat" />
+                            <h:outputText value="Phasellus convallis elit id ullamcorper pulvinar. Duis aliquam turpis mauris, eu ultricies erat malesuada quis. Aliquam dapibus." />
+                            <h:commandLink value="Learn more" action="generic.html" />
+                        </div>
+                    </div>
+
+                    <!-- Third Section -->
+
+                    <h:graphicImage library="images/html5up-hyperspace" name="pic02.jpg" />
+                    <div class="content">
+                        <div class="inner">
+                            <h:outputText value="Ultricies aliquam" />
+                            <h:outputText value="Phasellus convallis elit id ullamcorper pulvinar. Duis aliquam turpis mauris, eu ultricies erat malesuada quis. Aliquam dapibus." />
+                            <h:commandLink value="Learn more" action="generic.html" />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- One -->
+                <div id="one" class="wrapper style3 fade-up">
+                    <div class="inner">
+                        <h2>#{webContentController.findSingleText('services')}</h2>
+                        <p>Phasellus convallis elit id ullamcorper pulvinar. Duis aliquam turpis mauris, eu ultricies erat malesuada quis. Aliquam dapibus, lacus eget hendrerit bibendum, urna est aliquam sem, sit amet imperdiet est velit quis lorem.</p>
+                        <div class="features">
+                            <section>
+                                <span class="icon solid major fa-code"></span>
+                                <h3>Lorem ipsum amet</h3>
+                                <p>Phasellus convallis elit id ullam corper amet et pulvinar. Duis aliquam turpis mauris, sed ultricies erat dapibus.</p>
+                            </section>
+                            <section>
+                                <span class="icon solid major fa-lock"></span>
+                                <h3>Aliquam sed nullam</h3>
+                                <p>Phasellus convallis elit id ullam corper amet et pulvinar. Duis aliquam turpis mauris, sed ultricies erat dapibus.</p>
+                            </section>
+                            <section>
+                                <span class="icon solid major fa-cog"></span>
+                                <h3>Sed erat ullam corper</h3>
+                                <p>Phasellus convallis elit id ullam corper amet et pulvinar. Duis aliquam turpis mauris, sed ultricies erat dapibus.</p>
+                            </section>
+                            <section>
+                                <span class="icon solid major fa-desktop"></span>
+                                <h3>Veroeros quis lorem</h3>
+                                <p>Phasellus convallis elit id ullam corper amet et pulvinar. Duis aliquam turpis mauris, sed ultricies erat dapibus.</p>
+                            </section>
+                            <section>
+                                <span class="icon solid major fa-link"></span>
+                                <h3>Urna quis bibendum</h3>
+                                <p>Phasellus convallis elit id ullam corper amet et pulvinar. Duis aliquam turpis mauris, sed ultricies erat dapibus.</p>
+                            </section>
+                            <section>
+                                <span class="icon major fa-gem"></span>
+                                <h3>Aliquam urna dapibus</h3>
+                                <p>Phasellus convallis elit id ullam corper amet et pulvinar. Duis aliquam turpis mauris, sed ultricies erat dapibus.</p>
+                            </section>
+                        </div>
+                        <ul class="actions">
+                            <li><h:commandLink value="Learn more" action="generic.html" class="button" /></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Two -->
+                <div id="two" class="wrapper style4 fade-up">
+                    <div class="inner">
+                        <h1>#{webContentController.findSingleText('channel_doctor')}</h1>
+                    </div>
+                </div>
+                
+                <!-- Three -->
+                <div id="three" class="wrapper style5 fade-up">
+                    <div class="inner">
+                        <h1>#{webContentController.findSingleText('view_my_reports')}</h1>
+                    </div>
+                </div>
+                 <!-- Four -->
+                <div id="four" class="wrapper style1 fade-up">
+                <h:form id="formLogin">
+
+                        <div class="container">
+                            <div class="row justify-content-center">
+                                <div class="col-md-8 col-lg-6 col-sm-10 col-xs-12 mt-5">
+                                    <div class="card">
+                                        <div class="card-header d-flex align-items-center">
+                                            <div class="flex-grow-1">
+                                                <h4>Please Login</h4>
+                                            </div>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-md-3 d-flex align-items-center">
+                                                    <h:graphicImage library="image" name="lock.png" alt="Logo" styleClass="img-fluid mx-auto my-2"/>
+                                                </div>
+
+                                                <div class="col-md-9">
+
+                                                    <div class="row w-100">
+                                                        <div class="col">
+                                                            <div class="form-group">
+                                                                <label for="txtUserName">Username:</label>
+                                                                <h:inputText autocomplete="off" id="txtUserName"
+                                                                             value="#{sessionController.userName}"
+                                                                             required="true"
+                                                                             requiredMessage="Username is required"
+                                                                             class="form-control"></h:inputText>
+                                                                <h:message for="txtUserName" style="color:red;" />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row w-100" >
+                                                        <div class="col" >
+                                                            <div class="form-group">
+                                                                <label for="txtPassword">Password:</label>
+                                                                <h:inputSecret id="txtPassword" value="#{sessionController.passord }"
+                                                                               required="true"
+                                                                               requiredMessage="Password is required"
+                                                                               class="form-control"></h:inputSecret>
+                                                                <h:message for="txtPassword" style="color:red;" />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row w-100 mt-3">
+                                                        <div class="col d-flex justify-content-end">
+                                                            <p:commandButton value="Login" id="btnLogin"
+                                                                             action="#{sessionController.loginActionWithoutDepartment()}"
+                                                                             class="btn btn-primary mb-3"
+                                                                             ajax="false"></p:commandButton>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </h:form>
+                </div>
+                
+                <!-- Five -->
+                <div id="five" class="wrapper style1 fade-up">
+                    <div class="inner">
+                        <h2>Get in touch</h2>
+                        <p>Phasellus convallis elit id ullamcorper pulvinar. Duis aliquam turpis mauris, eu ultricies erat malesuada quis. Aliquam dapibus, lacus eget hendrerit bibendum, urna est aliquam sem, sit amet imperdiet est velit quis lorem.</p>
+                        <div class="split style1">
+                            <section>
+                                <form method="post" action="#">
+                                    <div class="fields">
+                                        <div class="field half">
+                                            <label for="name">Name</label>
+                                            <input type="text" name="name" id="name" />
+                                        </div>
+                                        <div class="field half">
+                                            <label for="email">Email</label>
+                                            <input type="text" name="email" id="email" />
+                                        </div>
+                                        <div class="field">
+                                            <label for="message">Message</label>
+                                            <textarea name="message" id="message" rows="5"></textarea>
+                                        </div>
+                                    </div>
+                                    <ul class="actions">
+                                        <li><a href="" class="button submit">Send Message</a></li>
+                                    </ul>
+                                </form>
+                            </section>
+                           
+                            <section>
+                                <ul class="contact">
+                                    <li>
+                                        <h3>Address</h3>
+                                        <span>12345 Somewhere Road #654<br />
+                                            Nashville, TN 00000-0000<br />
+                                            USA</span>
+                                    </li>
+                                    <li>
+                                        <h3>Email</h3>
+                                        <a href="#">user@untitled.tld</a>
+                                    </li>
+                                    <li>
+                                        <h3>Phone</h3>
+                                        <span>(000) 000-0000</span>
+                                    </li>
+                                    <li>
+                                        <h3>Social</h3>
+                                        <ul class="icons">
+                                            <li><a href="#" class="icon brands fa-twitter"><span class="label">Twitter</span></a></li>
+                                            <li><a href="#" class="icon brands fa-facebook-f"><span class="label">Facebook</span></a></li>
+                                            <li><a href="#" class="icon brands fa-github"><span class="label">GitHub</span></a></li>
+                                            <li><a href="#" class="icon brands fa-instagram"><span class="label">Instagram</span></a></li>
+                                            <li><a href="#" class="icon brands fa-linkedin-in"><span class="label">LinkedIn</span></a></li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                            </section>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <footer id="footer" class="wrapper style1-alt">
+                    <div class="inner">
+                        <ul class="menu">
+                            <li>&copy; Untitled. All rights reserved.</li><li>Design: <a href="http://html5up.net">HTML5 UP</a></li>
+                        </ul>
+                    </div>
+                </footer>
+
+            </div>
+        </h:body>
+    </cc:implementation>
+</html>

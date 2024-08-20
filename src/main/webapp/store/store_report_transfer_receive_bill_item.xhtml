@@ -1,50 +1,48 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:pe="http://primefaces.org/ui/extensions">
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      >
 
     <h:body>
 
-        <ui:composition template="/resources/template/template.xhtml">
+        <ui:composition template="/store/store_reports_index.xhtml">
 
-            <ui:define name="content">
+            <ui:define name="subcontent">
                 <h:form>
-
 
                     <p:panel header="Detailed Transfer Listing - (Consider after receiving)" >
 
-                        <h:panelGrid columns="2" >
+                        <h:panelGrid columns="2" class="my-2" >
                             <h:outputLabel value="Transfer From" ></h:outputLabel>
-                            <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" 
+                            <p:autoComplete class="w-100 mx-4" inputStyleClass="w-100" completeMethod="#{departmentController.completeDept}" var="dept" 
                                             itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
-                                            value="#{storeReportsTransfer.fromDepartment}" converter="departmentConverter" >
+                                            value="#{storeReportsTransfer.fromDepartment}"  >
                             </p:autoComplete>
                             <h:outputLabel value="Transfer To" ></h:outputLabel>
-                            <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" 
+                            <p:autoComplete class="w-100 mx-4" inputStyleClass="w-100" completeMethod="#{departmentController.completeDept}" var="dept" 
                                             itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
-                                            value="#{storeReportsTransfer.toDepartment}" converter="departmentConverter" >
+                                            value="#{storeReportsTransfer.toDepartment}"  >
                             </p:autoComplete>
                             <h:outputLabel value="From" ></h:outputLabel>
-                            <p:calendar value="#{storeReportsTransfer.fromDate}" pattern="dd MM yyyy" ></p:calendar>
+                            <p:calendar class="w-100 mx-4" inputStyleClass="w-100" value="#{storeReportsTransfer.fromDate}" pattern="#{sessionController.applicationPreference.shortDateFormat}" ></p:calendar>
                             <h:outputLabel value="To" ></h:outputLabel>
-                            <p:calendar value="#{storeReportsTransfer.toDate}" pattern="dd MM yyyy" ></p:calendar>
-                            </h:panelGrid>
-                            
-                            <h:panelGrid columns="4">
-                                <p:spacer width="80" height="1"/>
-                                <p:commandButton ajax="false" value="Fill" action="#{storeReportsTransfer.fillDepartmentTransfersReceive()}" ></p:commandButton>
-                            <p:commandButton value="Print" ajax="false" action="#" >
+                            <p:calendar class="w-100 mx-4" inputStyleClass="w-100" value="#{storeReportsTransfer.toDate}" pattern="#{sessionController.applicationPreference.shortDateFormat}" ></p:calendar>
+                        </h:panelGrid>
+                        <h:panelGrid columns="6" class="my-2">
+                            <p:commandButton class="ui-button-warning" icon="fas fa-fill" ajax="false" value="Fill" action="#{storeReportsTransfer.fillDepartmentTransfersReceive()}" ></p:commandButton>
+                            <p:commandButton class="ui-button-info mx-2" icon="fas fa-print" value="Print" ajax="false" action="#" >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
-                            
-                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
-                                <pe:exporter type="xlsx" target="tbl" fileName="Detailed_Transfer_Listing"  />
+
+                            <p:commandButton class="ui-button-success" icon="fas fa-file-excel" ajax="false" value="Excel" >
+                                <p:dataExporter type="xlsx" target="tbl" fileName="Detailed_Transfer_Listing"  />
                             </p:commandButton>
                         </h:panelGrid>
+
 
                         <h:panelGroup id="gpBillPreview">
                             <p:dataTable id="tbl" styleClass="noBorder normalFont"  value="#{storeReportsTransfer.transferItems}" var="i"  >
@@ -52,16 +50,16 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="Transfer Receive By Bill Item &emsp; From :"/>
                                     <h:outputLabel value="#{storeReportsTransfer.fromDepartment.name}"/> 
-                                     <h:outputLabel value="&emsp; To :"/>
+                                    <h:outputLabel value="&emsp; To :"/>
                                     <h:outputLabel value="#{storeReportsTransfer.toDepartment.name}"/> 
-                                        <h:outputLabel value="From : " style=" white-space:pre-line;"/>
-                                        <h:outputLabel value="#{storeReportsTransfer.fromDate}">
-                                            <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a" />
-                                        </h:outputLabel>
-                                        <h:outputLabel value="&emsp; To : "/>
-                                        <h:outputLabel value="#{storeReportsTransfer.toDate}">
-                                            <f:convertDateTime pattern="dd MMM yyyy  hh:mm:ss a" />
-                                        </h:outputLabel>
+                                    <h:outputLabel value="From : " style=" white-space:pre-line;"/>
+                                    <h:outputLabel value="#{storeReportsTransfer.fromDate}">
+                                        <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a" />
+                                    </h:outputLabel>
+                                    <h:outputLabel value="&emsp; To : "/>
+                                    <h:outputLabel value="#{storeReportsTransfer.toDate}">
+                                        <f:convertDateTime pattern="dd MMM yyyy  hh:mm:ss a" />
+                                    </h:outputLabel>
                                 </f:facet>
 
                                 <p:column headerText="Bill No"  >
@@ -69,21 +67,21 @@
                                 </p:column>
                                 <p:column headerText="Date">
                                     <h:outputLabel value="#{i.bill.createdAt}"  >
-                                        <f:convertDateTime pattern="dd/MM/yy" ></f:convertDateTime>
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Item Descreption">
                                     <h:outputLabel value="#{i.item.name}"  >                                      
                                     </h:outputLabel>
                                 </p:column>
-                                
+
                                 <p:column headerText="Code">
                                     <f:facet name="header">
                                         <h:outputLabel value="Code"/>
                                     </f:facet>                           
                                     <h:outputLabel value="#{i.pharmaceuticalBillItem.itemBatch.item.code}" style="width: 100px!important;" ></h:outputLabel>
                                 </p:column>
-                                
+
                                 <p:column headerText="Qty" style="text-align: right;">
                                     <h:outputLabel value="#{i.pharmaceuticalBillItem.qty}"  >
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>

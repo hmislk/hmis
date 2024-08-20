@@ -1,55 +1,56 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:pharmacy="http://java.sun.com/jsf/composite/pharmacy">
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:pharmacy="http://xmlns.jcp.org/jsf/composite/pharmacy">
 
     <h:body>
-        <ui:composition template="/resources/template/template.xhtml">
-            <ui:define name="content">
+        <ui:composition template="/emr/reports/index.xhtml">
+            <ui:define name="subcontent">
                 <h:form >
-                    <p:panelGrid columns="3" >
-                        <h:outputLabel value="From" ></h:outputLabel>
-                        <p:calendar value="#{patientEncounterController.fromDate}" pattern="dd MMMM yyyy hh:mm" ></p:calendar>
-                        <h:outputLabel value="" ></h:outputLabel>
-
-                        <h:outputLabel value="To" ></h:outputLabel>
-                        <p:calendar value="#{patientEncounterController.toDate}" pattern="dd MMMM yyyy hh:mm" ></p:calendar>
-                        <h:outputLabel value="" ></h:outputLabel>
+                    <p:panel header="Daily Visits">
+                        <h:panelGrid columns="2" class="w-100">
+                            <h:outputLabel value="From Date" ></h:outputLabel>
+                            <p:calendar value="#{patientEncounterController.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
 
 
-                        <h:outputLabel value="Speciality" ></h:outputLabel>
-                        <p:autoComplete value="#{practiceBookingController.speciality}"
-                                        id="acSpeciality" 
-                                        completeMethod="#{specialityController.completeSpeciality}"
-                                        var="dsp" itemLabel="#{dsp.name}" itemValue="#{dsp}"
-                                        >
-                            <f:ajax event="itemSelect" execute="acSpeciality" render="acStaff" ></f:ajax>
-                        </p:autoComplete>
-                        <h:outputLabel value="" ></h:outputLabel>
+                            <h:outputLabel value="To Date" ></h:outputLabel>
+                            <p:calendar value="#{patientEncounterController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
 
-                        <h:outputLabel value="Doctor" ></h:outputLabel>
-                        <p:autoComplete value="#{patientEncounterController.doctor}"
-                                        id="acStaff" converter="conDoc"
-                                        completeMethod="#{practiceBookingController.completeDoctorsOfSelectedSpeciality}"
-                                        var="doc"
-                                        itemLabel="#{doc.person.nameWithTitle}" itemValue="#{doc}"
-                                        >
-                            <f:ajax  event="itemSelect" execute="@this" 
-                                     render=":#{p:component('pList')}"  
-                                     listener="#{practiceBookingController.listBillSessions}" />                                                
-                        </p:autoComplete>
-                        <p:commandButton ajax="false" value="Process" 
-                                        action="/clinical/clinical_reports_all_opd_visits" 
-                                        actionListener="#{patientEncounterController.listAllEncounters()}" onclick="onSubmitButton();" ></p:commandButton>
-                    </p:panelGrid>
 
-                    <p:panel id="pList" >
 
-                        <p:dataTable value="#{patientEncounterController.items}" var="pe" 
+                            <h:outputLabel value="Speciality" ></h:outputLabel>
+                            <p:autoComplete value="#{practiceBookingController.speciality}"
+                                            id="acSpeciality" 
+                                            completeMethod="#{specialityController.completeSpeciality}"
+                                            var="dsp" itemLabel="#{dsp.name}" itemValue="#{dsp}"
+                                            >
+                                <f:ajax event="itemSelect" execute="acSpeciality" render="acStaff" ></f:ajax>
+                            </p:autoComplete>
+
+
+                            <h:outputLabel value="Doctor" ></h:outputLabel>
+                            <p:autoComplete value="#{patientEncounterController.doctor}"
+                                            id="acStaff" 
+                                            completeMethod="#{practiceBookingController.completeDoctorsOfSelectedSpeciality}"
+                                            var="doc"
+                                            itemLabel="#{doc.person.nameWithTitle}" itemValue="#{doc}"
+                                            >
+                                <f:ajax  event="itemSelect" execute="@this" 
+                                         render=":#{p:resolveFirstComponentWithId('pList',view).clientId}"  
+                                         listener="#{practiceBookingController.listBillSessions}" />                                                
+                            </p:autoComplete>
+                            <p:commandButton ajax="false" value="Process" 
+                                             icon="fa-solid fa-arrows-rotate"
+                                             class="ui-button-warning" 
+                                             action="/clinical/clinical_reports_all_opd_visits" 
+                                             actionListener="#{patientEncounterController.listAllEncounters()}"  ></p:commandButton>
+                        </h:panelGrid>
+
+                        <p:dataTable value="#{patientEncounterController.items}" var="pe" id="pList" 
                                      emptyMessage="No Patient Encounters during the selected period">
                             <p:column headerText="Visit Date/Time" >
                                 <h:outputLabel value="#{pe.createdAt}" >
@@ -63,12 +64,16 @@
                                 <h:outputLabel value="#{pe.opdDoctor.person.nameWithTitle}" ></h:outputLabel>
                             </p:column>
                             <p:column headerText="View" >
-                                <p:commandButton ajax="false" value="View" action="clinical_new_opd_visit" onclick="onSubmitButton();" >
-                                    <f:setPropertyActionListener value="#{pe}" target="#{patientEncounterController.current}" ></f:setPropertyActionListener>
+                                <p:commandButton ajax="false" 
+                                                 value="View"
+                                                 action="#{pastPatientEncounterController.navigateToViewPastEncounter()}">
+                                    <f:setPropertyActionListener value="#{pe}" target="#{pastPatientEncounterController.current}" ></f:setPropertyActionListener>
+
+                                    <f:setPropertyActionListener value="#{pe.patient}" target="#{patientController.current}" />
                                 </p:commandButton>
-                                
+
                             </p:column>
-                            
+
                         </p:dataTable>
                     </p:panel>
                 </h:form>

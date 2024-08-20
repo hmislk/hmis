@@ -1,0 +1,228 @@
+.test{
+    background-color: palegreen;
+    font-size: xx-large ;
+}
+
+.row-warning {
+    background-color: #fff3cd; /* Bootstrap warning color */
+}
+
+.row-danger {
+    background-color: #f8d7da; /* Bootstrap danger color */
+}
+
+
+th.align-right-header .ui-column-title {
+    text-align: right !important;
+}
+
+.align-right-header .ui-column-title {
+    text-align: right !important;
+}
+
+.discharged-color {
+    color: red;
+}
+
+.not-discharged-color {
+    color: green;
+}
+
+
+.standedicon{
+    width: 2em;
+    height: 2em;
+    border: 1px #888888 solid;
+    margin: 0.1em;
+    -webkit-border-radius: 0.1em;
+    -moz-border-radius: 0.1em;
+    border-radius: 0.1em;
+    -moz-box-shadow: 1px 1px 1px 1px #888888;
+    -webkit-box-shadow: 1px 1px 1px 1px #888888;
+    box-shadow: 1px 1px 1px 1px #888888;
+}
+
+
+.auto-width-datatable{
+    table-layout: auto !important;
+    width: 100% !important;
+}
+
+.dxicon {
+    background: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm1-12h-2V6h-2v2H8v2h2v2h2v-2h2v-2h-2z"/></svg>') no-repeat center;
+    background-size: contain;
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+}
+
+.testRed{
+    color: red!important;
+    background-color: yellow!important;
+    height: 50px;
+    width: 100px;
+}
+.printingOnly{
+    display: none!important;
+
+}
+
+.button-margin-adjusted {
+    margin-left: 4px;
+    margin-right: 4px;
+}
+
+
+/* Style for screen (if needed) */
+.prescription-text .ql-container.ql-snow {
+    /* Your default styles here */
+}
+
+/* Style for printing */
+@media print {
+    .prescription-text .ui-texteditor .ql-container.ql-snow,
+    .prescription-text .ql-container.ql-snow {
+        border: none !important;
+    }
+}
+
+.condensedTable .ui-datatable-tablewrapper {
+    font-size: 10px; /* Smaller font size */
+}
+
+.condensedTable .ui-datatable-thead > tr > th,
+.condensedTable .ui-datatable-tbody > tr > td {
+    padding: 1px 1px; /* Reduced padding around cells */
+    white-space: nowrap; /* Prevent text wrapping */
+}
+
+.condensedTable .ui-datatable-header,
+.condensedTable .ui-datatable-footer {
+    padding: 1px 1px; /* Reduced padding for header and footer */
+}
+
+.condensedTable .ui-paginator .ui-paginator-pages {
+    padding: 1px 1px; /* Reduced padding for paginator */
+}
+
+.condensedTable .ui-datatable-tablewrapper .ui-datatable-data tr td a {
+    font-size: 10px; /* Adjust the font size as needed */
+    padding: 1px 1px; /* Adjust padding to make it more condensed, if necessary */
+}
+
+.no-header-table .ui-datatable-header {
+    display: none;
+}
+
+.square-image {
+    width: 100%; /* or another fixed width */
+    padding-top: 100%; /* same as width to maintain aspect ratio */
+    position: relative; /* allows absolute positioning inside */
+}
+
+.square-image img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* cover, so it fills the area, cropping if necessary */
+}
+
+.img-prominent {
+    filter: none; /* No filter for marked activities, image is clear */
+}
+
+.img-light {
+    filter: brightness(50%); /* Dim the image for unmarked activities */
+}
+
+.compact-datatable .ui-datatable-data tr td {
+    padding: 2px 5px; /* Reduced padding */
+    font-size: 0.8rem; /* Smaller font size */
+}
+
+.compact-datatable th {
+    padding: 4px 5px; /* Reduced padding in headers */
+    font-size: 0.8rem; /* Smaller font size in headers */
+}
+
+.compact-datatable .ui-paginator {
+    padding: 1px !important; /* Reduced padding in paginator */
+    font-size: 0.8rem  !important; /* Smaller font size in paginator */
+}
+
+
+.compact-listbox .ui-selectlistbox-listcontainer {
+    padding: 0px !important;
+    margin: 0px !important;
+}
+.compact-listbox .ui-selectlistbox-item {
+    padding: 0px !important; /* or even smaller */
+    margin: 0px !important;
+}
+
+.compact-listbox .ui-selectlistbox-listcontainer {
+    padding: 0 !important;
+    margin: 0 !important;
+}
+.compact-listbox .ui-selectlistbox-item {
+    padding: 0px !important;  /* Minimal padding to tighten the layout */
+    margin: 0px !important;
+    /*line-height: 0.8;*/  
+}
+
+.compact-listbox .ui-selectlistbox-listcontainer {
+    padding: 0!important;
+    margin: 0!important;
+    /*height: 200px;*/ 
+}
+
+.compact-listbox .ui-selectlistbox-list {
+    width: 100%!important;
+    margin: 0!important;
+    padding: 0!important;
+    border-collapse: collapse!important; 
+}
+
+.compact-listbox .ui-selectlistbox-item {
+    margin: 0!important;
+    padding: 0!important;
+    line-height: 1!important;
+}
+
+.compact-listbox .ui-selectlistbox-item td {
+    padding: 0!important; 
+    margin: 0!important; 
+    border: none!important; 
+}
+
+.compact-listbox .ui-selectlistbox-item span {
+    display: block;
+    margin: 2px!important;
+    padding: 3px!important;
+}
+
+.compact-listbox .ui-selectlistbox-listcontainer {
+    padding: 1px!important;
+    margin: 1px!important;
+    /*height: 100px;*/
+    overflow-y: auto; /* Ensures proper scrolling */
+}
+
+.compact-listbox table,
+.compact-listbox tbody,
+.compact-listbox tr,
+.compact-listbox th,
+.compact-listbox td,
+.compact-listbox span {
+    margin: 3px!important;  
+    padding: 3px!important; 
+    border: none!important; 
+    line-height: 1.2; 
+}
+
+.compact-listbox .ui-selectlistbox-item {
+    background: none; /* Optional: remove any background styles */
+}
+

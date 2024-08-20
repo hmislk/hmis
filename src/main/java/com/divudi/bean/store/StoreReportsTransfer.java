@@ -1,7 +1,7 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Open Hospital Management Information System
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.store;
 
@@ -12,7 +12,7 @@ import com.divudi.data.BillClassType;
 import com.divudi.data.BillType;
 import com.divudi.data.dataStructure.StockReportRecord;
 import com.divudi.data.table.String1Value3;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.Category;
@@ -24,7 +24,8 @@ import com.divudi.entity.pharmacy.Stock;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.StockFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -95,7 +96,7 @@ public class StoreReportsTransfer implements Serializable {
     StoreBean StoreBean;
     @Inject
     BillBeanController billBeanController;
-    @EJB
+
     CommonFunctions commonFunctions;
 
     /**
@@ -254,7 +255,7 @@ public class StoreReportsTransfer implements Serializable {
             sql = "select bi from BillItem bi where bi.bill.createdAt "
                     + " between :fd and :td and bi.bill.billType=:bt order by bi.id";
         }
-        transferItems = getBillItemFacade().findBySQL(sql, m);
+        transferItems = getBillItemFacade().findByJpql(sql, m);
         purchaseValue = 0.0;
         saleValue = 0.0;
         for (BillItem ts : transferItems) {
@@ -262,7 +263,7 @@ public class StoreReportsTransfer implements Serializable {
             saleValue = saleValue + (ts.getPharmaceuticalBillItem().getItemBatch().getRetailsaleRate() * ts.getPharmaceuticalBillItem().getQtyInUnit());
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Store/Transfer/Report/Transfer receieve by bill item(/faces/store/store_report_transfer_receive_bill_item.xhtml)");
+        
     }
 
     public void fillDepartmentUnitIssueByBillStore() {
@@ -292,7 +293,7 @@ public class StoreReportsTransfer implements Serializable {
 
         sql += " order by b.id";
 
-        transferBills = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        transferBills = getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
         totalsValue = 0.0;
         discountsValue = 0.0;
         netTotalValues = 0.0;
@@ -303,7 +304,7 @@ public class StoreReportsTransfer implements Serializable {
             netTotalValues = netTotalValues + b.getNetTotal();
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Store/Summery/Issue Report/Departmet unit issue bybill(/faces/store/store_report_unit_issue_bill.xhtml)");
+        
     }
 
     public void fillDepartmentUnitIssueByBillItemStore() {
@@ -333,7 +334,7 @@ public class StoreReportsTransfer implements Serializable {
 
         sql += " order by b.bill.id";
 
-        transferItems = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        transferItems = getBillItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
         totalsValue = 0.0;
         discountsValue = 0.0;
         netTotalValues = 0.0;
@@ -344,7 +345,7 @@ public class StoreReportsTransfer implements Serializable {
             netTotalValues = netTotalValues + b.getNetValue();
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Store/Summery/Issue Report/Departmet unit issue by bill item(/faces/store/store_report_unit_issue_bill_item.xhtml)");
+        
     }
 
     public void fillFromDepartmentUnitIssueByBillStore() {
@@ -363,7 +364,7 @@ public class StoreReportsTransfer implements Serializable {
                 + " b.createdAt "
                 + " between :fd and :td and "
                 + " b.billType=:bt order by b.id";
-        transferBills = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        transferBills = getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
         totalsValue = 0.0;
         discountsValue = 0.0;
         netTotalValues = 0.0;
@@ -373,7 +374,7 @@ public class StoreReportsTransfer implements Serializable {
             netTotalValues = netTotalValues + b.getNetTotal();
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Store/Summery/Issue Report/Departmet unit by department(/faces/store/store_report_unit_issue_department.xhtml)");
+        
     }
 
     public ArrayList<DepartmentBillRow> getDrows() {
@@ -416,7 +417,7 @@ public class StoreReportsTransfer implements Serializable {
 
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Store/Summery/Issue Report/Departmet unit issue by department(summery)(/faces/store/store_report_unit_issue_department_by_departmaent.xhtm)");
+        
 
 //        netTotalValues = getBillBeanController().calNetTotalBilledDepartmentItemStore(fromDate, toDate, department);
     }
@@ -444,7 +445,7 @@ public class StoreReportsTransfer implements Serializable {
 
         sql += " order by bi.bill.toDepartment.name, bi.item.category.name, bi.item.name, bi.id";
 
-        transferItems = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        transferItems = getBillItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
         purchaseValue = 0.0;
         for (BillItem bi : transferItems) {
@@ -484,7 +485,7 @@ public class StoreReportsTransfer implements Serializable {
 
         ////System.out.println("sql = " + sql);
         ////System.out.println("m = " + m);
-        transferItems = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        transferItems = getBillItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
         purchaseValue = 0.0;
         saleValue = 0.0;
         Map<Item, ItemBillRow> ibrs = new HashMap<>();
@@ -571,7 +572,7 @@ public class StoreReportsTransfer implements Serializable {
 
         purchaseValue = getBillBeanController().calNetTotalBilledDepartmentItemStore(fromDate, toDate, department);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Store/Transfer/Report/(/faces/pharmacy/item_supplier_prices.xhtml)");
+        
     }
 
     public void fillDepartmentIssueByBillItem() {
@@ -605,7 +606,7 @@ public class StoreReportsTransfer implements Serializable {
 
         ////System.out.println("sql = " + sql);
         ////System.out.println("m = " + m);
-        transferItems = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        transferItems = getBillItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
         purchaseValue = 0.0;
         saleValue = 0.0;
         Map<Item, ItemBillRow> ibrs = new HashMap<>();
@@ -699,7 +700,7 @@ public class StoreReportsTransfer implements Serializable {
 
         purchaseValue = getBillBeanController().calNetTotalBilledDepartmentItemStore(fromDate, toDate, department);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Store/Transfer/Report/(/faces/pharmacy/item_supplier_prices.xhtml)");
+        
     }
 
     public void fillDepartmentTransfersIssueByBill() {
@@ -734,7 +735,7 @@ public class StoreReportsTransfer implements Serializable {
             sql = "select b from Bill b where b.createdAt "
                     + " between :fd and :td and b.billType=:bt order by b.id";
         }
-        transferBills = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        transferBills = getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
         totalsValue = 0.0;
         discountsValue = 0.0;
         netTotalValues = 0.0;
@@ -744,7 +745,7 @@ public class StoreReportsTransfer implements Serializable {
             netTotalValues = netTotalValues + b.getNetTotal();
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Store/Transfer/Report/Transfer issue by bill (/faces/store/store_report_transfer_receive_bill_item.xhtml)");
+        
     }
 
     public void fillDepartmentTransfersRecieveByBill() {
@@ -773,7 +774,7 @@ public class StoreReportsTransfer implements Serializable {
             sql = "select b from Bill b where b.createdAt "
                     + " between :fd and :td and b.billType=:bt order by b.id";
         }
-        transferBills = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        transferBills = getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
         totalsValue = 0.0;
         discountsValue = 0.0;
         netTotalValues = 0.0;
@@ -783,7 +784,7 @@ public class StoreReportsTransfer implements Serializable {
             netTotalValues = netTotalValues + b.getNetTotal();
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Store/Transfer/Report/Transfer receieve by bill(/faces/store/store_report_transfer_receive_bill_item.xhtml)");
+        
     }
 
     public void createStoreIssueReport() {
@@ -961,7 +962,7 @@ public class StoreReportsTransfer implements Serializable {
         dcr.getCaregoryRows().add(cr);
         departmentCategoryRows.add(dcr);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Store/Summery/Issue Report/Departmet unit issue bybill(/faces/store/store_report_unit_issue_bill.xhtml)");
+        
     }
 
     public void createStoreIssueCategoryReport() {
@@ -1064,7 +1065,7 @@ public class StoreReportsTransfer implements Serializable {
         saleValue += cr.getTotal();
         caregoryRows.add(cr);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Store/Summery/Issue Report/Unit Issue Category Wise Summery(/faces/store/store_report_unit_issue_bill_1.xhtml)");
+        
     }
 
     private ItemRow createItemRow(ItemRow ir, BillClassType bct, double count, double unitValue, double total) {

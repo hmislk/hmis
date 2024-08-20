@@ -1,0 +1,114 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui">
+    <h:head>
+    </h:head>
+    <h:body>
+        <ui:composition template="/pharmacy/admin/index.xhtml">
+            <ui:define name="subcontent">
+
+                <div class="container-fluid" >
+                    <div class="card" >
+                        <div class="card-header" >
+                            <h2>Upload VMPs</h2>
+                        </div>
+                        <div class="card-body" >
+                            <h:form enctype="multipart/form-data">
+                                <p:fileUpload value="#{dataUploadController.file}"
+                                              mode="simple"
+                                              label="Choose File"/>
+                                <p:commandButton value="Upload"
+                                                 icon="fa fa-upload"
+                                                 action="#{dataUploadController.uploadVmps()}"
+                                                 ajax="false"/>
+                                <p:commandButton 
+                                    value="Download Template" 
+                                    ajax="false" 
+                                    style="float: right;"
+                                    class="ui-button-warning"
+                                    onclick="PrimeFaces.monitorDownload(start, stop);" 
+                                    icon="fa fa-download">
+                                    <p:fileDownload value="#{dataUploadController.templateForVmpUpload}" />
+                                </p:commandButton>
+
+
+
+                            </h:form>
+
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Column</th>
+                                        <th>Title</th>
+                                        <th>Description</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>A</td>
+                                        <td>ID</td>
+                                        <td>ID is Optional</td>
+
+                                    </tr>
+                                    <tr>
+                                        <td>B</td>
+                                        <td>VMP Name</td>
+                                        <td>VMP Name required</td>
+
+                                    </tr>
+                                    <tr>
+                                        <td>C</td>
+                                        <td>VTM Name</td>
+                                        <td>VTM Name Required</td>
+
+                                    </tr>
+                                    <tr>
+                                        <td>D</td>
+                                        <td>Dosage Form</td>
+                                        <td>Dosage Form required</td>
+                                    </tr>
+                                    <tr>
+                                        <td>E</td>
+                                        <td>Strength Unit</td>
+                                        <td>Strength Unit required</td>
+
+                                    </tr>
+                                    <tr>
+                                        <td>F</td>
+                                        <td>Issue Unit</td>
+                                        <td>Issue Unit</td>
+
+                                    </tr>
+                                    <tr>
+                                         <td>G</td>
+                                          <td>Strength Units per Issue Unit</td>
+                                           <td>Strength Units per Issue Unit</td>
+                                    </tr>
+                                    <tr>
+                                         <td>H</td>
+                                          <td>Min Issue Quantity</td>
+                                           <td>Min Issue Quantity</td>
+                                    </tr>
+                                    <tr>
+                                         <td>I</td>
+                                          <td>Issue Multiplies Quantity</td>
+                                           <td>Issue Multiplies Quantity</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <h5>Output</h5>
+                            <h6><h:outputText value="#{dataUploadController.outputString}" ></h:outputText></h6>
+
+                        </div>
+                    </div>
+                </div>
+
+
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

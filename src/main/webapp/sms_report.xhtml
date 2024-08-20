@@ -1,11 +1,11 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:pe="http://primefaces.org/ui/extensions">
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      >
 
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
@@ -16,26 +16,26 @@
                             <h:panelGrid columns="2" >
                                 <h:outputLabel value="From Date"/>
                                 <p:calendar styleClass="dateTimePicker" id="fromDate" 
-                                            value="#{smsController.reportKeyWord.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >      
+                                            value="#{smsController.reportKeyWord.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
                                 </p:calendar>
                                 <h:outputLabel value="To Date"/>
                                 <p:calendar styleClass="dateTimePicker" id="toDate" 
-                                            value="#{smsController.reportKeyWord.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >                                                                              
+                                            value="#{smsController.reportKeyWord.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
                                 </p:calendar>
                                 <h:outputLabel value="To Date"/>
                                 <p:selectOneMenu  value="#{smsController.reportKeyWord.smsType}">
                                     <f:selectItem itemLabel="select Type" />
                                     <f:selectItems value="#{enumController.smsType}" />
                                 </p:selectOneMenu>
-                                <h:outputLabel value="Summery"/>
+                                <h:outputLabel value="Summary"/>
                                 <p:selectBooleanCheckbox value="#{smsController.reportKeyWord.additionalDetails}" />
                                 <p:commandButton id="btnSearch" ajax="false" value="Search" 
                                                  action="#{smsController.createSmsTable()}"/>
                                 <p:commandButton actionListener="#{smsController.createSmsTable}" value="Excel1" ajax="false" rendered="#{smsController.reportKeyWord.additionalDetails ne true}">
-                                    <pe:exporter type="xlsx" target="tblBills" fileName="sms_report"  />
+                                    <p:dataExporter type="xlsx" target="tblBills" fileName="sms_report"  />
                                 </p:commandButton>
                                 <p:commandButton actionListener="#{smsController.createSmsTable}" value="Excel2" ajax="false" rendered="#{smsController.reportKeyWord.additionalDetails eq true}">
-                                    <pe:exporter type="xlsx" target="tblBills1" fileName="sms_report"  />
+                                    <p:dataExporter type="xlsx" target="tblBills1" fileName="sms_report"  />
                                 </p:commandButton>
                             </h:panelGrid>
                         </f:facet>
@@ -82,12 +82,12 @@
                                     <p:outputLabel value="Created At" />
                                 </f:facet>
                                 <h:outputLabel value="#{s.createdAt}" >
-                                    <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                             </p:column>
                             <p:column >
                                 <f:facet name="header">
-                                    <p:outputLabel value="Creater" />
+                                    <p:outputLabel value="Creator" />
                                 </f:facet>
                                 <h:outputLabel value="#{s.creater.webUserPerson.name}" />                                      
                             </p:column>    

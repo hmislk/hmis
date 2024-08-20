@@ -1,0 +1,75 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+
+        <ui:composition template="./index.xhtml">
+
+            <ui:define name="contents">
+
+                <div class="row" >
+                    <h:form >
+                        <p:panel >
+                            <f:facet name="header" >
+                                <h:outputLabel value="Add New List Contents"></h:outputLabel>
+                            </f:facet>
+                        <div class="d-flex justify-content-end">
+                            <p:commandButton 
+                                class="form ui-button-warning my-2" 
+                                icon="fas fa-save"
+                                value="Save" 
+                                action="#{webContentController.saveSelected()}">
+                            </p:commandButton>
+                        </div>
+                        <div class="row p-1">
+                            <div class="col-md-2">
+                                <h:outputLabel class="form-label" for="txtName" value="Name" ></h:outputLabel>
+                            </div>
+                            <div class="col-md-10">
+                                <h:inputText class="form form-control" id="txtName" value="#{webContentController.selected.name}"></h:inputText>
+                            </div>
+                        </div>
+                        <div class="row p-1">
+                            <div class="col-md-2">
+                                <h:outputLabel class="form-label" for="txtContents"  value="Contents" ></h:outputLabel>
+                            </div>
+                            <div class="col-md-10">
+                                <h:inputText  class="form form-control" id="txtContents" value="#{webContentController.selected.shortContext}"></h:inputText>
+                            </div>
+                        </div>
+                        <div class="row p-1">
+                            <div class="col-md-2">
+                                <h:outputLabel class="form-label" for="cmbLang"  value="Contents" ></h:outputLabel>
+                            </div>
+                            <div class="col-md-10">
+                                <h:selectOneMenu id="cmbLang" class="form form-control" value="#{webContentController.selected.webLanguage}" >
+                                    <f:selectItems value="#{webLanguageController.items}" var="l" itemLabel="#{l.name}" itemValue="#{l}" ></f:selectItems>
+                                </h:selectOneMenu>
+                            </div>
+                        </div>
+                        <div class="row p-1">
+                            <div class="col-md-2">
+                                <h:outputLabel class="form form-label" for="txtOrder"  value="Order No" ></h:outputLabel>
+                            </div>
+                            <div class="col-md-10">
+                                <h:inputText class="form form-control" id="txtOrder" value="#{webContentController.selected.orderNo}"></h:inputText>
+                            </div>
+                        </div>
+                        </p:panel>
+                    </h:form>
+
+
+                </div>
+
+
+            </ui:define>
+
+        </ui:composition>
+
+    </h:body>
+</html>

@@ -1,10 +1,10 @@
 /*
- * MSc(Biomedical Informatics) Project
+ * Open Hospital Management Information System
  *
- * Development and Implementation of a Web-based Combined Data Repository of
- Genealogical, Clinical, Laboratory and Genetic Data
- * and
- * a Set of Related Tools
+ * Dr M H B Ariyaratne
+ * Acting Consultant (Health Informatics)
+ * (94) 71 5812399
+ * (94) 71 5812399
  */
 package com.divudi.bean.common;
 import com.divudi.entity.ServiceSession;
@@ -21,11 +21,11 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
-
+import com.divudi.bean.common.util.JsfUtil;
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- * Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
+ * Acting Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -42,14 +42,14 @@ public class ServiceSessionController implements Serializable {
     String selectText = "";
 
     public List<ServiceSession> getSelectedItems() {
-        selectedItems = getFacade().findBySQL("select c from ServiceSession c where c.retired=false and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+        selectedItems = getFacade().findByJpql("select c from ServiceSession c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
     }
 
     public List<ServiceSession> completeServiceSession(String qry) {
         List<ServiceSession> a = null;
         if (qry != null) {
-            a = getFacade().findBySQL("select c from ServiceSession c where c.retired=false and upper(c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
+            a = getFacade().findByJpql("select c from ServiceSession c where c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
         }
         if (a == null) {
             a = new ArrayList<ServiceSession>();
@@ -64,9 +64,9 @@ public class ServiceSessionController implements Serializable {
             suggestions = new ArrayList<ServiceSession>();
         } else {
 
-            sql = "select p from ServiceSession p where p.retired=false and ((upper(p.staff.person.name) like '%" + query.toUpperCase() + "%') or (upper(p.name) like '%" + query.toUpperCase() + "%') or (upper(p.staff.speciality.name) like '%" + query.toUpperCase() + "%') ) order by p.name";
-            //////System.out.println(sql);
-            suggestions = getFacade().findBySQL(sql);
+            sql = "select p from ServiceSession p where p.retired=false and (((p.staff.person.name) like '%" + query.toUpperCase() + "%') or ((p.name) like '%" + query.toUpperCase() + "%') or ((p.staff.speciality.name) like '%" + query.toUpperCase() + "%') ) order by p.name";
+            //////// // System.out.println(sql);
+            suggestions = getFacade().findByJpql(sql);
         }
         return suggestions;
     }
@@ -91,12 +91,12 @@ public class ServiceSessionController implements Serializable {
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            UtilityController.addSuccessMessage("Saved Successfully");
+            JsfUtil.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
         getItems();
@@ -140,9 +140,9 @@ public class ServiceSessionController implements Serializable {
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
@@ -208,4 +208,48 @@ public class ServiceSessionController implements Serializable {
             }
         }
     }
+    
+    
+    @FacesConverter(forClass = ServiceSession.class)
+    public static class ServiceSessionConverter implements Converter {
+
+        @Override
+        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
+            if (value == null || value.length() == 0) {
+                return null;
+            }
+            ServiceSessionController controller = (ServiceSessionController) facesContext.getApplication().getELResolver().
+                    getValue(facesContext.getELContext(), null, "serviceSessionController");
+            ServiceSession found = controller.getFacade().find(getKey(value));
+            return found;
+        }
+
+        java.lang.Long getKey(String value) {
+            java.lang.Long key;
+            key = Long.valueOf(value);
+            return key;
+        }
+
+        String getStringKey(java.lang.Long value) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(value);
+            return sb.toString();
+        }
+
+        @Override
+        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
+            if (object == null) {
+                return null;
+            }
+            if (object instanceof ServiceSession) {
+                ServiceSession o = (ServiceSession) object;
+                return getStringKey(o.getId());
+            } else {
+                throw new IllegalArgumentException("object " + object + " is of type "
+                        + object.getClass().getName() + "; expected type: " + ServiceSession.class.getName());
+            }
+        }
+    }
+
+    
 }

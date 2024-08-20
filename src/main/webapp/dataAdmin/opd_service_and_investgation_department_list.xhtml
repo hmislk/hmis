@@ -1,44 +1,46 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
-                template="/resources/template/template.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
-                xmlns:f="http://java.sun.com/jsf/core"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/dataAdmin/report_entered_data.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:pe="http://primefaces.org/ui/extensions">
+                >
 
 
-    <ui:define name="content">
+    <ui:define name="subcontent">
 
         <h:panelGroup >
             <h:form id="form"  >
                 <p:growl />
-                <p:panel id="panIx"  >
+                <p:panel>
 
                     <f:facet name="header" >
-                        <h:outputLabel value="List of Service"></h:outputLabel>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h:outputLabel value="List of Service"></h:outputLabel>
+                            <h:panelGrid columns="4" class="my-2">
+                                <p:commandButton class="ui-button-info mx-2" icon="fas fa-print" ajax="false" value="Print" >
+                                    <p:printer target="panIx" />
+                                </p:commandButton>
                         
-                        <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" >
-                            <p:printer target="panIx" />
-                        </p:commandButton>
-                        
-                        <p:commandButton id="btnRefresh" ajax="false" value="OPD"
-                                         styleClass="noPrintButton" 
+                                <p:commandButton class="ui-button-warning" id="btnRefresh" ajax="false" value="OPD"
                                          action="#{itemController.createOpdSeviceInvestgationList()}">                            
-                        </p:commandButton>
-                        <p:commandButton id="btnRefresh2" ajax="false" value="Inward"
-                                         styleClass="noPrintButton" 
+                                </p:commandButton>
+                                <p:commandButton class="ui-button-warning mx-2" id="btnRefresh2" ajax="false" value="Inward"
                                          action="#{itemController.createInwardList()}">                            
-                        </p:commandButton>
+                                </p:commandButton>
 
-                        <p:commandButton value="Excel" ajax="false" onclick="onSubmitButton();">
-                            <pe:exporter type="xlsx" target="tblBills" fileName="DepartmentIncome"
-                                         facetBackground="#008000" facetFontSize="15" 
-                                         facetFontColor="#FFFFFF" facetFontStyle="BOLD" cellFontColor="#0000FF" cellFontSize="12"  cellFontStyle="NORMAL"  
-                                         fontName="Courier New"  />
+                                <p:commandButton class="ui-button-success" icon="fas fa-file-excel" value="Excel" ajax="false" >
+                            <p:dataExporter type="xlsx" target="tblBills" fileName="DepartmentIncome"
+                                           
+                                                
+                                           />
                         </p:commandButton>
-
+                        </h:panelGrid>
+                        </div>
+                        
+                        
                     </f:facet>
 
 
@@ -51,7 +53,7 @@
                                             <h:outputLabel value="2013 / 2014"></h:outputLabel>
                                         </div>-->
 
-                    <p:panel >
+                    <p:panel id="panIx">
 
                         <p:dataTable id="tblBills" value="#{itemController.itemlist}" rowIndexVar="i" var="ix" filteredValue="#{serviceController.filterItem}"  >
                             <f:facet name="header">

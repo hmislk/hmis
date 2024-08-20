@@ -1,10 +1,11 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+* Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.entity.hr;
 
 import com.divudi.data.hr.WorkingType;
+import com.divudi.entity.Bill;
 import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
 import java.io.Serializable;
@@ -19,14 +20,13 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
 import javax.persistence.Transient;
-import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  *
  * @author Buddhika
  */
 @Entity
-@XmlRootElement
+
 public class WorkingTime implements Serializable {
 
     @OneToOne(mappedBy = "continuedTo")
@@ -47,7 +47,7 @@ public class WorkingTime implements Serializable {
     @Transient
     long durationInHours;
     @OneToOne
-    WorkingTime continuedTo;
+    private WorkingTime continuedTo;
     //Created Properties
     @ManyToOne
     private WebUser creater;
@@ -61,11 +61,13 @@ public class WorkingTime implements Serializable {
     private Date retiredAt;
     private String retireComments;
     @Enumerated(EnumType.STRING)
-    WorkingType workingType;
+    private WorkingType workingType;
 
-    boolean addedToSalary;
+    private boolean addedToSalary;
     
-    
+    @ManyToOne
+    private Bill professinoalPaymentBill;
+
     // 7am - 1pm - Normal
     // 1pm - 7pm > OT
     //7am - 7pm
@@ -89,6 +91,8 @@ public class WorkingTime implements Serializable {
         return durationInMinutes;
     }
 
+    
+    
     public void setDurationInMinutes(long durationInMinutes) {
         this.durationInMinutes = durationInMinutes;
     }
@@ -111,7 +115,9 @@ public class WorkingTime implements Serializable {
     }
 
     public Staff getStaff() {
-        staff = getStaffShift().getStaff();
+        if (getStaffShift() != null) {
+            staff = getStaffShift().getStaff();
+        }
         return staff;
     }
 
@@ -136,7 +142,7 @@ public class WorkingTime implements Serializable {
 
     @Override
     public boolean equals(Object object) {
-        
+
         if (!(object instanceof WorkingTime)) {
             return false;
         }
@@ -150,5 +156,93 @@ public class WorkingTime implements Serializable {
     @Override
     public String toString() {
         return "com.divudi.entity.hr.WorkingTime[ id=" + id + " ]";
+    }
+
+    public WorkingTime getContinuedTo() {
+        return continuedTo;
+    }
+
+    public void setContinuedTo(WorkingTime continuedTo) {
+        this.continuedTo = continuedTo;
+    }
+
+    public WorkingType getWorkingType() {
+        return workingType;
+    }
+
+    public void setWorkingType(WorkingType workingType) {
+        this.workingType = workingType;
+    }
+
+    public boolean isAddedToSalary() {
+        return addedToSalary;
+    }
+
+    public void setAddedToSalary(boolean addedToSalary) {
+        this.addedToSalary = addedToSalary;
+    }
+
+    public WorkingTime getContinuedFrom() {
+        return continuedFrom;
+    }
+
+    public void setContinuedFrom(WorkingTime continuedFrom) {
+        this.continuedFrom = continuedFrom;
+    }
+
+    public WebUser getCreater() {
+        return creater;
+    }
+
+    public void setCreater(WebUser creater) {
+        this.creater = creater;
+    }
+
+    public Date getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Date createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public boolean isRetired() {
+        return retired;
+    }
+
+    public void setRetired(boolean retired) {
+        this.retired = retired;
+    }
+
+    public WebUser getRetirer() {
+        return retirer;
+    }
+
+    public void setRetirer(WebUser retirer) {
+        this.retirer = retirer;
+    }
+
+    public Date getRetiredAt() {
+        return retiredAt;
+    }
+
+    public void setRetiredAt(Date retiredAt) {
+        this.retiredAt = retiredAt;
+    }
+
+    public String getRetireComments() {
+        return retireComments;
+    }
+
+    public void setRetireComments(String retireComments) {
+        this.retireComments = retireComments;
+    }
+
+    public Bill getProfessinoalPaymentBill() {
+        return professinoalPaymentBill;
+    }
+
+    public void setProfessinoalPaymentBill(Bill professinoalPaymentBill) {
+        this.professinoalPaymentBill = professinoalPaymentBill;
     }
 }

@@ -1,9 +1,9 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:cc="http://java.sun.com/jsf/composite"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core">
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <!-- INTERFACE -->
     <cc:interface>
@@ -24,7 +24,7 @@
 
                 <h:outputLabel value="#{cc.attrs.bill.cc.attrs.billDate}"
                                style="position: absolute; left: 9.8cm; top:1.1cm;" >
-                    <f:convertDateTime pattern="dd/MM/yy"/>
+                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                 </h:outputLabel>
 
                 <h:outputLabel value="#{cc.attrs.bill.paymentScheme.name}"
@@ -33,7 +33,7 @@
 
                 <h:outputLabel value="#{cc.attrs.bill.billTime}"
                                style="position: absolute; left: 9.8cm; top:1.6cm;" >
-                    <f:convertDateTime pattern="hh mm ss a"/>
+                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}"/>
                 </h:outputLabel>
 
                 <h:outputLabel value="#{cc.attrs.bill.patient.person.nameWithTitle}"
@@ -52,7 +52,7 @@
                                style="position:absolute;left:5.5cm; top:12.0cm;"  >
                 </h:outputLabel>
 
-                <h:dataTable value="#{cc.attrs.bill.billItems}" var="bip" style="position: absolute;left:1.6cm; top:3.5cm; border: 0px; "   >
+                <h:dataTable value="#{cc.attrs.bill.billItems}" var="bip" style="position: absolute;left:1.6cm; top:3.5cm; border: 0px; ">
                     <h:column >
                         <h:outputLabel value="#{bip.item.printName}"
                                        style="margin: 4px; font-size: 11px!important;" >

@@ -1,0 +1,702 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:emr="http://xmlns.jcp.org/jsf/composite/ezcomp/emr"
+      >
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <p:growl id="msg"></p:growl>
+                <p:panel class="w-100" style="height: 100vh;">
+                    <f:facet name="header" >
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <p:outputLabel value="Patient Clinical Data Profile" ></p:outputLabel>
+                            </div>
+                            <div class="row" >
+                                <div class="col-12" >
+                                    <h:form >
+                                        <div class="d-flex justify-content-end">
+                                            <p:commandButton
+                                                value="Edit"
+                                                action="#{patientController.navigateToEmrEditPatient()}"
+                                                ajax="false"
+                                                icon="fa fa-pencil"
+                                                styleClass="mx-1">
+                                            </p:commandButton>
+                                            <p:commandButton
+                                                value="OPD Visit"
+                                                action="#{patientController.navigateToNewOpdVisitFromSearch}"
+                                                ajax="false"
+                                                icon="fa fa-stethoscope"
+                                                styleClass="mx-1">
+                                            </p:commandButton>
+                                            <p:commandButton
+                                                value="Profile Picture"
+                                                action="#{patientController.navigateToCapturePatientPhoto()}"
+                                                ajax="false"
+                                                icon="fa fa-user"
+                                                styleClass="mx-1">
+                                            </p:commandButton>
+
+
+                                            <p:commandButton
+                                                value="Data Entry"
+                                                action="#{patientController.navigateToNewDataEntryForm}"
+                                                ajax="false"
+                                                icon="fa fa-keyboard"
+                                                styleClass="mx-1">
+                                            </p:commandButton>
+                                            <p:commandButton
+                                                value="OPD Billing"
+                                                action="#{patientController.navigateToOpdBilling()}"
+                                                ajax="false"
+                                                icon="fa fa-money-bill"
+                                                styleClass="mx-1">
+                                                <f:setPropertyActionListener value="#{patientController.current}" target="#{patientController.current}" />
+                                            </p:commandButton>
+                                            <p:commandButton
+                                                value="Pharmacy Billing"
+                                                action="#{patientController.navigateToPharamecyBilling()}"
+                                                ajax="false"
+                                                icon="fa fa-money-bill"
+                                                styleClass="mx-1">
+                                                <f:setPropertyActionListener value="#{patientController.current}" target="#{patientController.current}" />
+                                            </p:commandButton>
+                                            <p:commandButton
+                                                value="Patient Dashboard"
+                                                action="#{patientController.navigateToOpdPatientProfile()}"
+                                                ajax="false"
+                                                icon="fa fa-money-bill"
+                                                styleClass="mx-1">
+                                            </p:commandButton>
+                                            <p:commandButton
+                                                style="float: right;"
+                                                value="Lookup"
+                                                ajax="false"
+                                                icon="fa fa-search"
+                                                class="ui-button-warning mx-1"
+                                                action="#{opdBillController.navigateToSearchPatients()}"
+                                                >
+                                            </p:commandButton>
+                                        </div>
+                                    </h:form>
+                                </div>
+                            </div>
+                        </div>
+                    </f:facet>
+                    <div class="row" >
+                        <div class="col-3 " >
+                            <p:panel>
+                                <f:facet name="header">
+                                    <i class="fas fa-user"/>
+                                    <h:outputLabel value="Patient Details" class="mx-2 mt-2" />
+                                </f:facet>
+                                <p:outputPanel class="text-center">
+                                    <h:panelGroup rendered="#{patientController.current.baImage eq null}"  >
+                                        <p:graphicImage rendered="#{patientController.current.person.sex eq 'Male'}" 
+                                                        class="w-50 img-thumbnail"
+                                                        library="image" name="male.jpg">
+                                        </p:graphicImage>
+                                        <p:graphicImage rendered="#{patientController.current.person.sex eq 'Female'}" 
+                                                        class="w-50 img-thumbnail"
+                                                        library="image" name="female.png">
+                                        </p:graphicImage>
+                                    </h:panelGroup>
+
+
+                                    <p:graphicImage  class="w-75 img-thumbnail" 
+                                                     id="photos" cache="false"
+                                                     rendered="#{patientController.current.baImage ne null}"    
+                                                     value="#{patientController.image}"  >
+                                    </p:graphicImage>
+
+                                </p:outputPanel>
+                                <emr:patient patient="#{patientController.current}" ></emr:patient>
+                            </p:panel>
+                        </div>
+                        <div class="col-3">
+
+                            <h:form>
+                                <p:panel  id="panelQueue">
+                                    <f:facet name="header">
+                                        <i class="fas fa-hospital-user"/>
+                                        <h:outputLabel value="Queue" class="mx-2 mt-2" />
+                                    </f:facet>
+                                    <div class="row">
+                                        <h:panelGrid columns="2" class="w-100">
+                                            <h:outputLabel value="Date" ></h:outputLabel>
+                                            <p:calendar value="#{practiceBookingController.sessionDate}" 
+                                                        class="w-100"
+                                                        inputStyleClass="w-100"
+                                                        pattern="dd MMMM yyyy" >
+                                                <f:ajax  event="dateSelect" execute="@this" render="bSession"  
+                                                         listener="#{practiceBookingController.listBillSessions}" />                                                
+                                            </p:calendar>
+
+                                            <h:outputLabel value="Speciality" ></h:outputLabel>
+                                            <p:autoComplete value="#{practiceBookingController.speciality}"
+                                                            id="acSpeciality" 
+                                                            class="w-100"
+                                                            inputStyleClass="w-100"
+                                                            completeMethod="#{practiceBookingController.completeDoctorSpeciality}"
+                                                            var="dsp" itemLabel="#{dsp.name}" itemValue="#{dsp}"
+                                                            >
+                                                <p:ajax process="@this" update="acStaff"></p:ajax>
+                                            </p:autoComplete>
+
+                                            <h:outputLabel value="Doctor" ></h:outputLabel>
+                                            <p:autoComplete value="#{practiceBookingController.doctor}"
+                                                            id="acStaff"
+                                                            completeMethod="#{practiceBookingController.completeDoctorsOfSelectedSpeciality}"
+                                                            var="doc"
+                                                            class="w-100"
+                                                            inputStyleClass="w-100"
+                                                            forceSelection="true"
+                                                            itemLabel="#{doc.person.nameWithTitle}" itemValue="#{doc}"
+                                                            >
+                                                <f:ajax  event="itemSelect" execute="@this" render="bSession"  listener="#{practiceBookingController.listBillSessions}" />                                                
+                                            </p:autoComplete>
+
+                                            <p:commandButton id="btnAddToQueue"   value="Add" ajax="false"
+                                                         icon="fas fa-plus"
+                                                         class="ui-button-success w-100 m-1" 
+                                                         onclick="if (!confirm('Are you sure you want to Add this record?'))
+                                                                     return false;" 
+                                                         action="#{practiceBookingController.addToQueue()}">                        
+                                        </p:commandButton>
+
+                                        </h:panelGrid>
+                                        
+                                    </div>
+
+                                    <p:dataTable id="bSession" value="#{practiceBookingController.billSessions}" var='bs'
+                                                 selectionMode="single" rowKey="#{bs.id}"
+                                                 selection="#{practiceBookingController.selectedBillSession}">
+                                        <!--<p:ajax event="rowSelect" process="@this" update=":#{p:component('detail')}" />-->  
+
+                                        <p:column headerText="No">#{bs.serialNo}</p:column>
+                                        <p:column headerText="Patient Name">#{bs.bill.patient.person.nameWithTitle}</p:column>
+                                        <p:column headerText="Actions">
+<!--                                            <p:commandButton value="View Patient" process="bSession" update=":#{p:component('panelSearch')} :#{p:component('panelDetails')} " onclick="onSubmitButton();" >
+                                                <f:setPropertyActionListener value="#{bs.bill.patient}" target="#{patientController.current}" >
+                                                </f:setPropertyActionListener>
+                                            </p:commandButton>-->
+                                            <p:commandButton disabled="#{bs.absent}" value="Visit" 
+                                                             action="#{practiceBookingController.opdVisitFromQueue()}" 
+                                                             ajax="false" onclick="onSubmitButton();" >
+                                                <f:setPropertyActionListener value="#{bs}" 
+                                                                             target="#{practiceBookingController.billSession}" ></f:setPropertyActionListener>
+                                            </p:commandButton>
+                                        </p:column>
+                                    </p:dataTable>  
+
+                                </p:panel>
+                            </h:form>
+                        </div>
+                        <div class="col-6" >
+                            <div class="row" >
+                                <div class="col-12" >
+                                    <p:tabView class="h-100" activeIndex="#{emrController.activeIndexOfPatientProfile}">
+                                        <p:tab title="Summary">
+                                            <emr:emr_summery patient="#{patientController.current}"/>
+                                        </p:tab>
+                                        <p:tab title="Demographics" >
+                                            <emr:edit_patient patient="#{patientController.current}"/>
+                                        </p:tab>
+                                        <p:tab title="Medical Conditions" >
+                                            <h:form>
+                                                <div class="row m-2">
+                                                    <div class="col-md-3" >
+                                                        <p:autoComplete 
+                                                            id="acDx"
+                                                            completeMethod="#{diagnosisController.completeDiagnosis}"
+                                                            value="#{patientEncounterController.patientDiagnosis.itemValue}"
+                                                            var="item"
+                                                            itemLabel="#{item}"
+                                                            itemValue="#{item}"
+                                                            class="w-100"
+                                                            inputStyleClass="w-100"
+                                                            placeholder="Select Diagnosis"
+                                                            />
+                                                    </div>
+                                                    <div class="col-md-6" >
+                                                        <p:inputText
+                                                            id="txtDx"
+                                                            class="w-100"
+                                                            value="#{patientEncounterController.patientDiagnosis.stringValue}"
+                                                            placeholder="Details"/>
+                                                    </div><!-- comment -->
+                                                    <div class="col-md-3" >
+                                                        <p:commandButton value="Add"
+                                                                         id="btnAddDx"
+                                                                         icon="fa fa-plus"
+                                                                         class="mx-1 ui-button-success"
+                                                                         process="btnAddDx acDx txtDx"
+                                                                         update="tblDxx acDx txtDx"
+                                                                         action="#{patientEncounterController.addPatientDiagnosis()}"
+                                                                         />
+                                                    </div><!-- comment -->
+                                                </div>
+
+                                                <div class="row m-2" >
+                                                    <div class="col-md-12" >
+                                                        <p:dataTable
+                                                            id="tblDxx"
+                                                            value="#{patientEncounterController.patientDiagnoses}"
+                                                            var="dx">
+                                                            <p:column headerText="Diagnosis">
+                                                                <p:outputLabel value="#{dx.itemValue.name}">
+                                                                </p:outputLabel>
+                                                                <p:spacer height="1" width="5" ></p:spacer>
+                                                                <p:commandLink value="X" class="text-danger" 
+                                                                               id="btnDeleteDx"
+                                                                               process="btnDeleteDx"
+                                                                               update="tblDxx"
+                                                                               onclick="if (!confirm('Are you sure you want to delete this Diagnosis?'))
+                                                                                           return false;"
+
+                                                                               action="#{patientEncounterController.removePatientDiagnosis()}"
+                                                                               >
+                                                                    <f:setPropertyActionListener target="#{patientEncounterController.removingClinicalFindingValue}" value="#{dx}"/>
+                                                                </p:commandLink>
+                                                                <p:tooltip value="Delete" for="btnDeleteDx" ></p:tooltip>
+                                                            </p:column>
+                                                            <p:column headerText="Details">
+                                                                <h:outputText value="#{dx.stringValue}"/>
+                                                            </p:column>
+                                                        </p:dataTable>
+                                                    </div>
+                                                </div>
+
+
+
+
+                                            </h:form>
+                                        </p:tab>
+                                        <p:tab title="Medications" >
+                                            <h:form>
+                                                <div class="container-fluid m-2 w-100">
+                                                    <div class="d-flex flex-wrap w-100">
+
+                                                        <!-- Medicine Selection -->
+                                                        <div class="mx-1 flex-fill">
+                                                            <label for="acMedicine" class="w-100">Medicine:</label>
+                                                            <p:autoComplete id="acMedicine"
+                                                                            completeMethod="#{pharmaceuticalItemController.completeItem}"
+                                                                            value="#{patientEncounterController.patientMedicine.prescription.item}"
+                                                                            var="item"
+                                                                            class="w-100"
+                                                                            inputStyleClass="w-100"
+                                                                            itemLabel="#{item}"
+                                                                            itemValue="#{item}"
+                                                                            maxResults="10"
+                                                                            minQueryLength="3"
+                                                                            placeholder="Medicine">
+                                                                <p:ajax process="acMedicine" update="cmbDose" />
+                                                            </p:autoComplete>
+                                                        </div>
+
+                                                        <!-- Dose Group -->
+                                                        <div class="mx-1 flex-fill">
+                                                            <label class="w-100">Dose:</label>
+                                                            <div class="d-flex w-100">
+                                                                <p:inputText id="txtDose"
+                                                                             class="flex-grow-1"
+                                                                             value="#{patientEncounterController.patientMedicine.prescription.dose}"
+                                                                             placeholder="Dose"/>
+                                                                <p:selectOneMenu id="cmbDose" 
+                                                                                 class="flex-grow-1"
+                                                                                 value="#{patientEncounterController.patientMedicine.prescription.doseUnit}">
+                                                                    <f:selectItem itemLabel="Select" />
+                                                                    <f:selectItems value="#{measurementUnitController.getDoseUnitsForMedicine(patientEncounterController.patientMedicine.prescription.item)}" 
+                                                                                   var="du" itemLabel="#{du.name}" itemValue="#{du}" />
+                                                                </p:selectOneMenu>
+                                                            </div>
+                                                        </div>
+
+                                                        <!-- Frequency Selection -->
+                                                        <div class="mx-1 flex-fill">
+                                                            <label for="cmbFrequency" class="w-100">Frequency:</label>
+                                                            <p:selectOneMenu id="cmbFrequency" 
+                                                                             class="w-100"
+                                                                             value="#{patientEncounterController.patientMedicine.prescription.frequencyUnit}">
+                                                                <f:selectItem itemLabel="Select" />
+                                                                <f:selectItems value="#{measurementUnitController.frequencyUnits}" 
+                                                                               var="du" 
+                                                                               itemLabel="#{du.name}"
+                                                                               itemValue="#{du}" />
+                                                            </p:selectOneMenu>
+                                                        </div>
+
+                                                        <!-- Duration Group -->
+                                                        <div class="mx-1 flex-fill">
+                                                            <label class="w-100">Duration:</label>
+                                                            <div class="d-flex">
+                                                                <p:inputText id="txtDuration"
+                                                                             style="width: 6em;"
+                                                                             value="#{patientEncounterController.patientMedicine.prescription.duration}"
+                                                                             placeholder="Duration"/>
+                                                                <p:selectOneMenu id="cmbDuration" 
+                                                                                 class="flex-grow-1"
+                                                                                 value="#{patientEncounterController.patientMedicine.prescription.durationUnit}">
+                                                                    <f:selectItem itemLabel="Select" />
+                                                                    <f:selectItems value="#{measurementUnitController.durationUnits}" 
+                                                                                   var="du" 
+                                                                                   itemLabel="#{du.name}" 
+                                                                                   itemValue="#{du}" />
+                                                                </p:selectOneMenu>
+                                                            </div>
+                                                        </div>
+
+                                                        <!-- Add Prescription Button -->
+                                                        <div class="mx-1">
+                                                            <label class="w-100"></label>
+                                                            <p:commandButton value="Add"
+                                                                             id="btnAddRx"
+                                                                             icon="fa fa-plus"
+                                                                             class="mx-1 ui-button-success"
+                                                                             process="btnAddRx acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration"
+                                                                             update="tblRxx acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration"
+                                                                             action="#{patientEncounterController.addPatientMedicine}" />
+                                                            <p:defaultCommand target="btnAddRx" ></p:defaultCommand>
+                                                        </div>
+
+                                                    </div>
+
+                                                </div>
+
+
+                                                <div class="row m-2">
+                                                    <div class="row m-2" >
+                                                        <div class="col-md-12" >
+                                                            <p:dataTable
+                                                                id="tblRxx"
+                                                                value="#{patientEncounterController.patientMedicines}"
+                                                                var="rx">
+                                                                <p:column headerText="Medicine">
+                                                                    <p:outputLabel value="#{rx.prescription.item.name}">
+                                                                    </p:outputLabel>
+                                                                    <p:spacer height="1" width="5" ></p:spacer>
+                                                                    <p:commandLink value="X" class="text-danger" 
+                                                                                   id="btnDeleteRx"
+                                                                                   process="btnDeleteRx"
+                                                                                   update="tblRxx"
+                                                                                   onclick="if (!confirm('Are you sure you want to remove this medicine?'))
+                                                                                               return false;"
+                                                                                   action="#{patientEncounterController.removePatientMedicine()}"
+                                                                                   >
+                                                                        <f:setPropertyActionListener target="#{patientEncounterController.removingClinicalFindingValue}" value="#{rx}"/>
+                                                                    </p:commandLink>
+                                                                    <p:tooltip value="Delete" for="btnDeleteRx" ></p:tooltip>
+                                                                </p:column>
+                                                                <p:column headerText="Dose">
+                                                                    <h:outputText value="#{rx.prescription.dose}"/>
+                                                                    <h:outputText value="#{rx.prescription.doseUnit.name}"/>
+                                                                </p:column>
+                                                                <p:column headerText="Frequency">
+                                                                    <h:outputText value="#{rx.prescription.frequencyUnit.name}"/>
+                                                                </p:column>
+                                                                <p:column headerText="Duration">
+                                                                    <h:outputText value="#{rx.prescription.duration}"/>
+                                                                    <h:outputText value="#{rx.prescription.durationUnit.name}"/>
+                                                                </p:column>
+                                                            </p:dataTable>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+
+
+                                            </h:form>
+                                        </p:tab>
+                                        <p:tab title="Surgical Conditions" >
+                                            <h:form>
+                                                <div class="row m-2">
+                                                    <div class="col-md-3" >
+                                                        <p:autoComplete 
+                                                            id="acPr"
+                                                            completeMethod="#{procedureController.completeProcedures}"
+                                                            value="#{patientEncounterController.patientProcedure.itemValue}"
+                                                            var="item"
+                                                            itemLabel="#{item}"
+                                                            itemValue="#{item}"
+                                                            class="w-100"
+                                                            inputStyleClass="w-100"
+                                                            placeholder="Select Surgery"
+                                                            />
+                                                    </div>
+                                                    <div class="col-md-6" >
+                                                        <p:inputText
+                                                            id="txtPr"
+                                                            class="w-100"
+                                                            value="#{patientEncounterController.patientProcedure.stringValue}"
+                                                            placeholder="Details"/>
+
+                                                    </div>
+                                                    <div class="col-md-3" >
+                                                        <p:commandButton value="Add"
+                                                                         id="btnAddPr"
+                                                                         icon="fa fa-plus"
+                                                                         class="mx-1 ui-button-success"
+                                                                         process="btnAddPr acPr txtPr"
+                                                                         update="tblPrc acPr txtPr"
+                                                                         action="#{patientEncounterController.addPatientProcedure()}"
+                                                                         />
+                                                    </div>
+                                                </div>
+                                                <div class="row m-2" >
+                                                    <div class="col-md-12" >
+                                                        <p:dataTable
+                                                            id="tblPrc"
+                                                            value="#{patientEncounterController.patientProcedures}"
+                                                            var="pr">
+                                                            <p:column headerText="Procedure">
+                                                                <p:outputLabel value="#{pr.itemValue.name}">
+                                                                </p:outputLabel>
+                                                                <p:spacer height="1" width="5" ></p:spacer>
+                                                                <p:commandLink value="X" class="text-danger" 
+                                                                               id="btnDeletePr"
+                                                                               process="btnDeletePr"
+                                                                               update="tblPrc"
+                                                                               onclick="if (!confirm('Are you sure you want to delete this Procedure?'))
+                                                                                           return false;"
+
+                                                                               action="#{patientEncounterController.removePatientProcedure()}"
+                                                                               >
+                                                                    <f:setPropertyActionListener target="#{patientEncounterController.removingClinicalFindingValue}" value="#{pr}"/>
+                                                                </p:commandLink>
+                                                                <p:tooltip value="Delete" for="btnDeletePr" ></p:tooltip>
+                                                            </p:column>
+                                                            <p:column headerText="Details">
+                                                                <h:outputText value="#{pr.stringValue}"/>
+                                                            </p:column>
+                                                        </p:dataTable>
+                                                    </div>
+                                                </div>
+
+
+
+
+                                            </h:form>
+                                        </p:tab>
+                                        <p:tab title="Allergies" >
+                                            <h:form>
+                                                <div class="row m-2">
+                                                    <div class="col-md-3" >
+                                                        <p:autoComplete 
+                                                            id="acAllergy"
+                                                            completeMethod="#{pharmaceuticalItemController.completeItem}"
+                                                            value="#{patientEncounterController.patientAllergy.itemValue}"
+                                                            var="item"
+                                                            itemLabel="#{item}"
+                                                            itemValue="#{item}"
+                                                            class="w-100"
+                                                            inputStyleClass="w-100"
+                                                            placeholder="Select Medicine"
+                                                            />
+                                                    </div>
+                                                    <div class="col-md-6" >
+                                                        <p:inputText 
+                                                            id="txtAllergy"
+                                                            class="w-100"
+                                                            value="#{patientEncounterController.patientAllergy.stringValue}"
+                                                            placeholder="Details"
+                                                            />
+                                                    </div>
+                                                    <div class="col-md-3" >
+                                                        <p:commandButton 
+                                                            value="Add Allergy"
+                                                            id="btnAddAllergy"
+                                                            icon="fa fa-plus"
+                                                            class="mx-1 ui-button-success"
+                                                            process="btnAddAllergy acAllergy txtAllergy"
+                                                            update="tblAllergies acAllergy txtAllergy"
+                                                            action="#{patientEncounterController.addPatientAllergy()}"
+                                                            />
+                                                    </div>
+                                                </div>
+
+                                                <div class="row m-2" >
+                                                    <div class="col-md-12" >
+                                                        <p:dataTable 
+                                                            id="tblAllergies"
+                                                            value="#{patientEncounterController.patientAllergies}"
+                                                            var="allergy"
+                                                            >
+                                                            <p:column headerText="Medicine">
+                                                                <h:outputText value="#{allergy.itemValue.name}"/>
+                                                                <h:outputText value="#{allergy.lobValue}"/>
+                                                                <h:outputText value="#{allergy.stringValue}"/>
+                                                                <p:commandLink 
+                                                                    value="X" 
+                                                                    class="text-danger" 
+                                                                    id="btnDeleteAllergy"
+                                                                    onclick="if (!confirm('Are you sure you want to delete this allergy?'))
+                                                                                return false;"
+                                                                    process="btnDeleteAllergy tblAllergies"
+                                                                    update="tblAllergies"
+                                                                    action="#{patientEncounterController.removePatientAllergy()}"
+                                                                    >
+                                                                    <f:setPropertyActionListener 
+                                                                        target="#{patientEncounterController.removingClinicalFindingValue}" 
+                                                                        value="#{allergy}"
+                                                                        />
+                                                                </p:commandLink>
+
+                                                            </p:column>
+                                                        </p:dataTable>
+                                                    </div>
+                                                </div>
+                                            </h:form>
+                                        </p:tab>
+                                        <p:tab title="Past Data" >
+                                            <h:form>
+                                                <div class="row" >
+                                                    <div class="col-6" >
+
+                                                        <p:dataTable value="#{patientEncounterController.encounters}" var="visit">
+
+                                                            <p:column headerText="OPD Visits" >
+
+                                                                <h:commandLink action="#{pastPatientEncounterController.navigateToViewPastEncounter()}" >
+                                                                    <i class="fas fa-calendar-alt"></i> <!-- Calendar icon for date -->
+                                                                    <h:outputText value="#{visit.encounterDate}" class="m-2">
+                                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                                                    </h:outputText>
+                                                                    <f:setPropertyActionListener value="#{visit}" target="#{pastPatientEncounterController.current}" />
+                                                                </h:commandLink>
+
+                                                                <!-- Display comments with icon -->
+                                                                <h:outputText value="#{visit.comments}" rendered="#{not empty visit.comments}" styleClass="ml-2">
+                                                                    <span><i class="fas fa-comments"></i> #{visit.comments}</span>
+                                                                </h:outputText>
+
+                                                                <!-- Display weight with icon -->
+                                                                <h:outputText value="Weight: #{visit.visitWeight}" rendered="#{visit.visitWeight ne null}" styleClass="ml-2">
+                                                                    <span><i class="fas fa-weight"></i> Weight: #{visit.visitWeight}</span>
+                                                                </h:outputText>
+
+                                                                <!-- Display BP with icon, check for non-empty -->
+                                                                <h:outputText rendered="#{visit.bp != null and visit.bp != ''}" styleClass="ml-2">
+                                                                    <span><i class="fas fa-heartbeat"></i> BP: #{visit.bp}</span>
+                                                                </h:outputText>
+
+                                                                <!-- Display BMI with icon -->
+                                                                <h:outputText value="BMI: #{visit.bmiFormatted}" rendered="#{visit.bmi ne null}" styleClass="ml-2">
+                                                                    <span><i class="fas fa-ruler-combined"></i> BMI: #{visit.bmiFormatted}</span>
+                                                                </h:outputText>
+                                                            </p:column>
+                                                        </p:dataTable>
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <p:dataTable 
+                                                            id="tblInves"
+                                                            value="#{patientEncounterController.investigations}" 
+                                                            var="pi" 
+                                                            rowIndexVar="#{pi.id}" >
+
+                                                            <p:column headerText="Tests Orders"  styleClass="alignTop" >
+                                                                <h:outputLabel value="#{pi.billItem.bill.billDate}" class="mx-4" >
+                                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
+                                                                </h:outputLabel>
+                                                                <h:outputLabel value="#{pi.billItem.item.name}" >
+                                                                </h:outputLabel>
+
+                                                                <ui:repeat value="#{pi.patientReports}" var="dpr" rendered="#{pi.patientReports.size() ne 0}"   >
+                                                                    <p:commandLink id="cmdOldReportPrint"
+                                                                                   ajax="false" 
+                                                                                   action="/lab/patient_report_print"
+                                                                                   class="mx-4">
+                                                                        <p:graphicImage library="image" name="print.jpg" styleClass="standedicon" ></p:graphicImage>
+                                                                        <f:setPropertyActionListener value="#{dpr}" target="#{patientReportController.currentPatientReport}"></f:setPropertyActionListener>
+                                                                    </p:commandLink>
+                                                                </ui:repeat>
+
+                                                            </p:column>
+
+                                                        </p:dataTable>
+                                                    </div>
+                                                    <div class="col-6" >
+                                                        <p:dataTable rowIndexVar="i" 
+                                                                     id="tblBills" value="#{patientEncounterController.opdBills}" 
+                                                                     var="bill"  
+                                                                     style="min-width: 100%;"  
+                                                                     rowKey="#{bill.id}"
+                                                                     >
+                                                            <p:column headerText="Billed At"  sortBy="#{bill.billDate}"  >
+                                                                <p:outputLabel value="#{bill.billTime}" >
+                                                                    <f:convertDateTime  
+                                                                        timeZone="Asia/Colombo" 
+                                                                        pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" ></f:convertDateTime>
+                                                                </p:outputLabel>
+                                                            </p:column>
+                                                            <p:column headerText="Bill No" sortBy="#{bill.insId}"  >                                
+                                                                <p:commandLink id="billNo" 
+                                                                               ajax="false" 
+                                                                               value="#{bill.insId}" 
+                                                                               action="#{opdBillController.navigateToViewOpdBatchBill}">
+                                                                    <f:setPropertyActionListener value="#{bill}" target="#{opdBillController.bill}"/>
+                                                                </p:commandLink>
+                                                            </p:column>
+                                                            <p:column headerText="Net Value" sortBy="#{bill.netTotal}" 
+                                                                      styleClass="averageNumericColumn">
+                                                                <h:outputLabel value="#{bill.netTotal}" >
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputLabel>
+                                                            </p:column>                         
+                                                        </p:dataTable>
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <p:dataTable rowIndexVar="i" 
+                                                                     id="tblChannelBills" value="#{patientEncounterController.channelBills}" 
+                                                                     var="bill"  
+                                                                     style="min-width: 100%;"  
+                                                                     rowKey="#{bill.id}"
+                                                                     >
+                                                            <f:facet name="header" >
+                                                                <h:outputLabel value="Consultations" ></h:outputLabel>
+                                                            </f:facet>
+                                                            <p:column headerText="Consultation At"  sortBy="#{bill.billDate}"  >
+                                                                <p:outputLabel  value="#{bill.billDate}" >
+                                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" ></f:convertDateTime>
+                                                                </p:outputLabel>
+                                                            </p:column>
+                                                            <p:column headerText="Consultatant"  sortBy="#{bill.billDate}"  >
+                                                                <p:outputLabel  value="#{bill.billDate}" >
+                                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" ></f:convertDateTime>
+                                                                </p:outputLabel>
+                                                            </p:column>
+                                                            <p:column headerText="Fee" sortBy="#{bill.netTotal}" 
+                                                                      styleClass="averageNumericColumn">
+                                                                <h:outputLabel value="#{bill.netTotal}" >
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputLabel>
+                                                            </p:column>                         
+                                                        </p:dataTable>
+                                                    </div>
+
+
+                                                </div>
+
+
+                                            </h:form>
+
+                                        </p:tab>
+                                    </p:tabView>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </p:panel>
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

@@ -1,12 +1,12 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/resources/template/template.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://java.sun.com/jsf/core"
-                xmlns:bi="http://java.sun.com/jsf/composite/bill"
-                xmlns:ph="http://java.sun.com/jsf/composite/pharmacy">
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill"
+                xmlns:ph="http://xmlns.jcp.org/jsf/composite/pharmacy">
 
     <ui:define name="content">
         <h:form>
@@ -14,13 +14,13 @@
             <h:panelGroup rendered="#{!grnController.printPreview}">
 
                 <h:panelGrid columns="7" style="min-width: 100%;">
-                    <h:outputLabel value="DEALOR"/>
+                    <h:outputLabel value="Supplier"/>
                     <p:autoComplete converter="deal" value="#{grnController.grnBill.fromInstitution}"
                                     completeMethod="#{dealerController.completeDealor}" 
                                     forceSelection="true"
                                     var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" />
                     <h:outputLabel value="GRN Institution"/>
-                    <p:autoComplete converter="institutionConverter" value="#{grnController.grnBill.referenceInstitution}"
+                    <p:autoComplete  value="#{grnController.grnBill.referenceInstitution}"
                                     completeMethod="#{institutionController.completeCompany}" 
                                     forceSelection="true"
                                     var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" />
@@ -28,8 +28,8 @@
                         <f:selectItem itemLabel="SelectPayment method"/>
                         <f:selectItems value="#{enumController.paymentMethodsForPo}"/>                     
                     </p:selectOneMenu>
-                    <p:commandButton  value="Settle" action="#{grnController.settle}"
-                                      onclick="onSubmitButton();"
+                    <p:commandButton  value="Settle" action="#{grnController.settleWholesale()}"
+                                      
                                     ajax="false"  style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;">
                     </p:commandButton>      
                 </h:panelGrid>
@@ -49,8 +49,8 @@
                                         action="#{grnController.removeSelected()}"/>
                     </f:facet>  
 
-                    <p:ajax event="rowEdit" listener="#{grnController.onEdit}" update=":#{p:component('tot')}" />  
-                    <p:ajax event="rowEditCancel" listener="#{grnController.onEdit}" update=":#{p:component('tot')}" /> 
+                    <p:ajax event="rowEdit" listener="#{grnController.onEdit}" update=":#{p:resolveFirstComponentWithId('tot',view).clientId}" />  
+                    <p:ajax event="rowEditCancel" listener="#{grnController.onEdit}" update=":#{p:resolveFirstComponentWithId('tot',view).clientId}" /> 
 
                     <p:column style="width:6%">  
                         <p:rowEditor />  
@@ -80,7 +80,7 @@
                         </p:cellEditor>
                     </p:column>  
 
-                    <p:column headerText="Free"   >   
+                    <p:column headerText="Free">   
                         <p:cellEditor>  
                             <f:facet name="output">  
                                 <h:outputLabel id="freeQty" value="#{bi.pharmaceuticalBillItem.freeQty}"/>
@@ -91,7 +91,7 @@
                         </p:cellEditor>                        
                     </p:column> 
 
-                    <p:column headerText="Purchase Rate"   >  
+                    <p:column headerText="Purchase Rate">  
                         <p:cellEditor>  
                             <f:facet name="output">  
                                 <h:panelGroup id="purchase">
@@ -157,7 +157,7 @@
                         <p:cellEditor >
                             <f:facet name="output">
                                 <h:outputLabel value="#{bi.pharmaceuticalBillItem.doe}">
-                                    <f:convertDateTime pattern="dd/MM/yy"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                                 </h:outputLabel>
                             </f:facet>
                             <f:facet name="input">
@@ -170,7 +170,7 @@
                     </p:column> 
 
 
-                    <p:column headerText="Bathch No" >  
+                    <p:column headerText="Batch No" >  
                         <p:cellEditor >
                             <f:facet name="output">
                                 <h:outputLabel value="#{bi.pharmaceuticalBillItem.stringValue}" id="txtBatch"/>
@@ -186,7 +186,7 @@
 
                     <p:column >
                         <p:commandButton value="Remove" ajax="false"
-                                         onclick="onSubmitButton();"
+                                         
                                         action="#{grnController.removeItem(bi)}"/>
                     </p:column>
 
@@ -199,7 +199,7 @@
                             <p:outputLabel value="Invoice No : "/>
                             <p:inputText autocomplete="off" value="#{grnController.grnBill.invoiceNumber}" />
                             <p:outputLabel value="Invoice Date"/>
-                            <p:calendar  value="#{grnController.grnBill.invoiceDate}"   navigator="true" pattern="dd/MM/yy" /> 
+                            <p:calendar  value="#{grnController.grnBill.invoiceDate}"   navigator="true" pattern="#{sessionController.applicationPreference.shortDateFormat}" /> 
                         </p:panelGrid>                    
 
                         <p:panelGrid columns="2" id="tot">
@@ -227,7 +227,7 @@
             </h:panelGroup>
             <p:panel rendered="#{grnController.printPreview}" style="border: none;">
                 <p:commandButton ajax="false" action="pharmacy_purchase_order_list_for_recieve"
-                                 onclick="onSubmitButton();"
+                                 
                                 actionListener="#{grnController.viewPoList()}" value="PO List"/>                    
                 <p:commandButton value="Print" ajax="false" action="#" >
                     <p:printer target="gpBillPreview" ></p:printer>

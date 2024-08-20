@@ -1,0 +1,456 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+    <h:head>
+        <title>#{webContentController.findSingleText('site_title')}</title>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+        <link 
+            rel="stylesheet" 
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" 
+            integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" 
+            crossorigin="anonymous"/>
+        <link rel="stylesheet" href="assets/css/main.css" />
+        <noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
+    </h:head>
+    <h:body class="is-preload">
+
+        <!-- Sidebar -->
+        <section id="sidebar">
+            <div class="inner">
+                <nav>
+                    <ul>
+
+                        <li>
+                            <h:form>
+                                <h:outputLink value="#home">#{webContentController.findSingleText('home')}</h:outputLink>
+                            </h:form>
+                        </li>
+                        <li>
+                            <h:form>
+                                <h:outputLink value="#about">#{webContentController.findSingleText('about')}</h:outputLink>
+                            </h:form>
+                        </li>
+                        <li>
+                            <h:form>
+                                <h:outputLink value="#services">#{webContentController.findSingleText('services')}</h:outputLink>
+                            </h:form>
+                        </li>
+                        <li>
+                            <h:form>
+                                <h:outputLink value="#consult">#{webContentController.findSingleText('consult')}</h:outputLink>
+                            </h:form>
+                        </li>
+                        <li>
+                            <h:form>
+                                <h:outputLink value="#reports">#{webContentController.findSingleText('reports')}</h:outputLink>
+                            </h:form>
+                        </li>
+                        <li>
+                            <h:form>
+                                <h:outputLink value="#portal">#{webContentController.findSingleText('portal')}</h:outputLink>
+                            </h:form>
+                        </li>
+                        <li>
+                            <h:form>
+                                <h:outputLink value="#contact">#{webContentController.findSingleText('contact')}</h:outputLink>
+                            </h:form>
+                        </li>
+
+                    </ul>
+                </nav>
+            </div>
+        </section>
+
+
+
+        <!-- Wrapper -->
+        <div id="wrapper">
+
+            <!-- Home -->
+            <section id="home" class="wrapper style1 fullscreen fade-up">
+                <div class="inner" >
+                    <div class="container-fluid row w-100" >
+                        <div class="col-8" >
+                            <h1>#{webContentController.findSingleText('site_title')}</h1>
+                        </div>
+                        <div class="col-4" >
+                            <!-- Dropdown for selecting language -->
+                            <h:form id="languageForm">
+                                <ui:repeat value="#{webLanguageController.items}" var="wl" >
+                                    <h:panelGroup rendered="#{wl ne webContentController.language}" >
+                                        <h:commandLink value="#{wl.name}" 
+                                                       action="#{webContentController.makeSelectedLanguageAsDisplayLanguage()}">
+                                            <f:setPropertyActionListener 
+                                                value="#{wl}" 
+                                                target="#{webContentController.selectedlanguage}" ></f:setPropertyActionListener>
+                                        </h:commandLink>
+                                        &nbsp;|
+                                    </h:panelGroup>
+                                </ui:repeat>
+                                <h:commandLink value="Login" action="/home" />
+                            </h:form>
+                        </div>
+                    </div>
+
+
+                    <img src="#{webContentController.findSingleText('about_image')}" alt="Descriptive text" style="width: 50%; margin-right: 20px;" />
+                    <p>#{webContentController.findSingleText('tagline')}</p>
+
+
+
+
+                </div>
+            </section>
+
+
+            <!-- about -->
+            <section id="about" class="wrapper style2 spotlights">
+                <section>
+                    <a href="#" class="image"><img src="images/pic01.jpg" alt="" data-position="center center" /></a>
+                    <div class="content">
+                        <div class="inner">
+                            <h2>#{webContentController.findSingleText('about')}</h2>
+                            <p>
+                                <h:outputLabel value="#{webContentController.findSingleText('about_details')}" escape="false" ></h:outputLabel>
+                            </p>
+                        </div>
+                    </div>
+                </section>
+                <section>
+                    <a href="#" class="image"><img src="#{webContentController.findSingleText('about_image')}" alt="" data-position="top center" /></a>
+                    <div class="content">
+                        <div class="inner">
+
+                            <h2>#{webContentController.findSingleText('vision')}</h2>
+                            <p>#{webContentController.findSingleText('vision_details')}</p>
+                        </div>
+                    </div>
+                </section>
+                <section>
+                    <a href="#" class="image"><img src="images/pic03.jpg" alt="" data-position="25% 25%" /></a>
+                    <div class="content">
+                        <div class="inner">
+                            <h2>#{webContentController.findSingleText('mission')}</h2>
+                            <p>#{webContentController.findSingleText('mission_details')}</p>
+                        </div>
+                    </div>
+                </section>
+            </section>
+
+            <!-- services -->
+            <section id="services" class="wrapper style3 fade-up">
+                <div class="inner">
+                    <h2>#{webContentController.findSingleText('services')}</h2>
+                    <p>#{webContentController.findSingleText('services_details')}</p>
+                    <div class="features">
+                        <section>
+                            <span class="#{webContentController.findSingleText('service1_icon')}"></span>
+                            <h3>#{webContentController.findSingleText('service1')}</h3>
+                            <p>#{webContentController.findSingleText('service1_details')}</p>
+                        </section>
+                        <section>
+                            <span class="#{webContentController.findSingleText('service2_icon')}"></span>
+                            <h3>#{webContentController.findSingleText('service2')}</h3>
+                            <p>#{webContentController.findSingleText('service2_details')}</p>
+                        </section>
+                        <section>
+                            <span class="#{webContentController.findSingleText('service3_icon')}"></span>
+                            <h3>#{webContentController.findSingleText('service3')}</h3>
+                            <p>#{webContentController.findSingleText('service3_details')}</p>
+                        </section>
+
+                        <section>
+                            <span class="#{webContentController.findSingleText('service4_icon')}"></span>
+                            <h3>#{webContentController.findSingleText('service4')}</h3>
+                            <p>#{webContentController.findSingleText('service4_details')}</p>
+                        </section>
+
+                        <section>
+                            <span class="#{webContentController.findSingleText('service5_icon')}"></span>
+                            <h3>#{webContentController.findSingleText('service5')}</h3>
+                            <p>#{webContentController.findSingleText('service5_details')}</p>
+                        </section>
+
+                        <section>
+                            <span class="#{webContentController.findSingleText('service6_icon')}"></span>
+                            <h3>#{webContentController.findSingleText('service6')}</h3>
+                            <p>#{webContentController.findSingleText('service6_details')}</p>
+                        </section>
+
+                        <section>
+                            <span class="#{webContentController.findSingleText('service7_icon')}"></span>
+                            <h3>#{webContentController.findSingleText('service7')}</h3>
+                            <p>#{webContentController.findSingleText('service7_details')}</p>
+                        </section>
+
+                        <section>
+                            <span class="#{webContentController.findSingleText('service8_icon')}"></span>
+                            <h3>#{webContentController.findSingleText('service8')}</h3>
+                            <p>#{webContentController.findSingleText('service8_details')}</p>
+                        </section>
+
+                    </div>
+                </div>
+            </section>
+
+
+            <!-- consult -->
+            <section id="consult" class="wrapper style1 fade-up">
+                <div class="inner">
+                    <h2>#{webContentController.findSingleText('book_consultation')}</h2>
+                    <h:form>
+                        <div class="table-wrapper">
+                            <table>
+                                <tr>
+                                    <td><h:outputLabel for="speciality" value="#{webContentController.findSingleText('speciality')}" /></td>
+                                    <td>
+                                        <p:autoComplete id="speciality"
+                                                        style="width:100%;"
+                                                        inputStyle="width:100%;"
+                                                        placeholder="#{webContentController.findSingleText('search_speciality')}"
+                                                        value="#{specialityController.current}" 
+                                                        completeMethod="#{specialityController.completeDoctorSpeciality}" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><h:outputLabel for="consultant" value="#{webContentController.findSingleText('consultant')}" /></td>
+                                    <td>
+                                        <h:selectOneMenu id="consultant" value="#{yourManagedBean.consultant}"
+                                                         style="width:100%;"
+                                                         >
+                                            <f:selectItem itemLabel="#{webContentController.findSingleText('select_consultant')}" ></f:selectItem>
+                                            <f:selectItems value="#{consultantController.items}"
+                                                           var="consultant"
+                                                           itemLabel="#{consultant.person.nameWithTitle}"
+                                                           itemValue="#{consultant}" />
+                                        </h:selectOneMenu>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><h:outputLabel for="name" value="#{webContentController.findSingleText('patient_name')}" /></td>
+                                    <td><h:inputText id="name" value="#{patientController.password}" /></td>
+                                </tr>
+                                <tr>
+                                    <td><h:outputLabel for="phone" value="#{webContentController.findSingleText('phone_number')}" /></td>
+                                    <td>
+                                        <h:inputText id="phone"
+                                                     value="#{patientController.password}" />
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+
+                    </h:form>
+                    <ul class="actions">
+                        <li>
+                            <h:form >
+                                <h:commandLink 
+                                    value="#{webContentController.findSingleText('reserver_booking')}"
+                                    class="button">
+                                    Reserve
+                                </h:commandLink>
+                            </h:form>
+
+                        </li>
+                    </ul>
+                </div>
+            </section>
+
+
+
+
+            <!-- reports -->
+            <h:form id="labReportsForm">
+                <section id="reports" class="wrapper style2 spotlights">
+
+                    <div class="inner">
+                        <h2>#{webContentController.findSingleText('view_lab_reports')}</h2>
+                        <p><h:outputText
+                                escape="false"
+                                value="#{webContentController.findSingleText('view_lab_report_details')}">
+                            </h:outputText>
+                        </p>
+
+                        <div class="table-wrapper">
+                            <table >
+                                <tr>
+                                    <td>
+                                        <h:outputLabel value="#{webContentController.findSingleText('receipt_number')}" ></h:outputLabel>
+                                    </td>
+                                    <td>
+                                        <h:inputText ></h:inputText>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <h:outputLabel value="#{webContentController.findSingleText('phone_number')}" ></h:outputLabel>
+                                    </td>
+                                    <td>
+                                        <h:inputText ></h:inputText>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <ul class="actions">
+                            <li>
+                                <h:form >
+                                    <h:commandLink 
+                                        class="button">
+                                        #{webContentController.findSingleText('reserve_booking')}"
+                                    </h:commandLink>
+                                </h:form>
+
+                            </li>
+                        </ul>
+                    </div>
+
+                </section>
+            </h:form>
+
+
+            <!-- portal -->
+            <h:form>
+                <section id="portal" class="wrapper style3 fade-up">
+                    <div class="inner">
+                        <h2>#{webContentController.findSingleText('portals')}</h2>
+                        <p>
+                            <h:outputText 
+                                escape="false"
+                                value="#{webContentController.findSingleText('portal_details')}" >
+                            </h:outputText>
+                        </p>
+                        <div class="features">
+                            <section>
+                                <span class="icon solid major fa-code"></span>
+                                <h3>#{webContentController.findSingleText('portal1')}</h3>
+                                <p>
+                                    <h:outputText 
+                                        escape="false"
+                                        value="#{webContentController.findSingleText('portal1_details')}" >
+                                    </h:outputText>
+                                </p>
+                            </section>
+                            <section>
+                                <h:commandLink action="#{sessionController.navigateToLoginPage()}">
+                                    <span class="icon solid major fa-code"></span>
+                                    <h3>#{webContentController.findSingleText('portal2')}</h3>
+                                </h:commandLink>
+                                <p>
+                                    <h:outputText 
+                                        escape="false"
+                                        value="#{webContentController.findSingleText('portal2_details')}" >
+                                    </h:outputText>
+                                </p>
+                            </section>
+                        </div>
+                        <ul class="actions">
+                            <li><a href="generic.html" class="button">Learn more</a></li>
+                        </ul>
+                    </div>
+                </section>
+            </h:form>
+            <!-- contact -->
+            <section id="contact" class="wrapper style1 fade-up">
+                <div class="inner">
+                    <h2>#{webContentController.findSingleText('contact')}</h2>
+                    <p>
+                        <h:outputText 
+                            escape="false"
+                            value="#{webContentController.findSingleText('contact_details')}" >
+                        </h:outputText>
+                    </p>
+                    <div class="split style1">
+                        <section>
+                            <form method="post" action="#">
+                                <div class="fields">
+                                    <div class="field half">
+                                        <label for="name">#{webContentController.findSingleText('name')}</label>
+                                        <input type="text" name="name" id="name" />
+                                    </div>
+                                    <div class="field half">
+                                        <label for="email">#{webContentController.findSingleText('email')}</label>
+                                        <input type="text" name="email" id="email" />
+                                    </div>
+                                    <div class="field">
+                                        <label for="message">#{webContentController.findSingleText('message')}</label>
+                                        <textarea name="message" id="message" rows="5"></textarea>
+                                    </div>
+                                </div>
+                                <ul class="actions">
+                                    <li><a href="" class="button submit">#{webContentController.findSingleText('send_message')}</a></li>
+                                </ul>
+                            </form>
+                        </section>
+                        <section>
+                            <ul class="contact">
+                                <li>
+                                    <h3>#{webContentController.findSingleText('address')}</h3>
+                                    <span>
+                                        <h:outputText 
+                                            escape="false"
+                                            value="#{webContentController.findSingleText('address_value')}" >
+                                        </h:outputText>
+                                    </span>
+                                </li>
+                                <li>
+                                    <h3>#{webContentController.findSingleText('email')}</h3>
+                                    <span>
+                                        <h:outputText 
+                                            escape="false"
+                                            value="#{webContentController.findSingleText('email_value')}" >
+                                        </h:outputText>
+                                    </span>
+                                </li>
+                                <li>
+                                    <h3>#{webContentController.findSingleText('phone')}</h3>
+                                    <span>
+                                        <h:outputText 
+                                            escape="false"
+                                            value="#{webContentController.findSingleText('phone_value')}" >
+                                        </h:outputText>
+                                    </span>
+                                </li>
+                                <li>
+                                    <h3>#{webContentController.findSingleText('social')}</h3>
+                                    <ul class="icons">
+                                        <li><a href="#" class="icon brands fa-twitter"><span class="label">#{webContentController.findSingleText('twitter_url')}</span></a></li>
+                                        <li><a href="#" class="icon brands fa-facebook-f"><span class="label">#{webContentController.findSingleText('facebook_url')}</span></a></li>
+                                        <li><a href="#" class="icon brands fa-github"><span class="label">#{webContentController.findSingleText('github_url')}</span></a></li>
+                                        <li><a href="#" class="icon brands fa-instagram"><span class="label">#{webContentController.findSingleText('instagram_url')}</span></a></li>
+                                        <li><a href="#" class="icon brands fa-linkedin-in"><span class="label">#{webContentController.findSingleText('linkedin_url')}</span></a></li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </section>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+
+        <!-- Footer -->
+        <footer id="footer" class="wrapper style1-alt">
+            <div class="inner">
+                <ul class="menu">
+                    <li>&copy; Untitled. All rights reserved.</li><li>Design: <a href="http://html5up.net">HTML5 UP</a></li>
+                </ul>
+            </div>
+        </footer>
+
+        <!-- Scripts -->
+        <script src="assets/js/jquery.min.js"></script>
+        <script src="assets/js/jquery.scrollex.min.js"></script>
+        <script src="assets/js/jquery.scrolly.min.js"></script>
+        <script src="assets/js/browser.min.js"></script>
+        <script src="assets/js/breakpoints.min.js"></script>
+        <script src="assets/js/util.js"></script>
+        <script src="assets/js/main.js"></script>
+
+    </h:body>
+</html>

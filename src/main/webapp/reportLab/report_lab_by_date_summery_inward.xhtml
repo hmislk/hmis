@@ -1,56 +1,55 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
-                template="/resources/template/template.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/reportLab/lab_summeries_index.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://java.sun.com/jsf/core"
-                xmlns:pe="http://primefaces.org/ui/extensions">
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                >
 
-    <ui:define name="content">
+    <ui:define name="subcontent">
         <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
         <h:form>
             <p:panel>
                 <h:panelGrid columns="2">
                     <h:outputLabel value="From Date"/>
-                    <p:calendar value="#{bookKeepingSummery.fromDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss"  >
+                    <p:calendar class="w-100 mx-4 " inputStyleClass="w-100"  value="#{bookKeepingSummery.fromDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"   >
                     </p:calendar>
                     <h:outputLabel value="To Date"/>
-                    <p:calendar value="#{bookKeepingSummery.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" >
+                    <p:calendar class="w-100 mx-4 " inputStyleClass="w-100 my-1"  value="#{bookKeepingSummery.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                     </p:calendar>
                     <h:outputLabel value="Instituion"/>
-                    <p:autoComplete styleClass="noPrintButton"  value="#{bookKeepingSummery.institution}"  
+                    <p:autoComplete class="w-100 mx-4 " inputStyleClass="w-100"  value="#{bookKeepingSummery.institution}"  
                                       completeMethod="#{institutionController.completeCompany}" var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" forceSelection="true" rendered="true" requiredMessage="You must select a department" >
                     </p:autoComplete>
 
                 </h:panelGrid>
 
-                <h:panelGrid columns="4">
-                    <p:spacer height="1" width="80"/>
-                    <p:commandButton ajax="false" value="Process" action="#{bookKeepingSummery.createLabSummeryInward}"/>
-                    <p:commandButton ajax="false" value="Excel" actionListener="#{bookKeepingSummery.createLabSummeryInward}" styleClass="noPrintButton" style="float: right;" >
-                        <pe:exporter type="xlsx" target="sum1" fileName="report_pharmacy_sale_by_date_summery"  />
+                <h:panelGrid columns="4" class="my-2">
+                    <p:commandButton class="ui-button-warning" icon="fas fa-cogs" ajax="false" value="Process" action="#{bookKeepingSummery.createLabSummeryInward}"/>
+                    <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Excel" actionListener="#{bookKeepingSummery.createLabSummeryInward}" >
+                        <p:dataExporter type="xlsx" target="sum1" fileName="report_pharmacy_sale_by_date_summery"  />
                     </p:commandButton>
-                    <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" >
+                    <p:commandButton ajax="false" value="Print" class="ui-button-info" icon="fas fa-print" >
                         <p:printer target="panelPrint" />
                     </p:commandButton>
                 </h:panelGrid>
 
                 <h:panelGrid styleClass="printBlock" columns="2">
                     <h:outputLabel />
-                    <h:outputLabel value="LAB HAND OVER REPORT SUMMERY"/>                   
+                    <h:outputLabel  value="LAB HAND OVER REPORT SUMMARY"/>                   
                     <h:outputLabel value="From Date :  "/>
-                    <h:outputLabel value="#{bookKeepingSummery.fromDate}"  >
-                        <f:convertDateTime pattern="dd MMMM yyyy" />
+                    <h:outputLabel class="mx-2" value="#{bookKeepingSummery.fromDate}"  >
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                     </h:outputLabel>
                     <h:outputLabel value="To Date"/>
-                    <h:outputLabel value="#{bookKeepingSummery.toDate}"  >
-                        <f:convertDateTime pattern="dd MMMM yyyy" />
+                    <h:outputLabel class="mx-2" value="#{bookKeepingSummery.toDate}"  >
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                     </h:outputLabel>                       
                 </h:panelGrid>
             </p:panel>
             <p:panel id="panelPrint" styleClass="noBorder summeryBorder">
-                <p:dataTable id="sum1" value="#{pharmacySaleReport.billedSummery.bills}" var="i"
+                <p:dataTable id="sum1" value="#{pharmacySaleReportController.billedSummery.bills}" var="i"
                              rows="20"
                              paginator="true"
                              paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
@@ -60,11 +59,11 @@
                         <p:outputLabel value="#{bookKeepingSummery.institution.name} Summary Report By Date" />
                         <h:outputLabel value="From : "/>
                         <h:outputLabel value="#{bookKeepingSummery.fromDate}">
-                            <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss a"/>
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                         </h:outputLabel>
                         <h:outputLabel value="To :"/>
                         <h:outputLabel value="#{bookKeepingSummery.toDate}">
-                            <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss a"/>
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                         </h:outputLabel>
                     </f:facet>
 

@@ -1,0 +1,107 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui">
+
+    <h:head >
+        <ui:define name="title">
+            Web Content Index
+        </ui:define>
+    </h:head>
+    <h:body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+                <div class="row container container-fluid" >
+                    <div class="col-3" >
+                        <p:accordionPanel>
+                            <p:tab title="Manage Web Site">
+                        <h:form >
+
+                            <div class="d-grid gap-2">
+                            
+                                <p:commandButton ajax="false" class="w-100" action="#{webContentController.toAddNewShortWebContent()}" value="Add New Short Contents" icon="pi pi-plus"></p:commandButton>
+                            
+                            
+                                <p:commandButton ajax="false" class="w-100" action="#{webContentController.toAddNewLongWebContent()}" value="Add New Long Contents" icon="pi pi-plus"></p:commandButton>
+                            
+                            
+                                <p:commandButton ajax="false" class="w-100" action="#{webContentController.toAddNewWebContent()}" value="Add New List Contents" icon="pi pi-plus"></p:commandButton>
+                           
+                            
+                                <p:commandButton ajax="false" class="w-100" action="#{webContentController.toListWebContent()}" value="List Web Contents" icon="pi pi-list"></p:commandButton>
+                          
+                             
+                            
+                                <p:commandButton ajax="false" class="w-100" action="#{uploadController.toAddNewUpload()}" value="Add Web Image" icon="pi pi-image"></p:commandButton>
+                            
+                            
+                                <p:commandButton ajax="false" class="w-100" action="#{uploadController.toListUploads()}" value="List Images" icon="pi pi-images"></p:commandButton>
+                           
+                            
+                                <p:commandButton ajax="false" class="w-100" action="#{webLanguageController.toAddNewWebLanguage()}" value="Add Language" icon="pi pi-plus"></p:commandButton>
+                            
+                            
+                                <p:commandButton ajax="false" class="w-100" action="#{webLanguageController.toListWebLanguage()}" value="List Languages" icon="pi pi-list"></p:commandButton>
+                           
+                            
+                                <p:commandButton ajax="false" 
+                                                 class="w-100" 
+                                                 action="#{webTemplateController.navigateToAddNewTemplate()}"
+                                                 value="Add New Template" icon="pi pi-plus"></p:commandButton>
+                            
+
+                            
+                                <p:commandButton ajax="false" 
+                                                 class="w-100" 
+                                                 action="#{webTemplateController.navigateToListWebTemplates}" 
+                                                 value="List Templates" 
+                                                 icon="pi pi-list"></p:commandButton>
+
+                            
+
+                            
+                                <p:commandButton ajax="false" 
+                                                 class="w-100" 
+                                                 action="#{templateComponentController.navigateToAddNewTemplateComponent()}"
+                                                 value="Add New Template Componant" icon="pi pi-plus"></p:commandButton>
+                            
+
+                            
+                                <p:commandButton ajax="false" 
+                                                 class="w-100" 
+                                                 action="#{templateComponentController.navigateToListTemplateComponent()}" 
+                                                 value="List Templates Componants" 
+                                                 icon="pi pi-list"></p:commandButton>
+
+                            
+
+                            
+
+
+                                </div>
+                        </h:form>
+                                </p:tab>
+                        </p:accordionPanel>
+                        <h1>#{webContentController.findSingleText('title')}</h1>
+
+                        <ui:repeat value="#{webContentController.findMultipleWebText('vision')}" var="v" >
+                            #{v}
+                        </ui:repeat>
+
+                    </div>
+                    <div class="col-9" >
+                        <ui:insert name="contents">
+
+                        </ui:insert>
+                    </div>
+                </div>
+            </ui:define>
+
+        </ui:composition>
+
+    </h:body>
+</html>

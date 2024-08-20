@@ -1,18 +1,18 @@
 /*
- * MSc(Biomedical Informatics) Project
+ * Open Hospital Management Information System
  *
- * Development and Implementation of a Web-based Combined Data Repository of
- Genealogical, Clinical, Laboratory and Genetic Data
- * and
- * a Set of Related Tools
+ * Dr M H B Ariyaratne
+ * Acting Consultant (Health Informatics)
+ * (94) 71 5812399
+ * (94) 71 5812399
  */
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.entity.pharmacy.PharmaceuticalItemCategory;
 import com.divudi.facade.PharmaceuticalItemCategoryFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -27,11 +27,16 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.servlet.http.HttpServletResponse;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- * Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -46,15 +51,54 @@ public class PharmaceuticalItemCategoryController implements Serializable {
     private List<PharmaceuticalItemCategory> items = null;
     List<PharmaceuticalItemCategory> pharmaceuticalItemCategoryList = null;
 
+    public void downloadAsExcel() {
+        getItems();
+        try {
+            // Create a new Excel workbook
+            Workbook workbook = new XSSFWorkbook();
+            Sheet sheet = workbook.createSheet("Dosage Forms");
+
+            // Create a header row
+            Row headerRow = sheet.createRow(0);
+            headerRow.createCell(0).setCellValue("No");
+            headerRow.createCell(1).setCellValue("Name");
+            headerRow.createCell(1).setCellValue("Description");
+            // Add more columns as needed
+
+            // Populate the data rows
+            int rowNum = 1;
+            for (PharmaceuticalItemCategory diag : items) {
+                Row row = sheet.createRow(rowNum++);
+                row.createCell(0).setCellValue(rowNum);
+                row.createCell(1).setCellValue(diag.getName());
+                 row.createCell(2).setCellValue(diag.getDescription());
+            }
+
+            // Set the response headers to initiate the download
+            FacesContext context = FacesContext.getCurrentInstance();
+            HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            response.setHeader("Content-Disposition", "attachment; filename=\"item_categories.xlsx\"");
+
+            // Write the workbook to the response output stream
+            workbook.write(response.getOutputStream());
+            workbook.close();
+            context.responseComplete();
+        } catch (Exception e) {
+            // Handle any exceptions
+            e.printStackTrace();
+        }
+    }
+
     public List<PharmaceuticalItemCategory> completeCategory(String qry) {
 
         Map m = new HashMap();
         m.put("n", "%" + qry + "%");
         String sql = "select c from PharmaceuticalItemCategory c where "
-                + " c.retired=false and ((upper(c.name) like :n) or (upper(c.description) like :n)) order by c.name";
+                + " c.retired=false and (((c.name) like :n) or ((c.description) like :n)) order by c.name";
 
-        pharmaceuticalItemCategoryList = getFacade().findBySQL(sql, m, 20);
-        //////System.out.println("a size is " + a.size());
+        pharmaceuticalItemCategoryList = getFacade().findByJpql(sql, m, 20);
+        //////// // System.out.println("a size is " + a.size());
 
         if (pharmaceuticalItemCategoryList == null) {
             pharmaceuticalItemCategoryList = new ArrayList<>();
@@ -77,12 +121,12 @@ public class PharmaceuticalItemCategoryController implements Serializable {
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            UtilityController.addSuccessMessage("Saved Successfully");
+            JsfUtil.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
         getItems();
@@ -91,6 +135,7 @@ public class PharmaceuticalItemCategoryController implements Serializable {
     private boolean errorCheck() {
         if (getCurrent() != null) {
             if (getCurrent().getDescription() == null || getCurrent().getDescription().isEmpty()) {
+                JsfUtil.addErrorMessage("Please Fill Desciption.");
                 return false;
             } else {
                 String sql;
@@ -101,7 +146,7 @@ public class PharmaceuticalItemCategoryController implements Serializable {
                         + " and c.description=:dis ";
 
                 m.put("dis", getCurrent().getDescription());
-                List<PharmaceuticalItemCategory> list = getFacade().findBySQL(sql, m);
+                List<PharmaceuticalItemCategory> list = getFacade().findByJpql(sql, m);
                 if (list.size() > 0) {
                     JsfUtil.addErrorMessage("Category Code " + getCurrent().getDescription() + " is alredy exsist.");
                     return true;
@@ -151,9 +196,9 @@ public class PharmaceuticalItemCategoryController implements Serializable {
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
@@ -171,7 +216,7 @@ public class PharmaceuticalItemCategoryController implements Serializable {
                 + " c.retired=false "
                 + " order by c.name ";
 
-        items = getFacade().findBySQL(sql);
+        items = getFacade().findByJpql(sql);
         return items;
     }
 

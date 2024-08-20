@@ -1,15 +1,15 @@
 /*
- * MSc(Biomedical Informatics) Project
+ * Open Hospital Management Information System
  *
- * Development and Implementation of a Web-based Combined Data Repository of
- Genealogical, Clinical, Laboratory and Genetic Data
- * and
- * a Set of Related Tools
+ * Dr M H B Ariyaratne
+ * Acting Consultant (Health Informatics)
+ * (94) 71 5812399
+ * (94) 71 5812399
  */
 package com.divudi.bean.membership;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.entity.PaymentScheme;
@@ -17,7 +17,7 @@ import com.divudi.entity.membership.AllowedPaymentMethod;
 import com.divudi.entity.membership.MembershipScheme;
 import com.divudi.facade.AllowedPaymentMethodFacade;
 import com.divudi.facade.PaymentSchemeFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -34,8 +34,8 @@ import javax.inject.Named;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- * Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -92,12 +92,12 @@ public class PaymentSchemeController implements Serializable {
         this.membershipScheme = membershipScheme;
     }
 
-    public boolean errorCheckPaymentMethod(PaymentMethod paymentMethod, PaymentMethodData paymentMethodData) {
+    public boolean checkPaymentMethodError(PaymentMethod paymentMethod, PaymentMethodData paymentMethodData) {
         if (paymentMethod == PaymentMethod.Cheque) {
             if (paymentMethodData.getCheque().getInstitution() == null
                     || paymentMethodData.getCheque().getNo() == null
                     || paymentMethodData.getCheque().getDate() == null) {
-                UtilityController.addErrorMessage("Please select Cheque Number,Bank and Cheque Date");
+                JsfUtil.addErrorMessage("Please select Cheque Number,Bank and Cheque Date");
                 return true;
             }
 
@@ -106,7 +106,7 @@ public class PaymentSchemeController implements Serializable {
         if (paymentMethod == PaymentMethod.Slip) {
             if (paymentMethodData.getSlip().getInstitution() == null
                     || paymentMethodData.getSlip().getDate() == null) {
-                UtilityController.addErrorMessage("Please Fill Memo,Bank and Slip Date ");
+                JsfUtil.addErrorMessage("Please Fill Memo,Bank and Slip Date ");
                 return true;
             }
 
@@ -115,12 +115,18 @@ public class PaymentSchemeController implements Serializable {
         if (paymentMethod == PaymentMethod.Card) {
             if (paymentMethodData.getCreditCard().getInstitution() == null
                     || paymentMethodData.getCreditCard().getNo() == null) {
-                UtilityController.addErrorMessage("Please Fill Credit Card Number and Bank");
+                JsfUtil.addErrorMessage("Please Fill Credit Card Number and Bank");
                 return true;
             }
-
         }
 
+        if (paymentMethod == PaymentMethod.ewallet) {
+            if (paymentMethodData.getEwallet().getInstitution() == null
+                    || paymentMethodData.getEwallet().getNo() == null) {
+                JsfUtil.addErrorMessage("Please Fill eWallet Reference Number and Bank");
+                return true;
+            }
+        }
         return false;
     }
 
@@ -128,11 +134,11 @@ public class PaymentSchemeController implements Serializable {
 
         if (paymentMethod == PaymentMethod.Cash) {
             if (paid == 0.0) {
-                UtilityController.addErrorMessage("Please select tendered amount correctly");
+                JsfUtil.addErrorMessage("Please select tendered amount correctly");
                 return true;
             }
             if (paid < amount) {
-                UtilityController.addErrorMessage("Please select tendered amount correctly");
+                JsfUtil.addErrorMessage("Please select tendered amount correctly");
                 return true;
             }
         }
@@ -145,10 +151,10 @@ public class PaymentSchemeController implements Serializable {
     }
 
     public List<PaymentScheme> getSelectedItems() {
-        selectedItems = getFacade().findBySQL("select c from PaymentScheme c"
+        selectedItems = getFacade().findByJpql("select c from PaymentScheme c"
                 + " where c.retired=false "
                 + " and c.membershipScheme is null "
-                + " and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' "
+                + " and (c.name) like '%" + getSelectText().toUpperCase() + "%' "
                 + " order by c.name");
         return selectedItems;
     }
@@ -176,17 +182,17 @@ public class PaymentSchemeController implements Serializable {
 
         //  getCurrent().setMembershipScheme(membershipScheme);
 //        if (getCurrent().getPaymentMethod() == null) {
-//            UtilityController.addErrorMessage("Payment Method?");
+//            JsfUtil.addErrorMessage("Payment Method?");
 //            return;
 //        }
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(paymentScheme);
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             paymentScheme.setCreatedAt(new Date());
             paymentScheme.setCreater(getSessionController().getLoggedUser());
             getFacade().create(paymentScheme);
-            UtilityController.addSuccessMessage("Saved Successfully");
+            JsfUtil.addSuccessMessage("Saved Successfully");
         }
 
         paymentScheme = null;
@@ -196,8 +202,8 @@ public class PaymentSchemeController implements Serializable {
     }
 
     public void saveSelectedAllowedPaymentMethod() {
-        
-        if (getCurrentAllowedPaymentMethod().getPaymentMethod()==null) {
+
+        if (getCurrentAllowedPaymentMethod().getPaymentMethod() == null) {
             JsfUtil.addErrorMessage("Please Select Payment Methord");
             return;
         }
@@ -212,16 +218,15 @@ public class PaymentSchemeController implements Serializable {
                 getCurrentAllowedPaymentMethod().setMembershipScheme(getMembershipScheme());
             }
         }
-        
 
         if (getCurrentAllowedPaymentMethod().getId() != null && getCurrentAllowedPaymentMethod().getId() > 0) {
             getAllowedPaymentMethodFacade().edit(getCurrentAllowedPaymentMethod());
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             getCurrentAllowedPaymentMethod().setCreatedAt(new Date());
             getCurrentAllowedPaymentMethod().setCreater(getSessionController().getLoggedUser());
             getAllowedPaymentMethodFacade().create(getCurrentAllowedPaymentMethod());
-            UtilityController.addSuccessMessage("Saved Successfully");
+            JsfUtil.addSuccessMessage("Saved Successfully");
         }
 
         paymentSchemeAllowedPaymentMethod = null;
@@ -272,9 +277,9 @@ public class PaymentSchemeController implements Serializable {
             paymentScheme.setRetiredAt(new Date());
             paymentScheme.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(paymentScheme);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
@@ -299,7 +304,13 @@ public class PaymentSchemeController implements Serializable {
                 + " where  i.retired=false "
                 //+ " and i.membershipScheme is null "
                 + " order by i.orderNo, i.name";
-        items = getFacade().findBySQL(temSql);
+        items = getFacade().findByJpql(temSql);
+    }
+
+    public String navigateToPaymentScheme() {
+        createPaymentSchemes();
+        prepareAdd();
+        return "/admin/pricing/payment_scheme?faces-redirect=true";
     }
 
     public List<PaymentScheme> getPaymentSchemesForChannel() {
@@ -331,7 +342,7 @@ public class PaymentSchemeController implements Serializable {
 
         temSql += " order by i.orderNo, i.name";
 
-        return getFacade().findBySQL(temSql);
+        return getFacade().findByJpql(temSql);
     }
 
     public List<PaymentScheme> completePaymentScheme(String qry) {
@@ -339,10 +350,10 @@ public class PaymentSchemeController implements Serializable {
         HashMap hm = new HashMap();
         String sql = "select c from PaymentScheme c "
                 + " where c.retired=false "
-                + " and upper(c.name) like :q "
+                + " and (c.name) like :q "
                 + " order by c.name";
         hm.put("q", "%" + qry.toUpperCase() + "%");
-        c = getFacade().findBySQL(sql, hm);
+        c = getFacade().findByJpql(sql, hm);
 
         if (c == null) {
             c = new ArrayList<>();
@@ -356,10 +367,10 @@ public class PaymentSchemeController implements Serializable {
         String sql = "select c from PaymentScheme c "
                 + " where c.retired=false "
                 + " and c.validForChanneling=true "
-                + " and upper(c.name) like :q "
+                + " and (c.name) like :q "
                 + " order by c.name";
         hm.put("q", "%" + qry.toUpperCase() + "%");
-        c = getFacade().findBySQL(sql, hm);
+        c = getFacade().findByJpql(sql, hm);
 
         if (c == null) {
             c = new ArrayList<>();
@@ -378,7 +389,7 @@ public class PaymentSchemeController implements Serializable {
         hm.put("mem", membershipScheme);
         hm.put("pay", paymentScheme);
 
-        allowedPaymentMethods = getAllowedPaymentMethodFacade().findBySQL(temSql, hm);
+        allowedPaymentMethods = getAllowedPaymentMethodFacade().findByJpql(temSql, hm);
     }
 
     public List<AllowedPaymentMethod> getAllowedPaymentMethods() {

@@ -1,24 +1,28 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:pe="http://primefaces.org/ui/extensions">
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      >
 
     <h:body>
 
-        <ui:composition template="/resources/template/template.xhtml">
+        <ui:composition template="/pharmacy/pharmacy_analytics.xhtml">
 
-            <ui:define name="content">
+            <ui:define name="subcontent">
                 <h:form>
 
                     <p:panel header="Pharmacy Whole Sale Report" >
 
-                        <h:panelGrid columns="2" >
+                        <h:panelGrid columns="4" class="w-100" >
+                            <h:outputLabel value="From" ></h:outputLabel>
+                            <p:calendar value="#{billController.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
+                            <h:outputLabel value="To" ></h:outputLabel>
+                            <p:calendar value="#{billController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                             <h:outputLabel value="Institution" ></h:outputLabel>
-                            <p:autoComplete converter="institutionConverter"
+                            <p:autoComplete 
                                             completeMethod="#{institutionController.completeIns}" var="ins" 
                                             itemLabel="#{ins.name}" itemValue="#{ins}" forceSelection="true" 
                                             value="#{billController.institution}">
@@ -26,24 +30,35 @@
                             <h:outputLabel value="Department" ></h:outputLabel>
                             <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" 
                                             itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
-                                            value="#{billController.department}" converter="departmentConverter" >
+                                            value="#{billController.department}"  >
                             </p:autoComplete>
-                            <h:outputLabel value="From" ></h:outputLabel>
-                            <p:calendar value="#{billController.fromDate}" pattern="dd/MMM/yyyy - hh:mm:ss a" ></p:calendar>
-                            <h:outputLabel value="To" ></h:outputLabel>
-                            <p:calendar value="#{billController.toDate}" pattern="dd/MMM/yyyy - hh:mm:ss a" ></p:calendar>
+                            
                         </h:panelGrid>
 
-                        <h:panelGrid columns="3">
-                            <p:commandButton ajax="false" value="Fill" action="#{billController.getPharmacyWholeBills}" ></p:commandButton>
-
-                            <p:commandButton value="Print" ajax="false" action="#" >
+                        <h:panelGrid columns="3" class="my-2">
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Fill" 
+                                icon="fas fa-fill"
+                        class="ui-button-warning"
+                                action="#{billController.getPharmacyWholeBills}" >
+                            </p:commandButton>
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Excel" icon="fas fa-file-excel"
+                                class="ui-button-success mx-2" >
+                                <p:dataExporter type="xlsx" target="tbl" fileName="opd_bills"  />
+                            </p:commandButton> 
+                            <p:commandButton 
+                                value="Print" 
+                                ajax="false" 
+                                icon="fas fa-print"
+                                class="ui-button-info"
+                                action="#" >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
 
-                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
-                                <pe:exporter type="xlsx" target="tbl" fileName="opd_bills"  />
-                            </p:commandButton>  
+                             
                         </h:panelGrid>
 
 
@@ -51,18 +66,20 @@
                             <p:dataTable id="tbl" styleClass="noBorder normalFont"
                                          value="#{billController.bills}" var="bill"  rows="20"
                                          paginator="true"
+                                         paginatorPosition="bottom"
                                          paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                          rowsPerPageTemplate="20, 50, 100"  >
                                 <f:facet name="header">
-                                    <h:outputLabel value="Pharmacy Whole Sale Report : "/>
+                                    <h:outputLabel value="Pharmacy Whole Sale Report : "/>&nbsp;
                                     <h:outputLabel value="#{billController.department.name}"/> &#13;&nbsp;
-                                        <h:outputLabel value="From : "/>
-                                        <h:outputLabel value="#{billController.fromDate}">
-                                            <f:convertDateTime pattern="dd/MM/yy" ></f:convertDateTime>
-                                        </h:outputLabel>&#13;&nbsp;
-                                        <h:outputLabel value="To : "/>
+                                    <br/>
+                                    <h:outputLabel value="From : "/>&nbsp;
+                                    <h:outputLabel value="#{billController.fromDate}">&nbsp;
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
+                                        </h:outputLabel>
+                                    <h:outputLabel value="To : "/>&nbsp;
                                         <h:outputLabel value="#{billController.toDate}">
-                                            <f:convertDateTime pattern="dd/MM/yy" ></f:convertDateTime>
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
                                         </h:outputLabel>
                                 </f:facet>
 
@@ -99,7 +116,7 @@
                             <p:column headerText="Billed at"  
                                       sortBy="#{bill.createdAt}">
                                 <h:outputLabel value="#{bill.createdAt}" >
-                                    <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                                 <h:outputLabel value="#{bill.createdAt.time}" >
                                     
@@ -108,13 +125,13 @@
                                 <h:panelGroup rendered="#{bill.cancelled}" >
                                     <h:outputLabel style="color: red;" value="Cancelled at " />
                                     <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.createdAt}" >
-                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                     </h:outputLabel>
                                 </h:panelGroup>
                                 <h:panelGroup rendered="#{bill.refunded}" >
                                     <h:outputLabel style="color: red;" value="Refunded at " />
                                     <h:outputLabel style="color: red;" rendered="#{bill.refunded}" value="#{bill.refundedBill.createdAt}" >
-                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                     </h:outputLabel>
                                 </h:panelGroup>
                             </p:column>  

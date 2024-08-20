@@ -1,0 +1,46 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+
+        <ui:composition template="./index.xhtml">
+
+            <ui:define name="contents">
+
+                <h:form >
+                    <p:panel >
+                        <f:facet name="header" >
+                            <h:outputLabel value="List Images"></h:outputLabel>
+                        </f:facet>
+                        <p:dataTable class="table table-striped " value="#{uploadController.items}" var="u" >
+                            <p:column headerText="Name" >
+                                <h:outputText value="#{u.webContent.name}" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Order No" >
+                                <h:outputText value="#{u.webContent.orderNo}" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Actions" >
+                                <p:commandButton 
+                                    icon="fas fa-pencil"
+                                    class="ui-button-success"
+                                    action="${uploadController.toViewUpload()}" >
+                                    <f:setPropertyActionListener value="#{u}" target="#{uploadController.selected}" >
+                                    </f:setPropertyActionListener>
+                                </p:commandButton>
+                            </p:column>
+                        </p:dataTable >
+                    </p:panel>
+                </h:form>
+
+
+            </ui:define>
+
+        </ui:composition>
+
+    </h:body>
+</html>

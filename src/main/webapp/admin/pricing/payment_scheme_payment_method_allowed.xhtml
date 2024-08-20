@@ -1,0 +1,82 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/admin/pricing/index.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui">
+
+
+    <ui:define name="subcontent">
+
+        <h:panelGroup >
+            <h:form  >
+                <p:growl />
+                <p:focus id="selectFocus" context="gpSelect" />
+                <p:focus id="detailFocus" context="gpDetail" />
+
+
+
+                <p:panel header="Manage Discount Scheme Payment Method" >
+
+
+
+                    <div class="w-100 d-flex align-items-center">
+                        <h:panelGrid id="gpSelect" columns="1"  >
+                            <p:panel class="w-100" >                               
+                                <p:selectOneMenu value="#{paymentSchemeController.current}"  >
+                                    <f:selectItem itemLabel="Select Discount Scheme Scheme"/>
+                                    <f:selectItems value="#{paymentSchemeController.items}" var="i" itemValue="#{i}" itemLabel="#{i.name}"/>
+                                    <f:ajax event="change" render="@all" execute="@this" listener="#{paymentSchemeController.createAllowedPaymentMethods()}" />                                        
+                                </p:selectOneMenu>
+                                <h:panelGrid id="gpSelectText" class="w-100" >
+                                    <p:selectOneListbox scrollHeight="250" class="w-100" id="lstSelect" value="#{paymentSchemeController.currentAllowedPaymentMethod}">
+                                        <f:selectItems  value="#{paymentSchemeController.allowedPaymentMethods}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.paymentMethod}" ></f:selectItems>
+                                        <f:ajax render="gpDetail" execute="lstSelect" >
+                                        </f:ajax>
+                                    </p:selectOneListbox>
+                                </h:panelGrid>
+                                <h:panelGrid id="gpSelectButtons" columns="3"  >
+
+                                    <p:commandButton ajax="false" id="btnAdd" value="Add" 
+                                                     action="#{paymentSchemeController.prepareAdd()}" 
+                                                     styleClass="buttons" disabled="true"/>                                       
+
+
+                                    <p:commandButton ajax="false" icon="fas fa-trash" class="ui-button-danger" id="btnDelete" onclick="if (!confirm('Are you sure you want to delete this record?'))
+                                                return false;" action="#{paymentSchemeController.delete()}"  value="Delete"  >
+                                    </p:commandButton>
+
+                                    <p:commandButton ajax="false" value="Clear" class="ui-button-secondary"
+                                                     action="#{paymentSchemeController.recreateModel}"/>
+
+                                </h:panelGrid>
+                            </p:panel>
+                        </h:panelGrid  >
+                        <p:panel class="w-100 float-left">
+                            <h:panelGrid id="gpDetail" class="w-100">
+                                <h:panelGrid id="gpDetailText" columns="3">                                  
+                                    <h:outputText value="Payment Method" ></h:outputText>
+                                    <p:selectOneMenu class="mx-2" value="#{paymentSchemeController.currentAllowedPaymentMethod.paymentMethod}">
+                                        <f:selectItem itemLabel="Select Payment Method"/>
+                                        <f:selectItems value="#{enumController.paymentMethods}"/>
+                                    </p:selectOneMenu>
+
+                                    <p:commandButton id="btnSave" icon="fas fa-plus" value="Add" action="#{paymentSchemeController.saveSelectedAllowedPaymentMethod()}" class="ui-button-success mx-2">                                        
+                                    </p:commandButton>
+                                </h:panelGrid>
+
+                            </h:panelGrid>
+                        </p:panel>
+                    </div>
+                </p:panel>
+
+
+            </h:form>
+
+        </h:panelGroup>
+
+    </ui:define>
+
+</ui:composition>

@@ -1,0 +1,138 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <p:panel  header="Funds" >
+            <f:facet name="header">
+                <h:panelGroup id="totals">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h:outputText value="Funds List" ></h:outputText>
+                        </div>
+                        <div class="d-flex">
+                            <h:outputText value=" Total Funds : " ></h:outputText>
+                            <p:outputLabel 
+                                class="mx-2"
+                                value="#{financialTransactionController.currentBill.total}" >
+                            </p:outputLabel>
+                        </div>
+                    </div>
+
+                </h:panelGroup>
+            </f:facet>
+
+            <p:dataTable id="tblPayments" value="#{financialTransactionController.currentBillPayments}" var="bp" >
+                <p:column headerText="Payment Method" width="20%">
+                    <h:outputText value="#{bp.paymentMethod}" ></h:outputText>
+                </p:column>
+
+                <p:column headerText="Details" class="row d-grid" >
+                    <h:panelGroup rendered="#{bp.paymentMethod eq 'Cash'}">
+                        <ui:repeat value="#{bp.humanReadableDenominations}" var="denomination">
+                            <h:outputText value="#{denomination}" />
+                            <br />
+                        </ui:repeat>
+                    </h:panelGroup>
+
+                    <h:panelGroup rendered="#{bp.paymentMethod eq 'Cheque'}">
+                        <div class="row ">
+                            <h:outputLabel value="Bank Name : #{bp.bank.name}" ></h:outputLabel>
+                        </div>
+                        <div class="row ">
+                            <h:outputLabel value="Cheque No : #{bp.chequeRefNo}" ></h:outputLabel>
+                        </div>
+                        <div class="row ">
+                            <h:outputLabel value="Cheque Date" >
+                            </h:outputLabel>
+                            <h:outputLabel value="#{bp.chequeDate}" >
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"  ></f:convertDateTime>
+                            </h:outputLabel>
+                        </div>
+                    </h:panelGroup>
+
+                    <h:panelGroup rendered="#{bp.paymentMethod eq 'Card'}">
+                        <div class="row">
+                            <h:outputLabel value="Value : #{bp.paidValue}" ></h:outputLabel>
+                        </div>
+                        <div class="row">
+                            <h:outputLabel value="Reference No : #{bp.creditCardRefNo}" ></h:outputLabel>
+                        </div>
+                        <div class="row">
+                            <h:outputLabel value="Bank Name : #{bp.institution.name}" ></h:outputLabel>
+                        </div>
+                        <div class="row">
+                            <h:outputLabel value="Comments : #{bp.comments}" ></h:outputLabel>
+                        </div>
+                    </h:panelGroup>
+
+
+                    <h:panelGroup rendered="#{bp.paymentMethod eq 'ewallet'}">
+                        <div class="row">
+                            <h:outputLabel value="Value : #{bp.paidValue}" ></h:outputLabel>
+                        </div>
+                        <div class="row">
+                            <h:outputLabel value="Ref No : #{bp.chequeRefNo}" ></h:outputLabel>
+                        </div>
+                        <div class="row">
+                            <h:outputLabel value="Bank Name : #{bp.institution.name}" ></h:outputLabel>
+                        </div>
+                        <div class="row">
+                            <h:outputLabel value="Comments : #{bp.comments}" ></h:outputLabel>
+                        </div>
+                    </h:panelGroup>
+
+                    <h:panelGroup rendered="#{bp.paymentMethod eq 'Slip'}">
+                        <div class="row">
+                            <h:outputLabel value="Value : #{bp.paidValue}" ></h:outputLabel>
+                        </div>
+                        <div class="row">
+                            <h:outputLabel value="Bank Name : #{bp.bank.name}" ></h:outputLabel>
+                        </div>
+                        <div class="row">
+                            <h:outputLabel value="Date: " ></h:outputLabel>
+                            <h:outputLabel value="#{bp.chequeDate}" >
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"  ></f:convertDateTime>
+                            </h:outputLabel>
+                        </div>
+                        <div class="row">
+                            <h:outputLabel value="Comments : #{bp.comments}" ></h:outputLabel>
+                        </div>
+                    </h:panelGroup>
+                </p:column>
+
+                <p:column headerText="Value" width="20%">
+                    <h:outputText value="#{bp.paidValue}" ></h:outputText>
+                </p:column>
+
+
+
+                <p:column headerText="Action" width="20%">
+                    <p:commandButton 
+                        class="ui-button-danger"
+                        icon=" fa-solid fa-trash"
+                        id="btnRemove"
+                        value="Remove" 
+                        action="#{financialTransactionController.removePayment}" 
+                        process="btnRemove tblPayments"
+                        update=":#{p:resolveFirstComponentWithId('tblPayments',view).clientId} :#{p:resolveFirstComponentWithId('totals',view).clientId}"
+                        >
+                        <f:setPropertyActionListener value="#{bp}" target="#{financialTransactionController.removingPayment}" ></f:setPropertyActionListener>
+                    </p:commandButton>
+                </p:column>
+            </p:dataTable>
+
+        </p:panel>
+
+    </cc:implementation>
+</html>

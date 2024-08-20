@@ -1,11 +1,12 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:bi="http://java.sun.com/jsf/composite/inward/bill">
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
+      xmlns:bi="http://xmlns.jcp.org/jsf/composite/inward/bill">
 
     <h:body>
 
@@ -13,63 +14,67 @@
 
             <ui:define name="content">
                 <h:form>
-                    <p:panel header="Reprint" styleClass="alignTop" >
-                        <h:panelGrid columns="1">
+                    <p:panel header="" styleClass="alignTop" >
+                        <f:facet name="header">
 
-                            <p:commandButton value="Reprint Intrim" ajax="false" onclick="onSubmitButton();"  >
-                                <p:printer target="intrim" ></p:printer>
-                            </p:commandButton>  
-
-                        </h:panelGrid>
+                            <p:outputLabel value="Reprint" class="m-2"/>
+                            <p:commandButton value="Reprint Interim" ajax="false"
+                                             class="ui-button-info"
+                                             icon="fa-solid fa-print"
+                                             style="float: right" >
+                                <p:printer target="Interim" ></p:printer>
+                            </p:commandButton> 
+                        </f:facet>
 
                     </p:panel>
 
                     <p:panel id="print">
-                        <p:panelGrid columns="2" style="width: 100%;">
-                            <p:panel header="Patient Detail">
-                                <p:panelGrid columns="2">
-                                    <h:outputLabel value="Patient ​Name:" ></h:outputLabel>
-                                    <h:outputLabel value="#{inwardSearch.bill.patient.person.nameWithTitle }" ></h:outputLabel>
-                                    <h:outputLabel value="Age" />
-                                    <h:outputLabel value="#{inwardSearch.bill.patient.age}"  />
-                                    <h:outputLabel value="Sex" >
-                                    </h:outputLabel>
-                                    <h:outputLabel value="#{inwardSearch.bill.patient.person.sex}" >
-                                    </h:outputLabel>
-                                    <h:outputLabel value="Phone" >
-                                    </h:outputLabel>
-                                    <h:outputLabel value="#{inwardSearch.bill.patient.person.phone}" >
-                                    </h:outputLabel>
-                                </p:panelGrid>
-                            </p:panel>
-                            <p:panel header="Bill Detail">
-                                <p:panelGrid columns="2">
-                                    <h:outputLabel value="Bill No :" ></h:outputLabel>
-                                    <h:outputLabel value="#{inwardSearch.bill.insId}" ></h:outputLabel>
-                                    <h:outputLabel value="Total :" ></h:outputLabel>
-                                    <h:outputLabel value="#{inwardSearch.bill.grantTotal}" style="float: right;" >
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                    <h:outputLabel value="Discount :" ></h:outputLabel>
-                                    <h:outputLabel value="#{inwardSearch.bill.discount}" style="float: right;" >
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                    <h:outputLabel value="Net Total :" ></h:outputLabel>
-                                    <h:outputLabel value="#{inwardSearch.bill.netTotal}" style="float: right;" >
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                    <h:outputLabel value="Paid Amount :" ></h:outputLabel>
-                                    <h:outputLabel value="#{inwardSearch.bill.paidAmount}" style="float: right;" >
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                    <h:outputLabel value="Due :" ></h:outputLabel>
-                                    <h:outputLabel value="#{inwardSearch.bill.netTotal+inwardSearch.bill.paidAmount}" style="float: right;" >
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                   
-                                </p:panelGrid>
-                            </p:panel>
-                        </p:panelGrid>
+
+                        <div class="row">
+                            <div class="col-6">
+                                <p:panel>
+                                    <f:facet name="header">
+                                        <h:outputText styleClass="fas fa-id-card-alt"></h:outputText>
+                                        <h:outputLabel value="Patient Details" class="mx-2"></h:outputLabel>
+                                    </f:facet>
+                                    <common:patient patient="#{billSearch.bill.patient}" class="w-100"/>
+                                </p:panel>
+                            </div>
+                            <div class="col-6">
+                                <p:panel>
+                                    <f:facet name="header">
+                                        <h:outputText styleClass="fas fa-file-invoice"></h:outputText>
+                                        <h:outputLabel value="Bill Detail" class="mx-2"></h:outputLabel>
+                                    </f:facet>
+                                    <p:panelGrid columns="2">
+                                        <h:outputLabel value="Bill No :" ></h:outputLabel>
+                                        <h:outputLabel value="#{inwardSearch.bill.insId}" ></h:outputLabel>
+                                        <h:outputLabel value="Total :" ></h:outputLabel>
+                                        <h:outputLabel value="#{inwardSearch.bill.grantTotal}" style="float: right;" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                        <h:outputLabel value="Discount :" ></h:outputLabel>
+                                        <h:outputLabel value="#{inwardSearch.bill.discount}" style="float: right;" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                        <h:outputLabel value="Net Total :" ></h:outputLabel>
+                                        <h:outputLabel value="#{inwardSearch.bill.netTotal}" style="float: right;" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                        <h:outputLabel value="Paid Amount :" ></h:outputLabel>
+                                        <h:outputLabel value="#{inwardSearch.bill.paidAmount}" style="float: right;" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                        <h:outputLabel value="Due :" ></h:outputLabel>
+                                        <h:outputLabel value="#{inwardSearch.bill.netTotal+inwardSearch.bill.paidAmount}" style="float: right;" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+
+                                    </p:panelGrid>
+                                </p:panel>
+                            </div>
+                        </div>
+
 
                         <p:dataTable value="#{inwardSearch.bill.billItems}" var="bip"
                                      rowStyleClass="#{bip.netValue !=0 or bip.adjustedValue!=0 ?'':'noDisplayRow' }">
@@ -91,7 +96,7 @@
                     </p:panel>
 
 
-                    <h:panelGroup id="intrim" styleClass="noBorder">                  
+                    <h:panelGroup id="Interim" styleClass="noBorder">                  
                         <bi:intrimBill  bill="#{inwardSearch.bill}"/>
                     </h:panelGroup>
 

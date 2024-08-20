@@ -1,16 +1,16 @@
 /*
- * MSc(Biomedical Informatics) Project
+ * Open Hospital Management Information System
  *
- * Development and Implementation of a Web-based Combined Data Repository of
- Genealogical, Clinical, Laboratory and Genetic Data
- * and
- * a Set of Related Tools
+ * Dr M H B Ariyaratne
+ * Acting Consultant (Health Informatics)
+ * (94) 71 5812399
+ * (94) 71 5812399
  */
 package com.divudi.bean.hr;
 
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.hr.DayType;
 import com.divudi.data.hr.FingerPrintRecordType;
 import com.divudi.data.hr.Times;
@@ -38,8 +38,8 @@ import javax.persistence.TemporalType;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- * Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
+ * Acting Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -97,7 +97,7 @@ public class FingerPrintRecordController implements Serializable {
         m.put("fd", fromDate);
         m.put("td", toDate);
 
-        fingerPrintRecords = getFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        fingerPrintRecords = getFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
     }
 
     public void createFingerPrintRecordTableCreatedAt() {
@@ -105,7 +105,7 @@ public class FingerPrintRecordController implements Serializable {
         
         createFingerPrintRecordTable(true);
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Forms/Edit fingure print recode(/faces/hr/hr_staff_finger_edit_search.xhtml)");
+        
     }
 
     public void createFingerPrintRecordTableSiftDate() {
@@ -113,7 +113,7 @@ public class FingerPrintRecordController implements Serializable {
         
         createFingerPrintRecordTable(false);
         
-         commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Forms/Edit fingure print recode(/faces/hr/hr_staff_finger_edit_search.xhtml)");
+         
     }
 
     public void viewStaffFinger(FingerPrintRecord fpr) {
@@ -145,19 +145,19 @@ public class FingerPrintRecordController implements Serializable {
     public void saveStaffFinger(){
         if (fingerPrintRecord!=null) {
             getFacade().create(fingerPrintRecord);
-            UtilityController.addSuccessMessage("Updated");
+            JsfUtil.addSuccessMessage("Updated");
         }
     }
 
     public List<FingerPrintRecord> getSelectedItems() {
-        selectedItems = getFacade().findBySQL("select c from FingerPrintRecord c where c.retired=false and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+        selectedItems = getFacade().findByJpql("select c from FingerPrintRecord c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
     }
 
     public List<FingerPrintRecord> completeFingerPrintRecord(String qry) {
         List<FingerPrintRecord> a = null;
         if (qry != null) {
-            a = getFacade().findBySQL("select c from FingerPrintRecord c where c.retired=false and upper(c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
+            a = getFacade().findByJpql("select c from FingerPrintRecord c where c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
         }
         if (a == null) {
             a = new ArrayList<>();
@@ -185,15 +185,25 @@ public class FingerPrintRecordController implements Serializable {
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            UtilityController.addSuccessMessage("Saved Successfully");
+            JsfUtil.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
         getItems();
+    }
+    
+    public void save(FingerPrintRecord r) {
+        if (r.getId() != null) {
+            getFacade().edit(r);
+        } else {
+            r.setCreatedAt(new Date());
+            r.setCreater(getSessionController().getLoggedUser());
+            getFacade().create(r);
+        }
     }
 
     public void setSelectText(String selectText) {
@@ -237,9 +247,9 @@ public class FingerPrintRecordController implements Serializable {
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
@@ -355,63 +365,7 @@ public class FingerPrintRecordController implements Serializable {
         }
     }
 
-    @FacesConverter("fingerPrintRecordCon")
-    public static class FingerPrintRecordControllerConverter implements Converter {
 
-        @Override
-        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
-                return null;
-            }
-            FingerPrintRecordController controller = (FingerPrintRecordController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "fingerPrintRecordController");
-            return controller.getEjbFacade().find(getKey(value));
-        }
-
-        java.lang.Long getKey(String value) {
-            java.lang.Long key = 0L;
-//            System.err.println("Value + "+value);
-            if ("".equals(value)) {
-                return key;
-            }
-
-            try {
-                key = Long.valueOf(value);
-                return key;
-            } catch (NumberFormatException e) {
-                key = 0l;
-//                System.err.println(e.getMessage());
-            }
-
-            return key;
-
-        }
-
-        String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
-        }
-
-        @Override
-        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
-            if (object == null) {
-                return null;
-            }
-
-            if (object == "") {
-                return null;
-            }
-
-            if (object instanceof FingerPrintRecord) {
-                FingerPrintRecord o = (FingerPrintRecord) object;
-                return getStringKey(o.getId());
-            } else {
-                throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + FingerPrintRecordController.class.getName());
-            }
-        }
-    }
 
     public CommonController getCommonController() {
         return commonController;

@@ -1,12 +1,12 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Open Hospital Management Information System
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.pharmacy;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
@@ -161,7 +161,7 @@ public class PharmacyIssueControllerOld implements Serializable {
         if (newQty > getStockByBillItem(tmp)) {
             tmp.setQty(oldQty);
             getBillItemFacade().edit(tmp);
-            UtilityController.addErrorMessage("No Sufficient Stocks");
+            JsfUtil.addErrorMessage("No Sufficient Stocks");
             return;
         }
 
@@ -190,11 +190,11 @@ public class PharmacyIssueControllerOld implements Serializable {
 
     public void editQty(BillItem bi) {
         if (bi == null) {
-            //////System.out.println("No Bill Item to Edit Qty");
+            //////// // System.out.println("No Bill Item to Edit Qty");
             return;
         }
         if (editingQty == null) {
-            //////System.out.println("Editing qty is null");
+            //////// // System.out.println("Editing qty is null");
             return;
         }
 
@@ -250,7 +250,7 @@ public class PharmacyIssueControllerOld implements Serializable {
         m.put("s", d);
         m.put("vmp", amp.getVmp());
         sql = "select i from Stock i join treat(i.itemBatch.item as Amp) amp where i.stock >:s and i.department=:d and amp.vmp=:vmp order by i.itemBatch.item.name";
-        replaceableStocks = getStockFacade().findBySQL(sql, m);
+        replaceableStocks = getStockFacade().findByJpql(sql, m);
     }
 
     public List<Item> getItemsWithoutStocks() {
@@ -265,13 +265,13 @@ public class PharmacyIssueControllerOld implements Serializable {
         Map m = new HashMap<>();
         List<Item> items;
         String sql;
-        sql = "select i from Item i where i.retired=false and upper(i.name) like :n and type(i)=:t and i.id not in(select ibs.id from Stock ibs where ibs.stock >:s and ibs.department=:d and upper(ibs.itemBatch.item.name) like :n ) order by i.name ";
+        sql = "select i from Item i where i.retired=false and (i.name) like :n and type(i)=:t and i.id not in(select ibs.id from Stock ibs where ibs.stock >:s and ibs.department=:d and (ibs.itemBatch.item.name) like :n ) order by i.name ";
         m.put("t", Amp.class);
         m.put("d", getSessionController().getLoggedUser().getDepartment());
         m.put("n", "%" + qry + "%");
         double s = 0.0;
         m.put("s", s);
-        items = getItemFacade().findBySQL(sql, m, 10);
+        items = getItemFacade().findByJpql(sql, m, 10);
         return items;
     }
 
@@ -283,10 +283,10 @@ public class PharmacyIssueControllerOld implements Serializable {
         double d = 0.0;
         m.put("s", d);
         m.put("n", "%" + qry.toUpperCase() + "%");
-        sql = "select i from Stock i where i.stock >:s and i.department=:d and upper(i.itemBatch.item.name) like :n order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
-        items = getStockFacade().findBySQL(sql, m, 20);
+        sql = "select i from Stock i where i.stock >:s and i.department=:d and (i.itemBatch.item.name) like :n order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
+        items = getStockFacade().findByJpql(sql, m, 20);
         itemsWithoutStocks = completeRetailSaleItems(qry);
-        //////System.out.println("selectedSaleitems = " + itemsWithoutStocks);
+        //////// // System.out.println("selectedSaleitems = " + itemsWithoutStocks);
         return items;
     }
 
@@ -307,7 +307,7 @@ public class PharmacyIssueControllerOld implements Serializable {
 
     private boolean errorCheckForPreBill() {
         if (getPreBill().getBillItems().isEmpty()) {
-            UtilityController.addErrorMessage("No Items added to bill to sale");
+            JsfUtil.addErrorMessage("No Items added to bill to sale");
             return true;
         }
         return false;
@@ -505,15 +505,15 @@ public class PharmacyIssueControllerOld implements Serializable {
             return;
         }
         if (getStock() == null) {
-            UtilityController.addErrorMessage("Item?");
+            JsfUtil.addErrorMessage("Item?");
             return;
         }
         if (getQty() == null) {
-            UtilityController.addErrorMessage("Quentity?");
+            JsfUtil.addErrorMessage("Quentity?");
             return;
         }
         if (getQty() > getStock().getStock()) {
-            UtilityController.addErrorMessage("No Sufficient Stocks?");
+            JsfUtil.addErrorMessage("No Sufficient Stocks?");
             return;
         }
 
@@ -626,18 +626,18 @@ public class PharmacyIssueControllerOld implements Serializable {
     }
 
     public void calculateBillItemForEditing(BillItem bi) {
-        //////System.out.println("calculateBillItemForEditing");
-        //////System.out.println("bi = " + bi);
+        //////// // System.out.println("calculateBillItemForEditing");
+        //////// // System.out.println("bi = " + bi);
         if (getPreBill() == null || bi == null || bi.getPharmaceuticalBillItem() == null || bi.getPharmaceuticalBillItem().getStock() == null) {
-            //////System.out.println("calculateItemForEditingFailedBecause of null");
+            //////// // System.out.println("calculateItemForEditingFailedBecause of null");
             return;
         }
-        //////System.out.println("bi.getQty() = " + bi.getQty());
-        //////System.out.println("bi.getRate() = " + bi.getRate());
+        //////// // System.out.println("bi.getQty() = " + bi.getQty());
+        //////// // System.out.println("bi.getRate() = " + bi.getRate());
         bi.setGrossValue(bi.getPharmaceuticalBillItem().getStock().getItemBatch().getRetailsaleRate() * bi.getQty());
         bi.setNetValue(bi.getQty() * bi.getNetRate());
         bi.setDiscount(bi.getGrossValue() - bi.getNetValue());
-        //////System.out.println("bi.getNetValue() = " + bi.getNetValue());
+        //////// // System.out.println("bi.getNetValue() = " + bi.getNetValue());
 
     }
 
@@ -651,7 +651,7 @@ public class PharmacyIssueControllerOld implements Serializable {
     }
 
     public void calculateAllRates() {
-        //////System.out.println("calculating all rates");
+        //////// // System.out.println("calculating all rates");
         for (BillItem tbi : getPreBill().getBillItems()) {
             calculateRates(tbi);
             calculateBillItemForEditing(tbi);
@@ -664,9 +664,9 @@ public class PharmacyIssueControllerOld implements Serializable {
     }
 
     public void calculateRates(BillItem bi) {
-        //////System.out.println("calculating rates");
+        //////// // System.out.println("calculating rates");
         if (bi.getPharmaceuticalBillItem().getStock() == null) {
-            //////System.out.println("stock is null");
+            //////// // System.out.println("stock is null");
             return;
         }
         getBillItem();

@@ -1,15 +1,15 @@
 
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.data;
 
 /**
- *
  * @author Buddhika
  */
 public enum HistoryType {
+
     Sale,
     Issue,
     Order,
@@ -25,6 +25,12 @@ public enum HistoryType {
     ChannelCreditNoteCancel,
     ChannelDebitNote,
     ChannelDebitNoteCancel,
+
+    PatientDeposit,
+    PatientDepositCancel,
+    PatientDepositReturn,
+    PatientDepositUtilization,
+
     AgentBalanceUpdateBill,
     CollectingCentreBalanceUpdateBill,
     CollectingCentreDeposit,
@@ -34,5 +40,5 @@ public enum HistoryType {
     CollectingCentreDebitNote,
     CollectingCentreDebitNoteCancel,
     CollectingCentreBilling,
-    MonthlyRecord,   
+    MonthlyRecord,
 }

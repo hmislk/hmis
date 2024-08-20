@@ -1,14 +1,14 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Open Hospital Management Information System
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.inward;
 
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.FeeType;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
@@ -88,7 +88,7 @@ public class ServiceFeeEdit implements Serializable {
                 + " and b.billItem=:billItem ";
         HashMap hm = new HashMap();
         hm.put("billItem", billItem);
-        billFees = getBillFeeFacade().findBySQL(sql, hm);
+        billFees = getBillFeeFacade().findByJpql(sql, hm);
 
         // System.err.println("Calculating BillFee 2 " + billFees);
     }
@@ -128,7 +128,7 @@ public class ServiceFeeEdit implements Serializable {
 
         if (billFee.getFee().getFeeType() == FeeType.Staff) {
             if (billFee.getPaidValue() != 0) {
-                UtilityController.addErrorMessage("Staff Fee Allready Paid");
+                JsfUtil.addErrorMessage("Staff Fee Allready Paid");
                 return;
             }
         }
@@ -138,7 +138,7 @@ public class ServiceFeeEdit implements Serializable {
         }
 
         if (billFee.getBill().getCheckedBy() != null) {
-            UtilityController.addErrorMessage("This Bill Already Checked");
+            JsfUtil.addErrorMessage("This Bill Already Checked");
             return;
         }
 

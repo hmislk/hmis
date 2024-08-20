@@ -1,6 +1,16 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
+
+Source
+https://uts.nlm.nih.gov/uts/umls/semantic-network/root
+
+The semantic types listed in this Enum are from the Unified Medical Language System (UMLS) Semantic Network. The UMLS is a compendium of many controlled vocabularies in the biomedical sciences. It provides a mapping structure between these vocabularies and allows one to translate the concepts encoded in one vocabulary into another.
+
+Semantic types are categories to which all concepts in the UMLS Metathesaurus are assigned. They provide a consistent categorization of all concepts represented in the UMLS Metathesaurus. For example, "Anatomical Structure" and "Gene or Genome" are semantic types in the UMLS.
+
+The UMLS was created and is maintained by the U.S. National Library of Medicine (NLM), part of the National Institutes of Health (NIH). It can be accessed through the UMLS Terminology Services (UTS) interface. You can find more details about UMLS semantic types at the UMLS Semantic Network Fact Sheet page on the NLM website.
+
  */
 package com.divudi.data;
 
@@ -143,5 +153,11 @@ public enum SymanticType {
     Neoplastic_Process,
     Cell_or_Molecular_Dysfunction,
     Experimental_Model_of_Disease,
-    Injury_or_Poisoning,;
+    Injury_or_Poisoning,
+    Religion,
+    Race,
+    Employment,
+    Blood_Group,
+    Civil_status,
+    Relationships
 }

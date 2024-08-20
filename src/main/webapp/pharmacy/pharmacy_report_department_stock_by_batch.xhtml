@@ -1,48 +1,71 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:pe="http://primefaces.org/ui/extensions">
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      >
 
     <h:body>
 
-        <ui:composition template="/resources/template/template.xhtml">
+        <ui:composition template="/pharmacy/pharmacy_analytics.xhtml">
 
-            <ui:define name="content">
+            <ui:define name="subcontent">
                 <h:form id="frm">
 
 
                     <p:panel header="Stock Report by Batch" >
 
-                        <h:panelGrid columns="7" >
+                        <h:panelGrid columns="7" class="my-2 " >
                             <h:outputLabel value="Department" ></h:outputLabel>
                             <p:autoComplete completeMethod="#{departmentController.completeDept}" 
                                             var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" 
                                             forceSelection="true" 
                                             value="#{reportsStock.department}" 
-                                            converter="departmentConverter"  >
+                                            class="w-100 mx-2"
+                                            inputStyleClass="w-100"
+                                              >
                             </p:autoComplete>
                             <p:spacer width="10" height="1" ></p:spacer>
-                            <p:commandButton ajax="false" value="Process" actionListener="#{reportsStock.fillDepartmentStocks()}" ></p:commandButton>
-                            <p:commandButton value="PDF" ajax="false" >
-                                <pe:exporter type="pdf" target="tbl" fileName="MessagesAndDetails"  
-                                             datasetPadding="4"/>  
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Process"
+                                icon="fas fa-cogs"
+                                class="ui-button-warning"
+                                actionListener="#{reportsStock.fillDepartmentStocks()}" >
                             </p:commandButton>
-                            <p:commandButton value="Excel" ajax="false">
-                                <pe:exporter type="xlsx" target="tbl" fileName="Total_Stock"
-                                             facetBackground="#008000" facetFontSize="15" 
-                                             facetFontColor="#FFFFFF" facetFontStyle="BOLD" cellFontColor="#0000FF" cellFontSize="12"  cellFontStyle="NORMAL" 
-                                             fontName="Courier New" />
+                            <p:commandButton 
+                                class="mx-2 ui-button-danger"
+                                icon="fas fa-file-pdf"
+                                value="PDF" 
+                                ajax="false" >
+                                <p:dataExporter 
+                                    type="pdf"
+                                    target="tbl"
+                                    fileName="stock_by_batch"
+                                    />  
+                            </p:commandButton>
+                            <p:commandButton 
+                                icon="fas fa-file-excel"
+                                class="ui-button-success"
+                                value="Excel"
+                                ajax="false">
+                                <p:dataExporter type="xls" target="tbl" fileName="stock_by_batch" />
                             </p:commandButton>
 
 
-                            <p:commandButton value="Print" actionListener="#{reportsStock.prepareForPrint()}" 
+                            <p:commandButton value="Print"
+                                             icon="fas fa-print"
+                                             class="mx-2 ui-button-info"
+                                             actionListener="#{reportsStock.prepareForPrint()}" 
                                              oncomplete="$('#frm\\:print').click()"
                                              update=":frm:tbl"/>
-                            <p:commandButton id="print" value="Actual print" style="display: none">
+                            <p:commandButton 
+                                id="print"
+                                value="Actual print" 
+                                style="display: none"
+                                >
                                 <p:ajax event="click" listener="#{reportsStock.prepareForView()}" update=":frm:tbl"/>
                                 <p:printer target=":frm:tbl" />
                             </p:commandButton>
@@ -56,6 +79,7 @@
                                          value="#{reportsStock.stocks}" var="i" 
                                          rows="#{reportsStock.rows}"
                                          paginator="#{reportsStock.paginator}"
+                                         paginatorPosition="bottom"
                                          paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                          rowsPerPageTemplate="20, 50, 100" 
                                          >
@@ -63,9 +87,7 @@
                                     <h:outputLabel value="Batch Stock Report - #{reportsStock.department.name}"/>                                     
                                 </f:facet> 
 
-                                <p:column headerText="No.">
-                                    <h:outputLabel value="#{ii+1}" />
-                                </p:column>
+                              
 
                                 <p:column headerText="Category" 
                                           style="text-align: left;"
@@ -88,7 +110,7 @@
                                     <h:outputLabel value="#{i.itemBatch.item.name}" style="width: 100px!important;" ></h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Code"     
+                                <p:column headerText="Code" 
                                           styleClass="averageNumericColumn"
                                           sortBy="#{i.itemBatch.item.code}"
                                           filterBy="#{i.itemBatch.item.code}"
@@ -119,11 +141,11 @@
                                         <h:outputLabel value="Expiry"/>                                     
                                     </f:facet>
                                     <h:outputLabel value="#{i.itemBatch.dateOfExpire}"  >
-                                        <f:convertDateTime pattern="dd MMM yy" ></f:convertDateTime>
+                                        <f:convertDateTime pattern="dd MM yy" ></f:convertDateTime>
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Batch No"
+<!--                                <p:column headerText="Batch No"
                                           sortBy="#{i.itemBatch.batchNo}"
                                           styleClass="averageNumericColumn">
                                     <f:facet name="header">
@@ -131,7 +153,7 @@
                                     </f:facet>
                                     <h:outputLabel value="#{i.itemBatch.batchNo}"  >                                        
                                     </h:outputLabel>
-                                </p:column>
+                                </p:column>-->
 
                                 <p:column headerText="Purchase Rate"
                                           style="text-align: right;"
@@ -183,7 +205,7 @@
 
                                 <p:columnGroup type="footer">
                                     <p:row>
-                                        <p:column colspan="8" footerText="Total">
+                                        <p:column colspan="6" footerText="Total">
                                             <f:facet name="footer">
                                                 <h:outputLabel value="Total" />
                                             </f:facet>
@@ -191,7 +213,7 @@
                                         <p:column style="text-align: right;" footerText="#{reportsStock.stockPurchaseValue}">
                                             <f:facet name="footer" >
                                                 <h:outputLabel value="#{reportsStock.stockPurchaseValue}" >
-                                                    <f:convertNumber parent="#,##0.00" />
+                                                    <f:convertNumber parent="#,###,###.00" />
                                                 </h:outputLabel>
                                             </f:facet>
                                         </p:column>
@@ -199,13 +221,13 @@
                                         <p:column style="text-align: right;" footerText="#{reportsStock.stockSaleValue}">
                                             <f:facet name="footer" >
                                                 <h:outputLabel value="#{reportsStock.stockSaleValue}" >
-                                                    <f:convertNumber parent="#,##0.00" />
+                                                    <f:convertNumber parent="#,###,###.00" />
                                                 </h:outputLabel>
                                             </f:facet>
                                         </p:column>
                                     </p:row>
                                     <p:row>
-                                        <p:column colspan="11" >
+                                        <p:column colspan="9" >
                                             <f:facet name="footer" >
                                                 <h:outputLabel value="Printed At " ></h:outputLabel>
                                                 <h:outputLabel value="#{sessionController.currentDate}" >

@@ -1,0 +1,54 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:head>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"/>
+    </h:head>
+
+    <h:body>
+        <ui:composition template="/emr/settings/index.xhtml">
+            <ui:define name="subcontent">
+                <h:form >
+                    <p:dataTable id="documentTemplateTable"
+                                 var="doc"
+                                 value="#{documentTemplateController.items}"
+                                 paginator="true"
+                                 rows="10"
+                                 paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                 rowsPerPageTemplate="5,10,15">
+
+                        <p:column headerText="Name">
+                            <h:outputText value="#{doc.name}" />
+                        </p:column>
+                        <p:column headerText="Type">
+                            <h:outputText value="#{doc.type}" />
+                        </p:column>
+                        <p:column headerText="User">
+                            <h:outputText value="#{doc.webUser.name}" />
+                        </p:column>
+                        <p:column headerText="Default Template">
+                            <h:outputText value="#{doc.defaultTemplate ? 'Yes' : 'No'}" />
+                        </p:column>
+                        <p:column headerText="Auto Generate">
+                           <h:outputText value="#{doc.autoGenerate ? 'Yes' : 'No'}" />
+                        </p:column>
+                        <p:column headerText="Actions" style="width: 150px;">
+                            <p:commandButton value="Edit" action="#{documentTemplateController.navigateToEditUserDocumentTemplates()}" ajax="false">
+                                <f:setPropertyActionListener target="#{documentTemplateController.current}" value="#{doc}" />
+                            </p:commandButton>
+                            <p:commandButton value="Remove" action="#{documentTemplateController.removeUserDocumentTemplate()}" ajax="false">
+                                <f:setPropertyActionListener target="#{documentTemplateController.current}" value="#{doc}" />
+                            </p:commandButton>
+                        </p:column>
+                    </p:dataTable>
+
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

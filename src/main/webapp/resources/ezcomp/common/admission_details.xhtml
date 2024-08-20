@@ -1,0 +1,133 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      >
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="admission" type="com.divudi.entity.inward.Admission"  />
+        <cc:attribute name="rooms" type="java.util.List" />
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+
+        <p:panel class="w-100">
+            <f:facet name="header">
+                <h:outputText styleClass="fas fa-id-card-alt"></h:outputText>
+                <h:outputLabel value="Admission Details" class="mx-4"></h:outputLabel>
+            </f:facet>
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="row">
+                        <div class="col-md-5"><p:outputLabel value="Date of Admission" /></div>
+                        <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                        <div class="col-md-6"><h:outputText value="#{cc.attrs.admission.dateOfAdmission}" >
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
+                            </h:outputText></div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-5"><p:outputLabel value="BHT No" /></div>
+                        <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                        <div class="col-md-6"><h:outputLabel  value="#{cc.attrs.admission.bhtNo}" /></div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-5"><p:outputLabel value="Citizenship" /></div>
+                        <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                        <div class="col-md-6"> <h:outputLabel value="#{cc.attrs.admission.foriegner ? 'Foreigner' : 'Local'}" /></div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-5"><p:outputLabel value="Claimable/Non-Claimable" /></div>
+                        <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                        <div class="col-md-6"><h:outputText value="#{cc.attrs.admission.claimable ? 'Claimable' : 'Non-Claimable'}" />
+                        </div>
+                    </div><!-- comment -->
+
+                    <div class="row">
+                        <div class="col-md-5"><p:outputLabel value="Referring Doctor"/></div>
+                        <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                        <div class="col-md-6"><h:outputText value="#{cc.attrs.admission.referringDoctor.person.name}" /></div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-5"><h:outputLabel value="OPD Doctor" /></div>
+                        <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                        <div class="col-md-6"><h:outputText value="#{cc.attrs.admission.opdDoctor.person.nameWithTitle}" />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-5"><p:outputLabel value="Admission Type"/></div>
+                        <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                        <div class="col-md-6"><h:outputText value="#{cc.attrs.admission.admissionType.name}" /></div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-5"><h:outputLabel value="Payment Method"/></div>
+                        <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                        <div class="col-md-6"><h:outputText value="#{cc.attrs.admission.paymentMethod}" /></div>
+                    </div><!-- comment -->
+
+                    <div class="row">
+                        <div class="col-md-5"><p:outputLabel value="Guardian Name" /></div>
+                        <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                        <div class="col-md-6"><h:outputText value="#{cc.attrs.admission.guardian.name}" /></div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-5"><p:outputLabel value="Guardian NIC"/></div>
+                        <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                        <div class="col-md-6"> <h:outputText value="#{cc.attrs.admission.guardian.nic}" /></div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-5"><p:outputLabel value="Guardian Mobile No" /></div>
+                        <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                        <div class="col-md-6"><h:outputText value="#{cc.attrs.admission.guardian.mobile}" /></div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-5"><p:outputLabel value="Guardian Home Phone No" /></div>
+                        <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                        <div class="col-md-6"><h:outputText value="#{cc.attrs.admission.guardian.phone}" /></div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-5"><p:outputLabel value="Guardian Address" /></div>
+                        <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                        <div class="col-md-6"><h:outputText value="#{cc.attrs.admission.guardian.address}" /></div>
+                    </div>
+                </div></div>
+
+
+
+            <p:dataTable value="#{cc.attrs.rooms}" rendered="#{cc.attrs.rooms ne null}" var="rm">
+                <p:column headerText="Room Name">
+                    <h:outputText value="#{rm.roomFacilityCharge.name}" ></h:outputText>
+                </p:column>      
+                <p:column headerText="Admitted At">
+                    <h:outputText value="#{rm.admittedAt}" >
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
+                    </h:outputText>
+                </p:column>     
+                <p:column headerText="Discharged At">
+                    <h:outputText value="#{rm.dischargedAt}" >
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
+                    </h:outputText>
+                </p:column>     
+            </p:dataTable>
+
+
+
+        </p:panel>
+
+
+    </cc:implementation>
+</html>

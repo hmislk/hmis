@@ -1,0 +1,285 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/reports/index.xhtml">
+            <ui:define name="subcontent">
+                <h:form >
+                    <p:panel header="Month End Employee (No Pay) Report By Minute " >
+                        <p:panelGrid columns="4" class="w-100">
+                            <p:outputLabel value=" Date From">
+                            </p:outputLabel>
+                            <p:datePicker value="#{reportController.fromDate}" 
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}"
+                                          class=" w-100" ></p:datePicker>
+                            <p:outputLabel value=" Date To" >
+                            </p:outputLabel>
+                            <p:datePicker value="#{reportController.toDate}"
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}"
+                                          class=""></p:datePicker>
+
+                            <p:outputLabel value="Salary Cycle" >
+                            </p:outputLabel>
+                            <p:selectOneMenu 
+                                id="cmdFromInstitution"
+                                value="" 
+                                filter="true"
+                                class="w-100 ">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value=""
+                                               var="d"
+                                               itemLabel=""
+                                               itemValue="" ></f:selectItems>
+                            </p:selectOneMenu>
+
+                            <p:outputLabel value="Staff" />
+                                <p:selectOneMenu 
+                                    value="" 
+                                    filter="true"
+                                    class="w-100 ">
+                                    <f:selectItem itemLabel="All" ></f:selectItem>
+                                    <f:selectItems value=""
+                                                   var="d"
+                                                   itemLabel=""
+                                                   itemValue="" ></f:selectItems>
+                                </p:selectOneMenu>
+
+                        </p:panelGrid>
+
+                        <div class="d-flex align-items-center">
+<!--                             <p:commandButton class="m-2" ajax="false" value="Process" action="#{reportController.processLabTestCount()}" >
+                            </p:commandButton>
+                            <p:commandButton class="m-2" ajax="false" value="Download"
+                                             action="#{reportController.downloadLabTestCount}">
+                            </p:commandButton>-->
+                            <p:commandButton class="m-2" ajax="false" value="Fill"
+                                             >
+                            </p:commandButton>
+                        </div>
+
+
+                        <p:dataTable id="tbl" value="" 
+
+                                     rows="10"
+                                     class="my-2">
+                            <p:column headerText="">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Shift">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Roster">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Time">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Comments">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Attendance Start">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Attendance End">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Verified Start">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Verified End">
+                                <h:outputText value="" />
+                            </p:column>
+                        </p:dataTable>
+
+                        <p:dataTable id="tb2" value="" 
+
+                                     rows="10"
+                                     class="my-2">
+                            <p:column headerText="">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Shift">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Roster">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Time">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Comments">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Attendance Start">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Attendance End">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Verified Start">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Verified End">
+                                <h:outputText value="" />
+                            </p:column>
+                        </p:dataTable>
+
+                        <p:dataTable id="tb3" value="" 
+
+                                     rows="10"
+                                     class="my-2">
+                            <p:column headerText="">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Shift">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Roster">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Time">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Comments">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Attendance Start">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Attendance End">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Verified Start">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Verified End">
+                                <h:outputText value="" />
+                            </p:column>
+                        </p:dataTable>
+
+                        <p:dataTable id="tb4" value="" 
+
+                                     rows="10"
+                                     class="my-2">
+                            <p:column headerText="">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Shift">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Roster">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Time">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Comments">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Attendance Start">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Attendance End">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Verified Start">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Verified End">
+                                <h:outputText value="" />
+                            </p:column>
+                        </p:dataTable>
+
+                        <p:dataTable id="tb5" value="" 
+
+                                     rows="10"
+                                     class="my-2 "
+                                     >
+                            <p:column headerText="" >
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Shift" >
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Roster">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Time">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Comments">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Attendance Start">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Attendance End">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Verified Start">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Verified End">
+                                <h:outputText value="" />
+                            </p:column>
+                        </p:dataTable>
+
+
+                    </p:panel>
+
+                </h:form>
+
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

@@ -1,12 +1,12 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
-      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:pe="http://primefaces.org/ui/extensions"
-      xmlns:hr="http://java.sun.com/jsf/composite/autocomplete">
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      
+      xmlns:hr="http://xmlns.jcp.org/jsf/composite/autocomplete">
 
     <h:body>
 
@@ -23,8 +23,7 @@
                             <h:outputLabel value="Salary Cycle : "/>
                             <p:selectOneMenu id="advanced" 
                                              value="#{hrReportController.salaryCycle}" 
-                                             converter="salaryCycleConverter"                                      
-                                             effect="fade" var="t" 
+                                             var="t" 
                                              filter="true" 
                                              filterMatchMode="startsWith"  >
 
@@ -62,13 +61,13 @@
 
                         <h:panelGrid columns="4" >
                             <p:commandButton ajax="false" value="Process" action="#{hrReportController.createMonthEndWorkTimeReportForMonth}"/>
-                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
-                                <pe:exporter type="xlsx" target="tb1" fileName="hr_report_month_end_work_time_miniuts_summery"  />
+                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton"  >
+                                <p:dataExporter type="xlsx" target="tb1" fileName="hr_report_month_end_work_time_miniuts_summery"  />
                             </p:commandButton>
                             <p:commandButton value="Print All" ajax="false" action="#" >
                                 <p:printer target="gpBillPreviewPrint" ></p:printer>
                             </p:commandButton>
-                            <p:commandButton value="Print(Summery)" ajax="false" action="#" >
+                            <p:commandButton value="Print(Summary)" ajax="false" action="#" >
                                 <p:printer target="gpBillPreview1" ></p:printer>
                             </p:commandButton>
 
@@ -78,7 +77,7 @@
                                 <p:dataTable value="#{hrReportController.summeryForMonths}" var="ss">
                                     <f:facet name="header" >
                                         
-                                        <h:outputLabel value="Summery" />
+                                        <h:outputLabel value="Summary" />
                                         <h:panelGroup rendered="#{hrReportController.reportKeyWord.institution ne null}" >
                                             <h:outputLabel value="#{hrReportController.reportKeyWord.institution.name}" />
                                             <br/>
@@ -271,11 +270,11 @@
                                         <h:outputLabel value="Employee Working Time and Over Time Report " />
                                         <h:outputLabel value="From : "/>
                                         <h:outputLabel value="#{hrReportController.fromDate}">
-                                            <f:convertDateTime pattern="dd MMMM yyyy" ></f:convertDateTime>
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
                                         </h:outputLabel>
                                         <h:outputLabel value=" To : "/>
                                         <h:outputLabel value="#{hrReportController.toDate}">
-                                            <f:convertDateTime pattern="dd MMMM yyyy" ></f:convertDateTime>
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
                                         </h:outputLabel>
                                     </f:facet>
                                     <p:columnGroup type="header" >

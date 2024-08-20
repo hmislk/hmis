@@ -7,7 +7,7 @@ import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.SearchKeyword;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillComponent;
 import com.divudi.entity.BillFee;
@@ -28,6 +28,7 @@ import com.divudi.facade.CancelledBillFacade;
 import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.RefundBillFacade;
 import com.divudi.facade.StaffFacade;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -41,11 +42,16 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
 import org.primefaces.model.LazyDataModel;
+import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.BillTypeAtomic;
+import com.divudi.data.Title;
+import com.divudi.data.dataStructure.PaymentMethodData;
+import java.text.DecimalFormat;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- * Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -53,21 +59,12 @@ public class StaffPaymentBillController implements Serializable {
 
     @EJB
     private RefundBillFacade refundBillFacade;
-    private List<BillComponent> billComponents;
     @EJB
     private CancelledBillFacade cancelledBillFacade;
     @EJB
     private BillComponentFacade billComponentFacade;
     @EJB
     BillFeeFacade billFeeFacade;
-    private List<BillItem> billItems;
-    private static final long serialVersionUID = 1L;
-    private Date fromDate;
-    private Date toDate;
-    @Inject
-    SessionController sessionController;
-    @EJB
-    private CommonFunctions commonFunctions;
     @EJB
     private BillFacade billFacade;
     @EJB
@@ -76,6 +73,26 @@ public class StaffPaymentBillController implements Serializable {
     PaymentFacade paymentFacade;
     @EJB
     BillFeePaymentFacade BillFeePaymentFacade;
+    @EJB
+    StaffFacade staffFacade;
+    @EJB
+    BillNumberGenerator billNumberBean;
+    @EJB
+    CashTransactionBean cashTransactionBean;
+
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    SessionController sessionController;
+    @Inject
+    private BillBeanController billBean;
+
+    private List<BillComponent> billComponents;
+    private List<BillItem> billItems;
+    private static final long serialVersionUID = 1L;
+    private Date fromDate;
+    private Date toDate;
+    private CommonFunctions commonFunctions;
     List<Bill> selectedItems;
     private Bill current;
     private List<Bill> items = null;
@@ -86,14 +103,18 @@ public class StaffPaymentBillController implements Serializable {
     List<BillFee> payingBillFees;
     double totalDue;
     double totalPaying;
-    @EJB
-    BillNumberGenerator billNumberBean;
     private Boolean printPreview = false;
     PaymentMethod paymentMethod;
     Speciality speciality;
-    @EJB
-    StaffFacade staffFacade;
     private SearchKeyword searchKeyword;
+    private PaymentMethodData staffPaymentMethodData;
+    private List<BillFee> billFees;
+    private List<BillFee> tblBillFees;
+    private LazyDataModel<BillFee> dueBillFee;
+
+    public Title[] getTitle() {
+        return Title.values();
+    }
 
     public PaymentMethod getPaymentMethod() {
         return paymentMethod;
@@ -106,21 +127,19 @@ public class StaffPaymentBillController implements Serializable {
     public List<BillComponent> getBillComponents() {
         if (getCurrent() != null) {
             String sql = "SELECT b FROM BillComponent b WHERE b.retired=false and b.bill.id=" + getCurrent().getId();
-            billComponents = getBillComponentFacade().findBySQL(sql);
+            billComponents = getBillComponentFacade().findByJpql(sql);
             if (billComponents == null) {
                 billComponents = new ArrayList<>();
             }
         }
         return billComponents;
     }
-    private List<BillFee> billFees;
-    private List<BillFee> tblBillFees;
 
     public List<BillFee> getBillFees() {
         if (getCurrent() != null) {
             if (billFees == null) {
                 String sql = "SELECT b FROM BillFee b WHERE b.retired=false and b.bill.id=" + getCurrent().getId();
-                billFees = getBillFeeFacade().findBySQL(sql);
+                billFees = getBillFeeFacade().findByJpql(sql);
                 if (billFees == null) {
                     billFees = new ArrayList<>();
                 }
@@ -194,21 +213,21 @@ public class StaffPaymentBillController implements Serializable {
         if (speciality != null) {
             sql = "select p from Staff p "
                     + " where p.retired=false "
-                    + " and (upper(p.person.name) like :q "
-                    + " or  upper(p.code) like :q ) "
+                    + " and ((p.person.name) like :q "
+                    + " or  (p.code) like :q ) "
                     + " and p.speciality=:sp "
                     + " order by p.person.name";
             hm.put("sp", getSpeciality());
         } else {
             sql = "select p from Staff p "
                     + " where p.retired=false "
-                    + " and (upper(p.person.name) like :q "
-                    + " or  upper(p.code) like :q )"
+                    + " and ((p.person.name) like :q "
+                    + " or  (p.code) like :q )"
                     + " order by p.person.name";
         }
-        //////System.out.println(sql);
+        //////// // System.out.println(sql);
         hm.put("q", "%" + query.toUpperCase() + "%");
-        suggestions = getStaffFacade().findBySQL(sql, hm, 20);
+        suggestions = getStaffFacade().findByJpql(sql, hm, 20);
 
         return suggestions;
     }
@@ -241,37 +260,43 @@ public class StaffPaymentBillController implements Serializable {
         if (currentStaff == null || currentStaff.getId() == null) {
             dueBillFees = new ArrayList<>();
         } else {
+            List<BillTypeAtomic> btcs = new ArrayList<>();
+            btcs.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+            btcs.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+            btcs.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
+            btcs.add(BillTypeAtomic.CC_BILL);
             String sql;
             HashMap h = new HashMap();
             sql = "select b from BillFee b where "
                     + " b.retired=false"
-                    + " and (b.bill.billType=:btp or b.bill.billType=:btpc) "
+                    + " and b.bill.billTypeAtomic in :btcs"
                     + " and b.bill.cancelled=false "
-//                    + " and b.bill.refunded=false "
                     + " and (b.feeValue - b.paidValue) > 0 "
-                    + " and b.staff.id = " + currentStaff.getId();
-            h.put("btp", BillType.OpdBill);
-            h.put("btpc", BillType.CollectingCentreBill);
+                    + " and b.staff=:staff ";
+            h.put("btcs", btcs);
+            h.put("staff", currentStaff);
 
-            dueBillFees = getBillFeeFacade().findBySQL(sql, h, TemporalType.TIMESTAMP);
+            dueBillFees = getBillFeeFacade().findByJpql(sql, h, TemporalType.TIMESTAMP);
 
-            List<BillFee> removeingBillFees = new ArrayList<>();
-            for (BillFee bf : dueBillFees) {
-                h = new HashMap();
-                sql = "SELECT bi FROM BillItem bi where "
-                        + " bi.retired=false"
-                        + " and bi.bill.cancelled=false "
-                        + " and type(bi.bill)=:class "
-                        + " and bi.referanceBillItem.id=" + bf.getBillItem().getId();
-                h.put("class",RefundBill.class);
-                BillItem rbi = getBillItemFacade().findFirstBySQL(sql,h);
+            if (configOptionApplicationController.getBooleanValueByKey("Remove Refunded Bill From OPD Staff Payment")) {
+                List<BillFee> removeingBillFees = new ArrayList<>();
+                for (BillFee bf : dueBillFees) {
+                    h = new HashMap();
+                    sql = "SELECT bi FROM BillItem bi where "
+                            + " bi.retired=false"
+                            + " and bi.bill.cancelled=false "
+                            + " and type(bi.bill)=:class "
+                            + " and bi.referanceBillItem.id=" + bf.getBillItem().getId();
+                    h.put("class", RefundBill.class);
+                    BillItem rbi = getBillItemFacade().findFirstByJpql(sql, h);
 
-                if (rbi != null) {
-                    removeingBillFees.add(bf);
+                    if (rbi != null) {
+                        removeingBillFees.add(bf);
+                    }
+
                 }
-
+                dueBillFees.removeAll(removeingBillFees);
             }
-            dueBillFees.removeAll(removeingBillFees);
 
         }
     }
@@ -292,13 +317,13 @@ public class StaffPaymentBillController implements Serializable {
         totalPaying = 0;
 
         for (BillFee f : payingBillFees) {
-            //////System.out.println("totalPaying before " + totalPaying);
-            //////System.out.println("fee val is " + f.getFeeValue());
-            //////System.out.println("paid val is " + f.getPaidValue());
+            //////// // System.out.println("totalPaying before " + totalPaying);
+            //////// // System.out.println("fee val is " + f.getFeeValue());
+            //////// // System.out.println("paid val is " + f.getPaidValue());
             totalPaying = totalPaying + (f.getFeeValue() - f.getPaidValue());
-            //////System.out.println("totalPaying after " + totalPaying);
+            //////// // System.out.println("totalPaying after " + totalPaying);
         }
-        //////System.out.println("total pay is " + totalPaying);
+        //////// // System.out.println("total pay is " + totalPaying);
     }
 
     public BillFeeFacade getBillFeeFacade() {
@@ -322,7 +347,7 @@ public class StaffPaymentBillController implements Serializable {
     }
 
     public void setPayingBillFees(List<BillFee> payingBillFees) {
-        //////System.out.println("setting paying bill fees " + payingBillFees.size());
+        //////// // System.out.println("setting paying bill fees " + payingBillFees.size());
         this.payingBillFees = payingBillFees;
     }
 
@@ -355,7 +380,7 @@ public class StaffPaymentBillController implements Serializable {
     }
 
     public List<Bill> getSelectedItems() {
-        selectedItems = getFacade().findBySQL("select c from Bill c where c.retired=false and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+        selectedItems = getFacade().findByJpql("select c from Bill c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
     }
 
@@ -376,6 +401,7 @@ public class StaffPaymentBillController implements Serializable {
         tmp.setBillDate(Calendar.getInstance().getTime());
         tmp.setBillTime(Calendar.getInstance().getTime());
         tmp.setBillType(BillType.PaymentBill);
+        tmp.setBillTypeAtomic(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES);
         tmp.setCreatedAt(Calendar.getInstance().getTime());
         tmp.setCreater(getSessionController().getLoggedUser());
         tmp.setDepartment(getSessionController().getLoggedUser().getDepartment());
@@ -396,18 +422,25 @@ public class StaffPaymentBillController implements Serializable {
         return tmp;
     }
 
+    public String navigateToStaffPaymentFromDuePayment(Staff s) {
+        currentStaff = s;
+        speciality = s.getSpeciality();
+        calculateDueFees();
+        return "/payment_staff_bill?faces-redirect=true";
+    }
+
     private boolean errorCheck() {
         if (currentStaff == null) {
-            UtilityController.addErrorMessage("Please select a Staff Memeber");
+            JsfUtil.addErrorMessage("Please select a Staff Memeber");
             return true;
         }
         performCalculations();
         if (totalPaying == 0) {
-            UtilityController.addErrorMessage("Please select payments to update");
+            JsfUtil.addErrorMessage("Please select payments to update");
             return true;
         }
         if (paymentMethod == null) {
-            UtilityController.addErrorMessage("Please select a payment method");
+            JsfUtil.addErrorMessage("Please select a payment method");
             return true;
         }
 
@@ -417,9 +450,6 @@ public class StaffPaymentBillController implements Serializable {
     public Boolean isPrintPreview() {
         return printPreview;
     }
-
-    @EJB
-    CashTransactionBean cashTransactionBean;
 
     public CashTransactionBean getCashTransactionBean() {
         return cashTransactionBean;
@@ -443,8 +473,8 @@ public class StaffPaymentBillController implements Serializable {
 
         WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(b, getSessionController().getLoggedUser());
         getSessionController().setLoggedUser(wb);
-        UtilityController.addSuccessMessage("Successfully Paid");
-        //////System.out.println("Paid");
+        JsfUtil.addSuccessMessage("Successfully Paid");
+        //////// // System.out.println("Paid");
     }
 
     private void saveBillCompo(Bill b, Payment p) {
@@ -455,7 +485,7 @@ public class StaffPaymentBillController implements Serializable {
             bf.setPaidValue(bf.getFeeValue());
             bf.setSettleValue(bf.getFeeValue());
             getBillFeeFacade().edit(bf);
-            //////System.out.println("marking as paid");
+            //////// // System.out.println("marking as paid");
         }
     }
 
@@ -546,9 +576,9 @@ public class StaffPaymentBillController implements Serializable {
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
 //        getItems();
@@ -670,12 +700,12 @@ public class StaffPaymentBillController implements Serializable {
         String sql;
         Map temMap = new HashMap();
         sql = "select b from BillFee b where b.retired=false and b.bill.cancelled=false and (b.feeValue - b.paidValue) > 0 and b.bill.institution.id=" + getSessionController().getInstitution().getId() + " and b.bill.billDate between :fromDate and :toDate order by b.staff.id  ";
-        //////System.out.println("sql is " + sql);
+        //////// // System.out.println("sql is " + sql);
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
 
-        dueBillFeeReport = getBillFeeFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
-        //////System.out.println(dueBillFeeReport.size());
+        dueBillFeeReport = getBillFeeFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
+        //////// // System.out.println(dueBillFeeReport.size());
 
         if (dueBillFeeReport == null) {
             dueBillFeeReport = new ArrayList<BillFee>();
@@ -684,31 +714,196 @@ public class StaffPaymentBillController implements Serializable {
         return dueBillFeeReport;
     }
 
-    private LazyDataModel<BillFee> dueBillFee;
-
     public List<BillFee> getDueBillFeeReportAll() {
 
         String sql;
         Map temMap = new HashMap();
         if (!getSelectText().equals("")) {
-            sql = "select b from BillFee b where b.retired=false and (b.bill.billType!=:btp and b.bill.billType!=:btp2) and b.bill.cancelled=false and (b.feeValue - b.paidValue) > 0 and  b.bill.billDate between :fromDate and :toDate and upper(b.staff.person.name) like '%" + selectText.toUpperCase() + "%' order by b.staff.id  ";
+            sql = "select b from BillFee b where b.retired=false and (b.bill.billType!=:btp and b.bill.billType!=:btp2) and b.bill.cancelled=false and (b.feeValue - b.paidValue) > 0 and  b.bill.billDate between :fromDate and :toDate and (b.staff.person.name) like '%" + selectText.toUpperCase() + "%' order by b.staff.id  ";
         } else {
             sql = "select b from BillFee b where b.retired=false and (b.bill.billType!=:btp and b.bill.billType!=:btp2) and b.bill.cancelled=false and (b.feeValue - b.paidValue) > 0 and  b.bill.billDate between :fromDate and :toDate order by b.staff.id  ";
         }
-        //////System.out.println("sql is " + sql);
+        //////// // System.out.println("sql is " + sql);
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
         temMap.put("btp", BillType.ChannelPaid);
         temMap.put("btp2", BillType.ChannelCredit);
 
-        dueBillFeeReport = getBillFeeFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
-        //////System.out.println(dueBillFeeReport.size());
+        dueBillFeeReport = getBillFeeFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
+        //////// // System.out.println(dueBillFeeReport.size());
 
         if (dueBillFeeReport == null) {
             dueBillFeeReport = new ArrayList<BillFee>();
         }
 
         return dueBillFeeReport;
+    }
+
+    private boolean paymentMethodDataErrorCheck() {
+        if (getCurrent().getPaymentMethod() == PaymentMethod.Card) {
+            if (getStaffPaymentMethodData().getCreditCard().getNo().trim().equalsIgnoreCase("")) {
+                JsfUtil.addErrorMessage("Add CreditCard No");
+                return true;
+            } else if (getStaffPaymentMethodData().getCreditCard().getInstitution() == null) {
+                JsfUtil.addErrorMessage("Select Card Bank");
+                return true;
+            } else if (getStaffPaymentMethodData().getCreditCard().getComment().trim().equalsIgnoreCase("") && configOptionApplicationController.getBooleanValueByKey("Staff Credit Settle - CreditCard Comment is Mandatory", false)) {
+                JsfUtil.addErrorMessage("Add Comment");
+                return true;
+            }
+            return false;
+        } else if (getCurrent().getPaymentMethod() == PaymentMethod.Cheque) {
+            if (getStaffPaymentMethodData().getCheque().getNo().trim().equalsIgnoreCase("")) {
+                JsfUtil.addErrorMessage("Add Cheque No");
+                return true;
+            } else if (getStaffPaymentMethodData().getCheque().getInstitution() == null) {
+                JsfUtil.addErrorMessage("Select Cheque Bank");
+                return true;
+            } else if (getStaffPaymentMethodData().getCheque().getDate() == null ) {
+                JsfUtil.addErrorMessage("Add Cheque Date");
+                return true;
+            } else if (getStaffPaymentMethodData().getCheque().getComment().trim().equalsIgnoreCase("") && configOptionApplicationController.getBooleanValueByKey("Staff Credit Settle - Cheque Comment is Mandatory", false)) {
+                JsfUtil.addErrorMessage("Add Comment");
+                return true;
+            }
+            return false;
+        } else if (getCurrent().getPaymentMethod() == PaymentMethod.Slip) {
+            if (getStaffPaymentMethodData().getSlip().getInstitution() == null) {
+                JsfUtil.addErrorMessage("Select Slip Bank");
+                return true;
+            } else if (getStaffPaymentMethodData().getSlip().getDate()== null) {
+                JsfUtil.addErrorMessage("Add Slip Date");
+                return true;
+            } else if (getStaffPaymentMethodData().getSlip().getComment().trim().equalsIgnoreCase("") && configOptionApplicationController.getBooleanValueByKey("Staff Credit Settle - Slip Comment is Mandatory", false)) {
+                JsfUtil.addErrorMessage("Add Comment");
+                return true;
+            }
+            return false;
+        }
+        return false;
+    }
+
+    private boolean errorCheckForCreditSettle() {
+        if (getCurrentStaff() == null) {
+            JsfUtil.addErrorMessage("Select Staff");
+            return true;
+        }
+        
+        if (getCurrent().getPaymentMethod() == null) {
+            JsfUtil.addErrorMessage("Select Payment Method");
+            return true;
+        }
+
+        if (getCurrent().getNetTotal() < 1) {
+            JsfUtil.addErrorMessage("Type Amount");
+            return true;
+        }
+        
+        return false;
+    }
+
+    public void settleStaffCredit() {
+        System.out.println("settleStaffCredit");
+
+        if(errorCheckForCreditSettle()){
+            return ;
+        }
+        
+        if(paymentMethodDataErrorCheck()){
+            return ;
+        }
+
+        getCurrent().setTotal(getCurrent().getNetTotal());
+        DecimalFormat df = new DecimalFormat("00000");
+        String s = df.format(getCurrent().getIntInvoiceNumber());
+        getCurrent().setInvoiceNumber(createInvoiceNumberSuffix() + s);
+        saveBill();
+        saveBillItem();
+        createPaymentForStaffCreditSettleBill(getCurrent(), getCurrent().getPaymentMethod());
+
+        currentStaff.setCurrentCreditValue(currentStaff.getCurrentCreditValue() - getCurrent().getNetTotal());
+        staffFacade.edit(currentStaff);
+        JsfUtil.addSuccessMessage("Bill Saved");
+        printPreview = true;
+
+    }
+
+    private void saveBill() {
+
+        getCurrent().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.StaffCreditSettle, BillClassType.BilledBill, BillNumberSuffix.PTYPAY));
+        getCurrent().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.StaffCreditSettle, BillClassType.BilledBill, BillNumberSuffix.PTYPAY));
+        getCurrent().setBillTypeAtomic(BillTypeAtomic.STAFF_CREDIT_SETTLE);
+        getCurrent().setBillType(BillType.StaffCreditSettle);
+
+        getCurrent().setDepartment(getSessionController().getDepartment());
+        getCurrent().setInstitution(getSessionController().getInstitution());
+//        getCurrent().setComments(comment);
+
+        getCurrent().setBillDate(new Date());
+        getCurrent().setBillTime(new Date());
+
+        getCurrent().setStaff(currentStaff);
+
+        getCurrent().setCreatedAt(new Date());
+        getCurrent().setCreater(getSessionController().getLoggedUser());
+
+        getCurrent().setTotal(getCurrent().getNetTotal());
+        getCurrent().setNetTotal(getCurrent().getNetTotal());
+
+        getBillBean().setPaymentMethodData(getCurrent(), getCurrent().getPaymentMethod(), getStaffPaymentMethodData());
+
+        getBillFacade().create(getCurrent());
+    }
+
+    private String createInvoiceNumberSuffix() {
+
+        Calendar c = Calendar.getInstance();
+        int y = c.get(Calendar.YEAR);
+        int m = c.get(Calendar.MONTH);
+        String s1;
+        String s2;
+        if (m < 3) {
+            s1 = Integer.toString(y - 1);
+            s2 = Integer.toString(y);
+
+        } else {
+            s1 = Integer.toString(y);
+            s2 = Integer.toString(y + 1);
+
+        }
+        String s = s1.substring(2, 4) + s2.substring(2, 4) + "-";
+
+        return s;
+    }
+
+    public void createPaymentForStaffCreditSettleBill(Bill b, PaymentMethod pm) {
+        Payment p = new Payment();
+        p.setBill(b);
+        p.setPaidValue(0 - Math.abs(b.getNetTotal()));
+        System.out.println("p = " + p.getPaidValue());
+        setPaymentMethodData(p, pm);
+    }
+
+    private void saveBillItem() {
+        BillItem tmp = new BillItem();
+
+        tmp.setCreatedAt(new Date());
+        tmp.setCreater(getSessionController().getLoggedUser());
+        tmp.setBill(getCurrent());
+        tmp.setNetValue(0 - getCurrent().getNetTotal());
+        getBillItemFacade().create(tmp);
+    }
+
+    public void createNewSettleBill() {
+        current = new Bill();
+        makeNull();
+    }
+
+    public void makeNull() {
+        paymentMethod = null;
+        staffPaymentMethodData = null;
+        currentStaff = null;
+        printPreview = false;
     }
 
     public void setDueBillFeeReport(List<BillFee> dueBillFeeReport) {
@@ -718,7 +913,7 @@ public class StaffPaymentBillController implements Serializable {
     public List<BillItem> getBillItems() {
         if (getCurrent() != null) {
             String sql = "SELECT b FROM BillItem b WHERE b.retired=false and b.bill.id=" + getCurrent().getId();
-            billItems = getBillItemFacade().findBySQL(sql);
+            billItems = getBillItemFacade().findByJpql(sql);
             if (billItems == null) {
                 billItems = new ArrayList<BillItem>();
             }
@@ -808,6 +1003,25 @@ public class StaffPaymentBillController implements Serializable {
 
     public void setBillFeePaymentFacade(BillFeePaymentFacade BillFeePaymentFacade) {
         this.BillFeePaymentFacade = BillFeePaymentFacade;
+    }
+
+    public PaymentMethodData getStaffPaymentMethodData() {
+        if (staffPaymentMethodData == null) {
+            staffPaymentMethodData = new PaymentMethodData();
+        }
+        return staffPaymentMethodData;
+    }
+
+    public void setStaffPaymentMethodData(PaymentMethodData staffPaymentMethodData) {
+        this.staffPaymentMethodData = staffPaymentMethodData;
+    }
+
+    public BillBeanController getBillBean() {
+        return billBean;
+    }
+
+    public void setBillBean(BillBeanController billBean) {
+        this.billBean = billBean;
     }
 
 }

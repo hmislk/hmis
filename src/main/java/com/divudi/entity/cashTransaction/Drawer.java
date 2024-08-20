@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.divudi.entity.cashTransaction;
 
 import com.divudi.entity.WebUser;
@@ -15,10 +10,6 @@ import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.Temporal;
 
-/**
- *
- * @author safrin
- */
 @Entity
 public class Drawer implements Serializable {
 
@@ -26,8 +17,6 @@ public class Drawer implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-//    @OneToMany(mappedBy = "drawer")
-//    private List<WebUser> webUsers = new ArrayList<>();
     String name;
     @ManyToOne
     private WebUser creater;

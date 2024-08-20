@@ -1,18 +1,18 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.store;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.pharmacy.PharmacyController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.dataStructure.SearchKeyword;
 import com.divudi.ejb.BillNumberGenerator;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
@@ -24,6 +24,7 @@ import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
 import com.divudi.facade.StockFacade;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -65,7 +66,7 @@ public class StoreTransferReceiveController implements Serializable {
     StoreBean storeBean;
     @EJB
     private BillNumberGenerator billNumberBean;
-    @EJB
+
     private CommonFunctions commonFunctions;
     @Inject
     StoreCalculation storeCalculation;
@@ -138,7 +139,10 @@ public class StoreTransferReceiveController implements Serializable {
     public void settle() {
 
         saveBill();
-
+        if(getReceivedBill().getComments() == null || getReceivedBill().getComments().trim().equals("")) {
+            JsfUtil.addErrorMessage("Please enter a comment");
+            return;
+        }
         for (BillItem i : getBillItems()) {
 
 //            i.getPharmaceuticalBillItem().setQtyInUnit(i.getQty());
@@ -188,6 +192,11 @@ public class StoreTransferReceiveController implements Serializable {
 
             getReceivedBill().getBillItems().add(i);
         }
+        
+        if(getReceivedBill().getBillItems().isEmpty() || getReceivedBill().getBillItems() == null){
+            JsfUtil.addErrorMessage("Nothing to Recive, Please check Recieved Quantity");
+            return;
+        }
 
         getReceivedBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.StoreTransferReceive, BillClassType.BilledBill, BillNumberSuffix.STTR));
         getReceivedBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.StoreTransferReceive, BillClassType.BilledBill, BillNumberSuffix.STTR));
@@ -231,7 +240,7 @@ public class StoreTransferReceiveController implements Serializable {
 //        double oldValue = getPharmaceuticalBillItemFacade().find(tmp.getPharmaceuticalBillItem().getId()).getQtyInUnit();
 //        if (availableStock < tmp.getQty()) {
 //            tmp.setQty(oldValue);
-//            UtilityController.addErrorMessage("You cant recieved over than Issued Qty setted Old Value");
+//            JsfUtil.addErrorMessage("You cant recieved over than Issued Qty setted Old Value");
 //        }
 //
 //        //   getPharmacyController().setPharmacyItem(tmp.getItem());
@@ -242,7 +251,7 @@ public class StoreTransferReceiveController implements Serializable {
         //   double oldValue = getPharmaceuticalBillItemFacade().find(tmp.getPharmaceuticalBillItem().getId()).getQtyInUnit();
         if (tmp.getPharmaceuticalBillItem().getStaffStock().getStock() < tmp.getQty()) {
             tmp.setTmpQty(0.0);
-            UtilityController.addErrorMessage("You cant recieved over than Issued Qty setted Old Value");
+            JsfUtil.addErrorMessage("You cant recieved over than Issued Qty setted Old Value");
         }
 
         //   getPharmacyController().setPharmacyItem(tmp.getItem());

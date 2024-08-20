@@ -1,18 +1,33 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Open Hospital Management Information System
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.data;
 
 /**
- *
  * @author ruhunu
  */
 public enum MessageType {
+
     LabReport,
-    ChannelDoctorAraival,
+    OpdBillSettle,
     Marketing,
     BillCancellationInformationMail,
     BillReturnInfromationMail,
+    ChannelBooking,
+    ChannelDoctorArrival,
+    ChannelCancellation,
+    ChannelCompletion,
+    ChannelNoShow,
+    ChannelDoctorPayment,
+    ChannelCustom,
+    ChannelPatientFeedback,
+    ChannelPatientReschedule,
+    ChannelReminder,
+    ChannelBookingCancellation,
+    ChannelTimeDateChange,
+    ChannelDoctorReminder,
+    ChannelStatusUpdate,
+    DoctorPayment
 }

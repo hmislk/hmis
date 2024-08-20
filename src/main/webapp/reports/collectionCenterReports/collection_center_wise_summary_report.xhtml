@@ -1,0 +1,162 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/reports/index.xhtml">
+            <ui:define name="subcontent">
+
+                <h:form >
+
+                    <div class="container">
+                        <div class="row mb-2">
+                            <div class="col-12">
+                                <h2>Collection Centre Wise Summary Report</h2>
+                            </div>
+                        </div>
+
+                        <div class="row mb-2">
+                            <div class="col-md-2">
+                                <p:outputLabel value="From Date" >
+                                </p:outputLabel>
+                            </div>
+                            <div class="col-md-4">
+                                <p:datePicker value="#{reportController.fromDate}" 
+                                              pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
+                            </div>
+                            <div class="col-md-2">
+                                <p:outputLabel value="To Date" >
+                                </p:outputLabel>
+                            </div>
+                            <div class="col-md-4">
+                                <p:datePicker value="#{reportController.toDate}"
+                                              pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
+                            </div>
+                        </div>
+
+                        <div class="row mb-2">
+                            <div class="col-md-2">
+                                <p:outputLabel value="Institution/Branch" >
+                                </p:outputLabel>
+                            </div>
+                            <div class="col-md-4">
+                                <p:selectOneMenu 
+                                    id="cmdInstitution"
+                                    value="#{reportController.institution}"
+                                    style=" max-width: 100%; overflow-x: auto; "
+                                    class="w-100"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All"></f:selectItem>
+                                    <f:selectItems value="#{institutionController.companies}"
+                                                   var="i"
+                                                   itemLabel="#{i.name}"
+                                                   itemValue="#{i}"></f:selectItems>
+                                </p:selectOneMenu>
+                            </div>
+                            <div class="col-md-2">
+                                <p:outputLabel value="Collecting Center Name"></p:outputLabel>
+                            </div>
+                            <div class="col-md-4">
+                                <p:selectOneMenu 
+                                    value="#{reportController.collectingCentre}"
+                                    style=" max-width: 100%; overflow-x: auto; "
+                                    class="w-100"
+                                    filter="true">
+                                    <f:selectItem itemLabel="Select Collecting Centre"/>
+                                    <f:selectItems value="#{collectingCentreController.items}"
+                                                   var="i"
+                                                   itemLabel="#{i.name}"
+                                                   itemValue="#{i}" ></f:selectItems>
+                                </p:selectOneMenu>
+                            </div>
+                        </div>
+
+                        <div class="row mb-2">
+                            <div class="col-md-2">
+                                <p:outputLabel value="Collecting Centre Route"></p:outputLabel>
+                            </div>
+                            <div class="col-md-4">
+                                <p:selectOneMenu value="#{reportController.route}"
+                                                 style=" max-width: 100%; overflow-x: auto; "
+                                                 class="w-100"
+                                                 filter="true"
+                                                 filterMatchMode="contains">
+                                    <f:selectItem itemLabel="All" ></f:selectItem>
+                                    <f:selectItems value="#{routeController.items}"
+                                                   var="r"
+                                                   itemLabel="#{r.name}"
+                                                   itemValue="#{r}"
+                                                   />
+                                </p:selectOneMenu>
+                            </div>
+                            <div class="col-md-2">
+
+                            </div>
+                            <div class="col-md-4">
+
+                            </div>
+                        </div>
+
+                        <p:commandButton 
+                            ajax="false" 
+                            value="Process" 
+                            action="null" >
+                        </p:commandButton>
+
+                        <h:panelGrid columns="2">
+
+                            <h:outputLabel value="From Date :  "/>
+                            <h:outputLabel value="#{reportController.fromDate}"  >
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                            </h:outputLabel>
+
+                            <h:outputLabel value="To Date :  "/>
+                            <h:outputLabel value="#{reportController.toDate}"  >
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                            </h:outputLabel>
+
+                            <h:outputLabel value="CC Name :  "/>
+                            <h:outputLabel value="#{reportController.collectingCentre}"  ></h:outputLabel>
+
+                        </h:panelGrid>
+                    </div>
+
+                    <p:dataTable value="null" var="c">
+                        <p:column headerText="S. No" >
+                            <h:outputText value="" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="CC Code" >
+                            <h:outputText value="null" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="CC Name" >
+                            <h:outputText value="null" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="Count" >
+                            <h:outputText value="null" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="Hos Fee" >
+                            <h:outputText value="null" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="CC Fee" >
+                            <h:outputText value="null" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="Staff" >
+                            <h:outputText value="null" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="Net Total" >
+                            <h:outputText value="null" ></h:outputText>
+                        </p:column>
+
+                    </p:dataTable>
+
+                </h:form>
+
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

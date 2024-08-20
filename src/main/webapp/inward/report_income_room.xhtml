@@ -1,11 +1,11 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
-      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:f="http://java.sun.com/jsf/core" 
-      xmlns:pe="http://primefaces.org/ui/extensions">
+      xmlns:f="http://xmlns.jcp.org/jsf/core" 
+      >
 
 
     <h:body>
@@ -16,45 +16,47 @@
                 <h:form >
                     <p:panel >
                         <f:facet name="header" >
-                            <h:outputLabel value="Income Room" ></h:outputLabel>
+                            <div class="d-flex justify-content-between" >
+                                <h:outputLabel value="Income Room" ></h:outputLabel>
+                                <p:commandButton class="ui-button-secondary" icon="fas fa-arrow-left" ajax="false" value="Back" action="inward_report_bht_income_by_caregories"/>
+                            </div>
                         </f:facet>
                         <h:panelGrid columns="2" >
                             <h:outputLabel value="From : " ></h:outputLabel>
-                            <p:calendar value="#{inwardReportController1.fromDate}" pattern="dd MMMM yyyy hh:mm:ss" ></p:calendar>
+                            <p:calendar class="w-100 mx-4" inputStyleClass="w-100" value="#{inwardReportController1.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                             <h:outputLabel value="To : " ></h:outputLabel>
-                            <p:calendar value="#{inwardReportController1.toDate}" pattern="dd MMMM yyyy hh:mm:ss" ></p:calendar>
-                            <h:outputLabel value="Admission Type : " ></h:outputLabel>
-                            <p:selectOneMenu  id="lstAdmissionType"   value="#{inwardReportController1.admissionType}" >
+                            <p:calendar class="w-100 mx-4" inputStyleClass="w-100" value="#{inwardReportController1.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
+                            <h:outputLabel  value="Admission Type : " ></h:outputLabel>
+                            <p:selectOneMenu class="w-100 mx-4" id="lstAdmissionType"   value="#{inwardReportController1.admissionType}" >
                                 <f:selectItem itemLabel="All Admission Types"/>
                                 <f:selectItems  value="#{admissionTypeController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}"></f:selectItems>
                             </p:selectOneMenu>
                             <h:outputLabel value="BHT Type : " ></h:outputLabel>
-                            <p:selectOneMenu   id="cmbBhtType" value="#{inwardReportController1.paymentMethod}"  >
+                            <p:selectOneMenu class="w-100 mx-4"  id="cmbBhtType" value="#{inwardReportController1.paymentMethod}"  >
                                 <f:selectItem itemLabel="All BHT Types" />                           
                                 <f:selectItems value="#{enumController.paymentMethodForAdmission}" />
                             </p:selectOneMenu>
                             <h:outputLabel value="Credit Company : " ></h:outputLabel>
-                            <p:selectOneMenu  id="lstCc"   value="#{inwardReportController1.institution}" >
+                            <p:selectOneMenu class="w-100 mx-4" id="lstCc"   value="#{inwardReportController1.institution}" >
                                 <f:selectItem itemLabel="All Credit Companies"/>
                                 <f:selectItems  value="#{creditCompanyController.creditCompanies}" var="cc" 
                                                 itemValue="#{ccc}" itemLabel="#{ccc.name}"></f:selectItems>
                             </p:selectOneMenu>
 
                         </h:panelGrid>
-                           
-                        <p:panelGrid columns="3">
-                        <p:commandButton ajax="false" value="Process" action="#{inwardReportController1.processPatientRooms()}" onclick="onSubmitButton();"  ></p:commandButton>
 
-                        <p:commandButton ajax="false" value="Back" action="inward_report_bht_income_by_caregories"/>
+                        <h:panelGrid columns="2" class="my-2">
+                            <p:commandButton class="ui-button-warning" icon="fas fa-cogs" ajax="false" value="Process" action="#{inwardReportController1.processPatientRooms()}"   ></p:commandButton>
 
-                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();"  >
-                            <pe:exporter type="xlsx" target="so1,so2,so3,so4,so5,so6,so7"  fileName="BHT_Category_Report" />
-                        </p:commandButton> 
-                        </p:panelGrid>
-                        
+                            <p:commandButton class="ui-button-success" icon="fas fa-print" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;"   >
+                                <p:dataExporter type="xlsx" target="so1,so2,so3,so4,so5,so6,so7"  fileName="BHT_Category_Report" />
+                            </p:commandButton> 
+                        </h:panelGrid>
+
                         <p:dataTable value="#{inwardReportController1.patientRooms}" 
                                      var="rm" 
                                      paginator="true" 
+                                     paginatorPosition="bottom"
                                      rows="5" 
                                      rowsPerPageTemplate="5,10,15,20"
                                      id="so1">
@@ -98,6 +100,7 @@
                                      var="rm"
                                      paginator="true" 
                                      rows="5" 
+                                     paginatorPosition="bottom"
                                      rowsPerPageTemplate="5,10,15,20"
                                      id="so2">
                             <f:facet name="header">
@@ -142,6 +145,7 @@
                                      var="rm"
                                      paginator="true" 
                                      rows="5" 
+                                     paginatorPosition="bottom"
                                      rowsPerPageTemplate="5,10,15,20"
                                      id="so3">
                             <f:facet name="header">
@@ -185,6 +189,7 @@
                                      var="rm"
                                      paginator="true" 
                                      rows="5" 
+                                     paginatorPosition="bottom"
                                      rowsPerPageTemplate="5,10,15,20"
                                      id="so4">
                             <f:facet name="header">
@@ -230,6 +235,7 @@
                                      var="rm"
                                      paginator="true" 
                                      rows="5" 
+                                     paginatorPosition="bottom"
                                      rowsPerPageTemplate="5,10,15,20"
                                      id="so5">
                             <f:facet name="header">
@@ -272,6 +278,7 @@
                                      var="rm"
                                      paginator="true" 
                                      rows="5" 
+                                     paginatorPosition="bottom"
                                      rowsPerPageTemplate="5,10,15,20"
                                      id="so6">
                             <f:facet name="header"> 
@@ -286,13 +293,13 @@
 
                             </p:column>
                             <p:column headerText="Calculated" style="text-align: right;">
-                              <f:facet name="header">
+                                <f:facet name="header">
                                     <h:outputLabel value="Calculated"/> 
                                 </f:facet>  
                                 <p:outputLabel value="#{rm.calculatedMoCharge-rm.addedMoCharge}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </p:outputLabel>
-                              
+
                             </p:column>
                             <p:column headerText="Added" style="text-align: right;">
                                 <f:facet name="header">
@@ -309,7 +316,7 @@
                                 <p:outputLabel value="#{rm.discountMoCharge}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </p:outputLabel>
-                               
+
                             </p:column>
                         </p:dataTable>
                         <p:spacer height="30"/>
@@ -317,18 +324,19 @@
                                      var="rm"
                                      paginator="true" 
                                      rows="5" 
+                                     paginatorPosition="bottom"
                                      rowsPerPageTemplate="5,10,15,20"
                                      id="so7">
                             <f:facet name="header">
                                 <p:outputLabel value=" Nursing Charge" />
-                               
+
                             </f:facet>
                             <p:column headerText="BHT">
-                              <f:facet name="header">
+                                <f:facet name="header">
                                     <h:outputLabel value="BHT"/> 
                                 </f:facet> 
                                 <p:outputLabel value="#{rm.patientEncounter.bhtNo}" />
-                                
+
                             </p:column>
                             <p:column headerText="Calculated" style="text-align: right;">
                                 <f:facet name="header">
@@ -337,16 +345,16 @@
                                 <p:outputLabel value="#{rm.calculatedNursingCharge-rm.addedNursingCharge}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </p:outputLabel>
-                               
+
                             </p:column>
                             <p:column headerText="Added" style="text-align: right;">
-                              <f:facet name="header">
+                                <f:facet name="header">
                                     <h:outputLabel value="Added"/> 
                                 </f:facet>  
-                              <p:outputLabel value="#{rm.addedNursingCharge}" >
+                                <p:outputLabel value="#{rm.addedNursingCharge}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </p:outputLabel>  
-                               
+
                             </p:column>
                             <p:column headerText="Discount" style="text-align: right;">
                                 <f:facet name="header">
@@ -355,7 +363,7 @@
                                 <p:outputLabel value="#{rm.discountNursingCharge}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </p:outputLabel>
-                              
+
                             </p:column>
                         </p:dataTable>
 

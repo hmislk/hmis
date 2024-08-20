@@ -1,14 +1,14 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.data;
 
 /**
- *
  * @author Buddhika
  */
 public enum InvestigationItemValueType {
+
     Varchar,
     Memo,
     Double,
@@ -24,6 +24,5 @@ public enum InvestigationItemValueType {
     Person,
     Institution,
     Bundle,
-    Other,
-    
+    Other
 }

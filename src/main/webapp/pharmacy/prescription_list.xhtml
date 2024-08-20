@@ -1,0 +1,117 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/pharmacy/pharmacy_analytics.xhtml">
+            <ui:define name="subcontent">
+                <h:form >
+                    <p:panel header="Prescription List by Referral Doctor" >
+                        <div class="row">
+                            <div class="col-md-2">
+                                <h:outputLabel value="Bill Date From" ></h:outputLabel>
+                                <p:calendar 
+                                    class="w-100 mx-4"
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                    styleClass="dateTimePicker" 
+                                    inputStyleClass="form-control"
+                                    value="#{reportController.fromDate}">
+                                </p:calendar>
+                                <h:outputLabel value="Bill Date To" ></h:outputLabel>
+                                <p:calendar 
+                                    class="w-100 mx-4" 
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                    styleClass="dateTimePicker" 
+                                    inputStyleClass="form-control" 
+                                    value="#{reportController.toDate}">
+                                </p:calendar>
+                                <p:outputLabel value="Department" ></p:outputLabel>
+                                <p:autoComplete 
+                                    completeMethod="#{departmentController.completeDept}" 
+                                    var="dept" 
+                                    itemLabel="#{dept.name}" 
+                                    itemValue="#{dept}" 
+                                    forceSelection="true" 
+                                    value="#{reportController.department}" 
+                                    class="w-100"
+                                    inputStyleClass="w-100">
+                                </p:autoComplete>
+
+                                <p:outputLabel value="Referring Doctor" ></p:outputLabel>
+                                <p:autoComplete 
+                                    forceSelection="true" 
+                                    id="cmbDoc" 
+                                    value="#{reportController.referringDoctor}" 
+                                    completeMethod="#{doctorController.completeDoctor}" 
+                                    var="ix" itemLabel="#{ix.person.name}" 
+                                    itemValue="#{ix}" 
+                                    size="30" 
+                                    class=" w-100"
+                                    inputStyleClass="form-control"
+                                    >
+                                </p:autoComplete>
+
+                                <p:commandButton 
+                                    class="ui-button-warning w-100 my-2" 
+                                    icon="fas fa-cogs" 
+                                    ajax="false" 
+                                    value="Process" 
+                                    action="#{reportController.processPresciptionList()}" > 
+                                </p:commandButton>
+                                <p:commandButton 
+                                    class="ui-button-success w-100" 
+                                    icon="fas fa-file-excel" 
+                                    ajax="false" 
+                                    value="Excel" 
+                                    > 
+                                </p:commandButton>
+                            </div>
+                            
+                            <div class="col-md-10">
+                                <p:dataTable 
+                                    id="tbl" 
+                                    value="#{reportController.billLights}" 
+                                    var="doc"
+                                    paginator="true"
+                                    paginatorPosition="bottom"
+                                    rows="10"
+                                    >
+                                    <p:column headerText="Bill ID">
+                                        <p:commandLink>
+                                            <h:outputText value="#{doc.billNo}" />
+                                        </p:commandLink>
+                                    </p:column>
+                                    <p:column headerText="Date">
+                                        <h:outputText value="#{doc.billDate}" >
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Time">
+                                        <h:outputText value="#{doc.billTime}" >
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}" ></f:convertDateTime>
+                                        </h:outputText>
+                                    </p:column>
+
+                                    <p:column headerText="Patient">
+                                        <p:commandLink>
+                                            <h:outputText value="#{doc.patientName}" />
+                                        </p:commandLink>
+                                    </p:column>
+
+                                    <p:column headerText="Total Bill Income" style="text-align: right;">
+                                        <h:outputText value="#{doc.netValue}">
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputText>
+                                    </p:column>
+                                </p:dataTable>
+                            </div>
+                        </div>
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

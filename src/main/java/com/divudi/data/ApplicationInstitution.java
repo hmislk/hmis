@@ -1,24 +1,27 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.divudi.data;
 
-/**
- *
- * @author pasan
- */
 public enum ApplicationInstitution {
-    Ruhuna,
-    Cooperative,
-    Arogya,
-    Reliable,
-    KML,
-    Roseth,
-    Suwani,
-    BMS,
-    Digasiri,
-    Probhodha,
-    Rmh,
+
+    Ruhuna("Ruhuna Hospital"),
+    Cooperative("Cooperative Clinic"),
+    Arogya("Arogya Health Center"),
+    Reliable("Reliable Medical Center"),
+    KML("KML Hospital"),
+    Roseth("Roseth Clinic"),
+    Suwani("Suwani Hospital"),
+    BMS("BMS Clinic"),
+    Digasiri("Digasiri Health Center"),
+    Probhodha("Probhodha Medical Center"),
+    Sethma("Sethma Hospital"),
+    Rmh("RMH Hospital");
+
+    private final String label;
+
+    ApplicationInstitution(String label) {
+        this.label = label;
+    }
+
+    public String getLabel() {
+        return label;
+    }
 }

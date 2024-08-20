@@ -1,13 +1,13 @@
 /*
- * MSc(Biomedical Informatics) Project
+ * Open Hospital Management Information System
  *
- * Development and Implementation of a Web-based Combined Data Repository of
- Genealogical, Clinical, Laboratory and Genetic Data
- * and
- * a Set of Related Tools
+ * Dr M H B Ariyaratne
+ * Acting Consultant (Health Informatics)
+ * (94) 71 5812399
+ * (94) 71 5812399
  */
 package com.divudi.bean.common;
-
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
@@ -29,8 +29,8 @@ import javax.inject.Named;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- * Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
+ * Acting Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -71,7 +71,7 @@ public class IssueRateMarginsController implements Serializable {
         IssueRateMargins tmp = pharmacyBean.fetchIssueRateMargins(fromDepartment, getIssueRateMargins().getToDepartment());
 
         if (tmp != null) {
-            UtilityController.addErrorMessage("Already Exist");
+            JsfUtil.addErrorMessage("Already Exist");
             return;
         }
 
@@ -113,7 +113,7 @@ public class IssueRateMarginsController implements Serializable {
 
         createMargins();
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "Store/Unit Issue/Unit issue margin(Add All)(/faces/pharmacy/item_supplier_prices.xhtml)");
+        
     }
 
     public void onEdit(IssueRateMargins tmp) {
@@ -194,9 +194,9 @@ public class IssueRateMarginsController implements Serializable {
         sql = "select m from IssueRateMargins m "
                 + " where m.retired=false ";
 
-        items = ejbFacade.findBySQL(sql);
+        items = ejbFacade.findByJpql(sql);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Issue to units/Unit issue margin(/faces/store/issue_rate_margin_manager.xhtml)");
+        
     }
 
     public IssueRateMargins getCurrent() {
@@ -210,7 +210,7 @@ public class IssueRateMarginsController implements Serializable {
         m.put("td", toDepartment);
         m.put("fi", fromInstitution);
         m.put("ti", toInstitution);
-        current = getFacade().findFirstBySQL(sql, m);
+        current = getFacade().findFirstByJpql(sql, m);
         if (current == null) {
             current = new IssueRateMargins();
             current.setFromDepartment(fromDepartment);
@@ -284,46 +284,7 @@ public class IssueRateMarginsController implements Serializable {
     /**
      *
      */
-    @FacesConverter("issueRateMarginConverter")
-    public static class IssueRateMarginsConverter implements Converter {
-
-        @Override
-        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
-                return null;
-            }
-            IssueRateMarginsController controller = (IssueRateMarginsController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "issueRateMarginController");
-            return controller.getEjbFacade().find(getKey(value));
-        }
-
-        java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
-            return key;
-        }
-
-        String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
-        }
-
-        @Override
-        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
-            if (object == null) {
-                return null;
-            }
-            if (object instanceof IssueRateMargins) {
-                IssueRateMargins o = (IssueRateMargins) object;
-                return getStringKey(o.getId());
-            } else {
-                throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + IssueRateMarginsController.class.getName());
-            }
-        }
-    }
-
+    
     public CommonController getCommonController() {
         return commonController;
     }

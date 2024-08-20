@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core">
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <h:body>
 
@@ -19,12 +19,12 @@
                         <h:form>
                             <h:panelGrid columns="3" >
                                 <h:outputLabel value="Date" id="calSessionDate" ></h:outputLabel>
-                                <p:calendar value="#{practiceBookingController.sessionDate}" pattern="dd MMMM yyyy" >
+                                <p:calendar value="#{practiceBookingController.sessionDate}" pattern="#{sessionController.applicationPreference.longDateFormat}" >
                                 </p:calendar>
                                 <h:outputLabel value="" ></h:outputLabel>
                                 <p:commandButton   value="Process" ajax="false" style="float: right;" 
                                                   action="#{practiceBookingController.listPatientEncounters()}" 
-                                                   onclick="onSubmitButton();" >                        
+                                                    >                        
                                 </p:commandButton>
                             </h:panelGrid>
                         </h:form>
@@ -37,7 +37,7 @@
                                 <p:column headerText="No">#{bsc.billSession.serialNo}</p:column>
                                 <p:column headerText="Patient Name">#{bsc.billSession.bill.patient.person.nameWithTitle}</p:column>
                                 <p:column headerText="View/Edit">
-                                    <p:commandButton value="Visit" action="#{practiceBookingController.opdVisitFromQueue()}" ajax="false" onclick="onSubmitButton();" >
+                                    <p:commandButton value="Visit" action="#{practiceBookingController.opdVisitFromQueue()}" ajax="false"  >
                                         <f:setPropertyActionListener value="#{bsc.billSession}" target="#{practiceBookingController.billSession}" ></f:setPropertyActionListener>
                                     </p:commandButton>
                                 </p:column>

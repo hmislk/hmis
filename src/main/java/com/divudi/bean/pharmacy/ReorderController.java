@@ -4,7 +4,7 @@ import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.DepartmentController;
 import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.data.BillType;
 import com.divudi.data.DepartmentListMethod;
 import static com.divudi.data.DepartmentListMethod.ActiveDepartmentsOfAllInstitutions;
@@ -17,7 +17,7 @@ import static com.divudi.data.DepartmentListMethod.LoggedDepartmentOnly;
 import com.divudi.data.DepartmentType;
 import com.divudi.data.dataStructure.ItemReorders;
 import com.divudi.data.dataStructure.ItemTransactionSummeryRow;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
@@ -30,7 +30,9 @@ import com.divudi.entity.pharmacy.Reorder;
 import com.divudi.entity.pharmacy.Stock;
 import com.divudi.entity.pharmacy.StockHistory;
 import com.divudi.facade.ReorderFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.entity.pharmacy.Amp;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -52,9 +54,6 @@ import javax.persistence.TemporalType;
 import org.joda.time.DateTime;
 import org.joda.time.Days;
 import org.primefaces.event.RowEditEvent;
-import org.primefaces.model.chart.CartesianChartModel;
-import org.primefaces.model.chart.LineChartSeries;
-
 
 @Named
 @SessionScoped
@@ -116,11 +115,97 @@ public class ReorderController implements Serializable {
     Item item;
     Department historyDept;
 
-    private CartesianChartModel dateModel;
+//    private CartesianChartModel dateModel;
 
-    public CartesianChartModel getDateModel() {
-        return dateModel;
+    public String navigateReorderManagement() {
+        return "/pharmacy/reorder_management?faces-redirect=true";
     }
+
+    public void updateReorder(Reorder ro) {
+        if (ro == null) {
+            return;
+        }
+        save(ro);
+    }
+
+    public List<Reorder> fillReordersBySelectedDepartment() {
+        reorders = null;
+        Map m = new HashMap();
+        String sql = "select r from Reorder r where r.department=:dep";
+        m.put("dep", department);
+        reorders = reorderFacade.findByJpql(sql, m);
+        return reorders;
+
+    }
+
+    public List<Reorder> fillReordersBySelectedInstitution() {
+        reorders = null;
+        Map m = new HashMap();
+        String sql = "select r from Reorder r where r.institution=:ins";
+        m.put("ins", institution);
+        reorders = reorderFacade.findByJpql(sql, m);
+        return reorders;
+    }
+
+    public boolean isAmpHaveReorder(Amp amp, Department dept, Institution ins) {
+        List<Reorder> r = new ArrayList<>();
+        Map m = new HashMap();
+        String sql = "select r from Reorder r where r.item=:amp";
+        m.put("amp", amp);
+
+        if (dept != null) {
+            sql += " and r.department=:dep";
+            m.put("dep", dept);
+        }
+
+        if (ins != null) {
+            sql += " and r.institution=:ins";
+            m.put("ins", ins);
+        }
+
+        r = reorderFacade.findByJpql(sql, m);
+        if (r.size() == 0 || r.isEmpty()) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    public void removeReOrder(Reorder ro) {
+        if (ro != null) {
+            reorderFacade.remove(ro);
+        }
+
+    }
+
+    public void createReOrdersByDepartment() {
+        List<Amp> amps = new ArrayList();
+        amps = getAmpController().findItems();
+        for (Amp amp : amps) {
+            if (isAmpHaveReorder(amp, department, null) == false) {
+                Reorder ro = new Reorder();
+                ro.setDepartment(department);
+                ro.setItem(amp);
+                reorderFacade.create(ro);
+            }
+        }
+    }
+
+    public void createReOrdersByInstituion() {
+        List<Amp> amps = getAmpController().findItems();
+        for (Amp amp : amps) {
+            if (isAmpHaveReorder(amp, null, institution) == false) {
+                Reorder ro = new Reorder();
+                ro.setInstitution(institution);
+                ro.setItem(amp);
+                reorderFacade.create(ro);
+            }
+        }
+    }
+
+//    public CartesianChartModel getDateModel() {
+//        return dateModel;
+//    }
 
     public void createDailyItemSummery() {
         createDailyItemSummery(item, historyDept, fromDate, toDate);
@@ -133,64 +218,64 @@ public class ReorderController implements Serializable {
     }
 
     public void createDailyItemSummery(Item item, Department dept, Date fromDate, Date toDate) {
-        dateModel = new CartesianChartModel();
-        List<ItemTransactionSummeryRow> rows;
-
-        LineChartSeries series1 = new LineChartSeries();
-        series1.setLabel("Stock Average");
-        rows = findDailyStockAverage(item, dept, fromDate, toDate);
-        for (ItemTransactionSummeryRow r : rows) {
-            DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
-            series1.set(df.format(r.getDate()), r.getQuantity());
-        }
-        dateModel.addSeries(series1);
-
-        LineChartSeries series2 = new LineChartSeries();
-        series2.setLabel("Sales");
-        rows = findDailySale(item, dept, fromDate, toDate);
-        for (ItemTransactionSummeryRow r : rows) {
-            DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
-            series2.set(df.format(r.getDate()), r.getQuantity());
-        }
-        dateModel.addSeries(series2);
-
-        LineChartSeries series3 = new LineChartSeries();
-        series3.setLabel("Purchase/Good Receive");
-        rows = findDailyPurchase(item, dept, fromDate, toDate);
-        for (ItemTransactionSummeryRow r : rows) {
-            DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
-            series3.set(df.format(r.getDate()), r.getQuantity());
-        }
-        dateModel.addSeries(series3);
-
-        LineChartSeries series4 = new LineChartSeries();
-        series4.setLabel("Transfer Issue");
-        rows = findDailyTransferOut(item, dept, fromDate, toDate);
-        for (ItemTransactionSummeryRow r : rows) {
-            DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
-            series4.set(df.format(r.getDate()), r.getQuantity());
-        }
-        dateModel.addSeries(series4);
-
-        LineChartSeries series5 = new LineChartSeries();
-        series5.setLabel("Transfer Receive");
-        rows = findDailyTransferIn(item, dept, fromDate, toDate);
-        for (ItemTransactionSummeryRow r : rows) {
-            DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
-            series5.set(df.format(r.getDate()), r.getQuantity());
-        }
-        dateModel.addSeries(series5);
-
-//        dateModel.setTitle("Item Transactions");
-//        dateModel.setZoom(true);
-//        dateModel.setLegendPlacement(LegendPlacement.INSIDE);
-//        dateModel.setLegendPosition("ne");
-//        dateModel.getAxis(AxisType.Y).setLabel("Stock");
-//        DateAxis axis = new DateAxis("Dates");
-//        axis.setTickAngle(-50);
-////        axis.setMax("2014-02-01");
-//        axis.setTickFormat("%b %#d, %y");
-//        dateModel.getAxes().put(AxisType.X, axis);
+//        dateModel = new CartesianChartModel();
+//        List<ItemTransactionSummeryRow> rows;
+//
+//        LineChartSeries series1 = new LineChartSeries();
+//        series1.setLabel("Stock Average");
+//        rows = findDailyStockAverage(item, dept, fromDate, toDate);
+//        for (ItemTransactionSummeryRow r : rows) {
+//            DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+//            series1.set(df.format(r.getDate()), r.getQuantity());
+//        }
+//        dateModel.addSeries(series1);
+//
+//        LineChartSeries series2 = new LineChartSeries();
+//        series2.setLabel("Sales");
+//        rows = findDailySale(item, dept, fromDate, toDate);
+//        for (ItemTransactionSummeryRow r : rows) {
+//            DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+//            series2.set(df.format(r.getDate()), r.getQuantity());
+//        }
+//        dateModel.addSeries(series2);
+//
+//        LineChartSeries series3 = new LineChartSeries();
+//        series3.setLabel("Purchase/Good Receive");
+//        rows = findDailyPurchase(item, dept, fromDate, toDate);
+//        for (ItemTransactionSummeryRow r : rows) {
+//            DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+//            series3.set(df.format(r.getDate()), r.getQuantity());
+//        }
+//        dateModel.addSeries(series3);
+//
+//        LineChartSeries series4 = new LineChartSeries();
+//        series4.setLabel("Transfer Issue");
+//        rows = findDailyTransferOut(item, dept, fromDate, toDate);
+//        for (ItemTransactionSummeryRow r : rows) {
+//            DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+//            series4.set(df.format(r.getDate()), r.getQuantity());
+//        }
+//        dateModel.addSeries(series4);
+//
+//        LineChartSeries series5 = new LineChartSeries();
+//        series5.setLabel("Transfer Receive");
+//        rows = findDailyTransferIn(item, dept, fromDate, toDate);
+//        for (ItemTransactionSummeryRow r : rows) {
+//            DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+//            series5.set(df.format(r.getDate()), r.getQuantity());
+//        }
+//        dateModel.addSeries(series5);
+//
+////        dateModel.setTitle("Item Transactions");
+////        dateModel.setZoom(true);
+////        dateModel.setLegendPlacement(LegendPlacement.INSIDE);
+////        dateModel.setLegendPosition("ne");
+////        dateModel.getAxis(AxisType.Y).setLabel("Stock");
+////        DateAxis axis = new DateAxis("Dates");
+////        axis.setTickAngle(-50);
+//////        axis.setMax("2014-02-01");
+////        axis.setTickFormat("%b %#d, %y");
+////        dateModel.getAxes().put(AxisType.X, axis);
     }
 
     public DepartmentListMethod getDepartmentListMethod() {
@@ -307,7 +392,7 @@ public class ReorderController implements Serializable {
 
         if (dsso == null) {
             dsso = new ArrayList<>();
-            //    //System.out.println("new list as null");
+            //    //// // System.out.println("new list as null");
         }
         rows = new ArrayList<>();
         for (Object b : dsso) {
@@ -377,7 +462,7 @@ public class ReorderController implements Serializable {
 
         if (dsso == null) {
             dsso = new ArrayList<>();
-            //    //System.out.println("new list as null");
+            //    //// // System.out.println("new list as null");
         }
         rows = new ArrayList<>();
         for (Object b : dsso) {
@@ -429,7 +514,7 @@ public class ReorderController implements Serializable {
 
         generateReorders(false);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Purchase/By distributor(Fill All Items)(/faces/pharmacy/auto_ordering_by_distributor.xhtml)");
+        
 
     }
 
@@ -438,7 +523,7 @@ public class ReorderController implements Serializable {
 
         generateReorders(false, true);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Purchase/By distributor(Fill Required Items)(/faces/pharmacy/auto_ordering_by_distributor.xhtml)");
+        
     }
 
     public List<Reorder> getReorders() {
@@ -471,7 +556,7 @@ public class ReorderController implements Serializable {
         j = "select r from Reorder r where r.department=:dept ";
         m.put("dept", getDepartment());
         reordersAvailableForSelection = new ArrayList<>();
-        reordersAvailableForSelection = ejbFacade.findBySQL(j, m);
+        reordersAvailableForSelection = ejbFacade.findByJpql(j, m);
         userSelectedItems = new ArrayList<>();
         selectableItems = new ArrayList<>();
         for (Reorder r : reordersAvailableForSelection) {
@@ -492,7 +577,7 @@ public class ReorderController implements Serializable {
         j = "select r from Reorder r where r.department=:dept ";
         m.put("dept", getDepartment());
         reordersAvailableForSelection = new ArrayList<>();
-        List<Reorder> lst = ejbFacade.findBySQL(j, m);
+        List<Reorder> lst = ejbFacade.findByJpql(j, m);
         userSelectedItems = new ArrayList<>();
         selectableItems = new ArrayList<>();
         for (Reorder r : lst) {
@@ -511,7 +596,7 @@ public class ReorderController implements Serializable {
 
         generateReorders(true, false, departmentListMethod);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Purchase/By distributor(generate records)(/faces/pharmacy/auto_ordering_by_distributor.xhtml)");
+        
 
     }
 
@@ -539,7 +624,7 @@ public class ReorderController implements Serializable {
         bts.add(BillType.PharmacySale);
         bts.add(BillType.PharmacyTransferIssue);
         bts.add(BillType.PharmacyTransferReceive);
-        //System.out.println("bts = " + bts);
+        //// // System.out.println("bts = " + bts);
         String sql = "Select b.department from "
                 + " Bill b "
                 + " where b.retired=false "
@@ -561,8 +646,7 @@ public class ReorderController implements Serializable {
         m.put("td", getToDate());
         List<Department> depst = departmentController.getDepartments(sql, m);
 
-        //System.out.println("m = " + m);
-
+        //// // System.out.println("m = " + m);
         if (false) {
             Stock s = new Stock();
             s.getDepartment();
@@ -595,6 +679,17 @@ public class ReorderController implements Serializable {
         List<Department> deps = new ArrayList<>(ds.values());
 
         return deps;
+    }
+
+    private void save(Reorder ro) {
+        if (ro == null) {
+            return;
+        }
+        if(ro.getId()==null) {
+            reorderFacade.create(ro);
+        }else{
+            reorderFacade.edit(ro);
+        }
     }
 
     enum AutoOrderMethod {
@@ -654,14 +749,14 @@ public class ReorderController implements Serializable {
         List<Item> iss = null;
 
         if (autoOrderMethod == AutoOrderMethod.ByDistributor) {
-            itemController.setInstituion(institution);
+            itemController.setInstitution(institution);
             iss = itemController.getDealorItem();
         } else if (autoOrderMethod == AutoOrderMethod.ByRol) {
-            itemController.setInstituion(institution);
+            itemController.setInstitution(institution);
 //            generateUserSelectedItemsFromUserSelectedReorders();
             iss = userSelectedItems;
         } else {
-            itemController.setInstituion(institution);
+            itemController.setInstitution(institution);
 //            generateUserSelectedItemsFromUserSelectedReorders();
             iss = userSelectedItems;
         }
@@ -721,15 +816,15 @@ public class ReorderController implements Serializable {
                 }
 
                 if (temNo == 1) {
-                    //    //System.out.println("nextDeliveryDate = " + nextDeliveryDate);
-                    //    //System.out.println("nextDeliveryDate.getTime() = " + nextDeliveryDate.getTime());
-                    //    //System.out.println("expectedDeliveryDate = " + expectedDeliveryDate);
-                    //    //System.out.println("expectedDeliveryDate.getTime() = " + expectedDeliveryDate.getTime());
-                    //    //System.out.println("nextDeliveryDate.getTime() - expectedDeliveryDate.getTime() = " + (nextDeliveryDate.getTime() - expectedDeliveryDate.getTime()));
-                    //    //System.out.println("(nextDeliveryDate.getTime() - expectedDeliveryDate.getTime()) / (1000 * 60 * 60 * 24) = " + (nextDeliveryDate.getTime() - expectedDeliveryDate.getTime()) / (1000 * 60 * 60 * 24));
-                    //    //System.out.println("((int) (nextDeliveryDate.getTime() - expectedDeliveryDate.getTime()) / (1000 * 60 * 60 * 24)) = " + ((int) (nextDeliveryDate.getTime() - expectedDeliveryDate.getTime()) / (1000 * 60 * 60 * 24)));
-                    //    //System.out.println("((int) ((nextDeliveryDate.getTime() - expectedDeliveryDate.getTime()) / (1000 * 60 * 60 * 24))) = " + ((int) ((nextDeliveryDate.getTime() - expectedDeliveryDate.getTime()) / (1000 * 60 * 60 * 24))));
-                    //    //System.out.println("((Long) ((nextDeliveryDate.getTime() - expectedDeliveryDate.getTime()) / (1000 * 60 * 60 * 24))).intValue() = " + ((Long) ((nextDeliveryDate.getTime() - expectedDeliveryDate.getTime()) / (1000 * 60 * 60 * 24))).intValue());
+                    //    //// // System.out.println("nextDeliveryDate = " + nextDeliveryDate);
+                    //    //// // System.out.println("nextDeliveryDate.getTime() = " + nextDeliveryDate.getTime());
+                    //    //// // System.out.println("expectedDeliveryDate = " + expectedDeliveryDate);
+                    //    //// // System.out.println("expectedDeliveryDate.getTime() = " + expectedDeliveryDate.getTime());
+                    //    //// // System.out.println("nextDeliveryDate.getTime() - expectedDeliveryDate.getTime() = " + (nextDeliveryDate.getTime() - expectedDeliveryDate.getTime()));
+                    //    //// // System.out.println("(nextDeliveryDate.getTime() - expectedDeliveryDate.getTime()) / (1000 * 60 * 60 * 24) = " + (nextDeliveryDate.getTime() - expectedDeliveryDate.getTime()) / (1000 * 60 * 60 * 24));
+                    //    //// // System.out.println("((int) (nextDeliveryDate.getTime() - expectedDeliveryDate.getTime()) / (1000 * 60 * 60 * 24)) = " + ((int) (nextDeliveryDate.getTime() - expectedDeliveryDate.getTime()) / (1000 * 60 * 60 * 24)));
+                    //    //// // System.out.println("((int) ((nextDeliveryDate.getTime() - expectedDeliveryDate.getTime()) / (1000 * 60 * 60 * 24))) = " + ((int) ((nextDeliveryDate.getTime() - expectedDeliveryDate.getTime()) / (1000 * 60 * 60 * 24))));
+                    //    //// // System.out.println("((Long) ((nextDeliveryDate.getTime() - expectedDeliveryDate.getTime()) / (1000 * 60 * 60 * 24))).intValue() = " + ((Long) ((nextDeliveryDate.getTime() - expectedDeliveryDate.getTime()) / (1000 * 60 * 60 * 24))).intValue());
                 }
                 temNo++;
 
@@ -771,7 +866,7 @@ public class ReorderController implements Serializable {
         m.put("dept", dept);
         m.put("item", item);
         sql = "select r from Reorder r where r.department=:dept and r.item=:item";
-        Reorder r = reorderFacade.findFirstBySQL(sql, m);
+        Reorder r = reorderFacade.findFirstByJpql(sql, m);
         if (r == null) {
             r = new Reorder();
             r.setDepartment(dept);
@@ -792,8 +887,8 @@ public class ReorderController implements Serializable {
             }
         }
         JsfUtil.addSuccessMessage("Saved.");
+
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Reports for ordering/Reorder analysis(/faces/pharmacy/ordering_data.xhtml)");
 
     }
 
@@ -801,7 +896,7 @@ public class ReorderController implements Serializable {
 
         Reorder tmp = (Reorder) event.getObject();
         getEjbFacade().edit(tmp);
-        UtilityController.addSuccessMessage("Reorder Level Updted");
+        JsfUtil.addSuccessMessage("Reorder Level Updted");
     }
 
     public List<Item> getSelectableItems() {
@@ -823,8 +918,8 @@ public class ReorderController implements Serializable {
             sessionController.setDepartment(department);
             return "";
         }
-        purchaseOrderRequestController.recreate();
-        purchaseOrderRequestController.getCurrentBill().setToInstitution(itemController.getInstituion());
+        purchaseOrderRequestController.resetBillValues();
+        purchaseOrderRequestController.getCurrentBill().setToInstitution(itemController.getInstitution());
         pharmacyController.setFromDate(fromDate);
         pharmacyController.setToDate(toDate);
         generatePharmacyOrderBillComponents();
@@ -853,26 +948,26 @@ public class ReorderController implements Serializable {
 
     private void generatePharmacyTransferRequestBillComponents() {
         purchaseOrderRequestController.setBillItems(new ArrayList<BillItem>());
-        //    //System.out.println("fromDepartment = " + fromDepartment);
-        //    //System.out.println("toDepartment = " + toDepartment);
+        //    //// // System.out.println("fromDepartment = " + fromDepartment);
+        //    //// // System.out.println("toDepartment = " + toDepartment);
         for (ItemReorders i : itemReorders) {
-            //    //System.out.println("i.getItem().getName() = " + i.getItem().getName());
+            //    //// // System.out.println("i.getItem().getName() = " + i.getItem().getName());
             Reorder fromReorder = new Reorder();
             Reorder toReorder = new Reorder();
 
             for (Reorder r : i.getReorders()) {
                 if (r.getDepartment().equals(fromDepartment)) {
-                    //    //System.out.println("from");
-                    //    //System.out.println("r.getTransientOrderingQty() = " + r.getTransientOrderingQty());
+                    //    //// // System.out.println("from");
+                    //    //// // System.out.println("r.getTransientOrderingQty() = " + r.getTransientOrderingQty());
                     fromReorder = r;
                 }
                 if (r.getDepartment().equals(toDepartment)) {
-                    //    //System.out.println("to");
-                    //    //System.out.println("r.getTransientStock() = " + r.getTransientStock());
+                    //    //// // System.out.println("to");
+                    //    //// // System.out.println("r.getTransientStock() = " + r.getTransientStock());
                     toReorder = r;
                 }
             }
-            //    //System.out.println("toReorder.getTransientOrderingQty() = " + toReorder.getTransientOrderingQty());
+            //    //// // System.out.println("toReorder.getTransientOrderingQty() = " + toReorder.getTransientOrderingQty());
 
             if (fromReorder.getTransientOrderingQty() <= 0) {
                 continue;
@@ -882,13 +977,13 @@ public class ReorderController implements Serializable {
             double requestingQty;
 
             availableToRequest = toReorder.getTransientStock() - (toReorder.getTransientOrderingQty() + toReorder.getBufferStocks());
-            //    //System.out.println("availableToRequest = " + availableToRequest);
+            //    //// // System.out.println("availableToRequest = " + availableToRequest);
             if (availableToRequest > fromReorder.getTransientOrderingQty()) {
                 requestingQty = fromReorder.getTransientOrderingQty();
             } else {
                 requestingQty = availableToRequest;
             }
-            //    //System.out.println("requestingQty = " + requestingQty);
+            //    //// // System.out.println("requestingQty = " + requestingQty);
             transferRequestController.getCurrentBillItem().setItem(i.getItem());
             transferRequestController.getCurrentBillItem().setTmpQty(requestingQty);
             transferRequestController.addItem();
@@ -981,13 +1076,13 @@ public class ReorderController implements Serializable {
         long differenceInMs = 0l;
         for (Object[] objc : obj) {
             Bill b = (Bill) objc[0];
-            //    //System.out.println("b = " + b);
+            //    //// // System.out.println("b = " + b);
             Bill rf = (Bill) objc[1];
-            //    //System.out.println("rf = " + rf);
+            //    //// // System.out.println("rf = " + rf);
             count++;
-            //    //System.out.println("count = " + count);
+            //    //// // System.out.println("count = " + count);
             differenceInMs = differenceInMs + (rf.getCreatedAt().getTime() - b.getCreatedAt().getTime());
-            //    //System.out.println("differenceInMs = " + differenceInMs);
+            //    //// // System.out.println("differenceInMs = " + differenceInMs);
         }
 
         int avgLeadTimeInDays;
@@ -1002,7 +1097,7 @@ public class ReorderController implements Serializable {
     }
 
     public double calculateDailyDemandInUnits(Reorder reorder) {
-        //    //System.out.println("Calculate daily demand in Units - reorder = " + reorder);
+        //    //// // System.out.println("Calculate daily demand in Units - reorder = " + reorder);
         String jpql;
         Map m = new HashMap();
         DateTime dt = new DateTime();
@@ -1027,10 +1122,10 @@ public class ReorderController implements Serializable {
         m.put("amp", reorder.getItem());
         m.put("fd", fd);
         m.put("td", td);
-        //    //System.out.println("m = " + m);
-        //    //System.out.println("jpql = " + jpql);
+        //    //// // System.out.println("m = " + m);
+        //    //// // System.out.println("jpql = " + jpql);
         Object[] obj = ejbFacade.findSingleAggregate(jpql, m);
-        //    //System.out.println("obj = " + obj);
+        //    //// // System.out.println("obj = " + obj);
         if (obj == null) {
             return 14;
         }
@@ -1039,19 +1134,19 @@ public class ReorderController implements Serializable {
         Double totalQty;
 
         try {
-            //    //System.out.println(" obj[0] = " + obj[0]);
+            //    //// // System.out.println(" obj[0] = " + obj[0]);
             minDate = (Date) obj[0];
         } catch (Exception e) {
             minDate = new Date();
         }
         try {
-            //    //System.out.println(" obj[1] = " + obj[1]);
+            //    //// // System.out.println(" obj[1] = " + obj[1]);
             maxDate = (Date) obj[1];
         } catch (Exception e) {
             maxDate = new Date();
         }
         try {
-            //    //System.out.println(" obj[2] = " + obj[2]);
+            //    //// // System.out.println(" obj[2] = " + obj[2]);
             totalQty = Math.abs((Double) obj[2]);
         } catch (Exception e) {
             totalQty = 0.0;
@@ -1062,8 +1157,8 @@ public class ReorderController implements Serializable {
         Days daysDiff = Days.daysBetween(mind, maxd);
 
         int ds = daysDiff.getDays();
-        //    //System.out.println("ds = " + ds);
-        //    //System.out.println("totalQty = " + totalQty);
+        //    //// // System.out.println("ds = " + ds);
+        //    //// // System.out.println("totalQty = " + totalQty);
 
         double dailyDemand = 0;
         if (ds == 0) {
@@ -1077,12 +1172,12 @@ public class ReorderController implements Serializable {
         if (dailyDemand == 0.0) {
             dailyDemand = 1.0;
         }
-        //    //System.out.println("dailyDemand = " + dailyDemand);
+        //    //// // System.out.println("dailyDemand = " + dailyDemand);
         return dailyDemand;
     }
 
     public int calculateOrderingCycleDurationInDays(Reorder reorder) {
-        //    //System.out.println("calculating ordering cycle duration");
+        //    //// // System.out.println("calculating ordering cycle duration");
         String jpql;
         Map m = new HashMap();
 
@@ -1108,11 +1203,11 @@ public class ReorderController implements Serializable {
         m.put("fd", fd);
         m.put("td", td);
 
-        //    //System.out.println("jpql = " + jpql);
-        //    //System.out.println("m = " + m);
+        //    //// // System.out.println("jpql = " + jpql);
+        //    //// // System.out.println("m = " + m);
         Object[] obj = ejbFacade.findSingleAggregate(jpql, m);
 
-        //    //System.out.println("obj = " + obj);
+        //    //// // System.out.println("obj = " + obj);
         if (obj == null) {
             return 14;
         }
@@ -1121,19 +1216,19 @@ public class ReorderController implements Serializable {
         int count;
 
         try {
-            //    //System.out.println(" obj[0] = " + obj[0]);
+            //    //// // System.out.println(" obj[0] = " + obj[0]);
             minDate = (Date) obj[0];
         } catch (Exception e) {
             minDate = new Date();
         }
         try {
-            //    //System.out.println(" obj[1] = " + obj[1]);
+            //    //// // System.out.println(" obj[1] = " + obj[1]);
             maxDate = (Date) obj[1];
         } catch (Exception e) {
             maxDate = new Date();
         }
         try {
-            //    //System.out.println(" obj[2] = " + obj[2]);
+            //    //// // System.out.println(" obj[2] = " + obj[2]);
             count = (int) obj[2];
         } catch (Exception e) {
             count = 1;
@@ -1148,8 +1243,8 @@ public class ReorderController implements Serializable {
         Days daysDiff = Days.daysBetween(maxd, mind);
 
         int ds = daysDiff.getDays();
-        //    //System.out.println("ds = " + ds);
-        //    //System.out.println("count = " + count);
+        //    //// // System.out.println("ds = " + ds);
+        //    //// // System.out.println("count = " + count);
         return (int) (ds / count);
 
     }

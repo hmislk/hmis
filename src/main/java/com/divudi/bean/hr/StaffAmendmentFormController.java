@@ -1,13 +1,13 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Open Hospital Management Information System
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.hr;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
-import com.divudi.ejb.CommonFunctions;
+
+
 import com.divudi.entity.Staff;
 import com.divudi.entity.hr.AmendmentForm;
 import com.divudi.entity.hr.Shift;
@@ -16,7 +16,8 @@ import com.divudi.facade.AmendmentFormFacade;
 import com.divudi.facade.ShiftFacade;
 import com.divudi.facade.StaffShiftFacade;
 import com.divudi.facade.StaffShiftHistoryFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
@@ -42,7 +43,7 @@ public class StaffAmendmentFormController implements Serializable {
     @Inject
     SessionController sessionController;
 
-    @EJB
+
     CommonFunctions commonFunctions;
     List<AmendmentForm> amendmentForms;
     Staff fromStaff;
@@ -119,7 +120,7 @@ public class StaffAmendmentFormController implements Serializable {
         hm.put("stf", staff);
         hm.put("sh", shift);
 
-        return staffShiftFacade.findFirstBySQL(sql, hm, TemporalType.DATE);
+        return staffShiftFacade.findFirstByJpql(sql, hm, TemporalType.DATE);
     }
 
     private StaffShift createToStaffShift(Shift shift) {
@@ -277,7 +278,7 @@ public class StaffAmendmentFormController implements Serializable {
         m.put("fd", fromDate);
         m.put("td", toDate);
 
-        amendmentForms = getAmendmentFormFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        amendmentForms = getAmendmentFormFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
 
@@ -306,7 +307,7 @@ public class StaffAmendmentFormController implements Serializable {
         m.put("fd", fromDate);
         m.put("td", toDate);
 
-        amendmentForms = getAmendmentFormFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        amendmentForms = getAmendmentFormFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
 
@@ -324,7 +325,7 @@ public class StaffAmendmentFormController implements Serializable {
         currAmendmentForm.setRetiredAt(new Date());
         currAmendmentForm.setRetirer(getSessionController().getLoggedUser());
         getAmendmentFormFacade().edit(currAmendmentForm);
-        UtilityController.addSuccessMessage("Deleted");
+        JsfUtil.addSuccessMessage("Deleted");
         clear();
     }
 
@@ -340,7 +341,7 @@ public class StaffAmendmentFormController implements Serializable {
         hm.put("dt", getCurrAmendmentForm().getFromDate());
         hm.put("stf", getCurrAmendmentForm().getFromStaff());
 
-        fromStaffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
+        fromStaffShifts = staffShiftFacade.findByJpql(sql, hm, TemporalType.DATE);
     }
 
     public void fetchToStaffShift() {
@@ -355,7 +356,7 @@ public class StaffAmendmentFormController implements Serializable {
         hm.put("dt", getCurrAmendmentForm().getToDate());
         hm.put("stf", getCurrAmendmentForm().getToStaff());
 
-        toStaffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
+        toStaffShifts = staffShiftFacade.findByJpql(sql, hm, TemporalType.DATE);
     }
 
     public void fetchToShift() {
@@ -371,7 +372,7 @@ public class StaffAmendmentFormController implements Serializable {
 
         hm.put("rs", getCurrAmendmentForm().getToStaff().getRoster());
 
-        toShifts = shiftFacade.findBySQL(sql, hm, TemporalType.DATE);
+        toShifts = shiftFacade.findByJpql(sql, hm, TemporalType.DATE);
     }
 
     @EJB

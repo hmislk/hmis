@@ -1,0 +1,76 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/admin/users/user_list.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui">
+
+
+    <ui:define name="users">
+
+        <h:panelGroup rendered="#{not webUserController.hasPrivilege('AdminManagingUsers') or sessionController.firstLogin }" >
+            <h:outputText value="You are NOT authorized"/>
+        </h:panelGroup>
+
+        <h:panelGroup rendered="#{webUserController.hasPrivilege('AdminManagingUsers') or sessionController.firstLogin }" >
+            <h:form  >
+                <p:panel header="Allowed Payment Schemes for Users" >
+                    <f:facet name="header">
+                        <i class="fa fa-credit-card"/>
+                        <h:outputLabel value="Allowed Payment Schemes for Users" class="mx-2"/>
+                    </f:facet>
+                    <h:panelGrid  columns="3" class="mb-2">                          
+                        <h:outputLabel value="Select User"/>
+                        <p:outputLabel value=":" style="width: 50px; text-align: center" ></p:outputLabel>
+                        <p:autoComplete id="user"  forceSelection="true" 
+                                        completeMethod="#{webUserController.completeUser}" var="us"
+                                        itemLabel="#{us.webUserPerson.name}" itemValue="#{us}"  
+                                        value="#{userPaymentSchemeController.selectedUser}" 
+                                        class="w-100" inputStyleClass="w-100" style="width: 500px">
+                            <f:ajax event="itemSelect" execute="user" render="ins" />
+                        </p:autoComplete>
+                    </h:panelGrid>
+
+                    <div class="row">
+                        <div class="col-9">
+                            <h:panelGrid columns="3" class="mb-2">
+                                <h:outputText value="Paymentscheme" ></h:outputText>
+                                <p:outputLabel value=":" style="width: 50px; text-align: center" ></p:outputLabel>
+                                <p:selectOneMenu id="dept2" value="#{userPaymentSchemeController.currentPaymentScheme}">
+                                    <f:selectItem itemLabel="Please select a Paymentscheme"/>
+                                    <f:selectItems value="#{paymentSchemeController.items}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                                </p:selectOneMenu>
+                            </h:panelGrid>
+                        </div>
+
+                        <div class="col-3">
+                            <p:commandButton 
+                                id="btnAddPaymentScheme" 
+                                value="Add Discount Scheme" 
+                                action="#{userPaymentSchemeController.addPaymentSchemeForUser()}"
+                                icon="fa fa-plus"
+                                class="ui-button-success"
+                                style="float: right;"
+                                />
+                            <p:defaultCommand target="btnAddPaymentScheme"/>
+                        </div>
+
+                    </div>
+
+                    <h:panelGrid columns="2" id="ins">
+                        <p:panel header="PaymentSchme allowed for this user are">
+                            <p:dataTable  value="#{userPaymentSchemeController.items}" var="i">
+                                <p:column headerText="Discount Scheme">
+                                    <h:outputLabel value="#{i.paymentScheme.name}"/>                              
+                                </p:column>
+                            </p:dataTable>                        
+                        </p:panel>
+                    </h:panelGrid>
+                    
+                </p:panel>
+            </h:form>
+        </h:panelGroup>
+    </ui:define>
+</ui:composition>

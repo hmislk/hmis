@@ -1,14 +1,15 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
+import com.divudi.data.BillTypeAtomic;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.ejb.PharmacyCalculation;
@@ -40,6 +41,7 @@ public class PreReturnController implements Serializable {
     private Bill bill;
     private Bill returnBill;
     private boolean printPreview;
+    String comment;
     ////////
 
     private List<BillItem> billItems;
@@ -73,7 +75,7 @@ public class PreReturnController implements Serializable {
         }
 
         if (!getSessionController().getDepartment().equals(bill.getDepartment())) {
-            UtilityController.addErrorMessage("U can't return another department's Issue.please log to specific department");
+            JsfUtil.addErrorMessage("U can't return another department's Issue.please log to specific department");
             return;
         }
 
@@ -111,7 +113,7 @@ public class PreReturnController implements Serializable {
 
         if (tmp.getQty() > getPharmacyRecieveBean().calQty3(tmp.getReferanceBillItem())) {
             tmp.setQty(0.0);
-            UtilityController.addErrorMessage("You cant return over than ballanced Qty ");
+            JsfUtil.addErrorMessage("You cant return over than ballanced Qty ");
         }
 
         calTotal();
@@ -133,6 +135,7 @@ public class PreReturnController implements Serializable {
         double dbl = 0 - getReturnBill().getTotal();
 
         getReturnBill().setBillType(BillType.PharmacyPre);
+        getReturnBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY);
         getReturnBill().setTotal(dbl);
         getReturnBill().setNetTotal(dbl);
 
@@ -201,12 +204,17 @@ public class PreReturnController implements Serializable {
     public void settle() {
 
         if (getReturnBill().getTotal() == 0) {
-            UtilityController.addErrorMessage("Total is Zero cant' return");
+            JsfUtil.addErrorMessage("Total is Zero cant' return");
+            return;
+        }
+        if (getReturnBill().getComments() == null || getReturnBill().getComments().trim().equals("")) {
+            JsfUtil.addErrorMessage("Please enter a comment");
             return;
         }
 
         saveReturnBill();
         saveComponent();
+        getBill().getReturnPreBills().add(getReturnBill());
 
         getBillFacade().edit(getReturnBill());
 
@@ -214,20 +222,31 @@ public class PreReturnController implements Serializable {
         getBillFacade().edit(getBill());
 
 //        if (getReturnBill().getPaymentMethod() == PaymentMethod.Credit) {
-//            //   ////System.out.println("getBill().getPaymentMethod() = " + getBill().getPaymentMethod());
-//            //   ////System.out.println("getBill().getToStaff() = " + getBill().getToStaff());
+//            //   ////// // System.out.println("getBill().getPaymentMethod() = " + getBill().getPaymentMethod());
+//            //   ////// // System.out.println("getBill().getToStaff() = " + getBill().getToStaff());
 //            if (getBill().getToStaff() != null) {
-//                //   ////System.out.println("getBill().getNetTotal() = " + getBill().getNetTotal());
+//                //   ////// // System.out.println("getBill().getNetTotal() = " + getBill().getNetTotal());
 //                staffBean.updateStaffCredit(getBill().getToStaff(), getReturnBill().getNetTotal());
-//                UtilityController.addSuccessMessage("Staff Credit Updated");
+//                JsfUtil.addSuccessMessage("Staff Credit Updated");
 //                getReturnBill().setFromStaff(getBill().getToStaff());
 //                getBillFacade().edit(getReturnBill());
 //            }
 //        }
         /// setOnlyReturnValue();
         printPreview = true;
-        UtilityController.addSuccessMessage("Successfully Returned");
+        JsfUtil.addSuccessMessage("Successfully Returned");
 
+    }
+    
+    public void fillReturningQty(){
+        if(billItems == null || billItems.isEmpty()){
+            JsfUtil.addErrorMessage("Please add bill items");
+            return;
+        }
+        for(BillItem bi:billItems){
+            bi.setQty(bi.getPharmaceuticalBillItem().getQty());
+            onEdit(bi);
+        }
     }
 
     private void calTotal() {
@@ -369,6 +388,14 @@ public class PreReturnController implements Serializable {
 
     public void setBillItems(List<BillItem> billItems) {
         this.billItems = billItems;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
     }
 
 }

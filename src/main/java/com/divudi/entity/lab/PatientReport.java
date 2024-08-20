@@ -1,6 +1,6 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+* Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.entity.lab;
 
@@ -23,6 +23,7 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Temporal;
@@ -143,10 +144,12 @@ public class PatientReport implements Serializable {
 
     @ManyToOne
     private Category reportFormat;
+    @Lob
+    private String qrCodeContentsDetailed;
+    @Lob
+    private String qrCodeContentsLink;
     
-    
-    
-    
+
     public PatientReportItemValue getTemplateItem() {
 
         if (templateItem == null) {
@@ -167,7 +170,7 @@ public class PatientReport implements Serializable {
     }
 
     public Investigation getTransInvestigation() {
-        if (item!=null && item instanceof Investigation) {
+        if (item != null && item instanceof Investigation) {
             transInvestigation = (Investigation) item;
         } else {
             transInvestigation = null;
@@ -175,6 +178,8 @@ public class PatientReport implements Serializable {
         return transInvestigation;
     }
 
+    
+    
     private void checkContains() {
         containValues = false;
         containCalculations = false;
@@ -185,7 +190,7 @@ public class PatientReport implements Serializable {
             return;
         }
         for (InvestigationItem ii : getTransInvestigation().getReportItems()) {
-            
+
             switch (ii.getIxItemType()) {
                 case Value:
                     containValues = true;
@@ -426,6 +431,8 @@ public class PatientReport implements Serializable {
     public Institution getApproveInstitution() {
         return approveInstitution;
     }
+    
+    
 
     public void setApproveInstitution(Institution approveInstitution) {
         this.approveInstitution = approveInstitution;
@@ -690,8 +697,8 @@ public class PatientReport implements Serializable {
     }
 
     public Category getReportFormat() {
-        if(reportFormat==null){
-            if(getTransInvestigation()!=null){
+        if (reportFormat == null) {
+            if (getTransInvestigation() != null) {
                 reportFormat = getTransInvestigation().getReportFormat();
             }
         }
@@ -700,6 +707,22 @@ public class PatientReport implements Serializable {
 
     public void setReportFormat(Category reportFormat) {
         this.reportFormat = reportFormat;
+    }
+
+    public String getQrCodeContentsDetailed() {
+        return qrCodeContentsDetailed;
+    }
+
+    public void setQrCodeContentsDetailed(String qrCodeContentsDetailed) {
+        this.qrCodeContentsDetailed = qrCodeContentsDetailed;
+    }
+
+    public String getQrCodeContentsLink() {
+        return qrCodeContentsLink;
+    }
+
+    public void setQrCodeContentsLink(String qrCodeContentsLink) {
+        this.qrCodeContentsLink = qrCodeContentsLink;
     }
 
     static class PatientReportItemValueComparator implements Comparator<PatientReportItemValue> {

@@ -1,10 +1,10 @@
 /*
- * MSc(Biomedical Informatics) Project
+ * Open Hospital Management Information System
  *
- * Development and Implementation of a Web-based Combined Data Repository of
- Genealogical, Clinical, Laboratory and Genetic Data
- * and
- * a Set of Related Tools
+ * Dr M H B Ariyaratne
+ * Acting Consultant (Health Informatics)
+ * (94) 71 5812399
+ * (94) 71 5812399
  */
 package com.divudi.bean.common;
 
@@ -19,8 +19,9 @@ import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.data.dataStructure.YearMonthDay;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.ejb.ServiceSessionBean;
+import com.divudi.entity.AuditEvent;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillComponent;
 import com.divudi.entity.BillEntry;
@@ -48,6 +49,8 @@ import com.divudi.facade.BillSessionFacade;
 import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PersonFacade;
+import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -59,30 +62,32 @@ import java.util.Objects;
 import java.util.Set;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
-import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
-import javax.faces.convert.Converter;
-import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
 import org.primefaces.event.TabChangeEvent;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- * Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
-public class BillPackageMedicalController implements Serializable {
+public class BillPackageMedicalController implements Serializable, ControllerWithPatient {
 
     private static final long serialVersionUID = 1L;
     @Inject
     SessionController sessionController;
     @Inject
     private CommonController commonController;
+
+    @Inject
+    private AuditEventApplicationController auditEventApplicationController;
     @EJB
     private BillFacade billFacade;
     @EJB
@@ -92,8 +97,7 @@ public class BillPackageMedicalController implements Serializable {
     private YearMonthDay yearMonthDay;
     //Interface Data
     private PaymentScheme paymentScheme;
-    private Patient newPatient;
-    private Patient searchedPatient;
+    private Patient patient;
     private Doctor referredBy;
     private Institution creditCompany;
     private Staff staff;
@@ -112,11 +116,12 @@ public class BillPackageMedicalController implements Serializable {
     private List<BillItem> lstBillItems;
     private List<BillEntry> lstBillEntries;
     private Integer index;
+    private boolean patientDetailsEditable;
     @EJB
     private PatientInvestigationFacade patientInvestigationFacade;
     @Inject
     private BillBeanController billBean;
-    @EJB
+
     CommonFunctions commonFunctions;
     @EJB
     private PersonFacade personFacade;
@@ -151,6 +156,11 @@ public class BillPackageMedicalController implements Serializable {
         billItems = null;
         currentBillItem = null;
         total = 0.0;
+    }
+
+    @Override
+    public void toggalePatientEditable() {
+        patientDetailsEditable = !patientDetailsEditable;
     }
 
     public PaymentMethodData getPaymentMethodData() {
@@ -197,8 +207,8 @@ public class BillPackageMedicalController implements Serializable {
             getBillSearch().setBill((BilledBill) b);
             getBillSearch().setPaymentMethod(b.getPaymentMethod());
             getBillSearch().setComment("Batch Cancell");
-            //////System.out.println("ggg : " + getBillSearch().getComment());
-            getBillSearch().cancelBill();
+            //////// // System.out.println("ggg : " + getBillSearch().getComment());
+            getBillSearch().cancelOpdBill();
         }
 
         tmp.copy(billedBill);
@@ -239,19 +249,47 @@ public class BillPackageMedicalController implements Serializable {
 
     private void savePatient() {
         if (getPatientTabId().equals("tabNewPt")) {
-            getNewPatient().setCreater(getSessionController().getLoggedUser());
-            getNewPatient().setCreatedAt(new Date());
+            getPatient().setCreater(getSessionController().getLoggedUser());
+            getPatient().setCreatedAt(new Date());
 
-            getNewPatient().getPerson().setCreater(getSessionController().getLoggedUser());
-            getNewPatient().getPerson().setCreatedAt(new Date());
+            getPatient().getPerson().setCreater(getSessionController().getLoggedUser());
+            getPatient().getPerson().setCreatedAt(new Date());
 
-            getPersonFacade().create(getNewPatient().getPerson());
-            getPatientFacade().create(getNewPatient());
-            tmpPatient = getNewPatient();
+            getPersonFacade().create(getPatient().getPerson());
+            getPatientFacade().create(getPatient());
+            tmpPatient = getPatient();
 
         } else if (getPatientTabId().equals("tabSearchPt")) {
-            tmpPatient = getSearchedPatient();
+            tmpPatient = getPatient();
         }
+    }
+
+    private Patient savePatient(Patient p) {
+
+        if (p == null) {
+            return null;
+        }
+        if (p.getPerson() == null) {
+            return null;
+        }
+
+        if (p.getPerson().getId() == null) {
+            p.getPerson().setCreater(sessionController.getLoggedUser());
+            p.getPerson().setCreatedAt(new Date());
+            personFacade.create(p.getPerson());
+        } else {
+            personFacade.edit(p.getPerson());
+        }
+
+        if (p.getId() == null) {
+            p.setCreater(sessionController.getLoggedUser());
+            p.setCreatedAt(new Date());
+            patientFacade.create(p);
+        } else {
+            patientFacade.edit(p);
+        }
+
+        return p;
     }
 
     public void putToBills() {
@@ -275,10 +313,17 @@ public class BillPackageMedicalController implements Serializable {
                     tmp.add(e);
                 }
             }
-            //////System.out.println("555");
+            //////// // System.out.println("555");
             getBillBean().calculateBillItems(myBill, tmp);
             bills.add(myBill);
         }
+    }
+
+    public String navigateToMedicalPakageBillingFromMenu() {
+        clearBillValues();
+        setPatient(getPatient());
+
+        return "/opd_bill_package_medical";
     }
 
     public void settleBill() {
@@ -286,8 +331,8 @@ public class BillPackageMedicalController implements Serializable {
         if (errorCheck()) {
             return;
         }
-        savePatient();
-        if (getBillBean().checkDepartment(getLstBillEntries()) == 1) {
+        savePatient(getPatient());
+        if (getBillBean().calculateNumberOfBillsPerOrder(getLstBillEntries()) == 1) {
             BilledBill temp = new BilledBill();
             Bill b = saveBill(lstBillEntries.get(0).getBillItem().getItem().getDepartment(), temp);
             getBillBean().saveBillItems(b, getLstBillEntries(), getSessionController().getLoggedUser());
@@ -295,17 +340,17 @@ public class BillPackageMedicalController implements Serializable {
             getBills().add(b);
 
         } else {
-            //    //////System.out.println("11");
+            //    //////// // System.out.println("11");
             putToBills();
-            //   //////System.out.println("22");
+            //   //////// // System.out.println("22");
         }
 
         saveBatchBill();
         saveBillItemSessions();
 
         clearBillItemValues();
-        //////System.out.println("33");
-        UtilityController.addSuccessMessage("Bill Saved");
+        //////// // System.out.println("33");
+        JsfUtil.addSuccessMessage("Bill Saved");
         printPreview = true;
     }
 
@@ -425,24 +470,24 @@ public class BillPackageMedicalController implements Serializable {
     private boolean errorCheck() {
         if (getPatientTabId().toString().equals("tabNewPt")) {
 
-            if (getNewPatient().getPerson().getName() == null || getNewPatient().getPerson().getName().trim().equals("") || getNewPatient().getPerson().getSex() == null || getNewPatient().getPerson().getDob() == null) {
-                UtilityController.addErrorMessage("Can not bill without Patient Name, Age or Sex.");
+            if (getPatient().getPerson().getName() == null || getPatient().getPerson().getName().trim().equals("") || getPatient().getPerson().getSex() == null || getPatient().getPerson().getDob() == null) {
+                JsfUtil.addErrorMessage("Can not bill without Patient Name, Age or Sex.");
                 return true;
             }
 
-            if (!com.divudi.java.CommonFunctions.checkAgeSex(getNewPatient().getPerson().getDob(), getNewPatient().getPerson().getSex(), getNewPatient().getPerson().getTitle())) {
-                UtilityController.addErrorMessage("Check Title,Age,Sex");
+            if (!com.divudi.java.CommonFunctions.checkAgeSex(getPatient().getPerson().getDob(), getPatient().getPerson().getSex(), getPatient().getPerson().getTitle())) {
+                JsfUtil.addErrorMessage("Check Title,Age,Sex");
                 return true;
             }
 
-            if (getNewPatient().getPerson().getPhone().length() < 1) {
-                UtilityController.addErrorMessage("Phone Number is Required it should be fill");
+            if (getPatient().getPerson().getPhone().length() < 1) {
+                JsfUtil.addErrorMessage("Phone Number is Required it should be fill");
                 return true;
             }
 
         }
         if (getLstBillEntries().isEmpty()) {
-            UtilityController.addErrorMessage("No investigations are added to the bill to settle");
+            JsfUtil.addErrorMessage("No investigations are added to the bill to settle");
             return true;
         }
 
@@ -450,17 +495,17 @@ public class BillPackageMedicalController implements Serializable {
             return true;
         }
 
-        if (getPaymentSchemeController().errorCheckPaymentMethod(getPaymentMethod(), getPaymentMethodData())) {
+        if (getPaymentSchemeController().checkPaymentMethodError(getPaymentMethod(), getPaymentMethodData())) {
             return true;
         }
 
 //        if (paymentScheme.getPaymentMethod() == PaymentMethod.Cash) {
 //            if (cashPaid == 0.0) {
-//                UtilityController.addErrorMessage("Please select tendered amount correctly");
+//                JsfUtil.addErrorMessage("Please select tendered amount correctly");
 //                return true;
 //            }
 //            if (cashPaid < getNetTotal()) {
-//                UtilityController.addErrorMessage("Please select tendered amount correctly");
+//                JsfUtil.addErrorMessage("Please select tendered amount correctly");
 //                return true;
 //            }
 //        }
@@ -469,11 +514,11 @@ public class BillPackageMedicalController implements Serializable {
 
     private void addEntry(BillItem bi) {
         if (bi == null) {
-            UtilityController.addErrorMessage("Nothing to add");
+            JsfUtil.addErrorMessage("Nothing to add");
             return;
         }
         if (bi.getItem() == null) {
-            UtilityController.addErrorMessage("Please select an investigation");
+            JsfUtil.addErrorMessage("Please select an investigation");
             return;
         }
 
@@ -489,7 +534,7 @@ public class BillPackageMedicalController implements Serializable {
 
         calTotals();
         if (bi.getNetValue() == 0.0) {
-            UtilityController.addErrorMessage("Please enter the rate");
+            JsfUtil.addErrorMessage("Please enter the rate");
             return;
         }
         //      clearBillItemValues();
@@ -498,7 +543,7 @@ public class BillPackageMedicalController implements Serializable {
 
     public void addToBill() {
         if (getLstBillEntries().size() > 0) {
-            UtilityController.addErrorMessage("You can not add more than on package at a time create new bill");
+            JsfUtil.addErrorMessage("You can not add more than on package at a time create new bill");
             return;
         }
 
@@ -506,7 +551,7 @@ public class BillPackageMedicalController implements Serializable {
         setCreditCompany(getCurrentBillItem().getItem().getForInstitution());
         for (Item i : itemList) {
             if (i.getDepartment() == null) {
-                UtilityController.addErrorMessage("Under administration, add a Department for item " + i.getName());
+                JsfUtil.addErrorMessage("Under administration, add a Department for item " + i.getName());
                 return;
             }
 
@@ -516,7 +561,7 @@ public class BillPackageMedicalController implements Serializable {
 
         }
 
-        //UtilityController.addSuccessMessage("Item Added");
+        //JsfUtil.addSuccessMessage("Item Added");
     }
 
     public void createBillItems(Item item) {
@@ -549,13 +594,13 @@ public class BillPackageMedicalController implements Serializable {
         m.put("toDate", toDate);
         m.put("fromDate", frmDate);
 
-        billItems = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        billItems = getBillItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
         total = 0.0;
         for (BillItem bi : billItems) {
             total += bi.getNetValue();
-            ////System.out.println("total = " + total);
-            ////System.out.println("bi.getNetValue() = " + bi.getNetValue());
+            ////// // System.out.println("total = " + total);
+            ////// // System.out.println("bi.getNetValue() = " + bi.getNetValue());
         }
     }
 
@@ -591,7 +636,7 @@ public class BillPackageMedicalController implements Serializable {
         m.put("fromDate", frmDate);
         m.put("class", bill.getClass());
 
-        billItems = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        billItems = getBillItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
         return billItems;
     }
@@ -644,7 +689,7 @@ public class BillPackageMedicalController implements Serializable {
         m.put("toDate", toDate);
         m.put("fromDate", frmDate);
 
-        return billFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+        return billFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
     }
 
     public double getTotal(List<BillItem> billItm) {
@@ -656,11 +701,43 @@ public class BillPackageMedicalController implements Serializable {
         return tot;
     }
 
-    public void createMedicalPackageBillItems() { 
+    public void createMedicalPackageBillItems() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
         Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("createMedicalPackageBillItems()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+
         createBillItems(new MedicalPackage());
+
         
-        commonController.printReportDetails(frmDate, toDate, startTime, "Medical package detail report(/reportCashier/report_opd_package_medical.xhtml)");
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
 
     }
 
@@ -677,18 +754,83 @@ public class BillPackageMedicalController implements Serializable {
     }
 
     public void createOtherPackageBillItemsOld() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
         Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("createOtherPackageBillItemsOld()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+
         createBillItems(new Packege());
+
         
-        commonController.printReportDetails(frmDate, toDate, startTime, "Package detail report -by bill item(/reportCashier/report_opd_package.xhtml)");
 
     }
 
     public void createOtherPackageBills() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
         Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("createOtherPackageBills()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+
         createBills(new Packege());
+
         
-        commonController.printReportDetails(frmDate, toDate, startTime, " Package detail report - by bill(/reportCashier/report_opd_package_bill.xhtml)");
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
     }
 
     public void clearBillItemValues() {
@@ -705,6 +847,117 @@ public class BillPackageMedicalController implements Serializable {
         //billTotal = 0.0;
     }
 
+    public String navigateToReportOpdPackage() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
+        Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("navigateToReportOpdPackage()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        return "/reportCashier/report_opd_package.xhtml?faces-redirect=true";
+    }
+
+    public String navigateToReportOpdPackageBill() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
+        Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("navigateToReportOpdPackageBill()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        return "/reportCashier/report_opd_package_bill.xhtml?faces-redirect=true";
+    }
+
+//    public String navigateToReportOpdPackageMedical() {
+//        FacesContext context = FacesContext.getCurrentInstance();
+//        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+//        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+//
+//        String url = request.getRequestURL().toString();
+//
+//        String ipAddress = request.getRemoteAddr();
+//
+//        AuditEvent auditEvent = new AuditEvent();
+//        auditEvent.setEventStatus("Started");
+//        long duration;
+//        Date startTime = new Date();
+//        auditEvent.setEventDataTime(startTime);
+//        if (sessionController != null && sessionController.getDepartment() != null) {
+//            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+//        }
+//
+//        if (sessionController != null && sessionController.getInstitution() != null) {
+//            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+//        }
+//        if (sessionController != null && sessionController.getLoggedUser() != null) {
+//            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+//        }
+//        auditEvent.setUrl(url);
+//        auditEvent.setIpAddress(ipAddress);
+//        auditEvent.setEventTrigger("navigateToReportOpdPackageMedical()");
+//        auditEventApplicationController.logAuditEvent(auditEvent);
+//
+//        Date endTime = new Date();
+//        duration = endTime.getTime() - startTime.getTime();
+//        auditEvent.setEventDuration(duration);
+//        auditEvent.setEventStatus("Completed");
+//        auditEventApplicationController.logAuditEvent(auditEvent);
+//        return "/reportCashier/report_opd_package_medical.xhtml?faces-redirect=true";
+//    }
+
     public void calTotals() {
         double tot = 0.0;
         double dis = 0.0;
@@ -717,10 +970,10 @@ public class BillPackageMedicalController implements Serializable {
 
             for (BillFee bf : be.getLstBillFees()) {
 //                if (bf.getBillItem().getItem().isUserChangable() && bf.getBillItem().getItem().getDiscountAllowed() != true) {
-                //////System.out.println("Total is " + tot);
-                //    //////System.out.println("Bill Fee value is " + bf.getFeeValue());
+                //////// // System.out.println("Total is " + tot);
+                //    //////// // System.out.println("Bill Fee value is " + bf.getFeeValue());
                 tot += bf.getFeeValue();
-                //////System.out.println("After addition is " + tot);
+                //////// // System.out.println("After addition is " + tot);
                 bf.getBillItem().setNetValue(bf.getBillItem().getNetValue() + bf.getFeeValue());
                 bf.getBillItem().setGrossValue(bf.getBillItem().getGrossValue() + bf.getFeeValue());
 
@@ -739,8 +992,8 @@ public class BillPackageMedicalController implements Serializable {
     }
 
     public void clearBillValues() {
-        setNewPatient(null);
-        setSearchedPatient(null);
+        setPatient(null);
+        setPatient(null);
         setReferredBy(null);
         setCreditCompany(null);
         setYearMonthDay(null);
@@ -774,11 +1027,11 @@ public class BillPackageMedicalController implements Serializable {
     public void removeBillItem() {
 
         //TODO: Need to add Logic
-        //////System.out.println(getIndex());
+        //////// // System.out.println(getIndex());
         if (getIndex() != null) {
 
             BillEntry temp = getLstBillEntries().get(getIndex());
-            //////System.out.println("Removed Item:" + temp.getBillItem().getNetValue());
+            //////// // System.out.println("Removed Item:" + temp.getBillItem().getNetValue());
             recreateList(temp);
             calTotals();
 
@@ -790,7 +1043,7 @@ public class BillPackageMedicalController implements Serializable {
         for (BillEntry b : getLstBillEntries()) {
             if (b.getBillItem().getItem() != r.getBillItem().getItem()) {
                 temp.add(b);
-                //////System.out.println(b.getBillItem().getNetValue());
+                //////// // System.out.println(b.getBillItem().getNetValue());
             }
         }
         lstBillEntries = temp;
@@ -883,26 +1136,19 @@ public class BillPackageMedicalController implements Serializable {
         this.patientTabId = patientTabId;
     }
 
-    public Patient getNewPatient() {
-        if (newPatient == null) {
-            newPatient = new Patient();
+    public Patient getPatient() {
+        if (patient == null) {
+            patient = new Patient();
+            patientDetailsEditable=true;
             Person p = new Person();
 
-            newPatient.setPerson(p);
+            patient.setPerson(p);
         }
-        return newPatient;
+        return patient;
     }
 
-    public void setNewPatient(Patient newPatient) {
-        this.newPatient = newPatient;
-    }
-
-    public Patient getSearchedPatient() {
-        return searchedPatient;
-    }
-
-    public void setSearchedPatient(Patient searchedPatient) {
-        this.searchedPatient = searchedPatient;
+    public void setPatient(Patient newPatient) {
+        this.patient = newPatient;
     }
 
     public Doctor getReferredBy() {
@@ -1054,7 +1300,7 @@ public class BillPackageMedicalController implements Serializable {
     }
 
     public void dateChangeListen() {
-        getNewPatient().getPerson().setDob(getCommonFunctions().guessDob(yearMonthDay));
+        getPatient().getPerson().setDob(getCommonFunctions().guessDob(yearMonthDay));
 
     }
 
@@ -1214,44 +1460,14 @@ public class BillPackageMedicalController implements Serializable {
         this.commonController = commonController;
     }
 
-    
-    @FacesConverter(forClass = Bill.class)
-    public static class BillControllerConverter implements Converter {
-
-        @Override
-        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
-                return null;
-            }
-            BillPackageMedicalController controller = (BillPackageMedicalController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "billPackageMedicalController");
-            return controller.getBillFacade().find(getKey(value));
-        }
-
-        java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
-            return key;
-        }
-
-        String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
-        }
-
-        @Override
-        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
-            if (object == null) {
-                return null;
-            }
-            if (object instanceof Bill) {
-                Bill o = (Bill) object;
-                return getStringKey(o.getId());
-            } else {
-                throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + BillPackageMedicalController.class.getName());
-            }
-        }
+    @Override
+    public boolean isPatientDetailsEditable() {
+        return patientDetailsEditable;
     }
+
+    @Override
+    public void setPatientDetailsEditable(boolean patientDetailsEditable) {
+        this.patientDetailsEditable = patientDetailsEditable;
+    }
+
 }

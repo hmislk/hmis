@@ -1,7 +1,7 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Open Hospital Management Information System
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.lab;
 
@@ -9,7 +9,7 @@ import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.InvestigationValidator;
 import com.divudi.entity.lab.InvestigationValidaterComponent;
 import com.divudi.facade.InvestigationValidatorFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
@@ -60,7 +60,7 @@ public class InvestigationValidatorComponentController implements Serializable {
         String sql;
         sql = "select i from InvestigationValidator i where "
                 + " i.retired=false ";
-        investigationItemValidators = getInvestigationItemValidatorFacade().findBySQL(sql);
+        investigationItemValidators = getInvestigationItemValidatorFacade().findByJpql(sql);
     }
 
     public void setCurrentInvestigation(Investigation currentInvestigation) {

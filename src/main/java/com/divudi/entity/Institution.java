@@ -1,12 +1,14 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+* Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.entity;
 
+import com.divudi.data.CollectingCentrePaymentMethod;
 import com.divudi.data.IdentifiableWithNameOrCode;
 import com.divudi.data.InstitutionType;
 import com.divudi.entity.channel.AgentReferenceBook;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -24,7 +26,6 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Temporal;
 import javax.persistence.Transient;
-import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
 /**
@@ -32,20 +33,18 @@ import javax.xml.bind.annotation.XmlTransient;
  * @author buddhika
  */
 @Entity
-@XmlRootElement
 public class Institution implements Serializable, IdentifiableWithNameOrCode {
 
+    static final long serialVersionUID = 1L;
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    Long id;
+    String institutionCode;
     @ManyToOne(fetch = FetchType.LAZY)
     Institution institution;
     @ManyToOne(cascade = CascadeType.ALL)
     private Person contactPerson;
 
-    static final long serialVersionUID = 1L;
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    //Main Properties   
-    Long id;
-    String institutionCode;
     String name;
     private String code;
     String address;
@@ -56,7 +55,15 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
     String mobile;
     String web;
     String chequePrintingName;
+    private String ownerName;
 
+    @ManyToOne
+    private Institution labInstitution;
+    @ManyToOne
+    private Department labDepartment;
+    @ManyToOne
+    private Category feeListType;
+    
     @Lob
     String labBillHeading;
     @Lob
@@ -69,16 +76,25 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
     String cashierBillHeading;
     @Enumerated(EnumType.STRING)
     InstitutionType institutionType;
+    @Enumerated(EnumType.STRING)
+    private CollectingCentrePaymentMethod CollectingCentrePaymentMethod;
+    @ManyToOne
+    private Route route;
     //Created Properties
     @ManyToOne
+
     WebUser creater;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+
     Date createdAt;
     //Retairing properties
+
     boolean retired;
     @ManyToOne
+
     WebUser retirer;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+
     Date retiredAt;
     String retireComments;
     double labBillDiscount;
@@ -87,8 +103,10 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
     double pharmacyDiscount;
     double ballance;
     double allowedCredit;
+    private double allowedCreditLimit;
     double maxCreditLimit;
     double standardCreditLimit;
+    private double percentage;
     @Transient
     String transAddress1;
     @Transient
@@ -106,25 +124,28 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
     @Transient
     List<AgentReferenceBook> agentReferenceBooks;
     String pointOfIssueNo;
-    
+
     @OneToMany(mappedBy = "institution", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+
     List<Institution> branch = new ArrayList<>();
     @Lob
     String descreption;
     String accountNo;
+
+    @ManyToOne
     Institution bankBranch;
-    
+
     String emailSendingUsername;
     String emailSendingPassword;
-    
+
     private String smsSendingUsername;
     private String smsSendingPassword;
     private String smsSendingAlias;
-    
-    
-    
+
     //Inactive Status
     private boolean inactive;
+    @ManyToOne
+    private Institution parentInstitution;
 
     public String getEmailSendingUsername() {
         return emailSendingUsername;
@@ -142,8 +163,6 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
         this.emailSendingPassword = emailSendingPassword;
     }
 
-    
-    
     public String getPointOfIssueNo() {
         return pointOfIssueNo;
     }
@@ -152,13 +171,9 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
         this.pointOfIssueNo = pointOfIssueNo;
     }
 
-    
-    
-    
-    public Institution() {
-        split();
-    }   
-    
+//    public Institution() {
+//        split();
+//    }
 
     public String getDescreption() {
         return descreption;
@@ -191,10 +206,9 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
     public void setInwardDiscount(double inwardDiscount) {
         this.inwardDiscount = inwardDiscount;
     }
-    
 
     public String getTransAddress1() {
-        if (transAddress1==null) {
+        if (transAddress1 == null) {
             split();
         }
         return transAddress1;
@@ -227,29 +241,29 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
     public void setTransAddress4(String transAddress4) {
         this.transAddress4 = transAddress4;
     }
-    
+
     public void split() {
-        if(address == null){
+        if (address == null) {
             return;
         }
-        
+
         String arr[] = address.split(",");
-        ////System.out.println(arr);
-        if(arr==null){
+        ////// // System.out.println(arr);
+        if (arr == null) {
             return;
         }
-       try{
-            transAddress1=arr[0];
-            transAddress2=arr[1];
-            transAddress3=arr[2];
-            transAddress4=arr[3];
-            transAddress5=arr[4];
-            transAddress6=arr[5];
-            transAddress7=arr[6];
-       }catch(Exception e){
-           ////System.out.println(e.getMessage());
-       }
-        
+        try {
+            transAddress1 = arr[0];
+            transAddress2 = arr[1];
+            transAddress3 = arr[2];
+            transAddress4 = arr[3];
+            transAddress5 = arr[4];
+            transAddress6 = arr[5];
+            transAddress7 = arr[6];
+        } catch (Exception e) {
+            ////// // System.out.println(e.getMessage());
+        }
+
     }
 
     public Long getId() {
@@ -468,18 +482,17 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
     public void setMaxCreditLimit(double maxCreditLimit) {
         this.maxCreditLimit = maxCreditLimit;
     }
-    
-    
 
     public String getChequePrintingName() {
+        if (chequePrintingName == null || chequePrintingName.trim().equals("")) {
+            chequePrintingName = name;
+        }
         return chequePrintingName;
     }
 
     public void setChequePrintingName(String chequePrintingName) {
         this.chequePrintingName = chequePrintingName;
     }
-    
-    
 
     @XmlTransient
     public List<Institution> getBranch() {
@@ -491,7 +504,7 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
     }
 
     public Institution getInstitution() {
-        
+
         return institution;
     }
 
@@ -527,8 +540,8 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
     }
 
     public List<AgentReferenceBook> getAgentReferenceBooks() {
-        if (agentReferenceBooks==null) {
-            agentReferenceBooks=new ArrayList<>();
+        if (agentReferenceBooks == null) {
+            agentReferenceBooks = new ArrayList<>();
         }
         return agentReferenceBooks;
     }
@@ -615,6 +628,13 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
     }
 
     public void setCode(String code) {
+        if (code == null || code.trim().equals("")) {
+            if (institutionCode != null && !institutionCode.trim().equals("")) {
+                code = institutionCode;
+            } else {
+                code = CommonFunctions.nameToCode(name);
+            }
+        }
         this.code = code;
     }
 
@@ -626,6 +646,78 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
         this.ownerEmail = ownerEmail;
     }
 
+    public Route getRoute() {
+        return route;
+    }
     
     
+
+    public void setRoute(Route route) {
+        this.route = route;
+    }
+
+    public CollectingCentrePaymentMethod getCollectingCentrePaymentMethod() {
+        return CollectingCentrePaymentMethod;
+    }
+
+    public void setCollectingCentrePaymentMethod(CollectingCentrePaymentMethod CollectingCentrePaymentMethod) {
+        this.CollectingCentrePaymentMethod = CollectingCentrePaymentMethod;
+    }
+
+    public double getPercentage() {
+        return percentage;
+    }
+
+    public void setPercentage(double percentage) {
+        this.percentage = percentage;
+    }
+
+    public String getOwnerName() {
+        return ownerName;
+    }
+
+    public void setOwnerName(String ownerName) {
+        this.ownerName = ownerName;
+    }
+
+    public double getAllowedCreditLimit() {
+        return allowedCreditLimit;
+    }
+
+    public void setAllowedCreditLimit(double allowedCreditLimit) {
+        this.allowedCreditLimit = allowedCreditLimit;
+    }
+
+    public Institution getParentInstitution() {
+        return parentInstitution;
+    }
+
+    public void setParentInstitution(Institution parentInstitution) {
+        this.parentInstitution = parentInstitution;
+    }
+
+    public Institution getLabInstitution() {
+        return labInstitution;
+    }
+
+    public void setLabInstitution(Institution labInstitution) {
+        this.labInstitution = labInstitution;
+    }
+
+    public Department getLabDepartment() {
+        return labDepartment;
+    }
+
+    public void setLabDepartment(Department labDepartment) {
+        this.labDepartment = labDepartment;
+    }
+
+    public Category getFeeListType() {
+        return feeListType;
+    }
+
+    public void setFeeListType(Category feeListType) {
+        this.feeListType = feeListType;
+    }
+
 }

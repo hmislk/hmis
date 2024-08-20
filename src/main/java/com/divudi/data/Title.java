@@ -1,11 +1,10 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.data;
 
 /**
- *
  * @author Dr. M H B Ariyaratne <buddhika.ari at gmail.com>
  */
 public enum Title {
@@ -67,5 +66,18 @@ public enum Title {
                 return this.toString();
 
         }
+    }
+
+    public static Title getTitleEnum(String titleString) {
+        if (titleString == null || titleString.trim().equals("")) {
+            return Title.Other;
+        }
+        String cleanedTitle = titleString.replaceAll("[\\.\\s\\(\\)]", "");
+        for (Title title : Title.values()) {
+            if (title.name().equalsIgnoreCase(cleanedTitle)) {
+                return title;
+            }
+        }
+        return Title.Other;
     }
 }

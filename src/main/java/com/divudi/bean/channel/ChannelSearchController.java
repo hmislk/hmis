@@ -1,13 +1,13 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.channel;
 
 import com.divudi.bean.common.BillController;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.bean.common.WebUserController;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillClassType;
@@ -122,10 +122,10 @@ public class ChannelSearchController implements Serializable {
     }
 
     public void searchForBillSessions() {
-        //System.out.println("getFromDate() = " + getFromDate());
-        //System.out.println("getToDate() = " + getToDate());
-        //System.out.println("txtSearch = " + txtSearch);
-        //System.out.println("txtSearchRef = " + txtSearchRef);
+         //System.out.println("getFromDate() = " + getFromDate());
+         //System.out.println("getToDate() = " + getToDate());
+        //// // System.out.println("txtSearch = " + txtSearch);
+        //// // System.out.println("txtSearchRef = " + txtSearchRef);
         if (getFromDate() == null && getToDate() == null 
                 && (txtSearch == null || txtSearch.trim().equals("")) 
                 && (txtSearchRef == null || txtSearchRef.trim().equals("")) 
@@ -153,18 +153,18 @@ public class ChannelSearchController implements Serializable {
                 + " and type(bs.bill)=:class ";
 
         if (txtSearch != null && !txtSearch.trim().equals("")) {
-            sql += " and  ((upper(bs.bill.insId) like :ts ) "
-                    + " or (upper(bs.bill.deptId) like :ts ))";
+            sql += " and  ((bs.bill.insId like :ts ) "
+                    + " or (bs.bill.deptId like :ts ))";
             m.put("ts", "%" + txtSearch.trim().toUpperCase() + "%");
         }
 
         if (txtSearchRef != null && !txtSearchRef.trim().equals("")) {
-            sql += " and upper(bs.billItem.agentRefNo) like :ts2 ";
+            sql += " and bs.billItem.agentRefNo like :ts2 ";
             m.put("ts2", "%" + txtSearchRef.trim().toUpperCase() + "%");
         }
         
         if (txtSearchPhone != null && !txtSearchPhone.trim().equals("")) {
-            sql += " and upper(bs.bill.patient.person.phone) like :ts3";
+            sql += " and bs.bill.patient.person.phone like :ts3";
             m.put("ts3", "%" + txtSearchPhone.trim().toUpperCase() + "%");
         }
 
@@ -179,9 +179,9 @@ public class ChannelSearchController implements Serializable {
         m.put("class", BilledBill.class);
 
         if (getFromDate() != null && getToDate() != null) {
-            searchedBillSessions = getBillSessionFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+            searchedBillSessions = getBillSessionFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
         } else {
-            searchedBillSessions = getBillSessionFacade().findBySQL(sql, m);
+            searchedBillSessions = getBillSessionFacade().findByJpql(sql, m);
         }
 
     }
@@ -199,7 +199,7 @@ public class ChannelSearchController implements Serializable {
                         + " bs.serialNo";
                 HashMap hh = new HashMap();
                 hh.put("ssDate", getDate());
-                billSessions = getBillSessionFacade().findBySQL(sql, hh, TemporalType.DATE);
+                billSessions = getBillSessionFacade().findByJpql(sql, hh, TemporalType.DATE);
 
             }
         }
@@ -221,58 +221,58 @@ public class ChannelSearchController implements Serializable {
             getBill().setCancelled(true);
             getBill().setCancelledBill(cb);
             getBillFacade().edit(getBill());
-            UtilityController.addSuccessMessage("Cancelled");
+            JsfUtil.addSuccessMessage("Cancelled");
 
             WebUser wb = getCashTransactionBean().saveBillCashInTransaction(cb, getSessionController().getLoggedUser());
             getSessionController().setLoggedUser(wb);
             printPreview = true;
 
         } else {
-            UtilityController.addErrorMessage("No Bill to cancel");
+            JsfUtil.addErrorMessage("No Bill to cancel");
             return;
         }
     }
 
     private boolean errorCheck() {
         if (getBill().isCancelled()) {
-            UtilityController.addErrorMessage("Already Cancelled. Can not cancel again");
+            JsfUtil.addErrorMessage("Already Cancelled. Can not cancel again");
             return true;
         }
 
         if (getBill().isRefunded()) {
-            UtilityController.addErrorMessage("Already Returned. Can not cancel.");
+            JsfUtil.addErrorMessage("Already Returned. Can not cancel.");
             return true;
         }
 
         if (getPaymentMethod() == PaymentMethod.Credit && getBill().getPaidAmount() != 0.0) {
-            UtilityController.addErrorMessage("Already Credit Company Paid For This Bill. Can not cancel.");
+            JsfUtil.addErrorMessage("Already Credit Company Paid For This Bill. Can not cancel.");
             return true;
         }
 
         if (checkPaid()) {
-            UtilityController.addErrorMessage("Doctor Payment Already Paid So Cant Cancel Bill");
+            JsfUtil.addErrorMessage("Doctor Payment Already Paid So Cant Cancel Bill");
             return true;
         }
 
 //        if (getBill().getBillType() == BillType.LabBill && patientInvestigation.getCollected()== true) {
-//            UtilityController.addErrorMessage("You can't cancell mark as collected");
+//            JsfUtil.addErrorMessage("You can't cancell mark as collected");
 //            return true;
 //        }
 //        if (!getWebUserController().hasPrivilege("LabBillCancelSpecial")) {
 //
-//            ////System.out.println("patientInvestigationController.sampledForAnyItemInTheBill(bill) = " + patientInvestigationController.sampledForAnyItemInTheBill(bill));
+//            ////// // System.out.println("patientInvestigationController.sampledForAnyItemInTheBill(bill) = " + patientInvestigationController.sampledForAnyItemInTheBill(bill));
 //            if (patientInvestigationController.sampledForAnyItemInTheBill(bill)) {
-//                UtilityController.addErrorMessage("Sample Already collected can't cancel");
+//                JsfUtil.addErrorMessage("Sample Already collected can't cancel");
 //                return true;
 //            }
 //        }
         if (getBill().getBillType() != BillType.LabBill && getPaymentMethod() == null) {
-            UtilityController.addErrorMessage("Please select a payment scheme.");
+            JsfUtil.addErrorMessage("Please select a payment scheme.");
             return true;
         }
 
         if (getComment() == null || getComment().trim().equals("")) {
-            UtilityController.addErrorMessage("Please enter a comment");
+            JsfUtil.addErrorMessage("Please enter a comment");
             return true;
         }
 
@@ -341,7 +341,7 @@ public class ChannelSearchController implements Serializable {
             cancelBillComponents(can, b);
 
             String sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + nB.getId();
-            List<BillFee> tmp = getBillFeeFacade().findBySQL(sql);
+            List<BillFee> tmp = getBillFeeFacade().findByJpql(sql);
 ////////////////////////
 
             cancelBillFee(can, b, tmp);
@@ -355,7 +355,7 @@ public class ChannelSearchController implements Serializable {
 
     private void cancelPaymentItems(Bill pb) {
         List<BillItem> pbis;
-        pbis = getBillItemFacede().findBySQL("SELECT b FROM BillItem b WHERE b.retired=false and b.bill.id=" + pb.getId());
+        pbis = getBillItemFacede().findByJpql("SELECT b FROM BillItem b WHERE b.retired=false and b.bill.id=" + pb.getId());
         for (BillItem pbi : pbis) {
             if (pbi.getPaidForBillFee() != null) {
                 pbi.getPaidForBillFee().setPaidValue(0.0);
@@ -366,7 +366,7 @@ public class ChannelSearchController implements Serializable {
 
     private boolean checkPaid() {
         String sql = "SELECT bf FROM BillFee bf where bf.retired=false and bf.bill.id=" + getBill().getId();
-        List<BillFee> tempFe = getBillFeeFacade().findBySQL(sql);
+        List<BillFee> tempFe = getBillFeeFacade().findByJpql(sql);
 
         for (BillFee f : tempFe) {
             if (f.getPaidValue() != 0.0) {
@@ -426,7 +426,7 @@ public class ChannelSearchController implements Serializable {
     public List<BillComponent> getBillComponents() {
         if (getBill() != null) {
             String sql = "SELECT b FROM BillComponent b WHERE b.retired=false and b.bill.id=" + getBill().getId();
-            billComponents = getBillCommponentFacade().findBySQL(sql);
+            billComponents = getBillCommponentFacade().findByJpql(sql);
             if (billComponents == null) {
                 billComponents = new ArrayList<>();
             }
@@ -441,7 +441,7 @@ public class ChannelSearchController implements Serializable {
                 + "  WHERE b.retired=false "
                 + " and b.bill=:b";
         hm.put("b", getBill());
-        billItems = getBillItemFacede().findBySQL(sql, hm);
+        billItems = getBillItemFacede().findByJpql(sql, hm);
 
     }
 

@@ -3,8 +3,8 @@
  *
  * Development and Implementation of Web-based System by ww.divudi.com
  Development and Implementation of Web-based System by ww.divudi.com
- * and
- * a Set of Related Tools
+ * (94) 71 5812399
+ * (94) 71 5812399
  */
 package com.divudi.bean.common;
 import com.divudi.entity.Item;
@@ -31,10 +31,10 @@ import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
-
+import com.divudi.bean.common.util.JsfUtil;
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
  Informatics)
  */
 @Named
@@ -70,7 +70,7 @@ public class MedicalPackageItemController implements Serializable {
             temSql = "SELECT i FROM Item i where (type(i)=:t1 or type(i)=:t2 ) and i.retired=false order by i.department.name";
             h.put("t1", Investigation.class);
             h.put("t2", Service.class);
-            serviceItems = getItemFacade().findBySQL(temSql, h, TemporalType.TIME);
+            serviceItems = getItemFacade().findByJpql(temSql, h, TemporalType.TIME);
 
         }
 
@@ -79,16 +79,16 @@ public class MedicalPackageItemController implements Serializable {
 
     public void updateFee() {
         if (getCurrentMedicalPackage() == null) {
-            UtilityController.addErrorMessage("Please select a package");
+            JsfUtil.addErrorMessage("Please select a package");
             return;
         }
         if (getCurrentItem() == null) {
-            UtilityController.addErrorMessage("Please select an item");
+            JsfUtil.addErrorMessage("Please select an item");
             return;
         }
 
         getFacade().edit(getCurrent());
-        UtilityController.addSuccessMessage("savedFeeSuccessfully");
+        JsfUtil.addSuccessMessage("savedFeeSuccessfully");
         saveCharge();
         //recreateModel();
         getItems();
@@ -135,7 +135,7 @@ public class MedicalPackageItemController implements Serializable {
             calculateTotalFee();
             setCurrent(getCurrent());
         } catch (Exception e) {
-            //////System.out.println(e.getMessage());
+            //////// // System.out.println(e.getMessage());
         }
     }
 
@@ -147,11 +147,11 @@ public class MedicalPackageItemController implements Serializable {
 
     private boolean checkPackageItem() {
         for (MedicalPackageItem i : getItems()) {
-            //////System.out.println("a : " + i.getItem().getId());
-            //////System.out.println("b : " + getCurrentItem().getId());
+            //////// // System.out.println("a : " + i.getItem().getId());
+            //////// // System.out.println("b : " + getCurrentItem().getId());
             if (i.getItem().getId() == getCurrentItem().getId()) {
-                //////System.out.println("c : " + i.getItem().getId());
-                //////System.out.println("d : " + getCurrentItem().getId());
+                //////// // System.out.println("c : " + i.getItem().getId());
+                //////// // System.out.println("d : " + getCurrentItem().getId());
                 return true;
             }
         }
@@ -161,16 +161,16 @@ public class MedicalPackageItemController implements Serializable {
 
     public void addToPackage() {
         if (getCurrentMedicalPackage() == null) {
-            UtilityController.addErrorMessage("Please select a package");
+            JsfUtil.addErrorMessage("Please select a package");
             return;
         }
         if (getCurrentItem() == null) {
-            UtilityController.addErrorMessage("Please select an item");
+            JsfUtil.addErrorMessage("Please select an item");
             return;
         }
 
         if (checkPackageItem()) {
-            UtilityController.addErrorMessage("Please item already exist in this package");
+            JsfUtil.addErrorMessage("Please item already exist in this package");
             return;
         }
 
@@ -181,17 +181,17 @@ public class MedicalPackageItemController implements Serializable {
         pi.setCreatedAt(new Date());
         pi.setCreater(sessionController.loggedUser);
         getFacade().create(pi);
-        UtilityController.addSuccessMessage("Added");
+        JsfUtil.addSuccessMessage("Added");
         recreateModel();
     }
 
     public void removeFromPackage() {
         if (getCurrentMedicalPackage() == null) {
-            UtilityController.addErrorMessage("Please select a package");
+            JsfUtil.addErrorMessage("Please select a package");
             return;
         }
         if (getCurrent() == null) {
-            UtilityController.addErrorMessage("Please select an item");
+            JsfUtil.addErrorMessage("Please select an item");
             return;
         }
 
@@ -199,7 +199,7 @@ public class MedicalPackageItemController implements Serializable {
         getCurrent().setRetirer(getSessionController().getLoggedUser());
         getCurrent().setRetiredAt(new Date());
         getFacade().edit(getCurrent());
-        UtilityController.addSuccessMessage("Item Removed");
+        JsfUtil.addSuccessMessage("Item Removed");
         recreateModel();
     }
 
@@ -279,7 +279,7 @@ public class MedicalPackageItemController implements Serializable {
         String temSql;
         if (getCurrentMedicalPackage() != null) {
             temSql = "SELECT i FROM MedicalPackageItem i where i.retired=false and i.packege.id = " + getCurrentMedicalPackage().getId();
-            items = getFacade().findBySQL(temSql);
+            items = getFacade().findByJpql(temSql);
         } else {
             items = null;
         }
@@ -311,12 +311,12 @@ public class MedicalPackageItemController implements Serializable {
 
             getFacade().edit(current);
 
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            UtilityController.addSuccessMessage("Saved Successfully");
+            JsfUtil.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
         getItems();
@@ -334,9 +334,9 @@ public class MedicalPackageItemController implements Serializable {
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
@@ -428,7 +428,7 @@ public class MedicalPackageItemController implements Serializable {
     public List<MedicalPackageFee> getCharges() {
         if (getCurrent() != null && getCurrent().getId() != null) {
             String temp = "SELECT  p from MedicalPackageFee p where p.retired=false and p.item.id=" + getCurrent().getItem().getId() + "and p.packege.id=" + getCurrentMedicalPackage().getId();
-            charges = getMedicalPackageFeeFacade().findBySQL(temp);
+            charges = getMedicalPackageFeeFacade().findByJpql(temp);
         }
         if (charges == null) {
             charges = new ArrayList<>();

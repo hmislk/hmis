@@ -1,9 +1,9 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <h:body>
@@ -24,7 +24,7 @@
                                     <h:outputLabel value="Details - " ></h:outputLabel>
                                     <p:commandButton style="float:right;" id="btnSave" value="Save" 
                                                      action="#{investigationController.saveManyIx()}" styleClass="buttons" 
-                                                     ajax="false" onclick="onSubmitButton();"  >
+                                                     ajax="false"   >
                                     </p:commandButton>
                                     <p:defaultCommand target="btnSave"/>
                                 </f:facet>
@@ -186,7 +186,7 @@
 
                                                 <p:outputLabel value="Created At" />
                                                 <p:outputLabel value="#{investigationController.current.createdAt}" >
-                                                    <f:convertDateTime pattern="yyyy MM dd hh:mm:ss a" />
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                                                 </p:outputLabel>
 
                                                 <p:outputLabel value="Last Editor" />
@@ -194,7 +194,7 @@
 
                                                 <p:outputLabel value="Last Edite at" />
                                                 <p:outputLabel value="#{investigationController.current.editedAt}" >
-                                                    <f:convertDateTime pattern="yyyy MM dd hh:mm:ss a" />
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                                                 </p:outputLabel>
                                             </p:panelGrid>
 

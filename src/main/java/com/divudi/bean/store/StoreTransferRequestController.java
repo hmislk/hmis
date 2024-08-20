@@ -1,13 +1,12 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.store;
 
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
-import com.divudi.bean.pharmacy.PharmacyController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
@@ -74,6 +73,11 @@ public class StoreTransferRequestController implements Serializable {
         billItems = null;
         printPreview = false;
     }
+    
+    public void changeDepartment() {
+        billItems = null;
+        bill.setToDepartment(null);
+    }
 
     private boolean checkItems(Item item) {
         for (BillItem b : getBillItems()) {
@@ -86,27 +90,27 @@ public class StoreTransferRequestController implements Serializable {
 
     private boolean errorCheck() {
         if (getBill().getToDepartment() == null) {
-            UtilityController.addErrorMessage("Select Department");
+            JsfUtil.addErrorMessage("Select Department");
             return true;
         }
 
         if (getBill().getToDepartment().getId() == getSessionController().getDepartment().getId()) {
-            UtilityController.addErrorMessage("U can't request same department");
+            JsfUtil.addErrorMessage("You can't request same department");
             return true;
         }
 
         if (getCurrentBillItem().getItem() == null) {
-            UtilityController.addErrorMessage("Select Item");
+            JsfUtil.addErrorMessage("Select Item");
             return true;
         }
 
         if (getCurrentBillItem().getTmpQty() == 0) {
-            UtilityController.addErrorMessage("Set Ordering Qty");
+            JsfUtil.addErrorMessage("Set Ordering Qty");
             return true;
         }
 
         if (checkItems(getCurrentBillItem().getItem())) {
-            UtilityController.addErrorMessage("Item is Already Added");
+            JsfUtil.addErrorMessage("Item is Already Added");
             return true;
         }
 
@@ -162,18 +166,18 @@ public class StoreTransferRequestController implements Serializable {
         Date toDate = null;
 
         if (getBill().getToDepartment() == null) {
-            UtilityController.addErrorMessage("Select Requested Department");
+            JsfUtil.addErrorMessage("Select Requested Department");
             return;
         }
 
         if (getBill().getToDepartment() == getSessionController().getDepartment()) {
-            UtilityController.addErrorMessage("U cant request ur department itself");
+            JsfUtil.addErrorMessage("You cant request ur department itself");
             return;
         }
 
         for (BillItem bi : getBillItems()) {
             if (bi.getQty() == 0.0) {
-                UtilityController.addErrorMessage("Check Items Qty");
+                JsfUtil.addErrorMessage("Check Items Qty");
                 return;
             }
         }
@@ -208,11 +212,11 @@ public class StoreTransferRequestController implements Serializable {
 
         getBillFacade().edit(getBill());
 
-        UtilityController.addSuccessMessage("Transfer Request Succesfully Created");
+        JsfUtil.addSuccessMessage("Transfer Request Succesfully Created");
 
         printPreview = true;
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "Store/Transfer/Request(/faces/store/store_transfer_request.xhtml)");
+        
 
     }
 

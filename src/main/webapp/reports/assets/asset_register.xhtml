@@ -1,0 +1,172 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body class="w-100 border">
+
+        <ui:composition template="/reports/index.xhtml" class="w-100 border">
+            <ui:define name="subcontent">
+                <h:form class="w-100">
+                    <p:panel header="Asset Register" class="w-100">
+                        <h:panelGrid columns="5" class="w-100 ">
+                            <p:outputLabel value="Institution/Branch" for="institutionMenu"></p:outputLabel>
+                            <p:selectOneMenu value="#{reportController.institution}" id="institutionMenu" required="true">
+                                <f:selectItem itemLabel="Select Institution Type"/>
+                                <f:selectItems value="#{institutionController.items}" var="i" itemLabel="#{i.name}" itemValue="#{i}"/>
+                                <p:ajax event="change" process="@this" update="panalDepartment"></p:ajax>
+                            </p:selectOneMenu>
+                            <p:spacer/>
+                            
+                            <p:outputLabel value="Store" for="departmentMenu"></p:outputLabel>
+                            <h:panelGroup id="panalDepartment">
+                                <p:selectOneMenu value="#{reportController.department}" id="departmentMenu" required="true" rendered="#{reportController.institution ne null}">
+                                    <f:selectItem itemLabel="Select Department Type"/>
+                                    <f:selectItems value="#{departmentController.getInstitutionDepatrments(reportController.institution)}" var="d" itemLabel="#{d.name}" itemValue="#{d}"/>
+                                </p:selectOneMenu>
+                            </h:panelGroup>
+                            
+                            <p:outputLabel value="Item Category" for="itemCategoryMenu"></p:outputLabel>
+                            <p:selectOneMenu id="itemCategoryMenu" required="true">
+                                <f:selectItem itemLabel="Select Item Category"></f:selectItem>
+                            </p:selectOneMenu>
+                            <p:spacer/>
+                            <p:outputLabel value="Item Name" for="itemNameyMenu"></p:outputLabel>
+                            <p:selectOneMenu id="itemNameyMenu" required="true">
+                                <f:selectItem itemLabel="Select Item Name"></f:selectItem>
+                            </p:selectOneMenu>
+                            
+                            <p:outputLabel value="Life State" for="lifeStateMenu"></p:outputLabel>
+                            <p:selectOneMenu id="lifeStateMenu" required="true">
+                                <f:selectItem itemLabel="Acquired"></f:selectItem>
+                                <f:selectItem itemLabel="Wipe"></f:selectItem>
+                                <f:selectItem itemLabel="Ready for commisioning"></f:selectItem>
+                                <f:selectItem itemLabel="In Use">
+                                </f:selectItem><f:selectItem itemLabel="Retired"></f:selectItem>
+                                <f:selectItem itemLabel="Sold"></f:selectItem>
+                                <f:selectItem itemLabel="Leased"></f:selectItem>
+                            </p:selectOneMenu>
+                            
+                            <p:spacer/>
+                            
+                            <p:outputLabel value="Sort Life State" for=""></p:outputLabel>
+                            <p:selectOneRadio>
+                                <f:selectItem itemLabel="Ascending"></f:selectItem>
+                                <f:selectItem itemLabel="Descending"></f:selectItem>
+                            </p:selectOneRadio>
+                            
+                            <p:outputLabel value="Sort Purchase Date" ></p:outputLabel>
+                            <p:selectOneRadio>
+                                <f:selectItem itemLabel="Ascending"></f:selectItem>
+                                <f:selectItem itemLabel="Descending"></f:selectItem>
+                            </p:selectOneRadio>
+                        </h:panelGrid><br />
+                        
+                        <p:dataTable value="#{searchController.telephoneNumbers}" var="b" id="tb1" rowIndexVar="i"
+                                     rowKey="#{b}" 
+                                     rows="#{searchController.rows}"
+                                     selection="#{searchController.selectedTelephoneNumbers}"
+                                     paginator="true"
+                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     rowsPerPageTemplate="20, 50, 100, 1000, 1500" class="w-100">
+
+                            <f:facet name="header" >
+                                <p:outputLabel value="Asset Register Reports" />                                
+                            </f:facet>
+                            
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Asset Category" >
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Sub Category" >
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Asset Code" >
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="PO Number" >
+                                    </p:outputLabel>
+                                </f:facet> 
+                            </p:column>
+                            
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="PO Date" >
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Purchase Date" >
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Supplier Name" >
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="GRN No" >
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Asset Status" >
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Asset Location" >
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Warrenty End Date" >
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Warrenty Status" >
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            
+                            
+                        </p:dataTable>
+
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

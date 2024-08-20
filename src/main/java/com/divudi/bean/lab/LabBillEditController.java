@@ -1,11 +1,11 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Open Hospital Management Information System
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.lab;
 
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.entity.Bill;
 import com.divudi.facade.BillFacade;
 import java.io.Serializable;
@@ -33,11 +33,11 @@ public class LabBillEditController implements Serializable {
 
     public void updateBill() {
         if (bill == null) {
-            UtilityController.addErrorMessage("Select a bill");
+            JsfUtil.addErrorMessage("Select a bill");
             return;
         }
         getBillFacade().edit(bill);
-        UtilityController.addErrorMessage("Updates");
+        JsfUtil.addErrorMessage("Updates");
     }
 
     public Bill getBill() {

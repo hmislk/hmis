@@ -1,6 +1,6 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+* Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.entity.lab;
 
@@ -17,6 +17,8 @@ import com.divudi.data.lab.DataEntryMethod;
 import com.divudi.entity.Category;
 import com.divudi.entity.Item;
 import com.divudi.entity.WebUser;
+import com.divudi.java.CommonFunctions;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.CascadeType;
@@ -27,6 +29,7 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Inheritance;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
@@ -38,31 +41,40 @@ import javax.persistence.Transient;
  * @author Buddhika
  */
 @Entity
+@Inheritance
 public class ReportItem implements Serializable {
 
     static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @JsonIgnore
     Long id;
     //Main Properties
     String name;
-    String tName;
-    String sName;
+    String code;
+    @Lob
     String description;
     int orderNo;
     //Created Properties
     @ManyToOne
+    @JsonIgnore
     WebUser creater;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    @JsonIgnore
     Date createdAt;
     //Retairing properties
+    @JsonIgnore
     boolean retired;
     @ManyToOne
+    @JsonIgnore
     WebUser retirer;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    @JsonIgnore
     Date retiredAt;
+    @JsonIgnore
     String retireComments;
     @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JsonIgnore
     Item item;
     @Enumerated(EnumType.STRING)
     InvestigationItemType ixItemType;
@@ -106,11 +118,14 @@ public class ReportItem implements Serializable {
     @Enumerated(EnumType.STRING)
     ReportItemType reportItemType;
     @ManyToOne
+    @JsonIgnore
     Category category;
     int pageNo;
     @ManyToOne
+    @JsonIgnore
     private Item referringItem;
     @ManyToOne
+    @JsonIgnore
     private Category referringCategory;
 
     double riTop;
@@ -126,30 +141,41 @@ public class ReportItem implements Serializable {
     String htmltext;
 
     @OneToOne
+    @JsonIgnore
     private ReportItem testHeader;
     @OneToOne
+    @JsonIgnore
     private ReportItem valueHeader;
     @OneToOne
+    @JsonIgnore
     private ReportItem unitHeader;
     @OneToOne
+    @JsonIgnore
     private ReportItem referenceHeader;
     @OneToOne
+    @JsonIgnore
     private ReportItem testLabel;
     @ManyToOne
+    @JsonIgnore
     private ReportItem valueValue;
     @ManyToOne
+    @JsonIgnore
     private ReportItem flagValue;
     @OneToOne
+    @JsonIgnore
     private ReportItem unitLabel;
     @OneToOne
+    @JsonIgnore
     private ReportItem referenceLabel;
     @ManyToOne
+    @JsonIgnore
     private ReportItem commentLabel;
     @ManyToOne
+    @JsonIgnore
     private InvestigationComponent investigationComponent;
     @Enumerated(EnumType.STRING)
     private DataEntryMethod dataEntryMethod;
-    
+
     private boolean automated;
     @ManyToOne
     private Machine machine;
@@ -162,18 +188,17 @@ public class ReportItem implements Serializable {
     @ManyToOne
     private InvestigationTube tube;
     private String resultCode;
-    
+
     private boolean canNotApproveIfValueIsEmpty;
     private boolean canNotApproveIfValueIsBelowAbsoluteLowValue;
     private boolean canNotApproveIfValueIsAboveAbsoluteHighValue;
-    
+
     private String emptyValueWarning;
     private String belowAbsoluteWarning;
     private String aboveAbsoluteWarning;
-    
+
     private double absoluteLowValue;
     private double absoluteHighValue;
-    
 
     public CssTextDecoration getCssTextDecoration() {
         return cssTextDecoration;
@@ -402,7 +427,7 @@ public class ReportItem implements Serializable {
     }
 
     public InvestigationItemType getIxItemType() {
-        if(ixItemType==null){
+        if (ixItemType == null) {
             ixItemType = InvestigationItemType.Label;
         }
         return ixItemType;
@@ -626,20 +651,15 @@ public class ReportItem implements Serializable {
         this.formatString = formatString;
     }
 
-    public String gettName() {
-        return tName;
+    public String getCode() {
+        if (code == null || code.trim().equals("")) {
+            code = CommonFunctions.nameToCode(name);
+        }
+        return code;
     }
 
-    public void settName(String tName) {
-        this.tName = tName;
-    }
-
-    public String getsName() {
-        return sName;
-    }
-
-    public void setsName(String sName) {
-        this.sName = sName;
+    public void setCode(String code) {
+        this.code = code;
     }
 
 //    public String getCssStyle() {
@@ -730,10 +750,11 @@ public class ReportItem implements Serializable {
 //                + "clip:" + cssClip + ";font-family: " + cssFontFamily + ";font-variant:" + cssFontVariant + ";"
 //                + "font-weight: " + cssFontWeight + ":border-radius: " + cssBorderRadius + ";";
         //TODO (Later) to add cssHeight, font styles, etc, Now 12
-//        //System.out.println("cssStyle = " + cssStyle);
+//        //// // System.out.println("cssStyle = " + cssStyle);
         return cssStyle;
     }
 
+    @JsonIgnore
     public String getInnerCssStyle() {
         cssStyle = "";
         if (getRiFontSize() != 0) {
@@ -782,6 +803,7 @@ public class ReportItem implements Serializable {
         return cssStyle;
     }
 
+    @JsonIgnore
     public String getOuterCssStyle() {
         cssStyle = "";
         if (getRiTop() != 0) {
@@ -965,8 +987,7 @@ public class ReportItem implements Serializable {
 
     public static void copyReportItem(ReportItem fromRi, ReportItem toRi) {
         toRi.name = fromRi.name;
-        toRi.tName = fromRi.tName;
-        toRi.sName = fromRi.sName;
+        toRi.code = fromRi.code;
         toRi.htmltext = fromRi.htmltext;
         toRi.description = fromRi.description;
         toRi.orderNo = fromRi.orderNo;
@@ -1170,6 +1191,4 @@ public class ReportItem implements Serializable {
         this.aboveAbsoluteWarning = aboveAbsoluteWarning;
     }
 
-    
-    
 }

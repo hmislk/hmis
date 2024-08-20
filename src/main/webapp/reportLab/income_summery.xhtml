@@ -1,26 +1,26 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
-                template="/resources/template/template.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/reportLab/lab_summeries_index.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://java.sun.com/jsf/core"
-                xmlns:pe="http://primefaces.org/ui/extensions">
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                >
 
-    <ui:define name="content">
+    <ui:define name="subcontent">
         <h:panelGroup>
 
             <h:form id="form1">
-                <p:panel header="Get Income Summery">
+                <p:panel header="Get Income Summary">
 
                     <h:panelGrid columns="2">
 
                         <h:outputLabel   value="From Date" />
-                        <p:calendar styleClass="noPrintButton" value="#{investigationMonthSummeryOwnControllerSession.fromDate}" pattern="dd MMMM yyyy hh:mm:ss a" >
+                        <p:calendar styleClass="noPrintButton" value="#{investigationMonthSummeryOwnControllerSession.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                         </p:calendar>
 
                         <h:outputLabel   value="To Date" />
-                        <p:calendar styleClass="noPrintButton" value="#{investigationMonthSummeryOwnControllerSession.toDate}" pattern="dd MMMM yyyy hh:mm:ss a" >
+                        <p:calendar styleClass="noPrintButton" value="#{investigationMonthSummeryOwnControllerSession.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                         </p:calendar>  
                     </h:panelGrid>
                     <h:panelGrid columns="2" id="pan1">
@@ -52,7 +52,7 @@
                         <p:printer target="panelPrint" />
                     </p:commandButton>
                     <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" >
-                        <pe:exporter type="xlsx" target="tbl,tbl1" fileName="income_summery" />
+                        <p:dataExporter type="xlsx" target="tbl,tbl1" fileName="income_summery" />
                     </p:commandButton>
                     <p:panel id="panelPrint" styleClass="noBorder summeryBorder">
                         <p:dataTable id="tbl" value="#{investigationMonthSummeryOwnControllerSession.bills}" var="b" rowIndexVar="i" rendered="#{investigationMonthSummeryOwnControllerSession.summeryType eq '3'}">

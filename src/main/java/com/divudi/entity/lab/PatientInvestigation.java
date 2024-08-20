@@ -1,6 +1,6 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+* Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.entity.lab;
 
@@ -13,6 +13,7 @@ import com.divudi.entity.Patient;
 import com.divudi.entity.PatientEncounter;
 import com.divudi.entity.WebUser;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import javax.persistence.Entity;
@@ -60,6 +61,11 @@ public class PatientInvestigation implements Serializable {
     @ManyToOne
     private PatientEncounter encounter;
     //Sample Collection
+    private Boolean barcodeGenerated=false;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date barcodeGeneratedAt;
+    @ManyToOne
+    private WebUser barcodeGeneratedBy;
     private Boolean collected = false;
     @ManyToOne
     private WebUser sampleCollecter;
@@ -166,12 +172,16 @@ public class PatientInvestigation implements Serializable {
     List<PatientReport> patientReports;
 
     public List<PatientReport> getPatientReports() {
+        if(patientReports == null){
+            patientReports = new ArrayList<>();
+        }
         return patientReports;
     }
 
     public void setPatientReports(List<PatientReport> patientReports) {
         this.patientReports = patientReports;
     }
+    
     
     
     
@@ -249,13 +259,13 @@ public class PatientInvestigation implements Serializable {
     }
 
     public Boolean getSampleOutside() {
-        //////System.out.println("Getting "+sampleOutside);
+        //////// // System.out.println("Getting "+sampleOutside);
         
         return sampleOutside;
     }
 
     public void setSampleOutside(Boolean sampleOutside) {
-        //////System.out.println("Setting "+sampleOutside);
+        //////// // System.out.println("Setting "+sampleOutside);
         this.sampleOutside = sampleOutside;
     }
 
@@ -763,4 +773,29 @@ public class PatientInvestigation implements Serializable {
     public void setPackege(Packege packege) {
         this.packege = packege;
     }
+
+    public Boolean getBarcodeGenerated() {
+        return barcodeGenerated;
+    }
+
+    public void setBarcodeGenerated(Boolean barcodeGenerated) {
+        this.barcodeGenerated = barcodeGenerated;
+    }
+
+    public Date getBarcodeGeneratedAt() {
+        return barcodeGeneratedAt;
+    }
+
+    public void setBarcodeGeneratedAt(Date barcodeGeneratedAt) {
+        this.barcodeGeneratedAt = barcodeGeneratedAt;
+    }
+
+    public WebUser getBarcodeGeneratedBy() {
+        return barcodeGeneratedBy;
+    }
+
+    public void setBarcodeGeneratedBy(WebUser barcodeGeneratedBy) {
+        this.barcodeGeneratedBy = barcodeGeneratedBy;
+    }
+
 }

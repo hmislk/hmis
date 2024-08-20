@@ -1,7 +1,7 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Open Hospital Management Information System
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.data.lab;
 
@@ -73,7 +73,6 @@ public class SysMexAdf2 {
     private String basoPercentage;
 
     public boolean isCorrectReport() {
-        //System.out.println("Checking wether the report is Correct");
         boolean flag = true;
         if (bytes == null || bytes.isEmpty()) {
             return false;
@@ -82,14 +81,11 @@ public class SysMexAdf2 {
             return false;
         }
         Double id1 = findValue(sampleIdStart, sampleIdEnd, 0);
-        //System.out.println("id1 = " + id1);
 
         Double thb = findValue(hgbStart, hgbEnd, 2);
-        //System.out.println("Hb Check = " + thb);
         if (thb < 2 || thb > 20) {
             return false;
         }
-        //System.out.println("Hb  checks ok");
 
         Double tpcv = findValue(hctStart, hctEnd, 2);
         if (tpcv < 5 || tpcv > 60) {
@@ -175,12 +171,10 @@ public class SysMexAdf2 {
 
     private Double findValue(int from, int to, int decimals) {
         Double val = null;
-//        //System.out.println("from = " + from);
-//        //System.out.println("to = " + to);
 
         String display = "";
         for (int i = from; i < to + 1; i++) {
-//            //System.out.println("i = " + i);
+            //System.out.println("i = " + i);
             int temN;
             try {
                 temN = bytes.get(i);

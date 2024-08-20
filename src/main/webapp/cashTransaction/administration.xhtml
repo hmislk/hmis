@@ -1,8 +1,8 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
-      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui">
 
     <h:body>
@@ -11,9 +11,9 @@
 
             <ui:define name="content">
                 <h:form>
-                    <p:commandButton value="Create Drawer" action="drawer" ajax="false" onclick="onSubmitButton();"/>
-                    <p:commandButton value="Set Drawer To User"  action="set_drawer_to_user" ajax="false"  onclick="onSubmitButton();"/>   
-                     <p:commandButton value="Set Drawer To Other User"  action="set_drawer_to_other_user" ajax="false"  onclick="onSubmitButton();"/>   
+                    <p:commandButton value="Create Drawer" action="drawer" ajax="false" />
+                    <p:commandButton value="Set Drawer To User"  action="set_drawer_to_user" ajax="false"  />   
+                     <p:commandButton value="Set Drawer To Other User"  action="set_drawer_to_other_user" ajax="false"  />   
                 </h:form>
             </ui:define>
 

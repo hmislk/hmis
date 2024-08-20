@@ -1,7 +1,7 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Open Hospital Management Information System
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.common;
 
@@ -51,7 +51,8 @@ import com.divudi.facade.PharmaceuticalBillItemFacade;
 import com.divudi.facade.PharmaceuticalItemCategoryFacade;
 import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.StaffFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
+import java.sql.SQLSyntaxErrorException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -62,11 +63,22 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.ejb.EJB;
 import javax.enterprise.context.ApplicationScoped;
+import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.persistence.Entity;
+import javax.persistence.PersistenceException;
 import javax.persistence.TemporalType;
+import javax.servlet.http.HttpServletResponse;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.reflections.Reflections;
 
 /**
  *
@@ -164,6 +176,10 @@ public class DataAdministrationController {
     private DepartmentType departmentType;
     private SearchKeyword searchKeyword;
     CommonController commonController;
+    private int manageCheckEnteredDataIndex;
+    private String errors;
+    private String suggestedSql;
+    private String executionFeedback;
 
     Date fromDate;
     Date toDate;
@@ -192,7 +208,7 @@ public class DataAdministrationController {
 
         sql = "SELECT c FROM PharmaceuticalItemCategory c ";
 
-        Set<Category> allCats = new HashSet<>(categoryFacade.findBySQL(sql, m));
+        Set<Category> allCats = new HashSet<>(categoryFacade.findByJpql(sql, m));
 
         sql = "SELECT i.category "
                 + " FROM Item i "
@@ -201,7 +217,7 @@ public class DataAdministrationController {
         ////System.out.println("sql = " + sql);
         m = new HashMap();
 
-        Set<Category> usedCats = new HashSet<>(categoryFacade.findBySQL(sql, m));
+        Set<Category> usedCats = new HashSet<>(categoryFacade.findByJpql(sql, m));
 
         ////System.out.println("Used Cats " + usedCats.size());
         ////System.out.println("All Cats after removing " + allCats.size());
@@ -237,7 +253,7 @@ public class DataAdministrationController {
         sql = "select b from Bill b where (b.billType=:bt1 or b.billType=:bt2) order by b.id desc";
         m.put("bt1", BillType.PharmacySale);
         m.put("bt2", BillType.PharmacyPre);
-        List<Bill> bs = getBillFacade().findBySQL(sql, m, 20);
+        List<Bill> bs = getBillFacade().findByJpql(sql, m, 20);
         for (Bill b : bs) {
             ////System.out.println("b = " + b);
             ////System.out.println("b.getBillType() = " + b.getBillType());
@@ -256,6 +272,103 @@ public class DataAdministrationController {
 
     }
 
+    public String navigateToCheckMissingFields() {
+        return "/dataAdmin/missing_database_fields";
+    }
+
+    public void checkMissingFields1() {
+        suggestedSql = "";
+        errors = "";
+        StringBuilder allErrors = new StringBuilder();
+
+        for (Class<?> entityClass : findEntityClassNames()) {
+            String entityName = entityClass.getSimpleName();
+            try {
+                itemFacade.executeQueryFirstResult(entityClass, "SELECT e FROM " + entityName + " e");
+            } catch (PersistenceException pe) {
+                Throwable cause = pe.getCause();
+                while (cause != null && !(cause instanceof SQLSyntaxErrorException)) {
+                    cause = cause.getCause();
+                }
+                if (cause != null) {
+                    Matcher matcher = Pattern.compile("Unknown column '([^']+)' in 'field list'").matcher(cause.getMessage());
+                    if (matcher.find()) {
+                        String missingColumn = matcher.group(1);
+                        errors += String.format("Entity: %s, Missing Column: %s\n", entityName, missingColumn);
+                    }
+                }
+            } catch (Exception e) {
+                // Handle other exceptions as needed
+            }
+        }
+    }
+
+    public void checkMissingFields() {
+        suggestedSql = "";
+        List<EntityFieldError> entityFieldErrors = new ArrayList<>();
+
+        for (Class<?> entityClass : findEntityClassNames()) {
+            String entityName = entityClass.getSimpleName();
+            EntityFieldError entityFieldError = new EntityFieldError(entityName);
+            String jpql = "SELECT e FROM " + entityName + " e";
+            try {
+                itemFacade.executeQueryFirstResult(entityClass, jpql);
+            } catch (Exception e) {
+                Throwable cause = e.getCause();
+                while (cause != null && !(cause instanceof SQLSyntaxErrorException)) {
+                    cause = cause.getCause();
+                }
+                if (cause != null) {
+                    String message = cause.getMessage();
+                    Pattern pattern = Pattern.compile("Unknown column '([^']+)' in 'field list'");
+                    Matcher matcher = pattern.matcher(message);
+                    while (matcher.find()) {
+                        String missingColumn = matcher.group(1);
+                        entityFieldError.addMissingField(missingColumn);
+                    }
+                    if (!entityFieldError.missingFields.isEmpty()) {
+                        entityFieldErrors.add(entityFieldError);
+                    }
+                }
+            }
+        }
+
+        // Convert the list of EntityFieldError objects to a string
+        StringBuilder errorsBuilder = new StringBuilder();
+        for (EntityFieldError error : entityFieldErrors) {
+            errorsBuilder.append(error.toString()).append("\n");
+        }
+
+        errors = errorsBuilder.toString();
+    }
+
+    public List<Class<?>> findEntityClassNames() {
+        List<Class<?>> lst = new ArrayList<>();
+        Reflections reflections = new Reflections("com.divudi.entity");
+        Set<Class<?>> annotated = reflections.getTypesAnnotatedWith(Entity.class);
+        lst.addAll(annotated);
+        return lst;
+    }
+
+    public void runSqlToCreateFields() {
+        String[] sqlStatements = suggestedSql.split("<br/>");
+        StringBuilder executionResults = new StringBuilder();
+        for (String sql : sqlStatements) {
+            if (sql.trim().isEmpty()) {
+                continue; // Skip empty lines
+            }
+            int result = itemFacade.executeNativeSql(sql);
+            if (result >= 0) {
+                // Assuming a positive result indicates success. Adjust based on your logic.
+                executionResults.append("<br/>Successfully executed: ").append(sql);
+            } else {
+                // Handle failure case here. Adjust based on your logic.
+                executionResults.append("<br/>Failed to execute: ").append(sql);
+            }
+        }
+        executionFeedback = executionResults.toString();
+    }
+
     public void addBillFeesToProfessionalCancelBills() {
         List<Bill> bs;
         String s;
@@ -267,7 +380,7 @@ public class DataAdministrationController {
         m.put("bct", BilledBill.class);
         m.put("bt", BillType.PaymentBill);
 
-        bs = billFacade.findBySQL(s, m);
+        bs = billFacade.findByJpql(s, m);
         int i = 1;
         for (Bill b : bs) {
             Bill cb = b.getCancelledBill();
@@ -296,7 +409,7 @@ public class DataAdministrationController {
 
     public void makeAllAmpsWithNullDepartmentTypeToPharmacyType() {
         String j = "Select a from Amp a where a.retired=false and a.departmentType is null";
-        List<Item> amps = itemFacade.findBySQL(j);
+        List<Item> amps = itemFacade.findByJpql(j);
         for (Item a : amps) {
             if (a instanceof Amp) {
                 Amp amp = (Amp) a;
@@ -324,11 +437,10 @@ public class DataAdministrationController {
         m.put("bt", BillType.PaymentBill);
         m.put("rbt", BillType.OpdBill);
 
-//        bills = billFacade.findBySQL(s, m);
-        bills = billFacade.findBySQL(s, m, 10);
+//        bills = billFacade.findByJpql(s, m);
+        bills = billFacade.findByJpql(s, m, 10);
         for (Bill cb : bills) {
             for (BillItem bi : cb.getBillItems()) {
-                System.err.println("**************");
                 //System.out.println("bi = " + bi);
                 //System.out.println("bi.getRetiredAt() = " + bi.getRetiredAt());
                 //System.out.println("bi.isRetired() = " + bi.isRetired());
@@ -343,19 +455,19 @@ public class DataAdministrationController {
                 }
                 String sql;
                 sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + bi.getId();
-                List<BillFee> tmp = getBillFeeFacade().findBySQL(sql);
+                List<BillFee> tmp = getBillFeeFacade().findByJpql(sql);
                 if (tmp.size() > 0) {
                 } else {
                     sql = "Select bi From BillItem bi where bi.retired=false and bi.referanceBillItem.id=" + bi.getReferanceBillItem().getId();
-                    BillItem billItem = getBillItemFacade().findFirstBySQL(sql);
+                    BillItem billItem = getBillItemFacade().findFirstByJpql(sql);
                     sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + billItem.getId();
-                    tmp = getBillFeeFacade().findBySQL(sql);
+                    tmp = getBillFeeFacade().findByJpql(sql);
                     if (tmp.size() > 0) {
                         billSearch.cancelBillFee(cb, bi, tmp);
                     } else {
                         saveBillFee(billItem);
                         sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + billItem.getId();
-                        tmp = getBillFeeFacade().findBySQL(sql);
+                        tmp = getBillFeeFacade().findByJpql(sql);
                         billSearch.cancelBillFee(cb, bi, tmp);
                     }
                 }
@@ -375,14 +487,13 @@ public class DataAdministrationController {
 
         m.put("tps", Arrays.asList(new Class[]{Investigation.class, Service.class}));
 
-        items = itemFacade.findBySQL(sql, m);
+        items = itemFacade.findByJpql(sql, m);
 
         int j = 1;
         for (Item i : items) {
             i.setVatable(true);
             i.setVatPercentage(15.0);
             itemFacade.edit(i);
-            System.err.println("**** " + j + " ****");
             j++;
         }
 
@@ -408,7 +519,7 @@ public class DataAdministrationController {
 
     public void restBillNumber() {
         String sql = "Select b from BillNumber b where b.retired=false";
-        List<BillNumber> list = billNumberFacade.findBySQL(sql);
+        List<BillNumber> list = billNumberFacade.findByJpql(sql);
         for (BillNumber b : list) {
             b.setRetired(true);
             b.setRetiredAt(new Date());
@@ -444,7 +555,7 @@ public class DataAdministrationController {
 //        m.put("bts", BillType.PharmacyTransferReceive);
 //        m.put("bts", BillType.PharmacyTransferRequest);
 //        
-        bills = getBillFacade().findBySQL(j, m);
+        bills = getBillFacade().findByJpql(j, m);
 
         for (Bill b : bills) {
             ////System.out.println("b = " + b);
@@ -505,7 +616,7 @@ public class DataAdministrationController {
                 + " order by b.createdAt ";
         temMap.put("billType", BillType.InwardBill);
 
-        bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
     }
 
     public void updateInwardServiceBillWithPaymentmethord() {
@@ -613,7 +724,7 @@ public class DataAdministrationController {
 
         m.put("ins", reportKeyWord.getInstitution());
 
-        staffs = getStaffFacade().findBySQL(sql, m);
+        staffs = getStaffFacade().findByJpql(sql, m);
         for (Staff s : staffs) {
             s.getPerson().setZoneCode(reportKeyWord.getString());
             if (s.getPerson().getNic() != null && !s.getPerson().getNic().equals("")) {
@@ -666,7 +777,7 @@ public class DataAdministrationController {
             }
         }
         sql += " order by i.name ";
-        items = itemFacade.findBySQL(sql, m);
+        items = itemFacade.findByJpql(sql, m);
 
     }
 
@@ -801,7 +912,7 @@ public class DataAdministrationController {
                 + " and type(s)=:class ";
         m.put("class", ServiceSession.class);
 
-        sessions = serviceSessionFacade.findBySQL(sql, m);
+        sessions = serviceSessionFacade.findByJpql(sql, m);
 
         sql = "Select s From ServiceSession s where s.retired=false "
                 + " and s.originatingSession is not null "
@@ -809,7 +920,7 @@ public class DataAdministrationController {
                 + " and type(s)=:class ";
         m.put("cd", new Date());
 
-        sessions.addAll(serviceSessionFacade.findBySQL(sql, m, TemporalType.TIMESTAMP));
+        sessions.addAll(serviceSessionFacade.findByJpql(sql, m, TemporalType.TIMESTAMP));
 
         return sessions;
     }
@@ -827,7 +938,7 @@ public class DataAdministrationController {
             m.put("depT", departmentType);
         }
 
-        departments = getDepartmentFacade().findBySQL(sql, m);
+        departments = getDepartmentFacade().findByJpql(sql, m);
 
     }
 
@@ -836,7 +947,6 @@ public class DataAdministrationController {
         List<Object> objects = fetchAllBilledBillTypes();
         for (Object ob : objects) {
             BillType bt = (BillType) ob;
-            System.err.println("Time l1 = " + new Date());
             Bill b = fetchBill(bt, true);
             if (b != null) {
                 bills.add(b);
@@ -850,7 +960,6 @@ public class DataAdministrationController {
 
     public void createDuplicateBillTableByBillType() {
         bills = new ArrayList<>();
-        System.err.println("Time 1 = " + new Date());
         BillListWithTotals totals = billEjb.findBillsAndTotals(fromDate, toDate, new BillType[]{reportKeyWord.getBillType()}, null, null, null, null);
         for (Bill b : totals.getBills()) {
 //            System.err.println("Time For In = " + new Date());
@@ -869,7 +978,6 @@ public class DataAdministrationController {
 
     public void createBillTable() {
         bills = new ArrayList<>();
-        System.err.println("Time 1 = " + new Date());
         BillListWithTotals totals = billEjb.findBillsAndTotals(fromDate, toDate, new BillType[]{reportKeyWord.getBillType()}, null, null, null, null);
         for (Bill b : totals.getBills()) {
             bills.add(b);
@@ -885,7 +993,7 @@ public class DataAdministrationController {
                 + " b.retired=false "
                 + " and b.billType is not null ";
 
-        objects = getBillFacade().findObjectBySQL(sql);
+        objects = getBillFacade().findObjectByJpql(sql);
 
         return objects;
     }
@@ -903,43 +1011,36 @@ public class DataAdministrationController {
             sql += " order by b.createdAt desc";
         }
         m.put("bt", bt);
-        b = getBillFacade().findFirstBySQL(sql, m);
+        b = getBillFacade().findFirstByJpql(sql, m);
         return b;
     }
 
     public void createCodeSelectedCategory() {
-        if (itemCategory == null) {
-            JsfUtil.addErrorMessage("Please Select Category");
-            return;
-        }
-        if (itemCategory.getDescription().equals("") || itemCategory.getDescription() == null) {
-            JsfUtil.addErrorMessage("Please Check Category Code");
-            return;
-        }
         Map m = new HashMap();
         String sql = "select c from Amp c "
                 + " where c.retired=false"
-                + " and c.category=:cat "
                 + " and (c.departmentType is null "
-                + " or c.departmentType=:dep) "
-                + " order by c.name";
+                + " or c.departmentType=:dep) ";
 
         m.put("dep", DepartmentType.Pharmacy);
-        m.put("cat", itemCategory);
+        if (itemCategory != null) {
+            sql += " and c.category=:cat ";
+            m.put("cat", itemCategory);
+        }
+        sql += " order by c.name";
 
-        items = itemFacade.findBySQL(sql, m);
-
+        items = itemFacade.findByJpql(sql, m);
 
         int j = 1;
 
-        for (Item i : items) {
-            DecimalFormat df = new DecimalFormat("0000");
-//            df=new DecimalFormat("####");
-//            //System.out.println("df = " + df.format(j));
-            i.setCode(itemCategory.getDescription() + df.format(j));
-            itemFacade.edit(i);
-            j++;
-        }
+//        for (Item i : items) {
+//            DecimalFormat df = new DecimalFormat("0000");
+////            df=new DecimalFormat("####");
+////            //System.out.println("df = " + df.format(j));
+//            i.setCode(itemCategory.getDescription() + df.format(j));
+//            itemFacade.edit(i);
+//            j++;
+//        }
 
     }
 
@@ -956,8 +1057,7 @@ public class DataAdministrationController {
         m.put("dep", DepartmentType.Pharmacy);
 //        m.put("cat", itemCategory);
 
-        items = itemFacade.findBySQL(sql, m);
-
+        items = itemFacade.findByJpql(sql, m);
 
         int j = 1;
 
@@ -987,8 +1087,7 @@ public class DataAdministrationController {
         m.put("dep", DepartmentType.Store);
         m.put("cat", itemCategory);
 
-        items = itemFacade.findBySQL(sql, m);
-
+        items = itemFacade.findByJpql(sql, m);
 
         int j = 1;
 
@@ -1014,8 +1113,7 @@ public class DataAdministrationController {
         m.put("dep", DepartmentType.Store);
 //        m.put("cat", itemCategory);
 
-        items = itemFacade.findBySQL(sql, m);
-
+        items = itemFacade.findByJpql(sql, m);
 
         for (Item i : items) {
 //            //System.out.println("i.getName() = " + i.getName());
@@ -1042,12 +1140,12 @@ public class DataAdministrationController {
                 + " b.createdAt between :fromDate and :toDate  ";
 
         if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
-            sql += " and  (upper(b.insId) like :billNo )";
+            sql += " and  ((b.insId) like :billNo )";
             temMap.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getItemName() != null && !getSearchKeyword().getItemName().trim().equals("")) {
-            sql += " and  (upper(i.name) like :itm )";
+            sql += " and  ((i.name) like :itm )";
             temMap.put("itm", "%" + getSearchKeyword().getItemName().trim().toUpperCase() + "%");
         }
 
@@ -1056,7 +1154,7 @@ public class DataAdministrationController {
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
 
-        patientInvestigations = getPatientInvestigationFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP, 50);
+        patientInvestigations = getPatientInvestigationFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 50);
 
     }
 
@@ -1124,6 +1222,60 @@ public class DataAdministrationController {
         }
         fillPharmacyCategory();
     }
+    
+    public void downloadAsExcel() {
+        getItems();
+        try {
+            // Create a new Excel workbook
+            Workbook workbook = new XSSFWorkbook();
+            Sheet sheet = workbook.createSheet("Doctor Data");
+
+            // Create a header row
+            Row headerRow = sheet.createRow(0);
+            headerRow.createCell(0).setCellValue("Category");
+            headerRow.createCell(1).setCellValue("Name");
+            headerRow.createCell(2).setCellValue("Code");
+            headerRow.createCell(3).setCellValue("Barcode");
+            headerRow.createCell(4).setCellValue("VMP");
+
+            // Add more columns as needed
+            // Populate the data rows
+            int rowNum = 1;
+            for (Item i : items) {
+                Row row = sheet.createRow(rowNum++);
+                if(i.getCategory().getName() != null ||!i.getCategory().getName().trim().equals("")){
+                    row.createCell(0).setCellValue(i.getCategory().getName());
+                }
+                if(i.getName() != null ||!i.getName().trim().equals("")){
+                    row.createCell(1).setCellValue(i.getName());
+                }
+                if(!i.getCode().trim().equals("")){
+                    row.createCell(2).setCellValue(i.getCode());
+                }
+                if(!i.getBarcode().trim().equals("")){
+                    row.createCell(3).setCellValue(i.getBarcode());
+                }
+                if(i.getVmp() != null){
+                    row.createCell(4).setCellValue(i.getVmp().getName());
+                }
+                
+            }
+
+            // Set the response headers to initiate the download
+            FacesContext context = FacesContext.getCurrentInstance();
+            HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            response.setHeader("Content-Disposition", "attachment; filename=\"amp_data.xlsx\"");
+
+            // Write the workbook to the response output stream
+            workbook.write(response.getOutputStream());
+            workbook.close();
+            context.responseComplete();
+        } catch (Exception e) {
+            // Handle any exceptions
+            e.printStackTrace();
+        }
+    }
 
     private List<PharmaceuticalItemCategory> fetchPharmacyCategories(boolean active) {
 //        items = getFacade().findAll("name", true);
@@ -1135,9 +1287,9 @@ public class DataAdministrationController {
         }
         sql += " order by c.description, c.name ";
 
-        return getPharmaceuticalItemCategoryFacade().findBySQL(sql);
+        return getPharmaceuticalItemCategoryFacade().findByJpql(sql);
     }
-    
+
 //    Getters & Setters
     public PatientReportItemValueFacade getPatientReportItemValueFacade() {
         return patientReportItemValueFacade;
@@ -1500,6 +1652,78 @@ public class DataAdministrationController {
 
     public void setSelectedPharmaceuticalItemCategorys(List<PharmaceuticalItemCategory> selectedPharmaceuticalItemCategorys) {
         this.selectedPharmaceuticalItemCategorys = selectedPharmaceuticalItemCategorys;
+    }
+
+    public int getManageCheckEnteredDataIndex() {
+        return manageCheckEnteredDataIndex;
+    }
+
+    public void setManageCheckEnteredDataIndex(int manageCheckEnteredDataIndex) {
+        this.manageCheckEnteredDataIndex = manageCheckEnteredDataIndex;
+    }
+
+    public String navigateToAdminDataAdministration() {
+        return "/dataAdmin/admin_data_administration?faces-redirect=true";
+    }
+
+    public String getErrors() {
+        return errors;
+    }
+
+    public void setErrors(String errors) {
+        this.errors = errors;
+    }
+
+    public String getSuggestedSql() {
+        return suggestedSql;
+    }
+
+    public void setSuggestedSql(String suggestedSql) {
+        this.suggestedSql = suggestedSql;
+    }
+
+    public String getExecutionFeedback() {
+        return executionFeedback;
+    }
+
+    public void setExecutionFeedback(String executionFeedback) {
+        this.executionFeedback = executionFeedback;
+    }
+
+    public class EntityFieldError {
+
+        private String entityName;
+        private Set<String> missingFields = new HashSet<>();
+
+        public EntityFieldError(String entityName) {
+            this.entityName = entityName;
+        }
+
+        public void addMissingField(String fieldName) {
+            missingFields.add(fieldName);
+        }
+
+        @Override
+        public String toString() {
+            return "Entity: " + entityName + ", Missing Fields: " + String.join(", ", missingFields);
+        }
+
+        public String getEntityName() {
+            return entityName;
+        }
+
+        public void setEntityName(String entityName) {
+            this.entityName = entityName;
+        }
+
+        public Set<String> getMissingFields() {
+            return missingFields;
+        }
+
+        public void setMissingFields(Set<String> missingFields) {
+            this.missingFields = missingFields;
+        }
+
     }
 
 }

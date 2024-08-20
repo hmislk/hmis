@@ -1,7 +1,7 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Open Hospital Management Information System
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.ejb;
 
@@ -28,17 +28,15 @@ import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.StaffFacade;
 import com.divudi.facade.StockFacade;
 import com.divudi.facade.StockHistoryFacade;
+import com.divudi.java.CommonFunctions;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import javax.ejb.EJB;
-import javax.ejb.Schedule;
 import javax.ejb.Stateless;
-import javax.inject.Inject;
 import javax.persistence.TemporalType;
 
 /**
@@ -75,7 +73,7 @@ public class StockHistoryRecorder {
     @EJB
     FinalVariables finalVariables;
 
-    @Inject
+
     CommonFunctions commonFunctions;
 
 //    @SuppressWarnings("unused")
@@ -166,7 +164,7 @@ public class StockHistoryRecorder {
 
         m.put("typ", PersonInstitutionType.Channelling);
 
-        consultants = staffFacade.findBySQL(sql, m);
+        consultants = staffFacade.findByJpql(sql, m);
 
         return consultants;
     }
@@ -186,7 +184,7 @@ public class StockHistoryRecorder {
         HashMap hh = new HashMap();
         hh.put("ssDate", ss.getSessionDate());
         hh.put("ss", ss.getId());
-        arrivalRecord = (ArrivalRecord) fingerPrintRecordFacade.findFirstBySQL(sql, hh);
+        arrivalRecord = (ArrivalRecord) fingerPrintRecordFacade.findFirstByJpql(sql, hh);
 
         if (arrivalRecord != null) {
             if (arrivalRecord.isApproved()) {
@@ -202,7 +200,7 @@ public class StockHistoryRecorder {
         String sql;
         Map m = new HashMap();
         sql = "select distinct(s.department) from Stock s order by s.department.name";
-        return departmentFacade.findBySQL(sql, m);
+        return departmentFacade.findByJpql(sql, m);
     }
 
     public List<Item> fetchStockItem(Department department) {
@@ -212,7 +210,7 @@ public class StockHistoryRecorder {
                 + " where s.department=:dep "
                 + "  order by s.itemBatch.item.name";
         m.put("dep", department);
-        return itemFacade.findBySQL(sql, m);
+        return itemFacade.findByJpql(sql, m);
     }
 
     public double getStockQty(Item item, Department department) {
@@ -259,7 +257,7 @@ public class StockHistoryRecorder {
                 + " and fc.validFrom=:ed "
                 + " and fc.done!=true ";
         m.put("ed", getCommonFunctions().getEndOfDay(new Date()));
-        List<FeeChange> changes = getFeeChangeFacade().findBySQL(sql, m, TemporalType.DATE);
+        List<FeeChange> changes = getFeeChangeFacade().findByJpql(sql, m, TemporalType.DATE);
         return changes;
     }
 
@@ -286,7 +284,7 @@ public class StockHistoryRecorder {
         m.put("type", ServiceSession.class);
         m.put("ft", ft);
         m.put("a", s);
-        List<ItemFee> itemFees = getItemFeeFacade().findBySQL(sql, m);
+        List<ItemFee> itemFees = getItemFeeFacade().findByJpql(sql, m);
         return itemFees;
     }
 

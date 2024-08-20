@@ -1,19 +1,18 @@
 /*
  * Author : Dr. M H B Ariyaratne
  *
- * MO(Health Information), Department of Health Services, Southern Province
- * and
+ * Acting Consultant (Health Informatics), Department of Health Services, Southern Province
+ * (94) 71 5812399
  * Email : buddhika.ari@gmail.com
  */
 package com.divudi.entity;
 
 import com.divudi.data.Sex;
 import com.divudi.data.Title;
-import com.divudi.entity.clinical.ClinicalFindingValue;
 import com.divudi.entity.membership.MembershipScheme;
 import java.io.Serializable;
 import java.util.Date;
-import java.util.List;
+import javax.annotation.PostConstruct;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -23,35 +22,28 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
 import javax.persistence.Transient;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlTransient;
+import org.apache.commons.lang3.StringUtils;
 import org.joda.time.LocalDate;
 import org.joda.time.Period;
 import org.joda.time.PeriodType;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- * Informatics)
+ * Author : Dr. M H B Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Entity
-@XmlRootElement
 public class Person implements Serializable {
 
-    @OneToOne(mappedBy = "webUserPerson",cascade = CascadeType.ALL)
-    private WebUser webUser;
-
-    @OneToMany(mappedBy = "person")
-    private List<ClinicalFindingValue> clinicalFindingValues;
-
-    static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
+
+    static final long serialVersionUID = 1L;
+
     String name;
     String description;
     String nic;
@@ -60,11 +52,18 @@ public class Person implements Serializable {
     String email;
     String website;
     String mobile;
+    String phone;
     @Column(name = "TNAME")
     String fullName;
     @Column(name = "SNAME")
     String nameWithInitials;
-    String phone;
+
+    @OneToOne(mappedBy = "webUserPerson", cascade = CascadeType.ALL)
+    private WebUser webUser;
+
+    @Transient
+    boolean ageCalculated = false;
+
     String initials;
     String surName;
     String lastName;
@@ -73,16 +72,18 @@ public class Person implements Serializable {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date dob;
 
-    //Created Properties
+    // Created Properties
     @ManyToOne
     WebUser creater;
+
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date createdAt;
     @ManyToOne
     WebUser editer;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date editedAt;
-    //Retairing properties
+
+    // Retiring properties
     boolean retired;
     @ManyToOne
     WebUser retirer;
@@ -104,24 +105,76 @@ public class Person implements Serializable {
     boolean foreigner = false;
 
     @ManyToOne
+    Item civilStatus;
+    @ManyToOne
+    Item race;
+    @ManyToOne
+    Item bloodGroup;
+    @ManyToOne
+    Item occupation;
+    @ManyToOne
+    private Item religion;
+
+    @ManyToOne
+    @Deprecated
     private MembershipScheme membershipScheme;
 
     @Transient
-    int ageMonths;
+    int ageMonthsComponent;
     @Transient
-    int ageDays;
+    int ageDaysComponent;
     @Transient
-    int ageYears;
+    int ageYearsComponent;
     @Transient
-    String age;
+    String ageAsString;
+    @Transient
+    private String ageAsShortString;
     @Transient
     long ageInDays;
     @Transient
     int serealNumber;
-    
-    
-    
-    
+    @Transient
+    private String smsNumber;
+
+    // @Inject
+    // SessionController SessionController;
+    @PostConstruct
+    public void init() {
+        calAgeFromDob();
+    }
+
+    public Item getCivilStatus() {
+        return civilStatus;
+    }
+
+    public void setCivilStatus(Item civilStatus) {
+        this.civilStatus = civilStatus;
+    }
+
+    public Item getRace() {
+        return race;
+    }
+
+    public void setRace(Item race) {
+        this.race = race;
+    }
+
+    public Item getBloodGroup() {
+        return bloodGroup;
+    }
+
+    public void setBloodGroup(Item bloodGroup) {
+        this.bloodGroup = bloodGroup;
+    }
+
+    public Item getOccupation() {
+        return occupation;
+    }
+
+    public void setOccupation(Item occupation) {
+        this.occupation = occupation;
+    }
+
     public boolean isForeigner() {
         return foreigner;
     }
@@ -131,56 +184,123 @@ public class Person implements Serializable {
     }
 
     public void calAgeFromDob() {
-        age = "";
-        ageInDays = 0l;
-        ageMonths = 0;
-        ageDays = 0;
-        ageYears = 0;
+        ageAsString = "";
+        ageInDays = 0L;
         if (getDob() == null) {
             return;
         }
 
-        LocalDate dob = new LocalDate(getDob());
-        LocalDate date = new LocalDate(new Date());
+        LocalDate ldDob = new LocalDate(getDob());
+        LocalDate currentDate = LocalDate.now();
 
-        Period period = new Period(dob, date, PeriodType.yearMonthDay());
-        ageYears = period.getYears();
-        ageMonths = period.getMonths();
-        ageDays = period.getDays();
-        if (ageYears > 12) {
-            age = period.getYears() + " years.";
-        } else if (ageYears > 0) {
-            age = period.getYears() + " years and " + period.getMonths() + " months.";
+        Period period = new Period(ldDob, currentDate, PeriodType.yearMonthDay());
+
+        int years = period.getYears();
+        int months = period.getMonths();
+        int days = period.getDays();
+
+        if (years > 12) {
+            ageAsString = years + " years";
+        } else if (years > 0) {
+            ageAsString = years + " years and " + months + " months";
         } else {
-            age = period.getMonths() + " months and " + period.getDays() + " days.";
+            ageAsString = months + " months and " + days + " days";
         }
-        period = new Period(dob, date, PeriodType.days());
+
+        period = new Period(ldDob, currentDate, PeriodType.days());
         ageInDays = (long) period.getDays();
+        ageDaysComponent = days;
+        ageMonthsComponent = months;
+        ageYearsComponent = years;
     }
 
-    public String getAge() {
+    public void calShortAgeFromDob() {
+        ageAsShortString = "";
+        ageInDays = 0L;
+        if (getDob() == null) {
+            return;
+        }
+
+        LocalDate ldDob = new LocalDate(getDob());
+        LocalDate currentDate = LocalDate.now();
+
+        Period period = new Period(ldDob, currentDate, PeriodType.yearMonthDay());
+
+        int years = period.getYears();
+        int months = period.getMonths();
+        int days = period.getDays();
+
+        if (years > 5) {
+            ageAsShortString = years + "Y";
+        } else if (years > 0) {
+            ageAsShortString = years + "Y" + months + "M";
+        } else if (months > 0) {
+            ageAsShortString = months + "M" + days + "d";
+        } else {
+            ageAsShortString = days + "d";
+        }
+
+        period = new Period(ldDob, currentDate, PeriodType.days());
+        ageInDays = (long) period.getDays();
+        ageDaysComponent = days;
+        ageMonthsComponent = months;
+        ageYearsComponent = years;
+    }
+
+    public void calDobFromAge() {
+        LocalDate currentDate = new LocalDate();
+        LocalDate ldDob = currentDate.minusYears(ageYearsComponent).minusMonths(ageMonthsComponent).minusDays(ageDaysComponent);
+        this.dob = ldDob.toDate();
+    }
+
+    public String getAgeAsString() {
         calAgeFromDob();
-        return age;
+        if (ageAsString == null || ageAsString.trim().equals("")) {
+            ageAsString = "Not Recorded";
+        }
+        return ageAsString;
+    }
+
+    public String getAgeAsShortString() {
+        calShortAgeFromDob();
+        if (ageAsShortString == null || ageAsShortString.trim().equals("")) {
+            ageAsShortString = "";
+        }
+        return ageAsShortString;
     }
 
     public Long getAgeInDays() {
-        calAgeFromDob();
         return ageInDays;
     }
 
-    public int getAgeMonths() {
+    public int getAgeMonthsComponent() {
         calAgeFromDob();
-        return ageMonths;
+        return ageMonthsComponent;
     }
 
-    public int getAgeDays() {
+    public int getAgeDaysComponent() {
         calAgeFromDob();
-        return ageDays;
+        return ageDaysComponent;
     }
 
-    public int getAgeYears() {
+    public int getAgeYearsComponent() {
         calAgeFromDob();
-        return ageYears;
+        return ageYearsComponent;
+    }
+
+    public void setAgeMonthsComponent(int ageMonthsComponent) {
+        this.ageMonthsComponent = ageMonthsComponent;
+        calDobFromAge();
+    }
+
+    public void setAgeDaysComponent(int ageDaysComponent) {
+        this.ageDaysComponent = ageDaysComponent;
+        calDobFromAge();
+    }
+
+    public void setAgeYearsComponent(int ageYearsComponent) {
+        this.ageYearsComponent = ageYearsComponent;
+        calDobFromAge();
     }
 
     public String getNameWithTitle() {
@@ -192,6 +312,7 @@ public class Person implements Serializable {
             temT = "";
         }
         nameWithTitle = temT + " " + getName();
+
         return nameWithTitle;
     }
 
@@ -231,22 +352,21 @@ public class Person implements Serializable {
         this.createdAt = createdAt;
     }
 
-    public WebUser getEditer() {
-        return editer;
-    }
-
-    public void setEditer(WebUser editer) {
-        this.editer = editer;
-    }
-
-    public Date getEditedAt() {
-        return editedAt;
-    }
-
-    public void setEditedAt(Date editedAt) {
-        this.editedAt = editedAt;
-    }
-
+    // public WebUser getEditer() {
+    // return editer;
+    // }
+    //
+    // public void setEditer(WebUser editer) {
+    // this.editer = editer;
+    // }
+    //
+    // public Date getEditedAt() {
+    // return editedAt;
+    // }
+    //
+    // public void setEditedAt(Date editedAt) {
+    // this.editedAt = editedAt;
+    // }
     public WebUser getCreater() {
         return creater;
     }
@@ -268,7 +388,7 @@ public class Person implements Serializable {
     }
 
     public void setName(String name) {
-        this.name = name.toUpperCase();
+        this.name = name;
     }
 
     public String getInitials() {
@@ -319,6 +439,31 @@ public class Person implements Serializable {
         this.retirer = retirer;
     }
 
+    @Transient
+    public String getShortenedName() {
+        if (name == null || name.trim().isEmpty()) {
+            return "";
+        }
+        String[] words = name.trim().split("\\s+");
+        StringBuilder shortenedName = new StringBuilder();
+
+        for (String word : words) {
+            if (word.length() > 6) {
+                word = word.substring(0, 6);
+            }
+            shortenedName.append(capitalize(word)).append(" ");
+        }
+
+        return shortenedName.toString().trim();
+    }
+
+    private String capitalize(String word) {
+        if (word == null || word.isEmpty()) {
+            return word;
+        }
+        return word.substring(0, 1).toUpperCase() + word.substring(1).toLowerCase();
+    }
+
     @Override
     public int hashCode() {
         int hash = 0;
@@ -348,7 +493,7 @@ public class Person implements Serializable {
     }
 
     public void setAddress(String address) {
-        this.address = address.toUpperCase();
+        this.address = address;
     }
 
     public String getFax() {
@@ -413,6 +558,28 @@ public class Person implements Serializable {
 
     public void setTitle(Title title) {
         this.title = title;
+        if (title == null) {
+            return;
+        }
+        switch (this.title) {
+            case Dr:
+            case Master:
+            case Mr:
+            case Prof:
+                this.sex = Sex.Male;
+                break;
+            case DrMiss:
+            case DrMrs:
+            case DrMs:
+            case Miss:
+            case Mrs:
+            case Ms:
+            case ProfMrs:
+                this.sex = Sex.Female;
+                break;
+            default:
+        }
+
     }
 
     public Date getDob() {
@@ -421,6 +588,7 @@ public class Person implements Serializable {
 
     public void setDob(Date dob) {
         this.dob = dob;
+        calAgeFromDob();
     }
 
     public String getFullName() {
@@ -463,15 +631,6 @@ public class Person implements Serializable {
         this.lastName = lastName;
     }
 
-    @XmlTransient
-    public List<ClinicalFindingValue> getClinicalFindingValues() {
-        return clinicalFindingValues;
-    }
-
-    public void setClinicalFindingValues(List<ClinicalFindingValue> clinicalFindingValues) {
-        this.clinicalFindingValues = clinicalFindingValues;
-    }
-
     public MembershipScheme getMembershipScheme() {
         return membershipScheme;
     }
@@ -489,7 +648,7 @@ public class Person implements Serializable {
     }
 
     public WebUser getWebUser() {
-        if(webUser==null){
+        if (webUser == null) {
             webUser = new WebUser();
             webUser.setWebUserPerson(this);
         }
@@ -498,5 +657,27 @@ public class Person implements Serializable {
 
     public void setWebUser(WebUser webUser) {
         this.webUser = webUser;
+    }
+
+    public Item getReligion() {
+        return religion;
+    }
+
+    public void setReligion(Item religion) {
+        this.religion = religion;
+    }
+
+    public String getSmsNumber() {
+        if (StringUtils.isNotBlank(mobile)) {
+            return mobile;
+        } else if (StringUtils.isNotBlank(phone)) {
+            return phone;
+        } else {
+            return "";
+        }
+    }
+
+    public void setSmsNumber(String smsNumber) {
+        this.smsNumber = smsNumber;
     }
 }
