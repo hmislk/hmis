@@ -567,7 +567,7 @@ public class ReportTemplateRow {
     public void setReferringStaff(Staff referringStaff) {
         this.referringStaff = referringStaff;
     }
-
+  
     public String getUuid() {
         if (uuid == null) {
             uuid = UUID.randomUUID().toString();
