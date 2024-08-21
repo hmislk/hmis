@@ -18,9 +18,10 @@
                 <p:accordionPanel>
                     <p:tab title="Referral Reports">
                          <div class="d-grid gap-2">
-                            <p:commandButton styleClass="linkButton" ajax="false" value="Institution Referrals" action="report_referral_institution_detail"/>
-                            <p:commandButton styleClass="linkButton" ajax="false" value="Institution Referrals Bill Item Wise" action="report_referral_institution_detail_by_billItem"/>                             
-                        </div>                        
+                             <p:commandButton styleClass="linkButton" ajax="false" value="Institution Referrals" action="report_referral_institution_detail?faces-redirect=true"/>
+                             <p:commandButton styleClass="linkButton" ajax="false" value="Institution Referrals Bill Item Wise" action="report_referral_institution_detail_by_billItem?faces-redirect=true"/>
+                             <p:commandButton styleClass="linkButton" ajax="false" value="Doctor Referrals" action="report_referral_doctor_details?faces-redirect=true"/>
+                         </div>                        
                </p:tab>
                 </p:accordionPanel>                        
                 </h:form>
