@@ -156,6 +156,9 @@
                                                                                 <f:selectItems value="#{opdBillController.title}" var="i"
                                                                                                itemLabel="#{i.label}" itemValue="#{i}"/>
                                                                                 <p:ajax event="change" process="cmbTitle" update="cmbSex" ></p:ajax>
+                                                                                <p:ajax process="cmbTitle" update="advanced" ></p:ajax>
+                                                                                <p:ajax event="blur" process="cmbTitle" update="advanced" ></p:ajax>
+                                                                                <p:ajax event="change" process="cmbTitle" update="advanced" ></p:ajax>
                                                                             </p:selectOneMenu>
                                                                         </div>
                                                                         <div class="col-md-9 p-1">

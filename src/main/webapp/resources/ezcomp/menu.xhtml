@@ -397,14 +397,17 @@
                         <p:menuitem ajax="false" action="/lab/inward_search_service?faces-redirect=true" value="Search In-patient Bills" actionListener="#{searchController.makeListNull}"  rendered="#{webUserController.hasPrivilege('LabInwardSearchServiceBill')}" ></p:menuitem>  
                     </p:submenu>
 
-                    <p:submenu label="Sampling">
-                        <p:menuitem 
-                            ajax="false"
-                            action="#{patientInvestigationController.navigateToPatientSampelIndex()}"
-                            value="Phlebotomy Room" 
-                            rendered="#{webUserController.hasPrivilege('LabSampleCollecting')}" ></p:menuitem>
-                        <p:menuitem ajax="false"  action="/lab/sample_at_lab_index?faces-redirect=true" value="Lab"></p:menuitem>
-                    </p:submenu>
+
+                    <p:menuitem 
+                        ajax="false"
+                        action="#{patientInvestigationController.navigateToGenerateBarcodes()}"
+                        value="Sample Management - Phlebotomy Room" 
+                        rendered="#{webUserController.hasPrivilege('LabSampleCollecting')}" ></p:menuitem>
+                    <p:menuitem
+                        ajax="false"  
+                        action="/lab/sample_at_lab_index?faces-redirect=true" 
+                        value="Sample Management - Lab"></p:menuitem>
+
 
                     <p:menuitem ajax="false" action="/lab/receive?faces-redirect=true" actionListener="#{patientInvestigationController.toPrintWorksheets()}" value="Worksheets" rendered="#{webUserController.hasPrivilege('LabSampleReceiving')}" ></p:menuitem>
                     <p:menuitem ajax="false" action="#{searchController.navigateToLabReportSearch}"  value="Reports/Search" rendered="#{webUserController.hasPrivilege('LabReportSearch')}" ></p:menuitem>
@@ -842,6 +845,7 @@
                         <p:menuitem  ajax="false" action="/store/store_purchase?faces-redirect=true"  value="Direct Purchase" 
                                      rendered="#{webUserController.hasPrivilege('StorePurchasePurchase')}" 
                                      actionListener="#{storePurchaseController.makeNull()}" ></p:menuitem>
+                        <p:menuitem ajax="false" action="/store/store_direct_purchase_return?faces-redirect=true"  value="Direct Purchase Return" actionListener="#{searchController.makeListNull()}" rendered="#{webUserController.hasPrivilege('StorePurchaseGRNReturn')}"></p:menuitem>
                     </p:submenu>
                     <p:submenu label="Transfer" rendered="#{webUserController.hasPrivilege('StoreTransfer')}">
                         <p:menuitem  ajax="false" action="/store/store_transfer_request?faces-redirect=true"  value="Request" actionListener="#{storeTransferRequestController.recreate}" rendered="#{webUserController.hasPrivilege('StoreTransferRequest')}" ></p:menuitem>

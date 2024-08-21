@@ -93,10 +93,10 @@ public class InstitutionController implements Serializable {
         }
         return "/admin/institutions/institution?faces-redirect=true";
     }
-    
-    public void makeNull(){
+
+    public void makeNull() {
         current = null;
-        
+
     }
 
     public String deleteInstitution() {
@@ -247,8 +247,6 @@ public class InstitutionController implements Serializable {
             agencies = completeInstitution(selectText, InstitutionType.Agency);
         }
 
-        
-
         return agencies;
     }
 
@@ -357,7 +355,7 @@ public class InstitutionController implements Serializable {
                 + " where i.name=:name"
                 + " and i.retired=:ret";
         Institution i = getFacade().findFirstByJpql(sql, m);
-      
+
         if (i == null) {
             i = new Institution();
             i.setName(name);
@@ -368,7 +366,7 @@ public class InstitutionController implements Serializable {
         }
         return i;
     }
-    
+
     public Institution findAndSaveInstitutionByCode(String code) {
         if (code == null || code.trim().equals("")) {
             return null;
@@ -384,7 +382,7 @@ public class InstitutionController implements Serializable {
         Institution i = getFacade().findFirstByJpql(sql, m);
         return i;
     }
-    
+
     public Institution findExistingInstitutionByName(String name) {
         if (name == null || name.trim().equals("")) {
             return null;
@@ -616,6 +614,9 @@ public class InstitutionController implements Serializable {
     }
 
     public Institution findInstitution(Long id) {
+        if (id == null) {
+            return null;
+        }
         return getFacade().find(id);
     }
 
