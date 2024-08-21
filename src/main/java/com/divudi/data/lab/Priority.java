@@ -10,7 +10,7 @@ public enum Priority {
     Asap("Asap"),
     Routeine("Routeine"),
     DELAYED("Delayed"),
-    OTHER("Other");
+    Other("Other");
 
     private final String label;
 

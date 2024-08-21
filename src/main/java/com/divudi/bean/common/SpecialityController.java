@@ -152,6 +152,10 @@ public class SpecialityController implements Serializable {
         selectedItems = getFacade().findByJpql("select c from Speciality c where c.retired=false and type(c)=:class and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name", m);
         return selectedItems;
     }
+    
+    public List<Speciality> completeDoctorSpeciality() {
+        return completeDoctorSpeciality("");
+    }
 
     public Speciality findSpeciality(String name, boolean createNewIfNotExists) {
         String j;

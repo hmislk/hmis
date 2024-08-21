@@ -923,7 +923,7 @@ public class InwardStaffPaymentBillController implements Serializable {
         this.totalPaying = totalPaying;
     }
 
-    public void calculateDueFees() {
+    public String calculateDueFees() {
 
         dueBillFees = new ArrayList<>();
         payingBillFees = new ArrayList<>();
@@ -964,6 +964,7 @@ public class InwardStaffPaymentBillController implements Serializable {
         }
         dueBillFees.removeAll(removeingBillFees);
         calculateTotalPay();
+        return "/inward/inward_bill_staff_payment";
     }
 
     public void calculateTotalDue() {
