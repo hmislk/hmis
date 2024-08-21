@@ -106,6 +106,16 @@ public class FeeValueController implements Serializable {
 
         return getFacade().findFirstByJpql(jpql, params);
     }
+    
+    
+    public FeeValue getFeeValue(Long itemId, Category category) {
+        String jpql = "SELECT f FROM FeeValue f WHERE f.item.id = :iid AND f.category = :category";
+        Map<String, Object> params = new HashMap<>();
+        params.put("iid", itemId);
+        params.put("category", category);
+
+        return getFacade().findFirstByJpql(jpql, params);
+    }
 
     public FeeValue getFeeValue(Item item, Department dept, Institution ins, Category category) {
         String jpql = "SELECT f FROM FeeValue f WHERE f.item = :item AND f.department = :dept AND f.institution = :ins AND f.category = :category";
