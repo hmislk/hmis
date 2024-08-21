@@ -7,6 +7,7 @@
  * (94) 71 5812399
  */
 package com.divudi.bean.common;
+
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.DepartmentType;
 import com.divudi.entity.Department;
@@ -25,8 +26,8 @@ import javax.inject.Named;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- * Acting Consultant (Health Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -43,6 +44,35 @@ public class StoreController implements Serializable {
     String selectText = "";
     @EJB
     StockFacade stockFacade;
+    private int storeTabIndex;
+
+    public String navigateToConsumableCategory() {
+        return "/store/consumable_category/List.xhtml?faces-redirect=true";
+    }
+
+    public String navigateToManageMakes() {
+        return "/store/make_list.xhtml?faces-redirect=true";
+    }
+
+    public String navigateToItemMaster() {
+        return "/store/store_item_master.xhtml?faces-redirect=true";
+    }
+
+    public String navigateToImportFromExcel() {
+        return "store_item_import.xhtml?faces-redirect=true";
+    }
+
+    public String navigateToImportWithStock() {
+        return "store_item_import_with_stock.xhtml?faces-redirect=true";
+    }
+
+    public String navigateToImportWithCategory() {
+        return "store_item_import_with_category.xhtml?faces-redirect=true";
+    }
+
+    public String navigateToManufacturers() {
+        return "/pharmacy/pharmacy_manufacturer.xhtml?faces-redirect=true";
+    }
 
     public List<Department> getSelectedItems() {
         selectedItems = getFacade().findByJpql("select c from Department c where c.retired=false and i.departmentType = com.divudi.data.DepartmentType.Store and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
@@ -102,7 +132,7 @@ public class StoreController implements Serializable {
 
         return items;
     }
-    
+
     public List<Stock> completeAllStocksWithZero(String qry) {
         List<Stock> items;
         String sql;
@@ -115,7 +145,7 @@ public class StoreController implements Serializable {
         m.put("n", "%" + qry.toUpperCase() + "%");
         sql = "select i from Stock i where i.department=:d "
                 + " and i.itemBatch.item.departmentType=:dtp1"
-//                + " and i.stock > :stk "
+                //                + " and i.stock > :stk "
                 + " and ((i.itemBatch.item.name) like :n  or "
                 + " (i.itemBatch.item.code) like :n  or  "
                 + " (i.itemBatch.item.barcode) like :n ) "
@@ -196,4 +226,14 @@ public class StoreController implements Serializable {
         }
         return items;
     }
+
+    public int getStoreTabIndex() {
+        return storeTabIndex;
+    }
+
+    public void setStoreTabIndex(int storeTabIndex) {
+        this.storeTabIndex = storeTabIndex;
+    }
+    
+    
 }
