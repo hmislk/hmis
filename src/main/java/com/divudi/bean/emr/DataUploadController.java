@@ -229,6 +229,7 @@ public class DataUploadController implements Serializable {
     private List<Institution> suppliers;
     private List<Department> departments;
     private List<Area> areas;
+    private List<Route> routes;
     private StreamedContent templateForItemWithFeeUpload;
     private StreamedContent templateForCollectingCentreUpload;
     private StreamedContent templateForsupplierUpload;
@@ -264,6 +265,11 @@ public class DataUploadController implements Serializable {
     private List<ClinicalEntity> surgeriesToSave;
     private List<ClinicalEntity> surgeriesToSkiped;
 
+    public String navigateToRouteUpload() {
+        uploadComplete = false;
+        return "/admin/institutions/route_upload?faces-redirect=true";
+    }
+
     public String navigateToCollectingCenterUpload() {
         uploadComplete = false;
         return "/admin/institutions/collecting_centre_upload?faces-redirect=true";
@@ -278,6 +284,78 @@ public class DataUploadController implements Serializable {
         uploadComplete = false;
         return "/admin/institutions/supplier_upload?faces-redirect=true";
     }
+
+    public void uploadRoutes() {
+        routes = new ArrayList<>();
+        if (file != null) {
+            try (InputStream inputStream = file.getInputStream()) {
+                System.out.println("inputStream = " + inputStream);
+                routes = readRoutesFromExcel(inputStream);
+            } catch (IOException e) {
+                e.printStackTrace();
+                uploadComplete = false;
+                JsfUtil.addErrorMessage("Error in Uploading. " + e.getMessage());
+            }
+        }
+        uploadComplete = true;
+        JsfUtil.addSuccessMessage("Successfully Uploaded");
+    }
+
+    private List<Route> readRoutesFromExcel(InputStream inputStream) throws IOException {
+        Workbook workbook = new XSSFWorkbook(inputStream);
+        Sheet sheet = workbook.getSheetAt(0);
+        Iterator<Row> rowIterator = sheet.rowIterator();
+
+        List<Route> routes = new ArrayList<>();
+        Institution institution;
+
+        // Assuming the first row contains headers, skip it
+        if (rowIterator.hasNext()) {
+            rowIterator.next();
+        }
+
+        while (rowIterator.hasNext()) {
+            Row row = rowIterator.next();
+            Route route = null;
+            
+            String routeCode=null;
+            String name = null;
+            String institutionName = null;
+            
+            Cell routeCodeCell = row.getCell(0);
+            if (routeCodeCell != null && routeCodeCell.getCellType() == CellType.STRING) {
+                routeCode = routeCodeCell.getStringCellValue();
+            }
+
+            Cell nameCell = row.getCell(1);
+            if (nameCell != null && nameCell.getCellType() == CellType.STRING) {
+                name = nameCell.getStringCellValue();
+            }
+
+            Cell institutionCell = row.getCell(2);
+            if (institutionCell != null && institutionCell.getCellType() == CellType.STRING) {
+                institutionName = institutionCell.getStringCellValue();
+            }
+            if (institutionName == null || institutionName.trim().equals("")) {
+                institution = sessionController.getInstitution();
+            }
+            institution = institutionController.findAndSaveInstitutionByName(institutionName);
+
+            Route r = routeController.findRouteByName(name);
+            if (r == null) {
+                r = new Route();
+                r.setName(name);
+                r.setInstitution(institution);
+                r.setCreatedAt(new Date());
+                r.setCreater(sessionController.getLoggedUser());
+                routeController.save(r);
+            }
+        }
+
+        return routes;
+
+    }
+   
 
     public void uploadPatientAreas() {
         areas = new ArrayList<>();
@@ -1129,7 +1207,7 @@ public class DataUploadController implements Serializable {
                     System.out.println("Skipping row due to missing name.");
                     continue;  // Skip row if name is missing
                 }
-            } 
+            }
 
             // Column 4: Category (Required)
             Cell catCell = row.getCell(4);
@@ -5695,6 +5773,14 @@ public class DataUploadController implements Serializable {
 
     public void setTemplateForsupplierCentreUpload(StreamedContent templateForsupplierCentreUpload) {
         this.templateForsupplierUpload = templateForsupplierCentreUpload;
+    }
+
+    public List<Route> getRoutes() {
+        return routes;
+    }
+
+    public void setRoutes(List<Route> routes) {
+        this.routes = routes;
     }
 
 }
