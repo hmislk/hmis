@@ -188,6 +188,13 @@ public class ReportItem implements Serializable {
     @ManyToOne
     private InvestigationTube tube;
     private String resultCode;
+    private String valueCodeSystem;
+    private String valueCode;
+    private String valueUnitCodeSystem;
+    private String valueUnitCode;
+    
+    
+    
 
     private boolean canNotApproveIfValueIsEmpty;
     private boolean canNotApproveIfValueIsBelowAbsoluteLowValue;
@@ -1189,6 +1196,38 @@ public class ReportItem implements Serializable {
 
     public void setAboveAbsoluteWarning(String aboveAbsoluteWarning) {
         this.aboveAbsoluteWarning = aboveAbsoluteWarning;
+    }
+
+    public String getValueCodeSystem() {
+        return valueCodeSystem;
+    }
+
+    public void setValueCodeSystem(String valueCodeSystem) {
+        this.valueCodeSystem = valueCodeSystem;
+    }
+
+    public String getValueCode() {
+        return valueCode;
+    }
+
+    public void setValueCode(String valueCode) {
+        this.valueCode = valueCode;
+    }
+
+    public String getValueUnitCodeSystem() {
+        return valueUnitCodeSystem;
+    }
+
+    public void setValueUnitCodeSystem(String valueUnitCodeSystem) {
+        this.valueUnitCodeSystem = valueUnitCodeSystem;
+    }
+
+    public String getValueUnitCode() {
+        return valueUnitCode;
+    }
+
+    public void setValueUnitCode(String valueUnitCode) {
+        this.valueUnitCode = valueUnitCode;
     }
 
 }

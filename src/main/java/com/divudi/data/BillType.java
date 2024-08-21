@@ -41,6 +41,7 @@ public enum BillType {
     CashRecieveBill,
     PettyCash,
     PettyCashReturn,
+    PettyCashCancelApprove,
     IouIssue,
     IouReturn,
     AgentPaymentReceiveBill,
