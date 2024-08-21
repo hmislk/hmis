@@ -312,7 +312,10 @@ public class Staff implements Serializable, IdentifiableWithNameOrCode {
 
     @Override
     public String toString() {
-        return "com.divudi.entity.Staff[ id=" + id + " ]";
+        String specialityName = (getSpeciality() != null && getSpeciality().getName() != null) ? getSpeciality().getName() : "No Speciality";
+        String nameWithTitle = (getPerson() != null && getPerson().getNameWithTitle() != null) ? getPerson().getNameWithTitle() : "No Name";
+
+        return nameWithTitle + " (" + specialityName + ")";
     }
 
     public Person getPerson() {

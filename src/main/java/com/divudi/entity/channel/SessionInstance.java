@@ -219,6 +219,7 @@ public class SessionInstance implements Serializable {
     private Long onCallPatientCount;
     private Long completedPatientCount;
     private Long remainingPatientCount;
+    private Long paidToDoctorPatientCount;
     private Long reservedBookingCount;
     
     private boolean arrived;
@@ -1309,6 +1310,14 @@ public class SessionInstance implements Serializable {
 
     public void setReservedBookingCount(Long reservedBookingCount) {
         this.reservedBookingCount = reservedBookingCount;
+    }
+
+    public Long getPaidToDoctorPatientCount() {
+        return paidToDoctorPatientCount;
+    }
+
+    public void setPaidToDoctorPatientCount(Long paidToDoctorPatientCount) {
+        this.paidToDoctorPatientCount = paidToDoctorPatientCount;
     }
     
     
