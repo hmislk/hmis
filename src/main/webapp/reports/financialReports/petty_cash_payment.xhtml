@@ -17,17 +17,17 @@
                                     <p:outputLabel value="Branch Name"></p:outputLabel>
                                 </div>
                                 <div class="col-md-4">
-                                  <p:autoComplete 
-                                            value="#{webUserController.institution}"
+                                    <p:autoComplete 
+                                        value="#{webUserController.institution}"
 
-                                            completeMethod="#{institutionController.completeIns}"
-                                            var="ins"
-                                            class="w-100 mt-1"
-                                            inputStyleClass="form-control"
-                                            itemLabel="#{ins.name}"
-                                            itemValue="#{ins}">
-                                       
-                                        </p:autoComplete>
+                                        completeMethod="#{institutionController.completeIns}"
+                                        var="ins"
+                                        class="w-100 mt-1"
+                                        inputStyleClass="form-control"
+                                        itemLabel="#{ins.name}"
+                                        itemValue="#{ins}">
+
+                                    </p:autoComplete>
                                 </div>
                             </div>
                             <div class="row mb-2">
@@ -83,23 +83,26 @@
                             <p:spacer height="5"></p:spacer>
 
                             <p:dataTable value="#{reportController.bills}" var="pc" rowIndexVar="rowIndex">
-                                <p:column headerText="S" >
+                                <p:column headerText="S" width="2em">
                                     <h:outputText value="#{rowIndex+1}" ></h:outputText>
                                 </p:column>
-                                <p:column headerText="Bill No" >
+                                <p:column headerText="Casheir"><h:outputText value="#{pc.creater.webUserPerson.name}" ></h:outputText></p:column>
+                                <p:column headerText="Bill No" width="">
                                     <h:outputText value="#{pc.id}" ></h:outputText>
                                 </p:column>
                                 <p:column headerText="Bill Date" >
                                     <h:outputText value="#{pc.billDate}" ></h:outputText>
                                 </p:column>
                                 <p:column headerText="Document No" >
-                                    <h:outputText value="" ></h:outputText>
+                                    <h:outputText value="#{pc.billedBill.referenceNumber}" ></h:outputText>
                                 </p:column>
                                 <p:column headerText="Date" >
-                                    <h:outputText value="#{pc.billDate}" ></h:outputText>
+                                    <h:outputText value="#{pc.billDate}" >
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                    </h:outputText>
                                 </p:column>
                                 <p:column headerText="For Whome" >
-                                    <h:outputText value="" ></h:outputText>
+                                    <h:outputText value="#{pc.billType.label}" ></h:outputText>
                                 </p:column>
                                 <p:column headerText="Paid For" >
                                     <h:outputText value="" ></h:outputText>
@@ -108,14 +111,14 @@
                                     <h:outputText value="" ></h:outputText>
                                 </p:column>
                                 <p:column headerText="Status" >
-                                    <h:outputText value="" ></h:outputText>
+                                    <h:outputText value="#{pc.approveUser != null ? 'Approved': 'Not Approved'}" ></h:outputText>
                                 </p:column>
                                 <p:column headerText="Amount" >
                                     <h:outputText value="#{pc.total}" ></h:outputText>
                                 </p:column>
-                                
-                                
-           
+
+
+
                             </p:dataTable>
 
                             <p:spacer height="5"></p:spacer>
