@@ -52,6 +52,12 @@
                                                  value="#{investigationController.current.fullName}"  >
                                     </p:inputText>
 
+                                    <h:outputText  id="lblShortName" value="Short Name" ></h:outputText>
+                                    <h:outputLabel value=" : " style="width: 20px; text-align: center"/>
+                                    <p:inputText class="form-control"  autocomplete="off" id="txtShortName"  
+                                                 value="#{investigationController.current.shortName}"  >
+                                    </p:inputText>
+
                                     <p:outputLabel value="Item Code"/>
                                     <h:outputLabel value=" : " style="width: 20px; text-align: center"/>
                                     <p:inputText class="form-control" autocomplete="off" value="#{investigationController.current.code}"/>
@@ -103,10 +109,8 @@
                                     <p:outputLabel value="Report Category"/>
                                     <h:outputLabel value=" : " style="width: 20px; text-align: center"/>
                                     <p:selectOneMenu class="form-control" value="#{investigationController.current.reportType}" >                               
-                                        <f:selectItem itemLabel="General" itemValue="General"/>
-                                        <f:selectItem itemLabel="Microbiology" itemValue="Microbiology"/>
-                                        <f:selectItem itemLabel="Pathology / Haematology" 
-                                                      itemValue="PathologyOrHaematology"/>
+                                        <f:selectItem itemLabel="Select" />
+                                        <f:selectItems value="#{enumController.investigationReportTypes}" ></f:selectItems>
                                     </p:selectOneMenu>
 
                                     <h:outputText value="Report Format" ></h:outputText>
@@ -316,35 +320,35 @@
                             </p:tab>
                             <p:tab title="Manage" >
                                 <h:panelGrid columns="1" >
-                                    
+
                                     <p:commandButton                                                 
                                         class="w-100" 
                                         ajax="false" 
                                         action="#{investigationController.navigateToEditFormatSingle()}" 
                                         value="Manage Format - Single Item" >
                                     </p:commandButton>
-                                    
+
                                     <p:commandButton                                                 
                                         class="w-100" 
                                         ajax="false" 
                                         action="#{investigationController.navigateToEditFormatMultiple()}" 
                                         value="Manage Format - All Items" >
                                     </p:commandButton>
-                                    
+
                                     <p:commandButton                                                 
                                         class="w-100" 
                                         ajax="false" 
                                         action="#{investigationController.navigateToManageCalculations()}" 
                                         value="Manage Calculations" >
                                     </p:commandButton>
-                                    
+
                                     <p:commandButton                                                 
                                         class="w-100" 
                                         ajax="false" 
                                         action="#{investigationController.navigateToReplaceableInvestigations()}" 
                                         value="Manage Replaceable Investigations" >
                                     </p:commandButton>
-                                    
+
                                     <p:commandButton                                                 
                                         class="w-100" 
                                         ajax="false" 
@@ -366,7 +370,7 @@
                                         value="Manage Valuesets" 
                                         action="#{investigationController.navigateToManageValueSetsForAdmin()}" >
                                     </p:commandButton>
-  
+
                                     <p:commandButton 
                                         class="w-100" 
                                         ajax="false" 
@@ -374,22 +378,22 @@
                                         action="#{investigationController.navigateToManageFlagsForLab()}" >
                                         <f:setPropertyActionListener value="#{investigationController.current}" target="#{testFlagController.investigation}"/>
                                     </p:commandButton>
-                                    
+
                                     <p:commandButton 
                                         class="w-100" 
                                         ajax="false" 
                                         rendered="false"
                                         value="Calculations" 
                                         action="/admin/lims/calculation?faces-redirect=true" >
-                                        </p:commandButton>
-                                    
+                                    </p:commandButton>
+
                                     <p:commandButton 
                                         class="w-100" 
                                         ajax="false" 
                                         value="Dynamic Labels" 
                                         action="/admin/lims/dynamic_labels?faces-redirect=true" >
                                     </p:commandButton>
-                                    
+
                                     <p:commandButton                                         
                                         class="w-100" 
                                         ajax="false" 
@@ -403,7 +407,7 @@
                                         action="#{investigationController.toLoadParentInvestigation()}" 
                                         value="Load Parent Investigation" >
                                     </p:commandButton>
-                                    
+
                                     <p:commandButton                                                 
                                         class="w-100" 
                                         ajax="false" 
@@ -412,9 +416,9 @@
                                     </p:commandButton>
                                 </h:panelGrid>
                             </p:tab>
-                            
+
                         </p:tabView>
-                        
+
                     </p:panel>
                 </h:form>
             </ui:define>

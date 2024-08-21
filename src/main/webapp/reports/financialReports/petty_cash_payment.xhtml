@@ -1,0 +1,137 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/reports/index.xhtml">
+            <ui:define name="subcontent">
+                <h:form >
+                    <div class="container">
+                        <p:panel header="Petty Cash Report" >
+                            <div class="row mb-2">
+
+                                <div class="col-md-2">
+                                    <p:outputLabel value="Branch Name"></p:outputLabel>
+                                </div>
+                                <div class="col-md-4">
+                                    <p:autoComplete 
+                                        value="#{webUserController.institution}"
+
+                                        completeMethod="#{institutionController.completeIns}"
+                                        var="ins"
+                                        class="w-100 mt-1"
+                                        inputStyleClass="form-control"
+                                        itemLabel="#{ins.name}"
+                                        itemValue="#{ins}">
+
+                                    </p:autoComplete>
+                                </div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-md-2">
+                                    <p:outputLabel value="From Date" >
+                                    </p:outputLabel>
+                                </div>
+                                <div class="col-md-4">
+                                    <p:datePicker value="#{reportController.fromDate}" 
+                                                  style=" max-width: 100%; overflow-x: auto; "
+                                                  class="w-100"
+                                                  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"></p:datePicker>
+                                </div>
+                            </div>  
+                            <div class="row mb-2">
+                                <div class="col-md-2">
+                                    <p:outputLabel value="To Date" >
+                                    </p:outputLabel>
+                                </div>
+                                <div class="col-md-4">
+                                    <p:datePicker value="#{reportController.toDate}"
+                                                  style=" max-width: 100%; overflow-x: auto; "
+                                                  class="w-100"
+                                                  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"></p:datePicker>
+                                </div>
+                            </div>
+
+                            <div class="row mb-2">
+                                <div class="col-md-2">
+                                    <p:commandButton ajax="false" value="Process" action="#{reportController.processPettyCashPayment}" >
+                                    </p:commandButton>
+                                </div>
+                            </div>
+
+
+                            <h:panelGrid columns="2">
+                                <h:outputLabel value="From Date :  "/>
+                                <h:outputLabel value="#{reportController.fromDate}"  >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                </h:outputLabel>
+
+                                <h:outputLabel value="To Date :  "/>
+                                <h:outputLabel value="#{reportController.toDate}"  >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                </h:outputLabel>
+
+                                <h:outputLabel value="Collection Center Name :  "/>
+                                <h:outputLabel value="#{reportController.collectingCentre}"  >
+
+                                </h:outputLabel>
+                            </h:panelGrid>
+
+                            <p:spacer height="5"></p:spacer>
+
+                            <p:dataTable value="#{reportController.bills}" var="pc" rowIndexVar="rowIndex">
+                                <p:column headerText="S" width="2em">
+                                    <h:outputText value="#{rowIndex+1}" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Casheir"><h:outputText value="#{pc.creater.webUserPerson.name}" ></h:outputText></p:column>
+                                <p:column headerText="Bill No" width="">
+                                    <h:outputText value="#{pc.id}" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Bill Date" >
+                                    <h:outputText value="#{pc.billDate}" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Document No" >
+                                    <h:outputText value="#{pc.billedBill.referenceNumber}" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Date" >
+                                    <h:outputText value="#{pc.billDate}" >
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="For Whome" >
+                                    <h:outputText value="#{pc.billType.label}" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Paid For" >
+                                    <h:outputText value="" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Purpose" >
+                                    <h:outputText value="" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Status" >
+                                    <h:outputText value="#{pc.approveUser != null ? 'Approved': 'Not Approved'}" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Amount" >
+                                    <h:outputText value="#{pc.total}" ></h:outputText>
+                                </p:column>
+
+
+
+                            </p:dataTable>
+
+                            <p:spacer height="5"></p:spacer>
+
+
+
+                        </p:panel>
+                    </div>
+
+                </h:form>
+
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

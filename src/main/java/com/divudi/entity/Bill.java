@@ -177,7 +177,6 @@ public class Bill implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     private Institution paymentSchemeInstitution;
     @ManyToOne(fetch = FetchType.LAZY)
-    @Deprecated //Use fromInstitution
     private Institution collectingCentre;
     @ManyToOne(fetch = FetchType.LAZY)
     private Institution institution;
@@ -365,7 +364,7 @@ public class Bill implements Serializable {
     
     private String localNumber;
     
-    
+    private boolean billPaymentCompletelySettled;
 
     private void generateBillPrintFromBillTemplate() {
         billPrint = "";
@@ -2238,6 +2237,14 @@ public class Bill implements Serializable {
 
     public void setIpOpOrCc(String ipOpOrCc) {
         this.ipOpOrCc = ipOpOrCc;
+    }
+
+    public boolean isBillPaymentCompletelySettled() {
+        return billPaymentCompletelySettled;
+    }
+
+    public void setBillPaymentCompletelySettled(boolean billPaymentCompletelySettled) {
+        this.billPaymentCompletelySettled = billPaymentCompletelySettled;
     }
     
     

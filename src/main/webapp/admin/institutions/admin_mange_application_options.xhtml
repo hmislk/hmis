@@ -19,6 +19,7 @@
                         </f:facet>
                         <!-- Data Table for Options -->
                         <p:dataTable var="option" 
+                                     rowKey="#{option.id}"
                                      value="#{configOptionController.options}" id="optionsTable"
                                      paginator="true" rows="10" 
                                      paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"

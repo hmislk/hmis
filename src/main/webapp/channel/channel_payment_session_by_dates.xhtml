@@ -118,6 +118,7 @@
                                     paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                     currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
                                     rowsPerPageTemplate="{ShowAll|'All'}"
+                                    selectionMode="multiple"
                                     >
 
                                     <f:ajax  event="rowSelectCheckbox" execute="tblFee" listener="#{channelStaffPaymentBillController.performCalculations()}"   
@@ -132,7 +133,7 @@
                                     <f:ajax  event="rowSelect" execute="tblFee" listener="#{channelStaffPaymentBillController.performCalculations()}"   
                                              render=":#{p:resolveFirstComponentWithId('lblDue',view).clientId} :#{p:resolveFirstComponentWithId('lblPay',view).clientId}"  />
 
-                                    <p:column selectionMode="multiple" width="10"></p:column>
+                                    <p:column selectionBox="true" width="10"></p:column>
 
                                     <p:column headerText="No" width="3em">
                                         <h:outputLabel value="#{bf.bill.singleBillSession.serialNo}">

@@ -200,6 +200,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     private PaymentMethod paymentMethod;
     private Patient patient;
     private Doctor referredBy;
+    private String referredByName;
     private Institution referredByInstitution;
     private String referralId;
     private Institution creditCompany;
@@ -376,7 +377,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         for (WorkingTime wt : wts) {
             if (wt.getStaffShift() != null && wt.getStaffShift().getStaff() != null) {
                 currentlyWorkingStaff.add(wt.getStaffShift().getStaff());
-                selectedCurrentlyWorkingStaff = wt.getStaffShift().getStaff();
+//                selectedCurrentlyWorkingStaff = wt.getStaffShift().getStaff();
             }
         }
 
@@ -4163,6 +4164,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
     public void fillDepartmentOpdItems() {
         departmentOpdItems = null;
+        opdItems=null;
         itemApplicationController.reloadItems();
         getDepartmentOpdItems();
     }
@@ -4224,5 +4226,15 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     public void setRemainAmount(double remainAmount) {
         this.remainAmount = remainAmount;
     }
+
+    public String getReferredByName() {
+        return referredByName;
+    }
+
+    public void setReferredByName(String referredByName) {
+        this.referredByName = referredByName;
+    }
+    
+    
 
 }

@@ -20,45 +20,45 @@ import javax.persistence.Temporal;
 @Entity
 public class BillComponent implements Serializable {
 
-     static final long serialVersionUID = 1L;
+    static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     //Main Properties
-     Long id;
+    Long id;
     @ManyToOne
-     Packege packege;
+    Packege packege;
     @ManyToOne
-     Item item;
-     String name;
+    Item item;
+    String name;
     //Created Properties
     @ManyToOne
-     WebUser creater;
+    WebUser creater;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-     Date createdAt;
+    Date createdAt;
     //Retairing properties
-     boolean retired;
+    boolean retired;
     @ManyToOne
-     WebUser retirer;
+    WebUser retirer;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-     Date retiredAt;
-     String retireComments;
-     String deptId;
-     String insId;
-     String catId;
-     String sessionId;
+    Date retiredAt;
+    String retireComments;
+    String deptId;
+    String insId;
+    String catId;
+    String sessionId;
     @ManyToOne
-     Bill bill;
+    Bill bill;
     @ManyToOne
-     BillItem billItem;
+    BillItem billItem;
     @ManyToOne
-     Institution institution;
+    Institution institution;
     @ManyToOne
-     Department department;
+    Department department;
     @ManyToOne
-     Staff staff;
+    Staff staff;
     @ManyToOne
-     Speciality speciality;
-    
+    Speciality speciality;
+    private Double componentValue;
     
     
 
@@ -79,7 +79,7 @@ public class BillComponent implements Serializable {
 
     @Override
     public boolean equals(Object object) {
-        
+
         if (!(object instanceof BillComponent)) {
             return false;
         }
@@ -245,5 +245,13 @@ public class BillComponent implements Serializable {
 
     public void setSpeciality(Speciality speciality) {
         this.speciality = speciality;
+    }
+
+    public Double getComponentValue() {
+        return componentValue;
+    }
+
+    public void setComponentValue(Double componentValue) {
+        this.componentValue = componentValue;
     }
 }

@@ -233,6 +233,8 @@ public class DataUploadController implements Serializable {
     List<Department> departmentsSaved;
     private List<Consultant> consultantsToSave;
     private List<Institution> creditCompanies;
+    private List<Route> routes;
+    private List<Category>feeListTypes;
 
     private List<Doctor> doctorsTosave;
     private List<Staff> staffToSave;
@@ -243,6 +245,11 @@ public class DataUploadController implements Serializable {
     private List<ClinicalEntity> surgeries;
     private List<ClinicalEntity> surgeriesToSave;
     private List<ClinicalEntity> surgeriesToSkiped;
+    
+    
+    public String navigateToRouteUpload(){
+        return "/admin/institutions/route_upload?faces-redirect=true";
+    }
 
    
     public String navigateToCollectingCenterUpload() {
@@ -257,7 +264,7 @@ public class DataUploadController implements Serializable {
 
     public String navigateToSupplierUpload() {
         uploadComplete = false;
-        return "/admin/institutions/supplier_upload?faces-redirect=true";
+        return "/admin/institutions/route_upload?faces-redirect=true";
     }
 
     public void uploadPatientAreas() {
@@ -271,11 +278,13 @@ public class DataUploadController implements Serializable {
         }
     }
     
+
     public void uploadInstitutionItemFees() {
         itemFees = new ArrayList<>();
         if (file != null) {
             try (InputStream inputStream = file.getInputStream()) {
                 itemFees = readInstitutionItemFeeFromXcel(inputStream);
+
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -405,6 +414,8 @@ public class DataUploadController implements Serializable {
     public String toUploadVmps() {
         return "/pharmacy/admin/upload_vmps?faces-redirect=true";
     }
+    
+    
 
     public void uploadPatients() {
         List<Patient> patients;
@@ -600,6 +611,181 @@ public class DataUploadController implements Serializable {
             }
         }
         pollActive = false;
+    }
+    
+    public void uploadFeeListItemFees() {
+        itemFees = new ArrayList<>();
+        if (file != null) {
+            try ( InputStream inputStream = file.getInputStream()) {
+                itemFees = readFeeListItemFeesFromExcel(inputStream);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        
+    }
+    
+    public List<Category> readFeeListTypesFromExcel(InputStream inputStream)throws IOException {
+        List<Category> feeListTypes = new ArrayList<>();
+         Workbook workbook = new XSSFWorkbook(inputStream);
+        Sheet sheet = workbook.getSheetAt(0);
+        Iterator<Row> rowIterator = sheet.rowIterator();
+        
+         if (rowIterator.hasNext()) {
+            rowIterator.next();
+        }
+         
+         Category category = null;
+         
+         while (rowIterator.hasNext()) {
+          Row row = rowIterator.next();
+            
+            
+            String feeListName = null;
+            String description=null;
+
+            Cell feeListNameCell = row.getCell(0);
+            if (feeListNameCell != null && feeListNameCell.getCellType() == CellType.STRING) {
+                feeListName = feeListNameCell.getStringCellValue();
+            }
+            
+            
+             if (feeListName != null || !feeListName.trim().equals("")) {
+                 category=categoryController.findCategoryByName(feeListName);
+             }
+             
+             if (category == null) {
+                 category= new Category();
+                 category.setName(feeListName);
+                 category.setSymanticType(SymanticHyrachi.Fee_List_Type);
+                 category.setCreatedAt(new Date());
+                 category.setCreater(sessionController.getCurrent());
+                 categoryController.save(category);
+                 feeListTypes.add(category);
+             }
+ 
+         }
+         JsfUtil.addSuccessMessage("FeeList Types Uploaded");
+         return feeListTypes;
+    }
+    
+    private List<ItemFee> readFeeListItemFeesFromExcel(InputStream inputStream) throws IOException{
+        List<ItemFee> itemFees = new ArrayList<>();
+        Workbook workbook = new XSSFWorkbook(inputStream);
+        Sheet sheet = workbook.getSheetAt(0);
+        Iterator<Row> rowIterator = sheet.rowIterator();
+
+        // Assuming the first row contains headers, skip it
+        if (rowIterator.hasNext()) {
+            rowIterator.next();
+        }
+
+        while (rowIterator.hasNext()) {
+            Row row = rowIterator.next();
+            String itemCode=null;
+            String itemName = null;
+            String forCategoryName=null;
+            String institutionName=null;
+            String discountAllowed=null;
+            String ffeeValue=null;
+            String fffeeValue=null;
+            
+            boolean disAllowd;
+            double fee=0.0;
+            double ffee=0.0;
+            
+            Item item;
+            Category category;
+            Institution institution;
+
+            Cell itemCodeCell = row.getCell(0);
+            if (itemCodeCell != null && itemCodeCell.getCellType() == CellType.STRING) {
+                itemCode = itemCodeCell.getStringCellValue();
+            }
+            
+            Cell itemNameCell = row.getCell(1);
+            if (itemNameCell != null && itemNameCell.getCellType() == CellType.STRING) {
+                itemName = itemNameCell.getStringCellValue();
+            }
+            
+            Cell forCategoryCell = row.getCell(2);
+            if (forCategoryCell != null && forCategoryCell.getCellType() == CellType.STRING) {
+                forCategoryName = forCategoryCell.getStringCellValue();
+            }
+            
+            Cell institutionCell = row.getCell(3);
+            if (institutionCell != null && institutionCell.getCellType() == CellType.STRING) {
+                institutionName = forCategoryCell.getStringCellValue();
+            }
+            
+            Cell feeCell = row.getCell(4);
+            if (feeCell != null && feeCell.getCellType() == CellType.NUMERIC) {
+                fee = feeCell.getNumericCellValue();
+            }
+            
+            Cell ffeeCell = row.getCell(5);
+            if (ffeeCell != null && ffeeCell.getCellType() == CellType.NUMERIC) {
+                ffee = ffeeCell.getNumericCellValue();
+            }
+           
+            
+            Cell discountAllowedCell = row.getCell(6);
+            if (discountAllowedCell != null && discountAllowedCell.getCellType() == CellType.STRING) {
+                discountAllowed = discountAllowedCell.getStringCellValue();
+            }
+            if (discountAllowed!= null || !discountAllowed.trim().equals("")) {
+                disAllowd=true;
+            }else{
+                disAllowd=false;
+            }
+            
+            if (institutionName==null || institutionName.trim().equals("")) {
+                institution=sessionController.getInstitution();
+            }else{
+                institution=institutionController.findAndSaveInstitutionByName(institutionName);
+            }
+            
+            
+            if (itemName == null || itemCode==null) {
+                JsfUtil.addErrorMessage("Item Name and Item Code cannot be null.");
+                return itemFees;
+            }
+            
+            if (forCategoryName == null || forCategoryName.trim().equals("")) {
+                JsfUtil.addErrorMessage("Fee List types cannot be null.");
+                return itemFees;
+            }
+            
+            category=categoryController.findCategoryByName(forCategoryName);
+            if (category==null) {
+                JsfUtil.addErrorMessage("Fee List type Not found.");
+                return itemFees;
+            }
+            
+            item= itemController.findItemByNameAndCode(itemName, itemCode);
+            if (item==null) {
+                 JsfUtil.addErrorMessage("Item cannot be null.");
+                return itemFees;
+            }
+            ItemFee Itemfee= new ItemFee();
+             Itemfee.setCreatedAt(new Date());
+             Itemfee.setName(forCategoryName);
+        Itemfee.setCreater(sessionController.getLoggedUser());
+        Itemfee.setForInstitution(null);
+        Itemfee.setForCategory(category);
+        Itemfee.setItem(item);
+        Itemfee.setFeeType(FeeType.OwnInstitution);
+        Itemfee.setInstitution(institution);
+        Itemfee.setFee(fee);
+        Itemfee.setFfee(ffee);
+        Itemfee.setDiscountAllowed(disAllowd);
+        itemFeeFacade.create(Itemfee);
+        
+            
+        }
+         JsfUtil.addSuccessMessage("Upload Success");
+        return itemFees;
+       
     }
 
     private List<Consultant> readConsultantsFromExcel(InputStream inputStream) throws IOException {
@@ -2810,6 +2996,23 @@ public class DataUploadController implements Serializable {
         uploadComplete = true;
         JsfUtil.addSuccessMessage("Successfully Uploaded");
     }
+    
+    public void uploadRoutes() {
+        routes = new ArrayList<>();
+        if (file != null) {
+            try ( InputStream inputStream = file.getInputStream()) {
+                System.out.println("inputStream = " + inputStream);
+                routes = readRoutesFromExcel(inputStream);
+            } catch (IOException e) {
+                e.printStackTrace();
+                uploadComplete = false;
+                JsfUtil.addErrorMessage("Error in Uploading. " + e.getMessage());
+            }
+        }
+        uploadComplete = true;
+        JsfUtil.addSuccessMessage("Successfully Uploaded");
+    }
+    
 
     public void uploadDepartments() {
         departments = new ArrayList<>();
@@ -2835,6 +3038,54 @@ public class DataUploadController implements Serializable {
                 e.printStackTrace();
             }
         }
+    }
+    
+    private List<Route> readRoutesFromExcel(InputStream inputStream) throws IOException{
+        Workbook workbook = new XSSFWorkbook(inputStream);
+        Sheet sheet = workbook.getSheetAt(0);
+        Iterator<Row> rowIterator = sheet.rowIterator();
+
+        List<Route> routes = new ArrayList<>();
+        Institution institution;
+
+        // Assuming the first row contains headers, skip it
+        if (rowIterator.hasNext()) {
+            rowIterator.next();
+        }
+        
+        while (rowIterator.hasNext()) {
+            Row row = rowIterator.next();
+            Route route = null;
+            String name = null;
+            String institutionName=null;
+            
+            Cell nameCell = row.getCell(0);
+            if (nameCell != null && nameCell.getCellType() == CellType.STRING) {
+                name = nameCell.getStringCellValue();
+            }
+            
+            Cell institutionCell = row.getCell(1);
+            if (institutionCell != null && institutionCell.getCellType() == CellType.STRING) {
+                institutionName = institutionCell.getStringCellValue();
+            }
+            if (institutionName == null || institutionName.trim().equals("")) {
+                institution=sessionController.getInstitution();
+            }
+            institution=institutionController.findAndSaveInstitutionByName(institutionName);
+
+            Route r = routeController.findRouteByName(name);
+            if(r==null){
+                r = new Route();
+                r.setName(name);
+                r.setInstitution(institution);
+                r.setCreatedAt(new Date());
+                r.setCreater(sessionController.getLoggedUser());
+                routeController.save(r);
+            }
+        }
+
+        return routes;
+        
     }
 
     private List<Institution> readCollectingCentresFromExcel(InputStream inputStream) throws IOException {
@@ -3733,6 +3984,8 @@ public class DataUploadController implements Serializable {
             }
         }
     }
+    
+
 
     public void uploadInvestigations() {
         List<Investigation> investigations;
@@ -5688,6 +5941,22 @@ public class DataUploadController implements Serializable {
 
     public void setTemplateForsupplierCentreUpload(StreamedContent templateForsupplierCentreUpload) {
         this.templateForsupplierUpload = templateForsupplierCentreUpload;
+    }
+
+    public List<Route> getRoutes() {
+        return routes;
+    }
+
+    public void setRoutes(List<Route> routes) {
+        this.routes = routes;
+    }
+
+    public List<Category> getFeeListTypes() {
+        return feeListTypes;
+    }
+
+    public void setFeeListTypes(List<Category> feeListTypes) {
+        this.feeListTypes = feeListTypes;
     }
 
 }

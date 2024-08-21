@@ -349,6 +349,7 @@ public class UserPrivilageController implements Serializable {
         new DefaultTreeNode(new PrivilegeHolder(Privileges.PaymentBillRefund, "Payment Refund"), paymentNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.PaymentBillReactivation, "Payment Reactivation"), paymentNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.ChangeCreditLimitInCC, "Change Credit Limit in Collecting Centre"), paymentNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.PettyCashBillCancellationApprove, "Petty Cash Bill Cancellation Approval"), paymentNode);
 
         // Reports Privileges
         TreeNode reportsNode = new DefaultTreeNode(new PrivilegeHolder(null, "Reports"), allNode);
@@ -774,8 +775,14 @@ public class UserPrivilageController implements Serializable {
         List<PrivilegeHolder> privileges = new ArrayList<>();
         if (selectedNodes != null) {
             for (TreeNode node : selectedNodes) {
-                PrivilegeHolder ph = (PrivilegeHolder) node.getData();
-                privileges.add(ph);
+                Object data = node.getData();
+                if (data instanceof PrivilegeHolder) {
+                    PrivilegeHolder ph = (PrivilegeHolder) data;
+                    privileges.add(ph);
+                } else {
+                    System.out.println("Unexpected data type: " + data.getClass().getName());
+                    // Handle the case where the data is not of type PrivilegeHolder
+                }
             }
         }
         return privileges;
@@ -902,13 +909,13 @@ public class UserPrivilageController implements Serializable {
         currentUserPrivilegeHolders = createPrivilegeHolders(currentWebUserPrivileges);
         unselectTreeNodes(rootTreeNode);
         checkNodes(rootTreeNode, currentUserPrivilegeHolders);
-        privilegesLoaded=true;
+        privilegesLoaded = true;
     }
 
-    public void makePrivilegesNeededToBeReloaded(){
-        privilegesLoaded=false;
+    public void makePrivilegesNeededToBeReloaded() {
+        privilegesLoaded = false;
     }
-    
+
     public void fillUserRolePrivileges(WebUserRole u) {
         webUserRole = u;
         fillUserRolePrivileges();
@@ -1065,8 +1072,6 @@ public class UserPrivilageController implements Serializable {
     public void setPrivilegesLoaded(boolean privilegesLoaded) {
         this.privilegesLoaded = privilegesLoaded;
     }
-    
-    
 
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Converters">

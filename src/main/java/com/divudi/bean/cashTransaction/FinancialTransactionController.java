@@ -28,11 +28,13 @@ import com.divudi.data.ReportTemplateRowBundle;
 import com.divudi.data.ServiceType;
 import com.divudi.data.analytics.ReportTemplateType;
 import com.divudi.data.dataStructure.PaymentMethodData;
+import com.divudi.entity.BillComponent;
 import com.divudi.entity.Category;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.WebUser;
+import com.divudi.facade.BillComponentFacade;
 import com.divudi.java.CommonFunctions;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
@@ -65,6 +67,8 @@ public class FinancialTransactionController implements Serializable {
     BillFacade billFacade;
     @EJB
     PaymentFacade paymentFacade;
+    @EJB
+    BillComponentFacade billComponentFacade;
     // </editor-fold>  
 
     // <editor-fold defaultstate="collapsed" desc="Controllers">
@@ -86,6 +90,7 @@ public class FinancialTransactionController implements Serializable {
 
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
     private Bill currentBill;
+    private List<BillComponent> currentBillComponents;
     private ReportTemplateType reportTemplateType;
     private ReportTemplateRowBundle reportTemplateRowBundle;
     private ReportTemplateRowBundle opdServiceBundle;
@@ -428,7 +433,10 @@ public class FinancialTransactionController implements Serializable {
         WebUser paramUser = nonClosedShiftStartFundBill.getCreater();
         Institution paramCreditCompany = null;
         Long paramStartId = nonClosedShiftStartFundBill.getId();
-        Long paramEndId = nonClosedShiftStartFundBill.getReferenceBill().getId();
+        Long paramEndId = null;
+        if (nonClosedShiftStartFundBill.getReferenceBill() != null) {
+            paramEndId = nonClosedShiftStartFundBill.getReferenceBill().getId();
+        }
 
         ReportTemplateRowBundle tmpChannellingBundle = addChannellingByCategories(
                 channelingType,
@@ -2260,6 +2268,149 @@ public class FinancialTransactionController implements Serializable {
         nonClosedShiftStartFundBill.setReferenceBill(currentBill);
         billController.save(nonClosedShiftStartFundBill);
 
+        BillComponent bcCollectedCash = new BillComponent();
+        bcCollectedCash.setName("Collected Cash");
+        bcCollectedCash.setComponentValue(financialReportByPayments.getCollectedCash());
+        bcCollectedCash.setBill(currentBill);
+        billComponentFacade.create(bcCollectedCash);
+
+        BillComponent bcRefundedCash = new BillComponent();
+        bcRefundedCash.setName("Refunded Cash");
+        bcRefundedCash.setComponentValue(financialReportByPayments.getRefundedCash());
+        bcRefundedCash.setBill(currentBill);
+        billComponentFacade.create(bcRefundedCash);
+
+        BillComponent bcNetCashTotal = new BillComponent();
+        bcNetCashTotal.setName("Net Cash Total");
+        bcNetCashTotal.setComponentValue(financialReportByPayments.getNetCashTotal());
+        bcNetCashTotal.setBill(currentBill);
+        billComponentFacade.create(bcNetCashTotal);
+
+        BillComponent bcCollectedCreditCard = new BillComponent();
+        bcCollectedCreditCard.setName("Collected Credit Card");
+        bcCollectedCreditCard.setComponentValue(financialReportByPayments.getCollectedCreditCard());
+        bcCollectedCreditCard.setBill(currentBill);
+        billComponentFacade.create(bcCollectedCreditCard);
+
+        BillComponent bcRefundedCreditCard = new BillComponent();
+        bcRefundedCreditCard.setName("Refunded Credit Card");
+        bcRefundedCreditCard.setComponentValue(financialReportByPayments.getRefundedCreditCard());
+        bcRefundedCreditCard.setBill(currentBill);
+        billComponentFacade.create(bcRefundedCreditCard);
+
+        BillComponent bcNetCreditCardTotal = new BillComponent();
+        bcNetCreditCardTotal.setName("Net Credit Card Total");
+        bcNetCreditCardTotal.setComponentValue(financialReportByPayments.getNetCreditCardTotal());
+        bcNetCreditCardTotal.setBill(currentBill);
+        billComponentFacade.create(bcNetCreditCardTotal);
+
+        BillComponent bcCollectedVoucher = new BillComponent();
+        bcCollectedVoucher.setName("Collected Voucher");
+        bcCollectedVoucher.setComponentValue(financialReportByPayments.getCollectedVoucher());
+        bcCollectedVoucher.setBill(currentBill);
+        billComponentFacade.create(bcCollectedVoucher);
+
+        BillComponent bcRefundedVoucher = new BillComponent();
+        bcRefundedVoucher.setName("Refunded Voucher");
+        bcRefundedVoucher.setComponentValue(financialReportByPayments.getRefundedVoucher());
+        bcRefundedVoucher.setBill(currentBill);
+        billComponentFacade.create(bcRefundedVoucher);
+
+        BillComponent bcNetVoucherTotal = new BillComponent();
+        bcNetVoucherTotal.setName("Net Voucher Total");
+        bcNetVoucherTotal.setComponentValue(financialReportByPayments.getNetVoucherTotal());
+        bcNetVoucherTotal.setBill(currentBill);
+        billComponentFacade.create(bcNetVoucherTotal);
+
+        BillComponent bcCollectedOtherNonCredit = new BillComponent();
+        bcCollectedOtherNonCredit.setName("Collected Other Non-Credit");
+        bcCollectedOtherNonCredit.setComponentValue(financialReportByPayments.getCollectedOtherNonCredit());
+        bcCollectedOtherNonCredit.setBill(currentBill);
+        billComponentFacade.create(bcCollectedOtherNonCredit);
+
+        BillComponent bcRefundedOtherNonCredit = new BillComponent();
+        bcRefundedOtherNonCredit.setName("Refunded Other Non-Credit");
+        bcRefundedOtherNonCredit.setComponentValue(financialReportByPayments.getRefundedOtherNonCredit());
+        bcRefundedOtherNonCredit.setBill(currentBill);
+        billComponentFacade.create(bcRefundedOtherNonCredit);
+
+        BillComponent bcNetOtherNonCreditTotal = new BillComponent();
+        bcNetOtherNonCreditTotal.setName("Net Other Non-Credit Total");
+        bcNetOtherNonCreditTotal.setComponentValue(financialReportByPayments.getNetOtherNonCreditTotal());
+        bcNetOtherNonCreditTotal.setBill(currentBill);
+        billComponentFacade.create(bcNetOtherNonCreditTotal);
+
+        BillComponent bcShiftStartFunds = new BillComponent();
+        bcShiftStartFunds.setName("Shift Start Funds");
+        bcShiftStartFunds.setComponentValue(financialReportByPayments.getShiftStartFunds());
+        bcShiftStartFunds.setBill(currentBill);
+        billComponentFacade.create(bcShiftStartFunds);
+
+        BillComponent bcFloatReceived = new BillComponent();
+        bcFloatReceived.setName("Float Received");
+        bcFloatReceived.setComponentValue(financialReportByPayments.getFloatReceived());
+        bcFloatReceived.setBill(currentBill);
+        billComponentFacade.create(bcFloatReceived);
+
+        BillComponent bcFloatHandover = new BillComponent();
+        bcFloatHandover.setName("Float Handover");
+        bcFloatHandover.setComponentValue(financialReportByPayments.getFloatHandover());
+        bcFloatHandover.setBill(currentBill);
+        billComponentFacade.create(bcFloatHandover);
+
+        BillComponent bcBankWithdrawals = new BillComponent();
+        bcBankWithdrawals.setName("Bank Withdrawals");
+        bcBankWithdrawals.setComponentValue(financialReportByPayments.getBankWithdrawals());
+        bcBankWithdrawals.setBill(currentBill);
+        billComponentFacade.create(bcBankWithdrawals);
+
+        BillComponent bcBankDeposits = new BillComponent();
+        bcBankDeposits.setName("Bank Deposits");
+        bcBankDeposits.setComponentValue(financialReportByPayments.getBankDeposits());
+        bcBankDeposits.setBill(currentBill);
+        billComponentFacade.create(bcBankDeposits);
+
+        BillComponent bcCashCollectedTransferIn = new BillComponent();
+        bcCashCollectedTransferIn.setName("Cash Collected Transfer In");
+        bcCashCollectedTransferIn.setComponentValue(financialReportByPayments.getCashCollectedTransferIn());
+        bcCashCollectedTransferIn.setBill(currentBill);
+        billComponentFacade.create(bcCashCollectedTransferIn);
+
+        BillComponent bcCashGivenOutTransferOut = new BillComponent();
+        bcCashGivenOutTransferOut.setName("Cash Given Out Transfer Out");
+        bcCashGivenOutTransferOut.setComponentValue(financialReportByPayments.getCashGivenOutTransferOut());
+        bcCashGivenOutTransferOut.setBill(currentBill);
+        billComponentFacade.create(bcCashGivenOutTransferOut);
+
+        BillComponent bcTotal = new BillComponent();
+        bcTotal.setName("Total");
+        bcTotal.setComponentValue(financialReportByPayments.getTotal());
+        bcTotal.setBill(currentBill);
+        billComponentFacade.create(bcTotal);
+
+        BillComponent bcShortExcess = new BillComponent();
+        bcShortExcess.setName("Short/Excess");
+        bcShortExcess.setComponentValue(currentBill.getNetTotal() - financialReportByPayments.getTotal());
+        bcShortExcess.setBill(currentBill);
+        billComponentFacade.create(bcShortExcess);
+
+        currentBill.getBillComponents().add(bcCollectedCash);
+        currentBill.getBillComponents().add(bcRefundedCash);
+        currentBill.getBillComponents().add(bcNetCashTotal);
+        currentBill.getBillComponents().add(bcCollectedCreditCard);
+        currentBill.getBillComponents().add(bcRefundedCreditCard);
+        currentBill.getBillComponents().add(bcNetCreditCardTotal);
+        currentBill.getBillComponents().add(bcCollectedVoucher);
+        currentBill.getBillComponents().add(bcRefundedVoucher);
+        currentBill.getBillComponents().add(bcNetVoucherTotal);
+        currentBill.getBillComponents().add(bcCollectedOtherNonCredit);
+        currentBill.getBillComponents().add(bcRefundedOtherNonCredit);
+        currentBill.getBillComponents().add(bcNetOtherNonCreditTotal);
+        currentBill.getBillComponents().add(bcShiftStartFunds);
+        currentBill.getBillComponents().add(bcFloatReceived);
+        currentBill.getBillComponents().add(bcFloatHandover);
+        currentBill.getBillComponents().add(bcBankWithdrawals);
+
         return "/cashier/shift_end_summery_bill_print?faces-redirect=true";
     }
 
@@ -3046,6 +3197,14 @@ public class FinancialTransactionController implements Serializable {
 
     public void setShiftEndBundles(List<ReportTemplateRowBundle> shiftEndBundles) {
         this.shiftEndBundles = shiftEndBundles;
+    }
+
+    public List<BillComponent> getCurrentBillComponents() {
+        return currentBillComponents;
+    }
+
+    public void setCurrentBillComponents(List<BillComponent> currentBillComponents) {
+        this.currentBillComponents = currentBillComponents;
     }
 
 }
