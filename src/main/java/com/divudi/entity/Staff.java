@@ -21,6 +21,7 @@ import com.divudi.entity.hr.StaffEmployment;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Basic;
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -28,6 +29,7 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+
 import javax.persistence.Inheritance;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
@@ -39,20 +41,21 @@ import javax.persistence.Transient;
  *
  * @author buddhika
  */
-@Entity
 @Inheritance
+@Entity
 public class Staff implements Serializable, IdentifiableWithNameOrCode {
 
-    
-    static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     Long id;
+
+    static final long serialVersionUID = 1L;
+
     String registration;
     @Lob
     String qualification;
     String code = "";
-    
+
     @ManyToOne
     Roster roster;
 
@@ -72,7 +75,7 @@ public class Staff implements Serializable, IdentifiableWithNameOrCode {
 
     @Lob
     private String description;
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     Person person;
     @ManyToOne
     Speciality speciality;
@@ -148,7 +151,7 @@ public class Staff implements Serializable, IdentifiableWithNameOrCode {
     boolean withOutNotice;
     @Temporal(javax.persistence.TemporalType.DATE)
     Date dateWithOutNotice;
-    
+
     @Enumerated
     private StaffWelfarePeriod staffWelfarePeriod;
 
@@ -721,11 +724,10 @@ public class Staff implements Serializable, IdentifiableWithNameOrCode {
         this.dateWithOutNotice = dateWithOutNotice;
     }
 
-    @Transient
     public String getName() {
-        if (getPerson() != null) {
-            name = getPerson().getNameWithTitle();
-        }
+//        if (getPerson() != null) {
+//            name = getPerson().getNameWithTitle();
+//        }
         return name;
     }
 
@@ -760,7 +762,5 @@ public class Staff implements Serializable, IdentifiableWithNameOrCode {
     public void setCurrentCreditValue(double currentCreditValue) {
         this.currentCreditValue = currentCreditValue;
     }
-    
-    
 
 }
