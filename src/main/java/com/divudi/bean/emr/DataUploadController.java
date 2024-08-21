@@ -279,6 +279,11 @@ public class DataUploadController implements Serializable {
         return "/admin/institutions/supplier_upload?faces-redirect=true";
     }
 
+    public String navigateToRouteUpload(){
+        uploadComplete=false;
+        return "/admin?institutions/route_upload?faces-redirect=true;";
+    }
+    
     public void uploadPatientAreas() {
         areas = new ArrayList<>();
         if (file != null) {
