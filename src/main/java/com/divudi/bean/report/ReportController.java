@@ -70,6 +70,7 @@ public class ReportController implements Serializable {
     BillFacade billFacade;
     @EJB
     InstitutionFacade institutionFacade;
+    
 
     @Inject
     private InstitutionController institutionController;
@@ -156,7 +157,22 @@ public class ReportController implements Serializable {
 
         collectionCenters = institutionFacade.findByJpql(jpql, m);
     }
-
+    
+    public void processPettyCashPayment(){
+        String jpql = "SELECT pc "
+                +"FROM Bill pc "
+                +"WHERE pc.retired=:ret "
+                +"and pc.createdAt between :fromDate and :toDate";
+        Map<String, Object> m = new HashMap<>();
+        m.put("ret", false);
+        m.put("fromDate", getFromDate());
+        m.put("toDate", getToDate());
+        System.out.println(m);
+        System.err.println(jpql);
+        bills = billFacade.findByJpql(jpql, m);
+        
+    }
+    
     public String navigatetoOPDLabReportByMenu() {
         return "/lab/report_for_opd_print?faces-redirect=true";
     }
