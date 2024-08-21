@@ -160,12 +160,22 @@
 
                             <p:column width="4em" style="text-align: center;" sortBy="#{a.sessionInstance.cancelPatientCount}" filterBy="#{a.sessionInstance.cancelPatientCount}" filterMatchMode="exact">
                                 <f:facet name="header">
-                                    <p:outputLabel value="Cancelled" />
+                                    <p:outputLabel value="Cancelled On Call" />
                                 </f:facet>
                                 <f:facet name="footer">
                                     <p:outputLabel value="#{channelReportTemplateController.bundle.long4}" />
                                 </f:facet>
-                                <p:outputLabel value="#{a.sessionInstance.cancelPatientCount}" />
+                                <p:outputLabel value="#{a.sessionInstance.cancelOnCallPatientCount}" />
+                            </p:column>
+                            
+                            <p:column width="4em" style="text-align: center;" sortBy="#{a.sessionInstance.cancelPatientCount}" filterBy="#{a.sessionInstance.cancelPatientCount}" filterMatchMode="exact">
+                                <f:facet name="header">
+                                    <p:outputLabel value="Cancelled After Paid" />
+                                </f:facet>
+                                <f:facet name="footer">
+                                    <p:outputLabel value="#{channelReportTemplateController.bundle.long8}" />
+                                </f:facet>
+                                <p:outputLabel value="#{a.sessionInstance.cancelPaidPatientCount}" />
                             </p:column>
 
                             <p:column width="4em" style="text-align: center;" sortBy="#{a.sessionInstance.refundedPatientCount}" filterBy="#{a.sessionInstance.refundedPatientCount}" filterMatchMode="exact">
@@ -195,7 +205,7 @@
                                 <f:facet name="footer">
                                     <p:outputLabel value="#{channelReportTemplateController.bundle.long6}" />
                                 </f:facet>
-                                <p:outputLabel value="#{a.sessionInstance.remainingPatientCount}" />
+                                <p:outputLabel value="#{a.sessionInstance.bookedPatientCount - a.sessionInstance.paidPatientCount}" />
                             </p:column>
 
                         </p:dataTable>
