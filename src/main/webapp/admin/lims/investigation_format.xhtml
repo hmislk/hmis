@@ -9,27 +9,19 @@
     <h:head><!-- comment -->
     </h:head>
     <h:body>
-
-
-        <ui:composition template="/admin/lims/index.xhtml">
-
-            <ui:define name="subcontent">
-                <h:form id="form">
-                    <p:panel>
-
-                        <f:facet name="header">
-                            <h:outputLabel value="Manage Format - Single Item" ></h:outputLabel>
-                            <p:commandButton 
-                                value="Back" 
-                                style="float: right;"
-                                action="#{investigationController.navigateToManageInvestigation}" 
-                                ajax="false" >
-                            </p:commandButton>
-                        </f:facet>
-                        <h:panelGrid columns="2" >
-                            <h:panelGrid rendered="#{investigationItemController.editMode ne 'Move_Mode'}">
-
-                                <p:panel header="Investigation" >
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:form id="form" >
+                    <div class="container-fluid" >
+                        <div class="row" >
+                            <div class="col-4" >
+                                <p:commandButton 
+                                    value="Back" 
+                                    style="float: right;"
+                                    action="#{investigationController.navigateToManageInvestigation}" 
+                                    ajax="false" >
+                                </p:commandButton>
+                                <p:panel header="Investigation" styleClass="w-100 p-0 m-1" >
                                     <p:autoComplete 
                                         widgetVar="aPt" 
                                         id="acPt" 
@@ -302,7 +294,7 @@
 
                                 </p:panel>
 
-                                <p:panel id="pIx" class="mt-2">
+                                <p:panel id="pIx" class=" w-100">
 
                                     <f:facet name="header">
                                         <h:outputText value="Investigation Items List" class="mt-2"/>
@@ -343,26 +335,18 @@
                                                     <p:selectOneMenu 
                                                         class="w-100" 
                                                         id="cmbItemType" 
-                                                        required="true"
+
                                                         value="#{investigationItemController.current.ixItemType}">
                                                         <f:selectItem itemLabel="Please select" />
-                                                        <f:selectItem  itemLabel="Label" itemValue="Label" />
-                                                        <f:selectItem itemLabel="Value" itemValue="Value" />
-                                                        <f:selectItem itemLabel="Calculation" itemValue="Calculation" />
-                                                        <f:selectItem itemLabel="Flag" itemValue="Flag"/>
-                                                        <f:selectItem itemLabel="List" itemValue="List"/>
-                                                        <f:selectItem itemLabel="MeasurementUnit" itemValue="Measurement Unit"/>
-                                                        <f:selectItem itemLabel="Dynamic Label" itemValue="Dynamic Label" />
-                                                        <f:selectItem itemLabel="Investigation" itemValue="Investigation"/>
-                                                        <f:selectItem itemLabel="Template" itemValue="Template" />
-                                                        <f:selectItem itemLabel="Antibiotic" itemValue="Antibiotic List" />
+                                                        <f:selectItems value="#{enumController.investigationItemTypes}" var="iit" itemLabel="#{iit}" itemValue="#{iit}" >
+                                                        </f:selectItems>
                                                     </p:selectOneMenu>
 
                                                     <h:outputText value="Value Type"/>
                                                     <p:selectOneMenu 
                                                         class="w-100" 
                                                         id="cmbValueType" 
-                                                        required="true"
+
                                                         value="#{investigationItemController.current.ixItemValueType}">
                                                         <f:selectItem itemLabel="Please select" />
                                                         <f:selectItems value="#{enumController.investigationItemValueTypes}" />
@@ -637,113 +621,129 @@
                                     </h:panelGrid>
 
                                 </p:panel>
+                            </div>
+                            <div class="col-8" >
+                                <p:panel id="pPreview" class="w-100"  >
+
+                                    <p:selectOneButton id="btnModes" value="#{investigationItemController.editMode}" >
+                                        <f:selectItem itemLabel="View Mode" itemValue="View_Mode" ></f:selectItem>
+                                        <f:selectItem itemLabel="Edit Mode" itemValue="Edit_mode" ></f:selectItem>
+                                        <p:ajax process="btnModes"  update="divPrint" ></p:ajax>
+                                    </p:selectOneButton>
+
+                                    <h:panelGroup id="divPrint" class="w-100">
+                                        <div style="border: 1px solid black; margin: 0px; padding: 0px;background-color: white!important;width:21.0cm!important; height: 29.7cm!important; position: relative; " >
+                                            <ez:common_report commonReportFormat="#{investigationItemController.currentInvestigation.reportFormat}"/>
+
+                                            <ui:repeat value="#{investigationItemController.items}" rendered="#{investigationItemController.currentInvestigation.reportType eq 'General'}" var="myIi" >
+                                                <h:panelGroup id="gpIi" rendered="#{myIi.retired ne true and  myIi.ixItemType ne 'Investigation'}">
+
+                                                    <div style="#{myIi.outerCssStyle};background-color: #{myIi.ixItemType eq 'Value' ? 'lightgreen' : (myIi.ixItemType eq 'Calculation' ? '#EC7063' : (myIi.ixItemType eq 'Flag' ? '#3D85C6' :'lightyellow'))}; border: 1px solid lightblue; " >
+                                                        <h:outputLabel id="lblViewModeIi" 
+                                                                       rendered="#{investigationItemController.editMode eq 'View_Mode'}"  value="#{myIi.htmltext}" 
+                                                                       style="#{myIi.innerCssStyle}; color: black;" 
+                                                                       escape="false" ></h:outputLabel> 
+
+                                                        <p:tooltip for="lblViewModeIi" rendered="#{myIi.investigationItemValues.size() ne 0}" >
+                                                            <table>
+                                                                <ui:repeat value="#{myIi.investigationItemValues}" var="iiv" >
+                                                                    <tr>
+                                                                        <td>
+                                                                            <h:outputLabel value= "#{iiv.name}" escape="false" ></h:outputLabel>
+                                                                        </td>
+                                                                    </tr>
+                                                                </ui:repeat>
+                                                            </table>
+
+                                                        </p:tooltip>
+
+                                                        <p:inputText id="txtEditIi" 
+                                                                     rendered="#{investigationItemController.editMode eq 'Edit_mode'}"  
+                                                                     value="#{myIi.htmltext}" 
+                                                                     style="#{myIi.innerCssStyle}; border: 1px solid brown;background-color: bisque;vertical-align: top!important; overflow: scroll!important; background-color: #{myIi.ixItemType eq 'Value' ? 'lightgreen':'lightyellow'};"  >
+                                                            <f:ajax event="focus" execute="@this" listener="#{investigationItemController.makeThisCurrent(myIi)}" render=":#{p:resolveFirstComponentWithId('dtbItem',view).clientId} :#{p:resolveFirstComponentWithId('pDetails',view).clientId} "  ></f:ajax>
+                                                            <f:ajax event="blur" execute="@this" listener="#{investigationItemController.saveIiOnAjax(myIi)}" render=":#{p:resolveFirstComponentWithId('dtbItem',view).clientId} :#{p:resolveFirstComponentWithId('pDetails',view).clientId}"></f:ajax>
+                                                        </p:inputText>
+
+
+                                                        <h:inputText id="txtMove"
+                                                                     style="#{myIi.innerCssStyle}; margin: auto; border: 1px solid red;color: yellow;background-color: yellow;"
+                                                                     onkeydown="document.getElementById('#{keyCode.clientId}').value = event.keyCode" 
+                                                                     rendered="#{investigationItemController.editMode eq 'Move_Mode'}" >
+                                                            <f:ajax event="keyup" execute="@this keyCode" 
+                                                                    listener="#{investigationItemController.ajaxIiKeydownListner(myIi)}" 
+                                                                    render="gpIi :#{p:resolveFirstComponentWithId('pDetails',view).clientId} moveFocus "/>
+                                                        </h:inputText>
+
+
+
+
+                                                        <h:inputHidden id="keyCode" binding="#{keyCode}" 
+                                                                       value="#{investigationItemController.keyCode}">
+                                                        </h:inputHidden>
+                                                        <p:focus id="moveFocus" for="txtMove" ></p:focus>
+                                                    </div>
+                                                </h:panelGroup>
+                                            </ui:repeat>
+
+                                            <ui:repeat value="#{investigationItemController.items}" rendered="#{investigationItemController.currentInvestigation.reportType eq 'Microbiology'}" var="myIiMic" >
+                                                <h:panelGroup rendered="#{myIiMic.retired ne true and  myIiMic.ixItemType ne 'Investigation'}">
+                                                    <div style="#{myIiMic.outerCssStyle};background-color: #{myIiMic.ixItemType eq 'Value' ? 'lightgreen' : (myIiMic.ixItemType eq 'Calculation' ? '#EC7063' : (myIiMic.ixItemType eq 'Flag' ? '#3D85C6' :'lightyellow'))}; border: 1px solid lightblue; " >
+                                                        <h:outputLabel 
+                                                            rendered="#{investigationItemController.editMode eq 'View_Mode'}"  
+                                                            value="#{myIiMic.htmltext}" 
+                                                            style="#{myIiMic.innerCssStyle}; color: black;" 
+                                                            escape="false" >
+                                                        </h:outputLabel> 
+                                                    </div>
+                                                </h:panelGroup>
+                                            </ui:repeat>
+
+
+                                            <ui:repeat value="#{investigationItemController.items}" rendered="#{investigationItemController.currentInvestigation.reportType eq 'HtmlTemplate'}" var="myIiTmp" >
+                                                <h:panelGroup id="myIiTmp" rendered="#{myIiTmp.retired ne true and  myIiTmp.ixItemType eq 'Html'}">
+                                                    <div style="#{myIiTmp.outerCssStyle};background-color: yellowgreen; border: 1px solid green; " >
+                                                        <h:outputLabel 
+                                                            value="#{myIiTmp.htmltext}" 
+                                                            style="#{myIiTmp.innerCssStyle}; color: black;" 
+                                                            escape="false" >
+                                                        </h:outputLabel> 
+                                                    </div>
+                                                </h:panelGroup>
+                                            </ui:repeat>
+
+                                        </div>
+                                    </h:panelGroup>
+
+                                </p:panel>
+                            </div>
+
+
+                        </div>
+
+                    </div>
+
+
+
+
+                    <p:panel class="w-100">
+                        <f:facet name="header">
+
+                        </f:facet>
+                        <h:panelGrid columns="2" class="w-100">
+                            <h:panelGrid rendered="#{investigationItemController.editMode ne 'Move_Mode'}">
+
 
                             </h:panelGrid>
 
-                            <p:panel id="pPreview"   >
 
-                                <p:tooltip for="btnModes" >
-                                    <p>
-                                        <b>
-                                            Press Following Keys for Making Changes
-                                        </b>
-                                        <br/>
-                                        Up Arrow &#09;	-&#09;	Move Up <br/>
-                                        Down Arrow&#09;	-&#09;	Move Down<br/>
-                                        Left Arrow&#09;	-&#09;	Move Left<br/>
-                                        Right Arrow&#09;	-&#09;	Move Right<br/>
-                                        d&#09;&#09;		-&#09;       delete<br/>
-                                        b&#09;&#09;		-&#09;	bold<br/>
-                                        i&#09;&#09;		-&#09;	italic<br/>
-                                        n&#09;&#09;		-&#09;	remove bold and italic<br/>
-                                        r&#09;&#09;		-&#09;	align right<br/>
-                                        l&#09;&#09;		-&#09;	align left<br/>
-                                        c&#09;&#09;               -&#09;	align centre<br/>
-                                        j&#09;&#09;		-&#09;	justified<br/>
-                                        g&#09;&#09;		-&#09;	grow font<br/>
-                                        s&#09;&#09;		-&#09;	shrink font<br/>
-                                        w&#09;&#09;		-&#09;	widen<br/>
-                                        o&#09;&#09;		-&#09;	narrower<br/>
-                                        t&#09;&#09;		-&#09;	taller<br/>
-                                        h&#09;&#09;		-&#09;	shorter<br/>
-                                    </p>
-                                </p:tooltip>
-
-                                <p:selectOneButton id="btnModes" value="#{investigationItemController.editMode}" >
-                                    <f:selectItem itemLabel="View Mode" itemValue="View_Mode" ></f:selectItem>
-                                    <f:selectItem itemLabel="Edit Mode" itemValue="Edit_mode" ></f:selectItem>
-                                    <f:selectItem id="btnMoveMode" itemLabel="Move Mode" itemValue="Move_Mode" ></f:selectItem>
-                                    <p:ajax process="btnModes"  update="@all" ></p:ajax>
-                                </p:selectOneButton>
-
-                                <h:panelGroup id="divPrint" >
-
-
-                                    <div style="border: 1px solid black; margin: 0px; padding: 0px;background-color: white!important;width:21.0cm!important; height: 29.7cm!important; position: relative; " >
-                                        <ez:common_report commonReportFormat="#{investigationItemController.currentInvestigation.reportFormat}"/>
-
-
-
-                                        <ui:repeat value="#{investigationItemController.items}" var="myIi" >
-                                            <h:panelGroup id="gpIi" rendered="#{myIi.retired ne true and  myIi.ixItemType ne 'Investigation'}">
-
-                                                <div style="#{myIi.outerCssStyle};background-color: #{myIi.ixItemType eq 'Value' ? 'lightgreen' : (myIi.ixItemType eq 'Calculation' ? '#EC7063' : (myIi.ixItemType eq 'Flag' ? '#3D85C6' :'lightyellow'))}; border: 1px solid lightblue; " >
-                                                    <h:outputLabel id="lblViewModeIi" 
-                                                                   rendered="#{investigationItemController.editMode eq 'View_Mode'}"  value="#{myIi.htmltext}" 
-                                                                   style="#{myIi.innerCssStyle}; color: black;" 
-                                                                   escape="false" ></h:outputLabel> 
-
-                                                    <p:tooltip for="lblViewModeIi" rendered="#{myIi.investigationItemValues.size() ne 0}" >
-                                                        <table>
-                                                            <ui:repeat value="#{myIi.investigationItemValues}" var="iiv" >
-                                                                <tr>
-                                                                    <td>
-                                                                        <h:outputLabel value= "#{iiv.name}" escape="false" ></h:outputLabel>
-                                                                    </td>
-                                                                </tr>
-                                                            </ui:repeat>
-                                                        </table>
-
-                                                    </p:tooltip>
-
-                                                    <p:inputText id="txtEditIi" 
-                                                                 rendered="#{investigationItemController.editMode eq 'Edit_mode'}"  
-                                                                 value="#{myIi.htmltext}" 
-                                                                 style="#{myIi.innerCssStyle}; border: 1px solid brown;background-color: bisque;vertical-align: top!important; overflow: scroll!important; background-color: #{myIi.ixItemType eq 'Value' ? 'lightgreen':'lightyellow'};"  >
-                                                        <f:ajax event="focus" execute="@this" listener="#{investigationItemController.makeThisCurrent(myIi)}" render=":#{p:resolveFirstComponentWithId('dtbItem',view).clientId} :#{p:resolveFirstComponentWithId('pDetails',view).clientId} "  ></f:ajax>
-                                                        <f:ajax event="blur" execute="@this" listener="#{investigationItemController.saveIiOnAjax(myIi)}" render=":#{p:resolveFirstComponentWithId('dtbItem',view).clientId} :#{p:resolveFirstComponentWithId('pDetails',view).clientId}"></f:ajax>
-                                                    </p:inputText>
-
-
-                                                    <h:inputText id="txtMove"
-                                                                 style="#{myIi.innerCssStyle}; margin: auto; border: 1px solid red;color: yellow;background-color: yellow;"
-                                                                 onkeydown="document.getElementById('#{keyCode.clientId}').value = event.keyCode" 
-                                                                 rendered="#{investigationItemController.editMode eq 'Move_Mode'}" >
-                                                        <f:ajax event="keyup" execute="@this keyCode" 
-                                                                listener="#{investigationItemController.ajaxIiKeydownListner(myIi)}" 
-                                                                render="gpIi :#{p:resolveFirstComponentWithId('pDetails',view).clientId} moveFocus "/>
-                                                    </h:inputText>
-
-
-
-
-                                                    <h:inputHidden id="keyCode" binding="#{keyCode}" 
-                                                                   value="#{investigationItemController.keyCode}">
-                                                    </h:inputHidden>
-                                                    <p:focus id="moveFocus" for="txtMove" ></p:focus>
-                                                </div>
-                                            </h:panelGroup>
-                                        </ui:repeat>
-                                    </div>
-                                </h:panelGroup>
-                            </p:panel> 
                         </h:panelGrid> 
 
                     </p:panel>
                 </h:form>
 
 
-                <h1>#{investigationItemController.currentInvestigation.reportFormat}</h1>
+<!--                <h1>#{investigationItemController.currentInvestigation.reportFormat}</h1>-->
 
                 <div class="row mb-3">
                     <div class="col-6">

@@ -31,10 +31,11 @@
                                  rowKey="#{sv.id}" selection="#{departmentController.itemsToRemove}" 
                                  rows="10"
                                  paginator="true"
+                                 selectionMode="multiple"
                                  paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                  rowsPerPageTemplate="10,50,100,500"
                                  >
-                        <p:column id="colSelect"  selectionMode="multiple" >
+                        <p:column id="colSelect" selectRow="true"   >
                         </p:column>
 
                         <p:column headerText="Type" sortBy="#{sv.departmentType.label}" filterBy="#{sv.departmentType.label}" filterMatchMode="contains"

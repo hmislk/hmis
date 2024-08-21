@@ -29,9 +29,10 @@
                                      selection="#{dataAdministrationController.selectedBills}"
                                      rowIndexVar="i"
                                      rowKey="#{bill.id}"
+                                     selectionMode="multiple"
                                      rowStyleClass="#{bill.paymentMethod eq 'Card' ? 'greenText':''}"
                                      >    
-                            <p:column  selectionMode="multiple" >                            
+                            <p:column   >                            
                             </p:column>
                             <p:column>
                                 <f:facet name="header">
