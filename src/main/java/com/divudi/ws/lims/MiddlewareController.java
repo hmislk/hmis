@@ -34,6 +34,7 @@ import java.util.Map;
 import javax.ejb.EJB;
 import org.carecode.lims.libraries.AnalyzerDetails;
 import org.carecode.lims.libraries.DataBundle;
+import org.carecode.lims.libraries.ResultsRecord;
 
 @Path("/middleware")
 public class MiddlewareController {
@@ -45,6 +46,8 @@ public class MiddlewareController {
 
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    LimsMiddlewareController limsMiddlewareController;
 
     private static final Gson gson = new Gson();
 
@@ -92,23 +95,28 @@ public class MiddlewareController {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response receivePatientResults(String jsonInput) {
+        System.out.println("receivePatientResults");
         try {
             Gson gson = new Gson();
             DataBundle dataBundle = gson.fromJson(jsonInput, DataBundle.class);
-
+            System.out.println("dataBundle = " + dataBundle);
             if (dataBundle != null) {
 
                 WebUser requestSendingUser
                         = findRequestSendingUser(dataBundle.getMiddlewareSettings().getLimsSettings().getUsername(),
                                 dataBundle.getMiddlewareSettings().getLimsSettings().getPassword());
 
-                if (requestSendingUser != null) {
+                System.out.println("requestSendingUser = " + requestSendingUser);
+
+                if (requestSendingUser == null) {
                     return Response.status(Response.Status.UNAUTHORIZED).build();
                 }
 
-                AnalyzerDetails analyzerDetails = dataBundle.getAnalyzerDetails();
+                AnalyzerDetails analyzerDetails = dataBundle.getMiddlewareSettings().getAnalyzerDetails();
+                System.out.println("analyzerDetails = " + analyzerDetails);
+                System.out.println("analyzerDetails.getAnalyzerName() = " + analyzerDetails.getAnalyzerName());
                 Analyzer analyzer = Analyzer.valueOf(analyzerDetails.getAnalyzerName().replace(" ", "_")); // Ensuring enum compatibility
-
+                System.out.println("analyzer = " + analyzer);
                 switch (analyzer) {
                     case BioRadD10:
                         return processBioRadD10(dataBundle);
@@ -221,8 +229,28 @@ public class MiddlewareController {
     }
 
     public Response processSmartLytePlus(DataBundle dataBundle) {
-
-        return Response.ok("{\"status\":\"SmartLyte Plus processed successfully.\"}").build();
+        System.out.println("processSmartLytePlus");
+        boolean allOk = true;
+        for (ResultsRecord rr : dataBundle.getResultsRecords()) {
+            String sampleId = rr.getSampleId();
+            System.out.println("sampleId = " + sampleId);
+            String testStr = rr.getTestCode();
+            System.out.println("testStr = " + testStr);
+            String result = rr.getResultValue() + "";
+            System.out.println("result = " + result);
+            String unit = rr.getResultUnits();
+            System.out.println("unit = " + unit);
+            String error = "";
+            boolean thisOk = limsMiddlewareController.addResultToReport(sampleId, testStr, result, unit, error);
+            if (!thisOk) {
+                allOk = false;
+            }
+        }
+        if (allOk) {
+            return Response.ok("{\"status\":\"SmartLyte Plus processed successfully.\"}").build();
+        } else {
+            return Response.serverError().build();
+        }
     }
 
     public PatientSample patientSampleFromId(Long id) {
