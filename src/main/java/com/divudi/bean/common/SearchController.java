@@ -7582,9 +7582,7 @@ public class SearchController implements Serializable {
 
     @Deprecated
     public void createTableByKeyword(BillType billType, Institution ins, Department dep) {
-
         createTableByKeyword(billType, ins, dep, null, null, null, null);
-
     }
 
     public void createTableByKeyword(List<BillTypeAtomic> billTypesAtomics,

@@ -72,6 +72,8 @@ import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillFinanceType;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.OptionScope;
+import static com.divudi.data.PaymentMethod.Staff;
+import static com.divudi.data.PaymentMethod.Staff_Welfare;
 import com.divudi.data.dataStructure.ComponentDetail;
 import com.divudi.entity.Fee;
 import com.divudi.entity.Payment;
@@ -3628,30 +3630,41 @@ public class BookingController implements Serializable, ControllerWithPatient {
             case Cash:
                 bill.setBillType(BillType.ChannelCash);
                 bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
+                bill.setBillPaymentCompletelySettled(true);
                 break;
 
             case Card:
                 bill.setBillType(BillType.ChannelCash);
                 bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
+                bill.setBillPaymentCompletelySettled(true);
                 break;
 
             case Cheque:
                 bill.setBillType(BillType.ChannelCash);
                 bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
+                bill.setBillPaymentCompletelySettled(true);
                 break;
 
             case Slip:
                 bill.setBillType(BillType.ChannelCash);
                 bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
+                bill.setBillPaymentCompletelySettled(true);
                 break;
             case Agent:
                 bill.setBillType(BillType.ChannelAgent);
                 bill.setCreditCompany(institution);
                 bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
+                bill.setBillPaymentCompletelySettled(true);
                 break;
             case Staff:
                 bill.setBillType(BillType.ChannelStaff);
-                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITHOUT_PAYMENT);
+                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
+                bill.setBillPaymentCompletelySettled(true);
+                break;
+            case Staff_Welfare:
+                bill.setBillType(BillType.ChannelStaff);
+                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
+                bill.setBillPaymentCompletelySettled(true);
                 break;
             case Credit:
                 bill.setBillType(BillType.ChannelCredit);
@@ -3660,56 +3673,10 @@ public class BookingController implements Serializable, ControllerWithPatient {
             case OnlineSettlement:
                 bill.setBillType(BillType.ChannelCash);
                 bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT_ONLINE);
+                bill.setBillPaymentCompletelySettled(true);
                 break;
         }
-//        String insId = generateBillNumberInsId(bill);
-//
-//        if (insId.equals("")) {
-//            return null;
-//        }
-//        bill.setInsId(insId);
-//        String insId = generateBillNumberInsId(bill);
-//
-//        if (insId.equals("")) {
-//            return null;
-//        }
-//        bill.setInsId(insId);
-//        String insId = generateBillNumberInsId(bill);
-//
-//        if (insId.equals("")) {
-//            return null;
-//        }
-//        bill.setInsId(insId);
-//        String insId = generateBillNumberInsId(bill);
-//
-//        if (insId.equals("")) {
-//            return null;
-//        }
-//        bill.setInsId(insId);
-//        String insId = generateBillNumberInsId(bill);
-//
-//        if (insId.equals("")) {
-//            return null;
-//        }
-//        bill.setInsId(insId);
-//        String insId = generateBillNumberInsId(bill);
-//
-//        if (insId.equals("")) {
-//            return null;
-//        }
-//        bill.setInsId(insId);
-//        String insId = generateBillNumberInsId(bill);
-//
-//        if (insId.equals("")) {
-//            return null;
-//        }
-//        bill.setInsId(insId);
-//        String insId = generateBillNumberInsId(bill);
-//
-//        if (insId.equals("")) {
-//            return null;
-//        }
-//        bill.setInsId(insId);
+
         String deptId = generateBillNumberDeptId(bill);
 
         if (deptId.equals("")) {
@@ -3736,7 +3703,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
 
         getBillFacade().create(bill);
 
-        if (bill.getBillType() == BillType.ChannelCash || bill.getBillType() == BillType.ChannelAgent) {
+        if (bill.isBillPaymentCompletelySettled()) {
             bill.setPaidBill(bill);
             getBillFacade().edit(bill);
         }

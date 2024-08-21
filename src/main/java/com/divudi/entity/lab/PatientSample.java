@@ -29,7 +29,7 @@ import javax.persistence.Temporal;
 /**
  *
  * @author buddhika.ari@gmail.com
- * 
+ *
  */
 @Entity
 public class PatientSample implements Serializable {
@@ -39,13 +39,12 @@ public class PatientSample implements Serializable {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private Long sampleId;
-    
+
     @ManyToOne
     private Institution institution;
     @ManyToOne
     private Department department;
-    
-    
+
     @ManyToOne
     private Patient patient;
     @ManyToOne
@@ -86,10 +85,10 @@ public class PatientSample implements Serializable {
     private WebUser sampleSentBy;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date sampleSentAt;
-    
+
     @Enumerated
     private Priority priority;
-    
+
     //Sent To Analyzer
     private Boolean readyTosentToAnalyzer;
     @Enumerated(EnumType.STRING)
@@ -153,7 +152,7 @@ public class PatientSample implements Serializable {
 
     @ManyToOne
     private Institution sampleReceivedAtLabInstitution;
-     @Enumerated
+    @Enumerated
     private PatientInvestigationStatus status;
 
     //Cancellation
@@ -175,9 +174,6 @@ public class PatientSample implements Serializable {
     private Date retiredAt;
     private String retireComments;
 
-    
-    
-    
     public Long getId() {
         return id;
     }
@@ -186,16 +182,11 @@ public class PatientSample implements Serializable {
         this.id = id;
     }
 
-    
-    
-    
     public String getIdStr() {
         String formatted = id + "";
         return formatted;
     }
 
-    
-    
     @Override
     public int hashCode() {
         int hash = 0;
@@ -380,8 +371,6 @@ public class PatientSample implements Serializable {
     public void setCancellInstitution(Institution cancellInstitution) {
         this.cancellInstitution = cancellInstitution;
     }
-    
-    
 
     public Bill getBill() {
         return bill;
@@ -680,6 +669,9 @@ public class PatientSample implements Serializable {
     }
 
     public Long getSampleId() {
+        if (sampleId == null) {
+            sampleId = id;
+        }
         return sampleId;
     }
 

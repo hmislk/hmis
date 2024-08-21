@@ -29,8 +29,7 @@
                         <i class="fa fa-globe fa-fw" style="color: #58e7e9;" title="Status" rendered="#{not empty cc.attrs.patient.person.foreigner}"></i>
                         <p:badge 
                             style="margin-left: 20px;"
-                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Save the Patient with Patient Status')}"
-                            value="#{cc.attrs.patient.person.foreigner?'Patient is Forigner':'Patient is Local'}" 
+                            value="#{cc.attrs.patient.person.foreigner eq false or cc.attrs.patient.person.foreigner eq null?'Patient is Local':'Patient is Forigner'}" 
                             severity="#{cc.attrs.patient.person.foreigner?'warning':'success'}" 
                             styleClass="mr-2">
                         </p:badge>

@@ -1618,6 +1618,8 @@ public class BillController implements Serializable {
                 + " from BillFee bf"
                 + " where bf.retired=:ret"
                 + " and bf.staff=:staff "
+                + " and bf.bill.cancelled=:can"
+                 + " and bf.billItem.refunded=:ret"
                 + " and (bf.feeValue - bf.paidValue) > 0 "
                 + " and bf.bill.billTypeAtomic in :btcs "
                 + " and bf.fee.feeType=:ft";
@@ -1632,6 +1634,8 @@ public class BillController implements Serializable {
             m.put("toDate", toDate);
         }
 
+        m.put("ret", false);
+        m.put("can", false);
         m.put("btcs", btcs);
         m.put("staff", staff);
         m.put("ret", false);
@@ -1639,22 +1643,22 @@ public class BillController implements Serializable {
 
         tmpFees = billFeeFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
 
-        List<BillFee> removingBillFees = new ArrayList<>();
-        for (BillFee bf : tmpFees) {
-            m = new HashMap<>();
-            jpql = "SELECT bi FROM BillItem bi where "
-                    + " bi.retired=false"
-                    + " and bi.bill.cancelled=false "
-                    + " and type(bi.bill)=:class "
-                    + " and bi.referanceBillItem=:rbi";
-            m.put("class", RefundBill.class);
-            m.put("rbi", bf.getBillItem());
-            BillItem rbi = getBillItemFacade().findFirstByJpql(jpql, m);
-            if (rbi != null) {
-                removingBillFees.add(bf);
-            }
-        }
-        tmpFees.removeAll(removingBillFees);
+//        List<BillFee> removingBillFees = new ArrayList<>();
+//        for (BillFee bf : tmpFees) {
+//            m = new HashMap<>();
+//            jpql = "SELECT bi FROM BillItem bi where "
+//                    + " bi.retired=false"
+//                    + " and bi.bill.cancelled=false "
+//                    + " and type(bi.bill)=:class "
+//                    + " and bi.referanceBillItem=:rbi";
+//            m.put("class", RefundBill.class);
+//            m.put("rbi", bf.getBillItem());
+//            BillItem rbi = getBillItemFacade().findFirstByJpql(jpql, m);
+//            if (rbi != null) {
+//                removingBillFees.add(bf);
+//            }
+//        }
+//        tmpFees.removeAll(removingBillFees);
 
         return tmpFees;
     }
