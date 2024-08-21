@@ -44,10 +44,7 @@ public class GradeController implements Serializable {
     private List<Grade> items = null;
     String selectText = "";
 
-    public List<Grade> getSelectedItems() {
-        selectedItems = getFacade().findByJpql("select c from Grade c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
-        return selectedItems;
-    }
+   
 
     public List<Grade> completeGrade(String qry) {
         List<Grade> a = null;
