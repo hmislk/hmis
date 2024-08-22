@@ -64,12 +64,29 @@
                         <h:outputText class="fa-solid fa-warehouse mt-2"  />
                         <h:outputLabel  class="mx-2 mt-2" value="Collecting Centre Billing"/>
                         <h:outputLabel  class="mx-5 mt-2" value="#{collectingCentreBillController.collectingCentre.name}"/>
+                        <h:outputLabel  class="mx-5 mt-2" value="#{collectingCentreBillController.collectingCentre.code} - #{collectingCentreBillController.collectingCentre.name} - (#{collectingCentreBillController.collectingCentre.route}) "/>
+
                         <p:commandButton 
                             ajax="false" 
+                            class="mx-2"
                             value="Change Collecting Centre" 
                             immediate="true"
                             style="float: right;"
-                            action="#{collectingCentreBillController.navigateToCollectingCenterBillingromMenu()}"></p:commandButton>
+                            action="#{collectingCentreBillController.navigateToCollectingCenterBillingromMenu()}">
+                        </p:commandButton>
+
+                        <p:commandButton  
+                            style="float: right;"
+                            value="Settle" 
+                            icon="fa fa-check"
+                            action="#{collectingCentreBillController.settleBill}" 
+                            ajax="false" 
+                            onclick="if (!confirm('Are you sure you want to Settle This Bill ?'))
+                                        return false;"
+
+                            class="ui-button-success ">
+                        </p:commandButton>
+
                     </f:facet>
 
                     <h:panelGroup layout="block" rendered="#{!collectingCentreBillController.printPreview}" class="row">

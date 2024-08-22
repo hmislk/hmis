@@ -1408,11 +1408,11 @@ public class CollectingCentreBillController implements Serializable, ControllerW
                 entryVat += bf.getFeeVat();
                 System.out.println("bf.getInstitution().getInstitutionType() = " + bf.getInstitution().getInstitutionType());
                 if (bf.getInstitution().getInstitutionType() == InstitutionType.CollectingCentre) {
-                    collectingcCenterFee += bf.getFeeValue();
+                    collectingcCenterFee = bf.getFeeValue();
                 } else if (bf.getStaff() != null) {
-                    staffFee += bf.getFeeValue();
+                    staffFee = bf.getFeeValue();
                 } else {
-                    hospitalFee += bf.getFeeValue();
+                    hospitalFee = bf.getFeeValue();
                 }
 
                 System.out.println("collectingcCenterFee = " + collectingcCenterFee);
