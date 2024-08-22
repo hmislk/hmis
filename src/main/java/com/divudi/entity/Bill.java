@@ -366,6 +366,10 @@ public class Bill implements Serializable {
 
     private double tenderedAmount;
 
+    private double totalHospitalFee;
+    private double totalCenterFee;
+    private double totalStaffFee;
+
     private void generateBillPrintFromBillTemplate() {
         billPrint = "";
         if (billTemplate == null) {
@@ -2250,6 +2254,30 @@ public class Bill implements Serializable {
 
     public void setTenderedAmount(double tenderedAmount) {
         this.tenderedAmount = tenderedAmount;
+    }
+
+    public double getTotalHospitalFee() {
+        return totalHospitalFee;
+    }
+
+    public void setTotalHospitalFee(double totalHospitalFee) {
+        this.totalHospitalFee = totalHospitalFee;
+    }
+
+    public double getTotalCenterFee() {
+        return totalCenterFee;
+    }
+
+    public void setTotalCenterFee(double totalCenterFee) {
+        this.totalCenterFee = totalCenterFee;
+    }
+
+    public double getTotalStaffFee() {
+        return totalStaffFee;
+    }
+
+    public void setTotalStaffFee(double totalStaffFee) {
+        this.totalStaffFee = totalStaffFee;
     }
 
 }
