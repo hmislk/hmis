@@ -88,9 +88,10 @@
                                   rowKey="#{s.id}" 
                                   selection="#{staffController.selectedList}"
                                   rowIndexVar="i"
+                                  selectionMode="multiple"
                                   scrollable="true" rowStyleClass="#{((s.dateJoined eq staffSalaryController.salaryCycle.salaryFromDate)or(s.dateJoined gt staffSalaryController.salaryCycle.salaryFromDate)) and ((s.dateJoined eq staffSalaryController.salaryCycle.salaryToDate)or (s.dateJoined lt staffSalaryController.salaryCycle.salaryToDate)) ? 'greenText':''}"
                                   scrollHeight="250">
-                        <p:column  selectionMode="multiple" >                            
+                        <p:column  >                            
                         </p:column>
 
                         <p:column >

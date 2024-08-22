@@ -87,10 +87,10 @@ public class DepartmentMachineController implements Serializable {
         current.setMachine(machine);
 
     }
-    
+
     public void clearDeptAndDept() {
-       department=null;
-       institution=null;
+        department = null;
+        institution = null;
     }
 
     public void save(DepartmentMachine depMachine) {
@@ -128,6 +128,50 @@ public class DepartmentMachineController implements Serializable {
             current = new DepartmentMachine();
         }
         return current;
+    }
+
+    public DepartmentMachine findDepartmentMachine(Long id) {
+        return ejbFacade.find(id);
+    }
+
+    public DepartmentMachine findDepartmentMachine(String strId) {
+        if (strId == null) {
+            return null;
+        }
+        Long id;
+        try {
+            id = Long.valueOf(strId);
+        } catch (Exception e) {
+            return null;
+        }
+        return ejbFacade.find(id);
+    }
+
+    public DepartmentMachine findDepartmentMachine(Department department, Machine machine, boolean createNewIfNotFound) {
+        if (department == null) {
+            return null;
+        }
+        if (machine == null) {
+            return null;
+        }
+        Map parameters = new HashMap();
+        String jpql = "select dm "
+                + " from DepartmentMachine dm "
+                + " where dm.retired=:ret "
+                + " and dm.department=:dep "
+                + " and dm.setMachine=:ma ";
+        parameters.put("dep", department);
+        parameters.put("ma", machine);
+        DepartmentMachine dm = ejbFacade.findFirstByJpql(jpql, parameters);
+        if (dm == null) {
+            if (createNewIfNotFound) {
+                dm = new DepartmentMachine();
+                dm.setDepartment(department);
+                dm.setMachine(machine);
+                ejbFacade.create(dm);
+            }
+        }
+        return dm;
     }
 
     public void setCurrent(DepartmentMachine current) {

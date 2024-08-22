@@ -52,9 +52,9 @@ public class Bill implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     Long id;
-    
+
     static final long serialVersionUID = 1L;
-    
+
     @ManyToOne
     private MembershipScheme membershipScheme;
     @OneToOne
@@ -87,8 +87,6 @@ public class Bill implements Serializable {
     boolean transError;
 
     private String ipOpOrCc;
-    
-    
 
     @OneToMany(mappedBy = "bill", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Payment> payments = new ArrayList<>();
@@ -177,7 +175,6 @@ public class Bill implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     private Institution paymentSchemeInstitution;
     @ManyToOne(fetch = FetchType.LAZY)
-    @Deprecated //Use fromInstitution
     private Institution collectingCentre;
     @ManyToOne(fetch = FetchType.LAZY)
     private Institution institution;
@@ -324,7 +321,7 @@ public class Bill implements Serializable {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date printedAt;
 
-        //Print Information
+    //Print Information
     private boolean duplicatedPrinted;
     @ManyToOne(fetch = FetchType.LAZY)
     private WebUser duplicatePrintedUser;
@@ -359,13 +356,15 @@ public class Bill implements Serializable {
     private String ageAtBilledDate;
     @Transient
     private Bill tmpRefBill;
-    
+
     private String agentRefNo;
     private boolean billClosed;
-    
+
     private String localNumber;
-    
-    
+
+    private boolean billPaymentCompletelySettled;
+
+    private double tenderedAmount;
 
     private void generateBillPrintFromBillTemplate() {
         billPrint = "";
@@ -563,8 +562,6 @@ public class Bill implements Serializable {
 
     }
 
-    
-    
     private String safeReplace(String value) {
         return value != null ? value : "";
     }
@@ -820,7 +817,7 @@ public class Bill implements Serializable {
         vat = bill.getVat();
         vatPlusNetTotal = bill.getVatPlusNetTotal();
         sessionId = bill.getSessionId();
-        ipOpOrCc=bill.getIpOpOrCc();
+        ipOpOrCc = bill.getIpOpOrCc();
         //      referenceBill=bill.getReferenceBill();
     }
 
@@ -1166,7 +1163,6 @@ public class Bill implements Serializable {
     public void setPatientEncounter(PatientEncounter patientEncounter) {
         this.patientEncounter = patientEncounter;
     }
-
 
     public Long getId() {
         return id;
@@ -1544,8 +1540,8 @@ public class Bill implements Serializable {
     }
 
     public List<BillFee> getBillFees() {
-        if(billFees==null){
-            billFees=new ArrayList<>();
+        if (billFees == null) {
+            billFees = new ArrayList<>();
         }
         return billFees;
     }
@@ -2227,11 +2223,11 @@ public class Bill implements Serializable {
     }
 
     public String getIpOpOrCc() {
-        ipOpOrCc="OP";
-        if(this.getPatientEncounter()!=null){
-            ipOpOrCc="IP";
-        }else if(this.getCollectingCentre()!=null){
-            ipOpOrCc="CC";
+        ipOpOrCc = "OP";
+        if (this.getPatientEncounter() != null) {
+            ipOpOrCc = "IP";
+        } else if (this.getCollectingCentre() != null) {
+            ipOpOrCc = "CC";
         }
         return ipOpOrCc;
     }
@@ -2239,8 +2235,21 @@ public class Bill implements Serializable {
     public void setIpOpOrCc(String ipOpOrCc) {
         this.ipOpOrCc = ipOpOrCc;
     }
-    
-    
-    
+
+    public boolean isBillPaymentCompletelySettled() {
+        return billPaymentCompletelySettled;
+    }
+
+    public void setBillPaymentCompletelySettled(boolean billPaymentCompletelySettled) {
+        this.billPaymentCompletelySettled = billPaymentCompletelySettled;
+    }
+
+    public double getTenderedAmount() {
+        return tenderedAmount;
+    }
+
+    public void setTenderedAmount(double tenderedAmount) {
+        this.tenderedAmount = tenderedAmount;
+    }
 
 }

@@ -440,11 +440,6 @@
 
                                 </p:panel>
 
-
-
-
-
-
                                 <p:panel class="mt-2" rendered="#{configOptionApplicationController.getBooleanValueByKey('Allow Local Number For Opd Billing')}">
                                     <div class="d-flex">
                                         <p:outputLabel style="width: 150px;" class="mt-2" value="Local Number :"/>
@@ -623,7 +618,7 @@
                                                 action="#{opdBillController.fillDepartmentOpdItems()}"
                                                 rendered="#{webUserController.hasPrivilege('Admin')}"
                                                 process="btnRefreshItemLight"
-                                                update="acIx"
+                                                update="acIx departments"
                                                 />
                                         </div>
                                     </div>
@@ -1307,10 +1302,12 @@
                                         <h:outputText value="Doctor Details" class="mx-4"></h:outputText>
                                     </f:facet>
                                     <p:commandButton value="reload" rendered="false" action="#" process="@this" update="lstCurrentDocs" ></p:commandButton>
-                                    <p:selectOneListbox id="lstCurrentDocs" value="#{opdBillController.selectedCurrentlyWorkingStaff}">
+                                    <p:selectOneListbox 
+                                        id="lstCurrentDocs" 
+                                        value="#{opdBillController.selectedCurrentlyWorkingStaff}">
                                         <f:selectItem itemLabel="No Doctor" itemValue="#{null}" />
-                                        <f:selectItems value="#{opdBillController.currentlyWorkingStaff}" var="s" 
-                                                       itemLabel="#{s.name.concat(' - ').concat(s.speciality.name)}" itemValue="#{s}" />
+                                        <f:selectItems value="#{opdBillController.currentlyWorkingStaff}" var="opdDoc" 
+                                                       itemLabel="#{opdDoc.name.concat(' - ').concat(opdDoc.speciality.name)}" itemValue="#{opdDoc}" />
                                         <p:ajax process="@this" update="tblBillItem" ></p:ajax>
                                     </p:selectOneListbox>
                                 </p:panel>

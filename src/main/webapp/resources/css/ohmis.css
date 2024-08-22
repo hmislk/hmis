@@ -226,3 +226,11 @@ th.align-right-header .ui-column-title {
     background: none; /* Optional: remove any background styles */
 }
 
+.custom-col-40 {
+    width: 40%;
+}
+
+.custom-col-60 {
+    width: 60%;
+}
+

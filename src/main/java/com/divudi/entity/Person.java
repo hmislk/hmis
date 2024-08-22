@@ -58,12 +58,7 @@ public class Person implements Serializable {
     @Column(name = "SNAME")
     String nameWithInitials;
 
-    @OneToOne(mappedBy = "webUserPerson", cascade = CascadeType.ALL)
-    private WebUser webUser;
-
-    @Transient
-    boolean ageCalculated = false;
-
+    
     String initials;
     String surName;
     String lastName;
@@ -71,6 +66,14 @@ public class Person implements Serializable {
 
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date dob;
+
+    
+    
+    @OneToOne(mappedBy = "webUserPerson", cascade = CascadeType.ALL)
+    private WebUser webUser;
+
+    @Transient
+    boolean ageCalculated = false;
 
     // Created Properties
     @ManyToOne

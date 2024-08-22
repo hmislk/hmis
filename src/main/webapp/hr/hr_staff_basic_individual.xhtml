@@ -137,11 +137,12 @@
                         <p:dataTable id="tb7"  value="#{staffBasicController.items}" 
                                      filteredValue="#{staffBasicController.filteredStaffPaysheet}"
                                      var="i"  selection="#{staffBasicController.selectedStaffComponent}" 
-                                     rowKey="#{i.id}" rowIndexVar="a" >
+                                     rowKey="#{i.id}" rowIndexVar="a"
+                                     selectionMode="multiple">
                             <f:facet name="header">
                                 <h:outputLabel value="Employee Basic"/>
                             </f:facet>
-                            <p:column  selectionMode="multiple" styleClass="noPrintButton">                            
+                            <p:column  styleClass="noPrintButton">                            
                             </p:column>
                             <p:column headerText="No">
                                 <f:facet name="header">
