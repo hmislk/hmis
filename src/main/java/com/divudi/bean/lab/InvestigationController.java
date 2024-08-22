@@ -42,6 +42,9 @@ import com.divudi.facade.ItemFeeFacade;
 import com.divudi.facade.SpecialityFacade;
 import com.divudi.facade.WorksheetItemFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.entity.lab.InvestigationTube;
+import com.divudi.entity.lab.Machine;
+import com.divudi.entity.lab.Sample;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.BufferedReader;
@@ -132,6 +135,10 @@ public class InvestigationController implements Serializable {
     boolean reportedAs;
     Boolean listMasterItemsOnly = false;//if boolean is true list only institution null
     InvestigationCategory category;
+    private Sample sample;
+    private Machine machine;
+    private InvestigationTube investigationTube;
+    private Item itemForReported;
     List<Investigation> catIxs;
     List<Investigation> allIxs;
     List<Investigation> itemsToRemove;
@@ -143,6 +150,7 @@ public class InvestigationController implements Serializable {
     List<Investigation> ixWithoutSamples;
     List<InvestigationWithInvestigationItems> investigationWithInvestigationItemses;
     List<ItemWithFee> itemWithFees;
+
     private List<Investigation> investigationWithSelectedFormat;
     private Category categoryForFormat;
     private UploadedFile file;
@@ -186,6 +194,34 @@ public class InvestigationController implements Serializable {
             return "";
         }
         return "/lab/manage_investigation?faces-redirect=true";
+    }
+
+    public void updateSelectedInvestigations() {
+        if (selectedInvestigations.isEmpty()) {
+            JsfUtil.addErrorMessage("Pleace select Investigations !");
+            return;
+        }
+
+        for (Investigation selectedInvestigation : selectedInvestigations) {
+            if (category != null) {
+                selectedInvestigation.setInvestigationCategory(category);
+            }
+            if (sample != null) {
+                selectedInvestigation.setSample(sample);
+            }
+            if (machine != null) {
+                selectedInvestigation.setMachine(machine);
+            }
+            if (investigationTube != null) {
+                selectedInvestigation.setInvestigationTube(investigationTube);
+            }
+            if (itemForReported != null) {
+                selectedInvestigation.setReportedAs(itemForReported);
+            }
+
+            getFacade().edit(selectedInvestigation);
+
+        }
     }
 
     // Method to generate the Excel file and initiate the download
@@ -660,7 +696,6 @@ public class InvestigationController implements Serializable {
             }
         }
 
-        
     }
 
     public List<PatientReport> getSelectedPatientReports() {
@@ -1079,7 +1114,6 @@ public class InvestigationController implements Serializable {
         JsfUtil.addSuccessMessage("Successfully Deleted");
         selectedInvestigations = null;
 
-        
     }
 
     public void unDeleteSelectedItems() {
@@ -1101,7 +1135,6 @@ public class InvestigationController implements Serializable {
         JsfUtil.addSuccessMessage("Successfully Deleted");
         selectedInvestigations = null;
 
-        
     }
 
     public void markSelectedActive() {
@@ -1121,8 +1154,6 @@ public class InvestigationController implements Serializable {
 
         JsfUtil.addSuccessMessage("Successfully Actived");
         selectedInvestigations = null;
-
-        
 
     }
 
@@ -1144,7 +1175,6 @@ public class InvestigationController implements Serializable {
         JsfUtil.addSuccessMessage("Successfully Inactived");
         selectedInvestigations = null;
 
-        
     }
 
     public Institution getInstitution() {
@@ -1219,6 +1249,12 @@ public class InvestigationController implements Serializable {
     public String navigateToListInvestigation() {
         listAllIxs();
         return "/admin/lims/investigation_list?faces-redirect=true";
+    }
+
+    public String navigateToMultipleInvestigationUpdate() {
+        selectedInvestigations = new ArrayList<>();
+        listAllIxs();
+        return "/admin/lims/multiple_investigation_update?faces-redirect=true";
     }
 
     public String navigateToManageReportTemplateNames() {
@@ -1335,7 +1371,6 @@ public class InvestigationController implements Serializable {
         if (getCurrent() == null) {
             return;
         }
-        
 
         getCurrent().setSymanticType(SymanticType.Laboratory_Procedure);
         if (getCurrent().getInwardChargeType() == null) {
@@ -1436,7 +1471,6 @@ public class InvestigationController implements Serializable {
             investigationWithInvestigationItemses.add(items);
         }
 
-        
     }
 
     public List<InvestigationItemWithInvestigationItemValueFlags> fetchFlags(Investigation i) {
@@ -1547,6 +1581,38 @@ public class InvestigationController implements Serializable {
 
     public void setAdminTabIndex(int adminTabIndex) {
         this.adminTabIndex = adminTabIndex;
+    }
+
+    public Sample getSample() {
+        return sample;
+    }
+
+    public void setSample(Sample sample) {
+        this.sample = sample;
+    }
+
+    public Machine getMachine() {
+        return machine;
+    }
+
+    public void setMachine(Machine machine) {
+        this.machine = machine;
+    }
+
+    public InvestigationTube getInvestigationTube() {
+        return investigationTube;
+    }
+
+    public void setInvestigationTube(InvestigationTube investigationTube) {
+        this.investigationTube = investigationTube;
+    }
+
+    public Item getItemForReported() {
+        return itemForReported;
+    }
+
+    public void setItemForReported(Item itemForReported) {
+        this.itemForReported = itemForReported;
     }
 
     public class InvestigationWithInvestigationItems {
@@ -1717,7 +1783,6 @@ public class InvestigationController implements Serializable {
             itemWithFees.add(iwf);
         }
 
-        
     }
 
     public class ItemWithFee {

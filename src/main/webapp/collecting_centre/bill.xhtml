@@ -45,7 +45,7 @@
                                 maxResults="15"
                                 class="w-100 mb-1"
                                 inputStyleClass="form-control">
-                                <p:column style="padding: 6px;">#{vt.institutionCode}</p:column>
+                                <p:column style="padding: 6px;">#{vt.code}</p:column>
                                 <p:column style="padding: 6px;">#{vt.name}</p:column>
                             </p:autoComplete>
                         </div>
@@ -170,8 +170,26 @@
                                                             #{bi.billItem.item.name}
                                                     </p:column>
                                                     <p:column>
-                                                        <f:facet name="header">Fee</f:facet>
-                                                        <h:outputLabel value="#{bi.billItem.netValue}">
+                                                        <f:facet name="header">Collecting centre Fee</f:facet>
+                                                        <h:outputLabel value="#{bi.billItem.collectingCentreFee}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputLabel>
+                                                    </p:column>
+                                                    <p:column>
+                                                        <f:facet name="header">Hospital Fee</f:facet>
+                                                        <h:outputLabel value="#{bi.billItem.hospitalFee}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputLabel>
+                                                    </p:column>
+                                                    <p:column>
+                                                        <f:facet name="header">Staff Fee</f:facet>
+                                                        <h:outputLabel value="#{bi.billItem.staffFee}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputLabel>
+                                                    </p:column>
+                                                    <p:column>
+                                                        <f:facet name="header">Other Fee</f:facet>
+                                                        <h:outputLabel value="#{bi.billItem.otherFee}">
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputLabel>
                                                     </p:column>

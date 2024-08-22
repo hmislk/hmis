@@ -10,6 +10,7 @@ import com.divudi.entity.WebUser;
 import com.divudi.entity.channel.SessionInstance;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 /**
  *
@@ -17,6 +18,7 @@ import java.util.List;
  */
 public class ReportTemplateRow {
 
+    private String uuid;
     private String feeName;
     private String categoryName;
     private String toDepartmentName;
@@ -538,7 +540,7 @@ public class ReportTemplateRow {
         this.staff = staff;
     }
 
-    public ReportTemplateRow(Staff staff, Long long1, Long long2, Long long3, Long long4, Long long5, Long long6) {
+    public ReportTemplateRow(Staff staff, Long long1, Long long2, Long long3, Long long4, Long long5, Long long6, Long long7) {
         this.staff = staff;
         this.long1 = long1;
         this.long2 = long2;
@@ -546,6 +548,7 @@ public class ReportTemplateRow {
         this.long4 = long4;
         this.long5 = long5;
         this.long6 = long6;
+        this.long7 = long7;
         this.staff = staff;
     }
 
@@ -563,6 +566,17 @@ public class ReportTemplateRow {
 
     public void setReferringStaff(Staff referringStaff) {
         this.referringStaff = referringStaff;
+    }
+
+    public String getUuid() {
+        if (uuid == null) {
+            uuid = UUID.randomUUID().toString();
+        }
+        return uuid;
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
     }
 
 }
