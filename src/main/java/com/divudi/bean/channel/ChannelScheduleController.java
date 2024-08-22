@@ -868,6 +868,10 @@ public class ChannelScheduleController implements Serializable {
     }
 
     private boolean checkError() {
+        if (current.getCategory() == null) {
+            JsfUtil.addErrorMessage("Please select a session category before saving.");
+            return true;
+        }
         if (current.getStartingTime() == null) {
             JsfUtil.addErrorMessage("Starting time Must be Filled");
             return true;
