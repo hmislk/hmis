@@ -16,6 +16,7 @@ import com.divudi.data.ReportTemplateRowBundle;
 import com.divudi.data.analytics.ReportTemplateColumn;
 import com.divudi.data.analytics.ReportTemplateFilter;
 import com.divudi.data.analytics.ReportTemplateType;
+import static com.divudi.data.analytics.ReportTemplateType.ITEM_SUMMARY_BY_BILL;
 import com.divudi.entity.Department;
 import com.divudi.entity.ReportTemplate;
 import com.divudi.entity.Institution;
@@ -130,6 +131,35 @@ public class ReportTemplateController implements Serializable {
 
     public void recreateModel() {
         items = null;
+    }
+
+    public void processOpdItemCounts() {
+        ReportTemplateType trr = ITEM_SUMMARY_BY_BILL;
+        List<BillTypeAtomic> billTypesAtomics = new ArrayList<>();
+        billTypesAtomics.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+        billTypesAtomics.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
+        billTypesAtomics.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+
+        reportTemplateRowBundle = new ReportTemplateRowBundle();
+        reportTemplateRowBundle.setName("OPD Services by Categories & Items");
+        reportTemplateRowBundle = generateReport(
+                trr,
+                billTypesAtomics,
+                null,
+                fromDate,
+                toDate,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null
+        );
+
     }
 
     public ReportTemplateRowBundle generateReport(
@@ -2173,7 +2203,6 @@ public class ReportTemplateController implements Serializable {
             System.out.println("Results found: " + rs.size());
         }
 
-        
         long idCounter = 1;
 
         for (ReportTemplateRow row : rs) {
@@ -2466,8 +2495,8 @@ public class ReportTemplateController implements Serializable {
     }
 
     public Date getDate() {
-        if(date==null){
-            date=CommonFunctions.getStartOfDay();
+        if (date == null) {
+            date = CommonFunctions.getStartOfDay();
         }
         return date;
     }
@@ -2477,7 +2506,7 @@ public class ReportTemplateController implements Serializable {
     }
 
     public Date getFromDate() {
-        if(fromDate==null){
+        if (fromDate == null) {
             fromDate = CommonFunctions.getStartOfDay();
         }
         return fromDate;
@@ -2488,7 +2517,7 @@ public class ReportTemplateController implements Serializable {
     }
 
     public Date getToDate() {
-        if(toDate==null){
+        if (toDate == null) {
             toDate = CommonFunctions.getEndOfDay();
         }
         return toDate;
