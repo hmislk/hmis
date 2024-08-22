@@ -58,7 +58,7 @@
                                 <p:ajax event="itemSelect" 
                                         process="@this" 
                                         update="gpFees gpTotals gpTotalsF" 
-                                        listener="#{itemFeeManager.fillForInstitutionFees()}"></p:ajax>
+                                        listener="#{itemFeeManager.fillForCollectingCentreFees()}"></p:ajax>
                                 <p:column headerText="Type" style="padding: 6px;" >
                                     <p:outputLabel value="#{ix.class.simpleName}" ></p:outputLabel>
                                 </p:column>
@@ -238,6 +238,7 @@
                         <p:panel header="Current Fees" id="gpFees" class="m-1">
                             <p:dataTable id="tblFees" value="#{itemFeeManager.itemFees}" var="f" rowIndexVar="n" rowKey="#{f.id}" >
                                 <p:column headerText="Name" >
+                                    #{f}
                                     <p:inputText id="txtFeeName" value="#{f.name}" class="w-100" >
                                         <p:ajax process="txtFeeName" event="blur" listener="#{itemFeeManager.updateFee(f)}" update=":#{p:resolveFirstComponentWithId('gpTotals',view).clientId} :#{p:resolveFirstComponentWithId('gpTotalsF',view).clientId}" ></p:ajax>
                                     </p:inputText>
@@ -255,8 +256,17 @@
                                                            styleClass="#{f.discountAllowed ? 'ui-button-success' : 'ui-button-danger'}">
                                         <p:ajax process="@this" listener="#{itemFeeManager.updateFee(f)}" />
                                     </p:selectBooleanButton>
-
-
+                                </p:column>
+                                
+                                <p:column headerText="Devide by Fee" >
+                                    <p:selectBooleanButton value="#{f.devideByFee}" 
+                                                           offLabel="Combine Fee" 
+                                                           onLabel="Devided Fee" 
+                                                           onIcon="pi pi-check" 
+                                                           offIcon="pi pi-times"
+                                                           styleClass="#{f.devideByFee ? 'ui-button-success' : 'ui-button-danger'}">
+                                        <p:ajax process="@this" listener="#{itemFeeManager.updateFee(f)}" />
+                                    </p:selectBooleanButton>
                                 </p:column>
                                 <p:column headerText="For" >
                                     <h:panelGroup rendered="#{f.institution ne null}" >

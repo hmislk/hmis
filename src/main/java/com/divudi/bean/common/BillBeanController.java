@@ -3015,6 +3015,12 @@ public class BillBeanController implements Serializable {
 
         saveBillComponent(e, b, wu);
         saveBillFee(e, b, wu);
+        
+        System.out.println("BillItems().size() = " + b.getBillItems().size());
+        for(BillItem bi : b.getBillItems()){
+            System.out.println("bif = " + bi.getBillFees().size());
+        }
+        
 
         return e.getBillItem();
     }
