@@ -36,8 +36,15 @@ import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.InstitutionFacade;
 import com.divudi.facade.PriceMatrixFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.BillFinanceType;
+import com.divudi.data.BillTypeAtomic;
+import com.divudi.data.ReportTemplateRow;
+import com.divudi.data.ReportTemplateRowBundle;
+import com.divudi.data.ServiceType;
+import com.divudi.entity.Staff;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -96,7 +103,9 @@ public class CommonReport implements Serializable {
      *
      */
     List<BillFee> billFees;
+    private ReportTemplateRowBundle bundle;
     List<Bill> referralBills;
+    List<Bill> referralDoctorBills;
     List<BillItem> referralBillItems;
 
     List<Bill> pharmacyCashBilledBills;
@@ -936,7 +945,6 @@ public class CommonReport implements Serializable {
         totalFee = displayOutsideCalBillFees();
         billTotal = displayOutsideBillFeeBillTotals();
 
-        
         return "/lab/report_by_outside_institution";
 
     }
@@ -3278,8 +3286,6 @@ public class CommonReport implements Serializable {
         getRefundedBills().setSlip(calValue(new RefundBill(), billType, PaymentMethod.Slip));
         createSum();
 
-        
-
     }
 
     public void createTableByBillTypeWebUser() {
@@ -3346,7 +3352,6 @@ public class CommonReport implements Serializable {
         //pharmacyUnitIssueCancelBillTotals = getPharmacyBillTotal(BillType.PharmacyIssue, new CancelledBill());
         //pharmacyUnitIssueReturnbillTotals = getPharmacyBillTotal(BillType.PharmacyIssue, new RefundBill());
 
-        
     }
 
     List<Bill> getPharmacyBills(PaymentMethod paymentMethod, BillType billType, Bill bill) {
@@ -3525,8 +3530,6 @@ public class CommonReport implements Serializable {
 
         //////////
         createSumAfterCash();
-
-        
 
     }
 
@@ -3885,7 +3888,6 @@ public class CommonReport implements Serializable {
         //////////
         createSumAfterCash();
 
-        
         Date endTime = new Date();
         duration = endTime.getTime() - startTime.getTime();
         auditEvent.setEventDuration(duration);
@@ -4166,7 +4168,6 @@ public class CommonReport implements Serializable {
         //////////
         createSumAfterCash();
 
-        
         Date endTime = new Date();
         duration = endTime.getTime() - startTime.getTime();
         auditEvent.setEventDuration(duration);
@@ -4199,7 +4200,6 @@ public class CommonReport implements Serializable {
         }
         createCashierTableByUser();
 
-        
     }
 
     public void createCashierTableByUserOnlyChannel() {
@@ -4620,8 +4620,6 @@ public class CommonReport implements Serializable {
         //////////
         createSumAfterCash();
 
-        
-
     }
 
     public Date fetchDate(String s) {
@@ -4920,7 +4918,6 @@ public class CommonReport implements Serializable {
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
 
-        
     }
 
     public void createGrnReturnDetailTable() {
@@ -4978,7 +4975,6 @@ public class CommonReport implements Serializable {
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
 
-        
     }
 
     public void createGrnAndPurchaseBillsTable() {
@@ -5081,7 +5077,6 @@ public class CommonReport implements Serializable {
         getGrnReturnCancel().setCash(calValueNetTotal(new CancelledBill(), BillType.StoreGrnReturn, PaymentMethod.Cash, getDepartment()));
         getGrnReturnCancel().setCredit(calValueNetTotal(new CancelledBill(), BillType.StoreGrnReturn, PaymentMethod.Credit, getDepartment()));
 
-        
     }
 
     public void createGrnExpensTableStore() {
@@ -5123,7 +5118,6 @@ public class CommonReport implements Serializable {
 //        getGrnReturnCancel().setBillItems(getBillItems(new CancelledBill(), BillType.StoreGrnReturn, getDepartment()));
 ////        getGrnReturnCancel().setCash(calValueNetTotal(new CancelledBill(), BillType.StoreGrnReturn, PaymentMethod.Cash, getDepartment()));
 ////        getGrnReturnCancel().setCredit(calValueNetTotal(new CancelledBill(), BillType.StoreGrnReturn, PaymentMethod.Credit, getDepartment()));
-        
     }
 
 //    public void createGrnDetailTableStore() {
@@ -5272,7 +5266,6 @@ public class CommonReport implements Serializable {
         getGrnPaymentCancellReturn().setCash(calValue(new CancelledBill(), BillType.GrnPaymentReturn, PaymentMethod.Cash, getDepartment()));
         getGrnPaymentCancellReturn().setCredit(calValue(new CancelledBill(), BillType.GrnPaymentReturn, PaymentMethod.Credit, getDepartment()));
 
-        
     }
 
     public void createPurchaseDetailTable() {
@@ -5322,7 +5315,6 @@ public class CommonReport implements Serializable {
         getPurchaseReturnCancel().setSaleCash(calValueSaleValue(new CancelledBill(), BillType.PurchaseReturn, PaymentMethod.Cash, getDepartment()));
         getPurchaseReturnCancel().setSaleCredit(calValueSaleValue(new CancelledBill(), BillType.PurchaseReturn, PaymentMethod.Credit, getDepartment()));
 
-        
     }
 
     public void createPurchaseDetailTableStore() {
@@ -5359,7 +5351,6 @@ public class CommonReport implements Serializable {
         getPurchaseReturnCancel().setCash(calValue(new CancelledBill(), BillType.PurchaseReturn, PaymentMethod.Cash, getDepartment()));
         getPurchaseReturnCancel().setCredit(calValue(new CancelledBill(), BillType.PurchaseReturn, PaymentMethod.Credit, getDepartment()));
 
-        
     }
 
 //    public void createPurchaseDetailTableStore() {
@@ -5473,7 +5464,6 @@ public class CommonReport implements Serializable {
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
 
-        
     }
 
     public void createGrnDetailTableByDealorStore() {
@@ -5510,7 +5500,6 @@ public class CommonReport implements Serializable {
         getGrnReturnCancel().setCash(calValue(new CancelledBill(), BillType.StoreGrnReturn, PaymentMethod.Cash, getDepartment(), getInstitution()));
         getGrnReturnCancel().setCredit(calValue(new CancelledBill(), BillType.StoreGrnReturn, PaymentMethod.Credit, getDepartment(), getInstitution()));
 
-        
     }
 
 //    public void createGrnDetailTableByDealorStore() {
@@ -5609,38 +5598,10 @@ public class CommonReport implements Serializable {
     }
 
     public void fillInstitutionReferralBills() {
-        Date startTime = new Date();
-
-        //Done By Pasan
-//        String jpql;
-//        Map m = new HashMap();
-//        if (institution != null) {
-//            jpql = "select b from Bill b "
-//                    + "where b.retired=false "
-//                    + "and b.referredByInstitution=:refIns "
-//                    + "and b.createdAt between :fd and :td "
-//                    + " order by b.id";
-//            m.put("refIns", institution);
-//            m.put("fd", fromDate);
-//            m.put("td", toDate);
-//            referralBills = getBillFacade().findByJpql(jpql, m);
-//        }else{
-//            jpql = "select b from Bill b "
-//                    + " where b.retired=false "
-//                    + " and b.referredByInstitution is not null "
-//                    + "and b.createdAt between :fd and :td "
-//                    + " order by b.id";
-//            m.put("fd", fromDate);
-//            m.put("td", toDate);
-//            referralBills = getBillFacade().findByJpql(jpql, m, TemporalType.TIMESTAMP);
-//        }
-        //Done By Safrin
         String jpql;
         Map m = new HashMap();
-
         jpql = "select b from Bill b "
                 + "where b.retired=false ";
-
         if (referenceInstitution != null) {
             jpql += "and b.referredByInstitution=:refIns ";
             m.put("refIns", referenceInstitution);
@@ -5654,7 +5615,192 @@ public class CommonReport implements Serializable {
         m.put("td", toDate);
         referralBills = getBillFacade().findByJpql(jpql, m, TemporalType.TIMESTAMP);
 
-        
+    }
+
+    public void fillOpdReferralBillSummary() {
+        // Map to hold query parameters
+        Map<String, Object> m = new HashMap<>();
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("bts", BillTypeAtomic.findByServiceType(ServiceType.OPD));
+
+        // First Query: For referredBy condition
+        String jpql1 = "select new com.divudi.data.ReportTemplateRow("
+                + "rf, count(b), sum(b.netTotal))"
+                + " from Bill b "
+                + " left join b.referredBy rf "
+                + " where b.retired=false "
+                + " and rf is not null "
+                + " and b.createdAt between :fd and :td "
+                + " and b.billTypeAtomic in :bts "
+                + " group by rf";
+
+        // Second Query: For referredByInstitution condition
+        String jpql2 = "select new com.divudi.data.ReportTemplateRow("
+                + "ri, count(b), sum(b.netTotal))"
+                + " from Bill b "
+                + " left join b.referredByInstitution ri "
+                + " where b.retired=false "
+                + " and ri is not null "
+                + " and b.createdAt between :fd and :td "
+                + " and b.billTypeAtomic in :bts "
+                + " group by ri";
+
+        // Execute both queries separately
+        List<ReportTemplateRow> rtrsByReferredBy = (List<ReportTemplateRow>) billFacade.findLightsByJpql(jpql1, m);
+        List<ReportTemplateRow> rtrsByReferredByInstitution = (List<ReportTemplateRow>) billFacade.findLightsByJpql(jpql2, m);
+
+        // Combine results into a single bundle
+        bundle = new ReportTemplateRowBundle();
+        List<ReportTemplateRow> combinedResults = new ArrayList<>();
+
+        // Add results from the first query (Staff-based)
+        combinedResults.addAll(rtrsByReferredBy);
+
+        // Add results from the second query (Institution-based)
+        combinedResults.addAll(rtrsByReferredByInstitution);
+
+        // Set the combined results in the bundle
+        bundle.setReportTemplateRows(combinedResults);
+
+        // Format the report name with fromDate and toDate
+        String dateFormat = sessionController.getApplicationPreference().getLongDateFormat();
+        SimpleDateFormat sdf = new SimpleDateFormat(dateFormat);
+        String formattedFromDate = sdf.format(fromDate);
+        String formattedToDate = sdf.format(toDate);
+
+        String reportName = "OPD Referral Summary by Bill - From " + formattedFromDate + " to " + formattedToDate;
+        bundle.setName(reportName);
+    }
+    
+    public void fillChannellingReferralBillSummary() {
+        // Map to hold query parameters
+        Map<String, Object> m = new HashMap<>();
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("bts", BillTypeAtomic.findByServiceType(ServiceType.CHANNELLING));
+
+        // First Query: For referredBy condition
+        String jpql1 = "select new com.divudi.data.ReportTemplateRow("
+                + "rf, count(b), sum(b.netTotal))"
+                + " from Bill b "
+                + " left join b.referredBy rf "
+                + " where b.retired=false "
+                + " and rf is not null "
+                + " and b.createdAt between :fd and :td "
+                + " and b.billTypeAtomic in :bts "
+                + " group by rf";
+
+        // Second Query: For referredByInstitution condition
+        String jpql2 = "select new com.divudi.data.ReportTemplateRow("
+                + "ri, count(b), sum(b.netTotal))"
+                + " from Bill b "
+                + " left join b.referredByInstitution ri "
+                + " where b.retired=false "
+                + " and ri is not null "
+                + " and b.createdAt between :fd and :td "
+                + " and b.billTypeAtomic in :bts "
+                + " group by ri";
+
+        // Execute both queries separately
+        List<ReportTemplateRow> rtrsByReferredBy = (List<ReportTemplateRow>) billFacade.findLightsByJpql(jpql1, m);
+        List<ReportTemplateRow> rtrsByReferredByInstitution = (List<ReportTemplateRow>) billFacade.findLightsByJpql(jpql2, m);
+
+        // Combine results into a single bundle
+        bundle = new ReportTemplateRowBundle();
+        List<ReportTemplateRow> combinedResults = new ArrayList<>();
+
+        // Add results from the first query (Staff-based)
+        combinedResults.addAll(rtrsByReferredBy);
+
+        // Add results from the second query (Institution-based)
+        combinedResults.addAll(rtrsByReferredByInstitution);
+
+        // Set the combined results in the bundle
+        bundle.setReportTemplateRows(combinedResults);
+
+        // Format the report name with fromDate and toDate
+        String dateFormat = sessionController.getApplicationPreference().getLongDateFormat();
+        SimpleDateFormat sdf = new SimpleDateFormat(dateFormat);
+        String formattedFromDate = sdf.format(fromDate);
+        String formattedToDate = sdf.format(toDate);
+
+        String reportName = "Channelling Referral Summary by Bill - From " + formattedFromDate + " to " + formattedToDate;
+        bundle.setName(reportName);
+    }
+    
+    public void fillInpatientReferralBillSummary() {
+        // Map to hold query parameters
+        Map<String, Object> m = new HashMap<>();
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("bts", BillTypeAtomic.findByServiceType(ServiceType.INWARD));
+
+        // First Query: For referredBy condition
+        String jpql1 = "select new com.divudi.data.ReportTemplateRow("
+                + "rf, count(b), sum(b.netTotal))"
+                + " from Bill b "
+                + " left join b.referredBy rf "
+                + " where b.retired=false "
+                + " and rf is not null "
+                + " and b.createdAt between :fd and :td "
+                + " and b.billTypeAtomic in :bts "
+                + " group by rf";
+
+        // Second Query: For referredByInstitution condition
+        String jpql2 = "select new com.divudi.data.ReportTemplateRow("
+                + "ri, count(b), sum(b.netTotal))"
+                + " from Bill b "
+                + " left join b.referredByInstitution ri "
+                + " where b.retired=false "
+                + " and ri is not null "
+                + " and b.createdAt between :fd and :td "
+                + " and b.billTypeAtomic in :bts "
+                + " group by ri";
+
+        // Execute both queries separately
+        List<ReportTemplateRow> rtrsByReferredBy = (List<ReportTemplateRow>) billFacade.findLightsByJpql(jpql1, m);
+        List<ReportTemplateRow> rtrsByReferredByInstitution = (List<ReportTemplateRow>) billFacade.findLightsByJpql(jpql2, m);
+
+        // Combine results into a single bundle
+        bundle = new ReportTemplateRowBundle();
+        List<ReportTemplateRow> combinedResults = new ArrayList<>();
+
+        // Add results from the first query (Staff-based)
+        combinedResults.addAll(rtrsByReferredBy);
+
+        // Add results from the second query (Institution-based)
+        combinedResults.addAll(rtrsByReferredByInstitution);
+
+        // Set the combined results in the bundle
+        bundle.setReportTemplateRows(combinedResults);
+
+        // Format the report name with fromDate and toDate
+        String dateFormat = sessionController.getApplicationPreference().getLongDateFormat();
+        SimpleDateFormat sdf = new SimpleDateFormat(dateFormat);
+        String formattedFromDate = sdf.format(fromDate);
+        String formattedToDate = sdf.format(toDate);
+
+        String reportName = "OPD Referral Summary by Bill - From " + formattedFromDate + " to " + formattedToDate;
+        bundle.setName(reportName);
+    }
+
+    public void fillDoctorReferralBills() {
+        Date startTime = new Date();
+        String jpql;
+        Map m = new HashMap();
+
+        jpql = "select b from Bill b "
+                + "where b.retired=false ";
+
+        jpql += " and b.referredBy is not null ";
+
+        jpql += "and b.createdAt between :fd and :td "
+                + " order by b.id";
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        referralDoctorBills = getBillFacade().findByJpql(jpql, m, TemporalType.TIMESTAMP);
+        System.out.println("referralDoctorBills = " + referralDoctorBills);
     }
 
     public void fillInstitutionReferralBillItems() {
@@ -5682,8 +5828,6 @@ public class CommonReport implements Serializable {
         m.put("fd", fromDate);
         m.put("td", toDate);
         referralBillItems = getBillItemFac().findByJpql(jpql, m, TemporalType.TIMESTAMP);
-
-        
 
     }
 
@@ -5818,8 +5962,6 @@ public class CommonReport implements Serializable {
 
             }
         }
-
-        
 
     }
 
@@ -6801,7 +6943,6 @@ public class CommonReport implements Serializable {
             totalVat += b.getVat();
         }
 
-        
     }
 
     public void calculateTotalOfPuchaseOrderSummaryBills() {
@@ -6854,8 +6995,6 @@ public class CommonReport implements Serializable {
             total += tot;
             totalVat += totVat;
         }
-
-        
 
     }
 
@@ -7021,6 +7160,22 @@ public class CommonReport implements Serializable {
 
     public void setDepartmentId(String departmentId) {
         this.departmentId = departmentId;
+    }
+
+    public List<Bill> getReferralDoctorBills() {
+        return referralDoctorBills;
+    }
+
+    public void setReferralDoctorBills(List<Bill> referralDoctorBills) {
+        this.referralDoctorBills = referralDoctorBills;
+    }
+
+    public ReportTemplateRowBundle getBundle() {
+        return bundle;
+    }
+
+    public void setBundle(ReportTemplateRowBundle bundle) {
+        this.bundle = bundle;
     }
 
     public class CollectingCenteRow {

@@ -9,7 +9,7 @@
     <h:body>
         <ui:composition template="/admin/lims/index.xhtml">
 
-           
+
 
             <ui:define name="subcontent">
 
@@ -61,12 +61,12 @@
                                         >
                                     </p:outputLabel>
                                     <p:commandButton title="Clear Department"
-                                                 ajax="false"
-                                                 rendered="#{departmentMachineController.department ne null}"
-                                                 action="#{departmentMachineController.clearDeptAndDept()}" 
-                                                 icon="pi pi-times" styleClass="ui-button-danger" >
+                                                     ajax="false"
+                                                     rendered="#{departmentMachineController.department ne null}"
+                                                     action="#{departmentMachineController.clearDeptAndDept()}" 
+                                                     icon="pi pi-times" styleClass="ui-button-danger" >
                                     </p:commandButton>
-                                    
+
                                 </h:panelGroup>
                                 <p:commandButton 
                                     ajax="false" 
@@ -128,14 +128,19 @@
                                      value="#{departmentMachineController.items}" 
                                      var="t" 
                                      rowKey="#{t.id}">
+                            <p:column headerText="ID"  >
+                                <p:inputText value="#{t.id}" ></p:inputText>
+                            </p:column>
                             <p:column headerText="Institution" filterBy="#{t.department.institution.name}" sortBy="#{t.department.institution.name}" >
                                 <p:outputLabel value="#{t.department.institution.name}" ></p:outputLabel>
                             </p:column>
                             <p:column headerText="Department" filterBy="#{t.department.name}" sortBy="#{t.department.name}" >
                                 <p:outputLabel value="#{t.department.name}" ></p:outputLabel>
+                                <p:inputText value="#{t.department.id}" ></p:inputText>
                             </p:column>
                             <p:column headerText="Machine" filterBy="#{t.name}" sortBy="#{t.name}" >
-                                <p:outputLabel value="#{t.name}" ></p:outputLabel>
+                                <p:outputLabel value="#{t.machine.name}" ></p:outputLabel>
+                                <p:inputText value="#{t.machine.id}" ></p:inputText>
                             </p:column>
                             <p:column headerText="Serial" filterBy="#{t.serialNumber}" sortBy="#{t.serialNumber}" >
                                 <p:outputLabel value="#{t.serialNumber}" ></p:outputLabel>

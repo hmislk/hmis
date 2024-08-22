@@ -132,8 +132,14 @@ public class PatientReportBean {
     }
 
     public String getDefaultMemoValue(InvestigationItem item, Patient patient) {
-        //TODO: Create Logic
-        return "";
+        String defaultValue = "";
+        if(item==null){
+            return defaultValue;
+        }
+        if(item.getHtmltext()!=null){
+            defaultValue=item.getHtmltext();
+        }
+        return defaultValue;
     }
 
     public byte[] getDefaultImageValue(InvestigationItem item, Patient patient) {
@@ -146,7 +152,7 @@ public class PatientReportBean {
         Investigation temIx = (Investigation) ptReport.getItem();
         for (ReportItem ii : temIx.getReportItems()) {
             PatientReportItemValue val = null;
-            if ((ii.getIxItemType() == InvestigationItemType.Value || ii.getIxItemType() == InvestigationItemType.Calculation || ii.getIxItemType() == InvestigationItemType.Flag || ii.getIxItemType() == InvestigationItemType.Template) && ii.isRetired() == false) {
+            if ((ii.getIxItemType() == InvestigationItemType.Value || ii.getIxItemType() == InvestigationItemType.Calculation || ii.getIxItemType() == InvestigationItemType.Flag || ii.getIxItemType() == InvestigationItemType.Html || ii.getIxItemType() == InvestigationItemType.Template) && ii.isRetired() == false) {
                 if (ptReport.getId() == null || ptReport.getId() == 0) {
 
                     val = new PatientReportItemValue();

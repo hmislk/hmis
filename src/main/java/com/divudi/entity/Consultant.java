@@ -4,7 +4,6 @@
  */
 package com.divudi.entity;
 
-import java.io.Serializable;
 import javax.persistence.Entity;
 
 /**
@@ -12,6 +11,8 @@ import javax.persistence.Entity;
  * @author buddhika
  */
 @Entity
-public class Consultant extends Doctor implements Serializable {
+public class Consultant extends Doctor {
+
+
     
 }

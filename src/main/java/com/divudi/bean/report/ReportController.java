@@ -10,7 +10,6 @@ import com.divudi.data.BillItemStatus;
 import com.divudi.data.BillType;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.CategoryCount;
-import com.divudi.data.InstitutionType;
 import com.divudi.data.ItemCount;
 import com.divudi.data.ItemLight;
 import com.divudi.data.PaymentMethod;
@@ -158,20 +157,25 @@ public class ReportController implements Serializable {
         collectionCenters = institutionFacade.findByJpql(jpql, m);
     }
 
-    public void processCollectionCenterCurrentBalance() {
-        String jpql = "select chinthaka "
-                + " from Institution chinthaka"
-                + " where chinthaka.retired=:ret"
-                + " and chinthaka.institutionType=:itype "
-                + " order by chinthaka.name ";
+    public void processPettyCashPayment() {
+        String jpql = "SELECT pc "
+                + "FROM Bill pc "
+                + "WHERE pc.retired = :ret "
+                + "AND pc.billType = :bt "
+                + "AND pc.createdAt BETWEEN :fromDate AND :toDate";
 
         Map<String, Object> m = new HashMap<>();
         m.put("ret", false);
-        m.put("itype", InstitutionType.CollectingCentre);
-        collectionCenters = institutionFacade.findByJpql(jpql, m);
+        m.put("bt", BillType.PettyCash); 
+        m.put("fromDate", getFromDate());
+        m.put("toDate", getToDate());
+
+        System.out.println(m);
+        System.err.println(jpql);
+
+        bills = billFacade.findByJpql(jpql, m);
     }
-    
-    
+
     public String navigatetoOPDLabReportByMenu() {
         return "/lab/report_for_opd_print?faces-redirect=true";
     }

@@ -103,10 +103,8 @@
                                     <p:outputLabel value="Report Category"/>
                                     <h:outputLabel value=" : " style="width: 20px; text-align: center"/>
                                     <p:selectOneMenu class="form-control" value="#{investigationController.current.reportType}" >                               
-                                        <f:selectItem itemLabel="General" itemValue="General"/>
-                                        <f:selectItem itemLabel="Microbiology" itemValue="Microbiology"/>
-                                        <f:selectItem itemLabel="Pathology / Haematology" 
-                                                      itemValue="PathologyOrHaematology"/>
+                                        <f:selectItem itemLabel="Select" />
+                                        <f:selectItems value="#{enumController.investigationReportTypes}" ></f:selectItems>
                                     </p:selectOneMenu>
 
                                     <h:outputText value="Report Format" ></h:outputText>
