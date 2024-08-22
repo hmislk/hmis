@@ -2539,8 +2539,6 @@ public class PatientInvestigationController implements Serializable {
     public PatientSampleComponantFacade getPatientSampleComponantFacade() {
         return patientSampleComponantFacade;
     }
-    
-    
 
     public ItemFacade getItemFacade() {
         return itemFacade;
@@ -2991,6 +2989,12 @@ public class PatientInvestigationController implements Serializable {
 
                 Investigation ix = ptix.getInvestigation();
 
+                if (ix.getReportedAs() != null) {
+                    if (ix.getReportedAs() instanceof Investigation) {
+                        ix = (Investigation) ix.getReportedAs();
+                    }
+                }
+
                 if (ix == null) {
                     continue;
                 }
@@ -3014,27 +3018,34 @@ public class PatientInvestigationController implements Serializable {
                     if (ixi.getIxItemType() == InvestigationItemType.Value) {
                         System.out.println("ixi.getTube() = " + ixi.getTube());
                         if (ixi.getTube() == null) {
+                            if (ixi.getItem() != null) {
+                                if (ixi.getItem() instanceof Investigation) {
+                                    Investigation tix = (Investigation) ixi.getItem();
+                                    ixi.setTube(tix.getInvestigationTube());
+                                }
+                            }
+                        }
+                        if (ixi.getTube() == null) {
+                            System.out.println("No tube is set");
                             continue;
                         }
                         System.out.println("ixi.getSample() = " + ixi.getSample());
-                        if (ixi.getSample() == null) {
-                            continue;
-                        }
+//                        if (ixi.getSample() == null) {
+//                            continue;
+//                        }
 
                         j = "select ps from PatientSample ps "
                                 + " where ps.tube=:tube "
-                                + " and ps.sample=:sample "
-                                + " and ps.machine=:machine "
+                                //                                + " and ps.sample=:sample "
+                                //                                + " and ps.machine=:machine "
                                 + " and ps.patient=:pt "
                                 + " and ps.bill=:bill ";
 //                                + " and ps.collected=:ca
                         m = new HashMap();
                         m.put("tube", ixi.getTube());
 
-                        m.put("sample", ixi.getSample());
-
-                        m.put("machine", ixi.getMachine());
-
+//                        m.put("sample", ixi.getSample());
+//                        m.put("machine", ixi.getMachine());
                         m.put("pt", b.getPatient());
 
                         m.put("bill", b);
@@ -3149,7 +3160,15 @@ public class PatientInvestigationController implements Serializable {
             }
 
             Investigation ix = ptix.getInvestigation();
+            System.out.println("ix = " + ix.getName());
+            System.out.println("ix.getReportedAs() = " + ix.getReportedAs());
 
+            if (ix.getReportedAs() != null) {
+                if (ix.getReportedAs() instanceof Investigation) {
+                    ix = (Investigation) ix.getReportedAs();
+                }
+            }
+            System.out.println("ix = " + ix.getName());
             if (ix == null) {
                 continue;
             }
@@ -3163,6 +3182,11 @@ public class PatientInvestigationController implements Serializable {
 
             List<InvestigationItem> ixis = getItems(ix);
 
+            
+            System.out.println("ix.getInvestigationTube() = " + ix.getInvestigationTube());
+            
+            System.out.println("ixis = " + ixis);
+            
             if (ixis == null) {
                 continue;
             }
@@ -3173,12 +3197,23 @@ public class PatientInvestigationController implements Serializable {
                 if (ixi.getIxItemType() == InvestigationItemType.Value) {
                     System.out.println("ixi.getTube() = " + ixi.getTube());
                     if (ixi.getTube() == null) {
+                        if (ixi.getItem() != null) {
+                            if (ixi.getItem() instanceof Investigation) {
+                                Investigation tix = (Investigation) ixi.getItem();
+                                System.out.println("tix = " + tix);
+                                System.out.println("tix.getInvestigationTube() = " + tix.getInvestigationTube());
+                                ixi.setTube(tix.getInvestigationTube());
+                            }
+                        }
+                    }
+                    if (ixi.getTube() == null) {
+                        System.out.println("No tube is set");
                         continue;
                     }
                     System.out.println("ixi.getSample() = " + ixi.getSample());
-                    if (ixi.getSample() == null) {
-                        continue;
-                    }
+//                    if (ixi.getSample() == null) {
+//                        continue;
+//                    }
 
                     j = "select ps from PatientSample ps "
                             + " where ps.tube=:tube "
