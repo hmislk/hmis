@@ -1294,20 +1294,69 @@ public class PatientInvestigationController implements Serializable {
     }
 
     public void collectSamples() {
-        if (selectedItems == null) {
-            JsfUtil.addErrorMessage("No Bills Seelcted");
+        if (selectedPatientSamples == null) {
+            JsfUtil.addErrorMessage("No samples Seelcted");
             return;
         }
-        if (selectedItems.isEmpty()) {
-            JsfUtil.addErrorMessage("No Bills Seelcted");
+        if (selectedPatientSamples.isEmpty()) {
+            JsfUtil.addErrorMessage("No samples Seelcted");
             return;
         }
         listingEntity = ListingEntity.PATIENT_SAMPLES;
 
-        for (PatientInvestigation bi : selectedItems) {
-
+        for (PatientSample ps : selectedPatientSamples) {
+            ps.setSampleCollected(true);
+            ps.setSampleCollectedAt(new Date());
+            ps.setSampleCollectedDepartment(sessionController.getDepartment());
+            ps.setSampleCollectedInstitution(sessionController.getInstitution());
+            ps.setSampleCollecter(sessionController.getWebUser());
+            patientSampleFacade.edit(ps); 
         }
+        JsfUtil.addSuccessMessage("Selected Samples Are Collected ");
 
+    }
+    
+    public void sampleSendToLab() {
+        if (selectedPatientSamples == null) {
+            JsfUtil.addErrorMessage("No samples Seelcted");
+            return;
+        }
+        if (selectedPatientSamples.isEmpty()) {
+            JsfUtil.addErrorMessage("No samples Seelcted");
+            return;
+        }
+        listingEntity = ListingEntity.PATIENT_SAMPLES;
+
+        for (PatientSample ps : selectedPatientSamples) {
+            ps.setSampleSent(true);
+            ps.setSampleSentBy(sessionController.getLoggedUser());
+            ps.setSampleSentAt(new Date());
+            patientSampleFacade.edit(ps); 
+        }
+        JsfUtil.addSuccessMessage("Selected Samples Are Sent to Lab ");
+
+    }
+    
+    public void receivedSamples(){
+        if (selectedPatientSamples == null) {
+            JsfUtil.addErrorMessage("No samples Seelcted");
+            return;
+        }
+        if (selectedPatientSamples.isEmpty()) {
+            JsfUtil.addErrorMessage("No samples Seelcted");
+            return;
+        }
+        listingEntity = ListingEntity.PATIENT_SAMPLES;
+
+        for (PatientSample ps : selectedPatientSamples) {
+            ps.setSampleReceivedAtLab(true);
+            ps.setSampleReceiverAtLab(sessionController.getLoggedUser());
+            ps.setSampleReceivedAtLabDepartment(sessionController.getDepartment());
+            ps.setSampleReceivedAtLabInstitution(sessionController.getInstitution());
+            ps.setSampleReceivedAtLabAt(new Date());
+            patientSampleFacade.edit(ps); 
+        }
+        JsfUtil.addSuccessMessage("Selected Samples Are Received from Lab ");
     }
 
     public void listPatientInvestigationAwaitingSamplling() {
@@ -1686,8 +1735,8 @@ public class PatientInvestigationController implements Serializable {
         }
 
         if (type != null && !type.trim().isEmpty()) {
-            jpql += " AND i.billItem.bill.ipOpOrCC = :type ";
-            params.put("type", getType().trim());
+            jpql += " AND i.billItem.bill.ipOpOrCC = :tp ";
+            params.put("tp", getType().trim());
         }
 
         if (externalDoctor != null && !externalDoctor.trim().isEmpty()) {
