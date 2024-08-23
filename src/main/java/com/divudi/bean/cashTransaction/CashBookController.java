@@ -32,12 +32,14 @@ public class CashBookController implements Serializable {
 
     @EJB
     private CashBookFacade cashbookFacade;
-    @EJB
-    private CashBook cashBook;
-
+    
     @Inject
     private SessionController sessionController;
 
+    
+    private CashBook cashBook;
+
+    
     public CashBook findAndSaveCashBookBySite(Institution site, Institution ins, Department dept) {
         if (site==null) {
             return null;
@@ -58,11 +60,11 @@ public class CashBookController implements Serializable {
         m.put("site", site);
         m.put("ret", false);
         sql = "select cb "
-                + " from Cashbook cb "
+                + " from CashBook cb "
                 + " where cb.institution=:ins"
                 + " and cb.department=:dept"
                 + " and cb.site=:site"
-                + " and i.retired=:ret";
+                + " and cb.retired=:ret";
         CashBook cb = cashbookFacade.findFirstByJpql(sql, m);
 
         if (cb == null) {
