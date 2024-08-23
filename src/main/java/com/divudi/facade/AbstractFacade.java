@@ -78,6 +78,24 @@ public abstract class AbstractFacade<T> {
         }
     }
 
+    public List<T> findByJpql(String jpql, Map<String, Object> parameters, Map<String, TemporalType> temporalTypes) {
+        TypedQuery<T> qry = getEntityManager().createQuery(jpql, entityClass);
+
+        for (Map.Entry<String, Object> param : parameters.entrySet()) {
+            String paramName = param.getKey();
+            Object paramValue = param.getValue();
+
+            if (paramValue instanceof Date && temporalTypes.containsKey(paramName)) {
+                TemporalType tt = temporalTypes.get(paramName);
+                qry.setParameter(paramName, (Date) paramValue, tt);
+            } else {
+                qry.setParameter(paramName, paramValue);
+            }
+        }
+
+        return qry.getResultList();
+    }
+
     public List<Object> findObjects(String jpql, Map<String, Object> parameters) {
         return findObjects(jpql, parameters, TemporalType.DATE);
     }

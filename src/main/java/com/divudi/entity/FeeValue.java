@@ -1,13 +1,5 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
-package com.divudi.entity.cashTransaction;
+package com.divudi.entity;
 
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.WebUser;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Entity;
@@ -19,42 +11,40 @@ import javax.persistence.Temporal;
 
 /**
  *
- * @author Lawan Chaamindu
+ * @author Buddhika
  */
 @Entity
-public class CashBook implements Serializable {
+public class FeeValue implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    private String Name;
+
+    @ManyToOne
+    private Item item;
     @ManyToOne
     private Institution institution;
     @ManyToOne
-    private Institution site;
-    @ManyToOne
     private Department department;
-    
+    @ManyToOne
+    private Category category;
+
+    private Double totalValueForLocals;
+    private Double totalValueForForeigners;
+
     //Created Properties
     @ManyToOne
     private WebUser creater;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date createdAt;
-    
-    //Retairing properties 
+    //Retairing properties
     private boolean retired;
     @ManyToOne
     private WebUser retirer;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date retiredAt;
     private String retireComments;
-    
-    //Editer Properties
-    @ManyToOne
-    private WebUser editer;
-    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-    private Date editedAt;
 
     public Long getId() {
         return id;
@@ -64,6 +54,8 @@ public class CashBook implements Serializable {
         this.id = id;
     }
 
+    
+    
     @Override
     public int hashCode() {
         int hash = 0;
@@ -74,10 +66,10 @@ public class CashBook implements Serializable {
     @Override
     public boolean equals(Object object) {
         // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof CashBook)) {
+        if (!(object instanceof FeeValue)) {
             return false;
         }
-        CashBook other = (CashBook) object;
+        FeeValue other = (FeeValue) object;
         if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
             return false;
         }
@@ -86,16 +78,10 @@ public class CashBook implements Serializable {
 
     @Override
     public String toString() {
-        return "com.divudi.entity.cashTransaction.CashBook[ id=" + id + " ]";
+        return "com.divudi.entity.FeeValue[ id=" + id + " ]";
     }
-
-    public String getName() {
-        return Name;
-    }
-
-    public void setName(String Name) {
-        this.Name = Name;
-    }
+    
+    
 
     public Institution getInstitution() {
         return institution;
@@ -105,20 +91,36 @@ public class CashBook implements Serializable {
         this.institution = institution;
     }
 
-    public Institution getSite() {
-        return site;
-    }
-
-    public void setSite(Institution site) {
-        this.site = site;
-    }
-
     public Department getDepartment() {
         return department;
     }
 
     public void setDepartment(Department department) {
         this.department = department;
+    }
+
+    public Category getCategory() {
+        return category;
+    }
+
+    public void setCategory(Category category) {
+        this.category = category;
+    }
+
+    public Double getTotalValueForLocals() {
+        return totalValueForLocals;
+    }
+
+    public void setTotalValueForLocals(Double totalValueForLocals) {
+        this.totalValueForLocals = totalValueForLocals;
+    }
+
+    public Double getTotalValueForForeigners() {
+        return totalValueForForeigners;
+    }
+
+    public void setTotalValueForForeigners(Double totalValueForForeigners) {
+        this.totalValueForForeigners = totalValueForForeigners;
     }
 
     public WebUser getCreater() {
@@ -169,20 +171,12 @@ public class CashBook implements Serializable {
         this.retireComments = retireComments;
     }
 
-    public WebUser getEditer() {
-        return editer;
+    public Item getItem() {
+        return item;
     }
 
-    public void setEditer(WebUser editer) {
-        this.editer = editer;
+    public void setItem(Item item) {
+        this.item = item;
     }
 
-    public Date getEditedAt() {
-        return editedAt;
-    }
-
-    public void setEditedAt(Date editedAt) {
-        this.editedAt = editedAt;
-    }
-    
 }

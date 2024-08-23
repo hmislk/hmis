@@ -37,6 +37,7 @@ import com.divudi.entity.UserPreference;
 import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.InvestigationFacade;
 import com.divudi.facade.ItemMappingFacade;
+import com.divudi.facade.ServiceFacade;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -79,6 +80,8 @@ public class ItemController implements Serializable {
     private InvestigationFacade investigationFacade;
     @EJB
     private ItemFeeFacade itemFeeFacade;
+    @EJB
+    private ServiceFacade serviceFacade;
     @EJB
     ItemMappingFacade itemMappingFacade;
     @EJB
@@ -578,23 +581,6 @@ public class ItemController implements Serializable {
         m.put("ret", false);
         m.put("code", code);
         Item item = getFacade().findFirstByJpql(jpql, m);
-        if (item == null) {
-            jpql = "select i "
-                    + " from Item i "
-                    + " where i.code=:code";
-            m = new HashMap();
-            m.put("code", code);
-            item = getFacade().findFirstByJpql(jpql, m);
-            if (item != null) {
-                item.setRetired(false);
-                getFacade().edit(item);
-            } else {
-                item = new Item();
-                item.setName(code);
-                item.setCode(code);
-                getFacade().create(item);
-            }
-        }
         return item;
     }
 
@@ -729,7 +715,7 @@ public class ItemController implements Serializable {
             m.put("ret", false);
             m.put("name", name);
             m.put("code", code);
-            Investigation item = (Investigation) itemFacade.findFirstByJpql(jpql, m);
+            Investigation item = investigationFacade.findFirstByJpql(jpql, m);
             System.out.println("item = " + item);
             if (item == null) {
                 item = new Investigation();
@@ -749,14 +735,14 @@ public class ItemController implements Serializable {
             String jpql;
             Map m = new HashMap();
             jpql = "select i "
-                    + " from Item i "
+                    + " from Service i "
                     + " where i.retired=:ret "
                     + " and i.code=:code "
                     + " and i.name=:name";
             m.put("ret", false);
             m.put("name", name);
             m.put("code", code);
-            Service item = (Service) itemFacade.findFirstByJpql(jpql, m);
+            Service item = serviceFacade.findFirstByJpql(jpql, m);
             System.out.println("item = " + item);
             if (item == null) {
                 item = new Service();

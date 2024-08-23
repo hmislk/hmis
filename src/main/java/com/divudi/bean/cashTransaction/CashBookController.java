@@ -6,11 +6,19 @@
 package com.divudi.bean.cashTransaction;
 
 import com.divudi.bean.common.SessionController;
+import com.divudi.entity.Department;
+import com.divudi.entity.Institution;
 import com.divudi.entity.cashTransaction.CashBook;
 import com.divudi.facade.CashBookFacade;
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.faces.component.UIComponent;
+import javax.faces.context.FacesContext;
+import javax.faces.convert.Converter;
+import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
 
@@ -23,23 +31,59 @@ import javax.inject.Named;
 public class CashBookController implements Serializable {
 
     @EJB
-    private CashBookFacade CashbookFacade;
+    private CashBookFacade cashbookFacade;
     @EJB
     private CashBook cashBook;
-    
+
     @Inject
     private SessionController sessionController;
 
-    
+    public CashBook findAndSaveCashBookBySite(Institution site, Institution ins, Department dept) {
+        if (site==null) {
+            return null;
+        }
+        
+        if (ins==null) {
+            return null;
+        }
+        
+        if (dept==null) {
+            return null;
+        }
+        
+        String sql;
+        Map m = new HashMap();
+        m.put("ins", ins);
+        m.put("dept", dept);
+        m.put("site", site);
+        m.put("ret", false);
+        sql = "select cb "
+                + " from Cashbook cb "
+                + " where cb.institution=:ins"
+                + " and cb.department=:dept"
+                + " and cb.site=:site"
+                + " and i.retired=:ret";
+        CashBook cb = cashbookFacade.findFirstByJpql(sql, m);
+
+        if (cb == null) {
+            cb = new CashBook();
+            cb.setInstitution(ins);
+            cb.setDepartment(dept);
+            cb.setSite(site);
+            cashbookFacade.create(cb);
+        } 
+        return cb;
+    }
+
     public CashBookController() {
     }
 
     public CashBookFacade getCashbookFacade() {
-        return CashbookFacade;
+        return cashbookFacade;
     }
 
     public void setCashbookFacade(CashBookFacade CashbookFacade) {
-        this.CashbookFacade = CashbookFacade;
+        this.cashbookFacade = CashbookFacade;
     }
 
     public CashBook getCashBook() {
@@ -48,6 +92,49 @@ public class CashBookController implements Serializable {
 
     public void setCashBook(CashBook cashBook) {
         this.cashBook = cashBook;
+    }
+
+    /**
+     *
+     */
+    @FacesConverter(forClass = CashBook.class)
+    public static class CashBookConverter implements Converter {
+
+        @Override
+        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
+            if (value == null || value.length() == 0) {
+                return null;
+            }
+            CashBookController controller = (CashBookController) facesContext.getApplication().getELResolver().
+                    getValue(facesContext.getELContext(), null, "CashBookController");
+            return controller.getCashbookFacade().find(getKey(value));
+        }
+
+        java.lang.Long getKey(String value) {
+            java.lang.Long key;
+            key = Long.valueOf(value);
+            return key;
+        }
+
+        String getStringKey(java.lang.Long value) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(value);
+            return sb.toString();
+        }
+
+        @Override
+        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
+            if (object == null) {
+                return null;
+            }
+            if (object instanceof CashBook) {
+                CashBook o = (CashBook) object;
+                return getStringKey(o.getId());
+            } else {
+                throw new IllegalArgumentException("object " + object + " is of type "
+                        + object.getClass().getName() + "; expected type: " + CashBook.class.getName());
+            }
+        }
     }
 
 }
