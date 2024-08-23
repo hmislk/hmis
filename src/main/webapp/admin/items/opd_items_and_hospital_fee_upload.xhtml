@@ -10,17 +10,16 @@
                 xmlns:p="http://primefaces.org/ui">
     <ui:define name="item">
 
-        <h:form >
-
+        <h:form>
 
         </h:form>
 
-        <div class="container-fluid" >
-            <div class="card" >
-                <div class="card-header" >
+        <div class="container-fluid">
+            <div class="card">
+                <div class="card-header">
                     <h2>Upload OPD Items</h2>
                 </div>
-                <div class="card-body" >
+                <div class="card-body">
                     <h:form enctype="multipart/form-data">
                         <p:fileUpload value="#{dataUploadController.file}"
                                       mode="simple"
@@ -30,10 +29,6 @@
                             value="Upload"
                             action="#{dataUploadController.uploadItemsAndHospitalFees()}"
                             ajax="false"/>
-
-
-
-
                     </h:form>
 
                     <table class="table">
@@ -105,49 +100,47 @@
                                 <td>Hospital Fee</td>
                                 <td>Optional. Created for Logged Department and Institution</td>
                             </tr>
+                            <tr>
+                                <td>M</td>
+                                <td>Site</td>
+                                <td>Optional. Refers to the site where fee will be created. If left blank, no site is recorded.</td>
+                            </tr>
                         </tbody>
-
                     </table>
                 </div>
             </div>
         </div>
 
-        <div class="row" >
-            <div class="col-6" >
+        <div class="row">
+            <div class="col-6">
                 <h1>Uploaded Items</h1>
-                <p:dataTable id="tbl" value="#{dataUploadController.items}" var="item" >
-                    <p:column >
+                <p:dataTable id="tbl" value="#{dataUploadController.items}" var="item">
+                    <p:column>
                         #{item.name}
                     </p:column>
-                    <p:column >
+                    <p:column>
                         #{item.institution.name}
                     </p:column>
-                    <p:column >
+                    <p:column>
                         #{item.department.name}
                     </p:column>
-                    <p:column >
-                        
+                    <p:column>
                         #{item.total}
                     </p:column>
-
                 </p:dataTable>
             </div>
-            <div class="col-6" >
+            <div class="col-6">
                 <h1>Skipped Items</h1>
-                <p:dataTable id="tbl2" value="#{dataUploadController.itemsSkipped}" var="item" >
-                    <p:column >
+                <p:dataTable id="tbl2" value="#{dataUploadController.itemsSkipped}" var="item">
+                    <p:column>
                         #{item.name}
                     </p:column>
-                    <p:column >
+                    <p:column>
                         #{item.total}
                     </p:column>
-
                 </p:dataTable>
             </div>
         </div>
-
-
-
 
     </ui:define>
 </ui:composition>
