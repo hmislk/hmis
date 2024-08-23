@@ -85,6 +85,21 @@ public class PatientSampleController implements Serializable {
         recreateModel();
         getItems();
     }
+    
+    public void savePatientSample(PatientSample pts) {
+        if(pts==null){
+            return;
+        }
+        if (pts.getId() != null) {
+            getFacade().edit(pts);
+            JsfUtil.addSuccessMessage("Updated Successfully.");
+        } else {
+            pts.setCreatedAt(new Date());
+            pts.setCreater(getSessionController().getLoggedUser());
+            getFacade().create(pts);
+            JsfUtil.addSuccessMessage("Saved Successfully");
+        }
+    }
 
     public PatientSample findAndCreatePatientSampleByName(String qry) {
         PatientSample s;
