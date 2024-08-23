@@ -6192,18 +6192,18 @@ public class ChannelReportTemplateController implements Serializable {
         Institution i = null;
         for (AgentHistory a : agentHistorys) {
             if (start) {
-                a.setTransCumilativeTotal(a.getBeforeBallance() + a.getTransactionValue());
+                a.setTransCumilativeTotal(a.getBalanceBeforeTransaction() + a.getTransactionValue());
                 start = false;
-                d = a.getBeforeBallance() + a.getTransactionValue();
+                d = a.getBalanceBeforeTransaction() + a.getTransactionValue();
                 i = a.getBill().getFromInstitution();
                 continue;
             }
             if (i.equals(a.getBill().getFromInstitution())) {
                 a.setTransCumilativeTotal(d + a.getTransactionValue());
-                d = a.getBeforeBallance() + a.getTransactionValue();
+                d = a.getBalanceBeforeTransaction() + a.getTransactionValue();
             } else {
-                a.setTransCumilativeTotal(a.getBeforeBallance() + a.getTransactionValue());
-                d = a.getBeforeBallance() + a.getTransactionValue();
+                a.setTransCumilativeTotal(a.getBalanceBeforeTransaction() + a.getTransactionValue());
+                d = a.getBalanceBeforeTransaction() + a.getTransactionValue();
                 i = a.getBill().getFromInstitution();
             }
 

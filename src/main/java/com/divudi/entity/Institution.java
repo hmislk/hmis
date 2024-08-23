@@ -101,7 +101,12 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
     double opdBillDiscount;
     double inwardDiscount;
     double pharmacyDiscount;
+    
     double ballance;
+    
+    private double companyBalance;
+    private double agentBalance;
+    
     double allowedCredit;
     private double allowedCreditLimit;
     double maxCreditLimit;
@@ -719,5 +724,23 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
     public void setFeeListType(Category feeListType) {
         this.feeListType = feeListType;
     }
+
+    public double getCompanyBalance() {
+        return companyBalance;
+    }
+
+    public void setCompanyBalance(double companyBalance) {
+        this.companyBalance = companyBalance;
+    }
+
+    public double getAgentBalance() {
+        return agentBalance;
+    }
+
+    public void setAgentBalance(double agentBalance) {
+        this.agentBalance = agentBalance;
+    }
+    
+    
 
 }

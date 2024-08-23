@@ -38,7 +38,7 @@ public class CollectingCentreApplicationController {
 
     public void updateBalance(Institution collectingCentre,
             double collectingCenterFeeValue,
-            double valueWithoutHospitalFee,
+            double valueWithoutccFee,
             double transactionValue,
             HistoryType historyType,
             Bill bill,
@@ -52,15 +52,26 @@ public class CollectingCentreApplicationController {
                 agentHistory.setCreatedAt(new Date());
                 agentHistory.setCreater(bill.getCreater());
                 agentHistory.setBill(bill);
-                agentHistory.setBeforeBallance(collectingCentre.getBallance());
-                Double ccBalanceAfterTx = collectingCentre.getBallance() - valueWithoutHospitalFee;
-                agentHistory.setAfterBallance(ccBalanceAfterTx);
-                agentHistory.setTransactionValue(valueWithoutHospitalFee);
-                agentHistory.setCollectingCentertransactionValue(collectingCenterFeeValue);
                 agentHistory.setReferenceNumber(refNo);
                 agentHistory.setHistoryType(historyType);
+
+                
+                double balanceAfterTx = collectingCentre.getBallance() - transactionValue;
+                double hospitalBalanceAfterTx = collectingCentre.getAgentBalance() - valueWithoutccFee;
+                double agentBalanceAfterTx = collectingCentre.getCompanyBalance() - valueWithoutccFee;
+                
+                
+                agentHistory.setBalanceBeforeTransaction(collectingCentre.getBallance());
+                agentHistory.setBalanceAfterTransaction(balanceAfterTx);
+                agentHistory.setTransactionValue(valueWithoutccFee);
+
+                agentHistory.setCompanyBalanceBefore(collectingCentre.getCompanyBalance());
+                agentHistory.setCompanyBalanceAfter(collectingCentre.getCompanyBalance());
+                
+                agentHistory.setCollectingCentertransactionValue(collectingCenterFeeValue);
                 agentHistoryFacade.create(agentHistory);
-                collectingCentre.setBallance(ccBalanceAfterTx);
+
+                collectingCentre.setBallance(balanceAfterTx);
                 institutionFacade.edit(collectingCentre);
             }
 
