@@ -3833,7 +3833,7 @@ public class BookingController implements Serializable, ControllerWithPatient, C
         }
 
         String deptId = generateBillNumberDeptId(bill);
-        
+
         if (deptId.equals("")) {
             return null;
         }

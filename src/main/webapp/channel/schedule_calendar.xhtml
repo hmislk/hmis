@@ -1,0 +1,38 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:ch="http://xmlns.jcp.org/jsf/composite/channel"
+                xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
+                xmlns:au="http://xmlns.jcp.org/jsf/composite/autocomplete"
+                xmlns:pat="http://xmlns.jcp.org/jsf/composite/patient"
+                xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp">
+
+    <ui:define name="content">
+        <h:form id="form">
+            <p:panel>
+                <f:facet name="header">
+                    <div class="d-flex justify-content-center">
+                        <h4 style="font-weight: 600;">Schedule Calendar</h4>
+                    </div>
+                </f:facet>
+
+                <div style="margin-left: 8%; margin-right: 8%;">
+                    
+                </div>
+                <p:schedule 
+                    id="schedule" 
+                    value="#{bookingControllerViewScope.eventModel}" 
+                    widgetVar="myschedule"
+                    timeZone="#{bookingControllerViewScope.serverTimeZone}" 
+                    clientTimeZone="#{bookingControllerViewScope.serverTimeZone}">
+                </p:schedule>
+
+            </p:panel>
+
+        </h:form>
+    </ui:define>
+</ui:composition>

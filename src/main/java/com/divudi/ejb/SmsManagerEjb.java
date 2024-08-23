@@ -73,7 +73,7 @@ public class SmsManagerEjb {
 
     // Schedule sendSmsToDoctorsBeforeSession to run every 30 minutes
     @SuppressWarnings("unused")
-    @Schedule(second = "0", minute = "*/30", hour = "*", persistent = false)
+    @Schedule(second = "*", minute = "*/1", hour = "*", persistent = false)
     public void sendSmsToDoctorsBeforeSessionTimer() {
         if (doNotSendAnySms) {
             return;
@@ -91,9 +91,6 @@ public class SmsManagerEjb {
         if (doNotSendAnySms) {
             return;
         }
-        Date fromDate = CommonFunctions.getStartOfDay();
-        Date toDate = CommonFunctions.getEndOfDay();
-        List<SessionInstance> sessions = channelBean.listSessionInstances(fromDate, toDate, null, null, null);
 
         Date fromTime = new Date();
         Calendar calf = Calendar.getInstance();
@@ -105,13 +102,29 @@ public class SmsManagerEjb {
         cal.setTime(fromTime);
         cal.add(Calendar.MINUTE, 60);
         Date toTime = cal.getTime();
+        
+        List<SessionInstance> upcomingSessions;
+        Map<String, Object> m = new HashMap<>();
+        Map<String, TemporalType> temporalTypes = new HashMap<>();
+        
+        String jpql = "select i from SessionInstance i "
+                + "where i.retired=:ret "
+                + "and i.originatingSession.retired=:retos "
+                + "and i.sessionDate=:sessionDate "                
+                + "and i.startingTime between :startingTime and :endingTime";
 
-        List<SessionInstance> upcomingSessions = sessions.stream()
-                .filter(session -> {
-                    Date sessionStartDateTime = getSessionStartDateTime(session);
-                    return sessionStartDateTime != null && sessionStartDateTime.after(fromTime1) && sessionStartDateTime.before(toTime);
-                })
-                .collect(Collectors.toList());
+        m.put("ret", false);
+        m.put("retos", false);
+        m.put("sessionDate", new Date());
+        temporalTypes.put("sessionDate", TemporalType.DATE);
+        
+        m.put("startingTime",fromTime1);
+        m.put("endingTime",toTime);
+        temporalTypes.put("startingTime", TemporalType.TIME);
+        temporalTypes.put("endingTime", TemporalType.TIME);
+        
+        upcomingSessions = sessionInstanceFacade.findByJpql(jpql, m, temporalTypes);
+        
 
         for (SessionInstance s : upcomingSessions) {
             if (s.getBookedPatientCount() != null && !s.isCancelled() && s.getBookedPatientCount() > 0) {

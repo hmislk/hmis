@@ -1,4 +1,3 @@
-
 /*
 * Dr M H B Ariyaratne
  * buddhika.ari@gmail.com
@@ -7,7 +6,6 @@ package com.divudi.entity;
 
 
 import com.divudi.data.FeeType;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Entity;
@@ -42,7 +40,7 @@ public class Fee implements Serializable {
     double fee = 0.0;
     double ffee = 0.0;
     private double ccFee = 0.0;
-    @JsonIgnore
+    
     @ManyToOne
     Item item; // FBC, ESR, UFR
     @ManyToOne
@@ -58,62 +56,56 @@ public class Fee implements Serializable {
     @ManyToOne
     Staff staff;
     @ManyToOne
-    @JsonIgnore
+    
     ServiceSession serviceSession;
     private boolean booleanValue;
     //Created Properties
     @ManyToOne
-    @JsonIgnore
     WebUser creater;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-    @JsonIgnore
     Date createdAt;
     //Created Properties
     @ManyToOne
-    @JsonIgnore
     WebUser editer;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-    @JsonIgnore
     Date editedAt;
     //Retairing properties
-    @JsonIgnore
+    
     boolean retired;
     @ManyToOne
-    @JsonIgnore
     WebUser retirer;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-    @JsonIgnore
     Date retiredAt;
-    @JsonIgnore
+    
     String retireComments;
     @Enumerated(EnumType.STRING)
     FeeType feeType;
     @ManyToOne
-    @JsonIgnore
+    
     Item packege;  //Ceylinco, LEC ,
     @ManyToOne
-    @JsonIgnore
+    
     Department fromDepartment;
     @ManyToOne
-    @JsonIgnore
+    
     Department toDepartment;
-    @JsonIgnore
+    
     @ManyToOne
     Institution fromInstitution;
-    @JsonIgnore
+    
     @ManyToOne
     Institution toInstitution;
-    @JsonIgnore
+    
     @ManyToOne
     Staff fromStaff;
     @ManyToOne
-    @JsonIgnore
+    
     Staff toStaff;
     @ManyToOne
-    @JsonIgnore
+    
     Speciality fromSpeciality;
     @ManyToOne
-    @JsonIgnore
+    
     Speciality toSpaciality;
     private boolean discountAllowed;
 
