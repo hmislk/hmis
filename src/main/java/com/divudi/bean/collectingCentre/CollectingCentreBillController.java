@@ -828,6 +828,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
             for (BillEntry billEntry : getLstBillEntries()) {
                 list.add(getBillBean().saveBillItem(b, billEntry, getSessionController().getLoggedUser()));
             }
+            
             b.setBillItems(list);
             b.setBillTotal(b.getNetTotal());
             b.setIpOpOrCc("CC");
@@ -844,8 +845,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
 
             double feeTotalExceptCcfs = 0.0;
             for (BillFee bf : lstBillFees) {
-                if (bf.getFee().getFeeType() != FeeType.CollectingCentre) {
-                    feeTotalExceptCcfs += (bf.getFeeValue() + bf.getFeeVat());
+                if (bf.getFee().getFeeType() != FeeType.CollectingCentre) {               
                 }
             }
 
@@ -859,6 +859,8 @@ public class CollectingCentreBillController implements Serializable, ControllerW
                 return;
             }
         }
+        
+        
 
         saveBatchBill();
         saveBillItemSessions();
@@ -1408,11 +1410,11 @@ public class CollectingCentreBillController implements Serializable, ControllerW
                 entryVat += bf.getFeeVat();
                 System.out.println("bf.getInstitution().getInstitutionType() = " + bf.getInstitution().getInstitutionType());
                 if (bf.getInstitution().getInstitutionType() == InstitutionType.CollectingCentre) {
-                    collectingcCenterFee += bf.getFeeValue();
+                    collectingcCenterFee = bf.getFeeValue();
                 } else if (bf.getStaff() != null) {
-                    staffFee += bf.getFeeValue();
+                    staffFee = bf.getFeeValue();
                 } else {
-                    hospitalFee += bf.getFeeValue();
+                    hospitalFee = bf.getFeeValue();
                 }
 
                 System.out.println("collectingcCenterFee = " + collectingcCenterFee);
