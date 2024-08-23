@@ -710,21 +710,20 @@ public class ChannelReportTemplateController implements Serializable {
         BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelPaid};
         List<BillType> bts = Arrays.asList(billTypes);
         HashMap hm = new HashMap();
-        String sql = " SELECT count(b) "
+        String sql = " SELECT count(DISTINCT b.bill.paidBill) "
                 + " FROM BillFee b "
-                + " WHERE type(b.bill) = :class "
-                + " AND b.bill.retired = false "
-                + " AND b.bill.paidAmount != 0 "
+                + " WHERE b.bill.retired = false "
                 + " AND b.fee.feeType = :ftp "
                 + " AND b.bill.refunded = false "
                 + " AND b.bill.cancelled = false "
                 + " AND ABS(ABS(b.feeValue) - ABS(b.paidValue)) < 1 "
-                + " AND b.bill.billType IN :bt "
+//                + " AND b.bill.billType IN :bt "
                 + " AND b.bill.singleBillSession.sessionInstance = :si";
+
         hm.put("si", si);
-        hm.put("bt", bts);
+//        hm.put("bt", bts);
         hm.put("ftp", FeeType.Staff);
-        hm.put("class", BilledBill.class);
+//        hm.put("class", BilledBill.class);
         System.out.println("sql = " + sql);
         System.out.println("hm = " + hm);
         Long count = billFeeFacade.findLongByJpql(sql, hm, TemporalType.TIMESTAMP);
