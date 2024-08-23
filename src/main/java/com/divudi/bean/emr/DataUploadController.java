@@ -728,7 +728,6 @@ public class DataUploadController implements Serializable {
                 ffee = ffeeCell.getNumericCellValue();
             }
            
-            
             Cell discountAllowedCell = row.getCell(6);
             if (discountAllowedCell != null && discountAllowedCell.getCellType() == CellType.STRING) {
                 discountAllowed = discountAllowedCell.getStringCellValue();
@@ -744,8 +743,7 @@ public class DataUploadController implements Serializable {
             }else{
                 institution=institutionController.findAndSaveInstitutionByName(institutionName);
             }
-            
-            
+
             if (itemName == null || itemCode==null) {
                 JsfUtil.addErrorMessage("Item Name and Item Code cannot be null.");
                 return itemFees;
