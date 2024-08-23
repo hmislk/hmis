@@ -71,6 +71,11 @@ public class ItemFeeManager implements Serializable {
 
     private Double totalItemFee;
     private Double totalItemFeeForForeigners;
+    
+     public String navigateToInstitutionItemFeeUpload() {
+        return "/admin/pricing/institution_item_fee_upload?faces-redirect=true";
+    }
+    
 
     public String navigateItemFeeList() {
         return "/admin/pricing/item_fee_list?faces-redirect=true";
@@ -86,6 +91,14 @@ public class ItemFeeManager implements Serializable {
 
     public String navigateToUploadItemFees() {
         return "/admin/pricing/item_fee_upload?faces-redirect=true";
+    }
+    
+    public String navigateToUploadFeeListType(){
+        return "/admin/pricing/feelist_type_upload?faces-redirect=true";
+    }
+    
+    public String navigateToUploadInstitutionItemFees(){
+        return "/admin/pricing/feelist_item_fees_upload?faces-redirect=true";
     }
     
     public String navigateToUploadCollectingCentreFeeList() {
@@ -338,7 +351,6 @@ public class ItemFeeManager implements Serializable {
         String jpql = "select f from ItemFee f where f.retired=false and f.item=:i";
         Map<String, Object> m = new HashMap<>();
         m.put("i", i);
-
         if (forInstitution != null) {
             jpql += " and f.forInstitution=:ins";
             m.put("ins", forInstitution);
@@ -452,10 +464,8 @@ public class ItemFeeManager implements Serializable {
         getItemFee().setCreater(sessionController.getLoggedUser());
         getItemFee().setForInstitution(collectingCentre);
         itemFeeFacade.create(itemFee);
-
         getItemFee().setItem(item);
         itemFeeFacade.edit(itemFee);
-
         itemFee = new ItemFee();
         itemFees = null;
         fillForInstitutionFees();

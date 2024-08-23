@@ -73,9 +73,8 @@
                                 <f:ajax  event="toggleSelect" execute="tblFee" listener="#{staffPaymentBillController.performCalculations()}"   
                                          render=":#{p:resolveFirstComponentWithId('scStaff',view).clientId}  :#{p:resolveFirstComponentWithId('lblDue',view).clientId} :#{p:resolveFirstComponentWithId('lblPay',view).clientId} tblFee"  />  
 
-                                <p:column selectionMode="multiple" >
+                                <p:column selectionBox="true" width="20"></p:column>
 
-                                </p:column>
 
                                 <p:column headerText="Bill Id">
                                     <f:facet name="header">

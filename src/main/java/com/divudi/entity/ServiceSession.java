@@ -53,7 +53,7 @@ public class ServiceSession extends Item implements Serializable {
     Date startingTime;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date endingTime;
-    
+
     private Integer numberOfDaysForAutomaticInstanceCreation;
 
     boolean refundable = false;
@@ -84,7 +84,7 @@ public class ServiceSession extends Item implements Serializable {
     @Transient
     Boolean arival;
     @Transient
-    boolean serviceSessionCreateForOriginatingSession=false;
+    boolean serviceSessionCreateForOriginatingSession = false;
 
     //new Adittions
     private int recervedNumbers;
@@ -231,7 +231,7 @@ public class ServiceSession extends Item implements Serializable {
     }
 
     public String getDayString() {
-        if (sessionWeekday==null) {
+        if (sessionWeekday == null) {
             return "";
         }
         switch (sessionWeekday) {
@@ -341,16 +341,6 @@ public class ServiceSession extends Item implements Serializable {
     }
 
     public Date getEndingTime() {
-        if (endingTime == null) {
-            if (startingTime == null) {
-                endingTime = null;
-            } else {
-                Calendar e = Calendar.getInstance();
-                e.setTime(startingTime);
-                e.add(Calendar.HOUR, 2);
-                endingTime = e.getTime();
-            }
-        }
         return endingTime;
     }
 
@@ -517,11 +507,5 @@ public class ServiceSession extends Item implements Serializable {
     public void setExcludeFromPatientPortal(boolean excludeFromPatientPortal) {
         this.excludeFromPatientPortal = excludeFromPatientPortal;
     }
-
-   
-    
-    
-    
-    
 
 }

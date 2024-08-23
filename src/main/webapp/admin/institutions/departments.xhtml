@@ -16,31 +16,21 @@
 
 
                     <h:form>
+
+                        <p:commandButton value="Download" ajax="false" >
+                            <p:dataExporter fileName="departments" target="tbl" type="xlsx" ></p:dataExporter>
+                        </p:commandButton>
+
                         <p:dataTable value="#{departmentController.items}" var="item"
                                      rowKey="#{item.id}"
                                      class="w-100"
-
+                                     id="tbl"
                                      rows="10"
                                      paginator="true" paginatorPosition="both"
                                      paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                      currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
                                      rowsPerPageTemplate="5,10,{ShowAll|'All'}">
 
-                            <p:column sortBy="#{item.institution.name}" filterBy="#{item.institution.name}" filterMatchMode="contains">
-                                <f:facet name="header">
-                                    <h:outputText value="Institution"/>
-                                </f:facet>
-                                <h:outputText value="#{item.institution.name}"/>
-                            </p:column>
-
-
-
-                            <p:column sortBy="#{item.name}" filterBy="#{item.name}" filterMatchMode="contains">
-                                <f:facet name="header">
-                                    <h:outputText value="Name"/>
-                                </f:facet>
-                                <h:outputText value="#{item.name}"/>
-                            </p:column>
 
                             <p:column 
                                 sortBy="#{item.code}" 
@@ -50,6 +40,52 @@
                                 </f:facet>
                                 <h:outputText value="#{item.code}"/>
                             </p:column>
+
+                            <p:column 
+                                sortBy="#{item.departmentCode}" 
+                                filterBy="#{item.departmentCode}" filterMatchMode="contains">
+                                <f:facet name="header">
+                                    <h:outputText value="Prefix"/>
+                                </f:facet>
+                                <h:outputText value="#{item.departmentCode}"/>
+                            </p:column>
+
+                            <p:column sortBy="#{item.name}" filterBy="#{item.name}" filterMatchMode="contains">
+                                <f:facet name="header">
+                                    <h:outputText value="Name"/>
+                                </f:facet>
+                                <h:outputText value="#{item.name}"/>
+                            </p:column>
+
+                            <p:column sortBy="#{item.departmentType}" filterBy="#{item.departmentType}" filterMatchMode="contains">
+                                <f:facet name="header">
+                                    <h:outputText value="Type"/>
+                                </f:facet>
+                                <h:outputText value="#{item.departmentType}"/>
+                            </p:column>
+
+                            <p:column sortBy="#{item.site.name}" filterBy="#{item.site.name}" filterMatchMode="contains">
+                                <f:facet name="header">
+                                    <h:outputText value="Site"/>
+                                </f:facet>
+                                <h:outputText value="#{item.site.name}"/>
+                            </p:column>
+
+
+                            <p:column sortBy="#{item.telephone1}" filterBy="#{item.telephone1}" filterMatchMode="contains">
+                                <f:facet name="header">
+                                    <h:outputText value="Phone"/>
+                                </f:facet>
+                                <h:outputText value="#{item.telephone1}"/>
+                            </p:column>
+
+                            <p:column sortBy="#{item.email}" filterBy="#{item.email}" filterMatchMode="contains">
+                                <f:facet name="header">
+                                    <h:outputText value="Email"/>
+                                </f:facet>
+                                <h:outputText value="#{item.email}"/>
+                            </p:column>
+
 
                             <p:column sortBy="#{item.address}" filterBy="#{item.address}" filterMatchMode="contains">
                                 <f:facet name="header">
