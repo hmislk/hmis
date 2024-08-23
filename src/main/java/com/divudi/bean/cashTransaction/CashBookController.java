@@ -32,12 +32,14 @@ public class CashBookController implements Serializable {
 
     @EJB
     private CashBookFacade cashbookFacade;
-    @EJB
-    private CashBook cashBook;
-
+    
     @Inject
     private SessionController sessionController;
 
+    
+    private CashBook cashBook;
+
+    
     public CashBook findAndSaveCashBookBySite(Institution site, Institution ins, Department dept) {
         if (site==null) {
             return null;

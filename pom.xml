@@ -287,6 +287,12 @@
             <type>jar</type>
         </dependency>
         <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.8.9</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
             <groupId>javax</groupId>
             <artifactId>javaee-web-api</artifactId>
             <version>8.0.1</version>
@@ -314,7 +320,11 @@
             <artifactId>tomcat-catalina</artifactId>
             <version>9.0.83</version> <!-- or the version compatible with your setup -->
         </dependency>
-
+        <dependency>
+            <groupId>com.github.hmislk</groupId>
+            <artifactId>lims-middleware-libraries</artifactId>
+            <version>1.1.1</version>
+        </dependency>
     </dependencies>
 
     
@@ -353,6 +363,10 @@
 
 
     <repositories>
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
         <repository>
             <url>https://download.eclipse.org/rt/eclipselink/maven.repo/</url>
             <id>eclipselink</id>
