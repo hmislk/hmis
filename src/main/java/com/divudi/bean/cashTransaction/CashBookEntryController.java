@@ -32,6 +32,7 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.persistence.TemporalType;
 
 /**
  *
@@ -159,7 +160,7 @@ public class CashBookEntryController implements Serializable {
         m.put("fromDate", fromDate);
         m.put("toDate", toDate);
         m.put("ret", false);
-        cashBookEntryList = cashbookEntryFacade.findByJpql(jpql, m);
+        cashBookEntryList = cashbookEntryFacade.findByJpql(jpql, m,TemporalType.TIMESTAMP);
         System.out.println("cashBookEntryList = " + cashBookEntryList.size());
         System.out.println("jpql = " + jpql);
         return cashBookEntryList;
