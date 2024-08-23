@@ -1,5 +1,6 @@
 package com.divudi.bean.opd;
 
+import com.divudi.bean.cashTransaction.CashBookEntryController;
 import com.divudi.bean.cashTransaction.FinancialTransactionController;
 import com.divudi.bean.common.*;
 import com.divudi.bean.collectingCentre.CollectingCentreBillController;
@@ -189,6 +190,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     ConfigOptionController configOptionController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    CashBookEntryController cashBookEntryController;
 
     /**
      * Class Variables
@@ -3236,8 +3239,9 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                     case YouOweMe:
                     case MultiplePaymentMethods:
                 }
-
+                
                 paymentFacade.create(p);
+                cashBookEntryController.writeCashBookEntry(p);
                 ps.add(p);
             }
         } else {
@@ -3283,7 +3287,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
             p.setPaidValue(p.getBill().getNetTotal());
             paymentFacade.create(p);
-
+            cashBookEntryController.writeCashBookEntry(p);
             ps.add(p);
         }
         return ps;
