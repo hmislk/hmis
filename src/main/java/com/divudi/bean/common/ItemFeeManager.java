@@ -142,7 +142,8 @@ public class ItemFeeManager implements Serializable {
         return "/admin/pricing/feelist_type_upload?faces-redirect=true";
     }
 
-    public String navigateToUploadInstitutionItemFees() {
+    public String navigateToUploadInstitutionItemFees(){
+
         return "/admin/pricing/feelist_item_fees_upload?faces-redirect=true";
     }
 
@@ -164,6 +165,10 @@ public class ItemFeeManager implements Serializable {
 
     public void fillFeeListItemFees() {
         itemFees = fillFees(null, null, feeListType);
+    }
+
+    public void fillSiteItemFees() {
+        itemFees = fillFees(null, forSite, null);
     }
 
     public void downloadBaseItemFeesAsExcel() throws IOException {
