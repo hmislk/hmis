@@ -693,7 +693,8 @@ public class ChannelReportTemplateController implements Serializable {
         sessionInstance.setBookedPatientCount(bookedPatientCount);
         sessionInstance.setPaidPatientCount(paidPatientCount);
         sessionInstance.setCompletedPatientCount(completedPatientCount);
-        sessionInstance.setCancelPatientCount(cancelPatientCount);
+        sessionInstance.setCancelOnCallPatientCount(onCallPatientCount);
+        sessionInstance.setCancelPaidPatientCount(cancelPatientCount);
         sessionInstance.setRefundedPatientCount(refundedPatientCount);
         sessionInstance.setOnCallPatientCount(onCallPatientCount);
         sessionInstance.setReservedBookingCount(reservedBookingCount);
@@ -778,6 +779,7 @@ public class ChannelReportTemplateController implements Serializable {
         Long long5 = 0L;
         Long long6 = 0L;
         Long long7 = 0L;
+        Long long8 = 0L;
 
         System.out.println("Processing result rows...");
         for (ReportTemplateRow r : rs) {
@@ -798,24 +800,27 @@ public class ChannelReportTemplateController implements Serializable {
             long bookedCount = si.getBookedPatientCount() != null ? si.getBookedPatientCount() : 0;
             long paidCount = si.getPaidPatientCount() != null ? si.getPaidPatientCount() : 0;
             long completedCount = si.getCompletedPatientCount() != null ? si.getCompletedPatientCount() : 0;
-            long cancelCount = si.getCancelPatientCount() != null ? si.getCancelPatientCount() : 0;
+            long cancelOnCallCount = si.getCancelOnCallPatientCount() != null ? si.getCancelOnCallPatientCount() : 0;
             long refundedCount = si.getRefundedPatientCount() != null ? si.getRefundedPatientCount() : 0;
             long remainingCount = si.getRemainingPatientCount() != null ? si.getRemainingPatientCount() : 0;
             long paidToDoctorCount = si.getPaidToDoctorPatientCount() != null ? si.getPaidToDoctorPatientCount() : 0;
+            long cancelPaidCount = si.getCancelPaidPatientCount() != null ? si.getCancelPaidPatientCount() : 0;
             System.out.println("Booked: " + bookedCount + ", Paid: " + paidCount + ", Completed: " + completedCount
-                    + ", Cancelled: " + cancelCount + ", Refunded: " + refundedCount + ", Remaining: " + remainingCount);
+                    + ", CancelledOnCall: " + cancelOnCallCount + ", Refunded: " + refundedCount + ", Remaining: " + remainingCount
+                    + ", PaidToDoctor: " + paidToDoctorCount + ", CancelledPaid: " + cancelPaidCount);
 
             long1 += bookedCount;
             long2 += paidCount;
             long3 += completedCount;
-            long4 += cancelCount;
+            long4 += cancelOnCallCount;
             long5 += refundedCount;
             long6 += remainingCount;
             long7 += paidToDoctorCount;
+            long8 += cancelPaidCount;
         }
 
         System.out.println("Final counts: long1=" + long1 + ", long2=" + long2 + ", long3=" + long3
-                + ", long4=" + long4 + ", long5=" + long5 + ", long6=" + long6 + ", long7=" + long7);
+                + ", long4=" + long4 + ", long5=" + long5 + ", long6=" + long6 + ", long7=" + long7 + ", long8=" + long8);
 
         if (bundle != null) {
             System.out.println("Setting values in bundle...");
@@ -827,6 +832,7 @@ public class ChannelReportTemplateController implements Serializable {
             bundle.setLong5(long5);
             bundle.setLong6(long6);
             bundle.setLong7(long7);
+            bundle.setLong7(long8);
         } else {
             System.out.println("Bundle is null.");
         }

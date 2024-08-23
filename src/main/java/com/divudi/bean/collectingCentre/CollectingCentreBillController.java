@@ -68,6 +68,7 @@ import com.divudi.facade.PersonFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.InstitutionType;
 import com.divudi.entity.Fee;
+import com.divudi.entity.FeeValue;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -153,6 +154,8 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     CategoryController categoryController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    FeeValueController feeValueController;
     /**
      * Properties
      */
@@ -825,6 +828,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
             for (BillEntry billEntry : getLstBillEntries()) {
                 list.add(getBillBean().saveBillItem(b, billEntry, getSessionController().getLoggedUser()));
             }
+            
             b.setBillItems(list);
             b.setBillTotal(b.getNetTotal());
             b.setIpOpOrCc("CC");
@@ -841,8 +845,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
 
             double feeTotalExceptCcfs = 0.0;
             for (BillFee bf : lstBillFees) {
-                if (bf.getFee().getFeeType() != FeeType.CollectingCentre) {
-                    feeTotalExceptCcfs += (bf.getFeeValue() + bf.getFeeVat());
+                if (bf.getFee().getFeeType() != FeeType.CollectingCentre) {               
                 }
             }
 
@@ -856,6 +859,8 @@ public class CollectingCentreBillController implements Serializable, ControllerW
                 return;
             }
         }
+        
+        
 
         saveBatchBill();
         saveBillItemSessions();
@@ -1241,10 +1246,10 @@ public class CollectingCentreBillController implements Serializable, ControllerW
             JsfUtil.addErrorMessage("Please select an Item");
             return;
         }
-        if (getCurrentBillItem().getItem().getTotal() == 0.0) {
-            JsfUtil.addErrorMessage("Please corect item fee");
-            return;
-        }
+//        if (getCurrentBillItem().getItem().getTotal() == 0.0) {
+//            JsfUtil.addErrorMessage("Please corect item fee");
+//            return;
+//        }
 
         if (getCurrentBillItem().getItem().getInstitution() == null) {
             getCurrentBillItem().getItem().setInstitution(collectingCentre);
@@ -1317,6 +1322,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
 
     public void clearBillItemValues() {
         currentBillItem = null;
+        itemLight=null;
         recreateBillItems();
     }
 
@@ -1394,6 +1400,9 @@ public class CollectingCentreBillController implements Serializable, ControllerW
             BillItem bi = be.getBillItem();
 
             for (BillFee bf : be.getLstBillFees()) {
+                System.out.println("bf = " + bf);
+                System.out.println(" bf.getFeeValue() = " + bf.getFeeValue());
+
                 Department dept = null;
                 entryGross += bf.getFeeGrossValue();
                 entryNet += bf.getFeeValue();
@@ -1401,16 +1410,18 @@ public class CollectingCentreBillController implements Serializable, ControllerW
                 entryVat += bf.getFeeVat();
                 System.out.println("bf.getInstitution().getInstitutionType() = " + bf.getInstitution().getInstitutionType());
                 if (bf.getInstitution().getInstitutionType() == InstitutionType.CollectingCentre) {
-                    collectingcCenterFee += bf.getFeeValue();
+                    collectingcCenterFee = bf.getFeeValue();
                 } else if (bf.getStaff() != null) {
-                    staffFee += bf.getFeeValue();
-                } else if (bf.getInstitution().getInstitutionType() == InstitutionType.Company) {
-                    hospitalFee += bf.getFeeValue();
-                }else{
-                    otherFee+=bf.getFeeValue();
+                    staffFee = bf.getFeeValue();
+                } else {
+                    hospitalFee = bf.getFeeValue();
                 }
-                //////// // System.out.println("fee net is " + bf.getFeeValue());
 
+                System.out.println("collectingcCenterFee = " + collectingcCenterFee);
+                System.out.println("hospitalFee = " + hospitalFee);
+                System.out.println("otherFee = " + otherFee);
+
+                //////// // System.out.println("fee net is " + bf.getFeeValue());
             }
             bi.setCollectingCentreFee(collectingcCenterFee);
             bi.setHospitalFee(hospitalFee);
@@ -2112,6 +2123,43 @@ public class CollectingCentreBillController implements Serializable, ControllerW
             opdItems = fillOpdItems();
         }
         return opdItems;
+    }
+
+    public List<ItemLight> completeOpdItemsByWord(String query) {
+        List<ItemLight> filteredItems = new ArrayList<>();
+        int maxResults = 10; // You can set this dynamically as needed
+
+        // Split the query into individual tokens (space-separated)
+        String[] tokens = query.toLowerCase().split("\\s+");
+
+        for (ItemLight opdItem : getOpdItems()) {
+            boolean matchFound = true;
+
+            // Check if all tokens match either the name or code
+            for (String token : tokens) {
+                if (!(opdItem.getName().toLowerCase().contains(token)
+                        || opdItem.getCode().toLowerCase().contains(token))) {
+                    matchFound = false;
+                    break;
+                }
+            }
+
+            if (matchFound) {
+                FeeValue f = feeValueController.getFeeValue(opdItem.getId(), collectingCentre.getFeeListType());
+                if (f != null) {
+                    opdItem.setTotal(f.getTotalValueForLocals());
+                    opdItem.setTotalForForeigner(f.getTotalValueForForeigners());
+
+                }
+                filteredItems.add(opdItem);
+            }
+
+            // Limit the result set to maxResults
+            if (filteredItems.size() >= maxResults) {
+                break;
+            }
+        }
+        return filteredItems;
     }
 
     public Bill getBill() {

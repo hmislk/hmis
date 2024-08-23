@@ -45,7 +45,7 @@
                                 maxResults="15"
                                 class="w-100 mb-1"
                                 inputStyleClass="form-control">
-                                <p:column style="padding: 6px;">#{vt.institutionCode}</p:column>
+                                <p:column style="padding: 6px;">#{vt.code}</p:column>
                                 <p:column style="padding: 6px;">#{vt.name}</p:column>
                             </p:autoComplete>
                         </div>
@@ -63,13 +63,29 @@
                     <f:facet name="header" >
                         <h:outputText class="fa-solid fa-warehouse mt-2"  />
                         <h:outputLabel  class="mx-2 mt-2" value="Collecting Centre Billing"/>
-                        <h:outputLabel  class="mx-5 mt-2" value="#{collectingCentreBillController.collectingCentre.name}"/>
+                        <h:outputLabel  class="mx-5 mt-2" value="#{collectingCentreBillController.collectingCentre.code} - #{collectingCentreBillController.collectingCentre.name} - (#{collectingCentreBillController.collectingCentre.route}) "/>
+
                         <p:commandButton 
                             ajax="false" 
+                            class="mx-2"
                             value="Change Collecting Centre" 
                             immediate="true"
                             style="float: right;"
-                            action="#{collectingCentreBillController.navigateToCollectingCenterBillingromMenu()}"></p:commandButton>
+                            action="#{collectingCentreBillController.navigateToCollectingCenterBillingromMenu()}">
+                        </p:commandButton>
+
+                        <p:commandButton  
+                            style="float: right;"
+                            value="Settle" 
+                            icon="fa fa-check"
+                            action="#{collectingCentreBillController.settleBill}" 
+                            ajax="false" 
+                            onclick="if (!confirm('Are you sure you want to Settle This Bill ?'))
+                                        return false;"
+
+                            class="ui-button-success ">
+                        </p:commandButton>
+
                     </f:facet>
 
                     <h:panelGroup layout="block" rendered="#{!collectingCentreBillController.printPreview}" class="row">
@@ -87,46 +103,50 @@
                                     </f:facet>
                                     <div class="row">
                                         <div class="col-md-10" >
-                                            <p:selectOneListbox 
-                                                filter="true"
-                                                filterMatchMode="contains"
-                                                id="acIx"
-                                                class="w-100"
-                                                scrollHeight="200"
-                                                converter="itemLightConverter"
-                                                value="#{collectingCentreBillController.itemLight}" var="ix" >
-                                                <f:selectItems value="#{collectingCentreBillController.opdItems}"
-                                                               var="item" 
-                                                               itemLabel="#{item.name}"
-                                                               itemValue="#{item}" >
-                                                </f:selectItems>
-                                                <p:ajax 
-                                                    process="@this"></p:ajax>
-                                                <p:ajax 
-                                                    event="blur"
-                                                    process="@this"></p:ajax>
-                                                <p:ajax 
-                                                    event="keyup"
-                                                    process="@this"></p:ajax>
-                                                <p:column  headerText="Name">
-                                                    <f:facet name="header" >
-                                                        Name
-                                                    </f:facet>
-                                                    <h:outputText value="#{ix.name}" ></h:outputText>
-                                                    <h:panelGroup rendered="#{ix.name ne ix.fullName}" >
-                                                        <h:outputText value=" (#{ix.fullName})" ></h:outputText>
+                                            <p:autoComplete id="acIx" 
+                                                            value="#{collectingCentreBillController.itemLight}" 
+                                                            completeMethod="#{collectingCentreBillController.completeOpdItemsByWord}" 
+                                                            var="ix" 
+                                                            inputStyleClass="w-100"
+                                                            itemLabel="#{ix.name}" 
+                                                            itemValue="#{ix}" 
+                                                            converter="itemLightConverter"
+                                                            forceSelection="true"
+                                                            scrollHeight="200" 
+                                                            multiple="false"
+                                                            class="w-100">
+
+                                                <!-- Ajax Events -->
+                                                <p:ajax event="itemSelect" process="@this" />
+                                                <p:ajax event="blur" process="@this" />
+                                                <p:ajax event="keyup" process="@this" />
+
+                                                <!-- Columns -->
+                                                <p:column headerText="Name">
+                                                    <f:facet name="header">Name</f:facet>
+                                                    <h:outputText value="#{ix.name}" />
+                                                    <h:panelGroup rendered="#{ix.name ne ix.fullName}">
+                                                        <h:outputText value=" (#{ix.fullName})" />
                                                     </h:panelGroup>
                                                 </p:column>
-                                                <p:column  headerText="Dept">
-                                                    <h:outputText value="#{ix.departmentName}"></h:outputText>
+
+                                                <p:column headerText="Dept">
+                                                    <f:facet name="header">Dept</f:facet>
+                                                    <h:outputText value="#{ix.departmentName}" />
                                                 </p:column>
-                                                <p:column  headerText="Code">
-                                                    <h:outputText value="#{ix.code}"></h:outputText>
+
+                                                <p:column headerText="Code">
+                                                    <f:facet name="header">Code</f:facet>
+                                                    <h:outputText value="#{ix.code}" />
                                                 </p:column>
-                                                <p:column style="text-align: right;" headerText="Value">
-                                                    <h:outputText value="#{ix.total}"></h:outputText>
+
+                                                <p:column headerText="Value" style="text-align: right;">
+                                                    <f:facet name="header">Value</f:facet>
+                                                    <h:outputText value="#{ix.total}" />
                                                 </p:column>
-                                            </p:selectOneListbox>
+
+                                            </p:autoComplete>
+
                                         </div>
                                         <div class="col-md-2" >
                                             <h:panelGrid id="txtQty">
@@ -142,7 +162,7 @@
                                                 action="#{collectingCentreBillController.addToBill()}"  
                                                 class=" mx-1 ui-button-success" 
                                                 process="txtQty :#{p:resolveFirstComponentWithId('acIx',view).clientId} btnAddIx"
-                                                update="msg focusIx tblBillItem  :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}  pIxAdd">
+                                                update="msg focusIx tblBillItem acIx :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}  pIxAdd">
                                             </p:commandButton>
                                             <p:defaultCommand target="btnAddIx" />
                                         </div>
@@ -161,48 +181,43 @@
                                                     id="tblRequests" 
                                                     rowIndexVar="rowIndex" 
                                                     value="#{collectingCentreBillController.lstBillEntries}" var="bi" >
-                                                    <p:column>
+                                                    <p:column width="2em" rendered="false">
                                                         <f:facet name="header">No</f:facet>
                                                             #{rowIndex+1}
                                                     </p:column>
-                                                    <p:column>
+                                                    <p:column >
                                                         <f:facet name="header">Item</f:facet>
-                                                            #{bi.billItem.item.name}
+                                                        <p:inputText class="w-100" value="#{bi.billItem.item.name}" readonly="true" ></p:inputText>
                                                     </p:column>
-                                                    <p:column>
-                                                        <f:facet name="header">Collecting centre Fee</f:facet>
+                                                    <p:column width="5em">
+                                                        <f:facet name="header">CC Fee</f:facet>
                                                         <h:outputLabel value="#{bi.billItem.collectingCentreFee}">
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputLabel>
                                                     </p:column>
-                                                    <p:column>
-                                                        <f:facet name="header">Hospital Fee</f:facet>
+                                                    <p:column width="5em">
+                                                        <f:facet name="header">Hos Fee</f:facet>
                                                         <h:outputLabel value="#{bi.billItem.hospitalFee}">
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputLabel>
                                                     </p:column>
-                                                    <p:column>
+                                                    <p:column width="5em">
                                                         <f:facet name="header">Staff Fee</f:facet>
                                                         <h:outputLabel value="#{bi.billItem.staffFee}">
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputLabel>
                                                     </p:column>
-                                                    <p:column>
-                                                        <f:facet name="header">Other Fee</f:facet>
-                                                        <h:outputLabel value="#{bi.billItem.otherFee}">
-                                                            <f:convertNumber pattern="#,##0.00" />
-                                                        </h:outputLabel>
-                                                    </p:column>
-                                                    <p:column>
-                                                        <f:facet name="header">Department</f:facet>
-                                                            #{bi.billItem.item.department.name}
-                                                    </p:column>
-
-                                                    <p:column>
-                                                        <h:commandButton id="btnRemove" value="X" action="#{collectingCentreBillController.removeBillItem}" >
-                                                            <f:setPropertyActionListener  value="#{rowIndex}" target="#{collectingCentreBillController.index}" />
-                                                            <p:ajax  process="btnRemove" update=":#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}" />
-                                                        </h:commandButton>
+                                                    <p:column width="2em">
+                                                        <p:commandButton 
+                                                            id="btnRemove" 
+                                                            action="#{collectingCentreBillController.removeBillItem}" 
+                                                            title="Remove Bill Item" 
+                                                            icon="fa fa-trash" 
+                                                            process="btnRemove" 
+                                                            styleClass="ui-button-danger"
+                                                            update=":#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}">
+                                                            <f:setPropertyActionListener value="#{rowIndex}" target="#{collectingCentreBillController.index}" />
+                                                        </p:commandButton>
                                                     </p:column>
                                                 </p:dataTable>
                                             </p:tab>
@@ -324,7 +339,7 @@
                                         action="#{collectingCentreBillController.settleBill}" 
                                         ajax="false" 
                                         onclick="if (!confirm('Are you sure you want to Settle This Bill ?'))
-                                                        return false;"
+                                                    return false;"
 
                                         class="ui-button-success ">
                                     </p:commandButton>
