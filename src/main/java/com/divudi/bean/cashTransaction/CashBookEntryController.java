@@ -145,15 +145,15 @@ public class CashBookEntryController implements Serializable {
         Map m = new HashMap<>();
         jpql = "select b from CashBookEntry b where b.retired=:ret and b.createdAt between :fromDate and :toDate ";
         if (site != null) {
-            jpql += "and where b.site=:site ";
+            jpql += "and b.site=:site ";
             m.put("site", site);
         }
         if (ins != null) {
-            jpql += "and where b.institution=:ins ";
+            jpql += "and b.institution=:ins ";
             m.put("ins", ins);
         }
         if (dept != null) {
-            jpql += "and where b.department=:dept ";
+            jpql += "and b.department=:dept ";
             m.put("dept", dept);
         }
         m.put("fromDate", fromDate);
