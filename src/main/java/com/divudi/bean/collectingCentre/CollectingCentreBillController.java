@@ -828,6 +828,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
             for (BillEntry billEntry : getLstBillEntries()) {
                 list.add(getBillBean().saveBillItem(b, billEntry, getSessionController().getLoggedUser()));
             }
+            
             b.setBillItems(list);
             b.setBillTotal(b.getNetTotal());
             b.setIpOpOrCc("CC");
@@ -844,8 +845,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
 
             double feeTotalExceptCcfs = 0.0;
             for (BillFee bf : lstBillFees) {
-                if (bf.getFee().getFeeType() != FeeType.CollectingCentre) {
-                    feeTotalExceptCcfs += (bf.getFeeValue() + bf.getFeeVat());
+                if (bf.getFee().getFeeType() != FeeType.CollectingCentre) {               
                 }
             }
 
@@ -859,6 +859,8 @@ public class CollectingCentreBillController implements Serializable, ControllerW
                 return;
             }
         }
+        
+        
 
         saveBatchBill();
         saveBillItemSessions();
