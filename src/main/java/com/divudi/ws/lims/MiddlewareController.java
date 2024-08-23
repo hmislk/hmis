@@ -3,18 +3,13 @@ package com.divudi.ws.lims;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SecurityController;
 import com.divudi.data.lab.Analyzer;
-import com.divudi.entity.Department;
+import java.util.ArrayList;
 import com.divudi.entity.WebUser;
-import com.divudi.entity.lab.DepartmentMachine;
 import com.divudi.entity.lab.PatientSample;
 import com.divudi.facade.PatientSampleFacade;
 import com.divudi.facade.WebUserFacade;
 import javax.inject.Inject;
 import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -27,6 +22,7 @@ import org.carecode.lims.libraries.OrderRecord;
 import org.carecode.lims.libraries.PatientRecord;
 import org.carecode.lims.libraries.QueryRecord;
 import java.util.Arrays;
+
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -130,14 +126,14 @@ public class MiddlewareController {
                         return processCelltacMEK(dataBundle);
                     case BA400:
                         return processBA400(dataBundle);
-                    case IndikoPlus:
-                        return processIndikoPlus(dataBundle);
+
                     case MaglumiX3HL7:
                         return processMaglumiX3HL7(dataBundle);
                     case MindrayBC5150:
                         return processMindrayBC5150(dataBundle);
+                    case IndikoPlus:
                     case SmartLytePlus:
-                        return processSmartLytePlus(dataBundle);
+                        return processResultsCommon(dataBundle);
                     default:
                         throw new IllegalArgumentException("Unsupported analyzer type: " + analyzerDetails.getAnalyzerName());
                 }
@@ -213,11 +209,10 @@ public class MiddlewareController {
         return Response.ok("{\"status\":\"BA400 processed successfully.\"}").build();
     }
 
-    public Response processIndikoPlus(DataBundle dataBundle) {
-        // Process data specific to Indiko Plus
-        return Response.ok("{\"status\":\"Indiko Plus processed successfully.\"}").build();
-    }
-
+//    public Response processIndikoPlus(DataBundle dataBundle) {
+//        // Process data specific to Indiko Plus
+//        return Response.ok("{\"status\":\"Indiko Plus processed successfully.\"}").build();
+//    }
     public Response processMaglumiX3HL7(DataBundle dataBundle) {
         // Process data specific to Maglumi X3 HL7
         return Response.ok("{\"status\":\"Maglumi X3 HL7 processed successfully.\"}").build();
@@ -228,9 +223,10 @@ public class MiddlewareController {
         return Response.ok("{\"status\":\"Mindray BC5150 processed successfully.\"}").build();
     }
 
-    public Response processSmartLytePlus(DataBundle dataBundle) {
+    public Response processResultsCommon(DataBundle dataBundle) {
         System.out.println("processSmartLytePlus");
-        boolean allOk = true;
+        List<String> observationDetails = new ArrayList<>();
+
         for (ResultsRecord rr : dataBundle.getResultsRecords()) {
             String sampleId = rr.getSampleId();
             System.out.println("sampleId = " + sampleId);
@@ -241,16 +237,19 @@ public class MiddlewareController {
             String unit = rr.getResultUnits();
             System.out.println("unit = " + unit);
             String error = "";
+
             boolean thisOk = limsMiddlewareController.addResultToReport(sampleId, testStr, result, unit, error);
-            if (!thisOk) {
-                allOk = false;
+
+            // Add result status to observation details
+            if (thisOk) {
+                observationDetails.add("Sample ID: " + sampleId + " Test: " + testStr + " Status: Success");
+            } else {
+                observationDetails.add("Sample ID: " + sampleId + " Test: " + testStr + " Status: Failure");
             }
         }
-        if (allOk) {
-            return Response.ok("{\"status\":\"SmartLyte Plus processed successfully.\"}").build();
-        } else {
-            return Response.serverError().build();
-        }
+
+        // Always return OK with details of each observation
+        return Response.ok("{\"status\":\"SmartLyte Plus processed with details.\", \"details\": " + observationDetails + "}").build();
     }
 
     public PatientSample patientSampleFromId(Long id) {
