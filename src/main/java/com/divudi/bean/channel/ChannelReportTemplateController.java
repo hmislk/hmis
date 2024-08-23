@@ -717,7 +717,7 @@ public class ChannelReportTemplateController implements Serializable {
                 + " AND b.bill.refunded = false "
                 + " AND b.bill.cancelled = false "
                 + " AND ABS(ABS(b.feeValue) - ABS(b.paidValue)) < 1 "
-//                + " AND b.bill.billType IN :bt "
+                //                + " AND b.bill.billType IN :bt "
                 + " AND b.bill.singleBillSession.sessionInstance = :si";
 
         hm.put("si", si);

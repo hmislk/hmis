@@ -2599,8 +2599,10 @@ public class BookingController implements Serializable, ControllerWithPatient, C
             return;
         }
         selectedBillSession.setCompleted(true);
+        selectedBillSession.getPaidBillSession().setCompleted(true);
         selectedBillSession.setCurrentlyConsulted(false);
         billSessionFacade.edit(selectedBillSession);
+        billSessionFacade.edit(selectedBillSession.getPaidBillSession());
         selectedSessionInstance.setLastCompletedBillSession(selectedBillSession);
         sessionInstanceFacade.edit(selectedSessionInstance);
         sendSmsOnChannelBookedCompleted();

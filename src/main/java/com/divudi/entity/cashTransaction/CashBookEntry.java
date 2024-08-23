@@ -4,13 +4,16 @@
  */
 package com.divudi.entity.cashTransaction;
 
+import com.divudi.data.PaymentMethod;
+import com.divudi.entity.Bill;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
+import com.divudi.entity.Payment;
 import com.divudi.entity.WebUser;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Entity;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -19,22 +22,37 @@ import javax.persistence.Temporal;
 
 /**
  *
- * @author Lawan Chaamindu
+ * @author Buddhika
  */
 @Entity
-public class CashBook implements Serializable {
+public class CashBookEntry implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    private String Name;
+    
+    private String name;
+    @ManyToOne
+    private Bill bill;
+    @ManyToOne
+    private Payment payment;
+    @ManyToOne
+    private CashBook cashBook;
+    @Enumerated
+    private PaymentMethod paymentMethod;
+    private Double entryValue;
+    private Double institutionBalance;
+    private Double departmentBalance;
+    private Double siteBalance;
+    
     @ManyToOne
     private Institution institution;
     @ManyToOne
     private Institution site;
     @ManyToOne
     private Department department;
+    
     
     //Created Properties
     @ManyToOne
@@ -74,10 +92,10 @@ public class CashBook implements Serializable {
     @Override
     public boolean equals(Object object) {
         // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof CashBook)) {
+        if (!(object instanceof CashBookEntry)) {
             return false;
         }
-        CashBook other = (CashBook) object;
+        CashBookEntry other = (CashBookEntry) object;
         if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
             return false;
         }
@@ -86,15 +104,39 @@ public class CashBook implements Serializable {
 
     @Override
     public String toString() {
-        return "com.divudi.entity.cashTransaction.CashBook[ id=" + id + " ]";
+        return "com.divudi.entity.cashTransaction.CashBookEntry[ id=" + id + " ]";
     }
 
     public String getName() {
-        return Name;
+        return name;
     }
 
-    public void setName(String Name) {
-        this.Name = Name;
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public Bill getBill() {
+        return bill;
+    }
+
+    public void setBill(Bill bill) {
+        this.bill = bill;
+    }
+
+    public Payment getPayment() {
+        return payment;
+    }
+
+    public void setPayment(Payment payment) {
+        this.payment = payment;
+    }
+
+    public CashBook getCashBook() {
+        return cashBook;
+    }
+
+    public void setCashBook(CashBook cashBook) {
+        this.cashBook = cashBook;
     }
 
     public Institution getInstitution() {
@@ -183,6 +225,46 @@ public class CashBook implements Serializable {
 
     public void setEditedAt(Date editedAt) {
         this.editedAt = editedAt;
+    }
+
+    public PaymentMethod getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+
+    public Double getEntryValue() {
+        return entryValue;
+    }
+
+    public void setEntryValue(Double entryValue) {
+        this.entryValue = entryValue;
+    }
+
+    public Double getInstitutionBalance() {
+        return institutionBalance;
+    }
+
+    public void setInstitutionBalance(Double institutionBalance) {
+        this.institutionBalance = institutionBalance;
+    }
+
+    public Double getDepartmentBalance() {
+        return departmentBalance;
+    }
+
+    public void setDepartmentBalance(Double departmentBalance) {
+        this.departmentBalance = departmentBalance;
+    }
+
+    public Double getSiteBalance() {
+        return siteBalance;
+    }
+
+    public void setSiteBalance(Double siteBalance) {
+        this.siteBalance = siteBalance;
     }
     
 }
