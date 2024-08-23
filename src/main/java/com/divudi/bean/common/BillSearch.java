@@ -2902,6 +2902,13 @@ public class BillSearch implements Serializable {
         return "/payment_bill_reprint.xhtml?faces-redirect=true;";
     }
 
+    
+    
+    public String navigateToDownloadBillsAndBillItems(){
+        return "/";
+    }
+    
+    
     public String navigateViewBillByBillTypeAtomic() {
         if (bill == null) {
             JsfUtil.addErrorMessage("No Bill is Selected");
