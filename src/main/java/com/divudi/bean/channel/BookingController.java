@@ -267,6 +267,8 @@ public class BookingController implements Serializable, ControllerWithPatient {
     private List<SessionInstance> sessionInstancesToday;
     private String sessionInstanceFilter;
     private List<SessionInstance> sessionInstancesFiltered;
+    private double tenderedAmount = 0.0;
+    private double balance = 0.0;
 
     public void filterSessionInstances() {
         sessionInstancesToday = getSessionInstances();
@@ -339,6 +341,10 @@ public class BookingController implements Serializable, ControllerWithPatient {
             selectedSessionInstance = sessionInstancesFiltered.get(0);
             sessionInstanceSelected();
         }
+    }
+    
+    public void calculateBalance(){
+        balance = getTenderedAmount() - getFeeTotalForSelectedBill();
     }
 
     public void sessionInstanceSelected() {
@@ -719,7 +725,6 @@ public class BookingController implements Serializable, ControllerWithPatient {
     }
 
     // ALREADY DEFIENED in line 629
-    
 //    public void sendChannellingStatusUpdateNotificationSms(BillSession methodBillSession) {
 //        if (methodBillSession == null) {
 //            JsfUtil.addErrorMessage("Nothing to send");
@@ -782,7 +787,16 @@ public class BookingController implements Serializable, ControllerWithPatient {
 //                + url;
 //        return b;
 //    }
-
+    
+    public void makeNull(){
+        institution = null;
+        paymentMethod = null;
+        paymentMethodData = null;
+        agentRefNo = null;
+        tenderedAmount = 0.0;
+        balance = 0.0;
+    }
+    
     public String navigateToAddBooking() {
         if (staff == null) {
             JsfUtil.addErrorMessage("Please select a Docter");
@@ -2767,8 +2781,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
             BillType.ChannelStaff,
             BillType.ChannelCredit,
             BillType.ChannelResheduleWithOutPayment,
-            BillType.ChannelResheduleWithPayment,
-        };
+            BillType.ChannelResheduleWithPayment,};
         List<BillType> bts = Arrays.asList(billTypes);
         String sql = "Select bs "
                 + " From BillSession bs "
@@ -3082,7 +3095,8 @@ public class BookingController implements Serializable, ControllerWithPatient {
             savingBill.setBalance(0.0);
             savingBillSession.setPaidBillSession(savingBillSession);
         } else if (savingBill.getBillType() == BillType.ChannelCash) {
-            savingBill.setBalance(0.0);
+            savingBill.setTenderedAmount(tenderedAmount);
+            savingBill.setBalance(balance);
             savingBillSession.setPaidBillSession(savingBillSession);
         } else if (savingBill.getBillType() == BillType.ChannelOnCall) {
             savingBill.setBalance(savingBill.getNetTotal());
@@ -4588,5 +4602,21 @@ public class BookingController implements Serializable, ControllerWithPatient {
     public void setSessionInstancesFiltered(List<SessionInstance> sessionInstancesFiltered) {
         this.sessionInstancesFiltered = sessionInstancesFiltered;
     }
+    
+    public double getBalance() {
+        return balance;
+    }
 
+    public void setBalance(double balance) {
+        this.balance = balance;
+    }
+
+    public double getTenderedAmount() {
+        return tenderedAmount;
+    }
+
+    public void setTenderedAmount(double tenderedAmount) {
+        this.tenderedAmount = tenderedAmount;
+    }
+    
 }
