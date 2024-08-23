@@ -282,13 +282,13 @@
                                 <h:outputLabel value="Total Hospital Fee" style="font-size: 13px; font-weight: bold;"/>
                             </td>
                             <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 30px;">
-                                <h:outputLabel value="#{cc.attrs.bill.transTotalWithOutCCFee}" rendered="#{cc.attrs.bill.cancelledBill eq null and cc.attrs.bill.refundedBill eq null}" style="font-size: 13px!important; font-weight: bolder!important;" >
+                                <h:outputLabel value="#{cc.attrs.bill.totalHospitalFee}" rendered="#{cc.attrs.bill.cancelledBill eq null and cc.attrs.bill.refundedBill eq null}" style="font-size: 13px!important; font-weight: bolder!important;" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
-                                <h:outputLabel value="#{cc.attrs.bill.cancelledBill.transTotalWithOutCCFee}" rendered="#{cc.attrs.bill.cancelledBill ne null}" style="font-size: 13px!important; font-weight: bolder!important;">
+                                <h:outputLabel value="#{cc.attrs.bill.cancelledBill.totalHospitalFee}" rendered="#{cc.attrs.bill.cancelledBill ne null}" style="font-size: 13px!important; font-weight: bolder!important;">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
-                                <h:outputLabel value="#{cc.attrs.bill.refundedBill.transTotalWithOutCCFee}" rendered="#{cc.attrs.bill.refundedBill ne null}" style="font-size: 13px!important; font-weight: bolder!important;">
+                                <h:outputLabel value="#{cc.attrs.bill.refundedBill.totalHospitalFee}" rendered="#{cc.attrs.bill.refundedBill ne null}" style="font-size: 13px!important; font-weight: bolder!important;">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </td>
@@ -301,13 +301,13 @@
                                 <h:outputLabel value="Total CC Fee" style="font-size: 13px; font-weight: bold;"/>
                             </td>
                             <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 30px;">
-                                <h:outputLabel value="#{cc.attrs.bill.transTotalCCFee}" rendered="#{cc.attrs.bill.cancelledBill eq null and cc.attrs.bill.refundedBill eq null}" style="font-size: 13px!important; font-weight: bolder!important;">
+                                <h:outputLabel value="#{cc.attrs.bill.totalCenterFee}" rendered="#{cc.attrs.bill.cancelledBill eq null and cc.attrs.bill.refundedBill eq null}" style="font-size: 13px!important; font-weight: bolder!important;">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
-                                <h:outputLabel value="#{cc.attrs.bill.cancelledBill.transTotalCCFee}" rendered="#{cc.attrs.bill.cancelledBill ne null}" style="font-size: 13px!important; font-weight: bolder!important;">
+                                <h:outputLabel value="#{cc.attrs.bill.cancelledBill.totalCenterFee}" rendered="#{cc.attrs.bill.cancelledBill ne null}" style="font-size: 13px!important; font-weight: bolder!important;">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
-                                <h:outputLabel value="#{cc.attrs.bill.refundedBill.transTotalCCFee}" rendered="#{cc.attrs.bill.refundedBill ne null}" style="font-size: 13px!important; font-weight: bolder!important;">
+                                <h:outputLabel value="#{cc.attrs.bill.refundedBill.totalCenterFee}" rendered="#{cc.attrs.bill.refundedBill ne null}" style="font-size: 13px!important; font-weight: bolder!important;">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </td>
