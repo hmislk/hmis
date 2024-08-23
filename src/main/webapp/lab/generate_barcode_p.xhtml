@@ -190,8 +190,8 @@
                                                          value="Sent to Lab"
                                                          ajax="false" action="#{patientInvestigationController.sampleSendToLab()}"
                                                          title="Sent to Lab" icon="fas fa-vials" styleClass="m-1 ui-button-warning w-100"/>
-                                        
-                                         <p:commandButton disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
+
+                                        <p:commandButton disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
                                                          id="btnReceivToLab"
                                                          value="Received Samples"
                                                          ajax="false" action="#{patientInvestigationController.receivedSamples()}"
@@ -211,9 +211,9 @@
                                     <p:dataTable  
                                         class="w-100"
                                         value="#{patientInvestigationController.items}" 
-                                        var="smpIx" 
+                                        var="ptIx" 
                                         paginator="true"
-                                        rowKey="#{smpIx.id}"
+                                        rowKey="#{ptIx.id}"
                                         paginatorPosition="bottom"
                                         selectionMode="multiple"
                                         selection="#{patientInvestigationController.selectedItems}"
@@ -231,255 +231,343 @@
                                             <p:commandLink 
                                                 ajax="false" 
                                                 class="m-2"
-                                                value="#{smpIx.billItem.bill.deptId}" 
+                                                value="#{ptIx.billItem.bill.deptId}" 
                                                 action="#{billSearch.navigateToViewOpdBill()}">
-                                                <f:setPropertyActionListener value="#{smpIx.billItem.bill}" target="#{billSearch.bill}"/>
+                                                <f:setPropertyActionListener value="#{ptIx.billItem.bill}" target="#{billSearch.bill}"/>
                                             </p:commandLink>
                                         </p:column>
 
                                         <p:column headerText="Patient" width="10em">
-                                            <h:outputLabel value="#{smpIx.billItem.bill.patient.person.nameWithTitle}" />
+                                            <h:outputLabel value="#{ptIx.billItem.bill.patient.person.nameWithTitle}" />
                                             <p:spacer width="10" ></p:spacer>
-                                            <h:outputLabel value="(#{smpIx.billItem.bill.ipOpOrCc})" class="ml-5"/>
+                                            <h:outputLabel value="(#{ptIx.billItem.bill.ipOpOrCc})" class="ml-5"/>
                                         </p:column>
 
                                         <p:column headerText="Investigations" width="10em">
-                                            <h:outputLabel value="#{smpIx.investigation.name}"/>
+                                            <h:outputLabel value="#{ptIx.investigation.name}"/>
                                         </p:column>
 
                                         <p:column headerText="Status" width="5em">
-                                            <h:outputLabel value="#{smpIx.status}"/>
+                                            <h:outputLabel value="#{ptIx.status}"/>
                                         </p:column>
 
+                                        <p:column  headerText="Actions" style="width: 11em;">
+                                            <p:commandLink 
+                                                disabled="#{ptIx.collected or ptIx.billItem.bill.cancelled}"   
+                                                id="btnSample" ajax="false"
+                                                action="#{patientInvestigationController.markAsSampled}" >
+                                                <f:setPropertyActionListener value="#{ptIx}" target="#{patientInvestigationController.current}"></f:setPropertyActionListener>
+                                                <p:graphicImage library="image" styleClass="standedicon" name="bleed.png" rendered="#{ptIx.collected ne true}"></p:graphicImage>
+                                                <p:graphicImage library="image" styleClass="standedicon" name="bleedok.jpg" rendered="#{ptIx.collected eq true}"></p:graphicImage>
+                                            </p:commandLink>
+                                            <p:commandButton value="collect" action="#{patientInvestigationController.markAsSampled}" ajax="false" >
+                                                <f:setPropertyActionListener value="#{ptIx}" target="#{patientInvestigationController.current}"></f:setPropertyActionListener>
+                                            </p:commandButton>
+                                            <h:panelGroup rendered="#{webUserController.hasPrivilege('LabSampleReceiving')}">
+                                                <p:commandLink  disabled="#{ptIx.collected ne true}"   id="btnReceive"  action="#{patientInvestigationController.markAsReceived()}" >
+                                                    <f:setPropertyActionListener value="#{ptIx}" target="#{patientInvestigationController.current}"></f:setPropertyActionListener>
+                                                    <p:graphicImage library="image" styleClass="standedicon" name="receive.jpeg" rendered="#{ptIx.received ne true }" ></p:graphicImage>
+                                                    <p:graphicImage library="image" styleClass="standedicon" name="receiveok.jpg" rendered="#{ptIx.received eq true}"></p:graphicImage>
+                                                </p:commandLink>
+                                            </h:panelGroup>
 
+                                            <h:panelGroup rendered="#{ptIx.billItem.bill.cancelled ne true}">
+                                                <p:commandLink ajax="false" id="btnPrintWorksheets" disabled="#{ptIx.received ne true}" action="/lab/single_worksheet?faces-redirect=true" >
+                                                    <f:setPropertyActionListener value="#{ptIx}" target="#{patientInvestigationController.current}" ></f:setPropertyActionListener>
+                                                    <p:graphicImage library="image" styleClass="standedicon" name="worksheet.gif" ></p:graphicImage>
+                                                </p:commandLink>
+                                            </h:panelGroup>
+
+                                            <p:commandLink id="btnNewReport" ajax="false" 
+                                                           disabled="#{!ptIx.received}" 
+                                                           action="/lab/patient_report?faces-redirect=true"  
+                                                           actionListener="#{patientReportController.createNewReport(ptIx)}" >
+                                                <f:setPropertyActionListener value="#{ptIx}" target="#{patientReportController.currentPtIx}"></f:setPropertyActionListener>
+                                                <p:graphicImage library="image" styleClass="standedicon" name="data_entry.png" ></p:graphicImage>
+                                            </p:commandLink>
+                                            <h:panelGroup >
+                                                <p:commandLink 
+                                                    id="btnSms" 
+                                                    rendered="#{!ptIx.billItem.bill.smsed}"
+                                                    disabled="#{ptIx.billItem.bill.cancelled or ptIx.billItem.transRefund or ptIx.patientReports.size() eq 0}"
+                                                    action="#{patientInvestigationController.sendSms()}" >
+                                                    <f:setPropertyActionListener value="#{ptIx}" target="#{patientInvestigationController.current}"></f:setPropertyActionListener>
+                                                    <p:graphicImage library="image" styleClass="standedicon" name="sms.jpg" ></p:graphicImage>
+                                                </p:commandLink>
+                                                <p:commandLink 
+                                                    id="btnSmsSent"
+                                                    rendered="#{ptIx.billItem.bill.smsed}"
+                                                    disabled="#{ptIx.billItem.bill.cancelled or ptIx.billItem.transRefund or ptIx.patientReports.size() eq 0}"
+                                                    action="#{patientInvestigationController.sendSms()}" >
+                                                    <f:setPropertyActionListener value="#{ptIx}" target="#{patientInvestigationController.current}"></f:setPropertyActionListener>
+                                                    <p:graphicImage library="image" styleClass="standedicon" name="smssent.png" ></p:graphicImage>
+                                                </p:commandLink>
+
+                                            </h:panelGroup>
+
+                                            <p:tooltip for="btnReceive"  >
+                                                <h:outputLabel value="Receive Sample" rendered="#{!ptIx.received}" ></h:outputLabel>
+                                                <h:outputLabel value="Sample received at " rendered="#{ptIx.received}" ></h:outputLabel>
+                                                <h:outputLabel value="#{ptIx.receivedAt}" rendered="#{ptIx.received}" >
+                                                    <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
+                                                </h:outputLabel>
+                                            </p:tooltip>
+
+                                            <p:tooltip for="btnSample" value="Collect Sample" >
+                                                <h:outputLabel value="Collect Sample" rendered="#{!ptIx.collected }" ></h:outputLabel>
+                                                <h:outputLabel value="Sampled at " rendered="#{ptIx.collected}" ></h:outputLabel>
+                                                <h:outputLabel value="#{ptIx.sampledAt}" rendered="#{ptIx.collected}" >
+                                                    <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
+                                                </h:outputLabel>
+                                            </p:tooltip>
+
+                                            <p:tooltip for="btnNewReport" value="New Report" ></p:tooltip>
+
+                                            <p:tooltip for="btnPrintWorksheets" value="Print worksheet" ></p:tooltip>
+
+
+                                            <table >
+                                                <ui:repeat value="#{itemForItemController.getItemsForParentItem(pi.investigation)}" var="ifi"  >
+                                                    <tr>
+                                                        <td>
+                                                            <p:commandLink disabled="#{!pi.received}" value="New #{ifi.name}" actionListener="#{patientReportController.enterNewReportFormat(pi, ifi)}" action="/lab/patient_report?faces-redirect=true" 
+                                                                           ajax="false">
+                                                            </p:commandLink>
+                                                        </td>
+                                                    </tr>
+                                                </ui:repeat>
+                                            </table>
+
+
+                                        </p:column>
 
                                         <p:column headerText="Details">
                                             <h:panelGrid columns="1">
-                                                <h:outputLabel value="Sample Collected" rendered="#{smpIx.sampleCollected}"/>
-                                                <p:panelGrid rendered="#{smpIx.sampleCollected}" columns="2" styleClass="ui-widget-content ui-corner-all" style="display:none">
+                                                <h:outputLabel value="Sample Collected" rendered="#{ptIx.sampleCollected}"/>
+                                                <p:panelGrid rendered="#{ptIx.sampleCollected}" columns="2" styleClass="ui-widget-content ui-corner-all" style="display:none">
                                                     <p:row>
                                                         <p:column>Time:</p:column>
-                                                        <p:column><h:outputText value="#{smpIx.sampleCollectedAt}" /></p:column>
+                                                        <p:column><h:outputText value="#{ptIx.sampleCollectedAt}" /></p:column>
                                                     </p:row>
                                                     <p:row>
                                                         <p:column>Institution:</p:column>
-                                                        <p:column><h:outputText value="#{smpIx.sampleInstitution.name}" /></p:column>
+                                                        <p:column><h:outputText value="#{ptIx.sampleInstitution.name}" /></p:column>
                                                     </p:row>
                                                     <p:row>
                                                         <p:column>User:</p:column>
-                                                        <p:column><h:outputText value="#{smpIx.sampleCollectedBy.name}" /></p:column>
+                                                        <p:column><h:outputText value="#{ptIx.sampleCollectedBy.name}" /></p:column>
                                                     </p:row>
                                                 </p:panelGrid>
 
-                                                <h:outputLabel value="Sample Sent" rendered="#{smpIx.sampleSent}"/>
-                                                <p:panelGrid rendered="#{smpIx.sampleSent}" columns="2" styleClass="ui-widget-content ui-corner-all" style="display:none">
+                                                <h:outputLabel value="Sample Sent" rendered="#{ptIx.sampleSent}"/>
+                                                <p:panelGrid rendered="#{ptIx.sampleSent}" columns="2" styleClass="ui-widget-content ui-corner-all" style="display:none">
                                                     <p:row>
                                                         <p:column>Time:</p:column>
-                                                        <p:column><h:outputText value="#{smpIx.sampleSentAt}" /></p:column>
+                                                        <p:column><h:outputText value="#{ptIx.sampleSentAt}" /></p:column>
                                                     </p:row>
                                                     <p:row>
                                                         <p:column>Institution:</p:column>
-                                                        <p:column><h:outputText value="#{smpIx.sampleInstitution.name}" /></p:column>
+                                                        <p:column><h:outputText value="#{ptIx.sampleInstitution.name}" /></p:column>
                                                     </p:row>
                                                     <p:row>
                                                         <p:column>User:</p:column>
-                                                        <p:column><h:outputText value="#{smpIx.sampleSentBy.name}" /></p:column>
+                                                        <p:column><h:outputText value="#{ptIx.sampleSentBy.name}" /></p:column>
                                                     </p:row>
                                                 </p:panelGrid>
 
-                                                <h:outputLabel value="Sample Received" rendered="#{smpIx.received}"/>
-                                                <p:panelGrid rendered="#{smpIx.received}" columns="2" styleClass="ui-widget-content ui-corner-all" style="display:none">
+                                                <h:outputLabel value="Sample Received" rendered="#{ptIx.received}"/>
+                                                <p:panelGrid rendered="#{ptIx.received}" columns="2" styleClass="ui-widget-content ui-corner-all" style="display:none">
                                                     <p:row>
                                                         <p:column>Time:</p:column>
-                                                        <p:column><h:outputText value="#{smpIx.receivedAt}" /></p:column>
+                                                        <p:column><h:outputText value="#{ptIx.receivedAt}" /></p:column>
                                                     </p:row>
                                                     <p:row>
                                                         <p:column>Institution:</p:column>
-                                                        <p:column><h:outputText value="#{smpIx.receiveInstitution.name}" /></p:column>
+                                                        <p:column><h:outputText value="#{ptIx.receiveInstitution.name}" /></p:column>
                                                     </p:row>
                                                     <p:row>
                                                         <p:column>User:</p:column>
-                                                        <p:column><h:outputText value="#{smpIx.receivedCollecter.name}" /></p:column>
+                                                        <p:column><h:outputText value="#{ptIx.receivedCollecter.name}" /></p:column>
                                                     </p:row>
                                                 </p:panelGrid>
 
-                                                <h:outputLabel value="Sample Approved" rendered="#{smpIx.sampleApproved}"/>
-                                                <p:panelGrid rendered="#{smpIx.sampleApproved}" columns="2" styleClass="ui-widget-content ui-corner-all" style="display:none">
+                                                <h:outputLabel value="Sample Approved" rendered="#{ptIx.sampleApproved}"/>
+                                                <p:panelGrid rendered="#{ptIx.sampleApproved}" columns="2" styleClass="ui-widget-content ui-corner-all" style="display:none">
                                                     <p:row>
                                                         <p:column>Time:</p:column>
-                                                        <p:column><h:outputText value="#{smpIx.sampleApprovedAt}" /></p:column>
+                                                        <p:column><h:outputText value="#{ptIx.sampleApprovedAt}" /></p:column>
                                                     </p:row>
                                                     <p:row>
                                                         <p:column>Institution:</p:column>
-                                                        <p:column><h:outputText value="#{smpIx.sampleInstitution.name}" /></p:column>
+                                                        <p:column><h:outputText value="#{ptIx.sampleInstitution.name}" /></p:column>
                                                     </p:row>
                                                     <p:row>
                                                         <p:column>User:</p:column>
-                                                        <p:column><h:outputText value="#{smpIx.sampleApprovedBy.name}" /></p:column>
+                                                        <p:column><h:outputText value="#{ptIx.sampleApprovedBy.name}" /></p:column>
                                                     </p:row>
                                                 </p:panelGrid>
 
-                                                <h:outputLabel value="Sample Generated" rendered="#{smpIx.sampleGenerated}"/>
-                                                <p:panelGrid rendered="#{smpIx.sampleGenerated}" columns="2" styleClass="ui-widget-content ui-corner-all" style="display:none">
+                                                <h:outputLabel value="Sample Generated" rendered="#{ptIx.sampleGenerated}"/>
+                                                <p:panelGrid rendered="#{ptIx.sampleGenerated}" columns="2" styleClass="ui-widget-content ui-corner-all" style="display:none">
                                                     <p:row>
                                                         <p:column>Time:</p:column>
-                                                        <p:column><h:outputText value="#{smpIx.sampleGeneratedAt}" /></p:column>
+                                                        <p:column><h:outputText value="#{ptIx.sampleGeneratedAt}" /></p:column>
                                                     </p:row>
                                                     <p:row>
                                                         <p:column>Institution:</p:column>
-                                                        <p:column><h:outputText value="#{smpIx.sampleInstitution.name}" /></p:column>
+                                                        <p:column><h:outputText value="#{ptIx.sampleInstitution.name}" /></p:column>
                                                     </p:row>
                                                     <p:row>
                                                         <p:column>User:</p:column>
-                                                        <p:column><h:outputText value="#{smpIx.sampleGeneratedBy.name}" /></p:column>
+                                                        <p:column><h:outputText value="#{ptIx.sampleGeneratedBy.name}" /></p:column>
                                                     </p:row>
                                                 </p:panelGrid>
 
-                                                <h:outputLabel value="Sample Interfaced" rendered="#{smpIx.sampleInterfaced}"/>
-                                                <p:panelGrid rendered="#{smpIx.sampleInterfaced}" columns="2" styleClass="ui-widget-content ui-corner-all" style="display:none">
+                                                <h:outputLabel value="Sample Interfaced" rendered="#{ptIx.sampleInterfaced}"/>
+                                                <p:panelGrid rendered="#{ptIx.sampleInterfaced}" columns="2" styleClass="ui-widget-content ui-corner-all" style="display:none">
                                                     <p:row>
                                                         <p:column>Time:</p:column>
-                                                        <p:column><h:outputText value="#{smpIx.sampleInterfacedAt}" /></p:column>
+                                                        <p:column><h:outputText value="#{ptIx.sampleInterfacedAt}" /></p:column>
                                                     </p:row>
                                                     <p:row>
                                                         <p:column>Institution:</p:column>
-                                                        <p:column><h:outputText value="#{smpIx.sampleInstitution.name}" /></p:column>
+                                                        <p:column><h:outputText value="#{ptIx.sampleInstitution.name}" /></p:column>
                                                     </p:row>
                                                     <p:row>
                                                         <p:column>User:</p:column>
-                                                        <p:column><h:outputText value="#{smpIx.sampleInterfacedBy.name}" /></p:column>
+                                                        <p:column><h:outputText value="#{ptIx.sampleInterfacedBy.name}" /></p:column>
                                                     </p:row>
                                                 </p:panelGrid>
 
-                                                <h:outputLabel value="Sample Recollected" rendered="#{smpIx.sampleRecollected}"/>
-                                                <p:panelGrid rendered="#{smpIx.sampleRecollected}" columns="2" styleClass="ui-widget-content ui-corner-all" style="display:none">
+                                                <h:outputLabel value="Sample Recollected" rendered="#{ptIx.sampleRecollected}"/>
+                                                <p:panelGrid rendered="#{ptIx.sampleRecollected}" columns="2" styleClass="ui-widget-content ui-corner-all" style="display:none">
                                                     <p:row>
                                                         <p:column>Time:</p:column>
-                                                        <p:column><h:outputText value="#{smpIx.sampleRecollectedAt}" /></p:column>
+                                                        <p:column><h:outputText value="#{ptIx.sampleRecollectedAt}" /></p:column>
                                                     </p:row>
                                                     <p:row>
                                                         <p:column>Institution:</p:column>
-                                                        <p:column><h:outputText value="#{smpIx.sampleInstitution.name}" /></p:column>
+                                                        <p:column><h:outputText value="#{ptIx.sampleInstitution.name}" /></p:column>
                                                     </p:row>
                                                     <p:row>
                                                         <p:column>User:</p:column>
-                                                        <p:column><h:outputText value="#{smpIx.sampleRecollectedBy.name}" /></p:column>
+                                                        <p:column><h:outputText value="#{ptIx.sampleRecollectedBy.name}" /></p:column>
                                                     </p:row>
                                                 </p:panelGrid>
 
-                                                <h:outputLabel value="Sample Rejected" rendered="#{smpIx.sampleRejected}"/>
-                                                <p:panelGrid rendered="#{smpIx.sampleRejected}" columns="2" styleClass="ui-widget-content ui-corner-all" style="display:none">
+                                                <h:outputLabel value="Sample Rejected" rendered="#{ptIx.sampleRejected}"/>
+                                                <p:panelGrid rendered="#{ptIx.sampleRejected}" columns="2" styleClass="ui-widget-content ui-corner-all" style="display:none">
                                                     <p:row>
                                                         <p:column>Time:</p:column>
-                                                        <p:column><h:outputText value="#{smpIx.sampleRejectedAt}" /></p:column>
+                                                        <p:column><h:outputText value="#{ptIx.sampleRejectedAt}" /></p:column>
                                                     </p:row>
                                                     <p:row>
                                                         <p:column>Institution:</p:column>
-                                                        <p:column><h:outputText value="#{smpIx.sampleInstitution.name}" /></p:column>
+                                                        <p:column><h:outputText value="#{ptIx.sampleInstitution.name}" /></p:column>
                                                     </p:row>
                                                     <p:row>
                                                         <p:column>User:</p:column>
-                                                        <p:column><h:outputText value="#{smpIx.sampleRejectedBy.name}" /></p:column>
+                                                        <p:column><h:outputText value="#{ptIx.sampleRejectedBy.name}" /></p:column>
                                                     </p:row>
                                                 </p:panelGrid>
 
-                                                <h:outputLabel value="Sample Repeated" rendered="#{smpIx.sampleRepeated}"/>
-                                                <p:panelGrid rendered="#{smpIx.sampleRepeated}" columns="2" styleClass="ui-widget-content ui-corner-all" style="display:none">
+                                                <h:outputLabel value="Sample Repeated" rendered="#{ptIx.sampleRepeated}"/>
+                                                <p:panelGrid rendered="#{ptIx.sampleRepeated}" columns="2" styleClass="ui-widget-content ui-corner-all" style="display:none">
                                                     <p:row>
                                                         <p:column>Time:</p:column>
-                                                        <p:column><h:outputText value="#{smpIx.sampleRepeatedAt}" /></p:column>
+                                                        <p:column><h:outputText value="#{ptIx.sampleRepeatedAt}" /></p:column>
                                                     </p:row>
                                                     <p:row>
                                                         <p:column>Institution:</p:column>
-                                                        <p:column><h:outputText value="#{smpIx.sampleInstitution.name}" /></p:column>
+                                                        <p:column><h:outputText value="#{ptIx.sampleInstitution.name}" /></p:column>
                                                     </p:row>
                                                     <p:row>
                                                         <p:column>User:</p:column>
-                                                        <p:column><h:outputText value="#{smpIx.sampleRepeatedBy.name}" /></p:column>
+                                                        <p:column><h:outputText value="#{ptIx.sampleRepeatedBy.name}" /></p:column>
                                                     </p:row>
                                                 </p:panelGrid>
 
-                                                <h:outputLabel value="Sample Resent" rendered="#{smpIx.sampleResent}"/>
-                                                <p:panelGrid rendered="#{smpIx.sampleResent}" columns="2" styleClass="ui-widget-content ui-corner-all" style="display:none">
+                                                <h:outputLabel value="Sample Resent" rendered="#{ptIx.sampleResent}"/>
+                                                <p:panelGrid rendered="#{ptIx.sampleResent}" columns="2" styleClass="ui-widget-content ui-corner-all" style="display:none">
                                                     <p:row>
                                                         <p:column>Time:</p:column>
-                                                        <p:column><h:outputText value="#{smpIx.sampleResentAt}" /></p:column>
+                                                        <p:column><h:outputText value="#{ptIx.sampleResentAt}" /></p:column>
                                                     </p:row>
                                                     <p:row>
                                                         <p:column>Institution:</p:column>
-                                                        <p:column><h:outputText value="#{smpIx.sampleInstitution.name}" /></p:column>
+                                                        <p:column><h:outputText value="#{ptIx.sampleInstitution.name}" /></p:column>
                                                     </p:row>
                                                     <p:row>
                                                         <p:column>User:</p:column>
-                                                        <p:column><h:outputText value="#{smpIx.sampleResentBy.name}" /></p:column>
+                                                        <p:column><h:outputText value="#{ptIx.sampleResentBy.name}" /></p:column>
                                                     </p:row>
                                                 </p:panelGrid>
 
-                                                <h:outputLabel value="Sample Reverted" rendered="#{smpIx.sampleReverted}"/>
-                                                <p:panelGrid rendered="#{smpIx.sampleReverted}" columns="2" styleClass="ui-widget-content ui-corner-all" style="display:none">
+                                                <h:outputLabel value="Sample Reverted" rendered="#{ptIx.sampleReverted}"/>
+                                                <p:panelGrid rendered="#{ptIx.sampleReverted}" columns="2" styleClass="ui-widget-content ui-corner-all" style="display:none">
                                                     <p:row>
                                                         <p:column>Time:</p:column>
-                                                        <p:column><h:outputText value="#{smpIx.sampleRevertedAt}" /></p:column>
+                                                        <p:column><h:outputText value="#{ptIx.sampleRevertedAt}" /></p:column>
                                                     </p:row>
                                                     <p:row>
                                                         <p:column>Institution:</p:column>
-                                                        <p:column><h:outputText value="#{smpIx.sampleInstitution.name}" /></p:column>
+                                                        <p:column><h:outputText value="#{ptIx.sampleInstitution.name}" /></p:column>
                                                     </p:row>
                                                     <p:row>
                                                         <p:column>User:</p:column>
-                                                        <p:column><h:outputText value="#{smpIx.sampleRevertedBy.name}" /></p:column>
+                                                        <p:column><h:outputText value="#{ptIx.sampleRevertedBy.name}" /></p:column>
                                                     </p:row>
                                                 </p:panelGrid>
 
-                                                <h:outputLabel value="Report Printed" rendered="#{smpIx.reportPrinted}"/>
-                                                <p:panelGrid rendered="#{smpIx.reportPrinted}" columns="2" styleClass="ui-widget-content ui-corner-all" style="display:none">
+                                                <h:outputLabel value="Report Printed" rendered="#{ptIx.reportPrinted}"/>
+                                                <p:panelGrid rendered="#{ptIx.reportPrinted}" columns="2" styleClass="ui-widget-content ui-corner-all" style="display:none">
                                                     <p:row>
                                                         <p:column>Time:</p:column>
-                                                        <p:column><h:outputText value="#{smpIx.reportPrintedAt}" /></p:column>
+                                                        <p:column><h:outputText value="#{ptIx.reportPrintedAt}" /></p:column>
                                                     </p:row>
                                                     <p:row>
                                                         <p:column>Institution:</p:column>
-                                                        <p:column><h:outputText value="#{smpIx.printingInstitution.name}" /></p:column>
+                                                        <p:column><h:outputText value="#{ptIx.printingInstitution.name}" /></p:column>
                                                     </p:row>
                                                     <p:row>
                                                         <p:column>User:</p:column>
-                                                        <p:column><h:outputText value="#{smpIx.reportPrintedBy.name}" /></p:column>
+                                                        <p:column><h:outputText value="#{ptIx.reportPrintedBy.name}" /></p:column>
                                                     </p:row>
                                                 </p:panelGrid>
 
-                                                <h:outputLabel value="Report Handed Over" rendered="#{smpIx.reportHandedOver}"/>
-                                                <p:panelGrid rendered="#{smpIx.reportHandedOver}" columns="2" styleClass="ui-widget-content ui-corner-all" style="display:none">
+                                                <h:outputLabel value="Report Handed Over" rendered="#{ptIx.reportHandedOver}"/>
+                                                <p:panelGrid rendered="#{ptIx.reportHandedOver}" columns="2" styleClass="ui-widget-content ui-corner-all" style="display:none">
                                                     <p:row>
                                                         <p:column>Time:</p:column>
-                                                        <p:column><h:outputText value="#{smpIx.reportHandedOverAt}" /></p:column>
+                                                        <p:column><h:outputText value="#{ptIx.reportHandedOverAt}" /></p:column>
                                                     </p:row>
                                                     <p:row>
                                                         <p:column>Institution:</p:column>
-                                                        <p:column><h:outputText value="#{smpIx.reportHandedOverBy.name}" /></p:column>
+                                                        <p:column><h:outputText value="#{ptIx.reportHandedOverBy.name}" /></p:column>
                                                     </p:row>
                                                 </p:panelGrid>
 
-                                                <h:outputLabel value="Report Reached Collecting Centre" rendered="#{smpIx.reportReachedCollectingCentre}"/>
-                                                <p:panelGrid rendered="#{smpIx.reportReachedCollectingCentre}" columns="2" styleClass="ui-widget-content ui-corner-all" style="display:none">
+                                                <h:outputLabel value="Report Reached Collecting Centre" rendered="#{ptIx.reportReachedCollectingCentre}"/>
+                                                <p:panelGrid rendered="#{ptIx.reportReachedCollectingCentre}" columns="2" styleClass="ui-widget-content ui-corner-all" style="display:none">
                                                     <p:row>
                                                         <p:column>Time:</p:column>
-                                                        <p:column><h:outputText value="#{smpIx.reportReachedCollectingCentreAt}" /></p:column>
+                                                        <p:column><h:outputText value="#{ptIx.reportReachedCollectingCentreAt}" /></p:column>
                                                     </p:row>
                                                     <p:row>
                                                         <p:column>User:</p:column>
-                                                        <p:column><h:outputText value="#{smpIx.reportReachedCollectingCentreBy.name}" /></p:column>
+                                                        <p:column><h:outputText value="#{ptIx.reportReachedCollectingCentreBy.name}" /></p:column>
                                                     </p:row>
                                                 </p:panelGrid>
 
-                                                <h:outputLabel value="Report Distributed" rendered="#{smpIx.reportDistributed}"/>
-                                                <p:panelGrid rendered="#{smpIx.reportDistributed}" columns="2" styleClass="ui-widget-content ui-corner-all" style="display:none">
+                                                <h:outputLabel value="Report Distributed" rendered="#{ptIx.reportDistributed}"/>
+                                                <p:panelGrid rendered="#{ptIx.reportDistributed}" columns="2" styleClass="ui-widget-content ui-corner-all" style="display:none">
                                                     <p:row>
                                                         <p:column>Time:</p:column>
-                                                        <p:column><h:outputText value="#{smpIx.reportDistributedAt}" /></p:column>
+                                                        <p:column><h:outputText value="#{ptIx.reportDistributedAt}" /></p:column>
                                                     </p:row>
                                                     <p:row>
                                                         <p:column>User:</p:column>
-                                                        <p:column><h:outputText value="#{smpIx.reportDistributedBy.name}" /></p:column>
+                                                        <p:column><h:outputText value="#{ptIx.reportDistributedBy.name}" /></p:column>
                                                     </p:row>
                                                 </p:panelGrid>
 
@@ -656,6 +744,9 @@
                                             <p:badge value="Collected" rendered="#{ps.sampleCollected}" severity="success" styleClass="mr-2 mx-1"></p:badge>
                                             <p:badge value="Sent To Lab" rendered="#{ps.sampleSent}" severity="warning" styleClass="mr-2"></p:badge>
                                             <p:badge value="Received" rendered="#{ps.sampleReceivedAtLab}" severity="info" styleClass="mr-2 mx-1"></p:badge>
+                                        </p:column>
+                                        <p:column headerText="Investigation">
+                                            <p:outputLabel value="#{ps.patientInvestigation}" ></p:outputLabel>
                                         </p:column>
                                         <p:column headerText="Sample Number">
                                             <p:inputText id="txtSampleId" value="#{ps.sampleId}" class="mx-2" />
