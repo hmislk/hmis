@@ -320,17 +320,7 @@
                                     <h:outputText styleClass="fas fa-bullseye" /> <!-- FontAwesome Icon -->
                                     <h:outputText value="Collecting Centre Details" class="mx-4"></h:outputText>
 
-                                    <p:commandButton  
-                                        style="float: right;"
-                                        value="Settle" 
-                                        icon="fa fa-check"
-                                        action="#{collectingCentreBillController.settleBill}" 
-                                        ajax="false" 
-                                        onclick="if (!confirm('Are you sure you want to Settle This Bill ?'))
-                                                    return false;"
 
-                                        class="ui-button-success ">
-                                    </p:commandButton>
                                     <p:commandButton 
                                         style="float: right;"
                                         value="New Bill" 
@@ -363,7 +353,17 @@
                                     </p:commandButton>
                                     <p:focus id="focusIx" for=":#{p:resolveFirstComponentWithId('acIx',view).clientId}" />
 
+                                    <p:commandButton  
+                                        style="float: right;"
+                                        value="Settle" 
+                                        icon="fa fa-check"
+                                        action="#{collectingCentreBillController.settleBill}" 
+                                        ajax="false" 
+                                        onclick="if (!confirm('Are you sure you want to Settle This Bill ?'))
+                                                    return false;"
 
+                                        class="ui-button-success ">
+                                    </p:commandButton>
 
 
 
@@ -548,53 +548,32 @@
                             </p:panel>
 
                             <div class="row m-1" >
-                                <p:panel id="pBillDetails" >
-                                    <f:facet name="header" >
-                                        <h:outputText styleClass="fa fa-money-bill-wave" /> <!-- FontAwesome Icon -->
+                                <p:panel >
+                                    <f:facet name="header">
+                                        <h:outputText styleClass="fa fa-money-bill-wave" />
                                         <h:outputText value="Bill Details" class="mx-4"></h:outputText>
                                     </f:facet>
-                                    <div class="row h5">
-                                        <div class="col-md-3">
-                                            <h:outputText value="Total" ></h:outputText >
-                                        </div>
-                                        <div class="col-md-9">
-                                            <h:outputText id="tot" value="#{collectingCentreBillController.total}" >
-                                                <f:convertNumber pattern="#,##0.00" />
-                                            </h:outputText>
-                                        </div>
-                                        <div class="col-md-3">
-                                            <h:outputText value="Discount" ></h:outputText>
-                                        </div>
-                                        <div class="col-md-9">
-                                            <h:outputText id="dis" value="#{collectingCentreBillController.discount}" >
-                                                <f:convertNumber pattern="#,##0.00" />
-                                            </h:outputText>
-                                        </div>
-                                        <div class="col-md-3">
-                                            <h:outputText value="Net Total" ></h:outputText>
-                                        </div>
-                                        <div class="col-md-9">
-                                            <h:outputText id="netTotal" value="#{collectingCentreBillController.netTotal}" >
-                                                <f:convertNumber pattern="#,##0.00" />
-                                            </h:outputText>
-                                        </div>
-                                        <div class="col-md-3">
-                                            <h:outputText value="VAT" ></h:outputText>
-                                        </div>
-                                        <div class="col-md-9">
-                                            <h:outputText id="netTotalVat" value="#{collectingCentreBillController.vat}" >
-                                                <f:convertNumber pattern="#,##0.00" />
-                                            </h:outputText>
-                                        </div>
-                                        <div class="col-md-3">
-                                            <h:outputText  value="Balance " ></h:outputText>
-                                        </div>
-                                        <div class="col-md-9">
-                                            <h:outputText id="balance" value="#{collectingCentreBillController.cashBalance}" >
-                                                <f:convertNumber pattern="#,##0.00" />
-                                            </h:outputText>
-                                        </div>
-                                    </div>
+
+
+                                    <p:panelGrid columns="2" id="pBillDetails" styleClass="w-100" >
+
+                                        <h:outputText value="Total"></h:outputText>
+                                        <h:outputText value="#{collectingCentreBillController.netTotal}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                        <h:outputText value="Collecting Center Value"></h:outputText>
+                                        <h:outputText value="#{collectingCentreBillController.totalCCFee}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                        <h:outputText value="Hospital Fee Value"></h:outputText>
+                                        <h:outputText value="#{collectingCentreBillController.totalHosFee}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                        <h:outputText value="Staff Fee"></h:outputText>
+                                        <h:outputText value="#{collectingCentreBillController.totalStaffFee}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </p:panelGrid>
                                 </p:panel>
                             </div>
                         </div>

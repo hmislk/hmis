@@ -5,6 +5,7 @@
  */
 package com.divudi.bean.common;
 
+import com.divudi.bean.cashTransaction.CashBookEntryController;
 import com.divudi.bean.channel.ChannelSearchController;
 import com.divudi.bean.channel.analytics.ReportTemplateController;
 import com.divudi.bean.pharmacy.PharmacyPreSettleController;
@@ -63,6 +64,7 @@ import com.divudi.data.analytics.ReportTemplateType;
 import com.divudi.entity.Category;
 import com.divudi.entity.Payment;
 import com.divudi.entity.WebUser;
+import com.divudi.entity.cashTransaction.CashBookEntry;
 import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
@@ -162,6 +164,8 @@ public class SearchController implements Serializable {
     ChannelSearchController channelSearchController;
     @Inject
     ReportTemplateController reportTemplateController;
+    @Inject
+    CashBookEntryController cashBookEntryController;
 
     /**
      * Properties
@@ -269,6 +273,9 @@ public class SearchController implements Serializable {
     private boolean duplicateBillView;
 
     private ReportTemplateRowBundle bundle;
+    
+    private List<CashBookEntry> cashBookEntries;
+    private Institution site;
 
     public String navigateToPettyCashBillApprove() {
         createPettyApproveTable();
@@ -1725,6 +1732,22 @@ public class SearchController implements Serializable {
 
     public void setBundle(ReportTemplateRowBundle bundle) {
         this.bundle = bundle;
+    }
+
+    public List<CashBookEntry> getCashBookEntries() {
+        return cashBookEntries;
+    }
+
+    public void setCashBookEntries(List<CashBookEntry> cashBookEntries) {
+        this.cashBookEntries = cashBookEntries;
+    }
+
+    public Institution getSite() {
+        return site;
+    }
+
+    public void setSite(Institution site) {
+        this.site = site;
     }
 
     public class billsWithbill {
@@ -11208,6 +11231,15 @@ public class SearchController implements Serializable {
     public String navigateToListSingleUserBills() {
         processAllFinancialTransactionalBillListBySingleUserByIds();
         return "/cashier/shift_end_summary_bill_list";
+    }
+    
+    public String navigateToListCashBookEntry() {
+        cashBookEntries=new ArrayList<>();
+        return "/cashier/cash_book_entry";
+    }
+    
+    public void genarateCashBookEntries(){
+        cashBookEntries=cashBookEntryController.genarateCashBookEntries(fromDate,toDate,site,institution,department);
     }
 
     public SearchController() {

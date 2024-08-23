@@ -609,7 +609,7 @@ public class InstitutionController implements Serializable {
         AgentHistory agentHistory = new AgentHistory();
         agentHistory.setCreatedAt(new Date());
         agentHistory.setCreater(getSessionController().getLoggedUser());
-        agentHistory.setBeforeBallance(historyValue);
+        agentHistory.setBalanceBeforeTransaction(historyValue);
         agentHistory.setTransactionValue(transactionValue);
         agentHistory.setHistoryType(historyType);
         agentHistory.setComment(comment);
