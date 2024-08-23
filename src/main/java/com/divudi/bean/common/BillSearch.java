@@ -3619,6 +3619,8 @@ public class BillSearch implements Serializable {
         }
     }
 
+    
+    @Deprecated
     public void createCollectingCenterfees(Bill b) {
         AgentHistory ah = new AgentHistory();
         if (b.getCancelledBill() != null) {

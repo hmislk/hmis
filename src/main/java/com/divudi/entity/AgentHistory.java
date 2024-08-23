@@ -38,6 +38,7 @@ public class AgentHistory implements Serializable {
     double beforeBallance;
     double afterBallance;
     double transactionValue;
+    private double collectingCentertransactionValue;
     @Enumerated(EnumType.STRING)
     HistoryType historyType;
     //Created Properties
@@ -232,6 +233,22 @@ public class AgentHistory implements Serializable {
     @Override
     public String toString() {
         return "com.divudi.entity.AgentHistory[ id=" + id + " ]";
+    }
+
+    public double getAfterBallance() {
+        return afterBallance;
+    }
+
+    public void setAfterBallance(double afterBallance) {
+        this.afterBallance = afterBallance;
+    }
+
+    public double getCollectingCentertransactionValue() {
+        return collectingCentertransactionValue;
+    }
+
+    public void setCollectingCentertransactionValue(double collectingCentertransactionValue) {
+        this.collectingCentertransactionValue = collectingCentertransactionValue;
     }
 
 }
