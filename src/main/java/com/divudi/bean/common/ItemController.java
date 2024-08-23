@@ -38,6 +38,8 @@ import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.InvestigationFacade;
 import com.divudi.facade.ItemMappingFacade;
 import com.divudi.facade.ServiceFacade;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -59,7 +61,18 @@ import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
+import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.beanutils.BeanUtils;
+import org.apache.poi.ss.SpreadsheetVersion;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.util.AreaReference;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFTable;
+import org.apache.poi.xssf.usermodel.XSSFTableStyleInfo;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 /**
  *
@@ -150,6 +163,108 @@ public class ItemController implements Serializable {
     ReportKeyWord reportKeyWord;
 
     private List<Item> packaes;
+
+    public void downloadBaseItemFeesAsExcel() throws IOException {
+        // Check if itemFees is null or empty
+        if (items == null || items.isEmpty()) {
+            JsfUtil.addErrorMessage("Please fill item fees first to download them.");
+            return;
+        }
+
+        // Create a workbook and a sheet
+        XSSFWorkbook workbook = new XSSFWorkbook();
+        XSSFSheet sheet = workbook.createSheet("Base Item Fees");
+
+        // Create the header row
+        Row headerRow = sheet.createRow(0);
+        String[] headers = {"ID", "Item Code", "Item Type", "Item Name", "Category", "Financial Category", "Retired", "Institution", "Department"};
+
+        // Apply header formatting
+        CellStyle headerStyle = workbook.createCellStyle();
+        Font headerFont = workbook.createFont();
+        headerFont.setBold(true);
+        headerStyle.setFont(headerFont);
+
+        for (int i = 0; i < headers.length; i++) {
+            Cell headerCell = headerRow.createCell(i);
+            headerCell.setCellValue(headers[i]);
+            headerCell.setCellStyle(headerStyle);
+        }
+
+        // Fill the data into the sheet
+        int rowNum = 1;
+        for (Item tmpItem : items) {
+            if (tmpItem == null) {
+                continue; // Skip null entries
+            }
+
+            Row row = sheet.createRow(rowNum++);
+            
+            tmpItem.getFinancialCategory().getName();
+            tmpItem.getCategory().getName();
+            tmpItem.getInstitution().getName();
+            
+
+            
+            
+        }
+
+        // Apply a table format, ensuring there are enough rows and columns for the table
+        if (rowNum > 1) { // Ensure there are rows beyond the header
+            AreaReference area = new AreaReference("A1:L" + rowNum, SpreadsheetVersion.EXCEL2007);
+            XSSFTable table = sheet.createTable(area);
+            table.setName("BaseItemFeesTable");
+            table.setDisplayName("BaseItemFeesTable");
+
+            // Set the table style, with a null check to avoid the NullPointerException
+            XSSFTableStyleInfo style = (XSSFTableStyleInfo) table.getStyle();
+            if (style != null) {
+                style.setName("TableStyleMedium9");
+                style.setShowColumnStripes(true);
+                style.setShowRowStripes(true);
+            } else {
+                // Optionally log or handle the case where the style is not applied
+                System.out.println("Table style could not be applied.");
+            }
+        } else {
+            // Log or handle the case where no data is present for the table
+            System.out.println("No data available to create a table.");
+        }
+
+        // Lock the sheet except for the unlocked cells
+        sheet.protectSheet("password"); // Replace with your desired password
+
+        // Write the output to the response
+        FacesContext facesContext = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) facesContext.getExternalContext().getResponse();
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setHeader("Content-Disposition", "attachment; filename=\"base_item_fees.xlsx\"");
+        OutputStream outputStream = response.getOutputStream();
+        workbook.write(outputStream);
+        workbook.close();
+        outputStream.flush();
+        outputStream.close();
+
+        facesContext.responseComplete();
+    }
+
+    // Method to create locked cells
+    private void createLockedCell(Row row, int column, Object value, boolean unlock, XSSFWorkbook workbook) {
+        Cell cell = row.createCell(column);
+        if (value instanceof String) {
+            cell.setCellValue((String) value);
+        } else if (value instanceof Number) {
+            cell.setCellValue(((Number) value).doubleValue());
+        }
+        CellStyle style = workbook.createCellStyle();
+        style.setLocked(!unlock); // Lock unless specified to unlock
+        cell.setCellStyle(style);
+    }
+
+// Method to create unlocked cells
+    private void createUnlockedCell(Row row, int column, Object value, XSSFWorkbook workbook) {
+        createLockedCell(row, column, value, true, workbook); // Call with unlock true
+    }
 
     public void processDepartmentItemCount() {
         // Query for count of items without a department
