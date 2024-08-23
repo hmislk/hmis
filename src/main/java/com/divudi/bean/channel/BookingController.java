@@ -353,6 +353,10 @@ public class BookingController implements Serializable, ControllerWithPatient, C
             sessionInstanceSelected();
         }
     }
+    
+    public void calculateBalance(){
+        balance = getTenderedAmount() - getFeeTotalForSelectedBill();
+    }
 
     public double calculatRemainForMultiplePaymentTotal() {
         total = getFeeTotalForSelectedBill();
@@ -859,7 +863,8 @@ public class BookingController implements Serializable, ControllerWithPatient, C
 //                + url;
 //        return b;
 //    }
-    public void makeNull() {
+    
+    public void makeNull(){
         institution = null;
         paymentMethod = null;
         paymentMethodData = null;
@@ -4675,6 +4680,18 @@ public class BookingController implements Serializable, ControllerWithPatient, C
 
     public void setSessionInstancesFiltered(List<SessionInstance> sessionInstancesFiltered) {
         this.sessionInstancesFiltered = sessionInstancesFiltered;
+    }
+    
+    public double getBalance() {
+        return balance;
+    }
+
+    public void setBalance(double balance) {
+        this.balance = balance;
+    }
+
+    public double getTenderedAmount() {
+        return tenderedAmount;
     }
 
     public double getBalance() {
