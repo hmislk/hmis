@@ -11,6 +11,8 @@ import com.divudi.data.PaymentMethod;
 import static com.divudi.data.PaymentMethod.Card;
 import static com.divudi.data.PaymentMethod.OnCall;
 import static com.divudi.data.PaymentMethod.PatientDeposit;
+import com.divudi.entity.Department;
+import com.divudi.entity.Institution;
 import com.divudi.entity.Payment;
 import com.divudi.entity.cashTransaction.CashBook;
 import com.divudi.entity.cashTransaction.CashBookEntry;
@@ -19,6 +21,9 @@ import com.divudi.facade.CashBookFacade;
 import com.divudi.facade.PaymentFacade;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -46,6 +51,7 @@ public class CashBookEntryController implements Serializable {
     private SessionController sessionController;
 
     CashBookEntry current;
+    private List<CashBookEntry> cashBookEntryList;
 
     public void writeCashBookEntry(Payment p) {
         if (p == null) {
@@ -134,6 +140,31 @@ public class CashBookEntryController implements Serializable {
 
     }
 
+    public List<CashBookEntry> genarateCashBookEntries(Date fromDate, Date toDate, Institution site, Institution ins, Department dept) {
+        String jpql;
+        Map m = new HashMap<>();
+        jpql = "select b from CashBookEntry b where b.retired=:ret and b.createdAt between :fromDate and :toDate ";
+        if (site != null) {
+            jpql += "and where b.site=:site ";
+            m.put("site", site);
+        }
+        if (ins != null) {
+            jpql += "and where b.institution=:ins ";
+            m.put("ins", ins);
+        }
+        if (dept != null) {
+            jpql += "and where b.department=:dept ";
+            m.put("dept", dept);
+        }
+        m.put("fromDate", fromDate);
+        m.put("toDate", toDate);
+        m.put("ret", false);
+        cashBookEntryList = cashbookEntryFacade.findByJpql(jpql, m);
+        System.out.println("cashBookEntryList = " + cashBookEntryList.size());
+        System.out.println("jpql = " + jpql);
+        return cashBookEntryList;
+    }
+
     public CashBookEntryController() {
     }
 
@@ -151,6 +182,14 @@ public class CashBookEntryController implements Serializable {
 
     public void setCashBook(CashBook cashBook) {
         this.cashBook = cashBook;
+    }
+
+    public List<CashBookEntry> getCashBookEntryList() {
+        return cashBookEntryList;
+    }
+
+    public void setCashBookEntryList(List<CashBookEntry> cashBookEntryList) {
+        this.cashBookEntryList = cashBookEntryList;
     }
 
     /**
