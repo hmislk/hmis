@@ -66,6 +66,7 @@ public class CashBookEntryController implements Serializable {
         current.setEntryValue(p.getPaidValue());
         current.setPayment(p);
         current.setCashBook(sessionController.getLoggedCashbook());
+        current.setSite(sessionController.getDepartment().getSite());
         cashbookEntryFacade.create(current);
 
     }
