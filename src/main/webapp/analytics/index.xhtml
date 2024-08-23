@@ -35,6 +35,14 @@
                                     </p:tab>
                                     <p:tab title="Lists">
                                         <div class="d-grid gap-2">
+                                            
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                value="Download Bills " 
+                                                action="#{billSearch.navigateToDownloadBillsAndBillItems()}"
+                                                class="w-100">
+                                            </p:commandButton>
+                                            
                                             <p:commandButton 
                                                 ajax="false" 
                                                 value="Day End Summary" 
