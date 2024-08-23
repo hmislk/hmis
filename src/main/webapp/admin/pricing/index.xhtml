@@ -143,6 +143,52 @@
                                         </div>
                                     </p:tab>
 
+                                    <p:tab title="Download Fees">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton 
+                                                class="w-100"
+                                                ajax="false" 
+                                                value="Base Item Fees"
+                                                icon="fa fa-list" 
+                                                action="#{itemFeeManager.navigateToDownloadBaseItemFees()}">
+                                            </p:commandButton>
+
+                                            <p:commandButton 
+                                                class="w-100"
+                                                ajax="false" 
+                                                value="Item Fees for Sites"
+                                                icon="fa fa-sitemap" 
+                                                action="#{itemFeeManager.navigateToDownloadItemFeesForSites()}">
+                                            </p:commandButton>
+
+                                            <p:commandButton 
+                                                class="w-100"
+                                                ajax="false" 
+                                                value="Item Fees for Collecting Centres"
+                                                icon="fa fa-map-pin" 
+                                                action="#{itemFeeManager.navigateToDownloadItemFeesForCollectingCentres()}">
+                                            </p:commandButton>
+
+                                            <p:commandButton 
+                                                class="w-100"
+                                                ajax="false" 
+                                                value="Item Fees for Lists"
+                                                icon="fa fa-th-list" 
+                                                action="#{itemFeeManager.navigateToDownloadItemFeesForLists()}">
+                                            </p:commandButton>
+
+                                            <p:commandButton 
+                                                class="w-100"
+                                                ajax="false"
+                                                value="Upload Changed Item Fees"
+                                                icon="fa fa-upload"
+                                                action="#{itemFeeManager.navigateToUploadChangedItemFees()}">
+                                            </p:commandButton>
+                                        </div>
+                                    </p:tab>
+
+
+
                                     <p:tab title="Manage Packages">
                                         <div class="d-grid gap-2">
                                             <p:commandButton 
