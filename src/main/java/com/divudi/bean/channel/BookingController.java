@@ -419,71 +419,7 @@ public class BookingController implements Serializable, ControllerWithPatient, C
         balance = getTenderedAmount() - getFeeTotalForSelectedBill();
     }
 
-//    public double calculatRemainForMultiplePaymentTotal() {
-//        total = getFeeTotalForSelectedBill();
-//        if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
-//            double multiplePaymentMethodTotalValue = 0.0;
-//            for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
-//                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCash().getTotalValue();
-//                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCreditCard().getTotalValue();
-//                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCheque().getTotalValue();
-//                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getEwallet().getTotalValue();
-//                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
-//                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getSlip().getTotalValue();
-//                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getStaffCredit().getTotalValue();
-//
-//            }
-//            remainAmount = total - multiplePaymentMethodTotalValue;
-//            return total - multiplePaymentMethodTotalValue;
-//
-//        }
-//        remainAmount = total;
-//        return total;
-//    }
-//
-//    public void recieveRemainAmountAutomatically() {
-//        //double remainAmount = calculatRemainForMultiplePaymentTotal();
-//        if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
-//            int arrSize = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().size();
-//            ComponentDetail pm = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().get(arrSize - 1);
-//            switch (pm.getPaymentMethod()) {
-//                case Cash:
-//                    pm.getPaymentMethodData().getCash().setTotalValue(remainAmount);
-//                    break;
-//                case Card:
-//                    pm.getPaymentMethodData().getCreditCard().setTotalValue(remainAmount);
-//                    break;
-//                case Cheque:
-//                    pm.getPaymentMethodData().getCheque().setTotalValue(remainAmount);
-//                    break;
-//                case Slip:
-//                    pm.getPaymentMethodData().getSlip().setTotalValue(remainAmount);
-//                    break;
-//                case ewallet:
-//                    pm.getPaymentMethodData().getEwallet().setTotalValue(remainAmount);
-//                    break;
-//                case PatientDeposit:
-//                    if (patient != null) {
-//                        pm.getPaymentMethodData().getPatient_deposit().setPatient(patient);
-//                    }
-//                    pm.getPaymentMethodData().getPatient_deposit().setTotalValue(remainAmount);
-//                    break;
-//                case Credit:
-//                    pm.getPaymentMethodData().getCredit().setTotalValue(remainAmount);
-//                    break;
-//                case Staff:
-//                    pm.getPaymentMethodData().getStaffCredit().setTotalValue(remainAmount);
-//                    break;
-//                default:
-//                    throw new IllegalArgumentException("Unexpected value: " + pm.getPaymentMethod());
-//            }
-//        }
-//    }
-//
-//    public void calculateBalance() {
-//        balance = getTenderedAmount() - getFeeTotalForSelectedBill();
-//    }
-
+        
     public void sessionInstanceSelected() {
         sortSessions();
     }
@@ -861,6 +797,69 @@ public class BookingController implements Serializable, ControllerWithPatient, C
         return b;
     }
 
+    // ALREADY DEFIENED in line 629
+//    public void sendChannellingStatusUpdateNotificationSms(BillSession methodBillSession) {
+//        if (methodBillSession == null) {
+//            JsfUtil.addErrorMessage("Nothing to send");
+//            return;
+//        }
+//        if (methodBillSession.getSessionInstance() == null) {
+//            JsfUtil.addErrorMessage("No Session");
+//            return;
+//        }
+//        if (methodBillSession.getSessionInstance().getOriginatingSession() == null) {
+//            JsfUtil.addErrorMessage("No Originating Session");
+//            return;
+//        }
+//        if (methodBillSession.getBill() == null) {
+//            JsfUtil.addErrorMessage("No Bill");
+//            return;
+//        }
+//        if (methodBillSession.getBill().getPatient() == null) {
+//            JsfUtil.addErrorMessage("No Bill");
+//            return;
+//        }
+//
+//        if (!methodBillSession.getBill().getPatient().getPerson().getSmsNumber().trim().equals("")) {
+//            Sms e = new Sms();
+//            e.setCreatedAt(new Date());
+//            e.setCreater(sessionController.getLoggedUser());
+//            e.setBill(methodBillSession.getBill());
+//            e.setCreatedAt(new Date());
+//            e.setSmsType(MessageType.ChannelStatusUpdate);
+//            e.setCreater(sessionController.getLoggedUser());
+//            e.setReceipientNumber(methodBillSession.getBill().getPatient().getPerson().getSmsNumber());
+//            e.setSendingMessage(smsBody(methodBillSession));
+//            e.setDepartment(getSessionController().getLoggedUser().getDepartment());
+//            e.setInstitution(getSessionController().getLoggedUser().getInstitution());
+//            e.setPending(false);
+//            getSmsFacade().create(e);
+//
+//            Boolean sent = smsManager.sendSms(e);
+//            e.setSentSuccessfully(sent);
+//            getSmsFacade().edit(e);
+//
+//        }
+//
+//        JsfUtil.addSuccessMessage("SMS Sent");
+//    }
+//
+//    public String smsBody(BillSession r) {
+//        String securityKey = sessionController.getApplicationPreference().getEncrptionKey();
+//        if (securityKey == null || securityKey.trim().equals("")) {
+//            sessionController.getApplicationPreference().setEncrptionKey(securityController.generateRandomKey(10));
+//            sessionController.savePreferences(sessionController.getApplicationPreference());
+//        }
+//        Calendar c = Calendar.getInstance();
+//        c.add(Calendar.DATE, 2);
+//        String temId = securityController.encryptAlphanumeric(r.getId().toString(), securityKey);
+//        String url = commonController.getBaseUrl() + "faces/requests/cbss.xhtml?id=" + temId;
+//        String b = "Your session of "
+//                + r.getSessionInstance().getOriginatingSession().getName()
+//                + " Started. "
+//                + url;
+//        return b;
+//    }
     public void makeNull() {
         institution = null;
         paymentMethod = null;
@@ -3410,7 +3409,7 @@ public class BookingController implements Serializable, ControllerWithPatient, C
         agentHistory.setBill(bill);
         agentHistory.setBillItem(billItem);
         agentHistory.setBillSession(billSession);
-        agentHistory.setBalanceBeforeTransaction(ins.getBallance());
+        agentHistory.setBeforeBallance(ins.getBallance());
         agentHistory.setTransactionValue(transactionValue);
         agentHistory.setReferenceNumber(refNo);
         agentHistory.setHistoryType(historyType);
@@ -4681,16 +4680,14 @@ public class BookingController implements Serializable, ControllerWithPatient, C
         this.sessionInstancesFiltered = sessionInstancesFiltered;
     }
 
+
+
     public double getBalance() {
         return balance;
     }
 
     public void setBalance(double balance) {
         this.balance = balance;
-    }
-
-    public double getTenderedAmount() {
-        return tenderedAmount;
     }
 
     public void setTenderedAmount(double tenderedAmount) {
@@ -4711,6 +4708,10 @@ public class BookingController implements Serializable, ControllerWithPatient, C
 
     public void setRemainAmount(double remainAmount) {
         this.remainAmount = remainAmount;
+    }
+
+    public double getTenderedAmount() {
+        return tenderedAmount;
     }
 
 }
