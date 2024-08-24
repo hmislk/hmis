@@ -37,27 +37,26 @@
 
                                 <h:outputLabel value="Collecting Centre" />
                                 <p:selectOneMenu 
-                                            value="#{searchController.institution}" 
-                                            filter="true"
-                                            style="max-width: 100%;"
-                                            class="w-100"
-                                            filterMatchMode="true">
-                                            <f:selectItem itemLabel="All" ></f:selectItem>
-                                            <f:selectItems 
-                                                value="#{sessionController.loggableCollectingCentres}"
-                                                var="cc1" 
-                                                itemValue="#{cc1}" 
-                                                itemLabel="#{cc1.name}" >
-                                            </f:selectItems>
-                                        </p:selectOneMenu>
-
+                                    value="#{searchController.institution}" 
+                                    filter="true"
+                                    style="max-width: 100%;"
+                                    class="w-100"
+                                    filterMatchMode="contains">
+                                    <f:selectItems 
+                                        value="#{sessionController.loggableCollectingCentres}"
+                                        var="cc1" 
+                                        itemValue="#{cc1}" 
+                                        itemLabel="#{cc1.name}" >
+                                    </f:selectItems>
+                                </p:selectOneMenu>
+                                
                                 <p:commandButton 
                                     icon="fas fa-search" 
                                     id="btnSearch" 
                                     ajax="false" 
                                     value="Search" 
                                     class="w-100 ui-button-warning mt-2 mb-3"  
-                                    action="#{searchController.createPatientInvestigationsTable()}">
+                                    action="#{searchController.getPatientInvestigationsReportsTable()}">
                                 </p:commandButton>
 
                                 <h:outputLabel value="Bill No" />
