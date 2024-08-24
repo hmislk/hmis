@@ -648,9 +648,28 @@ public class InvestigationController implements Serializable {
 
     public void listAllIxs() {
         String sql;
-        sql = "Select i from Investigation i where i.retired=false ";
+        sql = "Select i "
+                + " from Investigation i "
+                + " where i.retired=:ret "
+                + " and i.hasReportFormat<>:rf";
         sql += " order by i.name";
-        allIxs = getFacade().findByJpql(sql);
+        Map m = new HashMap<>();
+        m.put("ret", false);
+        m.put("rf", true);
+        allIxs = getFacade().findByJpql(sql, m);
+    }
+
+    public void listAllReports() {
+        String sql;
+        sql = "Select i "
+                + " from Investigation i "
+                + " where i.retired=:ret "
+                + " and i.hasReportFormat=:rf";
+        sql += " order by i.name";
+        Map m = new HashMap<>();
+        m.put("ret", false);
+        m.put("rf", true);
+        allIxs = getFacade().findByJpql(sql, m);
     }
 
     public String listFilteredIxs() {
@@ -1199,6 +1218,21 @@ public class InvestigationController implements Serializable {
         return completeItems;
     }
 
+    public List<Investigation> completeReports(String qry) {
+        String jpql = "select c "
+                + " from Investigation c "
+                + " where c.retired=:ret"
+                + " and c.name like :qry"
+                + "  and c.hasReportFormat=:rf "
+                + " order by c.name";
+        Map params = new HashMap<>();
+        params.put("ret", false);
+        params.put("rf", true);
+        params.put("qry", "%" + qry.toUpperCase() + "%");
+        List<Investigation> completeItems = getFacade().findByJpql(jpql, params);
+        return completeItems;
+    }
+
 //    public List<Investigation> completeDepartmentItem(String qry) {
 //        if (getSessionController().getApplicationPreference().isInstitutionSpecificItems()) {
 //            String sql;
@@ -1249,6 +1283,11 @@ public class InvestigationController implements Serializable {
     public String navigateToListInvestigation() {
         listAllIxs();
         return "/admin/lims/investigation_list?faces-redirect=true";
+    }
+
+    public String navigateToListReportFormats() {
+        listAllReports();
+        return "/admin/lims/report_list?faces-redirect=true";
     }
 
     public String navigateToMultipleInvestigationUpdate() {
