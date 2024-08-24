@@ -152,7 +152,7 @@ public class PatientSample implements Serializable {
 
     @ManyToOne
     private Institution sampleReceivedAtLabInstitution;
-    @Enumerated
+    @Enumerated(EnumType.ORDINAL)
     private PatientInvestigationStatus status;
 
     //Cancellation
@@ -210,6 +210,12 @@ public class PatientSample implements Serializable {
     @Override
     public String toString() {
         return "com.divudi.entity.lab.PatientSample[ id=" + id + " ]";
+    }
+
+    public PatientSample() {
+        if (status == null) {
+            status = PatientInvestigationStatus.SAMPLE_GENERATED;
+        }
     }
 
     public Patient getPatient() {

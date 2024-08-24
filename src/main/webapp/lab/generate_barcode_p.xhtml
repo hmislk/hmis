@@ -378,14 +378,9 @@
                                         paginator="true"
                                         rowKey="#{b.id}"
                                         paginatorPosition="bottom"
-                                        selectionMode="multiple"
-                                        selection="#{patientInvestigationController.selectedBills}"
                                         rows="10"
                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                         rowsPerPageTemplate="10,25,50">
-
-                                        <p:column selectionBox="true" width="10">
-                                        </p:column>
 
                                         <!-- Bill Number and Date Column -->
                                         <p:column headerText="Bill No." width="6em" style="vertical-align: top;">
@@ -458,6 +453,10 @@
                                             <br/>
                                             <i class="fas fa-vials text-success"></i> <!-- Lab Department Icon -->
                                             <h:outputLabel value="#{b.toDepartment.name}" />
+                                        </p:column>
+
+                                        <p:column headerText="Actions" >
+                                            <p:commandButton value="Generate Barcodes" ajax="false" action="#{patientInvestigationController.generateBarcodesForSelectedBill(b)}" ></p:commandButton>
                                         </p:column>
 
                                     </p:dataTable>
