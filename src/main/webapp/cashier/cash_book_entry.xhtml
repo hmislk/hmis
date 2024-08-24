@@ -1,0 +1,133 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:prints="http://xmlns.jcp.org/jsf/composite/ezcomp/prints"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+
+        <ui:composition template="/cashier/index.xhtml">
+            <ui:define name="subcontent">
+
+                <h:form>
+
+                    <p:panel header="Cashbook Entries" >
+
+                        <h:panelGrid columns="2" class="w-100">
+                            <h:outputLabel value="From"/>
+                            <p:calendar 
+                                class="w-100 " 
+                                inputStyleClass="w-100" 
+                                id="fromDate" 
+                                value="#{searchController.fromDate}" 
+                                navigator="false" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                                <f:ajax event="dateSelect" execute="tblBills  cmbUser"  render="tblBills toDate fromDate"/>
+                            </p:calendar>
+
+                            <h:outputLabel value="To"/>                                
+                            <p:calendar 
+                                class="w-100 " 
+                                inputStyleClass="w-100" 
+                                id="toDate" 
+                                value="#{searchController.toDate}" 
+                                navigator="false" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                                <f:ajax event="dateSelect" execute="tblBills cmbUser"  render="tblBills toDate fromDate"/>
+                            </p:calendar>
+
+                            <h:outputLabel value="Institution"/>                                
+                            <p:selectOneMenu class="w-100 " value="#{searchController.institution}" filter="true" >
+                                <f:selectItem itemLabel="All Institution" ></f:selectItem>
+                                <f:selectItems value="#{sessionController.loggableInstitutions}" var="d" itemLabel="#{d.institution.name} - #{d.name}" itemValue="#{d}" ></f:selectItems>
+                            </p:selectOneMenu>
+
+                            <h:outputLabel value="Department"/>                                
+                            <p:selectOneMenu class="w-100 "  value="#{searchController.department}" filter="true">
+                                <f:selectItem itemLabel="All Departments" ></f:selectItem>
+                                <f:selectItems value="#{sessionController.loggableDepartments}" var="d" itemLabel="#{d.institution.name} - #{d.name}" itemValue="#{d}" ></f:selectItems>
+                            </p:selectOneMenu>
+
+                            <h:outputLabel value="Site"/>                                
+                            <p:autoComplete 
+                                class="w-100  " 
+                                inputStyleClass="w-100" 
+                                id="cmbUser"  
+                                placeholder="All Sites"
+                                forceSelection="true" 
+                                completeMethod="#{institutionController.completeSite}" 
+                                var="s" itemLabel="#{s.name}" 
+                                itemValue="#{s}"
+                                value="#{searchController.site}" >
+                            </p:autoComplete>
+                        </h:panelGrid>
+                        <h:panelGrid columns="3" class="my-2" >
+
+                            <p:commandButton  
+                                value="Process" 
+                                ajax="false"
+                                action="#{searchController.genarateCashBookEntries()}" 
+                                class="ui-button-warning" icon="fas fa-cogs">
+                            </p:commandButton>
+
+                        </h:panelGrid>
+                        <p:panel header="Cash book Entries" >
+                            <p:dataTable id="tblBills" value="#{searchController.cashBookEntries}" var="cb" rowKey="#{cb.key}" rowIndexVar="n" >
+                                <f:facet name="header">
+                                    <h:outputLabel value="Cash Book Entries"/>
+                                </f:facet>
+
+                                <p:column headerText="Payment Method" style="text-align: left;" 
+                                          filterBy="#{cb.paymentMethod}" filterMatchMode="contains"
+                                          sortBy="#{cb.paymentMethod}">
+                                    <p:outputLabel value="#{cb.paymentMethod}" ></p:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Site" 
+                                          filterBy="#{cb.site.name}" filterMatchMode="contains"
+                                          sortBy="#{cb.site.name}">
+                                    <p:outputLabel value="#{cb.site.name}" ></p:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Institution" sortBy="#{cb.institution}" style="text-align: right; padding-right: 20px;">
+                                    <p:outputLabel value="#{cb.institution.name}" ></p:outputLabel>
+                                </p:column>
+                                
+                                <p:column headerText="Department" sortBy="#{cb.department}" style="text-align: right; padding-right: 20px;">
+                                    <p:outputLabel value="#{cb.department.name}" ></p:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Total" sortBy="#{cb.entryValue}" style="text-align: right; padding-right: 20px;">
+                                    <p:outputLabel value="#{cb.entryValue}" >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </p:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Created AT" sortBy="#{cb.createdAt}" style="text-align: right; padding-right: 20px;">
+                                    <p:outputLabel value="#{cb.createdAt}" >
+                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}  HH:mm a" ></f:convertDateTime>
+                                    </p:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Creater" sortBy="#{cb.creater}"  style="text-align: right; padding-right: 20px;">
+                                    <p:outputLabel value="#{cb.creater.name}" >
+                                    </p:outputLabel>
+                                </p:column>
+
+                                
+
+                            </p:dataTable>
+                        </p:panel>
+
+                    </p:panel>
+
+                </h:form>
+            </ui:define>
+
+        </ui:composition>
+
+    </h:body>
+</html>
