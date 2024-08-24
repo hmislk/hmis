@@ -59,7 +59,7 @@ public class CollectingCentreApplicationController {
                 agentHistory.setHistoryType(historyType);
 
                 
-                double balanceAfterTx = collectingCentre.getBallance() - transactionValue;
+                double balanceAfterTx = collectingCentre.getBallance() - valueWithoutccFee;
                 double hospitalBalanceAfterTx = collectingCentre.getAgentBalance() - valueWithoutccFee;
                 double agentBalanceAfterTx = collectingCentre.getCompanyBalance() - valueWithoutccFee;
                 
