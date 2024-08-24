@@ -58,7 +58,7 @@
                         <div class="row" >
                             <div class="col-md-6" >
                                 <p:focus  context="txtQuickSearchPhoneNumber" ></p:focus>
-                                
+
                                 <p:panel id="ptImp">
                                     <f:facet name="header">
                                         <h:panelGroup layout="block" styleClass="d-flex justify-content-between align-items-center">
@@ -440,11 +440,6 @@
 
                                 </p:panel>
 
-
-
-
-
-
                                 <p:panel class="mt-2" rendered="#{configOptionApplicationController.getBooleanValueByKey('Allow Local Number For Opd Billing')}">
                                     <div class="d-flex">
                                         <p:outputLabel style="width: 150px;" class="mt-2" value="Local Number :"/>
@@ -515,7 +510,7 @@
                                                     <h:outputText value="#{ix.name}" ></h:outputText>
                                                 </p:column>
                                                 <p:column  width="7em" style="text-align: right; margin: 0px; padding: 0px;" headerText="Value">
-                                                    <h:outputText value="#{ix.total}">
+                                                    <h:outputText value="#{ix.total}" rendered="#{ix.total ne 0}">
                                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                     </h:outputText>
                                                 </p:column>
@@ -623,7 +618,7 @@
                                                 action="#{opdBillController.fillDepartmentOpdItems()}"
                                                 rendered="#{webUserController.hasPrivilege('Admin')}"
                                                 process="btnRefreshItemLight"
-                                                update="acIx"
+                                                update="acIx departments"
                                                 />
                                         </div>
                                     </div>
@@ -995,7 +990,7 @@
                                                     icon="fa fa-check"
                                                     action="#{opdBillController.settleOpdBill()}"
                                                     onclick="if (!confirm('Are you sure you want to Settle This Bill ?'))
-                                                        return false;"
+                                                                return false;"
                                                     class="ui-button-success mx-2 w-100">
                                                 </p:commandButton>
 

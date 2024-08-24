@@ -980,7 +980,7 @@ public class LimsMiddlewareController {
         return ok;
     }
 
-    private boolean addResultToReport(String sampleId, String testStr, String result, String unit, String error) {
+    public boolean addResultToReport(String sampleId, String testStr, String result, String unit, String error) {
         System.out.println("Adding Individual Result To Report");
         boolean temFlag = false;
         Long sid;
@@ -1008,12 +1008,22 @@ public class LimsMiddlewareController {
         }
         for (PatientInvestigation pi : ptixs) {
             System.out.println("Patient Investigation = " + pi);
+            
+            Investigation ix = pi.getInvestigation();
+            
+            if(ix.getReportedAs()!=null){
+                if(ix.getReportedAs() instanceof Investigation){
+                    ix = (Investigation) ix.getReportedAs();
+                }
+            }
+            
+            
             List<PatientReport> prs = new ArrayList<>();
             PatientReport tpr;
             tpr = getUnapprovedPatientReport(pi);
             System.out.println("Previous Unapproved Report = " + tpr);
             if (tpr == null) {
-                tpr = createNewPatientReport(pi, pi.getInvestigation());
+                tpr = createNewPatientReport(pi, ix);
             }
             prs.add(tpr);
 
@@ -1485,7 +1495,16 @@ public class LimsMiddlewareController {
     }
 
     public PatientSample patientSampleFromId(Long id) {
-        return patientSampleFacade.find(id);
+        PatientSample ps = patientSampleFacade.find(id);
+        if(ps!=null){
+            return ps;
+        }
+        String j = "Select ps "
+                + " from PatientSample ps "
+                + " where ps.sampleId=:sid ";
+        Map m = new HashMap<>();
+        m.put("sid", id);
+        return patientSampleFacade.findFirstByJpql(j,m);
     }
 
     public List<PatientSampleComponant> getPatientSampleComponents(PatientSample ps) {

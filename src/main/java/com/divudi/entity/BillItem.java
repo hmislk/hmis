@@ -73,13 +73,14 @@ public class BillItem implements Serializable {
     double netValue;
     @Transient
     private double absoluteNetValue;
-    double vatPlusNetValue;
+    private double vatPlusNetValue;
 
-    double marginValue;
+    private double marginValue;
     private double adjustedValue;
-    double hospitalFee;
+    private double hospitalFee;
     private double collectingCentreFee;
-    double staffFee;
+    private double staffFee;
+    private double otherFee;
 //    private double dblValue;
     @ManyToOne
     Item item;
@@ -956,6 +957,14 @@ public class BillItem implements Serializable {
     public double getTotalProcedureFeeValueTransient() {
         calculateFeeTotals();
         return totalProcedureFeeValueTransient;
+    }
+
+    public double getOtherFee() {
+        return otherFee;
+    }
+
+    public void setOtherFee(double otherFee) {
+        this.otherFee = otherFee;
     }
 
    

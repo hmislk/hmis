@@ -2902,6 +2902,13 @@ public class BillSearch implements Serializable {
         return "/payment_bill_reprint.xhtml?faces-redirect=true;";
     }
 
+    
+    
+    public String navigateToDownloadBillsAndBillItems(){
+        return "/";
+    }
+    
+    
     public String navigateViewBillByBillTypeAtomic() {
         if (bill == null) {
             JsfUtil.addErrorMessage("No Bill is Selected");
@@ -3619,6 +3626,8 @@ public class BillSearch implements Serializable {
         }
     }
 
+    
+    @Deprecated
     public void createCollectingCenterfees(Bill b) {
         AgentHistory ah = new AgentHistory();
         if (b.getCancelledBill() != null) {
@@ -3640,7 +3649,7 @@ public class BillSearch implements Serializable {
             }
             ah = fetchCCHistory(b.getCancelledBill());
             if (ah != null) {
-                b.getCancelledBill().setTransCurrentCCBalance(ah.getBeforeBallance() + ah.getTransactionValue());
+                b.getCancelledBill().setTransCurrentCCBalance(ah.getBalanceBeforeTransaction() + ah.getTransactionValue());
             }
 
         } else if (b.getRefundedBill() != null) {
@@ -3662,7 +3671,7 @@ public class BillSearch implements Serializable {
             }
             ah = fetchCCHistory(b.getRefundedBill());
             if (ah != null) {
-                b.getRefundedBill().setTransCurrentCCBalance(ah.getBeforeBallance() + ah.getTransactionValue());
+                b.getRefundedBill().setTransCurrentCCBalance(ah.getBalanceBeforeTransaction() + ah.getTransactionValue());
             }
         } else {
             b.setTransTotalCCFee(0.0);
@@ -3683,7 +3692,7 @@ public class BillSearch implements Serializable {
             }
             ah = fetchCCHistory(b);
             if (ah != null) {
-                b.setTransCurrentCCBalance(ah.getBeforeBallance() + ah.getTransactionValue());
+                b.setTransCurrentCCBalance(ah.getBalanceBeforeTransaction() + ah.getTransactionValue());
             }
         }
 

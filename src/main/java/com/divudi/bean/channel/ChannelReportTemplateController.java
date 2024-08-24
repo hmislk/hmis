@@ -693,12 +693,12 @@ public class ChannelReportTemplateController implements Serializable {
         sessionInstance.setBookedPatientCount(bookedPatientCount);
         sessionInstance.setPaidPatientCount(paidPatientCount);
         sessionInstance.setCompletedPatientCount(completedPatientCount);
-        sessionInstance.setCancelPatientCount(cancelPatientCount);
+        sessionInstance.setCancelOnCallPatientCount(onCallPatientCount);
+        sessionInstance.setCancelPaidPatientCount(cancelPatientCount);
         sessionInstance.setRefundedPatientCount(refundedPatientCount);
         sessionInstance.setOnCallPatientCount(onCallPatientCount);
         sessionInstance.setReservedBookingCount(reservedBookingCount);
         sessionInstance.setPaidToDoctorPatientCount(calculateSessionDoneFees(sessionInstance));
-        // Assuming remainingPatientCount is calculated as booked - completed
         sessionInstance.setRemainingPatientCount(bookedPatientCount - completedPatientCount);
         sessionInstanceFacade.edit(sessionInstance);
     }
@@ -711,25 +711,25 @@ public class ChannelReportTemplateController implements Serializable {
         BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelPaid};
         List<BillType> bts = Arrays.asList(billTypes);
         HashMap hm = new HashMap();
-        String sql = " SELECT count(b) "
+        String sql = " SELECT count(DISTINCT b.bill.paidBill) "
                 + " FROM BillFee b "
-                + " where type(b.bill)=:class "
-                + " and b.bill.retired=false "
-                + " and b.bill.paidAmount!=0 "
-                + " and b.fee.feeType=:ftp"
-                + " and b.bill.refunded=false "
-                + " and b.bill.cancelled=false "
-                + " and (b.feeValue - b.paidValue) > 0 "
-                + " and b.bill.billType in :bt "
-                + " and b.bill.singleBillSession.sessionInstance=:si"
-                + " and b.bill.singleBillSession.completed=:com";
-        sql += " order by b.bill.singleBillSession.serialNo ";
+                + " WHERE b.bill.retired = false "
+                + " AND b.fee.feeType = :ftp "
+                + " AND b.bill.refunded = false "
+                + " AND b.bill.cancelled = false "
+                + " AND ABS(ABS(b.feeValue) - ABS(b.paidValue)) < 1 "
+                //                + " AND b.bill.billType IN :bt "
+                + " AND b.bill.singleBillSession.sessionInstance = :si";
+
         hm.put("si", si);
-        hm.put("bt", bts);
+//        hm.put("bt", bts);
         hm.put("ftp", FeeType.Staff);
-        hm.put("com", true);
-        hm.put("class", BilledBill.class);
-        return billFeeFacade.findLongByJpql(sql, hm, TemporalType.TIMESTAMP);
+//        hm.put("class", BilledBill.class);
+        System.out.println("sql = " + sql);
+        System.out.println("hm = " + hm);
+        Long count = billFeeFacade.findLongByJpql(sql, hm, TemporalType.TIMESTAMP);
+        System.out.println("count = " + count);
+        return count;
     }
 
     public void processAndfillDailySessionCounts() {
@@ -778,6 +778,8 @@ public class ChannelReportTemplateController implements Serializable {
         Long long4 = 0L;
         Long long5 = 0L;
         Long long6 = 0L;
+        Long long7 = 0L;
+        Long long8 = 0L;
 
         System.out.println("Processing result rows...");
         for (ReportTemplateRow r : rs) {
@@ -798,23 +800,27 @@ public class ChannelReportTemplateController implements Serializable {
             long bookedCount = si.getBookedPatientCount() != null ? si.getBookedPatientCount() : 0;
             long paidCount = si.getPaidPatientCount() != null ? si.getPaidPatientCount() : 0;
             long completedCount = si.getCompletedPatientCount() != null ? si.getCompletedPatientCount() : 0;
-            long cancelCount = si.getCancelPatientCount() != null ? si.getCancelPatientCount() : 0;
+            long cancelOnCallCount = si.getCancelOnCallPatientCount() != null ? si.getCancelOnCallPatientCount() : 0;
             long refundedCount = si.getRefundedPatientCount() != null ? si.getRefundedPatientCount() : 0;
             long remainingCount = si.getRemainingPatientCount() != null ? si.getRemainingPatientCount() : 0;
-
+            long paidToDoctorCount = si.getPaidToDoctorPatientCount() != null ? si.getPaidToDoctorPatientCount() : 0;
+            long cancelPaidCount = si.getCancelPaidPatientCount() != null ? si.getCancelPaidPatientCount() : 0;
             System.out.println("Booked: " + bookedCount + ", Paid: " + paidCount + ", Completed: " + completedCount
-                    + ", Cancelled: " + cancelCount + ", Refunded: " + refundedCount + ", Remaining: " + remainingCount);
+                    + ", CancelledOnCall: " + cancelOnCallCount + ", Refunded: " + refundedCount + ", Remaining: " + remainingCount
+                    + ", PaidToDoctor: " + paidToDoctorCount + ", CancelledPaid: " + cancelPaidCount);
 
             long1 += bookedCount;
             long2 += paidCount;
             long3 += completedCount;
-            long4 += cancelCount;
+            long4 += cancelOnCallCount;
             long5 += refundedCount;
             long6 += remainingCount;
+            long7 += paidToDoctorCount;
+            long8 += cancelPaidCount;
         }
 
         System.out.println("Final counts: long1=" + long1 + ", long2=" + long2 + ", long3=" + long3
-                + ", long4=" + long4 + ", long5=" + long5 + ", long6=" + long6);
+                + ", long4=" + long4 + ", long5=" + long5 + ", long6=" + long6 + ", long7=" + long7 + ", long8=" + long8);
 
         if (bundle != null) {
             System.out.println("Setting values in bundle...");
@@ -825,6 +831,8 @@ public class ChannelReportTemplateController implements Serializable {
             bundle.setLong4(long4);
             bundle.setLong5(long5);
             bundle.setLong6(long6);
+            bundle.setLong7(long7);
+            bundle.setLong7(long8);
         } else {
             System.out.println("Bundle is null.");
         }
@@ -961,6 +969,7 @@ public class ChannelReportTemplateController implements Serializable {
                 + "sum(si.completedPatientCount),"
                 + "sum(si.cancelPatientCount),"
                 + "sum(si.refundedPatientCount),"
+                + "sum(si.paidToDoctorPatientCount),"
                 + "sum(si.remainingPatientCount)"
                 + ") "
                 + " from SessionInstance si "
@@ -987,27 +996,28 @@ public class ChannelReportTemplateController implements Serializable {
         List<ReportTemplateRow> rs = (List<ReportTemplateRow>) billFacade.findLightsByJpql(j, m, TemporalType.DATE);
 
         bundle.setReportTemplateRows(rs);
-        bundle.setLong1(0l);
-        bundle.setLong2(0l);
-        bundle.setLong3(0l);
-        bundle.setLong4(0l);
-        bundle.setLong5(0l);
-        bundle.setLong6(0l);
+        bundle.setLong1(0L);
+        bundle.setLong2(0L);
+        bundle.setLong3(0L);
+        bundle.setLong4(0L);
+        bundle.setLong5(0L);
+        bundle.setLong6(0L);
+        bundle.setLong7(0L);
 
         long idCounter = 1;
 
         for (ReportTemplateRow row : rs) {
             if (row != null) {
                 row.setId(idCounter++);
-                SessionInstance sessionInstance = row.getSessionInstance();
-                if (sessionInstance != null) {
-                    bundle.setLong1(bundle.getLong1() + (row.getLong1() != null ? row.getLong1() : 0));
-                    bundle.setLong2(bundle.getLong2() + (sessionInstance.getPaidPatientCount() != null ? sessionInstance.getPaidPatientCount() : 0));
-                    bundle.setLong3(bundle.getLong3() + (sessionInstance.getCompletedPatientCount() != null ? sessionInstance.getCompletedPatientCount() : 0));
-                    bundle.setLong4(bundle.getLong4() + (sessionInstance.getCancelPatientCount() != null ? sessionInstance.getCancelPatientCount() : 0));
-                    bundle.setLong5(bundle.getLong5() + (sessionInstance.getRefundedPatientCount() != null ? sessionInstance.getRefundedPatientCount() : 0));
-                    bundle.setLong6(bundle.getLong6() + (sessionInstance.getRemainingPatientCount() != null ? sessionInstance.getRemainingPatientCount() : 0));
-                }
+
+                // Directly sum the values from the aggregated query results
+                bundle.setLong1(bundle.getLong1() + (row.getLong1() != null ? row.getLong1() : 0)); // Booked Patient Count
+                bundle.setLong2(bundle.getLong2() + (row.getLong2() != null ? row.getLong2() : 0)); // Paid Patient Count
+                bundle.setLong3(bundle.getLong3() + (row.getLong3() != null ? row.getLong3() : 0)); // Completed Patient Count
+                bundle.setLong4(bundle.getLong4() + (row.getLong4() != null ? row.getLong4() : 0)); // Cancel Patient Count
+                bundle.setLong5(bundle.getLong5() + (row.getLong5() != null ? row.getLong5() : 0)); // Refunded Patient Count
+                bundle.setLong6(bundle.getLong6() + (row.getLong6() != null ? row.getLong6() : 0)); // Paid to Doctor Patient Count
+                bundle.setLong7(bundle.getLong7() + (row.getLong7() != null ? row.getLong7() : 0)); // Remaining Patient Count
             }
         }
 
@@ -6182,18 +6192,18 @@ public class ChannelReportTemplateController implements Serializable {
         Institution i = null;
         for (AgentHistory a : agentHistorys) {
             if (start) {
-                a.setTransCumilativeTotal(a.getBeforeBallance() + a.getTransactionValue());
+                a.setTransCumilativeTotal(a.getBalanceBeforeTransaction() + a.getTransactionValue());
                 start = false;
-                d = a.getBeforeBallance() + a.getTransactionValue();
+                d = a.getBalanceBeforeTransaction() + a.getTransactionValue();
                 i = a.getBill().getFromInstitution();
                 continue;
             }
             if (i.equals(a.getBill().getFromInstitution())) {
                 a.setTransCumilativeTotal(d + a.getTransactionValue());
-                d = a.getBeforeBallance() + a.getTransactionValue();
+                d = a.getBalanceBeforeTransaction() + a.getTransactionValue();
             } else {
-                a.setTransCumilativeTotal(a.getBeforeBallance() + a.getTransactionValue());
-                d = a.getBeforeBallance() + a.getTransactionValue();
+                a.setTransCumilativeTotal(a.getBalanceBeforeTransaction() + a.getTransactionValue());
+                d = a.getBalanceBeforeTransaction() + a.getTransactionValue();
                 i = a.getBill().getFromInstitution();
             }
 

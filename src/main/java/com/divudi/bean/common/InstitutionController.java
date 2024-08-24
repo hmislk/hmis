@@ -201,7 +201,7 @@ public class InstitutionController implements Serializable {
         sql = "select c from Institution c "
                 + " where c.retired=false ";
         if (qry != null) {
-            sql += " and ((c.name) like :qry or (c.institutionCode) like :qry) ";
+            sql += " and ((c.name) like :qry or (c.code) like :qry) ";
             hm.put("qry", "%" + qry.toUpperCase() + "%");
         }
         if (types != null) {
@@ -261,6 +261,11 @@ public class InstitutionController implements Serializable {
 
     public List<Institution> completeCompany(String qry) {
         return completeInstitution(qry, InstitutionType.Company);
+    }
+    
+    public List<Institution> completeSite(String qry) {
+        //Sites
+        return completeInstitution(qry, InstitutionType.Site);
     }
 
     public List<Institution> completeCollectingCenter(String qry) {
@@ -604,7 +609,7 @@ public class InstitutionController implements Serializable {
         AgentHistory agentHistory = new AgentHistory();
         agentHistory.setCreatedAt(new Date());
         agentHistory.setCreater(getSessionController().getLoggedUser());
-        agentHistory.setBeforeBallance(historyValue);
+        agentHistory.setBalanceBeforeTransaction(historyValue);
         agentHistory.setTransactionValue(transactionValue);
         agentHistory.setHistoryType(historyType);
         agentHistory.setComment(comment);
