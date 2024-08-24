@@ -3,6 +3,7 @@ package com.divudi.bean.common;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
+import javax.inject.Inject;
 
 /**
  *
@@ -16,6 +17,9 @@ public class NavigationController implements Serializable {
      * Creates a new instance of NavigationController
      */
     private int adminStaffMenuIndex;
+    
+    @Inject
+    InstitutionController institutionController;
 
     public NavigationController() {
     }
@@ -26,6 +30,12 @@ public class NavigationController implements Serializable {
 
     public String navigateToManageDepartment() {
         return "/admin/institutions/department_management?faces-redirect=true";
+    }
+    
+    public String navigateToManageSite(){
+        institutionController.fillAllSites();
+        institutionController.prepareAddSite();
+        return "/admin/institutions/site_management?faces-redirect=true";
     }
 
     public String navigateToManageInstitution() {
