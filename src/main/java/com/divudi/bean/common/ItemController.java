@@ -2083,32 +2083,22 @@ public class ItemController implements Serializable {
     }
 
     public List<Item> completeAllServicesAndInvestigations(String query) {
-        List<Item> suggestions;
+        List<Item> qryResults;
         HashMap<String, Object> m = new HashMap<>();
         String sql;
-        String[] keywords = null;
-
-        keywords = query.trim().toLowerCase().split("\\s+");
 
         StringBuilder sqlBuilder = new StringBuilder();
         sqlBuilder.append("select c from Item c ")
                 .append("where c.retired = false ")
+                .append("and c.name like :query ")
                 .append("and type(c) != :pac ")
                 .append("and (type(c) = :ser ")
                 .append("or type(c) = :inv ")
                 .append("or type(c) = :ward ")
-                .append("or type(c) = :the) ");
+                .append("or type(c) = :the) ")
+                .append("order by c.name");
 
-        for (int i = 0; i < keywords.length; i++) {
-            if (i == 0) {
-                sqlBuilder.append("and (");
-            } else {
-                sqlBuilder.append(" or ");
-            }
-            sqlBuilder.append("upper(c.name) like :q").append(i);
-            m.put("q" + i, "%" + keywords[i].toUpperCase() + "%");
-        }
-        sqlBuilder.append(") order by c.name");
+        m.put("query", "%" + query + "%");
 
         sql = sqlBuilder.toString();
 
@@ -2117,9 +2107,10 @@ public class ItemController implements Serializable {
         m.put("inv", Investigation.class);
         m.put("ward", InwardService.class);
         m.put("the", TheatreService.class);
-        suggestions = getFacade().findByJpql(sql, m);
 
-        return suggestions;
+        qryResults = getFacade().findByJpql(sql, m);
+
+        return qryResults;
     }
 
     public List<Item> completeInwardItems(String query) {

@@ -117,6 +117,10 @@ public class FeeValueController implements Serializable {
     }
 
     public FeeValue getCollectingCentreFeeValue(Long itemId, Institution collectingCentre) {
+        System.out.println("Starting getCollectingCentreFeeValue");
+        System.out.println("Item ID: " + itemId);
+        System.out.println("Collecting Centre: " + collectingCentre);
+
         String jpql = "SELECT f "
                 + " FROM FeeValue f "
                 + " WHERE f.item.id = :iid "
@@ -127,11 +131,18 @@ public class FeeValueController implements Serializable {
         params.put("iid", itemId);
         params.put("ret", false);
         params.put("collectingCentre", collectingCentre);
+
+        System.out.println("Executing JPQL: " + jpql);
+        System.out.println("Parameters: " + params);
+
         FeeValue fv = getFacade().findFirstByJpql(jpql, params);
 
         if (fv != null) {
+            System.out.println("FeeValue found in first query: " + fv);
             return fv;
         }
+
+        System.out.println("No FeeValue found in the first query, executing the second query.");
 
         jpql = "SELECT f "
                 + " FROM FeeValue f "
@@ -143,7 +154,13 @@ public class FeeValueController implements Serializable {
         params.put("iid", itemId);
         params.put("ret", false);
         params.put("category", collectingCentre.getFeeListType());
+
+        System.out.println("Executing fallback JPQL: " + jpql);
+        System.out.println("Fallback Parameters: " + params);
+
         fv = getFacade().findFirstByJpql(jpql, params);
+
+        System.out.println("Returning FeeValue: " + fv);
 
         return fv;
     }
