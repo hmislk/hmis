@@ -299,9 +299,19 @@ public class ItemController implements Serializable {
             createLockedCell(row, 0, tmpItem.getId() != null ? tmpItem.getId().toString() : "N/A", false, workbook); // Locked ID
             createLockedCell(row, 1, tmpItem.getCode() != null ? tmpItem.getCode() : "N/A", false, workbook); // Locked Item Code
 
+            
+            
+            
             // Create unlocked cells with null checks for other fields
             createUnlockedCell(row, 2, tmpItem.getItemType() != null ? tmpItem.getItemType().toString() : "N/A", workbook); // Unlocked Item Type
             createUnlockedCell(row, 3, tmpItem.getName() != null ? tmpItem.getName() : "N/A", workbook); // Unlocked Item Name
+            
+            //New Fields to add
+            tmpItem.getPrintName();
+            tmpItem.getFullName();
+            tmpItem.getShortName();
+            
+            
             createUnlockedCell(row, 4, tmpItem.getCategory() != null && tmpItem.getCategory().getName() != null ? tmpItem.getCategory().getName() : "N/A", workbook); // Unlocked Category
             createUnlockedCell(row, 5, tmpItem.getFinancialCategory() != null && tmpItem.getFinancialCategory().getName() != null ? tmpItem.getFinancialCategory().getName() : "N/A", workbook); // Unlocked Financial Category
             createUnlockedCell(row, 6, tmpItem.isRetired() ? "Yes" : "No", workbook); // Unlocked Retired
