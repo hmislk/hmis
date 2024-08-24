@@ -142,7 +142,7 @@ public class ItemFeeManager implements Serializable {
         return "/admin/pricing/feelist_type_upload?faces-redirect=true";
     }
 
-    public String navigateToUploadInstitutionItemFees(){
+    public String navigateToUploadInstitutionItemFees() {
 
         return "/admin/pricing/feelist_item_fees_upload?faces-redirect=true";
     }
@@ -509,19 +509,39 @@ public class ItemFeeManager implements Serializable {
         itemFees = fillFees(item);
     }
 
-    public void updateItemAndCollectingCentreFees(){
+    public void updateItemAndCollectingCentreFees() {
+        itemFees = new ArrayList<>();
+        if (item == null) {
+            return;
+        }
+        if (collectingCentre == null) {
+            return;
+        }
         itemFees = fillFees(item, collectingCentre);
     }
-    
-      public void updateItemAndSiteFees(){
+
+    public void updateItemAndSiteFees() {
+        itemFees = new ArrayList<>();
+        if (item == null) {
+            return;
+        }
+        if (forSite == null) {
+            return;
+        }
         itemFees = fillFees(item, forSite);
     }
-    
-    
-    public void updateItemAndFeeListees(){
+
+    public void updateItemAndFeeListees() {
+        itemFees = new ArrayList<>();
+        if (item == null) {
+            return;
+        }
+        if (feeListType == null) {
+            return;
+        }
         itemFees = fillFees(item, feeListType);
     }
-    
+
     public void fillForCollectingCentreFees() {
         if (collectingCentre == null) {
             itemFees = null;
@@ -633,7 +653,7 @@ public class ItemFeeManager implements Serializable {
         }
         System.out.println("m = " + m);
         System.out.println("jpql = " + jpql);
-        List<ItemFee> fs =  itemFeeFacade.findByJpql(jpql, m);
+        List<ItemFee> fs = itemFeeFacade.findByJpql(jpql, m);
         System.out.println("fs = " + fs);
         return fs;
     }
