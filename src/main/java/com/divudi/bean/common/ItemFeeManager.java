@@ -518,38 +518,6 @@ public class ItemFeeManager implements Serializable {
             return;
         }
         itemFees = fillFees(item, collectingCentre);
-    }
-
-    public void updateItemAndSiteFees() {
-        itemFees = new ArrayList<>();
-        if (item == null) {
-            return;
-        }
-        if (forSite == null) {
-            return;
-        }
-        itemFees = fillFees(item, forSite);
-    }
-
-    public void updateItemAndFeeListees() {
-        itemFees = new ArrayList<>();
-        if (item == null) {
-            return;
-        }
-        if (feeListType == null) {
-            return;
-        }
-        itemFees = fillFees(item, feeListType);
-    }
-
-    public void fillForCollectingCentreFees() {
-        if (collectingCentre == null) {
-            itemFees = null;
-            totalItemFee = 0.0;
-            totalItemFeeForForeigners = 0.0;
-            return;
-        }
-        itemFees = fillFees(item, collectingCentre);
         totalItemFee = itemFees.stream()
                 .filter(Objects::nonNull)
                 .mapToDouble(ItemFee::getFee)
@@ -558,16 +526,16 @@ public class ItemFeeManager implements Serializable {
                 .filter(Objects::nonNull)
                 .mapToDouble(ItemFee::getFfee)
                 .sum();
-
         feeValueController.updateFeeValue(item, collectingCentre, totalItemFee, totalItemFeeForForeigners);
 
     }
 
-    public void fillForSiteFees() {
+    public void updateItemAndSiteFees() {
+        itemFees = new ArrayList<>();
+        if (item == null) {
+            return;
+        }
         if (forSite == null) {
-            itemFees = null;
-            totalItemFee = 0.0;
-            totalItemFeeForForeigners = 0.0;
             return;
         }
         itemFees = fillFees(item, forSite);
@@ -580,14 +548,14 @@ public class ItemFeeManager implements Serializable {
                 .mapToDouble(ItemFee::getFfee)
                 .sum();
         feeValueController.updateFeeValue(item, forSite, totalItemFee, totalItemFeeForForeigners);
-
     }
 
-    public void fillForForCategoryFees() {
+    public void updateItemAndFeeListees() {
+        itemFees = new ArrayList<>();
+        if (item == null) {
+            return;
+        }
         if (feeListType == null) {
-            itemFees = null;
-            totalItemFee = 0.0;
-            totalItemFeeForForeigners = 0.0;
             return;
         }
         itemFees = fillFees(item, feeListType);
@@ -599,6 +567,66 @@ public class ItemFeeManager implements Serializable {
                 .filter(Objects::nonNull)
                 .mapToDouble(ItemFee::getFfee)
                 .sum();
+        feeValueController.updateFeeValue(item, feeListType, totalItemFee, totalItemFeeForForeigners);
+    }
+
+    public void fillForCollectingCentreFees() {
+        if (collectingCentre == null) {
+            itemFees = null;
+            totalItemFee = 0.0;
+            totalItemFeeForForeigners = 0.0;
+            return;
+        }
+        itemFees = fillFees(item, collectingCentre);
+//        totalItemFee = itemFees.stream()
+//                .filter(Objects::nonNull)
+//                .mapToDouble(ItemFee::getFee)
+//                .sum();
+//        totalItemFeeForForeigners = itemFees.stream()
+//                .filter(Objects::nonNull)
+//                .mapToDouble(ItemFee::getFfee)
+//                .sum();
+//
+//        feeValueController.updateFeeValue(item, collectingCentre, totalItemFee, totalItemFeeForForeigners);
+
+    }
+
+    public void fillForSiteFees() {
+        if (forSite == null) {
+            itemFees = null;
+            totalItemFee = 0.0;
+            totalItemFeeForForeigners = 0.0;
+            return;
+        }
+        itemFees = fillFees(item, forSite);
+//        totalItemFee = itemFees.stream()
+//                .filter(Objects::nonNull)
+//                .mapToDouble(ItemFee::getFee)
+//                .sum();
+//        totalItemFeeForForeigners = itemFees.stream()
+//                .filter(Objects::nonNull)
+//                .mapToDouble(ItemFee::getFfee)
+//                .sum();
+//        feeValueController.updateFeeValue(item, forSite, totalItemFee, totalItemFeeForForeigners);
+
+    }
+
+    public void fillForForCategoryFees() {
+        if (feeListType == null) {
+            itemFees = null;
+            totalItemFee = 0.0;
+            totalItemFeeForForeigners = 0.0;
+            return;
+        }
+        itemFees = fillFees(item, feeListType);
+//        totalItemFee = itemFees.stream()
+//                .filter(Objects::nonNull)
+//                .mapToDouble(ItemFee::getFee)
+//                .sum();
+//        totalItemFeeForForeigners = itemFees.stream()
+//                .filter(Objects::nonNull)
+//                .mapToDouble(ItemFee::getFfee)
+//                .sum();
     }
 
     public String toManageItemFees() {
