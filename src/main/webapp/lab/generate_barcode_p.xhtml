@@ -248,7 +248,7 @@
                                         </p:column>
 
                                         <p:column headerText="Status" width="5em">
-                                            <h:outputLabel value="#{ptIx.status}"/>
+                                            <h:outputLabel value="#{ptIx}"/>
                                         </p:column>
 
                                         <p:column  headerText="Actions" style="width: 11em;">
@@ -260,9 +260,8 @@
                                                 <p:graphicImage library="image" styleClass="standedicon" name="bleed.png" rendered="#{ptIx.collected ne true}"></p:graphicImage>
                                                 <p:graphicImage library="image" styleClass="standedicon" name="bleedok.jpg" rendered="#{ptIx.collected eq true}"></p:graphicImage>
                                             </p:commandLink>
-                                            <p:commandButton value="collect" action="#{patientInvestigationController.markAsSampled}" ajax="false" >
-                                                <f:setPropertyActionListener value="#{ptIx}" target="#{patientInvestigationController.current}"></f:setPropertyActionListener>
-                                            </p:commandButton>
+                                            <p:commandButton value="collect" action="#{patientInvestigationController.markAsSampledCollected(ptIx)}" ajax="false" >
+                                            </p:commandButton> 
                                             <h:panelGroup rendered="#{webUserController.hasPrivilege('LabSampleReceiving')}">
                                                 <p:commandLink  disabled="#{ptIx.collected ne true}"   id="btnReceive"  action="#{patientInvestigationController.markAsReceived()}" >
                                                     <f:setPropertyActionListener value="#{ptIx}" target="#{patientInvestigationController.current}"></f:setPropertyActionListener>
@@ -1017,14 +1016,6 @@
 
 
                     </div>
-
-
-
-
-
-
-
-
 
                 </h:form>
             </h:panelGroup>

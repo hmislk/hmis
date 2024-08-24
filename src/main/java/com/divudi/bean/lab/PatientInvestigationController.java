@@ -1067,6 +1067,33 @@ public class PatientInvestigationController implements Serializable {
 
         getLabReportSearchByInstitutionController().createPatientInvestigaationList();
     }
+    
+       public void markAsSampledCollected(PatientInvestigation pi) {
+        if (pi == null) {
+            JsfUtil.addErrorMessage("Nothing to sample");
+            return;
+        }
+
+        getCurrent().setSampleCollecter(getSessionController().getLoggedUser());
+        if (current.getSampleOutside()) {
+            getCurrent().setSampledAt(sampledOutsideDate);
+        } else {
+            getCurrent().setSampledAt(new Date());
+            current.setSampleDepartment(getSessionController().getLoggedUser().getDepartment());
+            current.setSampleInstitution(getSessionController().getLoggedUser().getInstitution());
+        }
+        if (getCurrent().getId() != null || getCurrent().getId() != 0) {
+            getCurrent().setCollected(Boolean.TRUE);
+            getCurrent().setSampleCollecter(getSessionController().getLoggedUser());
+            getEjbFacade().edit(getCurrent());
+            JsfUtil.addSuccessMessage("Marked as Sampled");
+        } else {
+            JsfUtil.addErrorMessage("Empty");
+        }
+        setSampledOutsideDate(Calendar.getInstance().getTime());
+
+        getLabReportSearchByInstitutionController().createPatientInvestigaationList();
+    }
 
     public void revertMarkedSample() {
         if (current == null) {
