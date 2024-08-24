@@ -74,18 +74,6 @@
                             action="#{collectingCentreBillController.navigateToCollectingCenterBillingromMenu()}">
                         </p:commandButton>
 
-                        <p:commandButton  
-                            style="float: right;"
-                            value="Settle" 
-                            icon="fa fa-check"
-                            action="#{collectingCentreBillController.settleBill}" 
-                            ajax="false" 
-                            onclick="if (!confirm('Are you sure you want to Settle This Bill ?'))
-                                        return false;"
-
-                            class="ui-button-success ">
-                        </p:commandButton>
-
                     </f:facet>
 
                     <h:panelGroup layout="block" rendered="#{!collectingCentreBillController.printPreview}" class="row">
@@ -112,7 +100,7 @@
                                                             itemValue="#{ix}" 
                                                             converter="itemLightConverter"
                                                             forceSelection="true"
-                                                            scrollHeight="200" 
+                                                            scrollHeight="250" 
                                                             multiple="false"
                                                             class="w-100">
 
@@ -122,7 +110,7 @@
                                                 <p:ajax event="keyup" process="@this" />
 
                                                 <!-- Columns -->
-                                                <p:column headerText="Name">
+                                                <p:column headerText="Name" style="padding: 8px;">
                                                     <f:facet name="header">Name</f:facet>
                                                     <h:outputText value="#{ix.name}" />
                                                     <h:panelGroup rendered="#{ix.name ne ix.fullName}">
@@ -130,17 +118,17 @@
                                                     </h:panelGroup>
                                                 </p:column>
 
-                                                <p:column headerText="Dept">
+                                                <p:column headerText="Dept" style="padding: 8px;">
                                                     <f:facet name="header">Dept</f:facet>
                                                     <h:outputText value="#{ix.departmentName}" />
                                                 </p:column>
 
-                                                <p:column headerText="Code">
+                                                <p:column headerText="Code" style="padding: 8px;">
                                                     <f:facet name="header">Code</f:facet>
                                                     <h:outputText value="#{ix.code}" />
                                                 </p:column>
 
-                                                <p:column headerText="Value" style="text-align: right;">
+                                                <p:column headerText="Value" style="padding: 8px; text-align: right;">
                                                     <f:facet name="header">Value</f:facet>
                                                     <h:outputText value="#{ix.total}" />
                                                 </p:column>
