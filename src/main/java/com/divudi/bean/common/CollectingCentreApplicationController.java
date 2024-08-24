@@ -52,6 +52,9 @@ public class CollectingCentreApplicationController {
                 agentHistory.setCreatedAt(new Date());
                 agentHistory.setCreater(bill.getCreater());
                 agentHistory.setBill(bill);
+                agentHistory.setInstitution(bill.getInstitution());
+                agentHistory.setDepartment(bill.getDepartment());
+                agentHistory.setAgency(collectingCentre);
                 agentHistory.setReferenceNumber(refNo);
                 agentHistory.setHistoryType(historyType);
 
