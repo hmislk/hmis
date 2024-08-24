@@ -10,9 +10,11 @@
     </h:head>
     <h:body>
 
-        <ui:composition template="/admin/pricing/index.xhtml">
+        
+        
+        <ui:composition template="/admin/items/index.xhtml">
 
-            <ui:define name="subcontent">
+            <ui:define name="item">
 
 
                 <p:growl id="msg"/>
@@ -40,19 +42,19 @@
                                              ajax="false" 
                                              icon="fa fa-download" 
                                              styleClass="ui-button-success m-2" 
-                                             action="#{itemController.downloadBaseItemFeesAsExcel()}"/>
+                                             action="#{itemController.downloadItems()}"/>
                         </h:form>
 
                         <p:spacer width="50"/>
-                        
+
                         <h:form id="upload" enctype="multipart/form-data">
-                            <p:fileUpload value="#{dataUploadController.file}"
+                            <p:fileUpload value="#{itemController.file}"
                                           mode="simple"
                                           label="Choose File"/>
                             <p:commandButton 
                                 icon="fa fa-upload"
                                 value="Upload and Replace Fee Values"
-                                action="#{dataUploadController.uploadAddReplaceFeesFromId()}"
+                                action="#{itemController.uploadAddReplaceItemsFromId()}"
                                 ajax="false"/>
                         </h:form>
 
@@ -63,7 +65,7 @@
 
 
 
-                        <p:dataTable id="tblFees" value="#{itemFeeManager.itemFees}" var="f" rowIndexVar="n" rowKey="#{f.id}" paginator="true" rows="5" 
+                        <p:dataTable id="tblFees" value="#{itemController.items}" var="f" rowIndexVar="n" rowKey="#{f.id}" paginator="true" rows="5" 
                                      paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                      currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}" rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
 
@@ -73,65 +75,47 @@
                             </p:column>
 
                             <!-- Item Code Column with sorting and filtering -->
-                            <p:column headerText="Item Code" width="15em" sortBy="#{f.item.code}" filterBy="#{f.item.code}" filterMatchMode="contains">
-                                <h:outputText value="#{f.item.code}" ></h:outputText>
+                            <p:column headerText="Item Code" width="15em" sortBy="#{f.code}" filterBy="#{f.code}" filterMatchMode="contains">
+                                <h:outputText value="#{f.code}" ></h:outputText>
                             </p:column>
-
 
                             <!-- Item Name Column with sorting and filtering -->
-                            <p:column headerText="Item Name" width="20em" sortBy="#{f.item.name}" filterBy="#{f.item.name}" filterMatchMode="contains">
-                                <h:outputText value="#{f.item.name}" ></h:outputText>
+                            <p:column headerText="Item Name" width="20em" sortBy="#{f.name}" filterBy="#{f.name}" filterMatchMode="contains">
+                                <h:outputText value="#{f.name}" ></h:outputText>
                             </p:column>
 
-
-                            <!-- Name Column with sorting and filtering -->
-                            <p:column headerText="Fee Name"  width="15em" sortBy="#{f.name}" filterBy="#{f.name}" filterMatchMode="contains">
-                                <h:outputText id="txtFeeName" value="#{f.name}" ></h:outputText>
+                            <!-- Item Type Column with sorting and filtering -->
+                            <p:column headerText="Item Type" width="10em" sortBy="#{f.itemType}" filterBy="#{f.itemType}" filterMatchMode="contains">
+                                <h:outputText value="#{f.itemType}" ></h:outputText>
                             </p:column>
 
-                            <!-- Type Column with sorting and filtering -->
-                            <p:column headerText="Fee Type"  width="15em" sortBy="#{f.feeType.label}" filterBy="#{f.feeType.label}" filterMatchMode="contains">
-                                <h:outputText id="txtFeeType" value="#{f.feeType.label}" ></h:outputText>
+                            <!-- Category Column with sorting and filtering -->
+                            <p:column headerText="Category" width="15em" sortBy="#{f.category.name}" filterBy="#{f.category.name}" filterMatchMode="contains">
+                                <h:outputText value="#{f.category.name}" ></h:outputText>
                             </p:column>
 
-                            <!-- Discount Allowed Column with boolean display as Yes/No -->
-                            <p:column headerText="Discount Allowed"   width="5em" sortBy="#{f.discountAllowed}" filterBy="#{f.discountAllowed}" filterMatchMode="exact">
-                                <h:outputText value="#{f.discountAllowed ? 'Yes' : 'No'}"></h:outputText>
+                            <!-- Financial Category Column with sorting and filtering -->
+                            <p:column headerText="Financial Category" width="15em" sortBy="#{f.financialCategory.name}" filterBy="#{f.financialCategory.name}" filterMatchMode="contains">
+                                <h:outputText value="#{f.financialCategory.name}" ></h:outputText>
                             </p:column>
 
-                            <!-- Retired Column with boolean display as Yes/No -->
-                            <p:column headerText="Retired"  width="5em"  sortBy="#{f.retired}" filterBy="#{f.retired}" filterMatchMode="exact">
-                                <h:outputText value="#{f.retired ? 'Yes' : 'No'}"></h:outputText>
-                            </p:column>
-
-                            <!-- Institution Column with sorting and filtering -->
-                            <p:column headerText="Institution"   width="25em"  sortBy="#{f.institution.name}" filterBy="#{f.institution.name}" filterMatchMode="contains">
-                                <h:outputText value="#{f.institution.name}" rendered="#{f.institution ne null}"></h:outputText>
+                            <!-- Retired Column with sorting and filtering -->
+                            <p:column headerText="Retired" width="10em" sortBy="#{f.retired}" filterBy="#{f.retired}" filterMatchMode="contains">
+                                <h:outputText value="#{f.retired ? 'Yes' : 'No'}" ></h:outputText>
                             </p:column>
 
                             <!-- Institution Column with sorting and filtering -->
-                            <p:column headerText="Department"   width="25em"  sortBy="#{f.department.name}" filterBy="#{f.department.name}" filterMatchMode="contains">
-                                <h:outputText value="#{f.department.name}" rendered="#{f.department ne null}"></h:outputText>
+                            <p:column headerText="Institution" width="20em" sortBy="#{f.institution.name}" filterBy="#{f.institution.name}" filterMatchMode="contains">
+                                <h:outputText value="#{f.institution.name}" ></h:outputText>
                             </p:column>
 
-                            <!-- Staff Column with sorting and filtering -->
-                            <p:column headerText="Staff"   width="25em" sortBy="#{f.staff.person.nameWithTitle}" filterBy="#{f.staff.person.nameWithTitle}" filterMatchMode="contains">
-                                <h:outputText value="#{f.staff.person.nameWithTitle}" rendered="#{f.staff ne null}"></h:outputText>
-                            </p:column>
-
-                            <!-- Value for Locals Column -->
-                            <p:column headerText="Value for Locals"  width="8em"  sortBy="#{f.fee}" filterBy="#{f.fee}" filterMatchMode="contains">
-                                <h:outputText id="txtFeeVal" value="#{f.fee}">
-                                </h:outputText>
-                            </p:column>
-
-                            <!-- Value for Foreigners Column -->
-                            <p:column headerText="Value for Foreigners"   width="8em" sortBy="#{f.ffee}" filterBy="#{f.ffee}" filterMatchMode="contains">
-                                <h:outputText id="txtFfeeVal" value="#{f.ffee}">
-                                </h:outputText>
+                            <!-- Department Column with sorting and filtering -->
+                            <p:column headerText="Department" width="20em" sortBy="#{f.department.name}" filterBy="#{f.department.name}" filterMatchMode="contains">
+                                <h:outputText value="#{f.department.name}" ></h:outputText>
                             </p:column>
 
                         </p:dataTable>
+
 
                     </h:form>
 

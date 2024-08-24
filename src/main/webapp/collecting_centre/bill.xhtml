@@ -91,18 +91,19 @@
                                     </f:facet>
                                     <div class="row">
                                         <div class="col-md-10" >
-                                            <p:autoComplete id="acIx" 
-                                                            value="#{collectingCentreBillController.itemLight}" 
-                                                            completeMethod="#{collectingCentreBillController.completeOpdItemsByWord}" 
-                                                            var="ix" 
-                                                            inputStyleClass="w-100"
-                                                            itemLabel="#{ix.name}" 
-                                                            itemValue="#{ix}" 
-                                                            converter="itemLightConverter"
-                                                            forceSelection="true"
-                                                            scrollHeight="250" 
-                                                            multiple="false"
-                                                            class="w-100">
+                                            <p:autoComplete 
+                                                id="acIx" 
+                                                value="#{collectingCentreBillController.itemLight}" 
+                                                completeMethod="#{collectingCentreBillController.completeOpdItemsByWord}" 
+                                                var="ix" 
+                                                inputStyleClass="w-100"
+                                                itemLabel="#{ix.name}" 
+                                                itemValue="#{ix}" 
+                                                converter="itemLightConverter"
+                                                forceSelection="true"
+                                                scrollHeight="250" 
+                                                multiple="false"
+                                                class="w-100">
 
                                                 <!-- Ajax Events -->
                                                 <p:ajax event="itemSelect" process="@this" />
