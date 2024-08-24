@@ -911,30 +911,40 @@ public class InvestigationController implements Serializable {
         List<Investigation> suggestions;
         String sql;
         Map m = new HashMap();
-
-        //m.put(m, m);
         sql = "select c from Investigation c "
                 + " where c.retired=false "
                 + " and ((c.name) like :n or "
                 + " (c.fullName) like :n or "
                 + " (c.code) like :n or (c.printName) like :n ) ";
-        //////// // System.out.println(sql);
-
         m.put("n", "%" + query.toUpperCase() + "%");
-
         if (listMasterItemsOnly == true) {
             sql += " and c.institution is null ";
         }
-
-//        if (sessionController.getApplicationPreference().isInstitutionSpecificItems()) {
-//            sql += " and (c.institution is null "
-//                    + " or c.institution=:ins) ";
-//            m.put("ins", sessionController.getInstitution());
-//        }
         sql += " order by c.name";
-
         suggestions = getFacade().findByJpql(sql, m);
+        return suggestions;
+    }
 
+    public List<Investigation> completeInvestigationsWIthoutReportFormats(String query) {
+        if (query == null || query.trim().equals("")) {
+            return new ArrayList<>();
+        }
+        List<Investigation> suggestions;
+        String sql;
+        Map m = new HashMap();
+        sql = "select c from Investigation c "
+                + " where c.retired=false "
+                + " and c.hasReportFormat<>:rf"
+                + " and ((c.name) like :n or "
+                + " (c.fullName) like :n or "
+                + " (c.code) like :n or (c.printName) like :n ) ";
+        m.put("n", "%" + query.toUpperCase() + "%");
+        m.put("rf", true);
+        if (listMasterItemsOnly == true) {
+            sql += " and c.institution is null ";
+        }
+        sql += " order by c.name";
+        suggestions = getFacade().findByJpql(sql, m);
         return suggestions;
     }
 
