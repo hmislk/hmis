@@ -208,12 +208,6 @@
                                                          ajax="false" action="#{patientInvestigationController.generateBarcodesForSelectedPatientInvestigations()}"
                                                          title="Generate Barcodes" icon="fas fa-barcode" styleClass="m-1 ui-button-success w-100"/>
 
-                                        <p:commandButton rendered="#{patientInvestigationController.listingEntity eq 'BILLS'}"
-                                                         id="btnGeneraBarcodesBills"
-                                                         value="Generate Barcodes by Bills"
-                                                         ajax="false" action="#{patientInvestigationController.generateBarcodesForSelectedBills()}"
-                                                         title="Generate Barcodes" icon="fas fa-barcode" styleClass="m-1 ui-button-success w-100"/>
-
                                         <p:commandButton disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
                                                          id="btnCollectSamples"
                                                          value="Collect Samples"
@@ -617,9 +611,7 @@
 
                                         <!-- Status Column with Badge -->
                                         <p:column headerText="Status" width="6em" style="vertical-align: top;">
-                                            <p:badge value="Collected" rendered="#{ps.status == 'Collected'}" severity="success" styleClass="mr-2 mx-1"></p:badge>
-                                            <p:badge value="Pending" rendered="#{ps.status == 'Pending'}" severity="warning" styleClass="mr-2 mx-1"></p:badge>
-                                            <p:badge value="Rejected" rendered="#{ps.status == 'Rejected'}" severity="danger" styleClass="mr-2 mx-1"></p:badge>
+                                            #{ps.status}
                                         </p:column>
 
                                         <!-- Sample Number Column (Conditionally Rendered) -->
