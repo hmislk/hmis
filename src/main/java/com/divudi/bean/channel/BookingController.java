@@ -3409,7 +3409,7 @@ public class BookingController implements Serializable, ControllerWithPatient, C
         agentHistory.setBill(bill);
         agentHistory.setBillItem(billItem);
         agentHistory.setBillSession(billSession);
-        agentHistory.setBeforeBallance(ins.getBallance());
+        agentHistory.setCompanyBalanceBefore(ins.getBallance());
         agentHistory.setTransactionValue(transactionValue);
         agentHistory.setReferenceNumber(refNo);
         agentHistory.setHistoryType(historyType);

@@ -71,6 +71,20 @@ public class InstitutionController implements Serializable {
     private String selectText = "";
     private Boolean codeDisabled = false;
     private int managaeInstitutionIndex = -1;
+    private List<Institution> sites;
+    
+    public void fillAllSites(){
+        sites = new ArrayList();
+        String sql;
+        HashMap hm = new HashMap();
+        sql = "select c from Institution c "
+                + " where c.retired=false "
+                + " and c.institutionType =:type";
+        
+        sql += " order by c.name";
+        hm.put("type", InstitutionType.Site);
+        sites = getFacade().findByJpql(sql, hm);
+    }
 
     public String toAdminManageInstitutions() {
         return "/admin/institutions/admin_institutions_index?faces-redirect=true";
@@ -442,6 +456,12 @@ public class InstitutionController implements Serializable {
         codeDisabled = false;
         current = new Institution();
     }
+    
+     public void prepareAddSite() {
+        codeDisabled = false;
+        current = new Institution();
+        current.setInstitutionType(InstitutionType.Site);
+    }
 
     public void prepareAddAgency() {
         codeDisabled = false;
@@ -477,6 +497,40 @@ public class InstitutionController implements Serializable {
             getFacade().edit(ins);
         }
     }
+    
+    
+    public void saveSelectedSite() {
+        if (getCurrent().getInstitutionType() != InstitutionType.Site) {
+            JsfUtil.addErrorMessage("Invalid Institution Type");
+            return;
+        }
+
+        if (getCurrent().getId() != null && getCurrent().getId() > 0) {
+//
+//            if (getCurrent().getCode() != null) {
+//                getCurrent().setInstitutionCode(getCurrent().getCode());
+//            }
+            getFacade().edit(getCurrent());
+            JsfUtil.addSuccessMessage("Updated Successfully.");
+        } else {
+//            if (getCurrent().getCode() != null) {
+//                if (!checkCodeExist()) {
+//                    getCurrent().setInstitutionCode(getCurrent().getCode());
+//
+//                } else {
+//                    return;
+//                }
+//            }
+            getCurrent().setCreatedAt(new Date());
+            getCurrent().setCreater(getSessionController().getLoggedUser());
+            getFacade().create(getCurrent());
+            JsfUtil.addSuccessMessage("Saved Successfully");
+        }
+        fillAllSites();
+    }
+    
+    
+    
 
     public void saveSelected() {
         if (getCurrent().getInstitutionType() == null) {
@@ -507,7 +561,8 @@ public class InstitutionController implements Serializable {
         }
         fillItems();
     }
-
+    
+   
     public void saveSelectedAgency() {
         if (getAgency().getInstitutionType() == null) {
             JsfUtil.addErrorMessage("Select Institution Type");
@@ -669,6 +724,24 @@ public class InstitutionController implements Serializable {
         current = null;
         getCurrent();
     }
+    
+      public void deleteSite() {
+
+        if (getCurrent() != null) {
+            getCurrent().setRetired(true);
+            getCurrent().setRetiredAt(new Date());
+            getCurrent().setRetirer(getSessionController().getLoggedUser());
+            getFacade().edit(getCurrent());
+            JsfUtil.addSuccessMessage("Deleted Successfully");
+        } else {
+            JsfUtil.addSuccessMessage("Nothing to Delete");
+        }
+        
+        current = null;
+        getCurrent();
+        fillAllSites();
+        getSites();
+    }
 
     public void deleteAgency() {
 
@@ -803,6 +876,18 @@ public class InstitutionController implements Serializable {
 
     public void setCollectingCentresAndManagedInstitutions(List<Institution> collectingCentresAndManagedInstitutions) {
         this.collectingCentresAndManagedInstitutions = collectingCentresAndManagedInstitutions;
+    }
+
+    public List<Institution> getSites() {
+        if(sites == null){
+            fillAllSites();
+        }
+        
+        return sites;
+    }
+
+    public void setSites(List<Institution> sites) {
+        this.sites = sites;
     }
 
     /**
