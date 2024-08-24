@@ -32,6 +32,7 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.persistence.TemporalType;
 
 /**
  *
@@ -145,21 +146,21 @@ public class CashBookEntryController implements Serializable {
         Map m = new HashMap<>();
         jpql = "select b from CashBookEntry b where b.retired=:ret and b.createdAt between :fromDate and :toDate ";
         if (site != null) {
-            jpql += "and where b.site=:site ";
+            jpql += "and b.site=:site ";
             m.put("site", site);
         }
         if (ins != null) {
-            jpql += "and where b.institution=:ins ";
+            jpql += "and b.institution=:ins ";
             m.put("ins", ins);
         }
         if (dept != null) {
-            jpql += "and where b.department=:dept ";
+            jpql += "and b.department=:dept ";
             m.put("dept", dept);
         }
         m.put("fromDate", fromDate);
         m.put("toDate", toDate);
         m.put("ret", false);
-        cashBookEntryList = cashbookEntryFacade.findByJpql(jpql, m);
+        cashBookEntryList = cashbookEntryFacade.findByJpql(jpql, m,TemporalType.TIMESTAMP);
         System.out.println("cashBookEntryList = " + cashBookEntryList.size());
         System.out.println("jpql = " + jpql);
         return cashBookEntryList;
