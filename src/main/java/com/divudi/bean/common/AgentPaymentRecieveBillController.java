@@ -255,7 +255,8 @@ public class AgentPaymentRecieveBillController implements Serializable {
 
     }
 
-    public void settleBill(BillType billType, HistoryType historyType, HistoryType updatHistoryType, BillNumberSuffix billNumberSuffix) {
+   public void settleBill(BillType billType, HistoryType historyType, HistoryType updatHistoryType, BillNumberSuffix billNumberSuffix) {
+        addPaymentMethordValueToTotal(current,getCurrent().getPaymentMethod());
         addToBill();
         if (!billType.equals(BillType.AgentDebitNoteBill) && !billType.equals(BillType.AgentCreditNoteBill)
                 && !billType.equals(BillType.CollectingCentreCreditNoteBill) && !billType.equals(BillType.CollectingCentreDebitNoteBill)) {
@@ -289,6 +290,40 @@ public class AgentPaymentRecieveBillController implements Serializable {
         JsfUtil.addSuccessMessage("Bill Saved");
         printPreview = true;
 
+    }
+   
+   public void addPaymentMethordValueToTotal(Bill b,PaymentMethod pm){
+        switch (pm) {
+                case Card:
+                    b.setNetTotal(paymentMethodData.getCreditCard().getTotalValue());
+                    break;
+                case Cheque:
+                   b.setNetTotal(paymentMethodData.getCheque().getTotalValue());
+                    break;
+                case Cash:
+                    break;
+                case ewallet:
+                    break;
+                case Agent:
+                    break;
+                case Credit:
+                    break;
+                case PatientDeposit:
+                    break;
+                case Slip:
+                    b.setNetTotal(paymentMethodData.getSlip().getTotalValue());
+                   break;
+                case OnCall:
+                    break;
+                case OnlineSettlement:
+                    break;
+                case Staff:
+                    break;
+                case YouOweMe:
+                    break;
+                case MultiplePaymentMethods:
+                    break;
+            }
     }
 
     private void saveBillItem() {

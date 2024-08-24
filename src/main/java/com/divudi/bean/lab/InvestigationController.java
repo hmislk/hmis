@@ -648,8 +648,27 @@ public class InvestigationController implements Serializable {
 
     public void listAllIxs() {
         String sql;
-        sql = "Select i from Investigation i where i.retired=false ";
+        sql = "Select i "
+                + " from Investigation i "
+                + " where i.retired=:ret "
+                + " and i.hasReportFormat=:rf";
         sql += " order by i.name";
+        Map m = new HashMap<>();
+        m.put("ret", false);
+        m.put("rf", false);
+        allIxs = getFacade().findByJpql(sql);
+    }
+    
+    public void listAllReports() {
+        String sql;
+        sql = "Select i "
+                + " from Investigation i "
+                + " where i.retired=:ret "
+                + " and i.hasReportFormat=:rf";
+        sql += " order by i.name";
+        Map m = new HashMap<>();
+        m.put("ret", false);
+        m.put("rf", true);
         allIxs = getFacade().findByJpql(sql);
     }
 
@@ -1198,6 +1217,12 @@ public class InvestigationController implements Serializable {
         List<Investigation> completeItems = getFacade().findByJpql("select c from Item c where ( type(c) = Investigation or type(c) = Packege ) and c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
         return completeItems;
     }
+    
+    public List<Investigation> completeReports(String qry) {
+        
+        List<Investigation> completeItems = getFacade().findByJpql("select c from Item c where ( type(c) = Investigation or type(c) = Packege ) and c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
+        return completeItems;
+    }
 
 //    public List<Investigation> completeDepartmentItem(String qry) {
 //        if (getSessionController().getApplicationPreference().isInstitutionSpecificItems()) {
@@ -1249,6 +1274,11 @@ public class InvestigationController implements Serializable {
     public String navigateToListInvestigation() {
         listAllIxs();
         return "/admin/lims/investigation_list?faces-redirect=true";
+    }
+
+    public String navigateToListReportFormats() {
+        listAllReports();
+        return "/admin/lims/report_list?faces-redirect=true";
     }
 
     public String navigateToMultipleInvestigationUpdate() {

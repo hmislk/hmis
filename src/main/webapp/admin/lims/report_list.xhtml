@@ -19,7 +19,7 @@
 
                         <p:column sortBy="#{item.name}" filterBy="#{item.name}" filterMatchMode="contains">
                             <f:facet name="header">
-                                <h:outputText value="Name*"/>
+                                <h:outputText value="Name"/>
                             </f:facet>
                             <h:outputText value="#{item.name}"/>
                         </p:column>
@@ -29,17 +29,11 @@
                             </f:facet>
                             <h:outputText value="#{item.category.name}"/>
                         </p:column>
-                        <p:column sortBy="#{item.id}" filterBy="#{item.id}" filterMatchMode="equals">
+                        <p:column sortBy="#{item.total}" filterBy="#{item.total}" filterMatchMode="equals">
                             <f:facet name="header">
-                                <h:outputText value="ID"/>
+                                <h:outputText value="Total"/>
                             </f:facet>
-                            <h:outputText value="#{item.id}"/>
-                        </p:column>
-                        <p:column sortBy="#{item.code}" filterBy="#{item.code}" filterMatchMode="equals">
-                            <f:facet name="header">
-                                <h:outputText value="ID"/>
-                            </f:facet>
-                            <h:outputText value="#{item.code}"/>
+                            <h:outputText value="#{item.total}"/>
                         </p:column>
                         <p:column sortBy="#{item.institution.name}" filterBy="#{item.institution.name}" filterMatchMode="contains">
                             <f:facet name="header">
