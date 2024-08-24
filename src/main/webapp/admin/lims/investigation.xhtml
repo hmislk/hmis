@@ -220,14 +220,16 @@
                                         itemLabel="#{ix2.name}" 
                                         itemValue="#{ix2}" 
                                         size="30"  >
-                                        <p:column >
+                                        <p:column headerText="Name" >
                                             <h:outputText value="#{ix2.name}" ></h:outputText>
                                         </p:column>
-                                        <p:column >
-                                            <h:outputText value="Master Item" rendered="#{ix2.institution eq null}" ></h:outputText>
-                                            <h:outputText value="#{ix2.institution.name}" rendered="#{ix2.institution ne null}"  ></h:outputText>
+                                        <p:column headerText="Code">
+                                            <h:outputText value="#{ix2.code}" ></h:outputText>
                                         </p:column>
-                                        <p:column >
+                                        <p:column headerText="ID">
+                                            <h:outputText value="#{ix2.id}" ></h:outputText>
+                                        </p:column>
+                                        <p:column headerText="Department">
                                             <h:outputText value="#{ix2.department.name}" rendered="#{ix2.department ne null}"  ></h:outputText>
                                         </p:column>
                                     </p:autoComplete>

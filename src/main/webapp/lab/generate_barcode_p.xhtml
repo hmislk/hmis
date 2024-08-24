@@ -248,10 +248,10 @@
                                         </p:column>
 
                                         <p:column headerText="Status" width="5em">
-                                            <h:outputLabel value="#{ptIx}"/>
+                                            <h:outputLabel value="#{ptIx.status}"/>
                                         </p:column>
 
-                                        <p:column  headerText="Actions" style="width: 11em;">
+                                        <p:column rendered="false" headerText="Actions" style="width: 11em;">
                                             <p:commandLink 
                                                 disabled="#{ptIx.collected or ptIx.billItem.bill.cancelled}"   
                                                 id="btnSample" ajax="false"
@@ -325,22 +325,12 @@
                                             <p:tooltip for="btnPrintWorksheets" value="Print worksheet" ></p:tooltip>
 
 
-                                            <table >
-                                                <ui:repeat value="#{itemForItemController.getItemsForParentItem(pi.investigation)}" var="ifi"  >
-                                                    <tr>
-                                                        <td>
-                                                            <p:commandLink disabled="#{!pi.received}" value="New #{ifi.name}" actionListener="#{patientReportController.enterNewReportFormat(pi, ifi)}" action="/lab/patient_report?faces-redirect=true" 
-                                                                           ajax="false">
-                                                            </p:commandLink>
-                                                        </td>
-                                                    </tr>
-                                                </ui:repeat>
-                                            </table>
+
 
 
                                         </p:column>
 
-                                        <p:column headerText="Details">
+                                        <p:column headerText="Details" rendered="false">
                                             <h:panelGrid columns="1">
                                                 <h:outputLabel value="Sample Collected" rendered="#{ptIx.sampleCollected}"/>
                                                 <p:panelGrid rendered="#{ptIx.sampleCollected}" columns="2" styleClass="ui-widget-content ui-corner-all" style="display:none">
@@ -1009,6 +999,21 @@
 
                                     </p:dataTable>
 
+                                </h:panelGroup>
+
+
+                                <h:panelGroup rendered="false" >
+                                    <table >
+                                        <ui:repeat value="#{itemForItemController.getItemsForParentItem(pi.investigation)}" var="ifi"  >
+                                            <tr>
+                                                <td>
+                                                    <p:commandLink disabled="#{!pi.received}" value="New #{ifi.name}" actionListener="#{patientReportController.enterNewReportFormat(pi, ifi)}" action="/lab/patient_report?faces-redirect=true" 
+                                                                   ajax="false">
+                                                    </p:commandLink>
+                                                </td>
+                                            </tr>
+                                        </ui:repeat>
+                                    </table>        
                                 </h:panelGroup>
 
                             </div>
