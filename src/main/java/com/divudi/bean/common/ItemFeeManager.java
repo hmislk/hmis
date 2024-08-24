@@ -166,6 +166,10 @@ public class ItemFeeManager implements Serializable {
         itemFees = fillFees(null, null, feeListType);
     }
 
+    public void fillSiteItemFees() {
+        itemFees = fillFees(null, forSite, null);
+    }
+
     public void downloadBaseItemFeesAsExcel() throws IOException {
         // Check if itemFees is null or empty
         if (itemFees == null || itemFees.isEmpty()) {

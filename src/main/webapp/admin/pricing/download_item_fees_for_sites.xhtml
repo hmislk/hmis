@@ -19,7 +19,7 @@
                 <p:panel>
                     <f:facet name="header">
                         <h:outputText styleClass="fa fa-fw fa-money-bill-wave"></h:outputText>
-                        <h:outputText value="Download &amp; Upload Fee List Items Fees" styleClass="m-2"></h:outputText>
+                        <h:outputText value="Download &amp; Upload Fees for Sites" styleClass="m-2"></h:outputText>
 
 
 
@@ -31,20 +31,16 @@
                         <h:form id="fill" >
                             <p:panelGrid columns="2" >
                                 <h:panelGroup >
-                                    <p:outputLabel value="Fee List" ></p:outputLabel>
-                                    <p:selectOneMenu 
-                                        value="#{itemFeeManager.feeListType}" 
-                                        id="acColl" 
-                                        filter="true"
-                                        class="w-100"
-                                        filterMatchMode="contains">
-                                        <f:selectItem itemLabel="Select" ></f:selectItem>
-                                        <f:selectItems 
-                                            value="#{categoryController.feeListTypes}"
-                                            var="vt" 
-                                            itemLabel="#{vt.name}" 
-                                            itemValue="#{vt}" ></f:selectItems>
-                                    </p:selectOneMenu>
+                                    <p:outputLabel value="Select Site" />
+                                    <p:autoComplete 
+                                        value="#{itemFeeManager.forSite}" 
+                                        forceSelection="true" id="acColl"
+                                        completeMethod="#{institutionController.completeSite}" 
+                                        var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" 
+                                        maxResults="10"
+                                        class="w-100 mb-1"
+                                        inputStyleClass="form-control">
+                                    </p:autoComplete>
                                 </h:panelGroup>
 
                                 <p:commandButton value="Fill" ajax="false" 
