@@ -801,7 +801,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
 //        double feeTotalExceptCcfs = 0.0;
 //        for (BillFee bf : lstBillFees) {
 //            if (bf.getFee().getFeeType() != FeeType.CollectingCentre) {
-//                feeTotalExceptCcfs += bf.getFeeValue();
+//                feeTotalExceptCcfs += bf.getCollectingCentreFeeValue();
 //            }
 //        }
 //        updateBallance(collectingCentre, 0 - Math.abs(feeTotalExceptCcfs), HistoryType.CollectingCentreBalanceUpdateBill, temBill, referralId);
@@ -1271,6 +1271,8 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         //   getCurrentBillItem().setBillSession(getServiceSessionBean().createBillSession(getCurrentBillItem()));
         BillItem bi = new BillItem();
         bi.copy(getCurrentBillItem());
+        
+        
         bi.setSessionDate(sessionDate);
         lastBillItem = bi;
         if (bi.getQty() == null || bi.getQty() < 1) {
@@ -1397,8 +1399,12 @@ public class CollectingCentreBillController implements Serializable, ControllerW
             double entryNet = 0.0;
             double entryVat = 0.0;
             BillItem bi = be.getBillItem();
+            System.out.println("bi = " + bi);
 
             for (BillFee bf : be.getLstBillFees()) {
+
+                System.out.println("bf = " + bf);
+
                 entryGross += bf.getFeeGrossValue();
                 entryNet += bf.getFeeValue();
                 entryDis += bf.getFeeDiscount();
@@ -1427,6 +1433,12 @@ public class CollectingCentreBillController implements Serializable, ControllerW
             bi.setNetValue(entryNet);
             bi.setVat(entryVat);
             bi.setVatPlusNetValue(entryVat + entryNet);
+
+            System.out.println("bi = " + bi.getGrossValue());
+            System.out.println("bi = " + bi.getNetValue());
+            System.out.println("bi = " + bi.getHospitalFee());
+            System.out.println("bi = " + bi.getCollectingCentreFee());
+            System.out.println("bi = " + bi.getStaffFee());
 
             billGross += bi.getGrossValue();
             billNet += bi.getNetValue();
@@ -2137,7 +2149,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
             }
 
             if (matchFound) {
-                FeeValue f = feeValueController.getFeeValue(opdItem.getId(), collectingCentre.getFeeListType());
+                FeeValue f = feeValueController.getCollectingCentreFeeValue(opdItem.getId(), collectingCentre);
                 if (f != null) {
                     opdItem.setTotal(f.getTotalValueForLocals());
                     opdItem.setTotalForForeigner(f.getTotalValueForForeigners());

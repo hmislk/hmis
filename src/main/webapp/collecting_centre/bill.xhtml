@@ -91,18 +91,19 @@
                                     </f:facet>
                                     <div class="row">
                                         <div class="col-md-10" >
-                                            <p:autoComplete id="acIx" 
-                                                            value="#{collectingCentreBillController.itemLight}" 
-                                                            completeMethod="#{collectingCentreBillController.completeOpdItemsByWord}" 
-                                                            var="ix" 
-                                                            inputStyleClass="w-100"
-                                                            itemLabel="#{ix.name}" 
-                                                            itemValue="#{ix}" 
-                                                            converter="itemLightConverter"
-                                                            forceSelection="true"
-                                                            scrollHeight="250" 
-                                                            multiple="false"
-                                                            class="w-100">
+                                            <p:autoComplete 
+                                                id="acIx" 
+                                                value="#{collectingCentreBillController.itemLight}" 
+                                                completeMethod="#{collectingCentreBillController.completeOpdItemsByWord}" 
+                                                var="ix" 
+                                                inputStyleClass="w-100"
+                                                itemLabel="#{ix.name}" 
+                                                itemValue="#{ix}" 
+                                                converter="itemLightConverter"
+                                                forceSelection="true"
+                                                scrollHeight="250" 
+                                                multiple="false"
+                                                class="w-100">
 
                                                 <!-- Ajax Events -->
                                                 <p:ajax event="itemSelect" process="@this" />
@@ -173,23 +174,27 @@
                                                         <f:facet name="header">No</f:facet>
                                                             #{rowIndex+1}
                                                     </p:column>
-                                                    <p:column >
+                                                    <p:column width="12em">
                                                         <f:facet name="header">Item</f:facet>
                                                         <p:inputText class="w-100" value="#{bi.billItem.item.name}" readonly="true" ></p:inputText>
                                                     </p:column>
                                                     <p:column width="5em">
+                                                        <f:facet name="header">Code</f:facet>
+                                                        <p:inputText class="w-100" value="#{bi.billItem.item.code}" readonly="true" ></p:inputText>
+                                                    </p:column>
+                                                    <p:column width="4em">
                                                         <f:facet name="header">CC Fee</f:facet>
                                                         <h:outputLabel value="#{bi.billItem.collectingCentreFee}">
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputLabel>
                                                     </p:column>
-                                                    <p:column width="5em">
+                                                    <p:column width="4em">
                                                         <f:facet name="header">Hos Fee</f:facet>
                                                         <h:outputLabel value="#{bi.billItem.hospitalFee}">
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputLabel>
                                                     </p:column>
-                                                    <p:column width="5em">
+                                                    <p:column width="4em">
                                                         <f:facet name="header">Staff Fee</f:facet>
                                                         <h:outputLabel value="#{bi.billItem.staffFee}">
                                                             <f:convertNumber pattern="#,##0.00" />
