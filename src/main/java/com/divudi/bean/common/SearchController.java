@@ -5641,7 +5641,7 @@ public class SearchController implements Serializable {
 
         //   searchBillItems = new LazyBillItem(tmp);
     }
-
+    
     public void createPatientInvestigationsTable() {
         Date startTime = new Date();
 
@@ -5679,6 +5679,71 @@ public class SearchController implements Serializable {
             sql += "and pi.encounter=:en";
             temMap.put("en", patientEncounter);
         }
+
+        if (getReportKeyWord().getDepartment() != null) {
+            sql += " and b.toDepartment=:dep ";
+            temMap.put("dep", getReportKeyWord().getDepartment());
+        }
+
+        if (getReportKeyWord().getDepartmentFrom() != null) {
+            sql += " and b.fromDepartment=:depFrom ";
+            temMap.put("depFrom", getReportKeyWord().getDepartmentFrom());
+        }
+
+        sql += " order by pi.id desc  ";
+//    
+
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+
+        //System.err.println("Sql " + sql);
+        patientInvestigations = getPatientInvestigationFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 50);
+        checkRefundBillItems(patientInvestigations);
+
+    }
+
+    public void getPatientInvestigationsReportsTable() {
+        Date startTime = new Date();
+
+        String sql = "select pi "
+                + " from PatientInvestigation pi "
+                + " join pi.investigation  i "
+                + " join pi.billItem.bill b "
+                + " join b.patient.person p "
+                + " where "
+                + " b.createdAt between :fromDate and :toDate  ";
+
+        Map temMap = new HashMap();
+
+        if (institution == null) {
+            sql += " and b.collectingCentre in :ccs ";
+            temMap.put("ccs", sessionController.getLoggableCollectingCentres());
+        } else {
+            sql += " and b.collectingCentre=:cc ";
+            temMap.put("cc", institution);
+        }
+        
+        if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
+            sql += " and  (p.name like :patientName )";
+            temMap.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
+            sql += " and  (b.insId like :billNo or b.deptId like :billNo)";
+            temMap.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getPatientPhone() != null && !getSearchKeyword().getPatientPhone().trim().equals("")) {
+            sql += " and  (p.phone like :patientPhone )";
+            temMap.put("patientPhone", "%" + getSearchKeyword().getPatientPhone().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getItemName() != null && !getSearchKeyword().getItemName().trim().equals("")) {
+            sql += " and  (i.name like :itm )";
+            temMap.put("itm", "%" + getSearchKeyword().getItemName().trim().toUpperCase() + "%");
+        }
+
+        
 
         if (getReportKeyWord().getDepartment() != null) {
             sql += " and b.toDepartment=:dep ";
