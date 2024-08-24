@@ -11,7 +11,7 @@
             <ui:define name="subcontent">
 
                 <h:form>
-                    <p:dataTable value="#{investigationController.items}" var="item"
+                    <p:dataTable value="#{investigationController.allIxs}" var="item"
                                  paginator="true" 
                                  rows="10" 
                                  emptyMessage="No investigations found."
@@ -37,7 +37,7 @@
                         </p:column>
                         <p:column sortBy="#{item.code}" filterBy="#{item.code}" filterMatchMode="equals">
                             <f:facet name="header">
-                                <h:outputText value="ID"/>
+                                <h:outputText value="Code"/>
                             </f:facet>
                             <h:outputText value="#{item.code}"/>
                         </p:column>
@@ -59,6 +59,13 @@
                             </f:facet>
                             <h:outputText value="#{item.fullName}"/>
                         </p:column>
+                        <p:column sortBy="#{item.shortName}" filterBy="#{item.shortName}" filterMatchMode="contains">
+                            <f:facet name="header">
+                                <h:outputText value="FullName"/>
+                            </f:facet>
+                            <h:outputText value="#{item.shortName}"/>
+                        </p:column>
+
                         <p:column>
                             <f:facet name="header">
                                 <h:outputText value="Actions"/>
