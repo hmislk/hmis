@@ -323,6 +323,24 @@ public class ItemFeeManager implements Serializable {
     public void fillForSiteItemFees() {
         itemFees = fillFees(null, forSite, null);
     }
+    
+    public void updateFeesForSiteItemFees() {
+        for(ItemFee tif:itemFees){
+            updateSiteFeeValues(tif.getItem(), forSite);
+        }
+    }
+    
+    public void updateFeesForListFees() {
+        for(ItemFee tif:itemFees){
+            updateListFeeValues(tif.getItem(), feeListType);
+        }
+    }
+    
+    public void updateFeesForCcFees() {
+        for(ItemFee tif:itemFees){
+            updateSiteFeeValues(tif.getItem(), collectingCentre);
+        }
+    }
 
     public void createItemFessForSelectedItems() {
         if (selectedList == null || selectedList.isEmpty()) {
@@ -527,8 +545,48 @@ public class ItemFeeManager implements Serializable {
                 .mapToDouble(ItemFee::getFfee)
                 .sum();
         feeValueController.updateFeeValue(item, collectingCentre, totalItemFee, totalItemFeeForForeigners);
-
     }
+
+    public void updateSiteFeeValues(Item ti, Institution si) {
+        List<ItemFee> tfs = fillFees(ti, si);
+        double tlf = tfs.stream()
+                .filter(Objects::nonNull)
+                .mapToDouble(ItemFee::getFee)
+                .sum();
+        double tfff = tfs.stream()
+                .filter(Objects::nonNull)
+                .mapToDouble(ItemFee::getFfee)
+                .sum();
+        feeValueController.updateFeeValue(ti, si, tlf, tfff);
+    }
+    
+    public void updateCcFeeValues(Item ti, Institution cc) {
+        List<ItemFee> tfs = fillFees(ti, cc);
+        double tlf = tfs.stream()
+                .filter(Objects::nonNull)
+                .mapToDouble(ItemFee::getFee)
+                .sum();
+        double tfff = tfs.stream()
+                .filter(Objects::nonNull)
+                .mapToDouble(ItemFee::getFfee)
+                .sum();
+        feeValueController.updateFeeValue(ti, cc, tlf, tfff);
+    }
+    
+    
+    public void updateListFeeValues(Item ti, Category fl) {
+        List<ItemFee> tfs = fillFees(ti, fl);
+        double tlf = tfs.stream()
+                .filter(Objects::nonNull)
+                .mapToDouble(ItemFee::getFee)
+                .sum();
+        double tfff = tfs.stream()
+                .filter(Objects::nonNull)
+                .mapToDouble(ItemFee::getFfee)
+                .sum();
+        feeValueController.updateFeeValue(ti, fl, tlf, tfff);
+    }
+    
 
     public void updateItemAndSiteFees() {
         itemFees = new ArrayList<>();
