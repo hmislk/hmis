@@ -1011,7 +1011,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
 
         temp.setInstitution(collectingCentre);
         temp.setDepartment(departmentController.getDefaultDepatrment(collectingCentre));
-
+        temp.setCollectingCentre(collectingCentre);
         temp.setToDepartment(bt);
         temp.setToInstitution(bt.getInstitution());
 
