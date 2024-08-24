@@ -36,6 +36,7 @@ public class AgentHistory implements Serializable {
     @ManyToOne
     BillSession billSession;
     double beforeBallance;
+    double afterBallance;
     double transactionValue;
     @Enumerated(EnumType.STRING)
     HistoryType historyType;
