@@ -191,7 +191,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     @Inject
     CashBookEntryController cashBookEntryController;
 
-    
     /**
      * Class Variables
      */
@@ -2006,32 +2005,28 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                         BillType.OpdBathcBill,
                         BillClassType.BilledBill,
                         BillNumberSuffix.NONE));
-        
+
         String deptId;
-        
+
         boolean billNumberByYear;
-        
+
         billNumberByYear = configOptionApplicationController.getBooleanValueByKey("Bill Numbers are based on Year.", false);
-        
-        if(billNumberByYear){
-            deptId=getBillNumberGenerator().departmentBillNumberGeneratorYearly(
-                getSessionController().getInstitution(),
-                getSessionController().getDepartment(),
-                BillType.OpdBathcBill,
-                BillClassType.BilledBill);
-        }else{
-            deptId=getBillNumberGenerator().departmentBillNumberGenerator(
-                getSessionController().getInstitution(),
-                getSessionController().getDepartment(),
-                BillType.OpdBathcBill,
-                BillClassType.BilledBill);
+
+        if (billNumberByYear) {
+            deptId = getBillNumberGenerator().departmentBillNumberGeneratorYearly(
+                    getSessionController().getInstitution(),
+                    getSessionController().getDepartment(),
+                    BillType.OpdBathcBill,
+                    BillClassType.BilledBill);
+        } else {
+            deptId = getBillNumberGenerator().departmentBillNumberGenerator(
+                    getSessionController().getInstitution(),
+                    getSessionController().getDepartment(),
+                    BillType.OpdBathcBill,
+                    BillClassType.BilledBill);
         }
-        
-        newBatchBill.setDeptId(getBillNumberGenerator().departmentBillNumberGenerator(
-                getSessionController().getInstitution(),
-                getSessionController().getDepartment(),
-                BillType.OpdBathcBill,
-                BillClassType.BilledBill));
+
+        newBatchBill.setDeptId(deptId);
         newBatchBill.setGrantTotal(total);
         newBatchBill.setTotal(total);
         newBatchBill.setDiscount(discount);
@@ -2046,9 +2041,15 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
         double dbl = 0;
         double reminingCashPaid = cashPaid;
+        int billCount =1;
         for (Bill b : bills) {
             b.setBackwardReferenceBill(newBatchBill);
+            if (billNumberByYear) {
+                b.setDeptId(deptId + "/" + String.format("%02d", billCount));
+            }
+            billCount++;
             dbl += b.getNetTotal();
+            
 
 //            if (getSessionController().getDepartmentPreference().isPartialPaymentOfOpdBillsAllowed()) {
 //                b.setCashPaid(reminingCashPaid);
@@ -2645,7 +2646,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             JsfUtil.addErrorMessage("Please select an Item");
             return;
         }
-       
 
         if (getCurrentBillItem().getItem().getDepartment() == null) {
             JsfUtil.addErrorMessage("Please set Department to Item");
@@ -2682,9 +2682,9 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         boolean siteBasedBillFees = configOptionApplicationController.getBooleanValueByKey("OPD Bill Fees are based on the site", false);
         System.out.println("siteBasedBillFees = " + siteBasedBillFees);
         System.out.println("addAllBillFees = " + addAllBillFees);
-        
+
         if (addAllBillFees) {
-            
+
             allBillFees = getBillBean().billFeefromBillItem(bi);
         } else if (siteBasedBillFees) {
             allBillFees = getBillBean().forInstitutionBillFeefromBillItem(bi, sessionController.getDepartment().getSite());
@@ -3259,7 +3259,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                     case YouOweMe:
                     case MultiplePaymentMethods:
                 }
-                
+
                 paymentFacade.create(p);
                 cashBookEntryController.writeCashBookEntry(p);
                 ps.add(p);
