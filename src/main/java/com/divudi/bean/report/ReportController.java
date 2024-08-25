@@ -779,11 +779,11 @@ public class ReportController implements Serializable {
         m.put("td", toDate);
         
         if (collectingCentre != null) {
-            jpql += " and bill.fromInstitution = :cc ";
+            jpql += " and ah.agency = :cc ";
             m.put("cc", collectingCentre);
         }
     
-        agentHistories = agentHistoryFacade.findByJpql(jpql, m);   
+        agentHistories = agentHistoryFacade.findByJpql(jpql, m,TemporalType.TIMESTAMP);   
     }
 
     public void processCollectingCentreReciptReport() {
