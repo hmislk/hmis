@@ -1435,7 +1435,7 @@ public class PatientInvestigationController implements Serializable {
             billFacade.edit(tb);
         }
 
-        JsfUtil.addSuccessMessage("Selected Samples Are Collected");
+        JsfUtil.addSuccessMessage("Selected Samples Collected");
     }
 
     public void sendSamplesToLab() {
@@ -1478,7 +1478,7 @@ public class PatientInvestigationController implements Serializable {
             billFacade.edit(tb);
         }
 
-        JsfUtil.addSuccessMessage("Selected Samples Are Sent to Lab");
+        JsfUtil.addSuccessMessage("Selected Samples Sent to Lab");
     }
     
     public void collectAndReceiveSamplesAtLab(){
