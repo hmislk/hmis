@@ -41,6 +41,12 @@
                                 icon="fa fa-file-excel">
                                 <p:dataExporter target="tblBills" fileName="bills" type="xlsx" ></p:dataExporter>
                             </p:commandButton>
+
+                            <p:commandButton value="Download Template" ajax="false" icon="fas fa-download" class="ui-button-warning mx-2"
+                                             onclick="PrimeFaces.monitorDownload(start, stop);">
+                                <p:fileDownload value="#{searchController.fileForDownload}" />
+                            </p:commandButton>
+
                         </h:panelGrid>
 
                         <p:dataTable 
