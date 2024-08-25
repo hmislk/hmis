@@ -3147,11 +3147,10 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
             if (matchFound) {
                 if (siteBasedBillFees) {
-                    FeeValue f = feeValueController.getCollectingCentreFeeValue(opdItem.getId(), sessionController.getLoggedSite());
+                    FeeValue f = feeValueController.getSiteFeeValue(opdItem.getId(), sessionController.getLoggedSite());
                     if (f != null) {
                         opdItem.setTotal(f.getTotalValueForLocals());
                         opdItem.setTotalForForeigner(f.getTotalValueForForeigners());
-
                     }
                 }
                 filteredItems.add(opdItem);
