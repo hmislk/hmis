@@ -205,61 +205,7 @@
                                         <p:commandButton ajax="false" action="#{patientInvestigationController.searchPatientReports}" value="Reports" icon="fas fa-file-medical" styleClass="m-1 ui-button-danger w-100"/>
                                         <p:commandButton ajax="false" action="#{patientInvestigationController.clearFilters}" value="Clear" icon="fas fa-eraser" styleClass="m-1 ui-button-secondary w-100"/>
                                     </h:panelGrid>
-                                    <h:panelGrid columns="1">
-                                        <p:commandButton rendered="#{patientInvestigationController.listingEntity eq 'PATIENT_INVESTIGATIONS'}"
-                                                         id="btnGenerateBarcodes"
-                                                         value="Generate Barcodes"
-                                                         ajax="false"
-                                                         action="#{patientInvestigationController.generateBarcodesForSelectedPatientInvestigations()}"
-                                                         title="Generate Barcodes"
-                                                         icon="pi pi-barcode"
-                                                         styleClass="m-1 ui-button-success" />
 
-                                        <p:commandButton disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
-                                                         id="btnCollectSamples"
-                                                         value="Collect Samples"
-                                                         ajax="false"
-                                                         action="#{patientInvestigationController.collectSamples()}"
-                                                         title="Collect Samples"
-                                                         icon="pi pi-plus-circle"
-                                                         styleClass="m-1 ui-button-primary" />
-
-                                        <p:commandButton disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
-                                                         id="btnSendToLab"
-                                                         value="Send to Lab"
-                                                         ajax="false"
-                                                         action="#{patientInvestigationController.sendSamplesToLab()}"
-                                                         title="Send to Lab"
-                                                         icon="pi pi-external-link"
-                                                         styleClass="m-1 ui-button-warning" />
-
-                                        <p:commandButton disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
-                                                         id="btnReceiveAtLab"
-                                                         value="Received Samples"
-                                                         ajax="false"
-                                                         action="#{patientInvestigationController.receiveSamplesAtLab()}"
-                                                         title="Receive Samples"
-                                                         icon="pi pi-check-circle"
-                                                         styleClass="m-1 ui-button-info" />
-
-                                        <p:commandButton disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
-                                                         id="btnCollectReceiveAtLab"
-                                                         value="Collect &amp; Received Samples"
-                                                         ajax="false"
-                                                         action="#{patientInvestigationController.collectAndReceiveSamplesAtLab()}"
-                                                         title="Receive Samples"
-                                                         icon="pi pi-check-circle"
-                                                         styleClass="m-1 ui-button-info" />
-
-                                        <p:commandButton disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
-                                                         id="btnRejectSamples"
-                                                         value="Reject Samples"
-                                                         ajax="false"
-                                                         action="#{patientInvestigationController.rejectSamples()}"
-                                                         title="Reject Samples"
-                                                         icon="pi pi-times-circle"
-                                                         styleClass="m-1 ui-button-danger" />
-                                    </h:panelGrid>
 
                                 </h:panelGrid>
                             </div>
@@ -269,7 +215,7 @@
 
                     <h:form >
                         <div class="row" >
-                            <div class="col-12" >
+                            <div class="col-10" >
 
                                 <h:panelGroup rendered="#{patientInvestigationController.listingEntity eq 'PATIENT_INVESTIGATIONS'}" >
 
@@ -398,7 +344,6 @@
                                                 </p:commandLink>
 
 
-                                                <h1>#{patientInvestigation}</h1>
 
                                                 <p:commandLink id="btnNewReport" 
                                                                class="m-1"
@@ -865,6 +810,64 @@
                                 </h:panelGroup>
 
                             </div>
+                            <div class="col-2" >
+                                <h:panelGrid columns="1">
+                                    <p:commandButton rendered="#{patientInvestigationController.listingEntity eq 'PATIENT_INVESTIGATIONS'}"
+                                                     id="btnGenerateBarcodes"
+                                                     value="Generate Barcodes"
+                                                     ajax="false"
+                                                     action="#{patientInvestigationController.generateBarcodesForSelectedPatientInvestigations()}"
+                                                     title="Generate Barcodes"
+                                                     icon="pi pi-barcode"
+                                                     styleClass="m-1 ui-button-success" />
+
+                                    <p:commandButton disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
+                                                     id="btnCollectSamples"
+                                                     value="Collect Samples"
+                                                     ajax="false"
+                                                     action="#{patientInvestigationController.collectSamples()}"
+                                                     title="Collect Samples"
+                                                     icon="pi pi-plus-circle"
+                                                     styleClass="m-1 ui-button-primary" />
+
+                                    <p:commandButton disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
+                                                     id="btnSendToLab"
+                                                     value="Send to Lab"
+                                                     ajax="false"
+                                                     action="#{patientInvestigationController.sendSamplesToLab()}"
+                                                     title="Send to Lab"
+                                                     icon="pi pi-external-link"
+                                                     styleClass="m-1 ui-button-warning" />
+
+                                    <p:commandButton disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
+                                                     id="btnReceiveAtLab"
+                                                     value="Received Samples"
+                                                     ajax="false"
+                                                     action="#{patientInvestigationController.receiveSamplesAtLab()}"
+                                                     title="Receive Samples"
+                                                     icon="pi pi-check-circle"
+                                                     styleClass="m-1 ui-button-info" />
+
+                                    <p:commandButton disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
+                                                     id="btnCollectReceiveAtLab"
+                                                     value="Collect &amp; Received Samples"
+                                                     ajax="false"
+                                                     action="#{patientInvestigationController.collectAndReceiveSamplesAtLab()}"
+                                                     title="Receive Samples"
+                                                     icon="pi pi-check-circle"
+                                                     styleClass="m-1 ui-button-info" />
+
+                                    <p:commandButton disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
+                                                     id="btnRejectSamples"
+                                                     value="Reject Samples"
+                                                     ajax="false"
+                                                     action="#{patientInvestigationController.rejectSamples()}"
+                                                     title="Reject Samples"
+                                                     icon="pi pi-times-circle"
+                                                     styleClass="m-1 ui-button-danger" />
+                                </h:panelGrid>
+                            </div>
+
                         </div>
                     </h:form>
 
