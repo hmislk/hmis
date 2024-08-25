@@ -1410,6 +1410,7 @@ public class PatientInvestigationController implements Serializable {
             ps.setSampleCollectedDepartment(sessionController.getDepartment());
             ps.setSampleCollectedInstitution(sessionController.getInstitution());
             ps.setSampleCollecter(sessionController.getLoggedUser());
+            ps.setStatus(PatientInvestigationStatus.SAMPLE_COLLECTED);
             patientSampleFacade.edit(ps);
 
             // Retrieve and store PatientInvestigations by unique ID to avoid duplicates
@@ -1479,6 +1480,13 @@ public class PatientInvestigationController implements Serializable {
 
         JsfUtil.addSuccessMessage("Selected Samples Are Sent to Lab");
     }
+    
+    public void collectAndReceiveSamplesAtLab(){
+        collectSamples();
+        sendSamplesToLab();
+        receiveSamplesAtLab();
+    }
+            
 
     public void receiveSamplesAtLab() {
         if (selectedPatientSamples == null || selectedPatientSamples.isEmpty()) {
@@ -1523,6 +1531,49 @@ public class PatientInvestigationController implements Serializable {
         }
 
         JsfUtil.addSuccessMessage("Selected Samples Are Received at Lab");
+    }
+
+    public void rejectSamples() {
+        if (selectedPatientSamples == null || selectedPatientSamples.isEmpty()) {
+            JsfUtil.addErrorMessage("No samples selected");
+            return;
+        }
+        listingEntity = ListingEntity.PATIENT_SAMPLES;
+
+        Map<Long, PatientInvestigation> rejectedPtixs = new HashMap<>();
+        Map<Long, Bill> affectedBills = new HashMap<>();
+
+        // Update sample rejection details and gather associated patient investigations
+        for (PatientSample ps : selectedPatientSamples) {
+            ps.setSampleRejected(true);
+            ps.setSampleRejectedAt(new Date());
+            ps.setSampleRejectedBy(sessionController.getLoggedUser());
+            ps.setStatus(PatientInvestigationStatus.SAMPLE_REJECTED);
+            patientSampleFacade.edit(ps);
+
+            // Retrieve and store PatientInvestigations by unique ID to avoid duplicates
+            for (PatientInvestigation pi : getPatientInvestigationsBySample(ps)) {
+                rejectedPtixs.putIfAbsent(pi.getId(), pi);
+            }
+        }
+
+        // Update patient investigations and gather associated bills
+        for (PatientInvestigation tptix : rejectedPtixs.values()) {
+            tptix.setSampleRejected(true);
+            tptix.setSampleRejectedAt(new Date());
+            tptix.setSampleRejectedBy(sessionController.getLoggedUser());
+            tptix.setStatus(PatientInvestigationStatus.SAMPLE_REJECTED);
+            getFacade().edit(tptix);
+            affectedBills.putIfAbsent(tptix.getBillItem().getBill().getId(), tptix.getBillItem().getBill());
+        }
+
+        // Update bills status accordingly
+        for (Bill tb : affectedBills.values()) {
+            tb.setStatus(PatientInvestigationStatus.SAMPLE_REJECTED);
+            billFacade.edit(tb);
+        }
+
+        JsfUtil.addSuccessMessage("Selected Samples Are Rejected");
     }
 
     public void listPatientInvestigationAwaitingSamplling() {
