@@ -1762,6 +1762,14 @@ public class SearchController implements Serializable {
         this.site = site;
     }
 
+    public StreamedContent getFileBillsAndBillItemsForDownload() {
+        return fileBillsAndBillItemsForDownload;
+    }
+
+    public void setFileBillsAndBillItemsForDownload(StreamedContent fileBillsAndBillItemsForDownload) {
+        this.fileBillsAndBillItemsForDownload = fileBillsAndBillItemsForDownload;
+    }
+
     public class billsWithbill {
 
         Bill b;
@@ -12099,4 +12107,111 @@ public class SearchController implements Serializable {
         this.pharmacyAdjustmentRows = pharmacyAdjustmentRows;
     }
 
+    private StreamedContent fileBillsAndBillItemsForDownload;
+
+    public StreamedContent getFileForBillsAndBillItemsForDownload() {
+        prepareDataBillsAndBillItemsDownload();  // Prepare data and create the Excel file
+        return fileBillsAndBillItemsForDownload;       // This should now contain the generated Excel file
+    }
+
+    public void createBillsBillItemsList(Set<Bill> bills, List<BillItem> billItems) throws IOException {
+        XSSFWorkbook workbook = new XSSFWorkbook();
+        XSSFSheet sheet = workbook.createSheet("Bills Details");
+
+        int rowIdx = 0;
+        Row headerRow = sheet.createRow(rowIdx++);
+        // Headers for both bills and bill items
+        String[] headers = {
+            "Bill ID", "Institution Name", "Department Name", "Patient Name", "Staff Name", "Bill Type", "Total", "Discount", "Net Total", "Payment Method",
+            "Bill Item Name", "Bill Item Code", "Item Type", "Quantity", "Rate", "Gross Value", "Bill Item Discount", "Net Value"
+        };
+        for (int i = 0; i < headers.length; i++) {
+            headerRow.createCell(i).setCellValue(headers[i]);
+        }
+
+        // Fill the sheet with bill data first, then bill item data in subsequent rows
+        for (Bill bill : bills) {
+            Row billRow = sheet.createRow(rowIdx++);
+            int colIdx = 0;
+            billRow.createCell(colIdx++).setCellValue(bill.getId());
+            billRow.createCell(colIdx++).setCellValue(bill.getInstitution() != null ? bill.getInstitution().getName() : "");
+            billRow.createCell(colIdx++).setCellValue(bill.getDepartment() != null ? bill.getDepartment().getName() : "");
+            billRow.createCell(colIdx++).setCellValue(bill.getPatient() != null && bill.getPatient().getPerson() != null ? bill.getPatient().getPerson().getName() : "");
+            billRow.createCell(colIdx++).setCellValue(bill.getStaff() != null && bill.getStaff().getPerson() != null ? bill.getStaff().getPerson().getNameWithTitle() : "");
+            billRow.createCell(colIdx++).setCellValue(bill.getBillType() != null ? bill.getBillType().getLabel() : "");
+            billRow.createCell(colIdx++).setCellValue(bill.getGrantTotal());
+            billRow.createCell(colIdx++).setCellValue(bill.getDiscount());
+            billRow.createCell(colIdx++).setCellValue(bill.getNetTotal());
+            billRow.createCell(colIdx++).setCellValue(bill.getPaymentMethod() != null ? bill.getPaymentMethod().getLabel() : "");
+
+            // Leave the bill item columns empty in the bill row
+            for (int j = 10; j < headers.length; j++) {
+                billRow.createCell(j);
+            }
+
+            // Fill in bill item data in subsequent rows
+            for (BillItem bi : billItems) {
+                if (bi.getBill().equals(bill)) {
+                    Row itemRow = sheet.createRow(rowIdx++);
+                    // Leave bill details columns empty
+                    for (int j = 0; j < 10; j++) {
+                        itemRow.createCell(j);
+                    }
+
+                    int itemColIdx = 10;
+                    itemRow.createCell(itemColIdx++).setCellValue(bi.getItem() != null ? bi.getItem().getName() : "");
+                    itemRow.createCell(itemColIdx++).setCellValue(bi.getItem() != null ? bi.getItem().getCode() : "");
+                    itemRow.createCell(itemColIdx++).setCellValue(bi.getItem() != null ? bi.getItem().getItemType().toString() : "");
+                    itemRow.createCell(itemColIdx++).setCellValue(bi.getQty());
+                    itemRow.createCell(itemColIdx++).setCellValue(bi.getNetRate());
+                    itemRow.createCell(itemColIdx++).setCellValue(bi.getGrossValue());
+                    itemRow.createCell(itemColIdx++).setCellValue(bi.getDiscount());
+                    itemRow.createCell(itemColIdx++).setCellValue(bi.getNetValue());
+                }
+            }
+        }
+
+        // Autosize columns to fit content
+        for (int i = 0; i < headers.length; i++) {
+            sheet.autoSizeColumn(i);
+        }
+
+        // Write to output stream and create download content
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        workbook.write(outputStream);
+        workbook.close();
+        InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+        fileBillsAndBillItemsForDownload = DefaultStreamedContent.builder()
+                .name("bills_and_bill_items.xlsx")
+                .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                .stream(() -> new ByteArrayInputStream(outputStream.toByteArray()))
+                .build();
+    }
+
+    public void prepareDataBillsAndBillItemsDownload() {
+        // Fetch all bills and their associated bill items, excluding fees
+        String jpql = "SELECT b FROM Bill b JOIN FETCH b.billItems WHERE b.createdAt BETWEEN :fromDate AND :toDate";
+        Map<String, Object> params = new HashMap<>();
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+
+        List<Bill> bills = billFacade.findByJpql(jpql, params); // Assuming you have a facade to execute JPQL queries
+
+        Set<Bill> uniqueBills = new HashSet<>(bills);
+        List<BillItem> allBillItems = new ArrayList<>();
+
+        // Only extract bill items, no fees
+        for (Bill bill : uniqueBills) {
+            allBillItems.addAll(bill.getBillItems());
+        }
+
+        try {
+            createBillsBillItemsList(uniqueBills, allBillItems);
+        } catch (IOException e) {
+            e.printStackTrace(); // Handle exceptions properly
+        }
+    }
+
+    
+    
 }
