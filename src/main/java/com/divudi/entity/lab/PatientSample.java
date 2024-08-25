@@ -152,7 +152,7 @@ public class PatientSample implements Serializable {
 
     @ManyToOne
     private Institution sampleReceivedAtLabInstitution;
-    @Enumerated
+    @Enumerated(EnumType.ORDINAL)
     private PatientInvestigationStatus status;
 
     //Cancellation
@@ -166,6 +166,13 @@ public class PatientSample implements Serializable {
     private Department cancellDepartment;
     @ManyToOne
     private Institution cancellInstitution;
+    
+    private Boolean sampleRejected = false;
+    @ManyToOne
+    private WebUser sampleRejectedBy;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date sampleRejectedAt;
+    
     //Retairing properties
     private boolean retired;
     @ManyToOne
@@ -206,10 +213,18 @@ public class PatientSample implements Serializable {
         }
         return true;
     }
+    
+    
 
     @Override
     public String toString() {
         return "com.divudi.entity.lab.PatientSample[ id=" + id + " ]";
+    }
+
+    public PatientSample() {
+        if (status == null) {
+            status = PatientInvestigationStatus.SAMPLE_GENERATED;
+        }
     }
 
     public Patient getPatient() {
@@ -725,6 +740,30 @@ public class PatientSample implements Serializable {
 
     public void setPriority(Priority priority) {
         this.priority = priority;
+    }
+
+    public Boolean getSampleRejected() {
+        return sampleRejected;
+    }
+
+    public void setSampleRejected(Boolean sampleRejected) {
+        this.sampleRejected = sampleRejected;
+    }
+
+    public WebUser getSampleRejectedBy() {
+        return sampleRejectedBy;
+    }
+
+    public void setSampleRejectedBy(WebUser sampleRejectedBy) {
+        this.sampleRejectedBy = sampleRejectedBy;
+    }
+
+    public Date getSampleRejectedAt() {
+        return sampleRejectedAt;
+    }
+
+    public void setSampleRejectedAt(Date sampleRejectedAt) {
+        this.sampleRejectedAt = sampleRejectedAt;
     }
 
 }

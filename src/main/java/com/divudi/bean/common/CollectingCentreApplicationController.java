@@ -52,11 +52,14 @@ public class CollectingCentreApplicationController {
                 agentHistory.setCreatedAt(new Date());
                 agentHistory.setCreater(bill.getCreater());
                 agentHistory.setBill(bill);
+                agentHistory.setInstitution(bill.getInstitution());
+                agentHistory.setDepartment(bill.getDepartment());
+                agentHistory.setAgency(collectingCentre);
                 agentHistory.setReferenceNumber(refNo);
                 agentHistory.setHistoryType(historyType);
 
                 
-                double balanceAfterTx = collectingCentre.getBallance() - transactionValue;
+                double balanceAfterTx = collectingCentre.getBallance() - valueWithoutccFee;
                 double hospitalBalanceAfterTx = collectingCentre.getAgentBalance() - valueWithoutccFee;
                 double agentBalanceAfterTx = collectingCentre.getCompanyBalance() - valueWithoutccFee;
                 
@@ -67,6 +70,8 @@ public class CollectingCentreApplicationController {
 
                 agentHistory.setCompanyBalanceBefore(collectingCentre.getCompanyBalance());
                 agentHistory.setCompanyBalanceAfter(collectingCentre.getCompanyBalance());
+                
+                agentHistory.setCompanyTransactionValue(valueWithoutccFee);
                 
                 agentHistory.setCollectingCentertransactionValue(collectingCenterFeeValue);
                 agentHistoryFacade.create(agentHistory);

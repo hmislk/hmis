@@ -177,7 +177,7 @@ public class ItemController implements Serializable {
     public void uploadAddReplaceItemsFromId() {
         items = new ArrayList<>();
         if (file != null) {
-            try ( InputStream inputStream = file.getInputStream()) {
+            try (InputStream inputStream = file.getInputStream()) {
                 items = replaceItemsFromExcel(inputStream);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -302,6 +302,12 @@ public class ItemController implements Serializable {
             // Create unlocked cells with null checks for other fields
             createUnlockedCell(row, 2, tmpItem.getItemType() != null ? tmpItem.getItemType().toString() : "N/A", workbook); // Unlocked Item Type
             createUnlockedCell(row, 3, tmpItem.getName() != null ? tmpItem.getName() : "N/A", workbook); // Unlocked Item Name
+
+            //New Fields to add
+            tmpItem.getPrintName();
+            tmpItem.getFullName();
+            tmpItem.getShortName();
+
             createUnlockedCell(row, 4, tmpItem.getCategory() != null && tmpItem.getCategory().getName() != null ? tmpItem.getCategory().getName() : "N/A", workbook); // Unlocked Category
             createUnlockedCell(row, 5, tmpItem.getFinancialCategory() != null && tmpItem.getFinancialCategory().getName() != null ? tmpItem.getFinancialCategory().getName() : "N/A", workbook); // Unlocked Financial Category
             createUnlockedCell(row, 6, tmpItem.isRetired() ? "Yes" : "No", workbook); // Unlocked Retired
@@ -1163,6 +1169,31 @@ public class ItemController implements Serializable {
             }
         }
         JsfUtil.addSuccessMessage("Added");
+    }
+
+    public Item addSampleComponent(Investigation tix) {
+        Item tmpSampleComponent=null;
+        List<Item> scs = findInvestigationSampleComponents(tix);
+        if (scs == null || scs.isEmpty()) {
+            tmpSampleComponent = new Item();
+            tmpSampleComponent.setName(tix.getName());
+            tmpSampleComponent.setParentItem(tix);
+            tmpSampleComponent.setItemType(ItemType.SampleComponent);
+            tmpSampleComponent.setCreatedAt(new Date());
+            tmpSampleComponent.setCreater(sessionController.getLoggedUser());
+            getFacade().create(tmpSampleComponent);
+        } else {
+            if (scs.size() > 1) {
+                
+                tix.setHasMoreThanOneComponant(true);
+                getFacade().edit(tix);
+            } else {
+                tix.setHasMoreThanOneComponant(false);
+                getFacade().edit(tix);
+            }
+            tmpSampleComponent=tmpSampleComponent=scs.get(0);
+        }
+        return tmpSampleComponent;
     }
 
     public void fillMachineTests() {

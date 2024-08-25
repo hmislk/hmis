@@ -2905,7 +2905,7 @@ public class BillSearch implements Serializable {
     
     
     public String navigateToDownloadBillsAndBillItems(){
-        return "/";
+        return "/analytics/download_bills?faces-redirect=true;";
     }
     
     

@@ -43,6 +43,7 @@ import com.divudi.bean.common.util.JsfUtil;
 import static com.divudi.data.InvestigationItemValueType.Memo;
 import static com.divudi.data.InvestigationItemValueType.Varchar;
 import com.divudi.entity.clinical.ClinicalFindingValue;
+import com.divudi.entity.lab.ReportFormat;
 import com.divudi.facade.ClinicalFindingValueFacade;
 import com.lowagie.text.DocumentException;
 import java.io.File;
@@ -2150,6 +2151,9 @@ public class PatientReportController implements Serializable {
     }
 
     public PatientReport createNewPatientReport(PatientInvestigation pi, Investigation ix) {
+        System.out.println("createNewPatientReport");
+        System.out.println("pi = " + pi);
+        System.out.println("ix = " + ix);
         //System.err.println("creating a new patient report");
         PatientReport r = null;
         if (pi != null && pi.getId() != null && ix != null) {
@@ -2160,7 +2164,12 @@ public class PatientReportController implements Serializable {
             r.setDataEntryDepartment(sessionController.getLoggedUser().getDepartment());
             r.setDataEntryInstitution(sessionController.getLoggedUser().getInstitution());
             if (r.getTransInvestigation() != null) {
-                r.setReportFormat(r.getTransInvestigation().getReportFormat());
+                if (r.getTransInvestigation().getReportFormat() != null) {
+                    r.setReportFormat(r.getTransInvestigation().getReportFormat());
+                } else {
+                    ReportFormat nrf = reportFormatController.getValidReportFormat();
+                    r.setReportFormat(nrf);
+                }
             }
             getFacade().create(r);
             r.setPatientInvestigation(pi);
@@ -2252,21 +2261,75 @@ public class PatientReportController implements Serializable {
         pr = getFacade().findFirstByJpql(j, m);
         return pr;
     }
+    
+    
+    
+    public String navigateToNewlyCreatedPatientReport(PatientInvestigation pi) {
+        System.out.println("navigateToNewlyCreatedPatientReport");
+        System.out.println("pi = " + pi);
+        if (pi == null) {
+            JsfUtil.addErrorMessage("No Patient Report");
+            return null;
+        }
+        Investigation ix = null;
+        System.out.println("pi.getInvestigation() = " + pi.getInvestigation());
+        if (pi.getInvestigation() == null) {
+            JsfUtil.addErrorMessage("No Investigation for Patient Report");
+            return null;
+        } else {
+            ix = (Investigation) pi.getInvestigation();
+            System.out.println("ix = " + ix);
+        }
+        System.out.println("ix.getReportedAs() = " + ix.getReportedAs());
+        if (ix.getReportedAs() != null) {
+            ix = (Investigation) pi.getInvestigation().getReportedAs();
+            System.out.println("ix = " + ix);
+        }
+
+        currentReportInvestigation = ix;
+        currentPtIx = pi;
+        PatientReport newlyCreatedReport=null;
+        System.out.println("InvestigationReportType.Microbiology = " + InvestigationReportType.Microbiology);
+        if (ix.getReportType() == InvestigationReportType.Microbiology) {
+            createNewMicrobiologyReport(pi, ix);
+        } else {
+           newlyCreatedReport =    createNewPatientReport(pi, ix);
+            System.out.println("newlyCreatedReport = " + newlyCreatedReport);
+        }
+        if(newlyCreatedReport==null){
+            JsfUtil.addErrorMessage("Error");
+            return null;
+        }
+        currentPatientReport = newlyCreatedReport;
+        getCommonReportItemController().setCategory(ix.getReportFormat());
+        
+        return "/lab/patient_report?faces-redirect=true";
+    }
+    
+    
 
     public void createNewReport(PatientInvestigation pi) {
+        System.out.println("createNewReport");
+        System.out.println("pi = " + pi);
         if (pi == null) {
             JsfUtil.addErrorMessage("No Patient Report");
             return;
         }
+        Investigation ix = null;
+        System.out.println("pi.getInvestigation() = " + pi.getInvestigation());
         if (pi.getInvestigation() == null) {
             JsfUtil.addErrorMessage("No Investigation for Patient Report");
             return;
+        } else {
+            ix = (Investigation) pi.getInvestigation();
+            System.out.println("ix = " + ix);
         }
-        if (pi.getInvestigation().getReportedAs() == null) {
-            JsfUtil.addErrorMessage("No Reported as for Investigation for Patient Report");
-            return;
+        System.out.println("ix.getReportedAs() = " + ix.getReportedAs());
+        if (ix.getReportedAs() != null) {
+            ix = (Investigation) pi.getInvestigation().getReportedAs();
+            System.out.println("ix = " + ix);
         }
-        Investigation ix = (Investigation) pi.getInvestigation().getReportedAs();
+
         currentReportInvestigation = ix;
         currentPtIx = pi;
         if (ix.getReportType() == InvestigationReportType.Microbiology) {
@@ -2295,12 +2358,15 @@ public class PatientReportController implements Serializable {
     }
 
     public void setCurrentPatientReport(PatientReport currentPatientReport) {
-
+        System.out.println("Setting current patient report: " + currentPatientReport);
         this.currentPatientReport = currentPatientReport;
-
         if (currentPatientReport != null) {
+            System.out.println("Report format: " + currentPatientReport.getItem().getReportFormat());
             getCommonReportItemController().setCategory(currentPatientReport.getItem().getReportFormat());
             currentPtIx = currentPatientReport.getPatientInvestigation();
+            System.out.println("Current patient investigation index: " + currentPtIx);
+        } else {
+            System.out.println("No current patient report provided, skipping setting category and index.");
         }
     }
 

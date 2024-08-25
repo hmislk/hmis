@@ -1011,7 +1011,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
 
         temp.setInstitution(collectingCentre);
         temp.setDepartment(departmentController.getDefaultDepatrment(collectingCentre));
-
+        temp.setCollectingCentre(collectingCentre);
         temp.setToDepartment(bt);
         temp.setToInstitution(bt.getInstitution());
 
@@ -1121,7 +1121,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
                 feeTotalExceptCcfs += bf.getFeeValue();
             }
         }
-        double awailableBalance = Math.abs(collectingCentre.getBallance() + Math.abs(collectingCentre.getAllowedCredit()));
+        double awailableBalance = Math.abs(collectingCentre.getBallance() + Math.abs(collectingCentre.getMaxCreditLimit()));
         if (collectingCentreBillingRequiresCreditBalanceManagement) {
             if (awailableBalance < Math.abs(feeTotalExceptCcfs)) {
                 JsfUtil.addErrorMessage("Collecting Centre Balance is Not Enough");

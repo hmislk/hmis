@@ -20,7 +20,9 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -140,8 +142,8 @@ public class ReportFormatController implements Serializable {
             return;
         }
     }
-    
-    public void removeUploadedFile(){
+
+    public void removeUploadedFile() {
         if (getUpload() == null || getUpload().getId() == null) {
             JsfUtil.addErrorMessage("Select Category");
             return;
@@ -150,7 +152,7 @@ public class ReportFormatController implements Serializable {
         try {
             getUpload().setBaImage(null);
             uploadController.saveUpload(getUpload());
-            
+
         } catch (Exception ex) {
             Logger.getLogger(PhotoCamBean.class.getName()).log(Level.SEVERE, null, ex);
             JsfUtil.addErrorMessage("Error");
@@ -165,9 +167,26 @@ public class ReportFormatController implements Serializable {
         return current;
     }
 
+    public ReportFormat getValidReportFormat() {
+        String jpql = "select f "
+                + " from ReportFormat f"
+                + " where f.retired=:ret"
+                + " order by f.id desc";
+        Map params = new HashMap();
+        ReportFormat r = getFacade().findFirstByJpql(jpql, params);
+        if (r == null) {
+            r = new ReportFormat();
+            r.setName("Common Report Format");
+            r.setCreatedAt(new Date());
+            r.setCreater(sessionController.getLoggedUser());
+            getFacade().create(r);
+        }
+        return r;
+    }
+
     public void setCurrent(ReportFormat current) {
         this.current = current;
-        if (current != null && current.getId()!=null) {
+        if (current != null && current.getId() != null) {
             upload = uploadController.findUpload(current);
             if (upload == null) {
                 upload = new Upload();
@@ -176,7 +195,7 @@ public class ReportFormatController implements Serializable {
                 upload.setCreatedAt(new Date());
                 uploadController.saveUpload(upload);
             }
-        }else{
+        } else {
             upload = null;
         }
     }
