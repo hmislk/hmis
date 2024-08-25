@@ -376,6 +376,25 @@
                                             </ui:repeat>
                                         </p:column>
 
+                                        <p:column headerText="Actions" >
+                                            <h:panelGroup rendered="#{ptIx.billItem.bill.cancelled ne true}">
+                                                <p:commandLink class="m-1" ajax="false" id="btnPrintWorksheets" disabled="#{ptIx.sampleAccepted ne true}" action="/lab/single_worksheet?faces-redirect=true" >
+                                                    <f:setPropertyActionListener value="#{ptIx}" target="#{patientInvestigationController.current}" ></f:setPropertyActionListener>
+                                                    <p:graphicImage library="image" styleClass="standedicon" name="worksheet.gif" ></p:graphicImage>
+                                                </p:commandLink>
+                                                <p:commandLink id="btnNewReport" ajax="false" 
+                                                               class="m-1"
+                                                               disabled="#{!ptIx.sampleAccepted}" 
+                                                               action="/lab/patient_report?faces-redirect=true"  
+                                                               actionListener="#{patientReportController.createNewReport(pi)}" >
+                                                    <f:setPropertyActionListener value="#{ptIx}" target="#{patientReportController.currentPtIx}"></f:setPropertyActionListener>
+                                                    <p:graphicImage library="image" styleClass="standedicon" name="data_entry.png" ></p:graphicImage>
+                                                </p:commandLink>
+                                            </h:panelGroup>
+
+
+                                        </p:column>
+
 
 
                                     </p:dataTable>
