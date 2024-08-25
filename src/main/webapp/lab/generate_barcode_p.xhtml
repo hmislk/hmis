@@ -237,7 +237,7 @@
                                                          title="Receive Samples"
                                                          icon="pi pi-check-circle"
                                                          styleClass="m-1 ui-button-info" />
-                                        
+
                                         <p:commandButton disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
                                                          id="btnCollectReceiveAtLab"
                                                          value="Collect &amp; Received Samples"
@@ -391,14 +391,26 @@
                                                     <f:setPropertyActionListener value="#{ptIx}" target="#{patientInvestigationController.current}" ></f:setPropertyActionListener>
                                                     <p:graphicImage library="image" styleClass="standedicon" name="worksheet.gif" ></p:graphicImage>
                                                 </p:commandLink>
+                                                
+                                                
                                                 <p:commandLink id="btnNewReport" ajax="false" 
                                                                class="m-1"
                                                                disabled="#{!ptIx.sampleAccepted}" 
                                                                action="/lab/patient_report?faces-redirect=true"  
                                                                actionListener="#{patientReportController.createNewReport(ptIx)}" >
-                                                    <!--<f:setPropertyActionListener value="#{ptIx}" target="#{patientReportController.currentPtIx}"></f:setPropertyActionListener>-->
+                                                    <f:setPropertyActionListener value="#{ptIx}" target="#{patientReportController.currentPtIx}"></f:setPropertyActionListener>
                                                     <p:graphicImage library="image" styleClass="standedicon" name="data_entry.png" ></p:graphicImage>
                                                 </p:commandLink>
+
+<!--                                                <p:commandLink id="btnNewReport" ajax="false" 
+                                                               disabled="#{!pi.received}" 
+                                                               action="/lab/patient_report?faces-redirect=true"  
+                                                               actionListener="#{patientReportController.createNewReport(pi)}" >
+                                                    <f:setPropertyActionListener value="#{pi}" target="#{patientReportController.currentPtIx}"></f:setPropertyActionListener>
+                                                    <p:graphicImage library="image" styleClass="standedicon" name="data_entry.png" ></p:graphicImage>
+                                                </p:commandLink>-->
+
+
                                             </h:panelGroup>
 
 
