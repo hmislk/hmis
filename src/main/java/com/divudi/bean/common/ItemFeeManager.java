@@ -527,6 +527,7 @@ public class ItemFeeManager implements Serializable {
         itemFees = fillFees(item);
     }
 
+    
     public void updateItemAndCollectingCentreFees() {
         itemFees = new ArrayList<>();
         if (item == null) {
