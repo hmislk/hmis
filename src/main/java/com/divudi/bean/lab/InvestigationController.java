@@ -204,7 +204,7 @@ public class InvestigationController implements Serializable {
 
         for (Investigation selectedInvestigation : selectedInvestigations) {
             if (category != null) {
-                selectedInvestigation.setInvestigationCategory(category);
+                selectedInvestigation.setCategory(category);
             }
             if (sample != null) {
                 selectedInvestigation.setSample(sample);
