@@ -203,29 +203,51 @@
                                     </h:panelGrid>
                                     <h:panelGrid columns="1">
                                         <p:commandButton rendered="#{patientInvestigationController.listingEntity eq 'PATIENT_INVESTIGATIONS'}"
-                                                         id="btnGeneraBarcodes"
+                                                         id="btnGenerateBarcodes"
                                                          value="Generate Barcodes"
-                                                         ajax="false" action="#{patientInvestigationController.generateBarcodesForSelectedPatientInvestigations()}"
-                                                         title="Generate Barcodes" icon="fas fa-barcode" styleClass="m-1 ui-button-success w-100"/>
+                                                         ajax="false"
+                                                         action="#{patientInvestigationController.generateBarcodesForSelectedPatientInvestigations()}"
+                                                         title="Generate Barcodes"
+                                                         icon="pi pi-barcode"
+                                                         styleClass="m-1 ui-button-success" />
 
                                         <p:commandButton disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
                                                          id="btnCollectSamples"
                                                          value="Collect Samples"
-                                                         ajax="false" action="#{patientInvestigationController.collectSamples()}"
-                                                         title="Collect Samples" icon="fas fa-hand-holding-medical" styleClass="m-1 ui-button-primary w-100"/>
+                                                         ajax="false"
+                                                         action="#{patientInvestigationController.collectSamples()}"
+                                                         title="Collect Samples"
+                                                         icon="pi pi-plus-circle"
+                                                         styleClass="m-1 ui-button-primary" />
 
                                         <p:commandButton disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
-                                                         id="btnSentToLab"
-                                                         value="Sent to Lab"
-                                                         ajax="false" action="#{patientInvestigationController.sampleSendToLab()}"
-                                                         title="Sent to Lab" icon="fas fa-vials" styleClass="m-1 ui-button-warning w-100"/>
+                                                         id="btnSendToLab"
+                                                         value="Send to Lab"
+                                                         ajax="false"
+                                                         action="#{patientInvestigationController.sendSamplesToLab()}"
+                                                         title="Send to Lab"
+                                                         icon="pi pi-external-link"
+                                                         styleClass="m-1 ui-button-warning" />
 
                                         <p:commandButton disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
-                                                         id="btnReceivToLab"
+                                                         id="btnReceiveAtLab"
                                                          value="Received Samples"
-                                                         ajax="false" action="#{patientInvestigationController.receivedSamples()}"
-                                                         title="Sent to Lab" icon="fas fa-vials" styleClass="m-1 ui-button-warning w-100"/>
+                                                         ajax="false"
+                                                         action="#{patientInvestigationController.receiveSamplesAtLab()}"
+                                                         title="Receive Samples"
+                                                         icon="pi pi-check-circle"
+                                                         styleClass="m-1 ui-button-info" />
+
+                                        <p:commandButton disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
+                                                         id="btnRejectSamples"
+                                                         value="Reject Samples"
+                                                         ajax="false"
+                                                         action="#{patientInvestigationController.rejectSamples()}"
+                                                         title="Reject Samples"
+                                                         icon="pi pi-times-circle"
+                                                         styleClass="m-1 ui-button-danger" />
                                     </h:panelGrid>
+
                                 </h:panelGrid>
                             </div>
                         </div>
@@ -255,7 +277,7 @@
                                         </p:column>
 
                                         <!-- Bill Number Column with Icon and Colour -->
-                                        <p:column headerText="Bill Number" width="6em" style="vertical-align: top;">
+                                        <p:column headerText="Bill Number" width="10em" style="vertical-align: top;">
                                             <p:commandLink 
                                                 ajax="false" 
                                                 class="m-2 text-primary"
@@ -286,7 +308,7 @@
                                         </p:column>
 
                                         <!-- Patient Details Column with Icons -->
-                                        <p:column headerText="Patient" width="10em" style="vertical-align: top;">
+                                        <p:column headerText="Patient" style="vertical-align: top;">
                                             <i class="fas fa-user text-primary"></i> <!-- Name Icon -->
                                             <h:outputLabel value="#{ptIx.billItem.bill.patient.person.nameWithTitle}" />
                                             <br/>
@@ -304,7 +326,7 @@
                                         </p:column>
 
                                         <!-- Investigation Name Column -->
-                                        <p:column headerText="Investigations" width="10em" style="vertical-align: top;">
+                                        <p:column headerText="Investigations" width="15em" style="vertical-align: top;">
                                             <i class="fas fa-vial text-danger"></i> <!-- Investigation Icon -->
                                             <h:outputLabel value="#{ptIx.investigation.name}"/>
                                         </p:column>
@@ -316,7 +338,7 @@
                                         </p:column>
 
                                         <!-- Ordered Institution and Department Column with Icons -->
-                                        <p:column headerText="Ordered Institute" width="10em" style="vertical-align: top;">
+                                        <p:column headerText="Ordered Institute" width="15em" style="vertical-align: top;">
                                             <h:panelGroup rendered="#{ptIx.billItem.bill.collectingCentre == null}">
                                                 <i class="fas fa-hospital text-info"></i> <!-- Institution Icon -->
                                                 <h:outputLabel value="#{ptIx.billItem.bill.institution.name}" />
@@ -331,7 +353,7 @@
                                         </p:column>
 
                                         <!-- Lab Institution and Department Column with Icons -->
-                                        <p:column headerText="Lab" width="10em" style="vertical-align: top;">
+                                        <p:column headerText="Lab" width="15em" style="vertical-align: top;">
                                             <i class="fas fa-flask text-danger"></i> <!-- Lab Institution Icon -->
                                             <h:outputLabel value="#{ptIx.billItem.bill.toInstitution.name}" />
                                             <br/>
@@ -339,21 +361,38 @@
                                             <h:outputLabel value="#{ptIx.billItem.bill.toDepartment.name}" />
                                         </p:column>
 
-                                        <p:column headerText="Sample Components">
+                                        <p:column headerText="Samples" width="10em">
                                             <ui:repeat value="#{patientInvestigationController.getPatientSampleComponentsByInvestigation(ptIx)}" var="psc">
                                                 <div class="ui-g" style="margin-bottom: 10px;">
-                                                    <div class="ui-g-12">
+                                                    <div class="ui-g-6">
                                                         <i class="fa fa-vial"></i>
-                                                        <span class="text-primary font-weight-bold">Sample ID:</span>
                                                         <h:outputText value="#{psc.patientSample.id}" class="text-primary" />
                                                     </div>
-                                                    <div class="ui-g-12">
+                                                    <div class="ui-g-6">
                                                         <i class="fa fa-flask"></i>
-                                                        <span class="text-success font-weight-bold">Test Component:</span>
                                                         <h:outputText value="#{psc.investigationComponant.name}" class="text-success" />
                                                     </div>
                                                 </div>
                                             </ui:repeat>
+                                        </p:column>
+
+                                        <p:column headerText="Actions" >
+                                            <h:panelGroup rendered="#{ptIx.billItem.bill.cancelled ne true}">
+                                                <p:commandLink class="m-1" ajax="false" id="btnPrintWorksheets" disabled="#{ptIx.sampleAccepted ne true}" action="/lab/single_worksheet?faces-redirect=true" >
+                                                    <f:setPropertyActionListener value="#{ptIx}" target="#{patientInvestigationController.current}" ></f:setPropertyActionListener>
+                                                    <p:graphicImage library="image" styleClass="standedicon" name="worksheet.gif" ></p:graphicImage>
+                                                </p:commandLink>
+                                                <p:commandLink id="btnNewReport" ajax="false" 
+                                                               class="m-1"
+                                                               disabled="#{!ptIx.sampleAccepted}" 
+                                                               action="/lab/patient_report?faces-redirect=true"  
+                                                               actionListener="#{patientReportController.createNewReport(pi)}" >
+                                                    <f:setPropertyActionListener value="#{ptIx}" target="#{patientReportController.currentPtIx}"></f:setPropertyActionListener>
+                                                    <p:graphicImage library="image" styleClass="standedicon" name="data_entry.png" ></p:graphicImage>
+                                                </p:commandLink>
+                                            </h:panelGroup>
+
+
                                         </p:column>
 
 
@@ -377,7 +416,7 @@
                                         rowsPerPageTemplate="10,25,50">
 
                                         <!-- Bill Number and Date Column -->
-                                        <p:column headerText="Bill No." width="6em" style="vertical-align: top;">
+                                        <p:column headerText="Bill No." width="10em" style="vertical-align: top;">
                                             <p:commandLink 
                                                 ajax="false" 
                                                 class="m-2 text-primary"
@@ -390,6 +429,10 @@
                                             <i class="fas fa-calendar-alt text-secondary"></i> <!-- Date Icon -->
                                             <h:outputLabel value="#{b.createdAt}">
                                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"></f:convertDateTime>
+                                            </h:outputLabel>
+                                            <br/>
+                                            <i class="fas fa-calendar-alt text-secondary"></i> <!-- Date Icon -->
+                                            <h:outputLabel value="#{b.id}">
                                             </h:outputLabel>
                                             <br/>
                                             <!-- CC, IP, and OP Icons with Colours -->
@@ -408,7 +451,7 @@
                                         </p:column>
 
                                         <!-- Patient Details Column with Icons -->
-                                        <p:column headerText="Patient" width="10em" style="vertical-align: top;">
+                                        <p:column headerText="Patient"  style="vertical-align: top;">
                                             <i class="fas fa-user text-primary"></i> <!-- Name Icon -->
                                             <h:outputLabel value="#{b.patient.person.nameWithTitle}" />
                                             <br/>
@@ -426,7 +469,7 @@
                                         </p:column>
 
                                         <!-- Ordered Institution and Department Column -->
-                                        <p:column headerText="Ordered Institute" width="10em" style="vertical-align: top;">
+                                        <p:column headerText="Ordered Institute" width="15em" style="vertical-align: top;">
                                             <h:panelGroup rendered="#{b.collectingCentre == null}">
                                                 <i class="fas fa-hospital text-info"></i> <!-- Institution Icon -->
                                                 <h:outputLabel value="#{b.institution.name}" />
@@ -441,7 +484,7 @@
                                         </p:column>
 
                                         <!-- Lab Institution and Department Column -->
-                                        <p:column headerText="Lab" width="10em" style="vertical-align: top;">
+                                        <p:column headerText="Lab" width="15em" style="vertical-align: top;">
                                             <i class="fas fa-flask text-danger"></i> <!-- Lab Institution Icon -->
                                             <h:outputLabel value="#{b.toInstitution.name}" />
                                             <br/>
@@ -449,7 +492,7 @@
                                             <h:outputLabel value="#{b.toDepartment.name}" />
                                         </p:column>
 
-                                        <p:column headerText="Actions" >
+                                        <p:column headerText="Actions" width="10em">
                                             <p:commandButton value="Generate Barcodes" ajax="false" action="#{patientInvestigationController.generateBarcodesForSelectedBill(b)}" ></p:commandButton>
                                         </p:column>
 
@@ -513,7 +556,7 @@
                                                     <div class="patient-sample-info">
                                                         <ui:repeat value="#{patientInvestigationController.getPatientSampleComponentsByPatientSample(psc.patientSample)}" var="psw">
                                                             <span class="sample-component">
-                                                                #{psw.investigationComponant.name} &nbsp;&nbsp;
+                                                                #{psw.nameTranscient}&nbsp;&nbsp;
                                                             </span>
                                                         </ui:repeat>
                                                     </div>

@@ -166,6 +166,13 @@ public class PatientSample implements Serializable {
     private Department cancellDepartment;
     @ManyToOne
     private Institution cancellInstitution;
+    
+    private Boolean sampleRejected = false;
+    @ManyToOne
+    private WebUser sampleRejectedBy;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date sampleRejectedAt;
+    
     //Retairing properties
     private boolean retired;
     @ManyToOne
@@ -206,6 +213,8 @@ public class PatientSample implements Serializable {
         }
         return true;
     }
+    
+    
 
     @Override
     public String toString() {
@@ -731,6 +740,30 @@ public class PatientSample implements Serializable {
 
     public void setPriority(Priority priority) {
         this.priority = priority;
+    }
+
+    public Boolean getSampleRejected() {
+        return sampleRejected;
+    }
+
+    public void setSampleRejected(Boolean sampleRejected) {
+        this.sampleRejected = sampleRejected;
+    }
+
+    public WebUser getSampleRejectedBy() {
+        return sampleRejectedBy;
+    }
+
+    public void setSampleRejectedBy(WebUser sampleRejectedBy) {
+        this.sampleRejectedBy = sampleRejectedBy;
+    }
+
+    public Date getSampleRejectedAt() {
+        return sampleRejectedAt;
+    }
+
+    public void setSampleRejectedAt(Date sampleRejectedAt) {
+        this.sampleRejectedAt = sampleRejectedAt;
     }
 
 }
