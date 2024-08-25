@@ -528,6 +528,7 @@ public class ItemFeeManager implements Serializable {
     }
 
     
+    
     public void updateItemAndCollectingCentreFees() {
         itemFees = new ArrayList<>();
         if (item == null) {
@@ -573,6 +574,7 @@ public class ItemFeeManager implements Serializable {
                 .sum();
         feeValueController.updateFeeValue(ti, cc, tlf, tfff);
     }
+    
     
     
     public void updateListFeeValues(Item ti, Category fl) {
