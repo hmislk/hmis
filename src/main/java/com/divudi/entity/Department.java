@@ -286,6 +286,13 @@ public class Department implements Serializable {
     }
 
     public String getDepartmentCode() {
+        if (departmentCode == null || departmentCode.trim().isEmpty()) {
+            if (code != null && !code.trim().isEmpty()) {
+                departmentCode = code;
+            } else if (name != null && name.trim().length() >= 2) {
+                departmentCode = name.trim().substring(0, 2).toUpperCase(); // Extract the first two letters and make them uppercase
+            }
+        }
         return departmentCode;
     }
 
@@ -363,6 +370,5 @@ public class Department implements Serializable {
     public void setSite(Institution site) {
         this.site = site;
     }
-    
-    
+
 }
