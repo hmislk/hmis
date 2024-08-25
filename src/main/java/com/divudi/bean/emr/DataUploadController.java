@@ -712,7 +712,7 @@ public class DataUploadController implements Serializable {
             if (forCategoryCell != null && forCategoryCell.getCellType() == CellType.STRING) {
                 forCategoryName = forCategoryCell.getStringCellValue();
             }
-           
+            
             Cell institutionCell = row.getCell(3);
             if (institutionCell != null && institutionCell.getCellType() == CellType.STRING) {
                 institutionName = forCategoryCell.getStringCellValue();
@@ -775,13 +775,16 @@ public class DataUploadController implements Serializable {
             Itemfee.setFeeType(FeeType.OwnInstitution);
 
             Itemfee.setInstitution(institution);
+
             Itemfee.setFee(fee);
             Itemfee.setFfee(ffee);
             Itemfee.setDiscountAllowed(disAllowd);
             itemFeeFacade.create(Itemfee);
+
         }
         JsfUtil.addSuccessMessage("Upload Success");
         return itemFees;
+       
     }
 
     private List<Consultant> readConsultantsFromExcel(InputStream inputStream) throws IOException {
