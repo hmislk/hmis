@@ -19,13 +19,15 @@
                 <p:inputText autocomplete="off"   value="#{cc.attrs.paymentMethodData.creditCard.totalValue}" style="width: 7em;" id="txtVal" >
                     <p:ajax process="@this" ></p:ajax>
                 </p:inputText>
-                            </h:panelGroup>
-            
-            
+            </h:panelGroup>
+
+
             <p:inputText 
                 autocomplete="off"
                 style="width: 150px"
-                value="#{cc.attrs.paymentMethodData.creditCard.no}"  id="refno">
+                value="#{cc.attrs.paymentMethodData.creditCard.no}"  
+                id="refno"
+                placeholder="Card Last 4 Digits">
                 <p:ajax process="@this" ></p:ajax>
             </p:inputText>                          
             <p:selectOneMenu style="width: 150px" value="#{cc.attrs.paymentMethodData.creditCard.institution}" filter="true" filterMatchMode="contains"  >
@@ -34,7 +36,7 @@
                 <p:ajax process="@this" ></p:ajax>
             </p:selectOneMenu>
             <p:inputText value="#{cc.attrs.paymentMethodData.creditCard.comment}" placeholder="Enter Credit Card Comments" ></p:inputText>
-                    </div>
+        </div>
 
     </cc:implementation>
 </html>
