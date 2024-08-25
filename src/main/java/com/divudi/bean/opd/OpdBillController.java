@@ -2622,10 +2622,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             JsfUtil.addErrorMessage("Please select an Item");
             return;
         }
-        if (getCurrentBillItem().getItem().getTotal() == 0.0) {
-            JsfUtil.addErrorMessage("Please correct item fee");
-            return;
-        }
+       
 
         if (getCurrentBillItem().getItem().getDepartment() == null) {
             JsfUtil.addErrorMessage("Please set Department to Item");
@@ -2660,8 +2657,11 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
         boolean addAllBillFees = configOptionApplicationController.getBooleanValueByKey("OPD Bill Fees are the same for all departments, institutions and sites.", true);
         boolean siteBasedBillFees = configOptionApplicationController.getBooleanValueByKey("OPD Bill Fees are based on the site", false);
-
+        System.out.println("siteBasedBillFees = " + siteBasedBillFees);
+        System.out.println("addAllBillFees = " + addAllBillFees);
+        
         if (addAllBillFees) {
+            
             allBillFees = getBillBean().billFeefromBillItem(bi);
         } else if (siteBasedBillFees) {
             allBillFees = getBillBean().forInstitutionBillFeefromBillItem(bi, sessionController.getDepartment().getSite());

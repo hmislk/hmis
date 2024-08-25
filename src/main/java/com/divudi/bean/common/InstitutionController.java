@@ -201,7 +201,7 @@ public class InstitutionController implements Serializable {
         sql = "select c from Institution c "
                 + " where c.retired=false ";
         if (qry != null) {
-            sql += " and ((c.name) like :qry or (c.institutionCode) like :qry) ";
+            sql += " and ((c.name) like :qry or (c.code) like :qry) ";
             hm.put("qry", "%" + qry.toUpperCase() + "%");
         }
         if (types != null) {
