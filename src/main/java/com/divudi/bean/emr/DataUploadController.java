@@ -229,6 +229,7 @@ public class DataUploadController implements Serializable {
     private List<Institution> suppliers;
     private List<Department> departments;
     private List<Area> areas;
+    private List<Route> routes;
     private StreamedContent templateForItemWithFeeUpload;
     private StreamedContent templateForCollectingCentreUpload;
     private StreamedContent templateForsupplierUpload;
@@ -253,8 +254,6 @@ public class DataUploadController implements Serializable {
     List<Department> departmentsSaved;
     private List<Consultant> consultantsToSave;
     private List<Institution> creditCompanies;
-    private List<Route> routes;
-    private List<Category>feeListTypes;
 
     private List<Doctor> doctorsTosave;
     private List<Staff> staffToSave;
@@ -265,13 +264,12 @@ public class DataUploadController implements Serializable {
     private List<ClinicalEntity> surgeries;
     private List<ClinicalEntity> surgeriesToSave;
     private List<ClinicalEntity> surgeriesToSkiped;
-    
-    
-    public String navigateToRouteUpload(){
+
+    public String navigateToRouteUpload() {
+        uploadComplete = false;
         return "/admin/institutions/route_upload?faces-redirect=true";
     }
 
-   
     public String navigateToCollectingCenterUpload() {
         uploadComplete = false;
         return "/admin/institutions/collecting_centre_upload?faces-redirect=true";
@@ -287,6 +285,77 @@ public class DataUploadController implements Serializable {
         return "/admin/institutions/supplier_upload?faces-redirect=true";
     }
 
+    public void uploadRoutes() {
+        routes = new ArrayList<>();
+        if (file != null) {
+            try (InputStream inputStream = file.getInputStream()) {
+                System.out.println("inputStream = " + inputStream);
+                routes = readRoutesFromExcel(inputStream);
+            } catch (IOException e) {
+                e.printStackTrace();
+                uploadComplete = false;
+                JsfUtil.addErrorMessage("Error in Uploading. " + e.getMessage());
+            }
+        }
+        uploadComplete = true;
+        JsfUtil.addSuccessMessage("Successfully Uploaded");
+    }
+
+    private List<Route> readRoutesFromExcel(InputStream inputStream) throws IOException {
+        Workbook workbook = new XSSFWorkbook(inputStream);
+        Sheet sheet = workbook.getSheetAt(0);
+        Iterator<Row> rowIterator = sheet.rowIterator();
+
+        List<Route> routes = new ArrayList<>();
+        Institution institution;
+
+        // Assuming the first row contains headers, skip it
+        if (rowIterator.hasNext()) {
+            rowIterator.next();
+        }
+
+        while (rowIterator.hasNext()) {
+            Row row = rowIterator.next();
+            Route route = null;
+
+            String routeCode = null;
+            String name = null;
+            String institutionName = null;
+
+            Cell routeCodeCell = row.getCell(0);
+            if (routeCodeCell != null && routeCodeCell.getCellType() == CellType.STRING) {
+                routeCode = routeCodeCell.getStringCellValue();
+            }
+
+            Cell nameCell = row.getCell(1);
+            if (nameCell != null && nameCell.getCellType() == CellType.STRING) {
+                name = nameCell.getStringCellValue();
+            }
+
+            Cell institutionCell = row.getCell(2);
+            if (institutionCell != null && institutionCell.getCellType() == CellType.STRING) {
+                institutionName = institutionCell.getStringCellValue();
+            }
+            if (institutionName == null || institutionName.trim().equals("")) {
+                institution = sessionController.getInstitution();
+            }
+            institution = institutionController.findAndSaveInstitutionByName(institutionName);
+
+            Route r = routeController.findRouteByName(name);
+            if (r == null) {
+                r = new Route();
+                r.setName(name);
+                r.setInstitution(institution);
+                r.setCreatedAt(new Date());
+                r.setCreater(sessionController.getLoggedUser());
+                routeController.save(r);
+            }
+        }
+
+        return routes;
+
+    }
+
     public void uploadPatientAreas() {
         areas = new ArrayList<>();
         if (file != null) {
@@ -297,14 +366,12 @@ public class DataUploadController implements Serializable {
             }
         }
     }
-    
 
     public void uploadInstitutionItemFees() {
         itemFees = new ArrayList<>();
         if (file != null) {
             try (InputStream inputStream = file.getInputStream()) {
                 itemFees = readInstitutionItemFeeFromXcel(inputStream);
-
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -434,8 +501,6 @@ public class DataUploadController implements Serializable {
     public String toUploadVmps() {
         return "/pharmacy/admin/upload_vmps?faces-redirect=true";
     }
-    
-    
 
     public void uploadPatients() {
         List<Patient> patients;
@@ -643,64 +708,62 @@ public class DataUploadController implements Serializable {
         }
         pollActive = false;
     }
-    
+
     public void uploadFeeListItemFees() {
         itemFees = new ArrayList<>();
         if (file != null) {
-            try ( InputStream inputStream = file.getInputStream()) {
+            try (InputStream inputStream = file.getInputStream()) {
                 itemFees = readFeeListItemFeesFromExcel(inputStream);
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
-        
+
     }
-    
-    public List<Category> readFeeListTypesFromExcel(InputStream inputStream)throws IOException {
+
+    public List<Category> readFeeListTypesFromExcel(InputStream inputStream) throws IOException {
         List<Category> feeListTypes = new ArrayList<>();
-         Workbook workbook = new XSSFWorkbook(inputStream);
+        Workbook workbook = new XSSFWorkbook(inputStream);
         Sheet sheet = workbook.getSheetAt(0);
         Iterator<Row> rowIterator = sheet.rowIterator();
-        
-         if (rowIterator.hasNext()) {
+
+        if (rowIterator.hasNext()) {
             rowIterator.next();
         }
-         
-         Category category = null;
-         
-         while (rowIterator.hasNext()) {
-          Row row = rowIterator.next();
-            
-            
+
+        Category category = null;
+
+        while (rowIterator.hasNext()) {
+            Row row = rowIterator.next();
+
             String feeListName = null;
-            String description=null;
+            String description = null;
 
             Cell feeListNameCell = row.getCell(0);
             if (feeListNameCell != null && feeListNameCell.getCellType() == CellType.STRING) {
                 feeListName = feeListNameCell.getStringCellValue();
             }
-            
-            
-             if (feeListName != null || !feeListName.trim().equals("")) {
-                 category=categoryController.findCategoryByName(feeListName);
-             }
-             
-             if (category == null) {
-                 category= new Category();
-                 category.setName(feeListName);
-                 category.setSymanticType(SymanticHyrachi.Fee_List_Type);
-                 category.setCreatedAt(new Date());
-                 category.setCreater(sessionController.getCurrent());
-                 categoryController.save(category);
-                 feeListTypes.add(category);
-             }
- 
-         }
-         JsfUtil.addSuccessMessage("FeeList Types Uploaded");
-         return feeListTypes;
+
+            if (feeListName != null || !feeListName.trim().equals("")) {
+                category = categoryController.findCategoryByName(feeListName);
+            }
+
+            if (category == null) {
+                category = new Category();
+                category.setName(feeListName);
+                category.setSymanticType(SymanticHyrachi.Fee_List_Type);
+                category.setCreatedAt(new Date());
+                category.setCreater(sessionController.getCurrent());
+                categoryController.save(category);
+                feeListTypes.add(category);
+            }
+
+        }
+        JsfUtil.addSuccessMessage("FeeList Types Uploaded");
+        return feeListTypes;
     }
-    
-    private List<ItemFee> readFeeListItemFeesFromExcel(InputStream inputStream) throws IOException{
+
+    private List<ItemFee> readFeeListItemFeesFromExcel(InputStream inputStream) throws IOException {
         List<ItemFee> itemFees = new ArrayList<>();
         Workbook workbook = new XSSFWorkbook(inputStream);
         Sheet sheet = workbook.getSheetAt(0);
@@ -713,18 +776,18 @@ public class DataUploadController implements Serializable {
 
         while (rowIterator.hasNext()) {
             Row row = rowIterator.next();
-            String itemCode=null;
+            String itemCode = null;
             String itemName = null;
-            String forCategoryName=null;
-            String institutionName=null;
-            String discountAllowed=null;
-            String ffeeValue=null;
-            String fffeeValue=null;
-            
+            String forCategoryName = null;
+            String institutionName = null;
+            String discountAllowed = null;
+            String ffeeValue = null;
+            String fffeeValue = null;
+
             boolean disAllowd;
-            double fee=0.0;
-            double ffee=0.0;
-            
+            double fee = 0.0;
+            double ffee = 0.0;
+
             Item item;
             Category category;
             Institution institution;
@@ -733,90 +796,76 @@ public class DataUploadController implements Serializable {
             if (itemCodeCell != null && itemCodeCell.getCellType() == CellType.STRING) {
                 itemCode = itemCodeCell.getStringCellValue();
             }
-            
+
             Cell itemNameCell = row.getCell(1);
             if (itemNameCell != null && itemNameCell.getCellType() == CellType.STRING) {
                 itemName = itemNameCell.getStringCellValue();
             }
-            
+
             Cell forCategoryCell = row.getCell(2);
             if (forCategoryCell != null && forCategoryCell.getCellType() == CellType.STRING) {
                 forCategoryName = forCategoryCell.getStringCellValue();
             }
-            
-            Cell institutionCell = row.getCell(3);
-            if (institutionCell != null && institutionCell.getCellType() == CellType.STRING) {
-                institutionName = forCategoryCell.getStringCellValue();
-            }
-            
-            Cell feeCell = row.getCell(4);
+
+            Cell feeCell = row.getCell(3);
             if (feeCell != null && feeCell.getCellType() == CellType.NUMERIC) {
                 fee = feeCell.getNumericCellValue();
             }
-            
-            Cell ffeeCell = row.getCell(5);
+
+            Cell ffeeCell = row.getCell(4);
             if (ffeeCell != null && ffeeCell.getCellType() == CellType.NUMERIC) {
                 ffee = ffeeCell.getNumericCellValue();
             }
-           
-            
-            Cell discountAllowedCell = row.getCell(6);
+
+            Cell discountAllowedCell = row.getCell(5);
             if (discountAllowedCell != null && discountAllowedCell.getCellType() == CellType.STRING) {
                 discountAllowed = discountAllowedCell.getStringCellValue();
             }
-            if (discountAllowed!= null || !discountAllowed.trim().equals("")) {
-                disAllowd=true;
-            }else{
-                disAllowd=false;
+            if (discountAllowed != null || !discountAllowed.trim().equals("")) {
+                disAllowd = true;
+            } else {
+                disAllowd = false;
             }
-            
-            if (institutionName==null || institutionName.trim().equals("")) {
-                institution=sessionController.getInstitution();
-            }else{
-                institution=institutionController.findAndSaveInstitutionByName(institutionName);
-            }
-            
-            
-            if (itemName == null || itemCode==null) {
+
+            if (itemName == null || itemCode == null) {
                 JsfUtil.addErrorMessage("Item Name and Item Code cannot be null.");
                 return itemFees;
             }
-            
+
             if (forCategoryName == null || forCategoryName.trim().equals("")) {
                 JsfUtil.addErrorMessage("Fee List types cannot be null.");
                 return itemFees;
             }
-            
-            category=categoryController.findCategoryByName(forCategoryName);
-            if (category==null) {
+
+            category = categoryController.findCategoryByName(forCategoryName);
+            if (category == null) {
                 JsfUtil.addErrorMessage("Fee List type Not found.");
                 return itemFees;
             }
-            
-            item= itemController.findItemByNameAndCode(itemName, itemCode);
-            if (item==null) {
-                 JsfUtil.addErrorMessage("Item cannot be null.");
+
+            item = itemController.findItemByNameAndCode(itemName, itemCode);
+            if (item == null) {
+                JsfUtil.addErrorMessage("Item cannot be null.");
                 return itemFees;
             }
-            ItemFee Itemfee= new ItemFee();
-             Itemfee.setCreatedAt(new Date());
-             Itemfee.setName(forCategoryName);
-        Itemfee.setCreater(sessionController.getLoggedUser());
-        Itemfee.setForInstitution(null);
-        Itemfee.setForCategory(category);
-        Itemfee.setItem(item);
-        Itemfee.setFeeType(FeeType.OwnInstitution);
-        Itemfee.setInstitution(institution);
-        Itemfee.setFee(fee);
-        Itemfee.setFfee(ffee);
-        Itemfee.setDiscountAllowed(disAllowd);
-        itemFeeFacade.create(Itemfee);
-        
-            
+            ItemFee Itemfee = new ItemFee();
+            Itemfee.setCreatedAt(new Date());
+            Itemfee.setName(forCategoryName);
+            Itemfee.setCreater(sessionController.getLoggedUser());
+            Itemfee.setForInstitution(null);
+            Itemfee.setForCategory(category);
+            Itemfee.setItem(item);
+            Itemfee.setFeeType(FeeType.OwnInstitution);
+            Itemfee.setInstitution(item.getInstitution());
+            Itemfee.setFee(fee);
+            Itemfee.setFfee(ffee);
+            Itemfee.setDiscountAllowed(disAllowd);
+            itemFeeFacade.create(Itemfee);
+
         }
-         JsfUtil.addSuccessMessage("Upload Success");
+        JsfUtil.addSuccessMessage("Upload Success");
         return itemFees;
-       
+
     }
 
     private List<Consultant> readConsultantsFromExcel(InputStream inputStream) throws IOException {
@@ -1309,16 +1358,13 @@ public class DataUploadController implements Serializable {
 
             // Column 0: Name (Required)
             Cell nameCell = row.getCell(0);
-            if (nameCell != null && nameCell.getCellType() == CellType.STRING) {
+            if (nameCell.getCellType() == CellType.STRING) {
                 name = nameCell.getStringCellValue();
                 System.out.println("Name: " + name);
                 if (name == null || name.trim().equals("")) {
                     System.out.println("Skipping row due to missing name.");
                     continue;  // Skip row if name is missing
                 }
-            } else {
-                System.out.println("Skipping row due to missing name cell.");
-                continue;  // Skip row if name is not available
             }
 
             // Column 4: Category (Required)
@@ -1370,7 +1416,7 @@ public class DataUploadController implements Serializable {
             if (feeNameCell != null && feeNameCell.getCellType() == CellType.STRING) {
                 feeName = feeNameCell.getStringCellValue();
                 System.out.println("Fee Name: " + feeName);
-                }
+            }
 
             // Column 11: Hospital Fee (Optional, for logged institution and department)
             Cell hospitalFeeTypeCell = row.getCell(11);
@@ -1394,7 +1440,7 @@ public class DataUploadController implements Serializable {
                 if (feeListName != null && !feeListName.trim().equals("")) {
                     feeList = categoryController.findCategoryByName(feeListName);
                     System.out.println("Fee List found: " + feeList);
-            }
+                }
             }
 
             // Handle institution and department
@@ -1403,8 +1449,20 @@ public class DataUploadController implements Serializable {
             department = departmentController.findAndSaveDepartmentByName(departmentName, institution);
             System.out.println("Department: " + department);
 
-            // Handle code and item lookup
-            code = row.getCell(3) != null ? row.getCell(3).getStringCellValue() : serviceController.generateShortCode(name);
+// Handle code and item lookup
+            if (row.getCell(3) != null) {
+                if (row.getCell(3).getCellType() == CellType.STRING) {
+                    code = row.getCell(3).getStringCellValue();
+                } else if (row.getCell(3).getCellType() == CellType.NUMERIC) {
+                    code = String.valueOf((int) row.getCell(3).getNumericCellValue());
+                } else {
+                    // Handle other possible types if necessary, or default
+                    code = serviceController.generateShortCode(name);
+                }
+            } else {
+                code = serviceController.generateShortCode(name);
+            }
+
             System.out.println("Item Code: " + code);
             item = itemController.findItemByCode(code);
             if (item == null) {
@@ -1412,8 +1470,7 @@ public class DataUploadController implements Serializable {
                 item = createItem(row, code, name, institution, department, category, financialCategory);
             } else {
                 System.out.println("Item found for code: " + code);
-                }
-
+            }
             // Save or update the item
             if (item.getId() == null) {
                 itemFacade.create(item);
@@ -1421,7 +1478,7 @@ public class DataUploadController implements Serializable {
             } else {
                 itemFacade.edit(item);
                 System.out.println("Item updated: " + item);
-                }
+            }
 
             // Create and save the ItemFee object
             ItemFee itf = new ItemFee();
@@ -1454,26 +1511,26 @@ public class DataUploadController implements Serializable {
             itemFeesToSave.add(itf);
             itemsToSave.add(item);
             System.out.println("Item and ItemFee added to save list.");
-            }
+        }
 
         workbook.close(); // Always close the workbook to prevent memory leaks
         System.out.println("Finished reading and processing Excel data.");
         return itemsToSave;
-            }
+    }
 
     private Double extractHospitalFee(Cell hospitalFeeTypeCell) {
         Double hospitalFee = 0.0;
-                if (hospitalFeeTypeCell.getCellType() == CellType.NUMERIC) {
-                    hospitalFee = hospitalFeeTypeCell.getNumericCellValue();
-                } else if (hospitalFeeTypeCell.getCellType() == CellType.FORMULA) {
+        if (hospitalFeeTypeCell.getCellType() == CellType.NUMERIC) {
+            hospitalFee = hospitalFeeTypeCell.getNumericCellValue();
+        } else if (hospitalFeeTypeCell.getCellType() == CellType.FORMULA) {
             FormulaEvaluator evaluator = hospitalFeeTypeCell.getSheet().getWorkbook().getCreationHelper().createFormulaEvaluator();
-                    CellValue cellValue = evaluator.evaluate(hospitalFeeTypeCell);
-                    if (cellValue.getCellType() == CellType.NUMERIC) {
-                        hospitalFee = cellValue.getNumberValue();
-                    }
-                } else if (hospitalFeeTypeCell.getCellType() == CellType.STRING) {
+            CellValue cellValue = evaluator.evaluate(hospitalFeeTypeCell);
+            if (cellValue.getCellType() == CellType.NUMERIC) {
+                hospitalFee = cellValue.getNumberValue();
+            }
+        } else if (hospitalFeeTypeCell.getCellType() == CellType.STRING) {
             hospitalFee = CommonFunctions.stringToDouble(hospitalFeeTypeCell.getStringCellValue());
-                }
+        }
         return hospitalFee == null || hospitalFee < 0 ? 0.0 : hospitalFee;
     }
 
@@ -1491,7 +1548,7 @@ public class DataUploadController implements Serializable {
         } else if (itemType.equals("Surgery")) {
             item = new ClinicalEntity();
             ((ClinicalEntity) item).setSymanticType(SymanticType.Therapeutic_Procedure);
-                }
+        }
 
         if (item != null) {
             item.setName(name);
@@ -1500,10 +1557,10 @@ public class DataUploadController implements Serializable {
             item.setDepartment(department);
             item.setCreater(sessionController.getLoggedUser());
             item.setCreatedAt(new Date());
-            }
+        }
 
         return item;
-        }
+    }
 
     private Item createItem(Row row, String code, String name, Institution institution, Department department, Category category, Category financialCategory) {
         System.out.println("createItem = ");
@@ -1530,7 +1587,7 @@ public class DataUploadController implements Serializable {
             item.setFinancialCategory(financialCategory);
             item.setCreater(sessionController.getLoggedUser());
             item.setCreatedAt(new Date());
-    }
+        }
 
         return item;
     }
@@ -3006,23 +3063,6 @@ public class DataUploadController implements Serializable {
         uploadComplete = true;
         JsfUtil.addSuccessMessage("Successfully Uploaded");
     }
-    
-    public void uploadRoutes() {
-        routes = new ArrayList<>();
-        if (file != null) {
-            try ( InputStream inputStream = file.getInputStream()) {
-                System.out.println("inputStream = " + inputStream);
-                routes = readRoutesFromExcel(inputStream);
-            } catch (IOException e) {
-                e.printStackTrace();
-                uploadComplete = false;
-                JsfUtil.addErrorMessage("Error in Uploading. " + e.getMessage());
-            }
-        }
-        uploadComplete = true;
-        JsfUtil.addSuccessMessage("Successfully Uploaded");
-    }
-    
 
     public void uploadDepartments() {
         departments = new ArrayList<>();
@@ -3048,54 +3088,6 @@ public class DataUploadController implements Serializable {
                 e.printStackTrace();
             }
         }
-    }
-    
-    private List<Route> readRoutesFromExcel(InputStream inputStream) throws IOException{
-        Workbook workbook = new XSSFWorkbook(inputStream);
-        Sheet sheet = workbook.getSheetAt(0);
-        Iterator<Row> rowIterator = sheet.rowIterator();
-
-        List<Route> routes = new ArrayList<>();
-        Institution institution;
-
-        // Assuming the first row contains headers, skip it
-        if (rowIterator.hasNext()) {
-            rowIterator.next();
-        }
-        
-        while (rowIterator.hasNext()) {
-            Row row = rowIterator.next();
-            Route route = null;
-            String name = null;
-            String institutionName=null;
-            
-            Cell nameCell = row.getCell(0);
-            if (nameCell != null && nameCell.getCellType() == CellType.STRING) {
-                name = nameCell.getStringCellValue();
-            }
-            
-            Cell institutionCell = row.getCell(1);
-            if (institutionCell != null && institutionCell.getCellType() == CellType.STRING) {
-                institutionName = institutionCell.getStringCellValue();
-            }
-            if (institutionName == null || institutionName.trim().equals("")) {
-                institution=sessionController.getInstitution();
-            }
-            institution=institutionController.findAndSaveInstitutionByName(institutionName);
-
-            Route r = routeController.findRouteByName(name);
-            if(r==null){
-                r = new Route();
-                r.setName(name);
-                r.setInstitution(institution);
-                r.setCreatedAt(new Date());
-                r.setCreater(sessionController.getLoggedUser());
-                routeController.save(r);
-            }
-        }
-
-        return routes;
-        
     }
 
     private List<Institution> readCollectingCentresFromExcel(InputStream inputStream) throws IOException {
@@ -3284,21 +3276,13 @@ public class DataUploadController implements Serializable {
                 continue;
             }
 
-            collectingCentre = collectingCentreController.findCollectingCentreByName(collectingCentreName);
-//            if (collectingCentre != null) {
-//                continue;
-//            }
-//            collectingCentre = collectingCentreController.findCollectingCentreByCode(code);
-//            if (collectingCentre != null) {
-//                continue;
-//            }
+            collectingCentre = collectingCentreController.findCollectingCentreByCode(code);
             if (collectingCentre == null) {
                 collectingCentre = new Institution();
+                collectingCentre.setInstitutionType(InstitutionType.CollectingCentre);
+                collectingCentre.setCode(code);
+                collectingCentre.setName(collectingCentreName);
             }
-//            collectingCentre = new Institution();
-            collectingCentre.setInstitutionType(InstitutionType.CollectingCentre);
-            collectingCentre.setCode(code);
-            collectingCentre.setName(collectingCentreName);
             if (withCommissionStatus) {
                 collectingCentre.setCollectingCentrePaymentMethod(CollectingCentrePaymentMethod.FULL_PAYMENT_WITH_COMMISSION);
             } else {
@@ -3306,15 +3290,6 @@ public class DataUploadController implements Serializable {
             }
 
             collectingCentre.setInactive(active);
-
-//            Route r = routeController.findRouteByName(routeName)
-//            if(r==null){
-//                r = new Route();
-//                r.setName(routeName);
-//                r.setCreatedAt(new Date());
-//                r.setCreater(sessionController.getLoggedUser());
-//                routeController.save(r);
-//            }
             collectingCentre.setRoute(route);
             collectingCentre.setChequePrintingName(collectingCentrePrintingName);
             collectingCentre.setPercentage(percentage);
@@ -3487,15 +3462,15 @@ public class DataUploadController implements Serializable {
             Row row = rowIterator.next();
             Institution institution;
             Department department;
-            Item item = null; 
+            Item item = null;
             Category category = null;
-            
+
             String departmentName = null;
-                     
+
             String institutionName = null;
             String itemCode = null;
             String itemName = null;
-            String itemTypeName=null;
+            String itemTypeName = null;
             String feeListType = null;
             Double price = 0.0;
 
@@ -3552,24 +3527,24 @@ public class DataUploadController implements Serializable {
             if (itemName == null || itemName.trim().isEmpty()) {
                 continue;
             }
-            
+
             Cell itemTypeCell = row.getCell(3);
             if (itemTypeCell != null && itemTypeCell.getCellType() == CellType.STRING) {
                 itemTypeName = itemTypeCell.getStringCellValue();
             }
-            
+
             if (itemTypeName != null) {
                 switch (itemTypeName) {
                     case "Investigation":
-                        item=itemController.findAndCreateInvestigationByNameAndCode(itemName, itemCode);
+                        item = itemController.findAndCreateInvestigationByNameAndCode(itemName, itemCode);
                         System.out.println("itemTypeCell = " + itemTypeName);
                         break;
-                        
+
                     case "Service":
-                        item=itemController.findAndCreateServiceByNameAndCode(itemName, itemCode);
+                        item = itemController.findAndCreateServiceByNameAndCode(itemName, itemCode);
                         System.out.println("itemTypeCell = " + itemTypeName);
                         break;
-                        
+
                     default:
                         throw new AssertionError();
                 }
@@ -3610,7 +3585,7 @@ public class DataUploadController implements Serializable {
         }
         return itemFees;
     }
-    
+
     private List<ItemFee> readInstitutionItemFeeFromXcel(InputStream inputStream) throws IOException {
         Workbook workbook = new XSSFWorkbook(inputStream);
         Sheet sheet = workbook.getSheetAt(0);
@@ -3628,18 +3603,18 @@ public class DataUploadController implements Serializable {
             Row row = rowIterator.next();
             Institution institution;
             Department department;
-            Item item = null; 
+            Item item = null;
             Institution forInstitution = null;
-            
+
             String departmentName = null;
-                     
+
             String institutionName = null;
             String itemCode = null;
             String itemName = null;
-            String itemTypeName=null;
+            String itemTypeName = null;
             String feeListType = null;
             Double price = 0.0;
-            String forInstitutionName=null;
+            String forInstitutionName = null;
 
             Cell insCell = row.getCell(5);
             if (insCell != null && insCell.getCellType() == CellType.STRING) {
@@ -3694,24 +3669,24 @@ public class DataUploadController implements Serializable {
             if (itemName == null || itemName.trim().isEmpty()) {
                 continue;
             }
-            
+
             Cell itemTypeCell = row.getCell(3);
             if (itemTypeCell != null && itemTypeCell.getCellType() == CellType.STRING) {
                 itemTypeName = itemTypeCell.getStringCellValue();
             }
-            
+
             if (itemTypeName != null) {
                 switch (itemTypeName) {
                     case "Investigation":
-                        item=itemController.findAndCreateInvestigationByNameAndCode(itemName, itemCode);
+                        item = itemController.findAndCreateInvestigationByNameAndCode(itemName, itemCode);
                         System.out.println("itemTypeCell = " + itemTypeName);
                         break;
-                        
+
                     case "Service":
-                        item=itemController.findAndCreateServiceByNameAndCode(itemName, itemCode);
+                        item = itemController.findAndCreateServiceByNameAndCode(itemName, itemCode);
                         System.out.println("itemTypeCell = " + itemTypeName);
                         break;
-                        
+
                     default:
                         throw new AssertionError();
                 }
@@ -3744,6 +3719,7 @@ public class DataUploadController implements Serializable {
             fee.setDepartment(department);
             fee.setFeeType(FeeType.OwnInstitution);
             itemFeeFacade.create(fee);
+            System.out.println("fee = " + fee.getId());
 
         }
         return itemFees;
@@ -3994,8 +3970,6 @@ public class DataUploadController implements Serializable {
             }
         }
     }
-    
-
 
     public void uploadInvestigations() {
         List<Investigation> investigations;
@@ -5959,14 +5933,6 @@ public class DataUploadController implements Serializable {
 
     public void setRoutes(List<Route> routes) {
         this.routes = routes;
-    }
-
-    public List<Category> getFeeListTypes() {
-        return feeListTypes;
-    }
-
-    public void setFeeListTypes(List<Category> feeListTypes) {
-        this.feeListTypes = feeListTypes;
     }
 
 }

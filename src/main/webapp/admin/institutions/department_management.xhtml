@@ -50,7 +50,10 @@
                                                  value="#{departmentController.current}" 
                                                  style="w-100"
                                                  filter="true">
-                                <f:selectItems  value="#{departmentController.searchItems}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
+                                <f:selectItems  value="#{departmentController.selectedItems}"
+                                                var="myItem" 
+                                                itemValue="#{myItem}" 
+                                                itemLabel="#{myItem.name}" ></f:selectItems>
                                 <p:ajax update="gpDetail" process="lstSelect" >
                                 </p:ajax>
                             </p:selectOneListbox>
@@ -131,7 +134,7 @@
                                                 id="acSite"
                                                 class="w-100" 
                                                 inputStyleClass="w-100" 
-                                                completeMethod="#{institutionController.completeSite}" 
+                                                completeMethod="#{institutionController.completeSite()}" 
                                                 var="site" 
                                                 itemLabel="#{site.name}" 
                                                 itemValue="#{site}" 
