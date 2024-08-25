@@ -23,18 +23,28 @@
                             <p:outputLabel value="From Date" />
                             <p:outputLabel value=":" />
                             <p:datePicker
-                                style=" max-width: 100%; overflow-x: auto; "
-                                class="w-100"
-                                value="#{reportController.fromDate}" 
-                                pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                    value="#{reportController.fromDate}" 
+                                    class="w-100"
+                                    showTime="true"
+                                    showButtonBar="true"
+                                    timeInput="true"
+                                    inputStyleClass="form-control"
+                                    maxdate="#{commonFunctionsController.endOfDay}"
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                                </p:datePicker>
 
                             <p:outputLabel value="To Date" />
                             <p:outputLabel value=":" />
                             <p:datePicker 
-                                style=" max-width: 100%; overflow-x: auto; "
-                                class="w-100"
-                                value="#{reportController.toDate}" 
-                                pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                    class="w-100"
+                                    showTime="true"
+                                            showButtonBar="true"
+                                            timeInput="true"
+                                    inputStyleClass="form-control"
+                                     value="#{reportController.toDate}" 
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                                </p:datePicker>
+                            
 
                             <p:outputLabel value="Collection Center Name" />
                             <p:outputLabel value=":" />
