@@ -419,7 +419,6 @@ public class BookingController implements Serializable, ControllerWithPatient, C
         balance = getTenderedAmount() - getFeeTotalForSelectedBill();
     }
 
-
     public double calculatRemainForMultiplePaymentTotal() {
         total = getFeeTotalForSelectedBill();
         if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
@@ -480,7 +479,7 @@ public class BookingController implements Serializable, ControllerWithPatient, C
             }
         }
     }
-  
+
     public void sessionInstanceSelected() {
         sortSessions();
     }
@@ -3470,7 +3469,7 @@ public class BookingController implements Serializable, ControllerWithPatient, C
         agentHistory.setBill(bill);
         agentHistory.setBillItem(billItem);
         agentHistory.setBillSession(billSession);
-        agentHistory.setCompanyBalanceBefore(ins.getBallance());
+        agentHistory.setBeforeBallance(ins.getBallance());
         agentHistory.setTransactionValue(transactionValue);
         agentHistory.setReferenceNumber(refNo);
         agentHistory.setHistoryType(historyType);
