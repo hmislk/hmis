@@ -3496,9 +3496,7 @@ public class PatientInvestigationController implements Serializable {
 
                             pts.setTube(ixi.getTube());
                             pts.setSample(ixi.getSample());
-                            if (ix.isHasMoreThanOneComponant()) {
-                                pts.setInvestigationComponant(ixi.getSampleComponent());
-                            }
+                            pts.setInvestigationComponant(ixi.getSampleComponent());
                             pts.setMachine(ixi.getMachine());
                             pts.setPatient(b.getPatient());
                             pts.setBill(b);
@@ -3618,7 +3616,7 @@ public class PatientInvestigationController implements Serializable {
 
             System.out.println("ixis = " + ixis);
             Item ixSampleComponant = itemController.addSampleComponent(ix);
-            
+
             if (ixis == null || ixis.isEmpty()) {
                 InvestigationItem ixi = new InvestigationItem();
                 ixi.setRiTop(46);
@@ -3655,6 +3653,11 @@ public class PatientInvestigationController implements Serializable {
                         InvestigationTube it = investigationTubeController.findAndCreateInvestigationTubeByName("Plain Tube");
                         ixi.setTube(it);
                     }
+
+                    if (ixi.getSampleComponent() == null) {
+                        ixi.setSampleComponent(ixSampleComponant);
+                    }
+
                     j = "select ps "
                             + " from PatientSample ps "
                             + " where ps.tube=:tube "
@@ -3680,7 +3683,7 @@ public class PatientInvestigationController implements Serializable {
                         pts.setMachine(ixi.getMachine());
                         pts.setPatient(barcodeBill.getPatient());
                         pts.setBill(barcodeBill);
-
+                        pts.setInvestigationComponant(ixi.getSampleComponent());
                         pts.setBarcodeGenerated(true);
                         pts.setBarcodeGeneratedDepartment(wu.getDepartment());
                         pts.setBarcodeGeneratedInstitution(wu.getInstitution());
@@ -3773,8 +3776,6 @@ public class PatientInvestigationController implements Serializable {
                 }
             }
 
-            
-            
             List<InvestigationItem> ixis = getIvestigationItemsForInvestigation(ix);
 
             System.out.println("ix.getInvestigationTube() = " + ix.getInvestigationTube());
@@ -3782,7 +3783,7 @@ public class PatientInvestigationController implements Serializable {
             System.out.println("ixis = " + ixis);
 
             Item ixSampleComponant = itemController.addSampleComponent(ix);
-            
+
             if (ixis == null || ixis.isEmpty()) {
                 InvestigationItem ixi = new InvestigationItem();
                 ixi.setRiTop(46);
@@ -3826,16 +3827,16 @@ public class PatientInvestigationController implements Serializable {
                         System.out.println("No tube is set");
                         continue;
                     }
+
+                    if (ixi.getSampleComponent() == null) {
+                        ixi.setSampleComponent(ixSampleComponant);
+                    }
+
                     System.out.println("ixi.getSample() = " + ixi.getSample());
-                    
-                    
-                    
-                    
-                    
+
 //                    if (ixi.getSample() == null) {
 //                        continue;
 //                    }
-
                     j = "select ps from PatientSample ps "
                             + " where ps.tube=:tube "
                             + " and ps.bill=:bill ";
@@ -3848,6 +3849,10 @@ public class PatientInvestigationController implements Serializable {
                         j += " and ps.investigationComponant=:sc ";
                         m.put("sc", ixi.getSampleComponent());
                     }
+                    if (ixi.getSampleComponent() == null) {
+                        ixi.setSampleComponent(ixSampleComponant);
+                    }
+
                     System.out.println("j = " + j);
                     System.out.println("m = " + m);
                     PatientSample pts = patientSampleFacade.findFirstByJpql(j, m);
