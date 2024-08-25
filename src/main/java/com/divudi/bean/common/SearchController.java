@@ -5522,6 +5522,41 @@ public class SearchController implements Serializable {
         calTotalBillItem();
     }
 
+    public void listBillsAndItemsWithFees() {
+    Date startTime = new Date();
+    String sql;
+    Map<String, Object> paramMap = new HashMap<>();
+    
+    paramMap.put("toDate", toDate);
+    paramMap.put("fromDate", fromDate);
+    
+
+    // Assuming BillItem has a fee attribute or a method to get the fee
+    sql = "select bi "
+            + "from BillItem bi "
+            + "where bi.createdAt between :fromDate and :toDate "
+            + "order by bi.id desc";
+
+    // Execute the query
+    List<BillItem> results = getBillItemFacade().findByJpql(sql, paramMap, TemporalType.TIMESTAMP);
+
+    billItems = results;
+
+    // Extract fees and bills if needed
+    Map<BillItem, Double> itemFees = new HashMap<>();
+    bills = new ArrayList<>();
+    
+    for (BillItem bi : results) {
+        Double feeValue = bi.getFeeValue();  // Assuming getFeeValue() returns the fee
+        itemFees.put(bi, feeValue);
+        bills.add(bi.getBill());
+    }
+
+    // You can use `itemFees` map or do additional processing if needed
+}
+
+
+    
     public void createBillItemTableByKeyword() {
         Date startTime = new Date();
         String sql;
