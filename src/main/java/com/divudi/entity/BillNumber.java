@@ -40,6 +40,7 @@ public class BillNumber implements Serializable {
     private BillType billType;
     @Enumerated(EnumType.STRING)
     private BillClassType billClassType;
+    private Integer billYear;
       //Retairing properties
     boolean retired;
     @ManyToOne
@@ -128,6 +129,8 @@ public class BillNumber implements Serializable {
     public void setId(Long id) {
         this.id = id;
     }
+    
+    
 
     @Override
     public int hashCode() {
@@ -152,6 +155,14 @@ public class BillNumber implements Serializable {
     @Override
     public String toString() {
         return "com.divudi.entity.BillNumber[ id=" + id + " ]";
+    }
+
+    public Integer getBillYear() {
+        return billYear;
+    }
+
+    public void setBillYear(Integer billYear) {
+        this.billYear = billYear;
     }
 
 }

@@ -4268,8 +4268,16 @@ public class BillBeanController implements Serializable {
             params.put("item", billItem.getItem());
             params.put("forIns", forIns);
 
+            System.out.println("params = " + params);
+            System.out.println("jpql = " + jpql);
+            
             List<ItemFee> itemFee = getItemFeeFacade().findByJpql(jpql, params);
+            
+            System.out.println("itemFee = " + itemFee);
+            
+            
             for (Fee i : itemFee) {
+                System.out.println("i = " + i);
                 f = new BillFee();
                 f.setFee(i);
                 f.setFeeValue(i.getFee() * billItem.getQty());
