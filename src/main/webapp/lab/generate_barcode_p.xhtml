@@ -198,11 +198,11 @@
                             </div>
                             <div class="col-2">
                                 <h:panelGrid columns="1" class="w-100 mx-2">
-                                        <p:commandButton ajax="false" action="#{patientInvestigationController.searchBills}" value="Bills" icon="fas fa-file-invoice-dollar" styleClass="m-1 ui-button-success w-100"/>
-                                        <p:commandButton ajax="false" action="#{patientInvestigationController.searchPatientInvestigations}" value="Investigations" icon="fas fa-search" styleClass="m-1 ui-button-primary w-100"/>
-                                        <p:commandButton ajax="false" action="#{patientInvestigationController.searchPatientSamples}" value="Samples" icon="fas fa-vial" styleClass="m-1 ui-button-warning w-100"/>
-                                        <p:commandButton ajax="false" action="#{patientInvestigationController.searchPatientReports}" value="Reports" icon="fas fa-file-medical" styleClass="m-1 ui-button-danger w-100"/>
-                                        <p:commandButton ajax="false" action="#{patientInvestigationController.clearFilters}" value="Clear" icon="fas fa-eraser" styleClass="m-1 ui-button-secondary w-100"/>
+                                    <p:commandButton ajax="false" action="#{patientInvestigationController.searchBills}" value="Bills" icon="fas fa-file-invoice-dollar" styleClass="m-1 ui-button-success w-100"/>
+                                    <p:commandButton ajax="false" action="#{patientInvestigationController.searchPatientInvestigations}" value="Investigations" icon="fas fa-search" styleClass="m-1 ui-button-primary w-100"/>
+                                    <p:commandButton ajax="false" action="#{patientInvestigationController.searchPatientSamples}" value="Samples" icon="fas fa-vial" styleClass="m-1 ui-button-warning w-100"/>
+                                    <p:commandButton ajax="false" action="#{patientInvestigationController.searchPatientReports}" value="Reports" icon="fas fa-file-medical" styleClass="m-1 ui-button-danger w-100"/>
+                                    <p:commandButton ajax="false" action="#{patientInvestigationController.clearFilters}" value="Clear" icon="fas fa-eraser" styleClass="m-1 ui-button-secondary w-100"/>
                                 </h:panelGrid>
                             </div>
                         </div>
@@ -825,6 +825,26 @@
                                                      title="Collect Samples"
                                                      icon="pi pi-plus-circle"
                                                      styleClass="m-1  w-100 ui-button-primary" />
+                                    <hr/>
+                                    <p:autoComplete 
+                                        completeMethod="#{staffController.completeStaff}"
+                                        value="#{patientInvestigationController.sampleTransportedToLabByStaff}" 
+                                        var="mys" class="w-100" inputStyleClass="w-100"
+                                        itemLabel="#{mys.person.name}" 
+                                        itemValue="#{mys}">
+                                        <p:column>
+                                            <h:outputText value="#{mys.person.nameWithTitle}" />
+                                        </p:column>
+                                        <p:column>
+                                            <h:outputText value="#{mys.code}" />
+                                        </p:column>
+                                        <p:column>
+                                            <h:outputText value="#{mys.epfNo}" />
+                                        </p:column>
+                                    </p:autoComplete>
+
+
+
 
                                     <p:commandButton disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
                                                      id="btnSendToLab"
@@ -834,6 +854,7 @@
                                                      title="Send to Lab"
                                                      icon="pi pi-external-link"
                                                      styleClass="m-1  w-100 ui-button-warning" />
+                                    <hr/>
 
                                     <p:commandButton disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
                                                      id="btnReceiveAtLab"
