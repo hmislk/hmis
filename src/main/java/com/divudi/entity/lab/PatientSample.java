@@ -170,6 +170,7 @@ public class PatientSample implements Serializable {
     @ManyToOne
     private Institution cancellInstitution;
     
+    private String sampleRejectionComment;
     private Boolean sampleRejected = false;
     @ManyToOne
     private WebUser sampleRejectedBy;
@@ -775,6 +776,14 @@ public class PatientSample implements Serializable {
 
     public void setSampleTransportedToLabByStaff(Staff sampleTransportedToLabByStaff) {
         this.sampleTransportedToLabByStaff = sampleTransportedToLabByStaff;
+    }
+
+    public String getSampleRejectionComment() {
+        return sampleRejectionComment;
+    }
+
+    public void setSampleRejectionComment(String sampleRejectionComment) {
+        this.sampleRejectionComment = sampleRejectionComment;
     }
 
     
