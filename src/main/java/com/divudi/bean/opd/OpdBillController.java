@@ -2111,6 +2111,11 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         if (localNumber != null) {
             newBill.setLocalNumber(localNumber);
         }
+        if(paymentMethod == PaymentMethod.Credit){
+            String creditRefNo = paymentMethodData.getCredit().getReferenceNo();
+            newBill.setReferenceNumber(creditRefNo);
+            System.out.println("this is the ref no for credit" + creditRefNo);
+        }
 
 //        newBill.setMembershipScheme(membershipSchemeController.fetchPatientMembershipScheme(patient, getSessionController().getApplicationPreference().isMembershipExpires()));
         newBill.setPaymentScheme(getPaymentScheme());
