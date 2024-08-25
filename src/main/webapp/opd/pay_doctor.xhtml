@@ -49,11 +49,14 @@
                                                         action="#{workingTimeController.selectStaffForOpdPaymentForAll()}" />
 
                                                     <p:commandButton 
-                                                        rendered="false"
                                                         value="List Completed Payments"
                                                         class="ui-button-success m-2"
                                                         icon="pi pi-list"
-                                                        action="#{workingTimeController.selectStaffForOpdPaymentForAll()}" />
+                                                        ajax="false"
+                                                        action="#{searchController.searchOpdProfessionalPayments()}" >
+                                                        <f:setPropertyActionListener target="#{searchController.staff}" 
+                                                                                     value="#{workingTimeController.staff}" />
+                                                    </p:commandButton>
 
                                                 </div>
                                             </div>

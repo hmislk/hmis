@@ -130,9 +130,9 @@
                                                         id="refCon"
                                                         required="true" requiredMessage="Please select referring consultant"
                                                         completeMethod="#{consultantController.completeConsultant}" 
-                                                        var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
+                                                        var="mysp" itemLabel="#{mysp.person.nameWithTitle}" itemValue="#{mysp}"
                                                         styleClass="form-control w-100"
-                                                        class="w-100" 
+                                                        class="w-100" placeholder="Referring Consultant"
                                                         inputStyleClass="w-100"></p:autoComplete>
 
                                         <p:outputLabel value="Medical Officer"/>

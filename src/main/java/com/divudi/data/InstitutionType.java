@@ -8,6 +8,7 @@ public enum InstitutionType {
     
     Agency("Agency"),
     Bank("Bank"),
+    Site("Site"),
     branch("Branch"), // Original enum spelling retained
     CollectingCentre("Collecting Centre"),
     Company("Company"),

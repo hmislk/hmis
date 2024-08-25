@@ -3,10 +3,10 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.divudi</groupId>
 
-    <artifactId>sethma</artifactId>
+    <artifactId>coop</artifactId>
     <version>3.0.0</version>
     <packaging>war</packaging>
-    <name>sethma</name>
+    <name>coop</name>
     
     <properties>
         <endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
@@ -314,7 +314,17 @@
             <artifactId>tomcat-catalina</artifactId>
             <version>9.0.83</version> <!-- or the version compatible with your setup -->
         </dependency>
-
+        <dependency>
+            <groupId>com.github.hmislk</groupId>
+            <artifactId>lims-middleware-libraries</artifactId>
+            <version>1.1.1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.8.9</version>
+            <type>jar</type>
+        </dependency>
     </dependencies>
 
     
@@ -367,6 +377,11 @@
             <snapshots>
                 <enabled>false</enabled>
             </snapshots>
+        </repository>
+        <!-- JitPack repository -->
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
         </repository>
         
     </repositories>

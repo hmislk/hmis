@@ -176,6 +176,7 @@ public class PatientInvestigationController implements Serializable {
     private List<PatientReport> lstToPrint = null;
     private List<PatientInvestigation> lstForSampleManagement = null;
     List<PatientSample> patientSamples;
+    private List<PatientSample> selectedPatientSamples;
     String selectText = "";
     private Institution orderedInstitution;
     private Department orderedDepartment;
@@ -2538,6 +2539,8 @@ public class PatientInvestigationController implements Serializable {
     public PatientSampleComponantFacade getPatientSampleComponantFacade() {
         return patientSampleComponantFacade;
     }
+    
+    
 
     public ItemFacade getItemFacade() {
         return itemFacade;
@@ -2896,6 +2899,14 @@ public class PatientInvestigationController implements Serializable {
 
     public void setSelectedBills(List<Bill> selectedBills) {
         this.selectedBills = selectedBills;
+    }
+
+    public List<PatientSample> getSelectedPatientSamples() {
+        return selectedPatientSamples;
+    }
+
+    public void setSelectedPatientSamples(List<PatientSample> selectedPatientSamples) {
+        this.selectedPatientSamples = selectedPatientSamples;
     }
 
     /**
