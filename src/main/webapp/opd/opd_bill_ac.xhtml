@@ -481,7 +481,7 @@
                                     <div class="row" >
 
                                         <div class="col-md-10" >
-                                            
+
                                             <p:autoComplete 
                                                 id="acIx" 
                                                 value="#{opdBillController.itemLight}" 
@@ -526,9 +526,9 @@
                                                 </p:column>
 
                                             </p:autoComplete>
-                                            
-                                            
-                                            
+
+
+
                                             <p:selectOneListbox 
                                                 rendered="false"
                                                 filter="true"
@@ -677,16 +677,15 @@
                                     <p:tabView id="tblBillItem" activeIndex="#{configOptionApplicationController.getLongValueByKey('OPD Bill Item and Fee Active Index')}" >
                                         <p:tab id="tabBillItems" title="Bill Items" >
                                             <p:dataTable id="tblRequests" rowIndexVar="rowIndex" value="#{opdBillController.lstBillEntries}" var="bi" >
-                                                <p:column  style="width: 2em;" >
-                                                    <f:facet name="header">No</f:facet>
-                                                        #{rowIndex+1}
-                                                </p:column>
-                                                <p:column  style="min-width: 9em; text-align: left;" >
+                                                <p:column  style="min-width: 16em;" >
                                                     <f:facet name="header">
                                                         <h:outputText style="min-width: 10em;" value="Item" />
                                                     </f:facet>
+                                                    <p:outputLabel value="#{rowIndex+1}" ></p:outputLabel>
+                                                    <p:spacer width="10" ></p:spacer>
                                                     <h:outputText value="#{bi.billItem.item.name}" style="width: 5em;"  ></h:outputText>
-
+                                                    <p:spacer width="10" ></p:spacer>
+                                                    <h:outputText value="#{bi.billItem.item.code}" style="width: 5em;"  ></h:outputText>
                                                     <h:outputText value="#{bi.billItem.qty}" class="mx-3" rendered="#{bi.billItem.item.requestForQuentity}" ></h:outputText>
 
                                                 </p:column>
