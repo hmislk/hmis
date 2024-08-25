@@ -203,29 +203,51 @@
                                     </h:panelGrid>
                                     <h:panelGrid columns="1">
                                         <p:commandButton rendered="#{patientInvestigationController.listingEntity eq 'PATIENT_INVESTIGATIONS'}"
-                                                         id="btnGeneraBarcodes"
+                                                         id="btnGenerateBarcodes"
                                                          value="Generate Barcodes"
-                                                         ajax="false" action="#{patientInvestigationController.generateBarcodesForSelectedPatientInvestigations()}"
-                                                         title="Generate Barcodes" icon="fas fa-barcode" styleClass="m-1 ui-button-success w-100"/>
+                                                         ajax="false"
+                                                         action="#{patientInvestigationController.generateBarcodesForSelectedPatientInvestigations()}"
+                                                         title="Generate Barcodes"
+                                                         icon="pi pi-barcode"
+                                                         styleClass="m-1 ui-button-success" />
 
                                         <p:commandButton disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
                                                          id="btnCollectSamples"
                                                          value="Collect Samples"
-                                                         ajax="false" action="#{patientInvestigationController.collectSamples()}"
-                                                         title="Collect Samples" icon="fas fa-hand-holding-medical" styleClass="m-1 ui-button-primary w-100"/>
+                                                         ajax="false"
+                                                         action="#{patientInvestigationController.collectSamples()}"
+                                                         title="Collect Samples"
+                                                         icon="pi pi-plus-circle"
+                                                         styleClass="m-1 ui-button-primary" />
 
                                         <p:commandButton disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
-                                                         id="btnSentToLab"
-                                                         value="Sent to Lab"
-                                                         ajax="false" action="#{patientInvestigationController.sendSamplesToLab()}"
-                                                         title="Sent to Lab" icon="fas fa-vials" styleClass="m-1 ui-button-warning w-100"/>
+                                                         id="btnSendToLab"
+                                                         value="Send to Lab"
+                                                         ajax="false"
+                                                         action="#{patientInvestigationController.sendSamplesToLab()}"
+                                                         title="Send to Lab"
+                                                         icon="pi pi-external-link"
+                                                         styleClass="m-1 ui-button-warning" />
 
                                         <p:commandButton disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
-                                                         id="btnReceivToLab"
+                                                         id="btnReceiveAtLab"
                                                          value="Received Samples"
-                                                         ajax="false" action="#{patientInvestigationController.receiveSamplesAtLab()}"
-                                                         title="Sent to Lab" icon="fas fa-vials" styleClass="m-1 ui-button-warning w-100"/>
+                                                         ajax="false"
+                                                         action="#{patientInvestigationController.receiveSamplesAtLab()}"
+                                                         title="Receive Samples"
+                                                         icon="pi pi-check-circle"
+                                                         styleClass="m-1 ui-button-info" />
+
+                                        <p:commandButton disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
+                                                         id="btnRejectSamples"
+                                                         value="Reject Samples"
+                                                         ajax="false"
+                                                         action="#{patientInvestigationController.rejectSamples()}"
+                                                         title="Reject Samples"
+                                                         icon="pi pi-times-circle"
+                                                         styleClass="m-1 ui-button-danger" />
                                     </h:panelGrid>
+
                                 </h:panelGrid>
                             </div>
                         </div>
@@ -390,8 +412,8 @@
                                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"></f:convertDateTime>
                                             </h:outputLabel>
                                             <br/>
-                                             <i class="fas fa-calendar-alt text-secondary"></i> <!-- Date Icon -->
-                                             <h:outputLabel value="#{b.id}">
+                                            <i class="fas fa-calendar-alt text-secondary"></i> <!-- Date Icon -->
+                                            <h:outputLabel value="#{b.id}">
                                             </h:outputLabel>
                                             <br/>
                                             <!-- CC, IP, and OP Icons with Colours -->
