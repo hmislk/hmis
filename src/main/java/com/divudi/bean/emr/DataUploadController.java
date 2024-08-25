@@ -712,7 +712,7 @@ public class DataUploadController implements Serializable {
             if (forCategoryCell != null && forCategoryCell.getCellType() == CellType.STRING) {
                 forCategoryName = forCategoryCell.getStringCellValue();
             }
-            
+           
             Cell institutionCell = row.getCell(3);
             if (institutionCell != null && institutionCell.getCellType() == CellType.STRING) {
                 institutionName = forCategoryCell.getStringCellValue();
@@ -728,7 +728,6 @@ public class DataUploadController implements Serializable {
                 ffee = ffeeCell.getNumericCellValue();
             }
            
-            
             Cell discountAllowedCell = row.getCell(6);
             if (discountAllowedCell != null && discountAllowedCell.getCellType() == CellType.STRING) {
                 discountAllowed = discountAllowedCell.getStringCellValue();
@@ -744,7 +743,6 @@ public class DataUploadController implements Serializable {
             }else{
                 institution=institutionController.findAndSaveInstitutionByName(institutionName);
             }
-            
             
             if (itemName == null || itemCode==null) {
                 JsfUtil.addErrorMessage("Item Name and Item Code cannot be null.");
@@ -768,24 +766,22 @@ public class DataUploadController implements Serializable {
                 return itemFees;
             }
             ItemFee Itemfee= new ItemFee();
-             Itemfee.setCreatedAt(new Date());
-             Itemfee.setName(forCategoryName);
-        Itemfee.setCreater(sessionController.getLoggedUser());
-        Itemfee.setForInstitution(null);
-        Itemfee.setForCategory(category);
-        Itemfee.setItem(item);
-        Itemfee.setFeeType(FeeType.OwnInstitution);
-        Itemfee.setInstitution(institution);
-        Itemfee.setFee(fee);
-        Itemfee.setFfee(ffee);
-        Itemfee.setDiscountAllowed(disAllowd);
-        itemFeeFacade.create(Itemfee);
-        
-            
+            Itemfee.setCreatedAt(new Date());
+            Itemfee.setName(forCategoryName);
+            Itemfee.setCreater(sessionController.getLoggedUser());
+            Itemfee.setForInstitution(null);
+            Itemfee.setForCategory(category);
+            Itemfee.setItem(item);
+            Itemfee.setFeeType(FeeType.OwnInstitution);
+
+            Itemfee.setInstitution(institution);
+            Itemfee.setFee(fee);
+            Itemfee.setFfee(ffee);
+            Itemfee.setDiscountAllowed(disAllowd);
+            itemFeeFacade.create(Itemfee);
         }
-         JsfUtil.addSuccessMessage("Upload Success");
+        JsfUtil.addSuccessMessage("Upload Success");
         return itemFees;
-       
     }
 
     private List<Consultant> readConsultantsFromExcel(InputStream inputStream) throws IOException {
