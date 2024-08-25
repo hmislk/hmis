@@ -661,6 +661,14 @@ public class PatientInvestigationController implements Serializable {
         return patientSampleComponantFacade.findByJpql(j, m);
     }
 
+    public List<PatientInvestigation> getPatientInvestigationsFromSample(PatientSample ps) {
+        String j = "select psc from PatientSampleComponant psc where psc.patientSample = :ps";
+
+        Map m = new HashMap();
+        m.put("ps", ps);
+        return patientSampleComponantFacade.findByJpql(j, m);
+    }
+
     private List<PatientInvestigation> getPatientInvestigations(List<PatientSampleComponant> pscs) {
         Set<PatientInvestigation> ptixhs = new HashSet<>();
         for (PatientSampleComponant psc : pscs) {
@@ -1386,69 +1394,135 @@ public class PatientInvestigationController implements Serializable {
     }
 
     public void collectSamples() {
-        if (selectedPatientSamples == null) {
-            JsfUtil.addErrorMessage("No samples Seelcted");
-            return;
-        }
-        if (selectedPatientSamples.isEmpty()) {
-            JsfUtil.addErrorMessage("No samples Seelcted");
+        if (selectedPatientSamples == null || selectedPatientSamples.isEmpty()) {
+            JsfUtil.addErrorMessage("No samples selected");
             return;
         }
         listingEntity = ListingEntity.PATIENT_SAMPLES;
 
+        Map<Long, PatientInvestigation> collectedPtixs = new HashMap<>();
+        Map<Long, Bill> collectedBills = new HashMap<>();
+
+        // Update sample collection details and gather associated patient investigations
         for (PatientSample ps : selectedPatientSamples) {
             ps.setSampleCollected(true);
             ps.setSampleCollectedAt(new Date());
             ps.setSampleCollectedDepartment(sessionController.getDepartment());
             ps.setSampleCollectedInstitution(sessionController.getInstitution());
-            ps.setSampleCollecter(sessionController.getWebUser());
+            ps.setSampleCollecter(sessionController.getLoggedUser());
             patientSampleFacade.edit(ps);
-        }
-        JsfUtil.addSuccessMessage("Selected Samples Are Collected ");
 
+            // Retrieve and store PatientInvestigations by unique ID to avoid duplicates
+            for (PatientInvestigation pi : getPatientInvestigationsBySample(ps)) {
+                collectedPtixs.putIfAbsent(pi.getId(), pi);
+            }
+        }
+
+        // Update patient investigations and collect associated bills
+        for (PatientInvestigation tptix : collectedPtixs.values()) {
+            tptix.setSampleCollected(true);
+            tptix.setSampleCollectedAt(new Date());
+            tptix.setSampleCollectedBy(sessionController.getLoggedUser());
+            tptix.setStatus(PatientInvestigationStatus.SAMPLE_COLLECTED);
+            getFacade().edit(tptix);
+            collectedBills.putIfAbsent(tptix.getBillItem().getBill().getId(), tptix.getBillItem().getBill());
+        }
+
+        // Update bills status
+        for (Bill tb : collectedBills.values()) {
+            tb.setStatus(PatientInvestigationStatus.SAMPLE_COLLECTED);
+            billFacade.edit(tb);
+        }
+
+        JsfUtil.addSuccessMessage("Selected Samples Are Collected");
     }
 
-    public void sampleSendToLab() {
-        if (selectedPatientSamples == null) {
-            JsfUtil.addErrorMessage("No samples Seelcted");
-            return;
-        }
-        if (selectedPatientSamples.isEmpty()) {
-            JsfUtil.addErrorMessage("No samples Seelcted");
+    public void sendSamplesToLab() {
+        if (selectedPatientSamples == null || selectedPatientSamples.isEmpty()) {
+            JsfUtil.addErrorMessage("No samples selected");
             return;
         }
         listingEntity = ListingEntity.PATIENT_SAMPLES;
 
+        Map<Long, PatientInvestigation> samplePtixs = new HashMap<>();
+        Map<Long, Bill> sampleBills = new HashMap<>();
+
+        // Process each selected patient sample
         for (PatientSample ps : selectedPatientSamples) {
             ps.setSampleSent(true);
             ps.setSampleSentBy(sessionController.getLoggedUser());
             ps.setSampleSentAt(new Date());
+            ps.setStatus(PatientInvestigationStatus.SAMPLE_SENT);
             patientSampleFacade.edit(ps);
-        }
-        JsfUtil.addSuccessMessage("Selected Samples Are Sent to Lab ");
 
+            // Retrieve and store PatientInvestigations by unique ID to avoid duplicates
+            for (PatientInvestigation pi : getPatientInvestigationsBySample(ps)) {
+                samplePtixs.putIfAbsent(pi.getId(), pi);
+            }
+        }
+
+        // Update PatientInvestigations and store associated Bills by unique ID to avoid duplicates
+        for (PatientInvestigation tptix : samplePtixs.values()) {
+            tptix.setSampleSent(true);
+            tptix.setSampleSentAt(new Date());
+            tptix.setSampleSentBy(sessionController.getLoggedUser());
+            tptix.setStatus(PatientInvestigationStatus.SAMPLE_SENT);
+            getFacade().edit(tptix);
+            sampleBills.putIfAbsent(tptix.getBillItem().getBill().getId(), tptix.getBillItem().getBill());
+        }
+
+        // Update Bills
+        for (Bill tb : sampleBills.values()) {
+            tb.setStatus(PatientInvestigationStatus.SAMPLE_SENT);
+            billFacade.edit(tb);
+        }
+
+        JsfUtil.addSuccessMessage("Selected Samples Are Sent to Lab");
     }
 
-    public void receivedSamples() {
-        if (selectedPatientSamples == null) {
-            JsfUtil.addErrorMessage("No samples Seelcted");
-            return;
-        }
-        if (selectedPatientSamples.isEmpty()) {
-            JsfUtil.addErrorMessage("No samples Seelcted");
+    public void receiveSamplesAtLab() {
+        if (selectedPatientSamples == null || selectedPatientSamples.isEmpty()) {
+            JsfUtil.addErrorMessage("No samples selected");
             return;
         }
         listingEntity = ListingEntity.PATIENT_SAMPLES;
 
+        Map<Long, PatientInvestigation> receivedPtixs = new HashMap<>();
+        Map<Long, Bill> receivedBills = new HashMap<>();
+
+        // Update sample details and collect associated patient investigations
         for (PatientSample ps : selectedPatientSamples) {
             ps.setSampleReceivedAtLab(true);
             ps.setSampleReceiverAtLab(sessionController.getLoggedUser());
             ps.setSampleReceivedAtLabDepartment(sessionController.getDepartment());
             ps.setSampleReceivedAtLabInstitution(sessionController.getInstitution());
             ps.setSampleReceivedAtLabAt(new Date());
+            ps.setStatus(PatientInvestigationStatus.SAMPLE_ACCEPTED);
             patientSampleFacade.edit(ps);
+
+            // Retrieve and store PatientInvestigations by unique ID to avoid duplicates
+            for (PatientInvestigation pi : getPatientInvestigationsBySample(ps)) {
+                receivedPtixs.putIfAbsent(pi.getId(), pi);
+            }
         }
-        JsfUtil.addSuccessMessage("Selected Samples Are Received from Lab ");
+
+        // Update patient investigations and collect associated bills
+        for (PatientInvestigation tptix : receivedPtixs.values()) {
+            tptix.setSampleAccepted(true);
+            tptix.setSampleAcceptedAt(new Date());
+            tptix.setSampleAcceptedBy(sessionController.getLoggedUser());
+            tptix.setStatus(PatientInvestigationStatus.SAMPLE_ACCEPTED);
+            getFacade().edit(tptix);
+            receivedBills.putIfAbsent(tptix.getBillItem().getBill().getId(), tptix.getBillItem().getBill());
+        }
+
+        // Update bills status
+        for (Bill tb : receivedBills.values()) {
+            tb.setStatus(PatientInvestigationStatus.SAMPLE_ACCEPTED);
+            billFacade.edit(tb);
+        }
+
+        JsfUtil.addSuccessMessage("Selected Samples Are Received at Lab");
     }
 
     public void listPatientInvestigationAwaitingSamplling() {
@@ -2155,6 +2229,22 @@ public class PatientInvestigationController implements Serializable {
         List<PatientSampleComponant> pscs = patientSampleComponantFacade.findByJpql(jpql, params);
         System.out.println("pscs = " + pscs);
         return pscs;
+    }
+
+    public List<PatientInvestigation> getPatientInvestigationsBySample(PatientSample patientSample) {
+        System.out.println("patientSample = " + patientSample);
+        String jpql = "SELECT psc.patientInvestigation "
+                + "FROM PatientSampleComponant psc "
+                + "WHERE psc.retired = :retired "
+                + "AND psc.patientSample = :patientSample";
+        Map<String, Object> params = new HashMap<>();
+        params.put("retired", false);  // Assuming you want only non-retired records
+        params.put("patientSample", patientSample);
+        System.out.println("params = " + params);
+        System.out.println("jpql = " + jpql);
+        List<PatientInvestigation> patientInvestigations = getFacade().findByJpql(jpql, params);
+        System.out.println("patientInvestigations = " + patientInvestigations);
+        return patientInvestigations;
     }
 
     public void listBillsWithGeneratedBarcodes() {

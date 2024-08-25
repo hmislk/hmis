@@ -217,13 +217,13 @@
                                         <p:commandButton disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
                                                          id="btnSentToLab"
                                                          value="Sent to Lab"
-                                                         ajax="false" action="#{patientInvestigationController.sampleSendToLab()}"
+                                                         ajax="false" action="#{patientInvestigationController.sendSamplesToLab()}"
                                                          title="Sent to Lab" icon="fas fa-vials" styleClass="m-1 ui-button-warning w-100"/>
 
                                         <p:commandButton disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
                                                          id="btnReceivToLab"
                                                          value="Received Samples"
-                                                         ajax="false" action="#{patientInvestigationController.receivedSamples()}"
+                                                         ajax="false" action="#{patientInvestigationController.receiveSamplesAtLab()}"
                                                          title="Sent to Lab" icon="fas fa-vials" styleClass="m-1 ui-button-warning w-100"/>
                                     </h:panelGrid>
                                 </h:panelGrid>
