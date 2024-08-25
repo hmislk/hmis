@@ -12,6 +12,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+
 /**
  *
  * @author buddhika
@@ -567,7 +568,7 @@ public class ReportTemplateRow {
     public void setReferringStaff(Staff referringStaff) {
         this.referringStaff = referringStaff;
     }
-
+  
     public String getUuid() {
         if (uuid == null) {
             uuid = UUID.randomUUID().toString();

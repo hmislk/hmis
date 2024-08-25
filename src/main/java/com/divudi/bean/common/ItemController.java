@@ -38,12 +38,17 @@ import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.InvestigationFacade;
 import com.divudi.facade.ItemMappingFacade;
 import com.divudi.facade.ServiceFacade;
+import com.divudi.java.CommonFunctions;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -59,7 +64,24 @@ import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
+import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.beanutils.BeanUtils;
+import org.apache.poi.ss.SpreadsheetVersion;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.CellType;
+import org.apache.poi.ss.usermodel.CellValue;
+import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.usermodel.FormulaEvaluator;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.util.AreaReference;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFTable;
+import org.apache.poi.xssf.usermodel.XSSFTableStyleInfo;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.primefaces.model.file.UploadedFile;
 
 /**
  *
@@ -146,10 +168,203 @@ public class ItemController implements Serializable {
     private List<Item> suggestItems;
     boolean masterItem;
     private Sex patientGender;
+    private UploadedFile file;
 
     ReportKeyWord reportKeyWord;
 
     private List<Item> packaes;
+
+    public void uploadAddReplaceItemsFromId() {
+        items = new ArrayList<>();
+        if (file != null) {
+            try ( InputStream inputStream = file.getInputStream()) {
+                items = replaceItemsFromExcel(inputStream);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public UploadedFile getFile() {
+        return file;
+    }
+
+    public void setFile(UploadedFile file) {
+        this.file = file;
+    }
+
+    private List<Item> replaceItemsFromExcel(InputStream inputStream) throws IOException {
+        Workbook workbook = new XSSFWorkbook(inputStream);
+        Sheet sheet = workbook.getSheetAt(0);
+        Iterator<Row> rowIterator = sheet.rowIterator();
+
+        List<Item> itemsToSave = new ArrayList<>();
+
+        // Assuming the first row contains headers, skip it
+        if (rowIterator.hasNext()) {
+            rowIterator.next();
+        }
+
+        while (rowIterator.hasNext()) {
+            Row row = rowIterator.next();
+            Item item = null;  // Ensure item is initialized correctly
+            String itemIdString = null;
+            Long itemIdLong = null;
+            String itemName = null;
+            boolean retired = false;
+
+            // Column 0: Item ID
+            Cell idCell = row.getCell(0);
+            if (idCell != null) {
+                if (idCell.getCellType() == CellType.STRING) {
+                    itemIdString = idCell.getStringCellValue();
+                    item = findItemById(itemIdString);
+                } else if (idCell.getCellType() == CellType.NUMERIC) {
+                    itemIdLong = (long) idCell.getNumericCellValue();
+                    item = findItemById(itemIdLong);
+                }
+            }
+
+            if (item == null) {
+                continue; // Skip if item not found
+            }
+
+            // Column 3: Item Name
+            Cell itemNameCell = row.getCell(3);
+            if (itemNameCell != null && itemNameCell.getCellType() == CellType.STRING) {
+                itemName = itemNameCell.getStringCellValue();
+            }
+
+            // Column 6: Retired (Yes/No)
+            Cell retiredCell = row.getCell(6);
+            if (retiredCell != null && retiredCell.getCellType() == CellType.STRING) {
+                String retiredString = retiredCell.getStringCellValue();
+                retired = retiredString.equalsIgnoreCase("Yes");
+            }
+
+            // Update item details
+            item.setName(itemName);
+            item.setRetired(retired);
+            if (retired) {
+                item.setRetiredAt(new Date());
+                item.setRetirer(sessionController.getLoggedUser());
+            }
+
+            // Save the item
+            itemsToSave.add(item);
+            itemFacade.edit(item);
+        }
+
+        workbook.close(); // Always close the workbook to prevent memory leaks
+        return itemsToSave;
+    }
+
+    public void downloadItems() throws IOException {
+        // Check if items is null or empty
+        if (items == null || items.isEmpty()) {
+            JsfUtil.addErrorMessage("Please fill item fees first to download them.");
+            return;
+        }
+
+        // Create a workbook and a sheet
+        XSSFWorkbook workbook = new XSSFWorkbook();
+        XSSFSheet sheet = workbook.createSheet("Base Item Fees");
+
+        // Create the header row
+        Row headerRow = sheet.createRow(0);
+        String[] headers = {"ID", "Item Code", "Item Type", "Item Name", "Category", "Financial Category", "Retired", "Institution", "Department"};
+
+        // Apply header formatting
+        CellStyle headerStyle = workbook.createCellStyle();
+        Font headerFont = workbook.createFont();
+        headerFont.setBold(true);
+        headerStyle.setFont(headerFont);
+
+        for (int i = 0; i < headers.length; i++) {
+            Cell headerCell = headerRow.createCell(i);
+            headerCell.setCellValue(headers[i]);
+            headerCell.setCellStyle(headerStyle);
+        }
+
+        // Fill the data into the sheet
+        int rowNum = 1;
+        for (Item tmpItem : items) {
+            if (tmpItem == null) {
+                continue; // Skip null entries
+            }
+
+            Row row = sheet.createRow(rowNum++);
+
+            // Create locked cells for ID and Item Code with null checks
+            createLockedCell(row, 0, tmpItem.getId() != null ? tmpItem.getId().toString() : "N/A", false, workbook); // Locked ID
+            createLockedCell(row, 1, tmpItem.getCode() != null ? tmpItem.getCode() : "N/A", false, workbook); // Locked Item Code
+
+            // Create unlocked cells with null checks for other fields
+            createUnlockedCell(row, 2, tmpItem.getItemType() != null ? tmpItem.getItemType().toString() : "N/A", workbook); // Unlocked Item Type
+            createUnlockedCell(row, 3, tmpItem.getName() != null ? tmpItem.getName() : "N/A", workbook); // Unlocked Item Name
+            createUnlockedCell(row, 4, tmpItem.getCategory() != null && tmpItem.getCategory().getName() != null ? tmpItem.getCategory().getName() : "N/A", workbook); // Unlocked Category
+            createUnlockedCell(row, 5, tmpItem.getFinancialCategory() != null && tmpItem.getFinancialCategory().getName() != null ? tmpItem.getFinancialCategory().getName() : "N/A", workbook); // Unlocked Financial Category
+            createUnlockedCell(row, 6, tmpItem.isRetired() ? "Yes" : "No", workbook); // Unlocked Retired
+
+            // Adding Institution and Department fields with null checks
+            createUnlockedCell(row, 7, tmpItem.getInstitution() != null && tmpItem.getInstitution().getName() != null ? tmpItem.getInstitution().getName() : "N/A", workbook); // Unlocked Institution
+            createUnlockedCell(row, 8, tmpItem.getDepartment() != null && tmpItem.getDepartment().getName() != null ? tmpItem.getDepartment().getName() : "N/A", workbook); // Unlocked Department
+        }
+
+        // Apply a table format, ensuring there are enough rows and columns for the table
+        if (rowNum > 1) { // Ensure there are rows beyond the header
+            AreaReference area = new AreaReference("A1:I" + rowNum, SpreadsheetVersion.EXCEL2007); // Adjusted to 9 columns
+            XSSFTable table = sheet.createTable(area);
+            table.setName("ItemTable");
+            table.setDisplayName("Item Table");
+
+            // Set the table style
+            XSSFTableStyleInfo style = (XSSFTableStyleInfo) table.getStyle();
+            if (style != null) {
+                style.setName("TableStyleMedium9");
+                style.setShowColumnStripes(true);
+                style.setShowRowStripes(true);
+            } else {
+                System.out.println("Table style could not be applied.");
+            }
+        } else {
+            System.out.println("No data available to create a table.");
+        }
+
+        // Lock the sheet except for the unlocked cells
+        sheet.protectSheet("password"); // Replace with your desired password
+
+        // Write the output to the response
+        FacesContext facesContext = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) facesContext.getExternalContext().getResponse();
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setHeader("Content-Disposition", "attachment; filename=\"item_list.xlsx\"");
+        OutputStream outputStream = response.getOutputStream();
+        workbook.write(outputStream);
+        workbook.close();
+        outputStream.flush();
+        outputStream.close();
+
+        facesContext.responseComplete();
+    }
+
+    // Method to create locked cells
+    private void createLockedCell(Row row, int column, Object value, boolean unlock, XSSFWorkbook workbook) {
+        Cell cell = row.createCell(column);
+        if (value instanceof String) {
+            cell.setCellValue((String) value);
+        } else if (value instanceof Number) {
+            cell.setCellValue(((Number) value).doubleValue());
+        }
+        CellStyle style = workbook.createCellStyle();
+        style.setLocked(!unlock); // Lock unless specified to unlock
+        cell.setCellStyle(style);
+    }
+
+// Method to create unlocked cells
+    private void createUnlockedCell(Row row, int column, Object value, XSSFWorkbook workbook) {
+        createLockedCell(row, column, value, true, workbook); // Call with unlock true
+    }
 
     public void processDepartmentItemCount() {
         // Query for count of items without a department
@@ -702,7 +917,7 @@ public class ItemController implements Serializable {
             return null;
         }
     }
-    
+
     public Investigation findAndCreateInvestigationByNameAndCode(String name, String code) {
         try {
             String jpql;
@@ -729,7 +944,7 @@ public class ItemController implements Serializable {
             return null;
         }
     }
-    
+
     public Service findAndCreateServiceByNameAndCode(String name, String code) {
         try {
             String jpql;
@@ -777,7 +992,7 @@ public class ItemController implements Serializable {
             return null;
         }
     }
-    
+
     public Item findItemByNameAndCode(String name, String code) {
         try {
             String jpql;
@@ -796,9 +1011,6 @@ public class ItemController implements Serializable {
             return null;
         }
     }
-    
-   
-
 
     public Item findMasterItemByName(String name) {
         try {
@@ -1772,7 +1984,6 @@ public class ItemController implements Serializable {
         return packaes;
     }
 
-
     public List<Item> completePackage(String query) {
         List<Item> suggestions;
         String sql;
@@ -1872,70 +2083,34 @@ public class ItemController implements Serializable {
     }
 
     public List<Item> completeAllServicesAndInvestigations(String query) {
-        List<Item> suggestions;
+        List<Item> qryResults;
         HashMap<String, Object> m = new HashMap<>();
         String sql;
-        String[] keywords = null;
 
-        if (query == null || query.trim().isEmpty()) {
-            suggestions = new ArrayList<>();
-        } else {
-            keywords = query.trim().toLowerCase().split("\\s+");
+        StringBuilder sqlBuilder = new StringBuilder();
+        sqlBuilder.append("select c from Item c ")
+                .append("where c.retired = false ")
+                .append("and c.name like :query ")
+                .append("and type(c) != :pac ")
+                .append("and (type(c) = :ser ")
+                .append("or type(c) = :inv ")
+                .append("or type(c) = :ward ")
+                .append("or type(c) = :the) ")
+                .append("order by c.name");
 
-            StringBuilder sqlBuilder = new StringBuilder();
-            sqlBuilder.append("select c from Item c ")
-                    .append("where c.retired = false ")
-                    .append("and type(c) != :pac ")
-                    .append("and (type(c) = :ser ")
-                    .append("or type(c) = :inv ")
-                    .append("or type(c) = :ward ")
-                    .append("or type(c) = :the) ");
+        m.put("query", "%" + query + "%");
 
-            for (int i = 0; i < keywords.length; i++) {
-                if (i == 0) {
-                    sqlBuilder.append("and (");
-                } else {
-                    sqlBuilder.append(" or ");
-                }
-                sqlBuilder.append("upper(c.name) like :q").append(i);
-                m.put("q" + i, "%" + keywords[i].toUpperCase() + "%");
-            }
-            sqlBuilder.append(") order by c.name");
+        sql = sqlBuilder.toString();
 
-            sql = sqlBuilder.toString();
+        m.put("pac", Packege.class);
+        m.put("ser", Service.class);
+        m.put("inv", Investigation.class);
+        m.put("ward", InwardService.class);
+        m.put("the", TheatreService.class);
 
-            m.put("pac", Packege.class);
-            m.put("ser", Service.class);
-            m.put("inv", Investigation.class);
-            m.put("ward", InwardService.class);
-            m.put("the", TheatreService.class);
-            suggestions = getFacade().findByJpql(sql, m);
+        qryResults = getFacade().findByJpql(sql, m);
 
-        }
-
-        if (suggestions != null && !suggestions.isEmpty()) {
-            List<Item> filteredSuggestions = new ArrayList<>();
-            for (Item suggestion : suggestions) {
-                String itemName = (suggestion.getName() != null) ? suggestion.getName().toLowerCase() : "";
-                String departmentName = (suggestion.getDepartment() != null && suggestion.getDepartment().getName() != null)
-                        ? suggestion.getDepartment().getName().toLowerCase() : "";
-
-                boolean matchesAll = true;
-                for (String keyword : keywords) {
-                    if (!itemName.contains(keyword) && !departmentName.contains(keyword)) {
-                        matchesAll = false;
-                        break;
-                    }
-                }
-
-                if (matchesAll) {
-                    filteredSuggestions.add(suggestion);
-                }
-            }
-            suggestions = filteredSuggestions;
-        }
-
-        return suggestions;
+        return qryResults;
     }
 
     public List<Item> completeInwardItems(String query) {
@@ -3111,6 +3286,28 @@ public class ItemController implements Serializable {
 
     public void setPatientGender(Sex patientGender) {
         this.patientGender = patientGender;
+    }
+
+    private Item findItemById(Long id) {
+        String jpql = "select i "
+                + " from Item i "
+                + " where i.retired=:ret "
+                + " and i.id=:iid ";
+        Map params = new HashMap<>();
+        params.put("ret", false);
+        params.put("iid", id);
+        return getFacade().findFirstByJpql(jpql, params);
+    }
+
+    private Item findItemById(String id) {
+        try {
+            Long longId = Long.parseLong(id); // Convert String to Long
+            return findItemById(longId); // Reuse the existing method
+        } catch (NumberFormatException e) {
+            // Log the error if the string is not a valid Long
+            System.err.println("Invalid ID format: " + id);
+            return null;
+        }
     }
 
     @FacesConverter("itemLightConverter")

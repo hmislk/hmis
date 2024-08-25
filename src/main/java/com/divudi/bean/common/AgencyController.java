@@ -70,7 +70,7 @@ public class AgencyController implements Serializable {
             agentHistory.setCreatedAt(new Date());
             agentHistory.setCreater(getSessionController().getLoggedUser());
             agentHistory.setBill(null);
-            agentHistory.setBeforeBallance(pb);
+            agentHistory.setBalanceBeforeTransaction(pb);
             agentHistory.setTransactionValue(b1);
             agentHistory.setHistoryType(HistoryType.ChannelBalanceReset);
             agentHistoryFacade.create(agentHistory);
@@ -84,7 +84,7 @@ public class AgencyController implements Serializable {
             agentHistory.setCreatedAt(new Date());
             agentHistory.setCreater(getSessionController().getLoggedUser());
             agentHistory.setBill(null);
-            agentHistory.setBeforeBallance(pb);
+            agentHistory.setBalanceBeforeTransaction(pb);
             agentHistory.setTransactionValue(b2);
             agentHistory.setHistoryType(HistoryType.ChannelBalanceReset);
             agentHistoryFacade.create(agentHistory);

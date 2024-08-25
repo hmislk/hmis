@@ -37,7 +37,7 @@
                                 <p:ajax event="itemSelect" 
                                         process="@this" 
                                         update="gpFees localFee foreignerFee" 
-                                        listener="#{itemFeeManager.fillForSiteFees()}"></p:ajax>
+                                        listener="#{itemFeeManager.updateItemAndSiteFees()}"></p:ajax>
                             </p:autoComplete>
 
                             <p:outputLabel value="Select Item" />
@@ -46,7 +46,7 @@
                                 id="acIx" 
                                 forceSelection="true" 
                                 value="#{itemFeeManager.item}"
-                                completeMethod="#{itemController.completeAllServicesAndInvestigations}" 
+                                completeMethod="#{itemController.completeInwardItems}" 
                                 var="ix" 
                                 itemLabel="#{ix.name}" 
                                 itemValue="#{ix}" 
@@ -57,7 +57,7 @@
                                 <p:ajax event="itemSelect" 
                                         process="@this" 
                                         update="gpFees localFee foreignerFee" 
-                                        listener="#{itemFeeManager.fillForSiteFees()}"></p:ajax>
+                                        listener="#{itemFeeManager.updateItemAndSiteFees()}"></p:ajax>
                             </p:autoComplete>
 
 
