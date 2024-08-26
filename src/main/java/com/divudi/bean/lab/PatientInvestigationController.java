@@ -1046,7 +1046,7 @@ public class PatientInvestigationController implements Serializable {
             JsfUtil.addErrorMessage("Nothing to sample");
             return;
         }
-
+        System.out.println("this = " + this);
         getCurrent().setSampleCollecter(getSessionController().getLoggedUser());
         if (current.getSampleOutside()) {
             getCurrent().setSampledAt(sampledOutsideDate);
@@ -1194,7 +1194,7 @@ public class PatientInvestigationController implements Serializable {
         if (searchInvestigationsForLoggedDepartment) {
             orderedDepartment = sessionController.getDepartment();
         }
-        listBillsToGenerateBarcodes();
+//        listBillsToGenerateBarcodes();
         return "/lab/generate_barcode_p?faces-redirect=true";
     }
 
@@ -1322,11 +1322,11 @@ public class PatientInvestigationController implements Serializable {
 
     public void collectSamples() {
         if (selectedPatientSamples == null) {
-            JsfUtil.addErrorMessage("No samples Seelcted");
+            JsfUtil.addErrorMessage("No samples Seelcted 1");
             return;
         }
         if (selectedPatientSamples.isEmpty()) {
-            JsfUtil.addErrorMessage("No samples Seelcted");
+            JsfUtil.addErrorMessage("No samples Seelcted 2");
             return;
         }
         listingEntity = ListingEntity.PATIENT_SAMPLES;
@@ -2457,7 +2457,7 @@ public class PatientInvestigationController implements Serializable {
     }
 
     public void markAsReceived() {
-
+        System.out.println("sample recived = " + this);
         if (getCurrent().getId() != null || getCurrent().getId() != 0) {
             getCurrent().setReceived(Boolean.TRUE);
             getCurrent().setReceivedAt(new Date());

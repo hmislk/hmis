@@ -207,7 +207,6 @@
                             <div class="col-12" >
 
                                 <h:panelGroup rendered="#{patientInvestigationController.listingEntity eq 'PATIENT_INVESTIGATIONS'}" >
-
                                     <p:dataTable  
                                         class="w-100"
                                         value="#{patientInvestigationController.items}" 
@@ -251,19 +250,18 @@
                                             <h:outputLabel value="#{ptIx}"/>
                                         </p:column>
 
-                                        <p:column  headerText="Actions" style="width: 11em;">
+                                        <p:column id="actions"  headerText="Actions" style="width: 11em;">
                                             <p:commandLink 
                                                 disabled="#{ptIx.collected or ptIx.billItem.bill.cancelled}"   
-                                                id="btnSample" ajax="false"
+                                                id="btnSample" process="btnSample" update="actions"
                                                 action="#{patientInvestigationController.markAsSampled}" >
                                                 <f:setPropertyActionListener value="#{ptIx}" target="#{patientInvestigationController.current}"></f:setPropertyActionListener>
                                                 <p:graphicImage library="image" styleClass="standedicon" name="bleed.png" rendered="#{ptIx.collected ne true}"></p:graphicImage>
                                                 <p:graphicImage library="image" styleClass="standedicon" name="bleedok.jpg" rendered="#{ptIx.collected eq true}"></p:graphicImage>
                                             </p:commandLink>
-                                            <p:commandButton value="collect" action="#{patientInvestigationController.markAsSampledCollected(ptIx)}" ajax="false" >
-                                            </p:commandButton> 
+                                            
                                             <h:panelGroup rendered="#{webUserController.hasPrivilege('LabSampleReceiving')}">
-                                                <p:commandLink  disabled="#{ptIx.collected ne true}"   id="btnReceive"  action="#{patientInvestigationController.markAsReceived()}" >
+                                                <p:commandLink   disabled="#{ptIx.collected ne true}"   id="btnReceive"  process="btnReceive" update="actions" action="#{patientInvestigationController.markAsReceived()}" >
                                                     <f:setPropertyActionListener value="#{ptIx}" target="#{patientInvestigationController.current}"></f:setPropertyActionListener>
                                                     <p:graphicImage library="image" styleClass="standedicon" name="receive.jpeg" rendered="#{ptIx.received ne true }" ></p:graphicImage>
                                                     <p:graphicImage library="image" styleClass="standedicon" name="receiveok.jpg" rendered="#{ptIx.received eq true}"></p:graphicImage>
@@ -271,13 +269,13 @@
                                             </h:panelGroup>
 
                                             <h:panelGroup rendered="#{ptIx.billItem.bill.cancelled ne true}">
-                                                <p:commandLink ajax="false" id="btnPrintWorksheets" disabled="#{ptIx.received ne true}" action="/lab/single_worksheet?faces-redirect=true" >
+                                                <p:commandLink ajax="false" id="btnPrintWorksheets" process="btnPrintWorksheets" update="actions" disabled="#{ptIx.received ne true}" action="/lab/single_worksheet?faces-redirect=true" >
                                                     <f:setPropertyActionListener value="#{ptIx}" target="#{patientInvestigationController.current}" ></f:setPropertyActionListener>
                                                     <p:graphicImage library="image" styleClass="standedicon" name="worksheet.gif" ></p:graphicImage>
                                                 </p:commandLink>
                                             </h:panelGroup>
 
-                                            <p:commandLink id="btnNewReport" ajax="false" 
+                                            <p:commandLink id="btnNewReport" process="btnNewReport" update="actions" ajax="false"
                                                            disabled="#{!ptIx.received}" 
                                                            action="/lab/patient_report?faces-redirect=true"  
                                                            actionListener="#{patientReportController.createNewReport(ptIx)}" >
@@ -287,6 +285,7 @@
                                             <h:panelGroup >
                                                 <p:commandLink 
                                                     id="btnSms" 
+                                                    process="btnSms" update="actions"
                                                     rendered="#{!ptIx.billItem.bill.smsed}"
                                                     disabled="#{ptIx.billItem.bill.cancelled or ptIx.billItem.transRefund or ptIx.patientReports.size() eq 0}"
                                                     action="#{patientInvestigationController.sendSms()}" >
@@ -294,7 +293,7 @@
                                                     <p:graphicImage library="image" styleClass="standedicon" name="sms.jpg" ></p:graphicImage>
                                                 </p:commandLink>
                                                 <p:commandLink 
-                                                    id="btnSmsSent"
+                                                    id="btnSmsSent" process="btnSmsSent" update="actions"
                                                     rendered="#{ptIx.billItem.bill.smsed}"
                                                     disabled="#{ptIx.billItem.bill.cancelled or ptIx.billItem.transRefund or ptIx.patientReports.size() eq 0}"
                                                     action="#{patientInvestigationController.sendSms()}" >
