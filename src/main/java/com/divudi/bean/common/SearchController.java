@@ -263,8 +263,8 @@ public class SearchController implements Serializable {
     private int managePaymentIndex = -1;
 
     private boolean duplicateBillView;
-    
-    public String navigateToPettyCashBillApprove(){
+
+    public String navigateToPettyCashBillApprove() {
         createPettyApproveTable();
         return "/petty_cash_bill_to_approve?faces-redirect=true";
     }
@@ -305,7 +305,7 @@ public class SearchController implements Serializable {
                 billSearch.setBill(bill);
                 navigateTo = "/payment_bill_reprint.xhtml?faces-redirect=true;";
                 break;
-            
+
             case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_FOR_AGENCIES:
             case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_FOR_AGENCIES_RETURN:
             case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_RETURN:
@@ -369,8 +369,6 @@ public class SearchController implements Serializable {
         return "/analytics/financial_transaction_summary_Department?faces-redirect=true";
     }
 
-    
-    
     public void clearBillList() {
         if (bills == null) {
             return;
@@ -4170,8 +4168,8 @@ public class SearchController implements Serializable {
 
     private String createKeySql(HashMap tmp) {
         String sql = "";
-        
-        if (getSearchKeyword().getRequestNo()!= null && !getSearchKeyword().getRequestNo().trim().equals("")) {
+
+        if (getSearchKeyword().getRequestNo() != null && !getSearchKeyword().getRequestNo().trim().equals("")) {
             sql += " and  ((b.qutationNumber) like :qutNo )";
             tmp.put("qutNo", "%" + getSearchKeyword().getRequestNo().trim().toUpperCase() + "%");
         }
@@ -4324,6 +4322,24 @@ public class SearchController implements Serializable {
         for (Bill b : bills) {
             b.setListOfBill(getReturnBill(b, BillType.PharmacyGrnReturn));
         }
+
+    }
+
+    public void directPurchaseOrderSearch() {
+        bills = null;
+        Map<String, Object> m = new HashMap<>();
+
+        String jpql = "SELECT b FROM Bill b WHERE b.retired = false AND b.billType = :bTp "
+                + "AND b.createdAt BETWEEN :fromDate AND :toDate";
+
+        m.put("bTp", BillType.StorePurchase);
+        m.put("fromDate", getFromDate());
+        m.put("toDate", getToDate());
+
+        bills = billFacade.findByJpql(jpql, m);
+        System.out.println("Bill Type: " + BillType.StorePurchase);
+        System.out.println("From Date: " + getFromDate());
+        System.out.println("To Date: " + getToDate());
 
     }
 
@@ -7178,7 +7194,7 @@ public class SearchController implements Serializable {
         createTableByKeywordForBillFees(billTypesAtomics, institution, department, null, null, null, null, category);
 
     }
-    
+
     public String searchOpdProfessionalPayments() {
         List<BillTypeAtomic> billTypesAtomics = new ArrayList<>();
         billTypesAtomics.add(BillTypeAtomic.OPD_PROFESSIONAL_PAYMENT_BILL);
@@ -7676,7 +7692,7 @@ public class SearchController implements Serializable {
         bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
-    
+
     public void createTableByKeywords(List<BillTypeAtomic> billTypesAtomics,
             Institution ins, Department dep,
             Institution fromIns,
@@ -7723,7 +7739,7 @@ public class SearchController implements Serializable {
             sql += " and b.toInstitution=:toins ";
             temMap.put("toins", toIns);
         }
-        
+
         if (stf != null) {
             sql += " and b.toStaff=:staff ";
             temMap.put("staff", stf);
@@ -7738,13 +7754,13 @@ public class SearchController implements Serializable {
         bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
-    
+
     public void createTableByKeywordForBillFees(List<BillTypeAtomic> billTypesAtomics,
             Institution ins, Department dep,
             Institution fromIns,
             Department fromDep,
             Institution toIns,
-            Department toDep){
+            Department toDep) {
         createTableByKeywordForBillFees(billTypesAtomics, ins, dep, fromIns, fromDep, toIns, toDep, null);
     }
 
@@ -7795,11 +7811,11 @@ public class SearchController implements Serializable {
             temMap.put("toins", toIns);
         }
 
-        if(cat!=null){
-            sql +=" and bf.referenceBillFee.billItem.bill.category=:rbfcc ";
+        if (cat != null) {
+            sql += " and bf.referenceBillFee.billItem.bill.category=:rbfcc ";
             temMap.put("rbfcc", cat);
         }
-        
+
         if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
             sql += " and  ((bf.bill.patient.person.name) like :patientName )";
             temMap.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
@@ -7834,17 +7850,17 @@ public class SearchController implements Serializable {
         billFees = getBillFeeFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
         System.out.println("Bill fees retrieved: " + billFees.size());
     }
-    
+
     public void createTableByKeywordForBillFee(List<BillTypeAtomic> billTypesAtomics,
             Institution ins, Department dep,
             Institution fromIns,
             Department fromDep,
             Institution toIns,
             Department toDep,
-            Staff stf){
+            Staff stf) {
         createTableByKeywordBillFee(billTypesAtomics, ins, dep, fromIns, fromDep, toIns, toDep, stf);
     }
-    
+
     public void createTableByKeywordBillFee(List<BillTypeAtomic> billTypesAtomics,
             Institution ins, Department dep,
             Institution fromIns,
@@ -10780,7 +10796,7 @@ public class SearchController implements Serializable {
         bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 50);
 
     }
-    
+
     public void createPettyApproveTable() {
         List<BillType> billTypes = new ArrayList<>();
         billTypes.add(BillType.PettyCashCancelApprove);
