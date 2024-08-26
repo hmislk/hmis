@@ -874,6 +874,10 @@
                                                      icon="pi pi-check-circle"
                                                      styleClass="m-1  w-100 ui-button-info" />
 
+                                    <hr/>
+                                    
+                                    <p:inputText value="#{patientInvestigationController.sampleRejectionComment}" ></p:inputText>
+
                                     <p:commandButton disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
                                                      id="btnRejectSamples"
                                                      value="Reject Samples"
@@ -882,6 +886,8 @@
                                                      title="Reject Samples"
                                                      icon="pi pi-times-circle"
                                                      styleClass="m-1  w-100 ui-button-danger" />
+
+                                    <hr/>
                                 </h:panelGrid>
                             </div>
 
