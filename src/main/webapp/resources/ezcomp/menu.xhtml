@@ -64,6 +64,13 @@
 
                         <p:menuitem 
                             ajax="false" 
+                            action="#{opdBillController.navigateToNewOpdBillAutocomplete()}" 
+                            value="OPD Billing Autocomplete"
+                            icon="fa fa-fw fa-notes-medical" 
+                            rendered="#{webUserController.hasPrivilege('OpdBilling')}" ></p:menuitem>
+
+                        <p:menuitem 
+                            ajax="false" 
                             action="#{opdPreBillController.navigateToBillingForCashierFromMenu()}"  
                             actionListener="#{opdPreBillController.prepareNewBill}" 
                             value="Billing for Cashier"
