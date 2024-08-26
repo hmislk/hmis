@@ -1762,14 +1762,6 @@ public class SearchController implements Serializable {
         this.site = site;
     }
 
-    public StreamedContent getFileBillsAndBillItemsForDownload() {
-        return fileBillsAndBillItemsForDownload;
-    }
-
-    public void setFileBillsAndBillItemsForDownload(StreamedContent fileBillsAndBillItemsForDownload) {
-        this.fileBillsAndBillItemsForDownload = fileBillsAndBillItemsForDownload;
-    }
-
     public class billsWithbill {
 
         Bill b;
@@ -12109,6 +12101,25 @@ public class SearchController implements Serializable {
 
     private StreamedContent fileBillsAndBillItemsForDownload;
 
+    public StreamedContent getFileBillsAndBillItemsForDownload() {
+        prepareDataBillsAndBillItemsDownload();  // Prepare data and create the Excel file
+        return fileBillsAndBillItemsForDownload;
+    }
+
+    public List<BillTypeAtomic> prepareDistinctBillTypeAtomic() {
+        String jpql = "SELECT DISTINCT b.billTypeAtomic FROM Bill b JOIN b.payments p";
+        List<?> results = billFacade.findLightsByJpql(jpql);
+        List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
+
+        for (Object result : results) {
+            if (result instanceof BillTypeAtomic) {
+                billTypeAtomics.add((BillTypeAtomic) result);
+            }
+        }
+
+        return billTypeAtomics;
+    }
+
     public StreamedContent getFileForBillsAndBillItemsForDownload() {
         prepareDataBillsAndBillItemsDownload();  // Prepare data and create the Excel file
         return fileBillsAndBillItemsForDownload;       // This should now contain the generated Excel file
@@ -12122,7 +12133,7 @@ public class SearchController implements Serializable {
         Row headerRow = sheet.createRow(rowIdx++);
         // Headers for both bills and bill items
         String[] headers = {
-            "Bill ID", "Institution Name", "Department Name", "Patient Name", "Staff Name", "Bill Type", "Total", "Discount", "Net Total", "Payment Method",
+            "Bill ID", "Institution Name", "Department Name", "Patient Name", "Staff Name", "User", "Bill Type", "Total", "Discount", "Net Total", "Payment Method",
             "Bill Item Name", "Bill Item Code", "Item Type", "Quantity", "Rate", "Gross Value", "Bill Item Discount", "Net Value"
         };
         for (int i = 0; i < headers.length; i++) {
@@ -12138,6 +12149,7 @@ public class SearchController implements Serializable {
             billRow.createCell(colIdx++).setCellValue(bill.getDepartment() != null ? bill.getDepartment().getName() : "");
             billRow.createCell(colIdx++).setCellValue(bill.getPatient() != null && bill.getPatient().getPerson() != null ? bill.getPatient().getPerson().getName() : "");
             billRow.createCell(colIdx++).setCellValue(bill.getStaff() != null && bill.getStaff().getPerson() != null ? bill.getStaff().getPerson().getNameWithTitle() : "");
+            billRow.createCell(colIdx++).setCellValue(bill.getCreater() != null && bill.getCreater().getWebUserPerson().getName() != null ? bill.getCreater().getWebUserPerson().getName() : "");
             billRow.createCell(colIdx++).setCellValue(bill.getBillType() != null ? bill.getBillType().getLabel() : "");
             billRow.createCell(colIdx++).setCellValue(bill.getGrantTotal());
             billRow.createCell(colIdx++).setCellValue(bill.getDiscount());
@@ -12163,7 +12175,7 @@ public class SearchController implements Serializable {
                     itemRow.createCell(itemColIdx++).setCellValue(bi.getItem() != null ? bi.getItem().getCode() : "");
                     itemRow.createCell(itemColIdx++).setCellValue(bi.getItem() != null ? bi.getItem().getItemType().toString() : "");
                     itemRow.createCell(itemColIdx++).setCellValue(bi.getQty());
-                    itemRow.createCell(itemColIdx++).setCellValue(bi.getNetRate());
+                    itemRow.createCell(itemColIdx++).setCellValue(bi.getRate());
                     itemRow.createCell(itemColIdx++).setCellValue(bi.getGrossValue());
                     itemRow.createCell(itemColIdx++).setCellValue(bi.getDiscount());
                     itemRow.createCell(itemColIdx++).setCellValue(bi.getNetValue());
@@ -12188,21 +12200,26 @@ public class SearchController implements Serializable {
                 .build();
     }
 
-    public void prepareDataBillsAndBillItemsDownload() {
+    public void prepareDataBillsAndBillItemsDownload(boolean old) {
         // Fetch all bills and their associated bill items, excluding fees
-        String jpql = "SELECT b FROM Bill b JOIN FETCH b.billItems WHERE b.createdAt BETWEEN :fromDate AND :toDate";
+        List<BillTypeAtomic> billTypeAtomics = prepareDistinctBillTypeAtomic();
+        String jpql = "SELECT b FROM Bill b JOIN FETCH b.billItems WHERE b.createdAt and b.retired=:ret and b.billTypeAtomic in :btas BETWEEN :fromDate AND :toDate";
         Map<String, Object> params = new HashMap<>();
         params.put("fromDate", fromDate);
         params.put("toDate", toDate);
+        params.put("ret", false);
+        params.put("btas", billTypeAtomics);
 
         List<Bill> bills = billFacade.findByJpql(jpql, params); // Assuming you have a facade to execute JPQL queries
 
         Set<Bill> uniqueBills = new HashSet<>(bills);
         List<BillItem> allBillItems = new ArrayList<>();
 
+        bills = new ArrayList<>();
         // Only extract bill items, no fees
         for (Bill bill : uniqueBills) {
             allBillItems.addAll(bill.getBillItems());
+            bills.add(bill);
         }
 
         try {
@@ -12212,6 +12229,30 @@ public class SearchController implements Serializable {
         }
     }
 
-    
-    
+    public void prepareDataBillsAndBillItemsDownload() {
+        // JPQL to fetch Bills and their BillItems through Payments
+        String jpql = "SELECT DISTINCT b "
+                + " FROM Payment p "
+                + " JOIN p.bill b "
+                + " JOIN FETCH b.billItems bi "
+                + " WHERE p.createdAt BETWEEN :fromDate AND :toDate AND b.retired = :ret";
+        Map<String, Object> params = new HashMap<>();
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+        params.put("ret", false);
+
+        // Execute the query to get filtered bills
+        List<Bill> bills = billFacade.findByJpql(jpql, params); // Assuming you have a facade to execute JPQL queries
+
+        // Since bills are fetched with their items, simply collect all items if needed
+        List<BillItem> allBillItems = new ArrayList<>();
+        bills.forEach(bill -> allBillItems.addAll(bill.getBillItems()));
+
+        try {
+            createBillsBillItemsList(new HashSet<>(bills), allBillItems);
+        } catch (IOException e) {
+            e.printStackTrace(); // Handle exceptions properly
+        }
+    }
+
 }
