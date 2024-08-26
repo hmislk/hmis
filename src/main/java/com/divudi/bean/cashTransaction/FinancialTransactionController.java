@@ -40,12 +40,15 @@ import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.faces.event.AjaxBehaviorEvent;
@@ -175,9 +178,13 @@ public class FinancialTransactionController implements Serializable {
     private int fundTransferBillsToReceiveCount;
     private Date fromDate;
     private Date toDate;
+    private Date cashbookDate;
+    private Department cashbookDepartment;
+    private List<Date> cashbookDates;
+    private List<Department> cashbookDepartments;
 
     private ReportTemplateRowBundle paymentSummaryBundle;
-    
+
     private Department department;
 
     // </editor-fold>  
@@ -661,7 +668,7 @@ public class FinancialTransactionController implements Serializable {
                 null,
                 null,
                 null);
-        
+
         fillPayments(fromDate, toDate, null);
     }
 
@@ -1066,19 +1073,19 @@ public class FinancialTransactionController implements Serializable {
                 + " where b.retired=:ret"
                 + " and b.billTypeAtomic=:bta "
                 + " and b.createdAt between :fd and :td ";
-        
+
         Map params = new HashMap<>();
         params.put("ret", false);
         params.put("bta", BillTypeAtomic.FUND_SHIFT_START_BILL);
         params.put("fd", fromDate);
         params.put("td", toDate);
-        
-        if(getDepartment()!= null){
+
+        if (getDepartment() != null) {
             jpql += " and b.department =:dept";
             params.put("dept", getDepartment());
         }
         jpql += " order by b.id ";
-        
+
         shiaftStartBills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
@@ -1791,6 +1798,18 @@ public class FinancialTransactionController implements Serializable {
         return "/cashier/shift_end_summery_bill?faces-redirect=true";
     }
 
+    public String navigateToHandoverCreateBill() {
+        resetClassVariables();
+        findNonClosedShiftStartFundBillIsAvailable();
+        fillPaymentsFromShiftStartToNowNotYetStartedToEntereToCashbook();
+        currentBill = new Bill();
+        currentBill.setBillType(BillType.CashHandoverCreateBill);
+        currentBill.setBillTypeAtomic(BillTypeAtomic.FUND_SHIFT_HANDOVER_CREATE);
+        currentBill.setBillClassType(BillClassType.PreBill);
+        currentBill.setReferenceBill(null);
+        return "/cashier/handover_start?faces-redirect=true";
+    }
+
     public String navigateToDayEndSummary() {
         return "/analytics/day_end_summery?faces-redirect=true";
     }
@@ -1934,7 +1953,11 @@ public class FinancialTransactionController implements Serializable {
         m.put("cr", nonClosedShiftStartFundBill.getCreater());
         m.put("ret", false);
         m.put("cid", nonClosedShiftStartFundBill.getId());
+        System.out.println("m = " + m);
+        System.out.println("jpql = " + jpql);
         paymentsFromShiftSratToNow = paymentFacade.findByJpql(jpql, m);
+        System.out.println("paymentsFromShiftSratToNow = " + paymentsFromShiftSratToNow);
+        
 //        paymentMethodValues = new PaymentMethodValues(PaymentMethod.values());
         atomicBillTypeTotalsByPayments = new AtomicBillTypeTotals();
         for (Payment p : paymentsFromShiftSratToNow) {
@@ -1948,6 +1971,160 @@ public class FinancialTransactionController implements Serializable {
         financialReportByPayments = new FinancialReport(atomicBillTypeTotalsByPayments);
 
     }
+
+    public void fillPaymentsFromShiftStartToNowNotYetStartedToEntereToCashbook() {
+        paymentsFromShiftSratToNow = new ArrayList<>();
+        if (nonClosedShiftStartFundBill == null) {
+            return;
+        }
+        Long shiftStartBillId = nonClosedShiftStartFundBill.getId();
+        Map<String, Object> m = new HashMap<>();
+        String jpql = "SELECT p "
+                + "FROM Payment p "
+                + "WHERE p.creater = :cr "
+                + "AND p.retired = :ret "
+                + "AND p.id > :cid "
+                + "AND p.cashbookEntryStated = :started ";
+        m.put("started", false);
+
+        jpql += "ORDER BY p.id DESC";
+
+        m.put("cr", nonClosedShiftStartFundBill.getCreater());
+        m.put("ret", false);
+        m.put("cid", shiftStartBillId);
+        System.out.println("jpql = " + jpql);
+        System.out.println("m = " + m);
+        paymentsFromShiftSratToNow = paymentFacade.findByJpql(jpql, m);
+        System.out.println("paymentsFromShiftSratToNow = " + paymentsFromShiftSratToNow);
+
+        atomicBillTypeTotalsByPayments = new AtomicBillTypeTotals();
+
+        Set<Department> uniqueDepartments = new HashSet<>();
+        Set<LocalDate> uniqueDates = new HashSet<>();
+
+        for (Payment p : paymentsFromShiftSratToNow) {
+            Bill bill = p.getBill();
+            if (bill == null) {
+                System.out.println("No Bill for Payment " + p);
+                continue;
+            }
+
+            if (bill.getBillTypeAtomic() == null) {
+                System.out.println("No atomic bill type for Bill = " + bill);
+            } else {
+                Department dept = bill.getDepartment();
+                if (dept != null) {
+                    uniqueDepartments.add(dept);
+                } else {
+                    System.out.println("No Department for the Bill " + bill);
+                }
+
+                if (p.getCreatedAt() != null) {
+                    LocalDate createdDateOnly = p.getCreatedAt().toInstant()
+                            .atZone(ZoneId.systemDefault())
+                            .toLocalDate();
+                    uniqueDates.add(createdDateOnly);
+                } else {
+                    System.out.println("No createdAt for Payment " + p);
+                }
+
+                atomicBillTypeTotalsByPayments.addOrUpdateAtomicRecord(bill.getBillTypeAtomic(), p.getPaymentMethod(), p.getPaidValue());
+            }
+        }
+
+        cashbookDepartments = new ArrayList<>(uniqueDepartments);
+
+        // Convert Set<LocalDate> to List<Date>
+        cashbookDates = new ArrayList<>();
+        for (LocalDate localDate : uniqueDates) {
+            Date date = Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+            cashbookDates.add(date); // Add converted Date to the list
+        }
+
+        financialReportByPayments = new FinancialReport(atomicBillTypeTotalsByPayments);
+    }
+    
+    
+    
+    public void fillPaymentsFromShiftStartToNowNotYetStartedToEntereToCashbookFilteredByDateAndDepartment() {
+        paymentsFromShiftSratToNow = new ArrayList<>();
+        if (nonClosedShiftStartFundBill == null) {
+            return;
+        }
+        Long shiftStartBillId = nonClosedShiftStartFundBill.getId();
+        Map<String, Object> m = new HashMap<>();
+        String jpql = "SELECT p "
+                + "FROM Payment p "
+                + "WHERE p.creater = :cr "
+                + "AND p.retired = :ret "
+                + "AND p.id > :cid "
+                + "AND p.cashbookEntryStated = :started ";
+        
+        jpql+= "AND FUNCTION('DATE', p.createdAt) = :createdDate "; 
+        jpql+= "AND p.bill.department = :dept "; 
+        
+        
+        m.put("dept", cashbookDepartment);
+        m.put("createdDate", cashbookDate);
+        m.put("started", false);
+
+        jpql += "ORDER BY p.id DESC";
+
+        m.put("cr", nonClosedShiftStartFundBill.getCreater());
+        m.put("ret", false);
+        m.put("cid", shiftStartBillId);
+        System.out.println("jpql = " + jpql);
+        System.out.println("m = " + m);
+        paymentsFromShiftSratToNow = paymentFacade.findByJpql(jpql, m);
+        System.out.println("paymentsFromShiftSratToNow = " + paymentsFromShiftSratToNow);
+
+        atomicBillTypeTotalsByPayments = new AtomicBillTypeTotals();
+
+        Set<Department> uniqueDepartments = new HashSet<>();
+        Set<LocalDate> uniqueDates = new HashSet<>();
+
+        for (Payment p : paymentsFromShiftSratToNow) {
+            Bill bill = p.getBill();
+            if (bill == null) {
+                System.out.println("No Bill for Payment " + p);
+                continue;
+            }
+
+            if (bill.getBillTypeAtomic() == null) {
+                System.out.println("No atomic bill type for Bill = " + bill);
+            } else {
+                Department dept = bill.getDepartment();
+                if (dept != null) {
+                    uniqueDepartments.add(dept);
+                } else {
+                    System.out.println("No Department for the Bill " + bill);
+                }
+
+                if (p.getCreatedAt() != null) {
+                    LocalDate createdDateOnly = p.getCreatedAt().toInstant()
+                            .atZone(ZoneId.systemDefault())
+                            .toLocalDate();
+                    uniqueDates.add(createdDateOnly);
+                } else {
+                    System.out.println("No createdAt for Payment " + p);
+                }
+
+                atomicBillTypeTotalsByPayments.addOrUpdateAtomicRecord(bill.getBillTypeAtomic(), p.getPaymentMethod(), p.getPaidValue());
+            }
+        }
+
+        cashbookDepartments = new ArrayList<>(uniqueDepartments);
+
+        // Convert Set<LocalDate> to List<Date>
+        cashbookDates = new ArrayList<>();
+        for (LocalDate localDate : uniqueDates) {
+            Date date = Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+            cashbookDates.add(date); // Add converted Date to the list
+        }
+
+        financialReportByPayments = new FinancialReport(atomicBillTypeTotalsByPayments);
+    }
+    
 
     public void fillPaymentsForDateRange() {
         System.out.println("fillPaymentsForDateRange");
@@ -2014,11 +2191,10 @@ public class FinancialTransactionController implements Serializable {
                 + "AND p.createdAt < :eid ";
         Map<String, Object> m = new HashMap<>();
         if (user != null) {
-           jpql += " and p.creater = :cr ";
-           m.put("cr", user);
+            jpql += " and p.creater = :cr ";
+            m.put("cr", user);
         }
 
-        
         m.put("ret", false);
         m.put("sid", fromDateParam);
         m.put("eid", toDateParam);
@@ -3267,6 +3443,38 @@ public class FinancialTransactionController implements Serializable {
 
     public void setDepartment(Department department) {
         this.department = department;
+    }
+
+    public Date getCashbookDate() {
+        return cashbookDate;
+    }
+
+    public void setCashbookDate(Date cashbookDate) {
+        this.cashbookDate = cashbookDate;
+    }
+
+    public Department getCashbookDepartment() {
+        return cashbookDepartment;
+    }
+
+    public void setCashbookDepartment(Department cashbookDepartment) {
+        this.cashbookDepartment = cashbookDepartment;
+    }
+
+    public List<Date> getCashbookDates() {
+        return cashbookDates;
+    }
+
+    public void setCashbookDates(List<Date> cashbookDates) {
+        this.cashbookDates = cashbookDates;
+    }
+
+    public List<Department> getCashbookDepartments() {
+        return cashbookDepartments;
+    }
+
+    public void setCashbookDepartments(List<Department> cashbookDepartments) {
+        this.cashbookDepartments = cashbookDepartments;
     }
 
 }

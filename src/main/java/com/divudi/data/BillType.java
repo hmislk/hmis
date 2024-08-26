@@ -150,6 +150,8 @@ public enum BillType {
     // Cash Handling and Transfer Processes
     ShiftStartFundBill, // For handling initial funds, be it cash, cheque, or electronic funds, at the beginning of a cashier's shift
     ShiftEndFundBill, // For summarising and finalising all transaction types, balances, and notes at the end of a cashier's shift
+    CashHandoverCreateBill,
+    CashHandoverAcceptBill,
     FundTransferBill, // For transferring the total balance from one shift to another
     FundTransferReceivedBill, // For receiving the transferred balance from one shift to another
     DepositFundBill, // For processing deposits of all payment types into the bank by the main or bulk cashier
