@@ -15,6 +15,7 @@ import com.divudi.data.ItemLight;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.Sex;
 import com.divudi.data.TestWiseCountReport;
+import com.divudi.entity.AgentHistory;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.Category;
@@ -29,6 +30,7 @@ import com.divudi.entity.Service;
 import com.divudi.entity.Speciality;
 import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.Machine;
+import com.divudi.facade.AgentHistoryFacade;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.InstitutionFacade;
@@ -70,6 +72,8 @@ public class ReportController implements Serializable {
     BillFacade billFacade;
     @EJB
     InstitutionFacade institutionFacade;
+    @EJB
+    AgentHistoryFacade agentHistoryFacade;
 
     @Inject
     private InstitutionController institutionController;
@@ -124,6 +128,7 @@ public class ReportController implements Serializable {
     private List<ItemCount> reportLabTestCounts;
     private List<CategoryCount> reportList;
     private List<Institution> collectionCenters;
+    private List<AgentHistory> agentHistories;
 
     private Date warrentyStartDate;
     private Date warrentyEndDate;
@@ -761,6 +766,25 @@ public class ReportController implements Serializable {
 //        }
         bills = billFacade.findByJpql(jpql, m);
     }
+    
+    public void processCollectingCentreAgentHistory(){
+         String jpql = "select ah "
+                + " from AgentHistory ah "
+                + " where ah.retired=:ret"
+                + " and ah.createdAt between :fd and :td ";
+         
+        Map<String, Object> m = new HashMap<>();
+        m.put("ret", false);
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        
+        if (collectingCentre != null) {
+            jpql += " and ah.agency = :cc ";
+            m.put("cc", collectingCentre);
+        }
+    
+        agentHistories = agentHistoryFacade.findByJpql(jpql, m,TemporalType.TIMESTAMP);   
+    }
 
     public void processCollectingCentreReciptReport() {
         String jpql = "select bill "
@@ -768,7 +792,7 @@ public class ReportController implements Serializable {
                 + " where bill.retired=:ret"
                 + " and bill.billDate between :fd and :td "
                 + " and bill.billType = :bType";
-
+        
         Map<String, Object> m = new HashMap<>();
         m.put("ret", false);
         m.put("fd", fromDate);
@@ -1803,6 +1827,14 @@ public class ReportController implements Serializable {
 
     public String navigateToDynamicReportSummary() {
         return "/reports/dynamic_reports/dynamic_report_summary?faces-redirect=true";
+    }
+
+    public List<AgentHistory> getAgentHistories() {
+        return agentHistories;
+    }
+
+    public void setAgentHistories(List<AgentHistory> agentHistories) {
+        this.agentHistories = agentHistories;
     }
 
 }
