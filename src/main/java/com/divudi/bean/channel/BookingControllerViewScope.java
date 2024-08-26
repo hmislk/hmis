@@ -3211,7 +3211,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             return true;
         }
 
-        if (!configOptionApplicationController.getBooleanValueByKey("Allow bill settlement without patient area")) {
+        if (configOptionApplicationController.getBooleanValueByKey("Allow bill settlement without patient area")) {
             if (p.getPerson().getArea() == null) {
                 JsfUtil.addErrorMessage("Please enter a area");
                 return true;
@@ -3432,13 +3432,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                     return;
 
                 }
-            }
-        }
-
-        if (configOptionApplicationController.getBooleanValueByKey("Allow bill settlement without patient area")) {
-            if (patient.getPerson().getArea() == null || patient.getPerson().getArea().getName().isEmpty()) {
-                JsfUtil.addErrorMessage("Pleace Select Patient Area");
-                return;
             }
         }
 
