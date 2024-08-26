@@ -164,6 +164,56 @@ public class FeeValueController implements Serializable {
 
         return fv;
     }
+    
+    
+    public FeeValue getSiteFeeValue(Long itemId, Institution site) {
+        System.out.println("Starting getSiteFeeValue");
+        System.out.println("Item ID: " + itemId);
+        System.out.println("Site: " + site);
+
+        String jpql = "SELECT f "
+                + " FROM FeeValue f "
+                + " WHERE f.item.id = :iid "
+                + " AND f.totalValueForLocals > 0 "
+                + " AND f.retired=:ret "
+                + " AND f.institution = :site";
+        Map<String, Object> params = new HashMap<>();
+        params.put("iid", itemId);
+        params.put("ret", false);
+        params.put("site", site);
+
+        System.out.println("Executing JPQL: " + jpql);
+        System.out.println("Parameters: " + params);
+
+        FeeValue fv = getFacade().findFirstByJpql(jpql, params);
+
+        if (fv != null) {
+            System.out.println("FeeValue found in first query: " + fv);
+            return fv;
+        }
+
+        System.out.println("No FeeValue found in the first query, executing the second query.");
+
+        jpql = "SELECT f "
+                + " FROM FeeValue f "
+                + " WHERE f.item.id = :iid "
+                + " AND f.totalValueForLocals > 0 "
+                + " AND f.retired=:ret "
+                + " AND f.category is null"
+                + " AND f.institution is null";
+        params = new HashMap<>();
+        params.put("iid", itemId);
+        params.put("ret", false);
+
+        System.out.println("Executing fallback JPQL: " + jpql);
+        System.out.println("Fallback Parameters: " + params);
+
+        fv = getFacade().findFirstByJpql(jpql, params);
+
+        System.out.println("Returning FeeValue: " + fv);
+
+        return fv;
+    }
 
     public FeeValue getFeeValue(Item item, Department dept, Institution ins, Category category) {
         String jpql = "SELECT f FROM FeeValue f WHERE f.item = :item AND f.department = :dept AND f.institution = :ins AND f.category = :category";

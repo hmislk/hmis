@@ -72,14 +72,20 @@ import com.divudi.facade.TokenFacade;
 import com.divudi.java.CommonFunctions;
 import com.divudi.light.common.BillLight;
 import com.divudi.light.common.BillSummaryRow;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.context.FacesContext;
@@ -88,6 +94,12 @@ import javax.inject.Named;
 import javax.persistence.TemporalType;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.primefaces.model.DefaultStreamedContent;
+import org.primefaces.model.StreamedContent;
 import org.primefaces.model.file.UploadedFile;
 
 /**
@@ -273,7 +285,7 @@ public class SearchController implements Serializable {
     private boolean duplicateBillView;
 
     private ReportTemplateRowBundle bundle;
-    
+
     private List<CashBookEntry> cashBookEntries;
     private Institution site;
 
@@ -5522,6 +5534,200 @@ public class SearchController implements Serializable {
         calTotalBillItem();
     }
 
+    private StreamedContent fileForDownload;
+
+    public void listBillsAndItemsWithFees() {
+        String sql;
+        Map<String, Object> paramMap = new HashMap<>();
+
+        paramMap.put("toDate", toDate);
+        paramMap.put("fromDate", fromDate);
+
+        // Assuming BillItem has a fee attribute or a method to get the fee
+        sql = "select bi "
+                + "from BillItem bi "
+                + "where bi.createdAt between :fromDate and :toDate "
+                + "order by bi.id desc";
+
+        // Execute the query
+        List<BillItem> results = getBillItemFacade().findByJpql(sql, paramMap, TemporalType.TIMESTAMP);
+
+        // Bills Have Bill Items and Bill Fees
+        // BillFee also has a referance to Bill Item and Bill
+        //BillItem has a referance to Item and Bill
+        // I want to list bills > under that Bill Items > Under that Bill Fees with the folloing attributed
+        // Have to create an excel table and download it
+        // Excel is partially created
+        billItems = results;
+
+        // Extract fees and bills if needed
+        Map<BillItem, Double> itemFees = new HashMap<>();
+        bills = new ArrayList<>();
+
+        for (BillItem bi : results) {
+
+            Bill b = bi.getBill();
+            List<BillFee> billFees = billBean.billFeefromBillItem(bi);
+            for (BillFee bf : billFees) {
+                bf.getBill();
+                bf.getBillItem();
+                bf.getFee().getName();
+                bf.getFee().getFeeType().toString();
+                bf.getFeeValue();
+                bf.getInstitution().getName();
+                bf.getDepartment().getName();
+                bf.getStaff().getPerson().getNameWithTitle();
+
+            }
+
+            b.getId();
+            b.getInsId();
+            b.getDeptId();
+            b.getPatient().getPerson().getName();
+            b.getStaff().getPerson().getNameWithTitle();
+            b.getBillType().getLabel();
+            b.getBillTypeAtomic().getLabel();
+            b.getGrantTotal();
+            b.getDiscount();
+            b.getNetTotal();
+            b.getCreditCompany().getName();
+            b.getToStaff();
+            b.getCreatedAt();
+            b.getPaidAmount();
+            b.isCancelled();
+            b.isRefunded();
+            b.getCreater().getWebUserPerson().getName();
+            b.getPaymentMethod();
+            b.getInstitution().getName();
+            b.getDepartment().getName();
+            b.getReferenceInstitution().getName();
+            b.getReferredBy().getName();
+
+            bi.getItem().getName();
+            bi.getItem().getCode();
+            bi.getItem().getItemType().toString();
+            bi.getQty();
+            bi.getNetRate();
+            bi.getGrossValue();
+            bi.getDiscount();
+            bi.getNetValue();
+
+            Double feeValue = bi.getFeeValue();  // Assuming getFeeValue() returns the fee
+            itemFees.put(bi, feeValue);
+            bills.add(bi.getBill());
+        }
+
+    }
+
+    public StreamedContent getFileForDownload() {
+        prepareDataForExcelExport();  // Prepare data and create the Excel file
+        return fileForDownload;       // This should now contain the generated Excel file
+    }
+
+    public void createBillsBillItemsAndBillFeesTable(Set<Bill> bills, List<BillItem> billItems, Map<BillItem, List<BillFee>> billItemToBillFees) throws IOException {
+        XSSFWorkbook workbook = new XSSFWorkbook();
+        XSSFSheet sheet = workbook.createSheet("Bills Details");
+
+        int rowIdx = 0;
+        Row headerRow = sheet.createRow(rowIdx++);
+        // Expanding the headers to include all necessary fields
+        String[] headers = {
+            "Bill ID", "Insitution Name", "Department Name", "Patient Name", "Staff Name", "Bill Type", "Total", "Discount", "Net Total", "Payment Method",
+            "Bill Item Name", "Bill Item Code", "Item Type", "Quantity", "Rate", "Gross Value", "Bill Item Discount", "Net Value",
+            "Fee Name", "Fee Type", "Fee Value", "Institution Name", "Department Name", "Staff Name"
+        };
+        for (int i = 0; i < headers.length; i++) {
+            headerRow.createCell(i).setCellValue(headers[i]);
+        }
+
+        // Fill the sheet with data
+        for (Bill bill : bills) {
+            for (BillItem bi : billItems) {
+                if (!bi.getBill().equals(bill)) {
+                    continue;
+                }
+                List<BillFee> fees = billItemToBillFees.get(bi);
+                for (BillFee fee : fees) {
+                    Row row = sheet.createRow(rowIdx++);
+                    int colIdx = 0;
+                    row.createCell(colIdx++).setCellValue(bill.getId());
+                    row.createCell(colIdx++).setCellValue(bill.getInstitution() != null ? bill.getInstitution().getName() : "");
+                    row.createCell(colIdx++).setCellValue(bill.getDepartment() != null ? bill.getDepartment().getName() : "");
+                    row.createCell(colIdx++).setCellValue(bill.getPatient() != null && bill.getPatient().getPerson() != null ? bill.getPatient().getPerson().getName() : "");
+                    row.createCell(colIdx++).setCellValue(bill.getStaff() != null && bill.getStaff().getPerson() != null ? bill.getStaff().getPerson().getNameWithTitle() : "");
+                    row.createCell(colIdx++).setCellValue(bill.getBillType() != null ? bill.getBillType().getLabel() : "");
+                    row.createCell(colIdx++).setCellValue(bill.getGrantTotal());
+                    row.createCell(colIdx++).setCellValue(bill.getDiscount());
+                    row.createCell(colIdx++).setCellValue(bill.getNetTotal());
+                    row.createCell(colIdx++).setCellValue(bill.getPaymentMethod() != null ? bill.getPaymentMethod().getLabel() : "");
+
+                    row.createCell(colIdx++).setCellValue(bi.getItem() != null ? bi.getItem().getName() : "");
+                    row.createCell(colIdx++).setCellValue(bi.getItem() != null ? bi.getItem().getCode() : "");
+                    row.createCell(colIdx++).setCellValue(bi.getItem() != null ? bi.getItem().getItemType().toString() : "");
+                    row.createCell(colIdx++).setCellValue(bi.getQty());
+                    row.createCell(colIdx++).setCellValue(bi.getNetRate());
+                    row.createCell(colIdx++).setCellValue(bi.getGrossValue());
+                    row.createCell(colIdx++).setCellValue(bi.getDiscount());
+                    row.createCell(colIdx++).setCellValue(bi.getNetValue());
+
+                    row.createCell(colIdx++).setCellValue(fee.getFee() != null ? fee.getFee().getName() : "");
+                    row.createCell(colIdx++).setCellValue(fee.getFee() != null ? fee.getFee().getFeeType().toString() : "");
+                    row.createCell(colIdx++).setCellValue(fee.getFeeValue());
+                    row.createCell(colIdx++).setCellValue(fee.getInstitution() != null ? fee.getInstitution().getName() : "");
+                    row.createCell(colIdx++).setCellValue(fee.getDepartment() != null ? fee.getDepartment().getName() : "");
+                    row.createCell(colIdx++).setCellValue(fee.getStaff() != null && fee.getStaff().getPerson() != null ? fee.getStaff().getPerson().getNameWithTitle() : "");
+                }
+
+            }
+        }
+
+        // Autosize columns to fit content
+        for (int i = 0; i < headers.length; i++) {
+            sheet.autoSizeColumn(i);
+        }
+
+        // Write to output stream and create download content
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        workbook.write(outputStream);
+        workbook.close();
+        InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+        // Set the StreamedContent object for download
+        fileForDownload = DefaultStreamedContent.builder()
+                .name("bills_details.xlsx")
+                .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                .stream(() -> new ByteArrayInputStream(outputStream.toByteArray()))
+                .build();
+    }
+
+    public void prepareDataForExcelExport() {
+        // Fetch all bills and their associated bill items and fees
+        String jpql = "SELECT b FROM Bill b JOIN FETCH b.billItems bi JOIN FETCH bi.billFees WHERE b.createdAt BETWEEN :fromDate AND :toDate";
+        Map<String, Object> params = new HashMap<>();
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+
+        List<Bill> bills = billFacade.findByJpql(jpql, params); // Assuming you have a facade to execute JPQL queries
+
+        Set<Bill> uniqueBills = new HashSet<>(bills);
+        List<BillItem> allBillItems = new ArrayList<>();
+        Map<BillItem, List<BillFee>> billItemToFeesMap = new HashMap<>();
+
+        // Extract bill items and fees
+        for (Bill bill : uniqueBills) {
+            for (BillItem billItem : bill.getBillItems()) {
+                allBillItems.add(billItem);
+                List<BillFee> fees = billItem.getBillFees();
+                billItemToFeesMap.put(billItem, fees);
+            }
+        }
+
+        try {
+            createBillsBillItemsAndBillFeesTable(uniqueBills, allBillItems, billItemToFeesMap);
+        } catch (IOException e) {
+            e.printStackTrace(); // Handle exceptions properly
+        }
+    }
+
     public void createBillItemTableByKeyword() {
         Date startTime = new Date();
         String sql;
@@ -5641,7 +5847,7 @@ public class SearchController implements Serializable {
 
         //   searchBillItems = new LazyBillItem(tmp);
     }
-    
+
     public void createPatientInvestigationsTable() {
         Date startTime = new Date();
 
@@ -5722,7 +5928,7 @@ public class SearchController implements Serializable {
             sql += " and b.collectingCentre=:cc ";
             temMap.put("cc", institution);
         }
-        
+
         if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
             sql += " and  (p.name like :patientName )";
             temMap.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
@@ -5742,8 +5948,6 @@ public class SearchController implements Serializable {
             sql += " and  (i.name like :itm )";
             temMap.put("itm", "%" + getSearchKeyword().getItemName().trim().toUpperCase() + "%");
         }
-
-        
 
         if (getReportKeyWord().getDepartment() != null) {
             sql += " and b.toDepartment=:dep ";
@@ -11297,14 +11501,14 @@ public class SearchController implements Serializable {
         processAllFinancialTransactionalBillListBySingleUserByIds();
         return "/cashier/shift_end_summary_bill_list";
     }
-    
+
     public String navigateToListCashBookEntry() {
-        cashBookEntries=new ArrayList<>();
+        cashBookEntries = new ArrayList<>();
         return "/cashier/cash_book_entry";
     }
-    
-    public void genarateCashBookEntries(){
-        cashBookEntries=cashBookEntryController.genarateCashBookEntries(fromDate,toDate,site,institution,department);
+
+    public void genarateCashBookEntries() {
+        cashBookEntries = cashBookEntryController.genarateCashBookEntries(fromDate, toDate, site, institution, department);
     }
 
     public SearchController() {
@@ -11893,6 +12097,162 @@ public class SearchController implements Serializable {
 
     public void setPharmacyAdjustmentRows(List<PharmacyAdjustmentRow> pharmacyAdjustmentRows) {
         this.pharmacyAdjustmentRows = pharmacyAdjustmentRows;
+    }
+
+    private StreamedContent fileBillsAndBillItemsForDownload;
+
+    public StreamedContent getFileBillsAndBillItemsForDownload() {
+        prepareDataBillsAndBillItemsDownload();  // Prepare data and create the Excel file
+        return fileBillsAndBillItemsForDownload;
+    }
+
+    public List<BillTypeAtomic> prepareDistinctBillTypeAtomic() {
+        String jpql = "SELECT DISTINCT b.billTypeAtomic FROM Bill b JOIN b.payments p";
+        List<?> results = billFacade.findLightsByJpql(jpql);
+        List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
+
+        for (Object result : results) {
+            if (result instanceof BillTypeAtomic) {
+                billTypeAtomics.add((BillTypeAtomic) result);
+            }
+        }
+
+        return billTypeAtomics;
+    }
+
+    public StreamedContent getFileForBillsAndBillItemsForDownload() {
+        prepareDataBillsAndBillItemsDownload();  // Prepare data and create the Excel file
+        return fileBillsAndBillItemsForDownload;       // This should now contain the generated Excel file
+    }
+
+    public void createBillsBillItemsList(Set<Bill> bills, List<BillItem> billItems) throws IOException {
+        XSSFWorkbook workbook = new XSSFWorkbook();
+        XSSFSheet sheet = workbook.createSheet("Bills Details");
+
+        int rowIdx = 0;
+        Row headerRow = sheet.createRow(rowIdx++);
+        // Headers for both bills and bill items
+        String[] headers = {
+            "Bill ID", "Institution Name", "Department Name", "Patient Name", "Staff Name", "User", "Bill Type", "Total", "Discount", "Net Total", "Payment Method",
+            "Bill Item Name", "Bill Item Code", "Item Type", "Quantity", "Rate", "Gross Value", "Bill Item Discount", "Net Value"
+        };
+        for (int i = 0; i < headers.length; i++) {
+            headerRow.createCell(i).setCellValue(headers[i]);
+        }
+
+        // Fill the sheet with bill data first, then bill item data in subsequent rows
+        for (Bill bill : bills) {
+            Row billRow = sheet.createRow(rowIdx++);
+            int colIdx = 0;
+            billRow.createCell(colIdx++).setCellValue(bill.getId());
+            billRow.createCell(colIdx++).setCellValue(bill.getInstitution() != null ? bill.getInstitution().getName() : "");
+            billRow.createCell(colIdx++).setCellValue(bill.getDepartment() != null ? bill.getDepartment().getName() : "");
+            billRow.createCell(colIdx++).setCellValue(bill.getPatient() != null && bill.getPatient().getPerson() != null ? bill.getPatient().getPerson().getName() : "");
+            billRow.createCell(colIdx++).setCellValue(bill.getStaff() != null && bill.getStaff().getPerson() != null ? bill.getStaff().getPerson().getNameWithTitle() : "");
+            billRow.createCell(colIdx++).setCellValue(bill.getCreater() != null && bill.getCreater().getWebUserPerson().getName() != null ? bill.getCreater().getWebUserPerson().getName() : "");
+            billRow.createCell(colIdx++).setCellValue(bill.getBillType() != null ? bill.getBillType().getLabel() : "");
+            billRow.createCell(colIdx++).setCellValue(bill.getGrantTotal());
+            billRow.createCell(colIdx++).setCellValue(bill.getDiscount());
+            billRow.createCell(colIdx++).setCellValue(bill.getNetTotal());
+            billRow.createCell(colIdx++).setCellValue(bill.getPaymentMethod() != null ? bill.getPaymentMethod().getLabel() : "");
+
+            // Leave the bill item columns empty in the bill row
+            for (int j = 10; j < headers.length; j++) {
+                billRow.createCell(j);
+            }
+
+            // Fill in bill item data in subsequent rows
+            for (BillItem bi : billItems) {
+                if (bi.getBill().equals(bill)) {
+                    Row itemRow = sheet.createRow(rowIdx++);
+                    // Leave bill details columns empty
+                    for (int j = 0; j < 10; j++) {
+                        itemRow.createCell(j);
+                    }
+
+                    int itemColIdx = 10;
+                    itemRow.createCell(itemColIdx++).setCellValue(bi.getItem() != null ? bi.getItem().getName() : "");
+                    itemRow.createCell(itemColIdx++).setCellValue(bi.getItem() != null ? bi.getItem().getCode() : "");
+                    itemRow.createCell(itemColIdx++).setCellValue(bi.getItem() != null ? bi.getItem().getItemType().toString() : "");
+                    itemRow.createCell(itemColIdx++).setCellValue(bi.getQty());
+                    itemRow.createCell(itemColIdx++).setCellValue(bi.getRate());
+                    itemRow.createCell(itemColIdx++).setCellValue(bi.getGrossValue());
+                    itemRow.createCell(itemColIdx++).setCellValue(bi.getDiscount());
+                    itemRow.createCell(itemColIdx++).setCellValue(bi.getNetValue());
+                }
+            }
+        }
+
+        // Autosize columns to fit content
+        for (int i = 0; i < headers.length; i++) {
+            sheet.autoSizeColumn(i);
+        }
+
+        // Write to output stream and create download content
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        workbook.write(outputStream);
+        workbook.close();
+        InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+        fileBillsAndBillItemsForDownload = DefaultStreamedContent.builder()
+                .name("bills_and_bill_items.xlsx")
+                .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                .stream(() -> new ByteArrayInputStream(outputStream.toByteArray()))
+                .build();
+    }
+
+    public void prepareDataBillsAndBillItemsDownload(boolean old) {
+        // Fetch all bills and their associated bill items, excluding fees
+        List<BillTypeAtomic> billTypeAtomics = prepareDistinctBillTypeAtomic();
+        String jpql = "SELECT b FROM Bill b JOIN FETCH b.billItems WHERE b.createdAt and b.retired=:ret and b.billTypeAtomic in :btas BETWEEN :fromDate AND :toDate";
+        Map<String, Object> params = new HashMap<>();
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+        params.put("ret", false);
+        params.put("btas", billTypeAtomics);
+
+        List<Bill> bills = billFacade.findByJpql(jpql, params); // Assuming you have a facade to execute JPQL queries
+
+        Set<Bill> uniqueBills = new HashSet<>(bills);
+        List<BillItem> allBillItems = new ArrayList<>();
+
+        bills = new ArrayList<>();
+        // Only extract bill items, no fees
+        for (Bill bill : uniqueBills) {
+            allBillItems.addAll(bill.getBillItems());
+            bills.add(bill);
+        }
+
+        try {
+            createBillsBillItemsList(uniqueBills, allBillItems);
+        } catch (IOException e) {
+            e.printStackTrace(); // Handle exceptions properly
+        }
+    }
+
+    public void prepareDataBillsAndBillItemsDownload() {
+        // JPQL to fetch Bills and their BillItems through Payments
+        String jpql = "SELECT DISTINCT b "
+                + " FROM Payment p "
+                + " JOIN p.bill b "
+                + " JOIN FETCH b.billItems bi "
+                + " WHERE p.createdAt BETWEEN :fromDate AND :toDate AND b.retired = :ret";
+        Map<String, Object> params = new HashMap<>();
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+        params.put("ret", false);
+
+        // Execute the query to get filtered bills
+        List<Bill> bills = billFacade.findByJpql(jpql, params); // Assuming you have a facade to execute JPQL queries
+
+        // Since bills are fetched with their items, simply collect all items if needed
+        List<BillItem> allBillItems = new ArrayList<>();
+        bills.forEach(bill -> allBillItems.addAll(bill.getBillItems()));
+
+        try {
+            createBillsBillItemsList(new HashSet<>(bills), allBillItems);
+        } catch (IOException e) {
+            e.printStackTrace(); // Handle exceptions properly
+        }
     }
 
 }

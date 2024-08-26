@@ -64,6 +64,13 @@
 
                         <p:menuitem 
                             ajax="false" 
+                            action="#{opdBillController.navigateToNewOpdBillAutocomplete()}" 
+                            value="OPD Billing Autocomplete"
+                            icon="fa fa-fw fa-notes-medical" 
+                            rendered="#{webUserController.hasPrivilege('OpdBilling')}" ></p:menuitem>
+
+                        <p:menuitem 
+                            ajax="false" 
                             action="#{opdPreBillController.navigateToBillingForCashierFromMenu()}"  
                             actionListener="#{opdPreBillController.prepareNewBill}" 
                             value="Billing for Cashier"
@@ -404,6 +411,7 @@
                         rendered="#{webUserController.hasPrivilege('LabSampleCollecting')}" ></p:menuitem>
                     <p:menuitem
                         ajax="false"  
+                        rendered="false"
                         action="/lab/sample_at_lab_index?faces-redirect=true" 
                         value="Sample Management - Lab"></p:menuitem>
 

@@ -69,6 +69,7 @@ import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillFeeBundleEntry;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.OptionScope;
+import com.divudi.entity.FeeValue;
 import com.divudi.entity.Token;
 import com.divudi.facade.TokenFacade;
 import com.divudi.java.CommonFunctions;
@@ -182,17 +183,16 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     private DepartmentController departmentController;
     @Inject
     ViewScopeDataTransferController viewScopeDataTransferController;
-
     @Inject
     OpdTokenController opdTokenController;
-
     @Inject
     ConfigOptionController configOptionController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     CashBookEntryController cashBookEntryController;
-
+    @Inject
+    FeeValueController feeValueController;
     /**
      * Class Variables
      */
@@ -2007,11 +2007,28 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                         BillType.OpdBathcBill,
                         BillClassType.BilledBill,
                         BillNumberSuffix.NONE));
-        newBatchBill.setDeptId(getBillNumberGenerator().departmentBillNumberGenerator(
-                getSessionController().getInstitution(),
-                getSessionController().getDepartment(),
-                BillType.OpdBathcBill,
-                BillClassType.BilledBill));
+
+        String deptId;
+
+        boolean billNumberByYear;
+
+        billNumberByYear = configOptionApplicationController.getBooleanValueByKey("Bill Numbers are based on Year.", false);
+
+        if (billNumberByYear) {
+            deptId = getBillNumberGenerator().departmentBillNumberGeneratorYearly(
+                    getSessionController().getInstitution(),
+                    getSessionController().getDepartment(),
+                    BillType.OpdBathcBill,
+                    BillClassType.BilledBill);
+        } else {
+            deptId = getBillNumberGenerator().departmentBillNumberGenerator(
+                    getSessionController().getInstitution(),
+                    getSessionController().getDepartment(),
+                    BillType.OpdBathcBill,
+                    BillClassType.BilledBill);
+        }
+
+        newBatchBill.setDeptId(deptId);
         newBatchBill.setGrantTotal(total);
         newBatchBill.setTotal(total);
         newBatchBill.setDiscount(discount);
@@ -2026,8 +2043,13 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
         double dbl = 0;
         double reminingCashPaid = cashPaid;
+        int billCount = 1;
         for (Bill b : bills) {
             b.setBackwardReferenceBill(newBatchBill);
+            if (billNumberByYear) {
+                b.setDeptId(deptId + "/" + String.format("%02d", billCount));
+            }
+            billCount++;
             dbl += b.getNetTotal();
 
 //            if (getSessionController().getDepartmentPreference().isPartialPaymentOfOpdBillsAllowed()) {
@@ -2114,7 +2136,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         if (localNumber != null) {
             newBill.setLocalNumber(localNumber);
         }
-        if(paymentMethod == PaymentMethod.Credit){
+        if (paymentMethod == PaymentMethod.Credit) {
             String creditRefNo = paymentMethodData.getCredit().getReferenceNo();
             newBill.setReferenceNumber(creditRefNo);
             System.out.println("this is the ref no for credit" + creditRefNo);
@@ -2630,7 +2652,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             JsfUtil.addErrorMessage("Please select an Item");
             return;
         }
-       
 
         if (getCurrentBillItem().getItem().getDepartment() == null) {
             JsfUtil.addErrorMessage("Please set Department to Item");
@@ -2667,9 +2688,9 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         boolean siteBasedBillFees = configOptionApplicationController.getBooleanValueByKey("OPD Bill Fees are based on the site", false);
         System.out.println("siteBasedBillFees = " + siteBasedBillFees);
         System.out.println("addAllBillFees = " + addAllBillFees);
-        
+
         if (addAllBillFees) {
-            
+
             allBillFees = getBillBean().billFeefromBillItem(bi);
         } else if (siteBasedBillFees) {
             allBillFees = getBillBean().forInstitutionBillFeefromBillItem(bi, sessionController.getDepartment().getSite());
@@ -3073,6 +3094,76 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         }
     }
 
+    public String navigateToNewOpdBillAutocomplete() {
+        Boolean opdBillingAfterShiftStart = sessionController.getApplicationPreference().isOpdBillingAftershiftStart();
+        if (opdBillingAfterShiftStart) {
+            financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
+            if (financialTransactionController.getNonClosedShiftStartFundBill() != null) {
+                clearBillItemValues();
+                clearBillValues();
+                paymentMethodData = null;
+                paymentScheme = null;
+                paymentMethod = PaymentMethod.Cash;
+                collectingCentreBillController.setCollectingCentre(null);
+                return "/opd/opd_bill_ac?faces-redirect=true";
+            } else {
+                JsfUtil.addErrorMessage("Start Your Shift First !");
+                return "/cashier/index?faces-redirect=true";
+            }
+        } else {
+            clearBillItemValues();
+            clearBillValues();
+            paymentMethodData = null;
+            paymentScheme = null;
+            paymentMethod = PaymentMethod.Cash;
+            collectingCentreBillController.setCollectingCentre(null);
+            return "/opd/opd_bill_ac?faces-redirect=true";
+        }
+    }
+
+    public List<ItemLight> completeOpdItemsByWord(String query) {
+        List<ItemLight> filteredItems = new ArrayList<>();
+        Long defaultValue = 10l;
+        Long maxResultsLong = configOptionApplicationController.getLongValueByKey("Number of Maximum Results for Item Search in Autocompletes",  defaultValue);
+        int maxResults = maxResultsLong.intValue();
+        
+        boolean addAllBillFees = configOptionApplicationController.getBooleanValueByKey("OPD Bill Fees are the same for all departments, institutions and sites.", true);
+        boolean siteBasedBillFees = configOptionApplicationController.getBooleanValueByKey("OPD Bill Fees are based on the site", false);
+
+        // Split the query into individual tokens (space-separated)
+        String[] tokens = query.toLowerCase().split("\\s+");
+
+        for (ItemLight opdItem : getOpdItems()) {
+            boolean matchFound = true;
+
+            // Check if all tokens match either the name or code
+            for (String token : tokens) {
+                if (!(opdItem.getName().toLowerCase().contains(token)
+                        || opdItem.getCode().toLowerCase().contains(token))) {
+                    matchFound = false;
+                    break;
+                }
+            }
+
+            if (matchFound) {
+                if (siteBasedBillFees) {
+                    FeeValue f = feeValueController.getSiteFeeValue(opdItem.getId(), sessionController.getLoggedSite());
+                    if (f != null) {
+                        opdItem.setTotal(f.getTotalValueForLocals());
+                        opdItem.setTotalForForeigner(f.getTotalValueForForeigners());
+                    }
+                }
+                filteredItems.add(opdItem);
+            }
+
+            // Limit the result set to maxResults
+            if (filteredItems.size() >= maxResults) {
+                break;
+            }
+        }
+        return filteredItems;
+    }
+
     public String navigateToNewOpdBillFromToken() {
         Boolean opdBillingAfterShiftStart = sessionController.getApplicationPreference().isOpdBillingAftershiftStart();
         if (opdBillingAfterShiftStart) {
@@ -3244,7 +3335,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                     case YouOweMe:
                     case MultiplePaymentMethods:
                 }
-                
+
                 paymentFacade.create(p);
                 cashBookEntryController.writeCashBookEntry(p);
                 ps.add(p);

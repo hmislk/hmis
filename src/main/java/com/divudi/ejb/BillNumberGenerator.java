@@ -33,9 +33,12 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.locks.ReentrantLock;
 import javax.ejb.EJB;
 import javax.ejb.Singleton;
 import javax.persistence.TemporalType;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  *
@@ -57,6 +60,108 @@ public class BillNumberGenerator {
     ItemFacade itemFacade;
     @EJB
     BillNumberFacade billNumberFacade;
+
+    private final ConcurrentHashMap<String, ReentrantLock> lockMap = new ConcurrentHashMap<>();
+
+    private String getLockKey(Institution institution, Department toDepartment, BillType billType) {
+        return institution.getId() + "-" + toDepartment.getId() + "-" + billType.name();
+    }
+
+    public BillNumber fetchLastBillNumberForYear(Institution institution, Department toDepartment, BillType billType, BillClassType billClassType) {
+        String lockKey = getLockKey(institution, toDepartment, billType);
+        ReentrantLock lock = lockMap.computeIfAbsent(lockKey, k -> new ReentrantLock());
+
+        lock.lock();
+        try {
+            return fetchLastBillNumberSynchronized(institution, toDepartment, billType, billClassType);
+        } finally {
+            lock.unlock();
+            // Optionally keep the lock in the map or use an appropriate strategy to remove it if necessary
+        }
+    }
+
+    private BillNumber fetchLastBillNumberSynchronized(Institution institution, Department toDepartment, BillType billType, BillClassType billClassType) {
+        int currentYear = Calendar.getInstance().get(Calendar.YEAR);
+
+        String sql = "SELECT b FROM "
+                + " BillNumber b "
+                + " where b.retired=false "
+                + " and b.billType=:bTp "
+                + " and b.billClassType=:bcl"
+                + " and b.institution=:ins "
+                + " AND b.toDepartment=:tDep"
+                + " AND b.billYear=:yr";
+
+        HashMap<String, Object> hm = new HashMap<>();
+        hm.put("bTp", billType);
+        hm.put("bcl", billClassType);
+        hm.put("ins", institution);
+        hm.put("tDep", toDepartment);
+        hm.put("yr", currentYear);
+
+        BillNumber billNumber = billNumberFacade.findFreshByJpql(sql, hm);
+
+        if (billNumber == null) {
+            billNumber = new BillNumber();
+            billNumber.setBillType(billType);
+            billNumber.setBillClassType(billClassType);
+            billNumber.setInstitution(institution);
+            billNumber.setToDepartment(toDepartment);
+            billNumber.setBillYear(currentYear);  // Set the current year
+
+            sql = "SELECT count(b) FROM Bill b "
+                    + " where b.billType=:bTp "
+                    + " and b.retired=false"
+                    + " and type(b)=:class"
+                    + " and b.institution=:ins "
+                    + " and b.toDepartment=:tDep"
+                    + " AND b.billDate BETWEEN :startOfYear AND :endOfYear";
+
+            Calendar startOfYear = Calendar.getInstance();
+            startOfYear.set(Calendar.DAY_OF_YEAR, 1);
+            Calendar endOfYear = Calendar.getInstance();
+            endOfYear.set(Calendar.MONTH, 11);  // December
+            endOfYear.set(Calendar.DAY_OF_MONTH, 31);
+
+            hm = new HashMap<>();
+            hm.put("bTp", billType);
+            hm.put("ins", institution);
+            hm.put("tDep", toDepartment);
+            hm.put("startOfYear", startOfYear.getTime());
+            hm.put("endOfYear", endOfYear.getTime());
+
+            switch (billClassType) {
+                case BilledBill:
+                    hm.put("class", BilledBill.class);
+                    break;
+                case CancelledBill:
+                    hm.put("class", CancelledBill.class);
+                    break;
+                case RefundBill:
+                    hm.put("class", RefundBill.class);
+                    break;
+                case PreBill:
+                    hm.put("class", PreBill.class);
+                    break;
+            }
+
+            Long dd = getBillFacade().findAggregateLong(sql, hm, TemporalType.DATE);
+            if (dd == null) {
+                dd = 0L;
+            }
+            billNumber.setLastBillNumber(dd);
+            billNumberFacade.createAndFlush(billNumber);
+        } else {
+            Long newBillNumberLong = billNumber.getLastBillNumber();
+            if (newBillNumberLong == null) {
+                newBillNumberLong = 0L;
+            }
+            billNumber.setLastBillNumber(newBillNumberLong);
+            billNumberFacade.editAndFlush(billNumber);
+        }
+
+        return billNumber;
+    }
 
     public PatientFacade getPatientFacade() {
         return patientFacade;
@@ -544,19 +649,19 @@ public class BillNumberGenerator {
             billNumber.setLastBillNumber(dd);
             billNumberFacade.createAndFlush(billNumber);
         }
-        if(billNumber.getLastBillNumber()==null){
+        if (billNumber.getLastBillNumber() == null) {
             billNumber.setLastBillNumber(0l);
         }
-        billNumber.setLastBillNumber(billNumber.getLastBillNumber()+1);
+        billNumber.setLastBillNumber(billNumber.getLastBillNumber() + 1);
         billNumberFacade.editAndFlush(billNumber);
         return billNumber;
 
     }
-    
+
     public String generateDailyBillNumberForOpdBatchBillPre(Department department) {
-        return generateDailyBillNumberForOpdBatchBillPre(department, null,null );
+        return generateDailyBillNumberForOpdBatchBillPre(department, null, null);
     }
-    
+
     public String generateDailyBillNumberForOpdBatchBillPre(Department department, Category cat, Staff fromStaff) {
         String sql = "SELECT count(b) FROM Bill b "
                 + " where b.billType=:bTp1 "
@@ -851,8 +956,8 @@ public class BillNumberGenerator {
             billNumberFacade.createAndFlush(billNumber);
         } else {
             Long newBillNumberLong = billNumber.getLastBillNumber();
-            if(newBillNumberLong==null){
-                newBillNumberLong=0l;
+            if (newBillNumberLong == null) {
+                newBillNumberLong = 0l;
             }
             billNumber.setLastBillNumber(newBillNumberLong);
             billNumberFacade.editAndFlush(billNumber);
@@ -1198,6 +1303,44 @@ public class BillNumberGenerator {
         result.append(++dd);
         billNumber.setLastBillNumber(dd);
         billNumberFacade.edit(billNumber);
+        return result.toString();
+    }
+
+    public String departmentBillNumberGeneratorYearly(Institution ins, Department dep, BillType billType, BillClassType billClassType) {
+        // Fetch the last bill number for this combination
+        BillNumber billNumber = fetchLastBillNumberForYear(ins, dep, billType, billClassType);
+
+        // Get the last bill number
+        Long dd = billNumber.getLastBillNumber();
+
+        // Increment the bill number
+        dd++;
+
+        // Set the updated bill number in the BillNumber entity
+        billNumber.setLastBillNumber(dd);
+
+        // Update the BillNumber entity in the database
+        billNumberFacade.edit(billNumber);
+
+        // Generate the bill number string
+        StringBuilder result = new StringBuilder();
+
+        // Append institution code
+        result.append(ins.getInstitutionCode());
+
+        // Append department code
+        result.append(dep.getDepartmentCode());
+
+        // Append current year (last two digits)
+        int year = Calendar.getInstance().get(Calendar.YEAR) % 100; // Get last two digits of year
+        result.append("/");
+        result.append(String.format("%02d", year)); // Ensure year is always two digits
+
+        // Append formatted 6-digit bill number
+        result.append("/");
+        result.append(String.format("%06d", dd)); // Ensure bill number is always six digits
+
+        // Return the formatted bill number
         return result.toString();
     }
 
