@@ -213,6 +213,7 @@ public class PatientInvestigationController implements Serializable {
     @Temporal(TemporalType.TIME)
     private Date fromDate;
     Date toDate;
+    private String sampleRejectionComment;
 
     private int activeIndexOfManageInvestigation;
 
@@ -1550,11 +1551,13 @@ public class PatientInvestigationController implements Serializable {
 
         // Update sample rejection details and gather associated patient investigations
         for (PatientSample ps : selectedPatientSamples) {
+            ps.setSampleReceivedAtLabComments(sampleRejectionComment);
             ps.setSampleRejected(true);
             ps.setSampleRejectedAt(new Date());
             ps.setSampleRejectedBy(sessionController.getLoggedUser());
             ps.setStatus(PatientInvestigationStatus.SAMPLE_REJECTED);
             patientSampleFacade.edit(ps);
+            sampleRejectionComment = "";
 
             // Retrieve and store PatientInvestigations by unique ID to avoid duplicates
             for (PatientInvestigation pi : getPatientInvestigationsBySample(ps)) {
@@ -3478,6 +3481,14 @@ public class PatientInvestigationController implements Serializable {
         this.sampleTransportedToLabByStaff = sampleTransportedToLabByStaff;
     }
 
+    public String getSampleRejectionComment() {
+        return sampleRejectionComment;
+    }
+
+    public void setSampleRejectionComment(String sampleRejectionComment) {
+        this.sampleRejectionComment = sampleRejectionComment;
+    }
+
     /**
      *
      */
@@ -4136,4 +4147,7 @@ public class PatientInvestigationController implements Serializable {
         return iis;
     }
 
+    
+    
+    
 }
