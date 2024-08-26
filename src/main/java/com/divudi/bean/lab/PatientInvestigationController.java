@@ -189,6 +189,7 @@ public class PatientInvestigationController implements Serializable {
     private List<PatientInvestigation> lstForSampleManagement = null;
     List<PatientSample> patientSamples;
     private List<PatientSample> selectedPatientSamples;
+    private Staff sampleTransportedToLabByStaff;
     String selectText = "";
     private Institution orderedInstitution;
     private Department orderedDepartment;
@@ -1450,6 +1451,7 @@ public class PatientInvestigationController implements Serializable {
 
         // Process each selected patient sample
         for (PatientSample ps : selectedPatientSamples) {
+            ps.setSampleTransportedToLabByStaff(sampleTransportedToLabByStaff); 
             ps.setSampleSent(true);
             ps.setSampleSentBy(sessionController.getLoggedUser());
             ps.setSampleSentAt(new Date());
@@ -1480,6 +1482,9 @@ public class PatientInvestigationController implements Serializable {
 
         JsfUtil.addSuccessMessage("Selected Samples Sent to Lab");
     }
+    
+    
+    
     
     public void collectAndReceiveSamplesAtLab(){
         collectSamples();
@@ -3463,6 +3468,14 @@ public class PatientInvestigationController implements Serializable {
 
     public void setSelectedPatientReports(List<PatientReport> selectedPatientReports) {
         this.selectedPatientReports = selectedPatientReports;
+    }
+
+    public Staff getSampleTransportedToLabByStaff() {
+        return sampleTransportedToLabByStaff;
+    }
+
+    public void setSampleTransportedToLabByStaff(Staff sampleTransportedToLabByStaff) {
+        this.sampleTransportedToLabByStaff = sampleTransportedToLabByStaff;
     }
 
     /**

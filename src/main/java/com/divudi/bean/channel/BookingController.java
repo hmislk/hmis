@@ -419,6 +419,7 @@ public class BookingController implements Serializable, ControllerWithPatient, C
         balance = getTenderedAmount() - getFeeTotalForSelectedBill();
     }
 
+
 //    public double calculatRemainForMultiplePaymentTotal() {
 //        total = getFeeTotalForSelectedBill();
 //        if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
@@ -478,6 +479,10 @@ public class BookingController implements Serializable, ControllerWithPatient, C
 //                    throw new IllegalArgumentException("Unexpected value: " + pm.getPaymentMethod());
 //            }
 //        }
+//    }
+//
+//    public void calculateBalance() {
+//        balance = getTenderedAmount() - getFeeTotalForSelectedBill();
 //    }
 
     public void sessionInstanceSelected() {
@@ -857,69 +862,6 @@ public class BookingController implements Serializable, ControllerWithPatient, C
         return b;
     }
 
-    // ALREADY DEFIENED in line 629
-//    public void sendChannellingStatusUpdateNotificationSms(BillSession methodBillSession) {
-//        if (methodBillSession == null) {
-//            JsfUtil.addErrorMessage("Nothing to send");
-//            return;
-//        }
-//        if (methodBillSession.getSessionInstance() == null) {
-//            JsfUtil.addErrorMessage("No Session");
-//            return;
-//        }
-//        if (methodBillSession.getSessionInstance().getOriginatingSession() == null) {
-//            JsfUtil.addErrorMessage("No Originating Session");
-//            return;
-//        }
-//        if (methodBillSession.getBill() == null) {
-//            JsfUtil.addErrorMessage("No Bill");
-//            return;
-//        }
-//        if (methodBillSession.getBill().getPatient() == null) {
-//            JsfUtil.addErrorMessage("No Bill");
-//            return;
-//        }
-//
-//        if (!methodBillSession.getBill().getPatient().getPerson().getSmsNumber().trim().equals("")) {
-//            Sms e = new Sms();
-//            e.setCreatedAt(new Date());
-//            e.setCreater(sessionController.getLoggedUser());
-//            e.setBill(methodBillSession.getBill());
-//            e.setCreatedAt(new Date());
-//            e.setSmsType(MessageType.ChannelStatusUpdate);
-//            e.setCreater(sessionController.getLoggedUser());
-//            e.setReceipientNumber(methodBillSession.getBill().getPatient().getPerson().getSmsNumber());
-//            e.setSendingMessage(smsBody(methodBillSession));
-//            e.setDepartment(getSessionController().getLoggedUser().getDepartment());
-//            e.setInstitution(getSessionController().getLoggedUser().getInstitution());
-//            e.setPending(false);
-//            getSmsFacade().create(e);
-//
-//            Boolean sent = smsManager.sendSms(e);
-//            e.setSentSuccessfully(sent);
-//            getSmsFacade().edit(e);
-//
-//        }
-//
-//        JsfUtil.addSuccessMessage("SMS Sent");
-//    }
-//
-//    public String smsBody(BillSession r) {
-//        String securityKey = sessionController.getApplicationPreference().getEncrptionKey();
-//        if (securityKey == null || securityKey.trim().equals("")) {
-//            sessionController.getApplicationPreference().setEncrptionKey(securityController.generateRandomKey(10));
-//            sessionController.savePreferences(sessionController.getApplicationPreference());
-//        }
-//        Calendar c = Calendar.getInstance();
-//        c.add(Calendar.DATE, 2);
-//        String temId = securityController.encryptAlphanumeric(r.getId().toString(), securityKey);
-//        String url = commonController.getBaseUrl() + "faces/requests/cbss.xhtml?id=" + temId;
-//        String b = "Your session of "
-//                + r.getSessionInstance().getOriginatingSession().getName()
-//                + " Started. "
-//                + url;
-//        return b;
-//    }
     public void makeNull() {
         institution = null;
         paymentMethod = null;
@@ -4748,6 +4690,11 @@ public class BookingController implements Serializable, ControllerWithPatient, C
         this.balance = balance;
     }
 
+    public double getTenderedAmount() {
+        return tenderedAmount;
+    }
+
+
     public void setTenderedAmount(double tenderedAmount) {
         this.tenderedAmount = tenderedAmount;
     }
@@ -4766,10 +4713,6 @@ public class BookingController implements Serializable, ControllerWithPatient, C
 
     public void setRemainAmount(double remainAmount) {
         this.remainAmount = remainAmount;
-    }
-
-    public double getTenderedAmount() {
-        return tenderedAmount;
     }
 
 }
