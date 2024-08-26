@@ -106,6 +106,16 @@ public class FeeValueController implements Serializable {
 
         return getFacade().findFirstByJpql(jpql, params);
     }
+    
+    
+    public FeeValue getFeeValue(Long itemId, Category category) {
+        String jpql = "SELECT f FROM FeeValue f WHERE f.item.id = :iid AND f.category = :category";
+        Map<String, Object> params = new HashMap<>();
+        params.put("iid", itemId);
+        params.put("category", category);
+
+        return getFacade().findFirstByJpql(jpql, params);
+    }
 
     public FeeValue getFeeValue(Item item, Department dept, Institution ins, Category category) {
         String jpql = "SELECT f FROM FeeValue f WHERE f.item = :item AND f.department = :dept AND f.institution = :ins AND f.category = :category";
@@ -161,6 +171,19 @@ public class FeeValueController implements Serializable {
         }
         return null; // Or return 0.0 if you prefer to return a default value
     }
+    
+    
+    public Double getFeeValueForLocalsByItemIdForLoggedSite(Long id) {
+        String jpql = "SELECT f.totalValueForLocals "
+                + " FROM FeeValue f "
+                + " WHERE f.item.id = :id "
+                + " AND f.institution = :institution";
+        Map<String, Object> params = new HashMap<>();
+        params.put("id", id);
+        params.put("institution", sessionController.getDepartment().getSite());
+        return getFacade().findDoubleByJpql(jpql, params);
+    }
+    
 
     public Double getFeeValueForForeigners(Item item, Department dept, Institution ins, Category category) {
         FeeValue feeValue = getFeeValue(item, dept, ins, category);
