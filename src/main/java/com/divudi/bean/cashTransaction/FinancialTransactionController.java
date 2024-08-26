@@ -177,6 +177,8 @@ public class FinancialTransactionController implements Serializable {
     private Date toDate;
 
     private ReportTemplateRowBundle paymentSummaryBundle;
+    
+    private Department department;
 
     // </editor-fold>  
     // <editor-fold defaultstate="collapsed" desc="Constructors">
@@ -1055,7 +1057,7 @@ public class FinancialTransactionController implements Serializable {
 
     public String navigateToListShiftEndSummaries() {
         resetClassVariables();
-        return "/cashier/initial_fund_bill_list?faces-redirect=true;";
+        return "/cashier/handover?faces-redirect=true;";
     }
 
     public void listShiftStartBills() {
@@ -1063,13 +1065,20 @@ public class FinancialTransactionController implements Serializable {
                 + " from Bill b "
                 + " where b.retired=:ret"
                 + " and b.billTypeAtomic=:bta "
-                + " and b.createdAt between :fd and :td "
-                + " order by b.id ";
+                + " and b.createdAt between :fd and :td ";
+        
         Map params = new HashMap<>();
         params.put("ret", false);
         params.put("bta", BillTypeAtomic.FUND_SHIFT_START_BILL);
         params.put("fd", fromDate);
         params.put("td", toDate);
+        
+        if(getDepartment()!= null){
+            jpql += " and b.department =:dept";
+            params.put("dept", getDepartment());
+        }
+        jpql += " order by b.id ";
+        
         shiaftStartBills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
@@ -1504,6 +1513,7 @@ public class FinancialTransactionController implements Serializable {
         selectedBill = null;
         nonClosedShiftStartFundBill = null;
         paymentsFromShiftSratToNow = null;
+        department = null;
 
     }
 
@@ -3249,6 +3259,14 @@ public class FinancialTransactionController implements Serializable {
 
     public void setCurrentBillComponents(List<BillComponent> currentBillComponents) {
         this.currentBillComponents = currentBillComponents;
+    }
+
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
     }
 
 }
