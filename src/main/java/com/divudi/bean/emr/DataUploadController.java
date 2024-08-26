@@ -317,11 +317,11 @@ public class DataUploadController implements Serializable {
         while (rowIterator.hasNext()) {
             Row row = rowIterator.next();
             Route route = null;
-            
-            String routeCode=null;
+
+            String routeCode = null;
             String name = null;
             String institutionName = null;
-            
+
             Cell routeCodeCell = row.getCell(0);
             if (routeCodeCell != null && routeCodeCell.getCellType() == CellType.STRING) {
                 routeCode = routeCodeCell.getStringCellValue();
@@ -355,7 +355,6 @@ public class DataUploadController implements Serializable {
         return routes;
 
     }
-   
 
     public void uploadPatientAreas() {
         areas = new ArrayList<>();
@@ -709,7 +708,6 @@ public class DataUploadController implements Serializable {
         }
         pollActive = false;
     }
-
     
     public void uploadFeeListItemFees() {
         itemFees = new ArrayList<>();
@@ -875,6 +873,164 @@ public class DataUploadController implements Serializable {
        
     }
 
+    public void uploadFeeListItemFees() {
+        itemFees = new ArrayList<>();
+        if (file != null) {
+            try (InputStream inputStream = file.getInputStream()) {
+                itemFees = readFeeListItemFeesFromExcel(inputStream);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+    }
+
+    public List<Category> readFeeListTypesFromExcel(InputStream inputStream) throws IOException {
+        List<Category> feeListTypes = new ArrayList<>();
+        Workbook workbook = new XSSFWorkbook(inputStream);
+        Sheet sheet = workbook.getSheetAt(0);
+        Iterator<Row> rowIterator = sheet.rowIterator();
+
+        if (rowIterator.hasNext()) {
+            rowIterator.next();
+        }
+
+        Category category = null;
+
+        while (rowIterator.hasNext()) {
+            Row row = rowIterator.next();
+
+            String feeListName = null;
+            String description = null;
+
+            Cell feeListNameCell = row.getCell(0);
+            if (feeListNameCell != null && feeListNameCell.getCellType() == CellType.STRING) {
+                feeListName = feeListNameCell.getStringCellValue();
+            }
+
+            if (feeListName != null || !feeListName.trim().equals("")) {
+                category = categoryController.findCategoryByName(feeListName);
+            }
+
+            if (category == null) {
+                category = new Category();
+                category.setName(feeListName);
+                category.setSymanticType(SymanticHyrachi.Fee_List_Type);
+                category.setCreatedAt(new Date());
+                category.setCreater(sessionController.getCurrent());
+                categoryController.save(category);
+                feeListTypes.add(category);
+            }
+
+        }
+        JsfUtil.addSuccessMessage("FeeList Types Uploaded");
+        return feeListTypes;
+    }
+
+    private List<ItemFee> readFeeListItemFeesFromExcel(InputStream inputStream) throws IOException {
+        List<ItemFee> itemFees = new ArrayList<>();
+        Workbook workbook = new XSSFWorkbook(inputStream);
+        Sheet sheet = workbook.getSheetAt(0);
+        Iterator<Row> rowIterator = sheet.rowIterator();
+
+        // Assuming the first row contains headers, skip it
+        if (rowIterator.hasNext()) {
+            rowIterator.next();
+        }
+
+        while (rowIterator.hasNext()) {
+            Row row = rowIterator.next();
+            String itemCode = null;
+            String itemName = null;
+            String forCategoryName = null;
+            String institutionName = null;
+            String discountAllowed = null;
+            String ffeeValue = null;
+            String fffeeValue = null;
+
+            boolean disAllowd;
+            double fee = 0.0;
+            double ffee = 0.0;
+
+            Item item;
+            Category category;
+            Institution institution;
+
+            Cell itemCodeCell = row.getCell(0);
+            if (itemCodeCell != null && itemCodeCell.getCellType() == CellType.STRING) {
+                itemCode = itemCodeCell.getStringCellValue();
+            }
+
+            Cell itemNameCell = row.getCell(1);
+            if (itemNameCell != null && itemNameCell.getCellType() == CellType.STRING) {
+                itemName = itemNameCell.getStringCellValue();
+            }
+
+            Cell forCategoryCell = row.getCell(2);
+            if (forCategoryCell != null && forCategoryCell.getCellType() == CellType.STRING) {
+                forCategoryName = forCategoryCell.getStringCellValue();
+            }
+
+            Cell feeCell = row.getCell(3);
+            if (feeCell != null && feeCell.getCellType() == CellType.NUMERIC) {
+                fee = feeCell.getNumericCellValue();
+            }
+
+            Cell ffeeCell = row.getCell(4);
+            if (ffeeCell != null && ffeeCell.getCellType() == CellType.NUMERIC) {
+                ffee = ffeeCell.getNumericCellValue();
+            }
+
+            Cell discountAllowedCell = row.getCell(5);
+            if (discountAllowedCell != null && discountAllowedCell.getCellType() == CellType.STRING) {
+                discountAllowed = discountAllowedCell.getStringCellValue();
+            }
+            if (discountAllowed != null || !discountAllowed.trim().equals("")) {
+                disAllowd = true;
+            } else {
+                disAllowd = false;
+            }
+
+            if (itemName == null || itemCode == null) {
+                JsfUtil.addErrorMessage("Item Name and Item Code cannot be null.");
+                return itemFees;
+            }
+
+            if (forCategoryName == null || forCategoryName.trim().equals("")) {
+                JsfUtil.addErrorMessage("Fee List types cannot be null.");
+                return itemFees;
+            }
+
+            category = categoryController.findCategoryByName(forCategoryName);
+            if (category == null) {
+                JsfUtil.addErrorMessage("Fee List type Not found.");
+                return itemFees;
+            }
+
+            item = itemController.findItemByNameAndCode(itemName, itemCode);
+            if (item == null) {
+                JsfUtil.addErrorMessage("Item cannot be null.");
+                return itemFees;
+            }
+            ItemFee Itemfee = new ItemFee();
+            Itemfee.setCreatedAt(new Date());
+            Itemfee.setName(forCategoryName);
+            Itemfee.setCreater(sessionController.getLoggedUser());
+            Itemfee.setForInstitution(null);
+            Itemfee.setForCategory(category);
+            Itemfee.setItem(item);
+            Itemfee.setFeeType(FeeType.OwnInstitution);
+            Itemfee.setInstitution(item.getInstitution());
+            Itemfee.setFee(fee);
+            Itemfee.setFfee(ffee);
+            Itemfee.setDiscountAllowed(disAllowd);
+            itemFeeFacade.create(Itemfee);
+
+        }
+        JsfUtil.addSuccessMessage("Upload Success");
+        return itemFees;
+
+    }
 
     private List<Consultant> readConsultantsFromExcel(InputStream inputStream) throws IOException {
         List<Consultant> cons = new ArrayList<>();
@@ -1457,8 +1613,20 @@ public class DataUploadController implements Serializable {
             department = departmentController.findAndSaveDepartmentByName(departmentName, institution);
             System.out.println("Department: " + department);
 
-            // Handle code and item lookup
-            code = row.getCell(3) != null ? row.getCell(3).getStringCellValue() : serviceController.generateShortCode(name);
+// Handle code and item lookup
+            if (row.getCell(3) != null) {
+                if (row.getCell(3).getCellType() == CellType.STRING) {
+                    code = row.getCell(3).getStringCellValue();
+                } else if (row.getCell(3).getCellType() == CellType.NUMERIC) {
+                    code = String.valueOf((int) row.getCell(3).getNumericCellValue());
+                } else {
+                    // Handle other possible types if necessary, or default
+                    code = serviceController.generateShortCode(name);
+                }
+            } else {
+                code = serviceController.generateShortCode(name);
+            }
+
             System.out.println("Item Code: " + code);
             item = itemController.findItemByCode(code);
             if (item == null) {
@@ -1467,7 +1635,6 @@ public class DataUploadController implements Serializable {
             } else {
                 System.out.println("Item found for code: " + code);
             }
-
             // Save or update the item
             if (item.getId() == null) {
                 itemFacade.create(item);
@@ -3273,21 +3440,13 @@ public class DataUploadController implements Serializable {
                 continue;
             }
 
-            collectingCentre = collectingCentreController.findCollectingCentreByName(collectingCentreName);
-//            if (collectingCentre != null) {
-//                continue;
-//            }
-//            collectingCentre = collectingCentreController.findCollectingCentreByCode(code);
-//            if (collectingCentre != null) {
-//                continue;
-//            }
+            collectingCentre = collectingCentreController.findCollectingCentreByCode(code);
             if (collectingCentre == null) {
                 collectingCentre = new Institution();
+                collectingCentre.setInstitutionType(InstitutionType.CollectingCentre);
+                collectingCentre.setCode(code);
+                collectingCentre.setName(collectingCentreName);
             }
-//            collectingCentre = new Institution();
-            collectingCentre.setInstitutionType(InstitutionType.CollectingCentre);
-            collectingCentre.setCode(code);
-            collectingCentre.setName(collectingCentreName);
             if (withCommissionStatus) {
                 collectingCentre.setCollectingCentrePaymentMethod(CollectingCentrePaymentMethod.FULL_PAYMENT_WITH_COMMISSION);
             } else {
@@ -3295,15 +3454,6 @@ public class DataUploadController implements Serializable {
             }
 
             collectingCentre.setInactive(active);
-
-//            Route r = routeController.findRouteByName(routeName)
-//            if(r==null){
-//                r = new Route();
-//                r.setName(routeName);
-//                r.setCreatedAt(new Date());
-//                r.setCreater(sessionController.getLoggedUser());
-//                routeController.save(r);
-//            }
             collectingCentre.setRoute(route);
             collectingCentre.setChequePrintingName(collectingCentrePrintingName);
             collectingCentre.setPercentage(percentage);

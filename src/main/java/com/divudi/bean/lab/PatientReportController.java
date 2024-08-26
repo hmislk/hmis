@@ -2258,15 +2258,18 @@ public class PatientReportController implements Serializable {
             JsfUtil.addErrorMessage("No Patient Report");
             return;
         }
+        Investigation ix = null;
         if (pi.getInvestigation() == null) {
             JsfUtil.addErrorMessage("No Investigation for Patient Report");
             return;
+        }else{
+             ix = (Investigation) pi.getInvestigation();
         }
-        if (pi.getInvestigation().getReportedAs() == null) {
-            JsfUtil.addErrorMessage("No Reported as for Investigation for Patient Report");
-            return;
+        if (pi.getInvestigation().getReportedAs() != null) {
+            
+           ix = (Investigation)pi.getInvestigation().getReportedAs();
         }
-        Investigation ix = (Investigation) pi.getInvestigation().getReportedAs();
+       
         currentReportInvestigation = ix;
         currentPtIx = pi;
         if (ix.getReportType() == InvestigationReportType.Microbiology) {
