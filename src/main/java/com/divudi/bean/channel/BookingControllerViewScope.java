@@ -496,7 +496,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             edt.set(Calendar.MINUTE, et.get(Calendar.MINUTE));
 
             DefaultScheduleEvent event = new DefaultScheduleEvent<SessionInstance>().builder()
-                    .title(si.getName()+" - " + si.getStaff().getPerson().getName())
+                    .title(si.getName() + " - " + si.getStaff().getPerson().getName())
                     .borderColor("#27AE60")
                     .backgroundColor("#BDE8CA")
                     .startDate(CommonFunctions.convertDateToLocalDateTime(sdt.getTime()))
@@ -3194,9 +3194,11 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             return true;
         }
 
-        if (p.getPerson().getDob() == null) {
-            JsfUtil.addErrorMessage("Please enter patient age");
-            return true;
+        if (!configOptionApplicationController.getBooleanValueByKey("Allow bill settlement without patient age")) {
+            if (p.getPerson().getDob() == null) {
+                JsfUtil.addErrorMessage("Please enter patient age");
+                return true;
+            }
         }
 
         if (p.getPerson().getPhone() == null || p.getPerson().getPhone().trim().equals("")) {
@@ -3209,9 +3211,11 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             return true;
         }
 
-        if (p.getPerson().getArea() == null) {
-            JsfUtil.addErrorMessage("Please enter a area");
-            return true;
+        if (configOptionApplicationController.getBooleanValueByKey("Allow bill settlement without patient area")) {
+            if (p.getPerson().getArea() == null) {
+                JsfUtil.addErrorMessage("Please enter a area");
+                return true;
+            }
         }
 
         return false;
@@ -3428,13 +3432,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                     return;
 
                 }
-            }
-        }
-
-        if (configOptionApplicationController.getBooleanValueByKey("Allow bill settlement without patient area")) {
-            if (patient.getPerson().getArea() == null || patient.getPerson().getArea().getName().isEmpty()) {
-                JsfUtil.addErrorMessage("Pleace Select Patient Area");
-                return;
             }
         }
 

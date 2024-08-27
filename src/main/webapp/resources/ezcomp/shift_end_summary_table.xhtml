@@ -21,14 +21,37 @@
                         <p:outputLabel value=" Shift Details" />
                     </div>
                     <div>
-                        <p:commandButton class="ui-button-info mx-2" 
-                                         ajax="false" 
-                                         value="Close Start Fund Bill" 
-                                         action="#{financialTransactionController.settleShiftEndFundBill()}" ></p:commandButton>
+
+                        <p:commandButton 
+                            class="ui-button-info mx-2" 
+                            ajax="false" 
+                            value="Close Start Fund Bill" 
+                            action="#{financialTransactionController.settleShiftEndFundBill()}" >
+                        </p:commandButton>
                     </div>
                 </div>
 
             </f:facet>
+            <div class="d-flex justify-content-end gap-4">
+                <p:autoComplete
+                    completeMethod="#{webUserController.completeUser}"
+                    id="acStaff" 
+                    value="#{financialTransactionController.currentBill.toStaff}" 
+                    var="s"
+                    
+                    scrollHeight="450"
+                    itemLabel="#{s.webUserPerson.nameWithTitle}" 
+                    itemValue="#{s.staff}" >
+                </p:autoComplete>
+
+                <p:commandButton 
+                    icon="fa-solid fa-check"
+                    class="ui-button-success"
+                    value="Fund Handover" 
+                    ajax="false" 
+                    action="#{financialTransactionController.settleFundHandoverBill()}" >
+                </p:commandButton>
+            </div>
             <div class="row mx-2" >
                 <div class="col-12" >
                     <p:panelGrid columns="2" class="w-100" >
