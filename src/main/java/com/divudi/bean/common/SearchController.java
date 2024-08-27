@@ -12244,13 +12244,13 @@ public class SearchController implements Serializable {
         params.put("ret", false);
 
         
-        jpql = "SELECT b FROM Bill b JOIN FETCH b.billItems WHERE  b.retired=:ret and b.createdAt BETWEEN :fromDate AND :toDate";
+//        jpql = "SELECT b FROM Bill b JOIN FETCH b.billItems WHERE  b.retired=:ret and b.createdAt BETWEEN :fromDate AND :toDate";
         
         System.out.println("params = " + params);
         System.out.println("jpql = " + jpql);
         
         // Execute the query to get filtered bills
-        List<Bill> bills = billFacade.findByJpql(jpql, params); // Assuming you have a facade to execute JPQL queries
+        List<Bill> bills = billFacade.findByJpql(jpql, params,TemporalType.TIMESTAMP); // Assuming you have a facade to execute JPQL queries
 System.out.println("bills = " + bills);
         
         // Since bills are fetched with their items, simply collect all items if needed
