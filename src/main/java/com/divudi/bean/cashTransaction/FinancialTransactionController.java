@@ -2655,7 +2655,6 @@ public class FinancialTransactionController implements Serializable {
             p.setCashbookEntryCompleted(false);
 
             paymentController.save(p);
-            System.out.println("p = " + p.getCashbookEntryStated());
         }
 
         billController.save(currentBill);
