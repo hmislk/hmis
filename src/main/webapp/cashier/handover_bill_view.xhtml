@@ -89,7 +89,7 @@
                                         ajax="false" 
                                         icon="fas fa-check"
                                         class="mx-2 ui-button-success"
-                                        action="#{financialTransactionController.settleFundTransferReceiveBill()}" >
+                                        action="#{financialTransactionController.acceptHandoverBill()}" >
                                     </p:commandButton>
                                 </p:panelGrid>
                             </div>
@@ -286,20 +286,7 @@
                                                 </h:outputText>
                                             </td>
                                         </tr>
-                                        <tr>
-                                            <td style="width:6em;">Short/Excess</td>
-                                            <td colspan="2"></td>
-                                            <td align="right" style="width:6em;">
-                                                <h:panelGroup styleClass="#{financialTransactionController.currentBill.netTotal - financialTransactionController.financialReportByPayments.total ge 0 ? 'text-success' : 'text-danger'}">
-                                                    <h:outputText value="#{financialTransactionController.currentBill.netTotal - financialTransactionController.financialReportByPayments.total}">
-                                                        <f:convertNumber pattern="#,##0.00" />
-                                                    </h:outputText>
-                                                    <h:outputText value=" #{financialTransactionController.currentBill.netTotal - financialTransactionController.financialReportByPayments.total ge 0 ? 'Excess' : 'Shortage'}">
-                                                        <i class="#{financialTransactionController.currentBill.netTotal - financialTransactionController.financialReportByPayments.total ge 0 ? 'fa fa-arrow-up' : 'fa fa-arrow-down'}" />
-                                                    </h:outputText>
-                                                </h:panelGroup>
-                                            </td>
-                                        </tr>
+                                  
                                     </tbody>
                                 </table>
 

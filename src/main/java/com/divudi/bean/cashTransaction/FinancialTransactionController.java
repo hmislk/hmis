@@ -1492,11 +1492,13 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public String navigateToReceiveFundTransferBillsForMe() {
+        findNonClosedShiftStartFundBillIsAvailable();
         fillFundTransferBillsForMeToReceive();
         return "/cashier/fund_transfer_bills_for_me_to_receive?faces-redirect=true";
     }
 
     public String navigateToReceiveHandoverBillsForMe() {
+        findNonClosedShiftStartFundBillIsAvailable();
         fillHandoverBillsForMeToReceive();
         return "/cashier/handover_bills_for_me_to_receive?faces-redirect=true";
     }
@@ -1998,8 +2000,10 @@ public class FinancialTransactionController implements Serializable {
                 + "WHERE p.creater = :cr "
                 + "AND p.retired = :ret "
                 + "AND p.id > :cid "
+                + "AND p.cashbookEntryStated = :started "
                 + "ORDER BY p.id DESC";
         Map<String, Object> m = new HashMap<>();
+        m.put("started", false);
         m.put("cr", nonClosedShiftStartFundBill.getCreater());
         m.put("ret", false);
         m.put("cid", nonClosedShiftStartFundBill.getId());
@@ -2832,7 +2836,7 @@ public class FinancialTransactionController implements Serializable {
         handovertBillsToReceive = billFacade.findByJpql(sql, tempMap);
 
         try {
-            handoverBillsToReceiveCount = fundTransferBillsToReceive.size();
+            handoverBillsToReceiveCount = handovertBillsToReceive.size();
         } catch (Exception e) {
             handoverBillsToReceiveCount = 0;
         }
@@ -2927,6 +2931,7 @@ public class FinancialTransactionController implements Serializable {
             pmv.setPaymentMethod(entry.getKey());
             pmv.setAmount(entry.getValue());
             pmv.setCreatedAt(new Date());
+            paymentMethodValueFacade.create(pmv);
             pmvs.add(pmv);
 
             BillComponent bc = new BillComponent();
