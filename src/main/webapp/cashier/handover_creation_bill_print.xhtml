@@ -1,0 +1,235 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:prints="http://xmlns.jcp.org/jsf/composite/ezcomp/prints"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <h:form>
+            <ui:composition template="./index.xhtml">
+                <ui:define name="subcontent">
+                    <p:panel header="" rendered="#{financialTransactionController.currentBill ne null}">
+                        <f:facet name="header">
+                            <h:outputText value="Shift End Fund Bill Print" ></h:outputText>
+                        </f:facet>
+
+
+                        <div class="row">
+
+                            <div class="col-lg-6">
+                                <div class="row">
+                                    <p:panel class="my-1">
+                                        <f:facet name="header">
+                                            <h:outputText value="Overview of Shift Funds" ></h:outputText>
+                                        </f:facet>
+
+                                        <div class="row" style="font-size: 18pt; font-weight: 600">
+                                            <h:panelGrid columns="6" >
+
+                                                <div class="col-md-12">
+
+                                                    <div class="row">
+                                                        <div class="col-md-2"><p:outputLabel value="Staff" ></p:outputLabel></div>
+                                                        <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                                                        <div class="col-md-8"><p:outputLabel value="#{financialTransactionController.currentBill.staff.person.nameWithTitle}" ></p:outputLabel></div>
+                                                    </div>
+                                                    <div class="row" >
+                                                        <div class="col-md-3"><p:outputLabel value="Shift Start Funds" style="font-weight: 700" ></p:outputLabel></div>
+                                                        <div class="col-md-6"><p:outputLabel value="" ></p:outputLabel></div>
+                                                        <div class="col-md-3"><p:outputLabel value="" ></p:outputLabel></div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-md-2"><p:outputLabel value="Start Date " ></p:outputLabel></div>
+                                                        <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                                                        <div class="col-md-8"><p:outputLabel value="#{financialTransactionController.currentBill.billDate}" >
+                                                                <f:convertDateTime pattern="MM/dd/yyyy" />
+                                                            </p:outputLabel></div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-md-2"><p:outputLabel value="Start Time" ></p:outputLabel></div>
+                                                        <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                                                        <div class="col-md-8"><p:outputLabel value="#{financialTransactionController.currentBill.billTime}" >
+                                                                <f:convertDateTime pattern="hh:mm:ss a" />
+                                                            </p:outputLabel></div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-md-2"><p:outputLabel value="Start Total Value" ></p:outputLabel></div>
+                                                        <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                                                        <div class="col-md-8"><p:outputLabel value="#{financialTransactionController.financialReportByPayments.shiftStartFunds}" >
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                            </p:outputLabel>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row" >
+                                                        <div class="col-md-3"><p:outputLabel value="Shift End Funds" style="font-weight: 700" ></p:outputLabel></div>
+                                                        <div class="col-md-6"><p:outputLabel value="" ></p:outputLabel></div>
+                                                        <div class="col-md-3"><p:outputLabel value="" ></p:outputLabel></div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-md-2"><p:outputLabel value="End Date " ></p:outputLabel></div>
+                                                        <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                                                        <div class="col-md-8"><p:outputLabel value="#{financialTransactionController.currentBill.billDate}" >
+                                                                <f:convertDateTime pattern="MM/dd/yyyy" />
+                                                            </p:outputLabel></div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-md-2"><p:outputLabel value="End Time" ></p:outputLabel></div>
+                                                        <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                                                        <div class="col-md-8"><p:outputLabel value="#{financialTransactionController.currentBill.billTime}" >
+                                                                <f:convertDateTime pattern="hh:mm:ss a" />
+                                                            </p:outputLabel></div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-md-2"><p:outputLabel value="End Total Value" ></p:outputLabel></div>
+                                                        <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                                                        <div class="col-md-8"><p:outputLabel value="#{financialTransactionController.financialReportByPayments.total}" >
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                            </p:outputLabel>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                            </h:panelGrid>
+                                        </div>
+                                    </p:panel>
+                                </div>
+                                <div class="row">
+                                    <p:panel class="my-1" >
+                                        <f:facet name="header">
+                                            <h:outputText value="Summary of Shift End Funds" ></h:outputText>
+                                        </f:facet>
+
+                                        <div class="row" style="font-size: 18pt; font-weight: 600">
+                                            <h:panelGrid columns="6" >
+
+                                                <div class="col-md-12">
+                                                    <div class="row" >
+                                                        <div class="col-md-3"><p:outputLabel value="Starting Funds" style="font-weight: 700" ></p:outputLabel></div>
+                                                        <div class="col-md-6"><p:outputLabel value="" ></p:outputLabel></div>
+                                                        <div class="col-md-3"><p:outputLabel value="" ></p:outputLabel></div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-md-2"><p:outputLabel value="Start Funds " ></p:outputLabel></div>
+                                                        <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                                                        <div class="col-md-8"><p:outputLabel value="#{financialTransactionController.financialReportByPayments.shiftStartFunds}" >
+                                                                <f:convertNumber pattern="#,##0.00" />
+                                                            </p:outputLabel>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row" >
+                                                        <div class="col-md-3"><p:outputLabel value="Additions (+)" style="font-weight: 700" ></p:outputLabel></div>
+                                                        <div class="col-md-6"><p:outputLabel value="" ></p:outputLabel></div>
+                                                        <div class="col-md-3"><p:outputLabel value="" ></p:outputLabel></div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-md-2"><p:outputLabel value="Transfered In" ></p:outputLabel></div>
+                                                        <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                                                        <div class="col-md-8"><p:outputLabel value="#{financialTransactionController.financialReportByPayments.floatReceived}" >
+                                                                <f:convertNumber pattern="#,##0.00" />
+                                                            </p:outputLabel>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-md-2"><p:outputLabel value="Bank Withdrawal" ></p:outputLabel></div>
+                                                        <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                                                        <div class="col-md-8"><p:outputLabel value="#{financialTransactionController.financialReportByPayments.bankWithdrawals}" >
+                                                                <f:convertNumber pattern="#,##0.00" />
+                                                            </p:outputLabel>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-md-2"><p:outputLabel value="Billed Bill (In Shift)" ></p:outputLabel></div>
+                                                        <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                                                        <div class="col-md-8"><p:outputLabel value="#{financialTransactionController.financialReportByPayments.netCashTotal + financialTransactionController.financialReportByPayments.netCreditCardTotal + financialTransactionController.financialReportByPayments.netVoucherTotal +  financialTransactionController.financialReportByPayments.netOtherNonCreditTotal +  financialTransactionController.financialReportByPayments.netCreditTotal}" >
+                                                                <f:convertNumber pattern="#,##0.00" />
+                                                            </p:outputLabel>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row" >
+                                                        <div class="col-md-3"><p:outputLabel value="Deductions (-)" style="font-weight: 700" ></p:outputLabel></div>
+                                                        <div class="col-md-6"><p:outputLabel value="" ></p:outputLabel></div>
+                                                        <div class="col-md-3"><p:outputLabel value="" ></p:outputLabel></div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-md-2"><p:outputLabel value="Transfered Out" ></p:outputLabel></div>
+                                                        <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                                                        <div class="col-md-8"><p:outputLabel value="#{financialTransactionController.financialReportByPayments.floatHandover}" >
+                                                                <f:convertNumber pattern="#,##0.00" />
+                                                            </p:outputLabel>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-md-2"><p:outputLabel value="Bank Deposits" ></p:outputLabel></div>
+                                                        <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                                                        <div class="col-md-8"><p:outputLabel value="#{financialTransactionController.financialReportByPayments.bankDeposits}" >
+                                                                <f:convertNumber pattern="#,##0.00" />
+                                                            </p:outputLabel>
+                                                        </div>
+                                                    </div>
+                                                    <!--                                                <div class="row">
+                                                                                                        <div class="col-md-2"><p:outputLabel value="Total Collection" ></p:outputLabel></div>
+                                                                                                        <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                                                                                                        <div class="col-md-8"><p:outputLabel value="#{financialTransactionController.financialReportByPayments.total}" ></p:outputLabel></div>
+                                                                                                    </div>-->
+
+                                                    <div class="row" >
+                                                        <div class="col-md-3"><p:outputLabel value="Total Of End Shift Bill" style="font-weight: 700" ></p:outputLabel></div>
+                                                        <div class="col-md-6"><p:outputLabel value=":" class="mx-2" ></p:outputLabel></div>
+                                                        <div class="col-md-3"><p:outputLabel value="#{financialTransactionController.financialReportByPayments.total}" style="font-weight: 700">
+                                                                <f:convertNumber pattern="#,##0.00" />
+                                                            </p:outputLabel>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                            </h:panelGrid>
+                                        </div>
+                                    </p:panel>
+                                </div>
+
+                            </div>
+
+                            <div class="col-lg-6 justify-content-center container-fluid">
+
+                                <p:panel class="my-1">
+
+                                    <f:facet name="header">
+                                        <div class="d-flex align-items-center justify-content-between">
+                                            <div>
+                                                <h:outputText value="End Shift Fund Bill Preview" ></h:outputText>
+                                            </div>
+                                            <div>
+                                                <p:commandButton class="ui-button-info mx-2" icon="fas fa-print" value="Print">
+                                                    <p:printer target="depositbill" />
+                                                </p:commandButton>
+                                            </div>
+                                        </div>
+                                    </f:facet>
+                                    <h:panelGrid id="depositbill">
+                                        <div class="d-flex justify-content-center">
+                                            <prints:five_five_paper_with_headings_for_Shift_end_fund_bill 
+                                                payments="#{financialTransactionController.currentBillPayments}" 
+                                                bill="#{financialTransactionController.currentBill}"
+                                                startbill="#{financialTransactionController.nonClosedShiftStartFundBill}"
+                                                additions="#{financialTransactionController.additions}"
+                                                deductions="#{financialTransactionController.deductions}"/>  
+                                        </div>
+                                    </h:panelGrid>
+                                </p:panel>
+
+
+
+                            </div>
+
+                        </div>
+
+                    </p:panel>
+
+                </ui:define>
+            </ui:composition>
+        </h:form>
+    </h:body>
+</html>
