@@ -4,6 +4,7 @@
  */
 package com.divudi.entity;
 
+import com.divudi.data.PaymentMethodValue;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Entity;
@@ -59,6 +60,8 @@ public class BillComponent implements Serializable {
     @ManyToOne
     Speciality speciality;
     private Double componentValue;
+    
+    private PaymentMethodValue paymentMethodValue;
     
     
 
@@ -253,5 +256,13 @@ public class BillComponent implements Serializable {
 
     public void setComponentValue(Double componentValue) {
         this.componentValue = componentValue;
+    }
+
+    public PaymentMethodValue getPaymentMethodValue() {
+        return paymentMethodValue;
+    }
+
+    public void setPaymentMethodValue(PaymentMethodValue paymentMethodValue) {
+        this.paymentMethodValue = paymentMethodValue;
     }
 }
