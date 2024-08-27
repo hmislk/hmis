@@ -182,6 +182,7 @@ public class FinancialTransactionController implements Serializable {
     private Department cashbookDepartment;
     private List<Date> cashbookDates;
     private List<Department> cashbookDepartments;
+    private List<PaymentMethodValue> handingOverPaymentMethodValues;
 
     private ReportTemplateRowBundle paymentSummaryBundle;
 
@@ -200,8 +201,6 @@ public class FinancialTransactionController implements Serializable {
         return "/cashier/index?faces-redirect=true;";
     }
 
-    
-    
     public String navigateToCreateNewInitialFundBill() {
         resetClassVariables();
         prepareToAddNewInitialFundBill();
@@ -1066,7 +1065,7 @@ public class FinancialTransactionController implements Serializable {
 
     public String navigateToListShiftEndSummaries() {
         resetClassVariables();
-        return "/cashier/handover?faces-redirect=true;";
+        return "/cashier/initial_fund_bill_list?faces-redirect=true;";
     }
 
     public void listShiftStartBills() {
@@ -2606,10 +2605,7 @@ public class FinancialTransactionController implements Serializable {
 
         return "/cashier/shift_end_summery_bill_print?faces-redirect=true";
     }
-    
-    
-    
-    
+
     public String settleHandoverStartBill() {
         boolean fundTransferBillTocollect = false;
         if (currentBill == null) {
@@ -2620,32 +2616,35 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("Error");
             return "";
         }
-        if (fundTransferBillsToReceive != null && !fundTransferBillsToReceive.isEmpty()) {
-            fundTransferBillTocollect = true;
-        }
-
-        if (fundTransferBillTocollect) {
-            JsfUtil.addErrorMessage("Please collect funds transferred to you before closing.");
-            return "";
-        }
-
         currentBill.setDepartment(sessionController.getDepartment());
         currentBill.setInstitution(sessionController.getInstitution());
         currentBill.setStaff(sessionController.getLoggedUser().getStaff());
+        currentBill.setCreatedAt(new Date());
+        currentBill.setCreater(sessionController.getLoggedUser());
         currentBill.setBillDate(new Date());
         currentBill.setBillTime(new Date());
         billController.save(currentBill);
         currentBill.setTotal(financialReportByPayments.getTotal());
         currentBill.setNetTotal(financialReportByPayments.getTotal());
-        for (Payment p : getCurrentBillPayments()) {
-            p.setBill(currentBill);
-            p.setDepartment(sessionController.getDepartment());
-            p.setInstitution(sessionController.getInstitution());
+        for (Payment p : getPaymentsSelected()) {
+            p.setHandoverAcceptBill(currentBill);
+            p.setCashbookEntryStated(true);
+            p.setCashbookEntryCompleted(false);
+
             paymentController.save(p);
         }
-        calculateTotalFundsFromShiftStartToNow();
-        nonClosedShiftStartFundBill.setReferenceBill(currentBill);
-        billController.save(nonClosedShiftStartFundBill);
+
+        billController.save(currentBill);
+
+        for (PaymentMethodValue pmv : handingOverPaymentMethodValues) {
+            BillComponent bc = new BillComponent();
+            bc.setName("Collected Cash");
+            
+            bc.setComponentValue(pmv.getAmount());
+            bc.setBill(currentBill);
+            billComponentFacade.create(bc);
+            
+        }
 
         BillComponent bcCollectedCash = new BillComponent();
         bcCollectedCash.setName("Collected Cash");
@@ -2792,8 +2791,6 @@ public class FinancialTransactionController implements Serializable {
 
         return "/cashier/shift_end_summery_bill_print?faces-redirect=true";
     }
-    
-    
 
 // </editor-fold>  
     // <editor-fold defaultstate="collapsed" desc="BalanceTransferFundBill">
@@ -2950,7 +2947,33 @@ public class FinancialTransactionController implements Serializable {
     }
 
     //Damith
-    // </editor-fold>      
+    // </editor-fold>  
+    public void calculateHandingOverValues() {
+        // Map to store total amount for each payment method
+        Map<PaymentMethod, Double> paymentMethodTotals = new HashMap<>();
+
+        // Loop through selected payments
+        for (Payment pmt : paymentsSelected) {
+            PaymentMethod method = pmt.getPaymentMethod();
+            Double amount = pmt.getPaidValue();
+
+            // Add the amount to the corresponding payment method total
+            paymentMethodTotals.put(method, paymentMethodTotals.getOrDefault(method, 0.0) + amount);
+        }
+
+        // Create the list of PaymentMethodValue
+        List<PaymentMethodValue> pmvs = new ArrayList<>();
+        for (Map.Entry<PaymentMethod, Double> entry : paymentMethodTotals.entrySet()) {
+            PaymentMethodValue pmv = new PaymentMethodValue();
+            pmv.setPaymentMethod(entry.getKey());
+            pmv.setAmount(entry.getValue());
+            pmvs.add(pmv);
+        }
+
+        handingOverPaymentMethodValues = pmvs;
+        // Now pmvs contains the total amounts for each payment method
+    }
+
     // <editor-fold defaultstate="collapsed" desc="Getters and Setters">
     public Bill getCurrentBill() {
         return currentBill;
@@ -3626,6 +3649,14 @@ public class FinancialTransactionController implements Serializable {
 
     public void setCashbookDepartments(List<Department> cashbookDepartments) {
         this.cashbookDepartments = cashbookDepartments;
+    }
+
+    public List<PaymentMethodValue> getHandingOverPaymentMethodValues() {
+        return handingOverPaymentMethodValues;
+    }
+
+    public void setHandingOverPaymentMethodValues(List<PaymentMethodValue> handingOverPaymentMethodValues) {
+        this.handingOverPaymentMethodValues = handingOverPaymentMethodValues;
     }
 
 }

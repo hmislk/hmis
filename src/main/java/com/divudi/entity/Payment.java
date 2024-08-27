@@ -109,9 +109,13 @@ public class Payment implements Serializable {
 
     private boolean cashbookEntryStated;
     private boolean cashbookEntryCompleted;
+    @ManyToOne
     private Bill handoverCreatedBill;
+    @ManyToOne
     private Bill handoverAcceptBill;
+    @ManyToOne
     private CashBookEntry cashbookEntry;
+    @ManyToOne
     private CashBook cashbook;
 
     public Payment() {
