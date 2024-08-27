@@ -1564,7 +1564,7 @@ public class BillSearch implements Serializable {
             JsfUtil.addErrorMessage("One or more bill Item you are refunding has been already paid to Service Provider. Can not refund again.");
             return "";
         }
-        
+
         if (paymentMethod == PaymentMethod.Staff) {
             if (getBill().getToStaff() == null) {
                 JsfUtil.addErrorMessage("Can't Select Staff Method");
@@ -2183,7 +2183,7 @@ public class BillSearch implements Serializable {
                 return;
             }
         }
-        
+
         if (!getWebUserController().hasPrivilege("OpdCancel")) {
             JsfUtil.addErrorMessage("You have no privilege to cancel OPD bills. Please contact System Administrator.");
             return;
@@ -2900,6 +2900,10 @@ public class BillSearch implements Serializable {
         setBill(bill);
         printPreview = true;
         return "/payment_bill_reprint.xhtml?faces-redirect=true;";
+    }
+
+    public String navigateToDownloadBillsAndBillItems() {
+        return "/analytics/download_bills?faces-redirect=true;";
     }
 
     public String navigateViewBillByBillTypeAtomic() {
@@ -3619,6 +3623,7 @@ public class BillSearch implements Serializable {
         }
     }
 
+    @Deprecated
     public void createCollectingCenterfees(Bill b) {
         AgentHistory ah = new AgentHistory();
         if (b.getCancelledBill() != null) {
@@ -3640,7 +3645,7 @@ public class BillSearch implements Serializable {
             }
             ah = fetchCCHistory(b.getCancelledBill());
             if (ah != null) {
-                b.getCancelledBill().setTransCurrentCCBalance(ah.getBeforeBallance() + ah.getTransactionValue());
+                b.getCancelledBill().setTransCurrentCCBalance(ah.getBalanceBeforeTransaction() + ah.getTransactionValue());
             }
 
         } else if (b.getRefundedBill() != null) {
@@ -3662,7 +3667,7 @@ public class BillSearch implements Serializable {
             }
             ah = fetchCCHistory(b.getRefundedBill());
             if (ah != null) {
-                b.getRefundedBill().setTransCurrentCCBalance(ah.getBeforeBallance() + ah.getTransactionValue());
+                b.getRefundedBill().setTransCurrentCCBalance(ah.getBalanceBeforeTransaction() + ah.getTransactionValue());
             }
         } else {
             b.setTransTotalCCFee(0.0);
@@ -3683,7 +3688,7 @@ public class BillSearch implements Serializable {
             }
             ah = fetchCCHistory(b);
             if (ah != null) {
-                b.setTransCurrentCCBalance(ah.getBeforeBallance() + ah.getTransactionValue());
+                b.setTransCurrentCCBalance(ah.getBalanceBeforeTransaction() + ah.getTransactionValue());
             }
         }
 
@@ -4303,6 +4308,10 @@ public class BillSearch implements Serializable {
             this.billTypeSummaries = billTypeSummaries;
         }
 
+    }
+
+    public String navigateToDownloadBillsAndBillItems1() {
+        return "/analytics/download_bills_and_items?faces-redirect=true;";
     }
 
 }

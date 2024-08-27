@@ -35,8 +35,23 @@ public class AgentHistory implements Serializable {
     Bill bill;
     @ManyToOne
     BillSession billSession;
-    double beforeBallance;
+    
+    double balanceBeforeTransaction;
+    double balanceAfterTransaction;
     double transactionValue;
+    
+    
+    private double companyTransactionValue;
+    private double companyBalanceBefore;
+    private double companyBalanceAfter;
+    
+    
+    private double agentTransactionValue;
+    private double agentBalanceBefore;
+    private double agentBalanceAfter;
+    
+    
+    private double collectingCentertransactionValue;
     @Enumerated(EnumType.STRING)
     HistoryType historyType;
     //Created Properties
@@ -44,6 +59,13 @@ public class AgentHistory implements Serializable {
     private WebUser creater;
     @ManyToOne
     Institution institution;
+    @ManyToOne
+    private Department department;
+    @ManyToOne
+    private Institution agency;
+    
+    
+    
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date createdAt;
     //Retairing properties
@@ -57,6 +79,9 @@ public class AgentHistory implements Serializable {
     String comment;
     @Transient
     double transCumilativeTotal;
+    
+    
+    
 
     public String getReferenceNumber() {
         return referenceNumber;
@@ -98,12 +123,12 @@ public class AgentHistory implements Serializable {
         this.billSession = billSession;
     }
 
-    public double getBeforeBallance() {
-        return beforeBallance;
+    public double getBalanceBeforeTransaction() {
+        return balanceBeforeTransaction;
     }
 
-    public void setBeforeBallance(double beforeBallance) {
-        this.beforeBallance = beforeBallance;
+    public void setBalanceBeforeTransaction(double balanceBeforeTransaction) {
+        this.balanceBeforeTransaction = balanceBeforeTransaction;
     }
 
     public double getTransactionValue() {
@@ -231,6 +256,90 @@ public class AgentHistory implements Serializable {
     @Override
     public String toString() {
         return "com.divudi.entity.AgentHistory[ id=" + id + " ]";
+    }
+
+    public double getBalanceAfterTransaction() {
+        return balanceAfterTransaction;
+    }
+
+    public void setBalanceAfterTransaction(double balanceAfterTransaction) {
+        this.balanceAfterTransaction = balanceAfterTransaction;
+    }
+
+    public double getCollectingCentertransactionValue() {
+        return collectingCentertransactionValue;
+    }
+
+    public void setCollectingCentertransactionValue(double collectingCentertransactionValue) {
+        this.collectingCentertransactionValue = collectingCentertransactionValue;
+    }
+
+    public double getCompanyTransactionValue() {
+        return companyTransactionValue;
+    }
+
+    public void setCompanyTransactionValue(double companyTransactionValue) {
+        this.companyTransactionValue = companyTransactionValue;
+    }
+
+    public double getCompanyBalanceBefore() {
+        return companyBalanceBefore;
+    }
+
+    public void setCompanyBalanceBefore(double companyBalanceBefore) {
+        this.companyBalanceBefore = companyBalanceBefore;
+    }
+
+    public double getCompanyBalanceAfter() {
+        return companyBalanceAfter;
+    }
+
+    public void setCompanyBalanceAfter(double companyBalanceAfter) {
+        this.companyBalanceAfter = companyBalanceAfter;
+    }
+
+    public double getAgentTransactionValue() {
+        return agentTransactionValue;
+    }
+
+    public void setAgentTransactionValue(double agentTransactionValue) {
+        this.agentTransactionValue = agentTransactionValue;
+    }
+
+    public double getAgentBalanceBefore() {
+        return agentBalanceBefore;
+    }
+
+    public void setAgentBalanceBefore(double agentBalanceBefore) {
+        this.agentBalanceBefore = agentBalanceBefore;
+    }
+
+    public double getAgentBalanceAfter() {
+        return agentBalanceAfter;
+    }
+
+    public void setAgentBalanceAfter(double agentBalanceAfter) {
+        this.agentBalanceAfter = agentBalanceAfter;
+    }
+
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
+    }
+
+    public Institution getAgency() {
+        return agency;
+    }
+
+    public void setAgency(Institution agency) {
+        this.agency = agency;
+    }
+
+    public void setBeforeBallance(double ballance) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 
 }
