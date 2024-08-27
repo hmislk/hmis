@@ -29,7 +29,7 @@
                         <p:panel header="Funds" >
                             <p:commandButton 
                                 value="To Receive"
-                                action="#{financialTransactionController.navigateToReceiveNewFundTransferBill()}"
+                                action="#{financialTransactionController.navigateToReceiveNewHandoverBill()}"
                                 ajax="false"
                                 class="my-2 ui-button-success"
                                 >
@@ -39,7 +39,7 @@
 
                             <p:dataTable
                                 id="tblbill"
-                                value="#{financialTransactionController.fundTransferBillsToReceive}" 
+                                value="#{financialTransactionController.handovertBillsToReceive}" 
                                 var="bp" 
                                 rowKey="#{bp.id}"
                                 selectionMode="single"
@@ -57,11 +57,11 @@
                                     <h:outputText value="#{bp.paymentMethod}" />
                                 </p:column>
 
-                                <p:column headerText="Net Total">
+<!--                                <p:column headerText="Net Total">
                                     <h:outputText value="#{bp.netTotal}" />
                                 </p:column>
 
-                                <!-- Subtable Column -->
+                                 Subtable Column 
                                 <p:column headerText="Payments">
                                     <p:dataTable
                                         id="subTblbill"
@@ -75,10 +75,10 @@
                                             <h:outputText value="#{payment.paidValue}" />
                                         </p:column>
 
-                                        <!-- Add more columns for payment details if needed -->
+                                         Add more columns for payment details if needed 
 
                                     </p:dataTable>
-                                </p:column>
+                                </p:column>-->
 
                             </p:dataTable>
 

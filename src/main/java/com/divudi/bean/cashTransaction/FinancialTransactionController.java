@@ -55,6 +55,7 @@ import javax.ejb.EJB;
 import javax.faces.event.AjaxBehaviorEvent;
 import javax.inject.Inject;
 import javax.persistence.TemporalType;
+import kotlin.collections.ArrayDeque;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -1465,12 +1466,24 @@ public class FinancialTransactionController implements Serializable {
         prepareToAddNewFundTransferReceiveBill();
         return "/cashier/fund_transfer_receive_bill?faces-redirect=true";
     }
+    
+    public String navigateToReceiveNewHandoverBill() {
+        if (selectedBill == null) {
+            JsfUtil.addErrorMessage("Please select a bill");
+            return "";
+        }
+        if (selectedBill.getBillType() != BillType.CashHandoverCreateBill) {
+            JsfUtil.addErrorMessage("Wrong Bill Type");
+            return "";
+        }
+        return "/cashier/handover_bill_view?faces-redirect=true";
+    }
 
     public String navigateToReceiveFundTransferBillsForMe() {
         fillFundTransferBillsForMeToReceive();
         return "/cashier/fund_transfer_bills_for_me_to_receive?faces-redirect=true";
     }
-    
+
     public String navigateToReceiveHandoverBillsForMe() {
         fillHandoverBillsForMeToReceive();
         return "/cashier/handover_bills_for_me_to_receive?faces-redirect=true";
@@ -2642,6 +2655,7 @@ public class FinancialTransactionController implements Serializable {
             p.setCashbookEntryCompleted(false);
 
             paymentController.save(p);
+            System.out.println("p = " + p.getCashbookEntryStated());
         }
 
         billController.save(currentBill);
@@ -2652,9 +2666,9 @@ public class FinancialTransactionController implements Serializable {
             bc.setComponentValue(pmv.getAmount());
             bc.setBill(currentBill);
             billComponentFacade.create(bc);
-            
+
             currentBill.getBillComponents().add(bc);
-             
+
         }
 
         return "/cashier/handover_creation_bill_print?faces-redirect=true";
@@ -2700,10 +2714,10 @@ public class FinancialTransactionController implements Serializable {
 
     }
 
-    
     public void fillHandoverBillsForMeToReceive() {
         String sql;
-        fundTransferBillsToReceive = null;
+        fundTransferBillsToReceive = new ArrayDeque<>();
+        handoverBillsToReceiveCount = 0;
         Map tempMap = new HashMap();
         sql = "select s "
                 + "from Bill s "
@@ -2716,12 +2730,16 @@ public class FinancialTransactionController implements Serializable {
         tempMap.put("ret", false);
         tempMap.put("logStaff", sessionController.getLoggedUser().getStaff());
         handovertBillsToReceive = billFacade.findByJpql(sql, tempMap);
-        handoverBillsToReceiveCount = fundTransferBillsToReceive.size();
+
+        try {
+            handoverBillsToReceiveCount = fundTransferBillsToReceive.size();
+        } catch (Exception e) {
+            handoverBillsToReceiveCount = 0;
+                    }
+        
 
     }
 
-    
-    
     public String settleFundTransferReceiveBill() {
         if (currentBill == null) {
             JsfUtil.addErrorMessage("Error");
@@ -3549,6 +3567,14 @@ public class FinancialTransactionController implements Serializable {
 
     public void setHandingOverPaymentMethodValues(List<PaymentMethodValue> handingOverPaymentMethodValues) {
         this.handingOverPaymentMethodValues = handingOverPaymentMethodValues;
+    }
+
+    public List<Bill> getHandovertBillsToReceive() {
+        return handovertBillsToReceive;
+    }
+
+    public void setHandovertBillsToReceive(List<Bill> handovertBillsToReceive) {
+        this.handovertBillsToReceive = handovertBillsToReceive;
     }
 
 }
