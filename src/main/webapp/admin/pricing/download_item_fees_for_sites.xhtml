@@ -44,9 +44,16 @@
                                 </h:panelGroup>
 
                                 <p:commandButton value="Fill" ajax="false" 
-                                                 action="#{itemFeeManager.fillFeeListItemFees()}" 
+                                                 action="#{itemFeeManager.fillForSiteItemFees()}" 
                                                  icon="fa fa-file" 
                                                  styleClass="ui-button-primary m-2"></p:commandButton>
+                                
+                                
+                                <p:commandButton value="Update Fee Totals" ajax="false" 
+                                                 action="#{itemFeeManager.updateFeesForSiteItemFees()}" 
+                                                 icon="fa fa-file" 
+                                                 styleClass="ui-button-primary m-2"></p:commandButton>
+                                
                             </p:panelGrid>
 
                         </h:form>

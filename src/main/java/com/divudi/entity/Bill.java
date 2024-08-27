@@ -10,6 +10,7 @@ import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.IdentifiableWithNameOrCode;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.inward.SurgeryBillType;
+import com.divudi.data.lab.PatientInvestigationStatus;
 import com.divudi.entity.cashTransaction.CashTransaction;
 import com.divudi.entity.membership.MembershipScheme;
 import com.divudi.entity.pharmacy.StockVarientBillItem;
@@ -365,6 +366,19 @@ public class Bill implements Serializable {
     private boolean billPaymentCompletelySettled;
 
     private double tenderedAmount;
+
+    private double totalHospitalFee;
+    private double totalCenterFee;
+    private double totalStaffFee;
+
+    @Enumerated(EnumType.ORDINAL)
+    private PatientInvestigationStatus status;
+
+    public Bill() {
+        if (status == null) {
+            status = PatientInvestigationStatus.ORDERED;
+        }
+    }
 
     private void generateBillPrintFromBillTemplate() {
         billPrint = "";
@@ -2250,6 +2264,38 @@ public class Bill implements Serializable {
 
     public void setTenderedAmount(double tenderedAmount) {
         this.tenderedAmount = tenderedAmount;
+    }
+
+    public double getTotalHospitalFee() {
+        return totalHospitalFee;
+    }
+
+    public void setTotalHospitalFee(double totalHospitalFee) {
+        this.totalHospitalFee = totalHospitalFee;
+    }
+
+    public double getTotalCenterFee() {
+        return totalCenterFee;
+    }
+
+    public void setTotalCenterFee(double totalCenterFee) {
+        this.totalCenterFee = totalCenterFee;
+    }
+
+    public double getTotalStaffFee() {
+        return totalStaffFee;
+    }
+
+    public void setTotalStaffFee(double totalStaffFee) {
+        this.totalStaffFee = totalStaffFee;
+    }
+
+    public PatientInvestigationStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(PatientInvestigationStatus status) {
+        this.status = status;
     }
 
 }

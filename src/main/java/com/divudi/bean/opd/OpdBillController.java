@@ -1,5 +1,6 @@
 package com.divudi.bean.opd;
 
+import com.divudi.bean.cashTransaction.CashBookEntryController;
 import com.divudi.bean.cashTransaction.FinancialTransactionController;
 import com.divudi.bean.common.*;
 import com.divudi.bean.collectingCentre.CollectingCentreBillController;
@@ -189,6 +190,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     ConfigOptionController configOptionController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    CashBookEntryController cashBookEntryController;
 
     /**
      * Class Variables
@@ -2622,10 +2625,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             JsfUtil.addErrorMessage("Please select an Item");
             return;
         }
-        if (getCurrentBillItem().getItem().getTotal() == 0.0) {
-            JsfUtil.addErrorMessage("Please correct item fee");
-            return;
-        }
+       
 
         if (getCurrentBillItem().getItem().getDepartment() == null) {
             JsfUtil.addErrorMessage("Please set Department to Item");
@@ -2660,8 +2660,11 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
         boolean addAllBillFees = configOptionApplicationController.getBooleanValueByKey("OPD Bill Fees are the same for all departments, institutions and sites.", true);
         boolean siteBasedBillFees = configOptionApplicationController.getBooleanValueByKey("OPD Bill Fees are based on the site", false);
-
+        System.out.println("siteBasedBillFees = " + siteBasedBillFees);
+        System.out.println("addAllBillFees = " + addAllBillFees);
+        
         if (addAllBillFees) {
+            
             allBillFees = getBillBean().billFeefromBillItem(bi);
         } else if (siteBasedBillFees) {
             allBillFees = getBillBean().forInstitutionBillFeefromBillItem(bi, sessionController.getDepartment().getSite());
@@ -3236,8 +3239,9 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                     case YouOweMe:
                     case MultiplePaymentMethods:
                 }
-
+                
                 paymentFacade.create(p);
+                cashBookEntryController.writeCashBookEntry(p);
                 ps.add(p);
             }
         } else {
@@ -3283,7 +3287,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
             p.setPaidValue(p.getBill().getNetTotal());
             paymentFacade.create(p);
-
+            cashBookEntryController.writeCashBookEntry(p);
             ps.add(p);
         }
         return ps;

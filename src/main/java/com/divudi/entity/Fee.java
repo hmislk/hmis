@@ -4,7 +4,6 @@
  */
 package com.divudi.entity;
 
-
 import com.divudi.data.FeeType;
 import java.io.Serializable;
 import java.util.Date;
@@ -40,7 +39,7 @@ public class Fee implements Serializable {
     double fee = 0.0;
     double ffee = 0.0;
     private double ccFee = 0.0;
-    
+
     @ManyToOne
     Item item; // FBC, ESR, UFR
     @ManyToOne
@@ -56,7 +55,7 @@ public class Fee implements Serializable {
     @ManyToOne
     Staff staff;
     @ManyToOne
-    
+
     ServiceSession serviceSession;
     private boolean booleanValue;
     //Created Properties
@@ -70,48 +69,45 @@ public class Fee implements Serializable {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date editedAt;
     //Retairing properties
-    
+
     boolean retired;
     @ManyToOne
     WebUser retirer;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date retiredAt;
-    
+
     String retireComments;
     @Enumerated(EnumType.STRING)
     FeeType feeType;
     @ManyToOne
-    
+
     Item packege;  //Ceylinco, LEC ,
     @ManyToOne
-    
+
     Department fromDepartment;
     @ManyToOne
-    
+
     Department toDepartment;
-    
+
     @ManyToOne
     Institution fromInstitution;
-    
+
     @ManyToOne
     Institution toInstitution;
-    
+
     @ManyToOne
     Staff fromStaff;
     @ManyToOne
-    
+
     Staff toStaff;
     @ManyToOne
-    
+
     Speciality fromSpeciality;
     @ManyToOne
-    
+
     Speciality toSpaciality;
     private boolean discountAllowed;
 
-    
-    
-    
     public Fee() {
     }
 
@@ -463,5 +459,5 @@ public class Fee implements Serializable {
         this.forCategory = forCategory;
     }
 
-
+    
 }

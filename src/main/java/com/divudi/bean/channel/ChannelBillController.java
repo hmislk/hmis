@@ -1944,7 +1944,7 @@ public class ChannelBillController implements Serializable {
         agentHistory.setBill(bill);
         agentHistory.setBillItem(billItem);
         agentHistory.setBillSession(billSession);
-        agentHistory.setBeforeBallance(ins.getBallance());
+        agentHistory.setBalanceBeforeTransaction(ins.getBallance());
         agentHistory.setTransactionValue(transactionValue);
         agentHistory.setReferenceNumber(refNo);
         agentHistory.setHistoryType(historyType);

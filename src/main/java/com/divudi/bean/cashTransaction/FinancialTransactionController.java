@@ -659,6 +659,8 @@ public class FinancialTransactionController implements Serializable {
                 null,
                 null,
                 null);
+        
+        fillPayments(fromDate, toDate, null);
     }
 
     private ReportTemplateRowBundle combineBundlesByItem(ReportTemplateRowBundle inBundle, ReportTemplateRowBundle outBundle) {
@@ -1974,6 +1976,48 @@ public class FinancialTransactionController implements Serializable {
         m.put("ret", false);
         m.put("cid", shiftStartBillId);
         paymentsFromShiftSratToNow = paymentFacade.findByJpql(jpql, m);
+        atomicBillTypeTotalsByPayments = new AtomicBillTypeTotals();
+        for (Payment p : paymentsFromShiftSratToNow) {
+            if (p.getBill().getBillTypeAtomic() == null) {
+            } else {
+                atomicBillTypeTotalsByPayments.addOrUpdateAtomicRecord(p.getBill().getBillTypeAtomic(), p.getPaymentMethod(), p.getPaidValue());
+            }
+        }
+        financialReportByPayments = new FinancialReport(atomicBillTypeTotalsByPayments);
+    }
+
+    public void fillPayments(Date fromDateParam, Date toDateParam, WebUser user) {
+        paymentsFromShiftSratToNow = new ArrayList<>();
+        if (fromDateParam == null) {
+            JsfUtil.addErrorMessage("No Start Date");
+            return;
+        }
+        if (toDateParam == null) {
+            JsfUtil.addErrorMessage("No End Date");
+            return;
+        }
+
+        String jpql = "SELECT p "
+                + "FROM Payment p "
+                + "WHERE p.retired = :ret "
+                + "AND p.createdAt > :sid "
+                + "AND p.createdAt < :eid ";
+        Map<String, Object> m = new HashMap<>();
+        if (user != null) {
+           jpql += " and p.creater = :cr ";
+           m.put("cr", user);
+        }
+
+        
+        m.put("ret", false);
+        m.put("sid", fromDateParam);
+        m.put("eid", toDateParam);
+
+        System.out.println("m = " + m);
+        System.out.println("jpql = " + jpql);
+
+        paymentsFromShiftSratToNow = paymentFacade.findByJpql(jpql, m);
+        System.out.println("paymentsFromShiftSratToNow = " + paymentsFromShiftSratToNow);
         atomicBillTypeTotalsByPayments = new AtomicBillTypeTotals();
         for (Payment p : paymentsFromShiftSratToNow) {
             if (p.getBill().getBillTypeAtomic() == null) {
