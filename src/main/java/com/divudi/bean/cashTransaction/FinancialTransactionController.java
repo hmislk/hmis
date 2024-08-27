@@ -2915,8 +2915,10 @@ public class FinancialTransactionController implements Serializable {
         Map<PaymentMethod, Double> paymentMethodTotals = new HashMap<>();
 
         for (Payment p : currentBillPayments) {
+            System.out.println("p = " + p);
             PaymentMethod method = p.getPaymentMethod();
             Double amount = p.getPaidValue();
+            System.out.println("amount = " + amount);
             p.setCashbookEntryCompleted(true);
             p.setHandoverAcceptBill(currentBill);
             paymentController.save(p);

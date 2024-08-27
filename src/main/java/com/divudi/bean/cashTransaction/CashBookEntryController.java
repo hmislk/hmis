@@ -88,7 +88,7 @@ public class CashBookEntryController implements Serializable {
         if (!chackPaymentMethodForCashBookEntryAtHandover(p.getPaymentMethod())) {
             return;
         }
-
+        System.out.println("p.getPaidValue() = " + p.getPaidValue());
         current = new CashBookEntry();
         current.setInstitution(p.getInstitution());
         current.setDepartment(p.getDepartment());
