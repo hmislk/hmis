@@ -35,6 +35,7 @@ import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.WebUser;
 import com.divudi.facade.BillComponentFacade;
+import com.divudi.facade.PaymentMethodValueFacade;
 import com.divudi.java.CommonFunctions;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
@@ -72,6 +73,8 @@ public class FinancialTransactionController implements Serializable {
     PaymentFacade paymentFacade;
     @EJB
     BillComponentFacade billComponentFacade;
+    @EJB
+    PaymentMethodValueFacade paymentMethodValueFacade;
     // </editor-fold>  
 
     // <editor-fold defaultstate="collapsed" desc="Controllers">
@@ -2825,7 +2828,9 @@ public class FinancialTransactionController implements Serializable {
             PaymentMethodValue pmv = new PaymentMethodValue();
             pmv.setPaymentMethod(entry.getKey());
             pmv.setAmount(entry.getValue());
+            pmv.setCreatedAt(new Date());
             pmvs.add(pmv);
+            paymentMethodValueFacade.create(pmv);
         }
 
         handingOverPaymentMethodValues = pmvs;
