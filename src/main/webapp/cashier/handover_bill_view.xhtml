@@ -46,13 +46,10 @@
                             <div class="col-6" >
                                 <p:panelGrid columns="2" class="w-100" >
                                     <p:outputLabel value="Staff*" ></p:outputLabel>
-                                    <p:outputLabel value="#{financialTransactionController.nonClosedShiftStartFundBill.staff.person.nameWithTitle}" ></p:outputLabel>
-                                    <p:outputLabel value="Start" ></p:outputLabel>
-                                    <p:outputLabel value="#{financialTransactionController.nonClosedShiftStartFundBill.createdAt}" >
+                                    <p:outputLabel value="#{financialTransactionController.selectedBill.staff.person.nameWithTitle}" ></p:outputLabel>
+                                    <p:outputLabel value="Handed Over at" ></p:outputLabel>
+                                    <p:outputLabel value="#{financialTransactionController.selectedBill.createdAt}" >
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                    </p:outputLabel>
-                                    <p:outputLabel value="Start Bill ID" ></p:outputLabel>
-                                    <p:outputLabel value="#{financialTransactionController.nonClosedShiftStartFundBill.id}" >
                                     </p:outputLabel>
                                     <p:outputLabel value="Total Value" ></p:outputLabel>
                                     <p:outputLabel value="#{financialTransactionController.currentBill.netTotal}" >
@@ -82,16 +79,18 @@
                                     </h:panelGroup>
 
                                     <h:panelGroup>
-                                         <p:outputLabel value="#{financialTransactionController.currentBill.fromDepartment}" styleClass="w-100" />
+                                        <p:outputLabel value="#{financialTransactionController.currentBill.fromDepartment.name}" styleClass="w-100" />
                                     </h:panelGroup>
 
                                     <p:spacer ></p:spacer>
                                     <!-- Submit Button -->
-                                    <p:commandButton
-                                        ajax="false"
-                                        value="Process"
-                                        action="#{financialTransactionController.fillPaymentsFromShiftStartToNowNotYetStartedToEntereToCashbookFilteredByDateAndDepartment}" 
-                                        icon="pi pi-check" styleClass="w-100" />
+                                    <p:commandButton 
+                                        value="Accept Handover" 
+                                        ajax="false" 
+                                        icon="fas fa-check"
+                                        class="mx-2 ui-button-success"
+                                        action="#{financialTransactionController.settleFundTransferReceiveBill()}" >
+                                    </p:commandButton>
                                 </p:panelGrid>
                             </div>
 
@@ -314,75 +313,75 @@
 
 
                         <h:panelGroup rendered="true" layout="block" class="w-100" style="overflow-x: scroll;">
-                          
+
 
                             <p:panel class="m-1">
-                            <p:dataTable 
-                                id="tblPayments" 
-                                value="#{financialTransactionController.paymentsFromShiftSratToNow}" 
-                                var="bp" 
-                                paginator="true"
-                                paginatorPosition="bottom"
-                                rows="5"
-                                style="width:150em;"
-                                rowKey="#{bp.id}"
-                                paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
-                                rowsPerPageTemplate="5,10,20,50,100">
-                                <p:column headerText="Bill No" rendered="false">
-                                    <h:outputLabel value="#{bp.bill.deptId}" ></h:outputLabel>
-                                </p:column>
-                                <p:column headerText="Payment ID" rendered="false" >
-                                    <p:inputText value="#{bp.id}" ></p:inputText>
-                                </p:column>
-                                <p:column headerText="Time" >
-                                    <h:outputText value="#{bp.createdAt}" >
-                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" ></f:convertDateTime>
-                                    </h:outputText>
-                                </p:column>
-                                <p:column headerText="Payment Method" >
-                                    <h:outputLabel value="#{bp.paymentMethod}" ></h:outputLabel>
-                                </p:column>
-                                <p:column headerText="Bill ID" rendered="false">
-                                    <p:inputText value="#{bp.bill.id}" ></p:inputText>
-                                </p:column>
-                                <p:column headerText="Bill Type" rendered="false" >
-                                    <p:inputText value="#{bp.bill.billType}" ></p:inputText>
-                                </p:column>
+                                <p:dataTable 
+                                    id="tblPayments" 
+                                    value="#{financialTransactionController.paymentsFromShiftSratToNow}" 
+                                    var="bp" 
+                                    paginator="true"
+                                    paginatorPosition="bottom"
+                                    rows="5"
+                                    style="width:150em;"
+                                    rowKey="#{bp.id}"
+                                    paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                    currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
+                                    rowsPerPageTemplate="5,10,20,50,100">
+                                    <p:column headerText="Bill No" rendered="false">
+                                        <h:outputLabel value="#{bp.bill.deptId}" ></h:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Payment ID" rendered="false" >
+                                        <p:inputText value="#{bp.id}" ></p:inputText>
+                                    </p:column>
+                                    <p:column headerText="Time" >
+                                        <h:outputText value="#{bp.createdAt}" >
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" ></f:convertDateTime>
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Payment Method" >
+                                        <h:outputLabel value="#{bp.paymentMethod}" ></h:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Bill ID" rendered="false">
+                                        <p:inputText value="#{bp.bill.id}" ></p:inputText>
+                                    </p:column>
+                                    <p:column headerText="Bill Type" rendered="false" >
+                                        <p:inputText value="#{bp.bill.billType}" ></p:inputText>
+                                    </p:column>
 
-                                <p:column headerText="Bill Class" rendered="false" >
-                                    <p:inputText value="#{bp.bill.billClass}" ></p:inputText>
-                                </p:column>
-                                <p:column headerText="Bill Type Atomic" >
-                                    <h:outputLabel value="#{bp.bill.billTypeAtomic.label}" ></h:outputLabel>
-                                </p:column>
-                                <p:column headerText="Bill Type Atomic Cash Type" rendered="false" >
-                                    <h:outputText value="#{bp.bill.billTypeAtomic.billFinanceType}" ></h:outputText>
-                                </p:column>
-                                <p:column headerText="Payment Method" rendered="false">
-                                    <h:outputText value="#{bp.bill.paymentMethod}" ></h:outputText>
-                                </p:column>
-                                <p:column headerText="Patient">
-                                    <h:outputText value="#{bp.bill.patient.person.nameWithTitle}" ></h:outputText>
-                                </p:column>
-                                <p:column headerText="Value" >
-                                    <h:outputLabel value="#{bp.paidValue}" >
-                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                    </h:outputLabel>
-                                </p:column>
-                                <p:column headerText="Action" >
-                                    <p:commandButton 
-                                        class="ui-button-success"
-                                        icon=" fa-solid fa-eye"
-                                        value="View Bill" 
-                                        ajax="false"
-                                        action="#{billSearch.navigateViewBillByBillTypeAtomic()}"
-                                        >
-                                        <f:setPropertyActionListener value="#{bp.bill}" target="#{billSearch.bill}"/>
-                                    </p:commandButton>
-                                </p:column>
-                            </p:dataTable>
-                                 </p:panel>
+                                    <p:column headerText="Bill Class" rendered="false" >
+                                        <p:inputText value="#{bp.bill.billClass}" ></p:inputText>
+                                    </p:column>
+                                    <p:column headerText="Bill Type Atomic" >
+                                        <h:outputLabel value="#{bp.bill.billTypeAtomic.label}" ></h:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Bill Type Atomic Cash Type" rendered="false" >
+                                        <h:outputText value="#{bp.bill.billTypeAtomic.billFinanceType}" ></h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Payment Method" rendered="false">
+                                        <h:outputText value="#{bp.bill.paymentMethod}" ></h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Patient">
+                                        <h:outputText value="#{bp.bill.patient.person.nameWithTitle}" ></h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Value" >
+                                        <h:outputLabel value="#{bp.paidValue}" >
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Action" >
+                                        <p:commandButton 
+                                            class="ui-button-success"
+                                            icon=" fa-solid fa-eye"
+                                            value="View Bill" 
+                                            ajax="false"
+                                            action="#{billSearch.navigateViewBillByBillTypeAtomic()}"
+                                            >
+                                            <f:setPropertyActionListener value="#{bp.bill}" target="#{billSearch.bill}"/>
+                                        </p:commandButton>
+                                    </p:column>
+                                </p:dataTable>
+                            </p:panel>
                         </h:panelGroup>
 
                         <p:panelGrid 

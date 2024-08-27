@@ -472,7 +472,7 @@ public class AgentPaymentRecieveBillController implements Serializable {
 
             p.setPaidValue(p.getBill().getNetTotal());
             paymentFacade.create(p);
-            cashBookEntryController.writeCashBookEntry(p);
+            cashBookEntryController.writeCashBookEntryAtPaymentCreation(p);
             ps.add(p);
         }
         return ps;

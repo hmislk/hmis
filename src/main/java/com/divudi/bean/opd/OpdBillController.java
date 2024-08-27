@@ -3337,7 +3337,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                 }
 
                 paymentFacade.create(p);
-                cashBookEntryController.writeCashBookEntry(p);
+                cashBookEntryController.writeCashBookEntryAtPaymentCreation(p);
                 ps.add(p);
             }
         } else {
@@ -3383,7 +3383,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
             p.setPaidValue(p.getBill().getNetTotal());
             paymentFacade.create(p);
-            cashBookEntryController.writeCashBookEntry(p);
+            cashBookEntryController.writeCashBookEntryAtPaymentCreation(p);
             ps.add(p);
         }
         return ps;
