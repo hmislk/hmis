@@ -12126,6 +12126,8 @@ public class SearchController implements Serializable {
     }
 
     public void createBillsBillItemsList(Set<Bill> bills, List<BillItem> billItems) throws IOException {
+        System.out.println("createBillsBillItemsList");
+        System.out.println("billItems = " + billItems);
         XSSFWorkbook workbook = new XSSFWorkbook();
         XSSFSheet sheet = workbook.createSheet("Bills Details");
 
@@ -12173,7 +12175,7 @@ public class SearchController implements Serializable {
                     int itemColIdx = 10;
                     itemRow.createCell(itemColIdx++).setCellValue(bi.getItem() != null ? bi.getItem().getName() : "");
                     itemRow.createCell(itemColIdx++).setCellValue(bi.getItem() != null ? bi.getItem().getCode() : "");
-                    itemRow.createCell(itemColIdx++).setCellValue(bi.getItem() != null ? bi.getItem().getItemType().toString() : "");
+                    itemRow.createCell(itemColIdx++).setCellValue(bi.getItem().getItemType() != null ? bi.getItem().getItemType().toString() : "");
                     itemRow.createCell(itemColIdx++).setCellValue(bi.getQty());
                     itemRow.createCell(itemColIdx++).setCellValue(bi.getRate());
                     itemRow.createCell(itemColIdx++).setCellValue(bi.getGrossValue());
@@ -12241,9 +12243,16 @@ public class SearchController implements Serializable {
         params.put("toDate", toDate);
         params.put("ret", false);
 
+        
+//        jpql = "SELECT b FROM Bill b JOIN FETCH b.billItems WHERE  b.retired=:ret and b.createdAt BETWEEN :fromDate AND :toDate";
+        
+        System.out.println("params = " + params);
+        System.out.println("jpql = " + jpql);
+        
         // Execute the query to get filtered bills
-        List<Bill> bills = billFacade.findByJpql(jpql, params); // Assuming you have a facade to execute JPQL queries
-
+        List<Bill> bills = billFacade.findByJpql(jpql, params,TemporalType.TIMESTAMP); // Assuming you have a facade to execute JPQL queries
+System.out.println("bills = " + bills);
+        
         // Since bills are fetched with their items, simply collect all items if needed
         List<BillItem> allBillItems = new ArrayList<>();
         bills.forEach(bill -> allBillItems.addAll(bill.getBillItems()));
