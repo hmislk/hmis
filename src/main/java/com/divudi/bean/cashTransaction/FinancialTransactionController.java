@@ -126,6 +126,7 @@ public class FinancialTransactionController implements Serializable {
     private List<Bill> currentBills;
     private List<Bill> shiaftStartBills;
     private List<Bill> fundTransferBillsToReceive;
+    private List<Bill> handovertBillsToReceive;
     private List<Bill> fundBillsForClosureBills;
     private Bill selectedBill;
     private Bill nonClosedShiftStartFundBill;
@@ -179,6 +180,7 @@ public class FinancialTransactionController implements Serializable {
     private double additions;
 
     private int fundTransferBillsToReceiveCount;
+    private int handoverBillsToReceiveCount;
     private Date fromDate;
     private Date toDate;
     private Date cashbookDate;
@@ -1468,6 +1470,11 @@ public class FinancialTransactionController implements Serializable {
         fillFundTransferBillsForMeToReceive();
         return "/cashier/fund_transfer_bills_for_me_to_receive?faces-redirect=true";
     }
+    
+    public String navigateToReceiveHandoverBillsForMe() {
+        fillHandoverBillsForMeToReceive();
+        return "/cashier/handover_bills_for_me_to_receive?faces-redirect=true";
+    }
 
     private void prepareToAddNewInitialFundBill() {
         currentBill = new Bill();
@@ -2693,6 +2700,28 @@ public class FinancialTransactionController implements Serializable {
 
     }
 
+    
+    public void fillHandoverBillsForMeToReceive() {
+        String sql;
+        fundTransferBillsToReceive = null;
+        Map tempMap = new HashMap();
+        sql = "select s "
+                + "from Bill s "
+                + "where s.retired=:ret "
+                + "and s.billType=:btype "
+                + "and s.toStaff=:logStaff "
+                + "and s.referenceBill is null "
+                + "order by s.createdAt ";
+        tempMap.put("btype", BillType.CashHandoverCreateBill);
+        tempMap.put("ret", false);
+        tempMap.put("logStaff", sessionController.getLoggedUser().getStaff());
+        handovertBillsToReceive = billFacade.findByJpql(sql, tempMap);
+        handoverBillsToReceiveCount = fundTransferBillsToReceive.size();
+
+    }
+
+    
+    
     public String settleFundTransferReceiveBill() {
         if (currentBill == null) {
             JsfUtil.addErrorMessage("Error");
