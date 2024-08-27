@@ -1564,7 +1564,7 @@ public class BillSearch implements Serializable {
             JsfUtil.addErrorMessage("One or more bill Item you are refunding has been already paid to Service Provider. Can not refund again.");
             return "";
         }
-        
+
         if (paymentMethod == PaymentMethod.Staff) {
             if (getBill().getToStaff() == null) {
                 JsfUtil.addErrorMessage("Can't Select Staff Method");
@@ -2183,7 +2183,7 @@ public class BillSearch implements Serializable {
                 return;
             }
         }
-        
+
         if (!getWebUserController().hasPrivilege("OpdCancel")) {
             JsfUtil.addErrorMessage("You have no privilege to cancel OPD bills. Please contact System Administrator.");
             return;
@@ -2902,13 +2902,10 @@ public class BillSearch implements Serializable {
         return "/payment_bill_reprint.xhtml?faces-redirect=true;";
     }
 
-    
-    
-    public String navigateToDownloadBillsAndBillItems(){
-        return "/";
+    public String navigateToDownloadBillsAndBillItems() {
+        return "/analytics/download_bills?faces-redirect=true;";
     }
-    
-    
+
     public String navigateViewBillByBillTypeAtomic() {
         if (bill == null) {
             JsfUtil.addErrorMessage("No Bill is Selected");
@@ -3626,7 +3623,6 @@ public class BillSearch implements Serializable {
         }
     }
 
-    
     @Deprecated
     public void createCollectingCenterfees(Bill b) {
         AgentHistory ah = new AgentHistory();
@@ -4312,6 +4308,10 @@ public class BillSearch implements Serializable {
             this.billTypeSummaries = billTypeSummaries;
         }
 
+    }
+
+    public String navigateToDownloadBillsAndBillItems1() {
+        return "/analytics/download_bills_and_items?faces-redirect=true;";
     }
 
 }

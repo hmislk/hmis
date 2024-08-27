@@ -189,6 +189,7 @@ public class PatientInvestigationController implements Serializable {
     private List<PatientInvestigation> lstForSampleManagement = null;
     List<PatientSample> patientSamples;
     private List<PatientSample> selectedPatientSamples;
+    private Staff sampleTransportedToLabByStaff;
     String selectText = "";
     private Institution orderedInstitution;
     private Department orderedDepartment;
@@ -212,6 +213,7 @@ public class PatientInvestigationController implements Serializable {
     @Temporal(TemporalType.TIME)
     private Date fromDate;
     Date toDate;
+    private String sampleRejectionComment;
 
     private int activeIndexOfManageInvestigation;
 
@@ -1435,7 +1437,7 @@ public class PatientInvestigationController implements Serializable {
             billFacade.edit(tb);
         }
 
-        JsfUtil.addSuccessMessage("Selected Samples Are Collected");
+        JsfUtil.addSuccessMessage("Selected Samples Collected");
     }
 
     public void sendSamplesToLab() {
@@ -1450,6 +1452,7 @@ public class PatientInvestigationController implements Serializable {
 
         // Process each selected patient sample
         for (PatientSample ps : selectedPatientSamples) {
+            ps.setSampleTransportedToLabByStaff(sampleTransportedToLabByStaff); 
             ps.setSampleSent(true);
             ps.setSampleSentBy(sessionController.getLoggedUser());
             ps.setSampleSentAt(new Date());
@@ -1478,8 +1481,11 @@ public class PatientInvestigationController implements Serializable {
             billFacade.edit(tb);
         }
 
-        JsfUtil.addSuccessMessage("Selected Samples Are Sent to Lab");
+        JsfUtil.addSuccessMessage("Selected Samples Sent to Lab");
     }
+    
+    
+    
     
     public void collectAndReceiveSamplesAtLab(){
         collectSamples();
@@ -1545,11 +1551,13 @@ public class PatientInvestigationController implements Serializable {
 
         // Update sample rejection details and gather associated patient investigations
         for (PatientSample ps : selectedPatientSamples) {
+            ps.setSampleReceivedAtLabComments(sampleRejectionComment);
             ps.setSampleRejected(true);
             ps.setSampleRejectedAt(new Date());
             ps.setSampleRejectedBy(sessionController.getLoggedUser());
             ps.setStatus(PatientInvestigationStatus.SAMPLE_REJECTED);
             patientSampleFacade.edit(ps);
+            sampleRejectionComment = "";
 
             // Retrieve and store PatientInvestigations by unique ID to avoid duplicates
             for (PatientInvestigation pi : getPatientInvestigationsBySample(ps)) {
@@ -3465,6 +3473,22 @@ public class PatientInvestigationController implements Serializable {
         this.selectedPatientReports = selectedPatientReports;
     }
 
+    public Staff getSampleTransportedToLabByStaff() {
+        return sampleTransportedToLabByStaff;
+    }
+
+    public void setSampleTransportedToLabByStaff(Staff sampleTransportedToLabByStaff) {
+        this.sampleTransportedToLabByStaff = sampleTransportedToLabByStaff;
+    }
+
+    public String getSampleRejectionComment() {
+        return sampleRejectionComment;
+    }
+
+    public void setSampleRejectionComment(String sampleRejectionComment) {
+        this.sampleRejectionComment = sampleRejectionComment;
+    }
+
     /**
      *
      */
@@ -4123,4 +4147,7 @@ public class PatientInvestigationController implements Serializable {
         return iis;
     }
 
+    
+    
+    
 }

@@ -96,7 +96,7 @@
                                     <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
                                 </p:commandLink>
                             </p:column>
-                            <p:column headerText="Batch Bill" sortBy="#{bill.backwardReferenceBill.insId}" filterBy="#{bill.backwardReferenceBill.insId}">
+                            <p:column headerText="Batch Bill" rendered="false" sortBy="#{bill.backwardReferenceBill.insId}" filterBy="#{bill.backwardReferenceBill.insId}">
                                 <h:commandLink action="#{opdBillController.navigateToViewOpdBatchBill}" value="#{bill.backwardReferenceBill.insId}">
                                     <f:setPropertyActionListener value="#{bill}" target="#{opdBillController.bill}"/>
                                 </h:commandLink>  
@@ -127,6 +127,12 @@
                                     </h:outputLabel>
                                 </h:panelGroup>
                             </p:column>
+                            
+                            <p:column headerText="Phone Number" sortBy="#{bill.patient.person.mobile}" filterBy="#{bill.patient.person.mobile}">
+                                <h:outputLabel value="#{bill.patient.person.mobile}" >                                      
+                                </h:outputLabel>  
+                            </p:column>
+                            
                             <p:column headerText="Remarks"   >  
                                 <p:badge rendered="#{bill.cancelled}" value="Cancelled" severity="danger" styleClass="mr-2"></p:badge>
                                 <p:badge rendered="#{bill.refunded}" value="Refunded" severity="warning" styleClass="mr-2"></p:badge>

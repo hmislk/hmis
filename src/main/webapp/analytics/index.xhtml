@@ -24,6 +24,14 @@
                                                 action="#{financialTransactionController.navigateToListShiftEndSummaries()}"
                                                 class="w-100">
                                             </p:commandButton>
+                                            
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                value="Handover" 
+                                                action="#{financialTransactionController.navigateToListShiftEndSummaries()}"
+                                                class="w-100">
+                                            </p:commandButton>
+                                            
                                             <p:commandButton 
                                                 ajax="false" 
                                                 value="Day End Summery" 
@@ -31,6 +39,8 @@
                                                 action="#{financialTransactionController.navigateToDayEndReport()}"
                                                 class="w-100">
                                             </p:commandButton>
+                                            
+                                            
                                         </div>
                                     </p:tab>
                                     <p:tab title="Lists">
@@ -40,6 +50,14 @@
                                                 ajax="false" 
                                                 value="Download Bills " 
                                                 action="#{billSearch.navigateToDownloadBillsAndBillItems()}"
+                                                class="w-100">
+                                            </p:commandButton>
+                                            
+                                            
+                                             <p:commandButton 
+                                                ajax="false" 
+                                                value="Download Bills and Bill Items" 
+                                                action="#{billSearch.navigateToDownloadBillsAndBillItems1()}"
                                                 class="w-100">
                                             </p:commandButton>
                                             

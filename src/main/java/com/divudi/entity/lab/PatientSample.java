@@ -13,6 +13,7 @@ import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.Patient;
+import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
 import java.io.Serializable;
 import java.util.Date;
@@ -85,6 +86,8 @@ public class PatientSample implements Serializable {
     private WebUser sampleSentBy;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date sampleSentAt;
+    @ManyToOne
+    private Staff sampleTransportedToLabByStaff;
 
     @Enumerated
     private Priority priority;
@@ -167,6 +170,7 @@ public class PatientSample implements Serializable {
     @ManyToOne
     private Institution cancellInstitution;
     
+    private String sampleRejectionComment;
     private Boolean sampleRejected = false;
     @ManyToOne
     private WebUser sampleRejectedBy;
@@ -766,4 +770,22 @@ public class PatientSample implements Serializable {
         this.sampleRejectedAt = sampleRejectedAt;
     }
 
+    public Staff getSampleTransportedToLabByStaff() {
+        return sampleTransportedToLabByStaff;
+    }
+
+    public void setSampleTransportedToLabByStaff(Staff sampleTransportedToLabByStaff) {
+        this.sampleTransportedToLabByStaff = sampleTransportedToLabByStaff;
+    }
+
+    public String getSampleRejectionComment() {
+        return sampleRejectionComment;
+    }
+
+    public void setSampleRejectionComment(String sampleRejectionComment) {
+        this.sampleRejectionComment = sampleRejectionComment;
+    }
+
+    
+    
 }
