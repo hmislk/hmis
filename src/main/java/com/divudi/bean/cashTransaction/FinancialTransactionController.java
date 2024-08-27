@@ -1064,11 +1064,6 @@ public class FinancialTransactionController implements Serializable {
         opdBundle = combineBundlesByItem(opdBilled, opdReturns);
     }
 
-    public String navigateToListShiftEndSummaries() {
-        resetClassVariables();
-        return "/cashier/handover?faces-redirect=true;";
-    }
-
     public void listShiftStartBills() {
         String jpql = "select b "
                 + " from Bill b "
