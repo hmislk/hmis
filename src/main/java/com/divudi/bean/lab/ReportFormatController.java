@@ -173,6 +173,7 @@ public class ReportFormatController implements Serializable {
                 + " where f.retired=:ret"
                 + " order by f.id desc";
         Map params = new HashMap();
+        params.put("ret",false);
         ReportFormat r = getFacade().findFirstByJpql(jpql, params);
         if (r == null) {
             r = new ReportFormat();
