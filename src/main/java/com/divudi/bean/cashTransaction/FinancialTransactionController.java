@@ -40,12 +40,15 @@ import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.faces.event.AjaxBehaviorEvent;
@@ -175,9 +178,13 @@ public class FinancialTransactionController implements Serializable {
     private int fundTransferBillsToReceiveCount;
     private Date fromDate;
     private Date toDate;
+    private Date cashbookDate;
+    private Department cashbookDepartment;
+    private List<Date> cashbookDates;
+    private List<Department> cashbookDepartments;
 
     private ReportTemplateRowBundle paymentSummaryBundle;
-    
+
     private Department department;
 
     // </editor-fold>  
@@ -193,6 +200,8 @@ public class FinancialTransactionController implements Serializable {
         return "/cashier/index?faces-redirect=true;";
     }
 
+    
+    
     public String navigateToCreateNewInitialFundBill() {
         resetClassVariables();
         prepareToAddNewInitialFundBill();
@@ -661,7 +670,7 @@ public class FinancialTransactionController implements Serializable {
                 null,
                 null,
                 null);
-        
+
         fillPayments(fromDate, toDate, null);
     }
 
@@ -1066,19 +1075,19 @@ public class FinancialTransactionController implements Serializable {
                 + " where b.retired=:ret"
                 + " and b.billTypeAtomic=:bta "
                 + " and b.createdAt between :fd and :td ";
-        
+
         Map params = new HashMap<>();
         params.put("ret", false);
         params.put("bta", BillTypeAtomic.FUND_SHIFT_START_BILL);
         params.put("fd", fromDate);
         params.put("td", toDate);
-        
-        if(getDepartment()!= null){
+
+        if (getDepartment() != null) {
             jpql += " and b.department =:dept";
             params.put("dept", getDepartment());
         }
         jpql += " order by b.id ";
-        
+
         shiaftStartBills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
@@ -1791,6 +1800,18 @@ public class FinancialTransactionController implements Serializable {
         return "/cashier/shift_end_summery_bill?faces-redirect=true";
     }
 
+    public String navigateToHandoverCreateBill() {
+        resetClassVariables();
+        findNonClosedShiftStartFundBillIsAvailable();
+        fillPaymentsFromShiftStartToNowNotYetStartedToEntereToCashbook();
+        currentBill = new Bill();
+        currentBill.setBillType(BillType.CashHandoverCreateBill);
+        currentBill.setBillTypeAtomic(BillTypeAtomic.FUND_SHIFT_HANDOVER_CREATE);
+        currentBill.setBillClassType(BillClassType.PreBill);
+        currentBill.setReferenceBill(null);
+        return "/cashier/handover_start?faces-redirect=true";
+    }
+
     public String navigateToDayEndSummary() {
         return "/analytics/day_end_summery?faces-redirect=true";
     }
@@ -1934,7 +1955,11 @@ public class FinancialTransactionController implements Serializable {
         m.put("cr", nonClosedShiftStartFundBill.getCreater());
         m.put("ret", false);
         m.put("cid", nonClosedShiftStartFundBill.getId());
+        System.out.println("m = " + m);
+        System.out.println("jpql = " + jpql);
         paymentsFromShiftSratToNow = paymentFacade.findByJpql(jpql, m);
+        System.out.println("paymentsFromShiftSratToNow = " + paymentsFromShiftSratToNow);
+
 //        paymentMethodValues = new PaymentMethodValues(PaymentMethod.values());
         atomicBillTypeTotalsByPayments = new AtomicBillTypeTotals();
         for (Payment p : paymentsFromShiftSratToNow) {
@@ -1947,6 +1972,121 @@ public class FinancialTransactionController implements Serializable {
 //        calculateTotalFundsFromShiftStartToNow();
         financialReportByPayments = new FinancialReport(atomicBillTypeTotalsByPayments);
 
+    }
+
+    public void fillPaymentsFromShiftStartToNowNotYetStartedToEntereToCashbook() {
+        paymentsFromShiftSratToNow = new ArrayList<>();
+        if (nonClosedShiftStartFundBill == null) {
+            return;
+        }
+        Long shiftStartBillId = nonClosedShiftStartFundBill.getId();
+        Map<String, Object> m = new HashMap<>();
+        String jpql = "SELECT p "
+                + "FROM Payment p "
+                + "WHERE p.creater = :cr "
+                + "AND p.retired = :ret "
+                + "AND p.id > :cid "
+                + "AND p.cashbookEntryStated = :started ";
+        m.put("started", false);
+
+        jpql += "ORDER BY p.id DESC";
+
+        m.put("cr", nonClosedShiftStartFundBill.getCreater());
+        m.put("ret", false);
+        m.put("cid", shiftStartBillId);
+        System.out.println("jpql = " + jpql);
+        System.out.println("m = " + m);
+        paymentsFromShiftSratToNow = paymentFacade.findByJpql(jpql, m);
+        System.out.println("paymentsFromShiftSratToNow = " + paymentsFromShiftSratToNow);
+
+        atomicBillTypeTotalsByPayments = new AtomicBillTypeTotals();
+
+        Set<Department> uniqueDepartments = new HashSet<>();
+        Set<LocalDate> uniqueDates = new HashSet<>();
+
+        for (Payment p : paymentsFromShiftSratToNow) {
+            Bill bill = p.getBill();
+            if (bill == null) {
+                System.out.println("No Bill for Payment " + p);
+                continue;
+            }
+
+            if (bill.getBillTypeAtomic() == null) {
+                System.out.println("No atomic bill type for Bill = " + bill);
+            } else {
+                Department dept = bill.getDepartment();
+                if (dept != null) {
+                    uniqueDepartments.add(dept);
+                } else {
+                    System.out.println("No Department for the Bill " + bill);
+                }
+
+                if (p.getCreatedAt() != null) {
+                    LocalDate createdDateOnly = p.getCreatedAt().toInstant()
+                            .atZone(ZoneId.systemDefault())
+                            .toLocalDate();
+                    uniqueDates.add(createdDateOnly);
+                } else {
+                    System.out.println("No createdAt for Payment " + p);
+                }
+
+                atomicBillTypeTotalsByPayments.addOrUpdateAtomicRecord(bill.getBillTypeAtomic(), p.getPaymentMethod(), p.getPaidValue());
+            }
+        }
+
+        cashbookDepartments = new ArrayList<>(uniqueDepartments);
+
+        // Convert Set<LocalDate> to List<Date>
+        cashbookDates = new ArrayList<>();
+        for (LocalDate localDate : uniqueDates) {
+            Date date = Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+            cashbookDates.add(date); // Add converted Date to the list
+        }
+
+        financialReportByPayments = new FinancialReport(atomicBillTypeTotalsByPayments);
+    }
+
+    public void fillPaymentsFromShiftStartToNowNotYetStartedToEntereToCashbookFilteredByDateAndDepartment() {
+        paymentsFromShiftSratToNow = new ArrayList<>();
+        if (nonClosedShiftStartFundBill == null) {
+            return;
+        }
+        Long shiftStartBillId = nonClosedShiftStartFundBill.getId();
+        Map<String, Object> m = new HashMap<>();
+        String jpql = "SELECT p "
+                + "FROM Payment p "
+                + "WHERE p.creater = :cr "
+                + "AND p.retired = :ret "
+                + "AND p.id > :cid "
+                + "AND p.cashbookEntryStated = :started ";
+        jpql += "AND FUNCTION('DATE', p.createdAt) = :createdDate ";
+        jpql += "AND p.bill.department = :dept ";
+        m.put("dept", cashbookDepartment);
+        m.put("createdDate", cashbookDate);
+        m.put("started", false);
+        jpql += "ORDER BY p.id DESC";
+        m.put("cr", nonClosedShiftStartFundBill.getCreater());
+        m.put("ret", false);
+        m.put("cid", shiftStartBillId);
+        System.out.println("jpql = " + jpql);
+        System.out.println("m = " + m);
+        paymentsFromShiftSratToNow = paymentFacade.findByJpql(jpql, m);
+        System.out.println("paymentsFromShiftSratToNow = " + paymentsFromShiftSratToNow);
+        atomicBillTypeTotalsByPayments = new AtomicBillTypeTotals();
+        for (Payment p : paymentsFromShiftSratToNow) {
+            Bill bill = p.getBill();
+            if (bill == null) {
+                System.out.println("No Bill for Payment " + p);
+                continue;
+            }
+
+            if (bill.getBillTypeAtomic() == null) {
+                System.out.println("No atomic bill type for Bill = " + bill);
+            } else {
+                atomicBillTypeTotalsByPayments.addOrUpdateAtomicRecord(bill.getBillTypeAtomic(), p.getPaymentMethod(), p.getPaidValue());
+            }
+        }
+        financialReportByPayments = new FinancialReport(atomicBillTypeTotalsByPayments);
     }
 
     public void fillPaymentsForDateRange() {
@@ -2014,11 +2154,10 @@ public class FinancialTransactionController implements Serializable {
                 + "AND p.createdAt < :eid ";
         Map<String, Object> m = new HashMap<>();
         if (user != null) {
-           jpql += " and p.creater = :cr ";
-           m.put("cr", user);
+            jpql += " and p.creater = :cr ";
+            m.put("cr", user);
         }
 
-        
         m.put("ret", false);
         m.put("sid", fromDateParam);
         m.put("eid", toDateParam);
@@ -2467,6 +2606,194 @@ public class FinancialTransactionController implements Serializable {
 
         return "/cashier/shift_end_summery_bill_print?faces-redirect=true";
     }
+    
+    
+    
+    
+    public String settleHandoverStartBill() {
+        boolean fundTransferBillTocollect = false;
+        if (currentBill == null) {
+            JsfUtil.addErrorMessage("Error");
+            return "";
+        }
+        if (currentBill.getBillType() != BillType.CashHandoverCreateBill) {
+            JsfUtil.addErrorMessage("Error");
+            return "";
+        }
+        if (fundTransferBillsToReceive != null && !fundTransferBillsToReceive.isEmpty()) {
+            fundTransferBillTocollect = true;
+        }
+
+        if (fundTransferBillTocollect) {
+            JsfUtil.addErrorMessage("Please collect funds transferred to you before closing.");
+            return "";
+        }
+
+        currentBill.setDepartment(sessionController.getDepartment());
+        currentBill.setInstitution(sessionController.getInstitution());
+        currentBill.setStaff(sessionController.getLoggedUser().getStaff());
+        currentBill.setBillDate(new Date());
+        currentBill.setBillTime(new Date());
+        billController.save(currentBill);
+        currentBill.setTotal(financialReportByPayments.getTotal());
+        currentBill.setNetTotal(financialReportByPayments.getTotal());
+        for (Payment p : getCurrentBillPayments()) {
+            p.setBill(currentBill);
+            p.setDepartment(sessionController.getDepartment());
+            p.setInstitution(sessionController.getInstitution());
+            paymentController.save(p);
+        }
+        calculateTotalFundsFromShiftStartToNow();
+        nonClosedShiftStartFundBill.setReferenceBill(currentBill);
+        billController.save(nonClosedShiftStartFundBill);
+
+        BillComponent bcCollectedCash = new BillComponent();
+        bcCollectedCash.setName("Collected Cash");
+        bcCollectedCash.setComponentValue(financialReportByPayments.getCollectedCash());
+        bcCollectedCash.setBill(currentBill);
+        billComponentFacade.create(bcCollectedCash);
+
+        BillComponent bcRefundedCash = new BillComponent();
+        bcRefundedCash.setName("Refunded Cash");
+        bcRefundedCash.setComponentValue(financialReportByPayments.getRefundedCash());
+        bcRefundedCash.setBill(currentBill);
+        billComponentFacade.create(bcRefundedCash);
+
+        BillComponent bcNetCashTotal = new BillComponent();
+        bcNetCashTotal.setName("Net Cash Total");
+        bcNetCashTotal.setComponentValue(financialReportByPayments.getNetCashTotal());
+        bcNetCashTotal.setBill(currentBill);
+        billComponentFacade.create(bcNetCashTotal);
+
+        BillComponent bcCollectedCreditCard = new BillComponent();
+        bcCollectedCreditCard.setName("Collected Credit Card");
+        bcCollectedCreditCard.setComponentValue(financialReportByPayments.getCollectedCreditCard());
+        bcCollectedCreditCard.setBill(currentBill);
+        billComponentFacade.create(bcCollectedCreditCard);
+
+        BillComponent bcRefundedCreditCard = new BillComponent();
+        bcRefundedCreditCard.setName("Refunded Credit Card");
+        bcRefundedCreditCard.setComponentValue(financialReportByPayments.getRefundedCreditCard());
+        bcRefundedCreditCard.setBill(currentBill);
+        billComponentFacade.create(bcRefundedCreditCard);
+
+        BillComponent bcNetCreditCardTotal = new BillComponent();
+        bcNetCreditCardTotal.setName("Net Credit Card Total");
+        bcNetCreditCardTotal.setComponentValue(financialReportByPayments.getNetCreditCardTotal());
+        bcNetCreditCardTotal.setBill(currentBill);
+        billComponentFacade.create(bcNetCreditCardTotal);
+
+        BillComponent bcCollectedVoucher = new BillComponent();
+        bcCollectedVoucher.setName("Collected Voucher");
+        bcCollectedVoucher.setComponentValue(financialReportByPayments.getCollectedVoucher());
+        bcCollectedVoucher.setBill(currentBill);
+        billComponentFacade.create(bcCollectedVoucher);
+
+        BillComponent bcRefundedVoucher = new BillComponent();
+        bcRefundedVoucher.setName("Refunded Voucher");
+        bcRefundedVoucher.setComponentValue(financialReportByPayments.getRefundedVoucher());
+        bcRefundedVoucher.setBill(currentBill);
+        billComponentFacade.create(bcRefundedVoucher);
+
+        BillComponent bcNetVoucherTotal = new BillComponent();
+        bcNetVoucherTotal.setName("Net Voucher Total");
+        bcNetVoucherTotal.setComponentValue(financialReportByPayments.getNetVoucherTotal());
+        bcNetVoucherTotal.setBill(currentBill);
+        billComponentFacade.create(bcNetVoucherTotal);
+
+        BillComponent bcCollectedOtherNonCredit = new BillComponent();
+        bcCollectedOtherNonCredit.setName("Collected Other Non-Credit");
+        bcCollectedOtherNonCredit.setComponentValue(financialReportByPayments.getCollectedOtherNonCredit());
+        bcCollectedOtherNonCredit.setBill(currentBill);
+        billComponentFacade.create(bcCollectedOtherNonCredit);
+
+        BillComponent bcRefundedOtherNonCredit = new BillComponent();
+        bcRefundedOtherNonCredit.setName("Refunded Other Non-Credit");
+        bcRefundedOtherNonCredit.setComponentValue(financialReportByPayments.getRefundedOtherNonCredit());
+        bcRefundedOtherNonCredit.setBill(currentBill);
+        billComponentFacade.create(bcRefundedOtherNonCredit);
+
+        BillComponent bcNetOtherNonCreditTotal = new BillComponent();
+        bcNetOtherNonCreditTotal.setName("Net Other Non-Credit Total");
+        bcNetOtherNonCreditTotal.setComponentValue(financialReportByPayments.getNetOtherNonCreditTotal());
+        bcNetOtherNonCreditTotal.setBill(currentBill);
+        billComponentFacade.create(bcNetOtherNonCreditTotal);
+
+        BillComponent bcShiftStartFunds = new BillComponent();
+        bcShiftStartFunds.setName("Shift Start Funds");
+        bcShiftStartFunds.setComponentValue(financialReportByPayments.getShiftStartFunds());
+        bcShiftStartFunds.setBill(currentBill);
+        billComponentFacade.create(bcShiftStartFunds);
+
+        BillComponent bcFloatReceived = new BillComponent();
+        bcFloatReceived.setName("Float Received");
+        bcFloatReceived.setComponentValue(financialReportByPayments.getFloatReceived());
+        bcFloatReceived.setBill(currentBill);
+        billComponentFacade.create(bcFloatReceived);
+
+        BillComponent bcFloatHandover = new BillComponent();
+        bcFloatHandover.setName("Float Handover");
+        bcFloatHandover.setComponentValue(financialReportByPayments.getFloatHandover());
+        bcFloatHandover.setBill(currentBill);
+        billComponentFacade.create(bcFloatHandover);
+
+        BillComponent bcBankWithdrawals = new BillComponent();
+        bcBankWithdrawals.setName("Bank Withdrawals");
+        bcBankWithdrawals.setComponentValue(financialReportByPayments.getBankWithdrawals());
+        bcBankWithdrawals.setBill(currentBill);
+        billComponentFacade.create(bcBankWithdrawals);
+
+        BillComponent bcBankDeposits = new BillComponent();
+        bcBankDeposits.setName("Bank Deposits");
+        bcBankDeposits.setComponentValue(financialReportByPayments.getBankDeposits());
+        bcBankDeposits.setBill(currentBill);
+        billComponentFacade.create(bcBankDeposits);
+
+        BillComponent bcCashCollectedTransferIn = new BillComponent();
+        bcCashCollectedTransferIn.setName("Cash Collected Transfer In");
+        bcCashCollectedTransferIn.setComponentValue(financialReportByPayments.getCashCollectedTransferIn());
+        bcCashCollectedTransferIn.setBill(currentBill);
+        billComponentFacade.create(bcCashCollectedTransferIn);
+
+        BillComponent bcCashGivenOutTransferOut = new BillComponent();
+        bcCashGivenOutTransferOut.setName("Cash Given Out Transfer Out");
+        bcCashGivenOutTransferOut.setComponentValue(financialReportByPayments.getCashGivenOutTransferOut());
+        bcCashGivenOutTransferOut.setBill(currentBill);
+        billComponentFacade.create(bcCashGivenOutTransferOut);
+
+        BillComponent bcTotal = new BillComponent();
+        bcTotal.setName("Total");
+        bcTotal.setComponentValue(financialReportByPayments.getTotal());
+        bcTotal.setBill(currentBill);
+        billComponentFacade.create(bcTotal);
+
+        BillComponent bcShortExcess = new BillComponent();
+        bcShortExcess.setName("Short/Excess");
+        bcShortExcess.setComponentValue(currentBill.getNetTotal() - financialReportByPayments.getTotal());
+        bcShortExcess.setBill(currentBill);
+        billComponentFacade.create(bcShortExcess);
+
+        currentBill.getBillComponents().add(bcCollectedCash);
+        currentBill.getBillComponents().add(bcRefundedCash);
+        currentBill.getBillComponents().add(bcNetCashTotal);
+        currentBill.getBillComponents().add(bcCollectedCreditCard);
+        currentBill.getBillComponents().add(bcRefundedCreditCard);
+        currentBill.getBillComponents().add(bcNetCreditCardTotal);
+        currentBill.getBillComponents().add(bcCollectedVoucher);
+        currentBill.getBillComponents().add(bcRefundedVoucher);
+        currentBill.getBillComponents().add(bcNetVoucherTotal);
+        currentBill.getBillComponents().add(bcCollectedOtherNonCredit);
+        currentBill.getBillComponents().add(bcRefundedOtherNonCredit);
+        currentBill.getBillComponents().add(bcNetOtherNonCreditTotal);
+        currentBill.getBillComponents().add(bcShiftStartFunds);
+        currentBill.getBillComponents().add(bcFloatReceived);
+        currentBill.getBillComponents().add(bcFloatHandover);
+        currentBill.getBillComponents().add(bcBankWithdrawals);
+
+        return "/cashier/shift_end_summery_bill_print?faces-redirect=true";
+    }
+    
+    
 
 // </editor-fold>  
     // <editor-fold defaultstate="collapsed" desc="BalanceTransferFundBill">
@@ -3267,6 +3594,38 @@ public class FinancialTransactionController implements Serializable {
 
     public void setDepartment(Department department) {
         this.department = department;
+    }
+
+    public Date getCashbookDate() {
+        return cashbookDate;
+    }
+
+    public void setCashbookDate(Date cashbookDate) {
+        this.cashbookDate = cashbookDate;
+    }
+
+    public Department getCashbookDepartment() {
+        return cashbookDepartment;
+    }
+
+    public void setCashbookDepartment(Department cashbookDepartment) {
+        this.cashbookDepartment = cashbookDepartment;
+    }
+
+    public List<Date> getCashbookDates() {
+        return cashbookDates;
+    }
+
+    public void setCashbookDates(List<Date> cashbookDates) {
+        this.cashbookDates = cashbookDates;
+    }
+
+    public List<Department> getCashbookDepartments() {
+        return cashbookDepartments;
+    }
+
+    public void setCashbookDepartments(List<Department> cashbookDepartments) {
+        this.cashbookDepartments = cashbookDepartments;
     }
 
 }

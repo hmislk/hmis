@@ -24,12 +24,8 @@
                             <p:datePicker class="w-100 mx-4" inputStyleClass="w-100" id="toDate" value="#{searchController.toDate}" 
                                           showTime="true"
                                           pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>                                                                              
-                        </h:panelGrid>
-                        <h:panelGrid columns="2" class="my-2">
-                            <p:commandButton id="btnSearch" ajax="false" value="Search" 
-                                             action="#{searchController.prepareDataBillsAndBillItemsDownload()}"
-                                             icon="fa fa-search"
-                                             class="ui-button-warning"/>
+                        
+                            <p:spacer ></p:spacer>
                             <p:commandButton value="Download Excel" ajax="false" icon="fas fa-download" class="ui-button-warning"
                                              onclick="PrimeFaces.monitorDownload(start, stop);">
                                 <p:fileDownload value="#{searchController.fileBillsAndBillItemsForDownload}"/>
@@ -37,76 +33,7 @@
                         </h:panelGrid>
                     </p:panel>
 
-                    <p:dataTable var="bill" value="#{searchController.bills}" widgetVar="billTable" 
-                                 resizableColumns="true" liveResize="true">
-
-                        <!-- Columns for Bill attributes -->
-                        <p:column headerText="Bill ID">
-                            <h:outputText value="#{bill.id}" />
-                        </p:column>
-                        <p:column headerText="Institution Name">
-                            <h:outputText value="#{bill.institution.name}" />
-                        </p:column>
-                        <p:column headerText="Department Name">
-                            <h:outputText value="#{bill.department.name}" />
-                        </p:column>
-                        <p:column headerText="Patient Name">
-                            <h:outputText value="#{bill.patient.person.name}" />
-                        </p:column>
-                        <p:column headerText="Staff Name">
-                            <h:outputText value="#{bill.staff.person.nameWithTitle}" />
-                        </p:column>
-                        <p:column headerText="User">
-                            <h:outputText value="#{bill.creater.webUserPerson.name}" />
-                        </p:column>
-                        <p:column headerText="Bill Type">
-                            <h:outputText value="#{bill.billType.label}" />
-                        </p:column>
-                        <p:column headerText="Total">
-                            <h:outputText value="#{bill.grantTotal}" />
-                        </p:column>
-                        <p:column headerText="Discount">
-                            <h:outputText value="#{bill.discount}" />
-                        </p:column>
-                        <p:column headerText="Net Total">
-                            <h:outputText value="#{bill.netTotal}" />
-                        </p:column>
-                        <p:column headerText="Payment Method">
-                            <h:outputText value="#{bill.paymentMethod.label}" />
-                        </p:column>
-
-                        <!-- Row expansion to show Bill Items -->
-                        <p:rowExpansion>
-                            <p:dataTable var="item" value="#{bill.billItems}" style="width:100%;">
-                                <!-- Columns for Bill Item attributes -->
-                                <p:column headerText="Bill Item Name">
-                                    <h:outputText value="#{item.name}" />
-                                </p:column>
-                                <p:column headerText="Bill Item Code">
-                                    <h:outputText value="#{item.code}" />
-                                </p:column>
-                                <p:column headerText="Item Type">
-                                    <h:outputText value="#{item.itemType}" />
-                                </p:column>
-                                <p:column headerText="Quantity">
-                                    <h:outputText value="#{item.quantity}" />
-                                </p:column>
-                                <p:column headerText="Rate">
-                                    <h:outputText value="#{item.rate}" />
-                                </p:column>
-                                <p:column headerText="Gross Value">
-                                    <h:outputText value="#{item.grossValue}" />
-                                </p:column>
-                                <p:column headerText="Bill Item Discount">
-                                    <h:outputText value="#{item.discount}" />
-                                </p:column>
-                                <p:column headerText="Net Value">
-                                    <h:outputText value="#{item.netValue}" />
-                                </p:column>
-                            </p:dataTable>
-                        </p:rowExpansion>
-
-                    </p:dataTable>
+             
 
                 </h:form>
             </ui:define>
