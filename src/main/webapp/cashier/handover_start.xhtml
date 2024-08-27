@@ -42,8 +42,8 @@
                                     <p:commandButton 
                                         class="ui-button-info mx-2" 
                                         ajax="false" 
-                                        value="Close Start Fund Bill" 
-                                        action="#{financialTransactionController.settleShiftEndFundBill()}" >
+                                        value="Handover" 
+                                        action="#{financialTransactionController.settleHandoverStartBill()}" >
                                     </p:commandButton>
                                 </div>
                             </div>
@@ -51,7 +51,7 @@
                         </f:facet>
 
                         <div class="row mx-2" >
-                            <div class="col-6 bg-info" >
+                            <div class="col-6" >
                                 <p:panelGrid columns="2" class="w-100" >
                                     <p:outputLabel value="Staff*" ></p:outputLabel>
                                     <p:outputLabel value="#{financialTransactionController.nonClosedShiftStartFundBill.staff.person.nameWithTitle}" ></p:outputLabel>
@@ -68,6 +68,51 @@
                                     </p:outputLabel>
                                 </p:panelGrid>
                             </div>
+                            <div class="col-6">
+                                <p:panelGrid columns="2" class="w-100" >
+
+                                    <!-- Date Label and Dropdown -->
+                                    <h:panelGroup >
+                                        <i class="pi pi-calendar" style="margin-right: 5px;"></i>
+                                        <p:outputLabel value="Date*" />
+                                    </h:panelGroup>
+
+                                    <h:panelGroup>
+
+                                        <p:selectOneMenu value="#{financialTransactionController.cashbookDate}" styleClass="w-100" converter="longDateConverter">
+                                            <f:selectItem itemLabel="Select Date" ></f:selectItem>
+                                            <f:selectItems value="#{financialTransactionController.cashbookDates}" var="date"
+                                                           itemLabel="#{commonController.formatToLongDate(date)}" 
+                                                           itemValue="#{date}" />
+                                        </p:selectOneMenu>
+                                    </h:panelGroup>
+
+                                    <!-- Department Label and Dropdown -->
+                                    <h:panelGroup >
+                                        <i class="pi pi-briefcase" style="margin-right: 5px;"></i>
+                                        <p:outputLabel value="Department" />
+                                    </h:panelGroup>
+
+                                    <h:panelGroup>
+
+                                        <p:selectOneMenu value="#{financialTransactionController.cashbookDepartment}" styleClass="w-100">
+                                            <f:selectItem itemLabel="Select Department" ></f:selectItem>
+                                            <f:selectItems value="#{financialTransactionController.cashbookDepartments}" var="department"
+                                                           itemLabel="#{department.name}" itemValue="#{department}" />
+                                        </p:selectOneMenu>
+                                    </h:panelGroup>
+
+                                    <p:spacer ></p:spacer>
+                                    <!-- Submit Button -->
+                                    <p:commandButton
+                                        ajax="false"
+                                        value="Process"
+                                        action="#{financialTransactionController.fillPaymentsFromShiftStartToNowNotYetStartedToEntereToCashbookFilteredByDateAndDepartment}" 
+                                        icon="pi pi-check" styleClass="w-100" />
+                                </p:panelGrid>
+                            </div>
+
+
                         </div>
 
                         <div class="row mx-2" >
@@ -296,12 +341,19 @@
                                 paginator="true"
                                 paginatorPosition="bottom"
                                 rows="5"
+                                selection="#{financialTransactionController.paymentsSelected}"
                                 style="width:150em;"
                                 rowKey="#{bp.id}"
                                 paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                 currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
                                 rowsPerPageTemplate="5,10,20,50,100">
-                                <p:column headerText="Payment ID" >
+                                <p:column selectionBox="true" width="50" >
+
+                                </p:column>
+                                <p:column headerText="Bill No" rendered="false">
+                                    <h:outputLabel value="#{bp.bill.deptId}" ></h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Payment ID" rendered="false" >
                                     <p:inputText value="#{bp.id}" ></p:inputText>
                                 </p:column>
                                 <p:column headerText="Time" >
@@ -310,32 +362,34 @@
                                     </h:outputText>
                                 </p:column>
                                 <p:column headerText="Payment Method" >
-                                    <p:inputText value="#{bp.paymentMethod}" ></p:inputText>
+                                    <h:outputLabel value="#{bp.paymentMethod}" ></h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Bill ID" >
+                                <p:column headerText="Bill ID" rendered="false">
                                     <p:inputText value="#{bp.bill.id}" ></p:inputText>
                                 </p:column>
-                                <p:column headerText="Bill Type" >
+                                <p:column headerText="Bill Type" rendered="false" >
                                     <p:inputText value="#{bp.bill.billType}" ></p:inputText>
                                 </p:column>
 
-                                <p:column headerText="Bill Class" >
+                                <p:column headerText="Bill Class" rendered="false" >
                                     <p:inputText value="#{bp.bill.billClass}" ></p:inputText>
                                 </p:column>
                                 <p:column headerText="Bill Type Atomic" >
-                                    <p:inputText value="#{bp.bill.billTypeAtomic}" ></p:inputText>
+                                    <h:outputLabel value="#{bp.bill.billTypeAtomic.label}" ></h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Bill Type Atomic Cash Type" >
+                                <p:column headerText="Bill Type Atomic Cash Type" rendered="false" >
                                     <h:outputText value="#{bp.bill.billTypeAtomic.billFinanceType}" ></h:outputText>
                                 </p:column>
-                                <p:column headerText="Payment Method">
+                                <p:column headerText="Payment Method" rendered="false">
                                     <h:outputText value="#{bp.bill.paymentMethod}" ></h:outputText>
                                 </p:column>
                                 <p:column headerText="Patient">
                                     <h:outputText value="#{bp.bill.patient.person.nameWithTitle}" ></h:outputText>
                                 </p:column>
                                 <p:column headerText="Value" >
-                                    <p:inputText value="#{bp.paidValue}" />
+                                    <h:outputLabel value="#{bp.paidValue}" >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Action" >
                                     <p:commandButton 
