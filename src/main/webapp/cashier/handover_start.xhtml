@@ -37,15 +37,7 @@
                                     <i class="fa-solid fa-cash-register">&nbsp;&nbsp;</i>
                                     <p:outputLabel value=" Shift Details*" />
                                 </div>
-                                <div>
 
-                                    <p:commandButton 
-                                        class="ui-button-info mx-2" 
-                                        ajax="false" 
-                                        value="Handover" 
-                                        action="#{financialTransactionController.settleHandoverStartBill()}" >
-                                    </p:commandButton>
-                                </div>
                             </div>
 
                         </f:facet>
@@ -336,22 +328,42 @@
                                 ajax="false"
                                 action="#{financialTransactionController.calculateHandingOverValues()}"
                                 >
-                               
+
                             </p:commandButton>
-                            
-                            
-                            
-                            
-                            <p:dataTable value="#{financialTransactionController.handingOverPaymentMethodValues}" var="pmv" >
-                                <p:column headerText="Payment Method">
-                                    <h:outputText value="#{pmv.paymentMethod.label}" ></h:outputText>
-                                </p:column>
-                                <p:column headerText="Payment Method">
-                                    <h:outputText value="#{pmv.amount}" ></h:outputText>
-                                </p:column>
-                            </p:dataTable>
-                            
-                            
+
+                            <p:panel class="m-1">
+
+                                <p:dataTable value="#{financialTransactionController.handingOverPaymentMethodValues}" var="pmv" >
+                                    <p:column headerText="Payment Method">
+                                        <h:outputText value="#{pmv.paymentMethod.label}" ></h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Payment Method">
+                                        <h:outputText value="#{pmv.amount}" ></h:outputText>
+                                    </p:column>
+                                </p:dataTable>
+                            </p:panel>
+
+                            <div>
+                                <p:outputLabel value="Hand over to Staff" class="font-weight-bold" ></p:outputLabel>
+
+                                <p:autoComplete
+                                    completeMethod="#{webUserController.completeUser}"
+                                    class="mx-2"
+                                    id="acStaff" 
+                                    value="#{financialTransactionController.currentBill.toStaff}" 
+                                    var="s"
+                                    scrollHeight="450"
+                                    itemLabel="#{s.webUserPerson.nameWithTitle}" 
+                                    itemValue="#{s.staff}" >
+                                </p:autoComplete>
+
+                                <p:commandButton 
+                                    class="ui-button-success mx-2" 
+                                    ajax="false" 
+                                    value="Handover" 
+                                    action="#{financialTransactionController.settleHandoverStartBill()}" >
+                                </p:commandButton>
+                            </div>
                             <p:commandButton value="Export to excel" >
                                 <p:dataExporter type="xlsx" target="tblPayments" fileName="exportedData"/>
                             </p:commandButton>
