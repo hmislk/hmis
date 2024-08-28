@@ -230,8 +230,9 @@
                                                         </div>-->
                                                         <div class="text-center">
                                                             <h:outputLabel style="font-weight: bolder" value="N"/><br/>
-                                                            <p:badge value="#{s.nextAvailableAppointmentNumber+1}" rendered="#{s.nextAvailableAppointmentNumber ne null}" size="large" styleClass="mr-2"></p:badge>
-                                                            <p:badge value="0" rendered="#{s.nextAvailableAppointmentNumber eq null}" size="large" styleClass="mr-2"></p:badge>
+                                                            <p:badge value="#{s.nextAvailableAppointmentNumber}" rendered="#{s.nextAvailableAppointmentNumber ne null}" size="large" styleClass="mr-2"></p:badge>
+                                                            <p:badge value="0" rendered="#{s.nextAvailableAppointmentNumber eq null and s.originatingSession.sessionStartingNumber eq null}" size="large" styleClass="mr-2"></p:badge>
+                                                            <p:badge value="#{s.originatingSession.sessionStartingNumber}" rendered="#{s.originatingSession.sessionStartingNumber ne null and s.nextAvailableAppointmentNumber eq null}" size="large" styleClass="mr-2"></p:badge>
                                                         </div>
                                                     </div>
 

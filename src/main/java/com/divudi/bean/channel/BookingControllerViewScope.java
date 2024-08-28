@@ -4899,12 +4899,17 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         long reservedBookingCount = 0;
         long sessionStartingNumber=0;
         long nextAvailableAppointmentNumber = 0;
-        
-        if (selectedSessionInstance.getOriginatingSession().getSessionStartingNumber()!=null) {
-            sessionStartingNumber=Long.parseLong(selectedSessionInstance.getOriginatingSession().getSessionStartingNumber());
-        }else{
-            sessionStartingNumber=01;
-        }
+       if (selectedSessionInstance.getOriginatingSession().getSessionStartingNumber() != null 
+    && !selectedSessionInstance.getOriginatingSession().getSessionStartingNumber().trim().equals("")) {
+    
+    System.out.println("selectedSessionInstance.getOriginatingSession().getSessionStartingNumber() = " + selectedSessionInstance.getOriginatingSession().getSessionStartingNumber());
+    
+    int ssn = Integer.parseInt(selectedSessionInstance.getOriginatingSession().getSessionStartingNumber().trim());
+    sessionStartingNumber = ssn;
+} else {
+    sessionStartingNumber = 1; // Use 1 instead of 01 since it's an integer
+}
+
 
         if (billSessions == null) {
             selectedSessionInstance.setBookedPatientCount(0l);
@@ -4990,29 +4995,40 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         selectedSessionInstance.setRefundedPatientCount(refundedPatientCount);
         selectedSessionInstance.setOnCallPatientCount(onCallPatientCount);
         selectedSessionInstance.setReservedBookingCount(reservedBookingCount);
-        selectedSessionInstance.setNextAvailableAppointmentNumber(genarateNextAvailableAppointmentNumberBySessioninstance(selectedSessionInstance,serialnumbersBySelectedSessionInstance));
+        selectedSessionInstance.setNextAvailableAppointmentNumber(generateNextAvailableAppointmentNumberBySessionInstance(selectedSessionInstance,serialnumbersBySelectedSessionInstance));
 
         // Assuming remainingPatientCount is calculated as booked - completed
         selectedSessionInstance.setRemainingPatientCount(bookedPatientCount - completedPatientCount);
         sessionInstanceController.save(selectedSessionInstance);
     }
     
-    public long genarateNextAvailableAppointmentNumberBySessioninstance(SessionInstance ssi,List<Integer> serialNumberArray){
-         long nextAvailable = 0;
+    public long generateNextAvailableAppointmentNumberBySessionInstance(SessionInstance ssi, List<Integer> serialNumberArray) {
+    long nextAvailable = 0;
     
-    if (ssi == null || serialNumberArray==null) {
+    if (ssi == null || serialNumberArray == null) {
         return nextAvailable;
     }
+    
     List<Integer> reservedNumbersBySessionInstance = CommonFunctions.convertStringToIntegerList(ssi.getReserveNumbers());
-    Set<Integer> allReservedNumbers = new HashSet<>(serialNumberArray);
-    allReservedNumbers.addAll(reservedNumbersBySessionInstance);
-    nextAvailable=1;
-    while (allReservedNumbers.contains(nextAvailable)) {
+
+    if (reservedNumbersBySessionInstance != null && !reservedNumbersBySessionInstance.isEmpty()) {
+        serialNumberArray.removeAll(reservedNumbersBySessionInstance);
+    }
+
+    int maxNumber = 0;
+    if (!serialNumberArray.isEmpty()) {
+        maxNumber = serialNumberArray.stream().max(Integer::compareTo).orElse(0);
+    }
+
+    nextAvailable = maxNumber + 1;
+
+    while (reservedNumbersBySessionInstance.contains((int) nextAvailable)) {
         nextAvailable++;
     }
+
     return nextAvailable;
-        
-    }
+}
+
 
     public void fillBillSessions(List<SessionInstance> sessionInstances) {
         if (sessionInstances == null || sessionInstances.isEmpty()) {
