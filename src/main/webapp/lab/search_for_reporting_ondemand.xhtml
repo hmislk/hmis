@@ -47,7 +47,7 @@
                                         forceSelection="true" 
                                         value="#{searchController.reportKeyWord.department}" 
                                         />
-                                    
+
                                     <h:commandLink 
                                         id="btnSearch0" 
                                         action="#{searchController.fillToSelectedDepartmentPatientInvestigations()}" 
@@ -55,7 +55,7 @@
                                         <h:outputText value="Selected Department Only" />
                                         <i class="fa fa-search" style="margin-left: 5px;"></i>
                                     </h:commandLink>
-                                    
+
                                     <h:commandLink 
                                         id="btnSearch4" 
                                         action="#{searchController.fillToMyDepartmentPatientInvestigations()}" 
@@ -184,11 +184,11 @@
 
                                     >
                                     <p:column  headerText="Order No" style="width:8em;" >
-<!--                                        <h:outputLabel
-                                            rendered="false"
+                                        <!--                                        <h:outputLabel
+                                                                                    rendered="false"
                                                                                                                                                                                                         value="#{pi.billItem.bill.insId}" 
-                                                       ></h:outputLabel>-->
-                                        
+                                                                                               ></h:outputLabel>-->
+
                                         <h:outputLabel id="lblBillNo" 
                                                        value="#{pi.billItem.bill.deptId}" 
                                                        styleClass="#{pi.billItem.bill.cancelled or pi.billItem.transRefund ? 'redtext':''}"></h:outputLabel>
@@ -266,8 +266,8 @@
                                          <h:panelGroup rendered="#{pi.encounter eq null}" >
                                             <p:outputLabel value="#{pi.encounter.patient.person.nameWithTitle}" ></p:outputLabel>
                                         </h:panelGroup>-->
-                                        
-                                        
+
+
                                         <h:commandLink id="colPtDetail" rendered="#{webUserController.hasPrivilege('LabEditPatient') and pi.billItem.bill.approvedAnyTest}" 
                                                        value="#{pi.billItem.bill.patient.person.name}, #{pi.billItem.bill.patient.age}" 
                                                        action="#{patientController.navigateToOpdPatientEdit()}" 
@@ -307,9 +307,12 @@
 
                                     <p:column headerText="Investigation"  styleClass="alignTop" style="width: 32em;">
                                         <h:outputLabel value="#{pi.billItem.item.name}" >
+                                            <p:commandButton icon="pi pi-cog" action="#{investigationController.navigateToManageInvestigation()}" styleClass="ui-button-icon-only ui-p-primeng">
+                                                <f:setPropertyActionListener value="#{pi.investigation}" target="#{investigationController.current}"  />
+                                            </p:commandButton>
                                         </h:outputLabel>
                                     </p:column>
-                                    
+
                                     <p:column rendered="#{configOptionApplicationController.getBooleanValueByKey('Allow Local Number For Opd Billing')}" headerText="Local Number"  styleClass="alignTop" style="width: 32em;">
                                         <h:outputLabel value="#{pi.billItem.bill.localNumber}" >
                                         </h:outputLabel>
@@ -479,7 +482,7 @@
                                                         <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
                                                     </h:outputLabel>
                                                 </p:tooltip>
-                                                
+
                                             </div>
                                             <p:badge value="Printed" severity="info" rendered="#{pi.printed}" ></p:badge>
                                         </ui:repeat>

@@ -19,11 +19,15 @@
             </h:panelGroup>
 
             <h:panelGroup rendered="#{webUserController.hasPrivilege('LabSampleCollecting')}" >
-                <h:form>        
 
-                    <div class="container-fluid" >
+
+                <div class="container-fluid" >
+
+
+                    <h:form >
+
                         <div class="row my-2" >
-                            <div class="col-9" >
+                            <div class="col-10" >
                                 <h:panelGrid columns="6" class="w-100" style="font-weight: bolder">
                                     <h:panelGrid columns="1" class="w-100">
                                         <h:outputLabel class="w-100" value="Date Range for"/>
@@ -192,63 +196,31 @@
 
                                 </h:panelGrid>
                             </div>
-                            <div class="col-3 ">
-                                <h:panelGrid columns="2">
-                                    <h:panelGrid columns="1">
-                                        <p:commandButton ajax="false" action="#{patientInvestigationController.searchBills}" value="Bills" icon="fas fa-file-invoice-dollar" styleClass="m-1 ui-button-success w-100"/>
-                                        <p:commandButton ajax="false" action="#{patientInvestigationController.searchPatientInvestigations}" value="Investigations" icon="fas fa-search" styleClass="m-1 ui-button-primary w-100"/>
-                                        <p:commandButton ajax="false" action="#{patientInvestigationController.searchPatientSamples}" value="Samples" icon="fas fa-vial" styleClass="m-1 ui-button-warning w-100"/>
-                                        <p:commandButton ajax="false" action="#{patientInvestigationController.searchPatientReports}" value="Reports" icon="fas fa-file-medical" styleClass="m-1 ui-button-danger w-100"/>
-                                        <p:commandButton ajax="false" action="#{patientInvestigationController.clearFilters}" value="Clear" icon="fas fa-eraser" styleClass="m-1 ui-button-secondary w-100"/>
-                                    </h:panelGrid>
-                                    <h:panelGrid columns="1">
-                                        <p:commandButton rendered="#{patientInvestigationController.listingEntity eq 'PATIENT_INVESTIGATIONS'}"
-                                                         id="btnGeneraBarcodes"
-                                                         value="Generate Barcodes"
-                                                         ajax="false" action="#{patientInvestigationController.generateBarcodesForSelectedPatientInvestigations()}"
-                                                         title="Generate Barcodes" icon="fas fa-barcode" styleClass="m-1 ui-button-success w-100"/>
-
-                                        <p:commandButton rendered="#{patientInvestigationController.listingEntity eq 'BILLS'}"
-                                                         id="btnGeneraBarcodesBills"
-                                                         value="Generate Barcodes by Bills"
-                                                         ajax="false" action="#{patientInvestigationController.generateBarcodesForSelectedBills()}"
-                                                         title="Generate Barcodes" icon="fas fa-barcode" styleClass="m-1 ui-button-success w-100"/>
-
-                                        <p:commandButton disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
-                                                         id="btnCollectSamples"
-                                                         value="Collect Samples"
-                                                         ajax="false" action="#{patientInvestigationController.collectSamples()}"
-                                                         title="Collect Samples" icon="fas fa-hand-holding-medical" styleClass="m-1 ui-button-primary w-100"/>
-
-                                        <p:commandButton disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
-                                                         id="btnSentToLab"
-                                                         value="Sent to Lab"
-                                                         ajax="false" action="#{patientInvestigationController.sampleSendToLab()}"
-                                                         title="Sent to Lab" icon="fas fa-vials" styleClass="m-1 ui-button-warning w-100"/>
-
-                                        <p:commandButton disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
-                                                         id="btnReceivToLab"
-                                                         value="Received Samples"
-                                                         ajax="false" action="#{patientInvestigationController.receivedSamples()}"
-                                                         title="Sent to Lab" icon="fas fa-vials" styleClass="m-1 ui-button-warning w-100"/>
-                                    </h:panelGrid>
+                            <div class="col-2">
+                                <h:panelGrid columns="1" class="w-100 mx-2">
+                                    <p:commandButton ajax="false" action="#{patientInvestigationController.searchBills}" value="Bills" icon="fas fa-file-invoice-dollar" styleClass="m-1 ui-button-success w-100"/>
+                                    <p:commandButton ajax="false" action="#{patientInvestigationController.searchPatientInvestigations}" value="Investigations" icon="fas fa-search" styleClass="m-1 ui-button-primary w-100"/>
+                                    <p:commandButton ajax="false" action="#{patientInvestigationController.searchPatientSamples}" value="Samples" icon="fas fa-vial" styleClass="m-1 ui-button-warning w-100"/>
+                                    <p:commandButton ajax="false" action="#{patientInvestigationController.searchPatientReports}" value="Reports" icon="fas fa-file-medical" styleClass="m-1 ui-button-danger w-100"/>
+                                    <p:commandButton ajax="false" action="#{patientInvestigationController.clearFilters}" value="Clear" icon="fas fa-eraser" styleClass="m-1 ui-button-secondary w-100"/>
                                 </h:panelGrid>
                             </div>
                         </div>
 
+                    </h:form>
 
-
+                    <h:form >
                         <div class="row" >
-                            <div class="col-12" >
+                            <div class="col-10" >
 
                                 <h:panelGroup rendered="#{patientInvestigationController.listingEntity eq 'PATIENT_INVESTIGATIONS'}" >
 
                                     <p:dataTable  
                                         class="w-100"
                                         value="#{patientInvestigationController.items}" 
-                                        var="ptIx" 
+                                        var="patientInvestigation" 
                                         paginator="true"
-                                        rowKey="#{ptIx.id}"
+                                        rowKey="#{patientInvestigation.id}"
                                         paginatorPosition="bottom"
                                         selectionMode="multiple"
                                         selection="#{patientInvestigationController.selectedItems}"
@@ -261,105 +233,126 @@
                                         </p:column>
 
                                         <!-- Bill Number Column with Icon and Colour -->
-                                        <p:column headerText="Bill Number" width="6em" style="vertical-align: top;">
+                                        <p:column headerText="Bill Number" width="10em" style="vertical-align: top;">
                                             <p:commandLink 
                                                 ajax="false" 
                                                 class="m-2 text-primary"
-                                                value="#{ptIx.billItem.bill.deptId}" 
+                                                value="#{patientInvestigation.billItem.bill.deptId}" 
                                                 action="#{billSearch.navigateToViewOpdBill()}">
-                                                <f:setPropertyActionListener value="#{ptIx.billItem.bill}" target="#{billSearch.bill}"/>
+                                                <f:setPropertyActionListener value="#{patientInvestigation.billItem.bill}" target="#{billSearch.bill}"/>
                                                 <i class="fas fa-receipt"></i> <!-- Bill Icon -->
                                             </p:commandLink>
                                             <br/>
                                             <i class="fas fa-calendar-alt text-secondary"></i> <!-- Date Icon -->
-                                            <h:outputLabel value="#{ptIx.billItem.bill.createdAt}">
+                                            <h:outputLabel value="#{patientInvestigation.billItem.bill.createdAt}">
                                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"></f:convertDateTime>
                                             </h:outputLabel>
                                             <br/>
                                             <!-- CC, IP, and OP Icons with Colours -->
-                                            <h:panelGroup rendered="#{ptIx.billItem.bill.ipOpOrCc == 'CC'}">
+                                            <h:panelGroup rendered="#{patientInvestigation.billItem.bill.ipOpOrCc == 'CC'}">
                                                 <i class="fas fa-box text-warning"></i> <!-- Collecting Centre Icon -->
                                                 <h:outputLabel value="Collecting Centre (CC)" class="text-warning"/>
                                             </h:panelGroup>
-                                            <h:panelGroup rendered="#{ptIx.billItem.bill.ipOpOrCc == 'IP'}">
+                                            <h:panelGroup rendered="#{patientInvestigation.billItem.bill.ipOpOrCc == 'IP'}">
                                                 <i class="fas fa-procedures text-info"></i> <!-- Inpatient Icon -->
                                                 <h:outputLabel value="Inpatient (IP)" class="text-info"/>
                                             </h:panelGroup>
-                                            <h:panelGroup rendered="#{ptIx.billItem.bill.ipOpOrCc == 'OP'}">
+                                            <h:panelGroup rendered="#{patientInvestigation.billItem.bill.ipOpOrCc == 'OP'}">
                                                 <i class="fas fa-user-outlet text-primary"></i> <!-- Outpatient Icon -->
                                                 <h:outputLabel value="Outpatient (OP)" class="text-primary"/>
                                             </h:panelGroup>
                                         </p:column>
 
                                         <!-- Patient Details Column with Icons -->
-                                        <p:column headerText="Patient" width="10em" style="vertical-align: top;">
+                                        <p:column headerText="Patient" style="vertical-align: top;">
                                             <i class="fas fa-user text-primary"></i> <!-- Name Icon -->
-                                            <h:outputLabel value="#{ptIx.billItem.bill.patient.person.nameWithTitle}" />
+                                            <h:outputLabel value="#{patientInvestigation.billItem.bill.patient.person.nameWithTitle}" />
                                             <br/>
                                             <i class="fas fa-birthday-cake text-info"></i> <!-- Age Icon -->
-                                            <h:outputLabel value="#{ptIx.billItem.bill.patient.person.ageAsString}" />
+                                            <h:outputLabel value="#{patientInvestigation.billItem.bill.patient.person.ageAsString}" />
                                             <br/>
                                             <i class="fas fa-venus-mars text-danger"></i> <!-- Sex Icon -->
-                                            <h:outputLabel value="#{ptIx.billItem.bill.patient.person.sex.label}" />
+                                            <h:outputLabel value="#{patientInvestigation.billItem.bill.patient.person.sex.label}" />
                                             <br/>
                                             <i class="fas fa-phone-alt text-success"></i> <!-- Phone Icon -->
-                                            <h:outputLabel value="#{ptIx.billItem.bill.patient.person.phone}" />
+                                            <h:outputLabel value="#{patientInvestigation.billItem.bill.patient.person.phone}" />
                                             <br/>
                                             <i class="fas fa-mobile-alt text-warning"></i> <!-- Mobile Icon -->
-                                            <h:outputLabel value="#{ptIx.billItem.bill.patient.person.mobile}" />
+                                            <h:outputLabel value="#{patientInvestigation.billItem.bill.patient.person.mobile}" />
                                         </p:column>
 
                                         <!-- Investigation Name Column -->
-                                        <p:column headerText="Investigations" width="10em" style="vertical-align: top;">
+                                        <p:column headerText="Investigations" width="15em" style="vertical-align: top;">
                                             <i class="fas fa-vial text-danger"></i> <!-- Investigation Icon -->
-                                            <h:outputLabel value="#{ptIx.investigation.name}"/>
+                                            <h:outputLabel value="#{patientInvestigation.investigation.name}"/>
                                         </p:column>
 
                                         <!-- Status Column -->
                                         <p:column headerText="Status" width="5em" style="vertical-align: top;">
                                             <i class="fas fa-info-circle text-info"></i> <!-- Status Icon -->
-                                            <h:outputLabel value="#{ptIx.status}"/>
+                                            <h:outputLabel value="#{patientInvestigation.status}"/>
                                         </p:column>
 
                                         <!-- Ordered Institution and Department Column with Icons -->
-                                        <p:column headerText="Ordered Institute" width="10em" style="vertical-align: top;">
-                                            <h:panelGroup rendered="#{ptIx.billItem.bill.collectingCentre == null}">
+                                        <p:column headerText="Ordered Institute" width="15em" style="vertical-align: top;">
+                                            <h:panelGroup rendered="#{patientInvestigation.billItem.bill.collectingCentre == null}">
                                                 <i class="fas fa-hospital text-info"></i> <!-- Institution Icon -->
-                                                <h:outputLabel value="#{ptIx.billItem.bill.institution.name}" />
+                                                <h:outputLabel value="#{patientInvestigation.billItem.bill.institution.name}" />
                                                 <br/>
                                                 <i class="fas fa-building text-primary"></i> <!-- Department Icon -->
-                                                <h:outputLabel value="#{ptIx.billItem.bill.department.name}" />
+                                                <h:outputLabel value="#{patientInvestigation.billItem.bill.department.name}" />
                                             </h:panelGroup>
-                                            <h:panelGroup rendered="#{ptIx.billItem.bill.collectingCentre != null}">
+                                            <h:panelGroup rendered="#{patientInvestigation.billItem.bill.collectingCentre != null}">
                                                 <i class="fas fa-box text-secondary"></i> <!-- Collecting Centre Icon -->
-                                                <h:outputLabel value="#{ptIx.billItem.bill.collectingCentre.name}" />
+                                                <h:outputLabel value="#{patientInvestigation.billItem.bill.collectingCentre.name}" />
                                             </h:panelGroup>
                                         </p:column>
 
                                         <!-- Lab Institution and Department Column with Icons -->
-                                        <p:column headerText="Lab" width="10em" style="vertical-align: top;">
+                                        <p:column headerText="Lab" width="15em" style="vertical-align: top;">
                                             <i class="fas fa-flask text-danger"></i> <!-- Lab Institution Icon -->
-                                            <h:outputLabel value="#{ptIx.billItem.bill.toInstitution.name}" />
+                                            <h:outputLabel value="#{patientInvestigation.billItem.bill.toInstitution.name}" />
                                             <br/>
                                             <i class="fas fa-vials text-success"></i> <!-- Lab Department Icon -->
-                                            <h:outputLabel value="#{ptIx.billItem.bill.toDepartment.name}" />
+                                            <h:outputLabel value="#{patientInvestigation.billItem.bill.toDepartment.name}" />
                                         </p:column>
 
-                                        <p:column headerText="Sample Components">
-                                            <ui:repeat value="#{patientInvestigationController.getPatientSampleComponentsByInvestigation(ptIx)}" var="psc">
+                                        <p:column headerText="Samples" width="10em">
+                                            <ui:repeat value="#{patientInvestigationController.getPatientSampleComponentsByInvestigation(patientInvestigation)}" var="psc">
                                                 <div class="ui-g" style="margin-bottom: 10px;">
-                                                    <div class="ui-g-12">
+                                                    <div class="ui-g-6">
                                                         <i class="fa fa-vial"></i>
-                                                        <span class="text-primary font-weight-bold">Sample ID:</span>
                                                         <h:outputText value="#{psc.patientSample.id}" class="text-primary" />
                                                     </div>
-                                                    <div class="ui-g-12">
+                                                    <div class="ui-g-6">
                                                         <i class="fa fa-flask"></i>
-                                                        <span class="text-success font-weight-bold">Test Component:</span>
                                                         <h:outputText value="#{psc.investigationComponant.name}" class="text-success" />
                                                     </div>
                                                 </div>
                                             </ui:repeat>
+                                        </p:column>
+
+                                        <p:column headerText="Actions" >
+                                            <h:panelGroup rendered="#{patientInvestigation.billItem.bill.cancelled ne true}">
+                                                <p:commandLink class="m-1" ajax="false" id="btnPrintWorksheets" disabled="#{patientInvestigation.sampleAccepted ne true}" action="/lab/single_worksheet?faces-redirect=true" >
+                                                    <f:setPropertyActionListener value="#{patientInvestigation}" target="#{patientInvestigationController.current}" ></f:setPropertyActionListener>
+                                                    <p:graphicImage library="image" styleClass="standedicon" name="worksheet.gif" ></p:graphicImage>
+                                                </p:commandLink>
+
+
+
+                                                <p:commandLink id="btnNewReport" 
+                                                               class="m-1"
+                                                               disabled="#{!patientInvestigation.sampleAccepted}" 
+                                                               action="#{patientReportController.navigateToNewlyCreatedPatientReport(patientInvestigation)}"   >
+                                                    <p:graphicImage library="image" styleClass="standedicon" name="data_entry.png" ></p:graphicImage>
+                                                </p:commandLink>
+
+
+
+                                            </h:panelGroup>
+
+
                                         </p:column>
 
 
@@ -383,7 +376,7 @@
                                         rowsPerPageTemplate="10,25,50">
 
                                         <!-- Bill Number and Date Column -->
-                                        <p:column headerText="Bill No." width="6em" style="vertical-align: top;">
+                                        <p:column headerText="Bill No." width="10em" style="vertical-align: top;">
                                             <p:commandLink 
                                                 ajax="false" 
                                                 class="m-2 text-primary"
@@ -396,6 +389,10 @@
                                             <i class="fas fa-calendar-alt text-secondary"></i> <!-- Date Icon -->
                                             <h:outputLabel value="#{b.createdAt}">
                                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"></f:convertDateTime>
+                                            </h:outputLabel>
+                                            <br/>
+                                            <i class="fas fa-calendar-alt text-secondary"></i> <!-- Date Icon -->
+                                            <h:outputLabel value="#{b.id}">
                                             </h:outputLabel>
                                             <br/>
                                             <!-- CC, IP, and OP Icons with Colours -->
@@ -414,7 +411,7 @@
                                         </p:column>
 
                                         <!-- Patient Details Column with Icons -->
-                                        <p:column headerText="Patient" width="10em" style="vertical-align: top;">
+                                        <p:column headerText="Patient"  style="vertical-align: top;">
                                             <i class="fas fa-user text-primary"></i> <!-- Name Icon -->
                                             <h:outputLabel value="#{b.patient.person.nameWithTitle}" />
                                             <br/>
@@ -432,7 +429,7 @@
                                         </p:column>
 
                                         <!-- Ordered Institution and Department Column -->
-                                        <p:column headerText="Ordered Institute" width="10em" style="vertical-align: top;">
+                                        <p:column headerText="Ordered Institute" width="15em" style="vertical-align: top;">
                                             <h:panelGroup rendered="#{b.collectingCentre == null}">
                                                 <i class="fas fa-hospital text-info"></i> <!-- Institution Icon -->
                                                 <h:outputLabel value="#{b.institution.name}" />
@@ -447,7 +444,7 @@
                                         </p:column>
 
                                         <!-- Lab Institution and Department Column -->
-                                        <p:column headerText="Lab" width="10em" style="vertical-align: top;">
+                                        <p:column headerText="Lab" width="15em" style="vertical-align: top;">
                                             <i class="fas fa-flask text-danger"></i> <!-- Lab Institution Icon -->
                                             <h:outputLabel value="#{b.toInstitution.name}" />
                                             <br/>
@@ -455,7 +452,7 @@
                                             <h:outputLabel value="#{b.toDepartment.name}" />
                                         </p:column>
 
-                                        <p:column headerText="Actions" >
+                                        <p:column headerText="Actions" width="10em">
                                             <p:commandButton value="Generate Barcodes" ajax="false" action="#{patientInvestigationController.generateBarcodesForSelectedBill(b)}" ></p:commandButton>
                                         </p:column>
 
@@ -519,7 +516,7 @@
                                                     <div class="patient-sample-info">
                                                         <ui:repeat value="#{patientInvestigationController.getPatientSampleComponentsByPatientSample(psc.patientSample)}" var="psw">
                                                             <span class="sample-component">
-                                                                #{psw.investigationComponant.name} &nbsp;&nbsp;
+                                                                #{psw.nameTranscient}&nbsp;&nbsp;
                                                             </span>
                                                         </ui:repeat>
                                                     </div>
@@ -564,6 +561,11 @@
                                         <p:column headerText="Sample ID" width="6em" style="vertical-align: top;">
                                             <i class="fas fa-vial text-danger"></i> <!-- Sample Icon -->
                                             <h:outputLabel value="#{ps.id}" />
+                                        </p:column>
+
+                                        <p:column headerText="Tube" width="6em" style="vertical-align: top;">
+                                            <i class="fas fa-vial text-danger"></i> <!-- Sample Icon -->
+                                            <h:outputLabel value="#{ps.tube.name}" />
                                         </p:column>
 
                                         <!-- Bill Column with Icon -->
@@ -617,9 +619,7 @@
 
                                         <!-- Status Column with Badge -->
                                         <p:column headerText="Status" width="6em" style="vertical-align: top;">
-                                            <p:badge value="Collected" rendered="#{ps.status == 'Collected'}" severity="success" styleClass="mr-2 mx-1"></p:badge>
-                                            <p:badge value="Pending" rendered="#{ps.status == 'Pending'}" severity="warning" styleClass="mr-2 mx-1"></p:badge>
-                                            <p:badge value="Rejected" rendered="#{ps.status == 'Rejected'}" severity="danger" styleClass="mr-2 mx-1"></p:badge>
+                                            #{ps.status}
                                         </p:column>
 
                                         <!-- Sample Number Column (Conditionally Rendered) -->
@@ -806,12 +806,97 @@
                                 </h:panelGroup>
 
                             </div>
+                            <div class="col-2" >
+                                <h:panelGrid columns="1" class="w-100">
+                                    <p:commandButton rendered="#{patientInvestigationController.listingEntity eq 'PATIENT_INVESTIGATIONS'}"
+                                                     id="btnGenerateBarcodes"
+                                                     value="Generate Barcodes"
+                                                     ajax="false"
+                                                     action="#{patientInvestigationController.generateBarcodesForSelectedPatientInvestigations()}"
+                                                     title="Generate Barcodes"
+                                                     icon="pi pi-barcode"
+                                                     styleClass="m-1 w-100 ui-button-success" />
+
+                                    <p:commandButton disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
+                                                     id="btnCollectSamples"
+                                                     value="Collect Samples"
+                                                     ajax="false"
+                                                     action="#{patientInvestigationController.collectSamples()}"
+                                                     title="Collect Samples"
+                                                     icon="pi pi-plus-circle"
+                                                     styleClass="m-1  w-100 ui-button-primary" />
+                                    <hr/>
+                                    <p:autoComplete 
+                                        completeMethod="#{staffController.completeStaff}"
+                                        value="#{patientInvestigationController.sampleTransportedToLabByStaff}" 
+                                        var="mys" class="w-100" inputStyleClass="w-100"
+                                        itemLabel="#{mys.person.name}" 
+                                        itemValue="#{mys}">
+                                        <p:column>
+                                            <h:outputText value="#{mys.person.nameWithTitle}" />
+                                        </p:column>
+                                        <p:column>
+                                            <h:outputText value="#{mys.code}" />
+                                        </p:column>
+                                        <p:column>
+                                            <h:outputText value="#{mys.epfNo}" />
+                                        </p:column>
+                                    </p:autoComplete>
+
+
+
+
+                                    <p:commandButton disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
+                                                     id="btnSendToLab"
+                                                     value="Send to Lab"
+                                                     ajax="false"
+                                                     action="#{patientInvestigationController.sendSamplesToLab()}"
+                                                     title="Send to Lab"
+                                                     icon="pi pi-external-link"
+                                                     styleClass="m-1  w-100 ui-button-warning" />
+                                    <hr/>
+
+                                    <p:commandButton disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
+                                                     id="btnReceiveAtLab"
+                                                     value="Received Samples"
+                                                     ajax="false"
+                                                     action="#{patientInvestigationController.receiveSamplesAtLab()}"
+                                                     title="Receive Samples"
+                                                     icon="pi pi-check-circle"
+                                                     styleClass="m-1  w-100 ui-button-info" />
+
+                                    <p:commandButton disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
+                                                     id="btnCollectReceiveAtLab"
+                                                     value="Collect &amp; Received Samples"
+                                                     ajax="false"
+                                                     action="#{patientInvestigationController.collectAndReceiveSamplesAtLab()}"
+                                                     title="Receive Samples"
+                                                     icon="pi pi-check-circle"
+                                                     styleClass="m-1  w-100 ui-button-info" />
+
+                                    <hr/>
+                                    
+                                    <p:inputText value="#{patientInvestigationController.sampleRejectionComment}" ></p:inputText>
+
+                                    <p:commandButton disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
+                                                     id="btnRejectSamples"
+                                                     value="Reject Samples"
+                                                     ajax="false"
+                                                     action="#{patientInvestigationController.rejectSamples()}"
+                                                     title="Reject Samples"
+                                                     icon="pi pi-times-circle"
+                                                     styleClass="m-1  w-100 ui-button-danger" />
+
+                                    <hr/>
+                                </h:panelGrid>
+                            </div>
+
                         </div>
+                    </h:form>
+
+                </div>
 
 
-                    </div>
-
-                </h:form>
             </h:panelGroup>
         </ui:define>
     </ui:composition>

@@ -134,6 +134,7 @@ public class BillItem implements Serializable {
     private Priority priority;
     @Enumerated(EnumType.ORDINAL)
     private BillItemStatus billItemStatus;
+    private double feeValue;
 
 //    @Transient
     int searialNo;
@@ -967,6 +968,12 @@ public class BillItem implements Serializable {
         this.otherFee = otherFee;
     }
 
-   
+    public double getFeeValue() {
+        return feeValue;
+    }
+
+    public void setFeeValue(double feeValue) {
+        this.feeValue = feeValue;
+    }
 
 }

@@ -13,6 +13,7 @@ import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.Patient;
+import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
 import java.io.Serializable;
 import java.util.Date;
@@ -85,6 +86,8 @@ public class PatientSample implements Serializable {
     private WebUser sampleSentBy;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date sampleSentAt;
+    @ManyToOne
+    private Staff sampleTransportedToLabByStaff;
 
     @Enumerated
     private Priority priority;
@@ -166,6 +169,14 @@ public class PatientSample implements Serializable {
     private Department cancellDepartment;
     @ManyToOne
     private Institution cancellInstitution;
+    
+    private String sampleRejectionComment;
+    private Boolean sampleRejected = false;
+    @ManyToOne
+    private WebUser sampleRejectedBy;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date sampleRejectedAt;
+    
     //Retairing properties
     private boolean retired;
     @ManyToOne
@@ -206,6 +217,8 @@ public class PatientSample implements Serializable {
         }
         return true;
     }
+    
+    
 
     @Override
     public String toString() {
@@ -733,4 +746,46 @@ public class PatientSample implements Serializable {
         this.priority = priority;
     }
 
+    public Boolean getSampleRejected() {
+        return sampleRejected;
+    }
+
+    public void setSampleRejected(Boolean sampleRejected) {
+        this.sampleRejected = sampleRejected;
+    }
+
+    public WebUser getSampleRejectedBy() {
+        return sampleRejectedBy;
+    }
+
+    public void setSampleRejectedBy(WebUser sampleRejectedBy) {
+        this.sampleRejectedBy = sampleRejectedBy;
+    }
+
+    public Date getSampleRejectedAt() {
+        return sampleRejectedAt;
+    }
+
+    public void setSampleRejectedAt(Date sampleRejectedAt) {
+        this.sampleRejectedAt = sampleRejectedAt;
+    }
+
+    public Staff getSampleTransportedToLabByStaff() {
+        return sampleTransportedToLabByStaff;
+    }
+
+    public void setSampleTransportedToLabByStaff(Staff sampleTransportedToLabByStaff) {
+        this.sampleTransportedToLabByStaff = sampleTransportedToLabByStaff;
+    }
+
+    public String getSampleRejectionComment() {
+        return sampleRejectionComment;
+    }
+
+    public void setSampleRejectionComment(String sampleRejectionComment) {
+        this.sampleRejectionComment = sampleRejectionComment;
+    }
+
+    
+    
 }

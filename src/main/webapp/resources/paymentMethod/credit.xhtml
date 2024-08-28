@@ -38,11 +38,18 @@
 
             <p:inputText 
                 id="polNo" 
-                style="width: 200px;"
+                style="width: 100px;"
                 value="#{cc.attrs.paymentMethodData.credit.referralNo}" 
                 placeholder="Policy NO" >
             </p:inputText>
-            
+
+            <p:inputText 
+                id="refNo" 
+                style="width: 100px;" 
+                value="#{cc.attrs.paymentMethodData.credit.referenceNo}" 
+                placeholder="Reference NO" >
+            </p:inputText>
+
             <p:inputText 
                 id="memo" 
                 style="width: 300px;"
@@ -59,7 +66,7 @@
                 action="#{navigationController.navigateToCreditCompany()}"
                 actionListener="#{creditCompanyController.prepareAdd()}" />  
 
-                    </div>
+        </div>
 
     </cc:implementation>
 </html>
