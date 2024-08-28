@@ -12,9 +12,9 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation class="w-100">
-        <div class="d-flex justify-content-center align-items-center w-100" style="background-color: rgba(211, 211, 211,0.7); height: 100vh;">
+        <div class="d-flex justify-content-center align-items-center w-100" style="background-color: rgba(211, 211, 211,0.7); height: 100vh; min-width: 30rem; ">
             <h:form id="formDept" class="my-5 p-5">
-                <div class="card shadow-lg p-5 w-100" style="background-color: rgba(255, 255, 255, 0.9);">
+                <div class="card shadow-lg p-5 w-100" style="background-color: rgba(255, 255, 255, 0.9); border: 2px solid red; min-width: 50em;" >
                     <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Display the payment notice')}" >
                         <iframe src="#{configOptionApplicationController.getLongTextValueByKey('Payment Notice URL')}" 
                                 width="600" height="400" frameborder="0"></iframe>
@@ -34,6 +34,7 @@
                                 filterMatchMode="contains" 
                                 required="true" 
                                 var="d" 
+                                style="width: 35em;"
                                 class="w-100 form-select form-select-lg p-1"
                                 requiredMessage="Please select the Department you have to log.">
                                 <f:selectItems value="#{sessionController.departments}"
