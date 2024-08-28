@@ -53,13 +53,13 @@ public class CashBookEntryController implements Serializable {
     CashBookEntry current;
     private List<CashBookEntry> cashBookEntryList;
 
-    public void writeCashBookEntry(Payment p) {
+    public void writeCashBookEntryAtPaymentCreation(Payment p) {
         if (p == null) {
             JsfUtil.addErrorMessage("Cashbook Entry Error !");
             return;
         }
 
-        if (!chackPaymentMethodForCashBookEntry(p.getPaymentMethod())) {
+        if (!chackPaymentMethodForCashBookEntryAtPaymentMethodCreation(p.getPaymentMethod())) {
             return;
         }
 
@@ -73,6 +73,33 @@ public class CashBookEntryController implements Serializable {
         current.setPayment(p);
         current.setCashBook(sessionController.getLoggedCashbook());
         current.setSite(sessionController.getDepartment().getSite());
+        current.setBill(p.getBill());
+        updateBalances(p.getPaymentMethod(), p.getPaidValue(), current);
+        cashbookEntryFacade.create(current);
+
+    }
+
+    public void writeCashBookEntryAtHandover(Payment p) {
+        if (p == null) {
+            JsfUtil.addErrorMessage("Cashbook Entry Error !");
+            return;
+        }
+
+        if (!chackPaymentMethodForCashBookEntryAtHandover(p.getPaymentMethod())) {
+            return;
+        }
+        System.out.println("p.getPaidValue() = " + p.getPaidValue());
+        current = new CashBookEntry();
+        current.setInstitution(p.getInstitution());
+        current.setDepartment(p.getDepartment());
+        current.setCreater(sessionController.getLoggedUser());
+        current.setCreatedAt(new Date());
+        current.setPaymentMethod(p.getPaymentMethod());
+        current.setEntryValue(p.getPaidValue());
+        current.setPayment(p);
+        current.setBill(p.getHandoverAcceptBill());
+        current.setCashBook(sessionController.getLoggedCashbook());
+        current.setSite(sessionController.getDepartment().getSite());
         updateBalances(p.getPaymentMethod(), p.getPaidValue(), current);
         cashbookEntryFacade.create(current);
 
@@ -82,7 +109,7 @@ public class CashBookEntryController implements Serializable {
         Map m = new HashMap<>();
         String jpql = "Select cbe from CashBookEntry cbe where "
                 + " cbe.paymentMethod=:pm";
-        
+
         m.put("pm", pm);
 
         if (cbe.getDepartment() != null) {
@@ -140,7 +167,7 @@ public class CashBookEntryController implements Serializable {
 
     }
 
-    public boolean chackPaymentMethodForCashBookEntry(PaymentMethod pm) {
+    public boolean chackPaymentMethodForCashBookEntryAtPaymentMethodCreation(PaymentMethod pm) {
         boolean check = false;
         if (pm == null) {
             JsfUtil.addErrorMessage("Payment method is not found !");
@@ -193,6 +220,69 @@ public class CashBookEntryController implements Serializable {
 
             case OnlineSettlement:
                 check = true;
+                break;
+
+            default:
+
+        }
+
+        return check;
+
+    }
+
+    public boolean chackPaymentMethodForCashBookEntryAtHandover(PaymentMethod pm) {
+        boolean check = false;
+        if (pm == null) {
+            JsfUtil.addErrorMessage("Payment method is not found !");
+            return false;
+        }
+        switch (pm) {
+            case Card:
+                check = false;
+                break;
+
+            case Cash:
+                check = true;
+                break;
+
+            case Cheque:
+                check = false;
+                break;
+
+            case Agent:
+                check = true;
+                break;
+
+            case Credit:
+                check = false;
+                break;
+
+            case OnCall:
+                check = true;
+                break;
+
+            case PatientDeposit:
+                check = true;
+                break;
+
+            case Slip:
+                check = false;
+                break;
+
+            case Staff:
+                check = false;
+                break;
+
+            case Staff_Welfare:
+                check = false;
+                break;
+
+            case ewallet:
+                check = false;
+                break;
+
+            case OnlineSettlement:
+                check = false;
                 break;
 
             default:

@@ -12143,45 +12143,52 @@ public class SearchController implements Serializable {
         }
 
         // Fill the sheet with bill data first, then bill item data in subsequent rows
-        for (Bill bill : bills) {
-            Row billRow = sheet.createRow(rowIdx++);
-            int colIdx = 0;
-            billRow.createCell(colIdx++).setCellValue(bill.getId());
-            billRow.createCell(colIdx++).setCellValue(bill.getInstitution() != null ? bill.getInstitution().getName() : "");
-            billRow.createCell(colIdx++).setCellValue(bill.getDepartment() != null ? bill.getDepartment().getName() : "");
-            billRow.createCell(colIdx++).setCellValue(bill.getPatient() != null && bill.getPatient().getPerson() != null ? bill.getPatient().getPerson().getName() : "");
-            billRow.createCell(colIdx++).setCellValue(bill.getStaff() != null && bill.getStaff().getPerson() != null ? bill.getStaff().getPerson().getNameWithTitle() : "");
-            billRow.createCell(colIdx++).setCellValue(bill.getCreater() != null && bill.getCreater().getWebUserPerson().getName() != null ? bill.getCreater().getWebUserPerson().getName() : "");
-            billRow.createCell(colIdx++).setCellValue(bill.getBillType() != null ? bill.getBillType().getLabel() : "");
-            billRow.createCell(colIdx++).setCellValue(bill.getGrantTotal());
-            billRow.createCell(colIdx++).setCellValue(bill.getDiscount());
-            billRow.createCell(colIdx++).setCellValue(bill.getNetTotal());
-            billRow.createCell(colIdx++).setCellValue(bill.getPaymentMethod() != null ? bill.getPaymentMethod().getLabel() : "");
-
-            // Leave the bill item columns empty in the bill row
-            for (int j = 10; j < headers.length; j++) {
-                billRow.createCell(j);
-            }
-
-            // Fill in bill item data in subsequent rows
-            for (BillItem bi : billItems) {
-                if (bi.getBill().equals(bill)) {
-                    Row itemRow = sheet.createRow(rowIdx++);
-                    // Leave bill details columns empty
-                    for (int j = 0; j < 10; j++) {
-                        itemRow.createCell(j);
-                    }
-
-                    int itemColIdx = 10;
-                    itemRow.createCell(itemColIdx++).setCellValue(bi.getItem() != null ? bi.getItem().getName() : "");
-                    itemRow.createCell(itemColIdx++).setCellValue(bi.getItem() != null ? bi.getItem().getCode() : "");
-                    itemRow.createCell(itemColIdx++).setCellValue(bi.getItem().getItemType() != null ? bi.getItem().getItemType().toString() : "");
-                    itemRow.createCell(itemColIdx++).setCellValue(bi.getQty());
-                    itemRow.createCell(itemColIdx++).setCellValue(bi.getRate());
-                    itemRow.createCell(itemColIdx++).setCellValue(bi.getGrossValue());
-                    itemRow.createCell(itemColIdx++).setCellValue(bi.getDiscount());
-                    itemRow.createCell(itemColIdx++).setCellValue(bi.getNetValue());
+        for (BillItem bi : billItems) {
+            if (bi.getBill().equals(bill)) {
+                Row itemRow = sheet.createRow(rowIdx++);
+                // Leave bill details columns empty
+                for (int j = 0; j < 10; j++) {
+                    itemRow.createCell(j);
                 }
+
+                int itemColIdx = 10;
+                itemRow.createCell(itemColIdx++).setCellValue(
+                        bi != null && bi.getItem() != null && bi.getItem().getName() != null
+                        ? bi.getItem().getName()
+                        : ""
+                );
+                itemRow.createCell(itemColIdx++).setCellValue(
+                        bi != null && bi.getItem() != null && bi.getItem().getCode() != null
+                        ? bi.getItem().getCode()
+                        : ""
+                );
+                itemRow.createCell(itemColIdx++).setCellValue(
+                        bi != null && bi.getItem() != null && bi.getItem().getItemType() != null
+                        ? bi.getItem().getItemType().toString()
+                        : ""
+                );
+                itemRow.createCell(itemColIdx++).setCellValue(
+                        bi != null && bi.getQty() != null
+                        ? bi.getQty()
+                        : 0
+                );
+                itemRow.createCell(itemColIdx++).setCellValue(
+                        bi != null ? bi.getRate()
+                        : 0.0
+                );
+                itemRow.createCell(itemColIdx++).setCellValue(
+                        bi != null? bi.getGrossValue()
+                        : 0.0
+                );
+                itemRow.createCell(itemColIdx++).setCellValue(
+                        bi != null ? bi.getDiscount()
+                        : 0.0
+                );
+                itemRow.createCell(itemColIdx++).setCellValue(
+                        bi != null 
+                        ? bi.getNetValue()
+                        : 0.0
+                );
             }
         }
 
@@ -12243,16 +12250,14 @@ public class SearchController implements Serializable {
         params.put("toDate", toDate);
         params.put("ret", false);
 
-        
 //        jpql = "SELECT b FROM Bill b JOIN FETCH b.billItems WHERE  b.retired=:ret and b.createdAt BETWEEN :fromDate AND :toDate";
-        
         System.out.println("params = " + params);
         System.out.println("jpql = " + jpql);
-        
+
         // Execute the query to get filtered bills
-        List<Bill> bills = billFacade.findByJpql(jpql, params,TemporalType.TIMESTAMP); // Assuming you have a facade to execute JPQL queries
-System.out.println("bills = " + bills);
-        
+        List<Bill> bills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP); // Assuming you have a facade to execute JPQL queries
+        System.out.println("bills = " + bills);
+
         // Since bills are fetched with their items, simply collect all items if needed
         List<BillItem> allBillItems = new ArrayList<>();
         bills.forEach(bill -> allBillItems.addAll(bill.getBillItems()));
