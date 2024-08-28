@@ -1219,6 +1219,19 @@ public class PatientInvestigationController implements Serializable {
         listBillsToGenerateBarcodes();
         return "/lab/generate_barcode_p?faces-redirect=true";
     }
+    
+    public String navigateToGenerateBarcodesFromCourier() {
+        boolean searchInvestigationsForLoggedInstitution = configOptionApplicationController.getBooleanValueByKey("For Lab Sample Barcode Generation, Search by Ordered Institution", false);
+        if (searchInvestigationsForLoggedInstitution) {
+            orderedInstitution = sessionController.getInstitution();
+        }
+        boolean searchInvestigationsForLoggedDepartment = configOptionApplicationController.getBooleanValueByKey("For Lab Sample Barcode Generation, Search by Ordered Department", false);
+        if (searchInvestigationsForLoggedDepartment) {
+            orderedDepartment = sessionController.getDepartment();
+        }
+        listBillsToGenerateBarcodes();
+        return "/collecting_centre/courier/generate_barcode_p_cup?faces-redirect=true";
+    }
 
     public String navigateToSentToLab() {
         return "/lab/sent_to_lab?faces-redirect=true";
