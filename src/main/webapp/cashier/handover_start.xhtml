@@ -337,7 +337,7 @@
                                     <p:column headerText="Payment Method">
                                         <h:outputText value="#{pmv.paymentMethod.label}" ></h:outputText>
                                     </p:column>
-                                    <p:column headerText="Payment Method">
+                                    <p:column headerText="Payments Amount">
                                         <h:outputText value="#{pmv.amount}" ></h:outputText>
                                     </p:column>
                                 </p:dataTable>
@@ -368,6 +368,7 @@
                                 <p:dataExporter type="xlsx" target="tblPayments" fileName="exportedData"/>
                             </p:commandButton>
                             <p:dataTable 
+                                class="w-100"
                                 id="tblPayments" 
                                 value="#{financialTransactionController.paymentsFromShiftSratToNow}" 
                                 var="bp" 
