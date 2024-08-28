@@ -104,8 +104,10 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
@@ -354,6 +356,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     boolean billingStarted = false;
 
+    private List<Integer> serialnumbersBySelectedSessionInstance;
+    
     //----------------------------------------------
     private Staff consultant;
     private ScheduleModel channelModel;
@@ -4893,21 +4897,30 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         long refundedPatientCount = 0;
         long onCallPatientCount = 0;
         long reservedBookingCount = 0;
+        long sessionStartingNumber=0;
+        long nextAvailableAppointmentNumber = 0;
+        
+        if (selectedSessionInstance.getOriginatingSession().getSessionStartingNumber()!=null) {
+            sessionStartingNumber=Long.parseLong(selectedSessionInstance.getOriginatingSession().getSessionStartingNumber());
+        }else{
+            sessionStartingNumber=01;
+        }
 
         if (billSessions == null) {
             selectedSessionInstance.setBookedPatientCount(0l);
             selectedSessionInstance.setPaidPatientCount(0l);
             selectedSessionInstance.setCompletedPatientCount(0l);
             selectedSessionInstance.setRemainingPatientCount(0l);
+            selectedSessionInstance.setNextAvailableAppointmentNumber(sessionStartingNumber);
             sessionInstanceController.save(selectedSessionInstance);
             return;
         }
-
+        serialnumbersBySelectedSessionInstance=new ArrayList<>();
         // Loop through billSessions to calculate counts
         for (BillSession bs : billSessions) {
             if (bs != null) {
                 bookedPatientCount++; // Always increment if bs is not null
-
+                serialnumbersBySelectedSessionInstance.add(bs.getSerialNo());
                 // Additional check for reserved status
                 try {
                     if (bs.isReservedBooking()) {
@@ -4977,10 +4990,28 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         selectedSessionInstance.setRefundedPatientCount(refundedPatientCount);
         selectedSessionInstance.setOnCallPatientCount(onCallPatientCount);
         selectedSessionInstance.setReservedBookingCount(reservedBookingCount);
+        selectedSessionInstance.setNextAvailableAppointmentNumber(genarateNextAvailableAppointmentNumberBySessioninstance(selectedSessionInstance,serialnumbersBySelectedSessionInstance));
 
         // Assuming remainingPatientCount is calculated as booked - completed
         selectedSessionInstance.setRemainingPatientCount(bookedPatientCount - completedPatientCount);
         sessionInstanceController.save(selectedSessionInstance);
+    }
+    
+    public long genarateNextAvailableAppointmentNumberBySessioninstance(SessionInstance ssi,List<Integer> serialNumberArray){
+         long nextAvailable = 0;
+    
+    if (ssi == null || serialNumberArray==null) {
+        return nextAvailable;
+    }
+    List<Integer> reservedNumbersBySessionInstance = CommonFunctions.convertStringToIntegerList(ssi.getReserveNumbers());
+    Set<Integer> allReservedNumbers = new HashSet<>(serialNumberArray);
+    allReservedNumbers.addAll(reservedNumbersBySessionInstance);
+    nextAvailable=1;
+    while (allReservedNumbers.contains(nextAvailable)) {
+        nextAvailable++;
+    }
+    return nextAvailable;
+        
     }
 
     public void fillBillSessions(List<SessionInstance> sessionInstances) {
@@ -8531,6 +8562,14 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     public void setsEvent(ScheduleEvent<?> sEvent) {
         this.sEvent = sEvent;
+    }
+
+    public List<Integer> getSerialnumbersBySelectedSessionInstance() {
+        return serialnumbersBySelectedSessionInstance;
+    }
+
+    public void setSerialnumbersBySelectedSessionInstance(List<Integer> serialnumbersBySelectedSessionInstance) {
+        this.serialnumbersBySelectedSessionInstance = serialnumbersBySelectedSessionInstance;
     }
 
 }

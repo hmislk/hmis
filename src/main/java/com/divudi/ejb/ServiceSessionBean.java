@@ -351,7 +351,13 @@ public class ServiceSessionBean {
 
         // Find the next available number
         // Assuming serial numbers start from 1 and increment by 1
-        int nextAvailableNumber = 1;
+        int nextAvailableNumber;
+        if (si.getOriginatingSession().getSessionStartingNumber() != null) {
+            nextAvailableNumber=Integer.parseInt(si.getOriginatingSession().getSessionStartingNumber());
+        }else{
+            nextAvailableNumber=1;
+        }
+        
         while (allUnavailableNumbers.contains(nextAvailableNumber)) {
             nextAvailableNumber++;
         }
