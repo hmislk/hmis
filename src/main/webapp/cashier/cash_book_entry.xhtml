@@ -63,6 +63,19 @@
                                 itemValue="#{s}"
                                 value="#{searchController.site}" >
                             </p:autoComplete>
+
+                            <h:outputLabel value="Payment Method"/>
+                            <p:autoComplete
+                                class="w-100  "
+                                inputStyleClass="w-100"
+                                id="cmbPayment"
+                                placeholder="All Payment Method"
+                                forceSelection="true"
+                                completeMethod="#{institutionController.completeSite}"
+                                var="s" itemLabel="#{s.name}"
+                                itemValue="#{s}"
+                                value="#{searchController.site}" >
+                            </p:autoComplete>
                         </h:panelGrid>
                         <h:panelGrid columns="3" class="my-2" >
 
@@ -90,6 +103,18 @@
                                           filterBy="#{cb.site.name}" filterMatchMode="contains"
                                           sortBy="#{cb.site.name}">
                                     <p:outputLabel value="#{cb.site.name}" ></p:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Department Balance" style="text-align: left;">
+                                    <p:outputLabel value="#{cb.departmentBalance}" ></p:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Institution Balance" style="text-align: left;" >
+                                    <p:outputLabel value="#{cb.institutionBalance}" ></p:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Site Balance" style="text-align: left;">
+                                    <p:outputLabel value=" #{cb.siteBalance}" ></p:outputLabel>
                                 </p:column>
 
                                 <p:column headerText="Institution" sortBy="#{cb.institution}" style="text-align: right; padding-right: 20px;">

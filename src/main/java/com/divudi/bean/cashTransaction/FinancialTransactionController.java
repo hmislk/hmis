@@ -35,6 +35,7 @@ import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.WebUser;
 import com.divudi.facade.BillComponentFacade;
+import com.divudi.facade.PaymentMethodValueFacade;
 import com.divudi.java.CommonFunctions;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
@@ -54,6 +55,7 @@ import javax.ejb.EJB;
 import javax.faces.event.AjaxBehaviorEvent;
 import javax.inject.Inject;
 import javax.persistence.TemporalType;
+import kotlin.collections.ArrayDeque;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -72,6 +74,8 @@ public class FinancialTransactionController implements Serializable {
     PaymentFacade paymentFacade;
     @EJB
     BillComponentFacade billComponentFacade;
+    @EJB
+    PaymentMethodValueFacade paymentMethodValueFacade;
     // </editor-fold>  
 
     // <editor-fold defaultstate="collapsed" desc="Controllers">
@@ -123,6 +127,7 @@ public class FinancialTransactionController implements Serializable {
     private List<Bill> currentBills;
     private List<Bill> shiaftStartBills;
     private List<Bill> fundTransferBillsToReceive;
+    private List<Bill> handovertBillsToReceive;
     private List<Bill> fundBillsForClosureBills;
     private Bill selectedBill;
     private Bill nonClosedShiftStartFundBill;
@@ -176,12 +181,14 @@ public class FinancialTransactionController implements Serializable {
     private double additions;
 
     private int fundTransferBillsToReceiveCount;
+    private int handoverBillsToReceiveCount;
     private Date fromDate;
     private Date toDate;
     private Date cashbookDate;
     private Department cashbookDepartment;
     private List<Date> cashbookDates;
     private List<Department> cashbookDepartments;
+    private List<PaymentMethodValue> handingOverPaymentMethodValues;
 
     private ReportTemplateRowBundle paymentSummaryBundle;
 
@@ -200,8 +207,6 @@ public class FinancialTransactionController implements Serializable {
         return "/cashier/index?faces-redirect=true;";
     }
 
-    
-    
     public String navigateToCreateNewInitialFundBill() {
         resetClassVariables();
         prepareToAddNewInitialFundBill();
@@ -1066,7 +1071,7 @@ public class FinancialTransactionController implements Serializable {
 
     public String navigateToListShiftEndSummaries() {
         resetClassVariables();
-        return "/cashier/handover?faces-redirect=true;";
+        return "/cashier/initial_fund_bill_list?faces-redirect=true;";
     }
 
     public void listShiftStartBills() {
@@ -1461,10 +1466,27 @@ public class FinancialTransactionController implements Serializable {
         prepareToAddNewFundTransferReceiveBill();
         return "/cashier/fund_transfer_receive_bill?faces-redirect=true";
     }
+    
+    public String navigateToReceiveNewHandoverBill() {
+        if (selectedBill == null) {
+            JsfUtil.addErrorMessage("Please select a bill");
+            return "";
+        }
+        if (selectedBill.getBillType() != BillType.CashHandoverCreateBill) {
+            JsfUtil.addErrorMessage("Wrong Bill Type");
+            return "";
+        }
+        return "/cashier/handover_bill_view?faces-redirect=true";
+    }
 
     public String navigateToReceiveFundTransferBillsForMe() {
         fillFundTransferBillsForMeToReceive();
         return "/cashier/fund_transfer_bills_for_me_to_receive?faces-redirect=true";
+    }
+
+    public String navigateToReceiveHandoverBillsForMe() {
+        fillHandoverBillsForMeToReceive();
+        return "/cashier/handover_bills_for_me_to_receive?faces-redirect=true";
     }
 
     private void prepareToAddNewInitialFundBill() {
@@ -2606,10 +2628,7 @@ public class FinancialTransactionController implements Serializable {
 
         return "/cashier/shift_end_summery_bill_print?faces-redirect=true";
     }
-    
-    
-    
-    
+
     public String settleHandoverStartBill() {
         boolean fundTransferBillTocollect = false;
         if (currentBill == null) {
@@ -2620,180 +2639,40 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("Error");
             return "";
         }
-        if (fundTransferBillsToReceive != null && !fundTransferBillsToReceive.isEmpty()) {
-            fundTransferBillTocollect = true;
-        }
-
-        if (fundTransferBillTocollect) {
-            JsfUtil.addErrorMessage("Please collect funds transferred to you before closing.");
-            return "";
-        }
-
         currentBill.setDepartment(sessionController.getDepartment());
         currentBill.setInstitution(sessionController.getInstitution());
         currentBill.setStaff(sessionController.getLoggedUser().getStaff());
+        currentBill.setCreatedAt(new Date());
+        currentBill.setCreater(sessionController.getLoggedUser());
         currentBill.setBillDate(new Date());
         currentBill.setBillTime(new Date());
         billController.save(currentBill);
         currentBill.setTotal(financialReportByPayments.getTotal());
         currentBill.setNetTotal(financialReportByPayments.getTotal());
-        for (Payment p : getCurrentBillPayments()) {
-            p.setBill(currentBill);
-            p.setDepartment(sessionController.getDepartment());
-            p.setInstitution(sessionController.getInstitution());
+        for (Payment p : getPaymentsSelected()) {
+            p.setHandoverAcceptBill(currentBill);
+            p.setCashbookEntryStated(true);
+            p.setCashbookEntryCompleted(false);
+
             paymentController.save(p);
+            System.out.println("p = " + p.getCashbookEntryStated());
         }
-        calculateTotalFundsFromShiftStartToNow();
-        nonClosedShiftStartFundBill.setReferenceBill(currentBill);
-        billController.save(nonClosedShiftStartFundBill);
 
-        BillComponent bcCollectedCash = new BillComponent();
-        bcCollectedCash.setName("Collected Cash");
-        bcCollectedCash.setComponentValue(financialReportByPayments.getCollectedCash());
-        bcCollectedCash.setBill(currentBill);
-        billComponentFacade.create(bcCollectedCash);
+        billController.save(currentBill);
 
-        BillComponent bcRefundedCash = new BillComponent();
-        bcRefundedCash.setName("Refunded Cash");
-        bcRefundedCash.setComponentValue(financialReportByPayments.getRefundedCash());
-        bcRefundedCash.setBill(currentBill);
-        billComponentFacade.create(bcRefundedCash);
+        for (PaymentMethodValue pmv : handingOverPaymentMethodValues) {
+            BillComponent bc = new BillComponent();
+            bc.setName("Collected  " + pmv.getPaymentMethod().getLabel());
+            bc.setComponentValue(pmv.getAmount());
+            bc.setBill(currentBill);
+            billComponentFacade.create(bc);
 
-        BillComponent bcNetCashTotal = new BillComponent();
-        bcNetCashTotal.setName("Net Cash Total");
-        bcNetCashTotal.setComponentValue(financialReportByPayments.getNetCashTotal());
-        bcNetCashTotal.setBill(currentBill);
-        billComponentFacade.create(bcNetCashTotal);
+            currentBill.getBillComponents().add(bc);
 
-        BillComponent bcCollectedCreditCard = new BillComponent();
-        bcCollectedCreditCard.setName("Collected Credit Card");
-        bcCollectedCreditCard.setComponentValue(financialReportByPayments.getCollectedCreditCard());
-        bcCollectedCreditCard.setBill(currentBill);
-        billComponentFacade.create(bcCollectedCreditCard);
+        }
 
-        BillComponent bcRefundedCreditCard = new BillComponent();
-        bcRefundedCreditCard.setName("Refunded Credit Card");
-        bcRefundedCreditCard.setComponentValue(financialReportByPayments.getRefundedCreditCard());
-        bcRefundedCreditCard.setBill(currentBill);
-        billComponentFacade.create(bcRefundedCreditCard);
-
-        BillComponent bcNetCreditCardTotal = new BillComponent();
-        bcNetCreditCardTotal.setName("Net Credit Card Total");
-        bcNetCreditCardTotal.setComponentValue(financialReportByPayments.getNetCreditCardTotal());
-        bcNetCreditCardTotal.setBill(currentBill);
-        billComponentFacade.create(bcNetCreditCardTotal);
-
-        BillComponent bcCollectedVoucher = new BillComponent();
-        bcCollectedVoucher.setName("Collected Voucher");
-        bcCollectedVoucher.setComponentValue(financialReportByPayments.getCollectedVoucher());
-        bcCollectedVoucher.setBill(currentBill);
-        billComponentFacade.create(bcCollectedVoucher);
-
-        BillComponent bcRefundedVoucher = new BillComponent();
-        bcRefundedVoucher.setName("Refunded Voucher");
-        bcRefundedVoucher.setComponentValue(financialReportByPayments.getRefundedVoucher());
-        bcRefundedVoucher.setBill(currentBill);
-        billComponentFacade.create(bcRefundedVoucher);
-
-        BillComponent bcNetVoucherTotal = new BillComponent();
-        bcNetVoucherTotal.setName("Net Voucher Total");
-        bcNetVoucherTotal.setComponentValue(financialReportByPayments.getNetVoucherTotal());
-        bcNetVoucherTotal.setBill(currentBill);
-        billComponentFacade.create(bcNetVoucherTotal);
-
-        BillComponent bcCollectedOtherNonCredit = new BillComponent();
-        bcCollectedOtherNonCredit.setName("Collected Other Non-Credit");
-        bcCollectedOtherNonCredit.setComponentValue(financialReportByPayments.getCollectedOtherNonCredit());
-        bcCollectedOtherNonCredit.setBill(currentBill);
-        billComponentFacade.create(bcCollectedOtherNonCredit);
-
-        BillComponent bcRefundedOtherNonCredit = new BillComponent();
-        bcRefundedOtherNonCredit.setName("Refunded Other Non-Credit");
-        bcRefundedOtherNonCredit.setComponentValue(financialReportByPayments.getRefundedOtherNonCredit());
-        bcRefundedOtherNonCredit.setBill(currentBill);
-        billComponentFacade.create(bcRefundedOtherNonCredit);
-
-        BillComponent bcNetOtherNonCreditTotal = new BillComponent();
-        bcNetOtherNonCreditTotal.setName("Net Other Non-Credit Total");
-        bcNetOtherNonCreditTotal.setComponentValue(financialReportByPayments.getNetOtherNonCreditTotal());
-        bcNetOtherNonCreditTotal.setBill(currentBill);
-        billComponentFacade.create(bcNetOtherNonCreditTotal);
-
-        BillComponent bcShiftStartFunds = new BillComponent();
-        bcShiftStartFunds.setName("Shift Start Funds");
-        bcShiftStartFunds.setComponentValue(financialReportByPayments.getShiftStartFunds());
-        bcShiftStartFunds.setBill(currentBill);
-        billComponentFacade.create(bcShiftStartFunds);
-
-        BillComponent bcFloatReceived = new BillComponent();
-        bcFloatReceived.setName("Float Received");
-        bcFloatReceived.setComponentValue(financialReportByPayments.getFloatReceived());
-        bcFloatReceived.setBill(currentBill);
-        billComponentFacade.create(bcFloatReceived);
-
-        BillComponent bcFloatHandover = new BillComponent();
-        bcFloatHandover.setName("Float Handover");
-        bcFloatHandover.setComponentValue(financialReportByPayments.getFloatHandover());
-        bcFloatHandover.setBill(currentBill);
-        billComponentFacade.create(bcFloatHandover);
-
-        BillComponent bcBankWithdrawals = new BillComponent();
-        bcBankWithdrawals.setName("Bank Withdrawals");
-        bcBankWithdrawals.setComponentValue(financialReportByPayments.getBankWithdrawals());
-        bcBankWithdrawals.setBill(currentBill);
-        billComponentFacade.create(bcBankWithdrawals);
-
-        BillComponent bcBankDeposits = new BillComponent();
-        bcBankDeposits.setName("Bank Deposits");
-        bcBankDeposits.setComponentValue(financialReportByPayments.getBankDeposits());
-        bcBankDeposits.setBill(currentBill);
-        billComponentFacade.create(bcBankDeposits);
-
-        BillComponent bcCashCollectedTransferIn = new BillComponent();
-        bcCashCollectedTransferIn.setName("Cash Collected Transfer In");
-        bcCashCollectedTransferIn.setComponentValue(financialReportByPayments.getCashCollectedTransferIn());
-        bcCashCollectedTransferIn.setBill(currentBill);
-        billComponentFacade.create(bcCashCollectedTransferIn);
-
-        BillComponent bcCashGivenOutTransferOut = new BillComponent();
-        bcCashGivenOutTransferOut.setName("Cash Given Out Transfer Out");
-        bcCashGivenOutTransferOut.setComponentValue(financialReportByPayments.getCashGivenOutTransferOut());
-        bcCashGivenOutTransferOut.setBill(currentBill);
-        billComponentFacade.create(bcCashGivenOutTransferOut);
-
-        BillComponent bcTotal = new BillComponent();
-        bcTotal.setName("Total");
-        bcTotal.setComponentValue(financialReportByPayments.getTotal());
-        bcTotal.setBill(currentBill);
-        billComponentFacade.create(bcTotal);
-
-        BillComponent bcShortExcess = new BillComponent();
-        bcShortExcess.setName("Short/Excess");
-        bcShortExcess.setComponentValue(currentBill.getNetTotal() - financialReportByPayments.getTotal());
-        bcShortExcess.setBill(currentBill);
-        billComponentFacade.create(bcShortExcess);
-
-        currentBill.getBillComponents().add(bcCollectedCash);
-        currentBill.getBillComponents().add(bcRefundedCash);
-        currentBill.getBillComponents().add(bcNetCashTotal);
-        currentBill.getBillComponents().add(bcCollectedCreditCard);
-        currentBill.getBillComponents().add(bcRefundedCreditCard);
-        currentBill.getBillComponents().add(bcNetCreditCardTotal);
-        currentBill.getBillComponents().add(bcCollectedVoucher);
-        currentBill.getBillComponents().add(bcRefundedVoucher);
-        currentBill.getBillComponents().add(bcNetVoucherTotal);
-        currentBill.getBillComponents().add(bcCollectedOtherNonCredit);
-        currentBill.getBillComponents().add(bcRefundedOtherNonCredit);
-        currentBill.getBillComponents().add(bcNetOtherNonCreditTotal);
-        currentBill.getBillComponents().add(bcShiftStartFunds);
-        currentBill.getBillComponents().add(bcFloatReceived);
-        currentBill.getBillComponents().add(bcFloatHandover);
-        currentBill.getBillComponents().add(bcBankWithdrawals);
-
-        return "/cashier/shift_end_summery_bill_print?faces-redirect=true";
+        return "/cashier/handover_creation_bill_print?faces-redirect=true";
     }
-    
-    
 
 // </editor-fold>  
     // <editor-fold defaultstate="collapsed" desc="BalanceTransferFundBill">
@@ -2832,6 +2711,32 @@ public class FinancialTransactionController implements Serializable {
         tempMap.put("logStaff", sessionController.getLoggedUser().getStaff());
         fundTransferBillsToReceive = billFacade.findByJpql(sql, tempMap);
         fundTransferBillsToReceiveCount = fundTransferBillsToReceive.size();
+
+    }
+
+    public void fillHandoverBillsForMeToReceive() {
+        String sql;
+        fundTransferBillsToReceive = new ArrayDeque<>();
+        handoverBillsToReceiveCount = 0;
+        Map tempMap = new HashMap();
+        sql = "select s "
+                + "from Bill s "
+                + "where s.retired=:ret "
+                + "and s.billType=:btype "
+                + "and s.toStaff=:logStaff "
+                + "and s.referenceBill is null "
+                + "order by s.createdAt ";
+        tempMap.put("btype", BillType.CashHandoverCreateBill);
+        tempMap.put("ret", false);
+        tempMap.put("logStaff", sessionController.getLoggedUser().getStaff());
+        handovertBillsToReceive = billFacade.findByJpql(sql, tempMap);
+
+        try {
+            handoverBillsToReceiveCount = fundTransferBillsToReceive.size();
+        } catch (Exception e) {
+            handoverBillsToReceiveCount = 0;
+                    }
+        
 
     }
 
@@ -2950,7 +2855,35 @@ public class FinancialTransactionController implements Serializable {
     }
 
     //Damith
-    // </editor-fold>      
+    // </editor-fold>  
+    public void calculateHandingOverValues() {
+        // Map to store total amount for each payment method
+        Map<PaymentMethod, Double> paymentMethodTotals = new HashMap<>();
+
+        // Loop through selected payments
+        for (Payment pmt : paymentsSelected) {
+            PaymentMethod method = pmt.getPaymentMethod();
+            Double amount = pmt.getPaidValue();
+
+            // Add the amount to the corresponding payment method total
+            paymentMethodTotals.put(method, paymentMethodTotals.getOrDefault(method, 0.0) + amount);
+        }
+
+        // Create the list of PaymentMethodValue
+        List<PaymentMethodValue> pmvs = new ArrayList<>();
+        for (Map.Entry<PaymentMethod, Double> entry : paymentMethodTotals.entrySet()) {
+            PaymentMethodValue pmv = new PaymentMethodValue();
+            pmv.setPaymentMethod(entry.getKey());
+            pmv.setAmount(entry.getValue());
+            pmv.setCreatedAt(new Date());
+            pmvs.add(pmv);
+            paymentMethodValueFacade.create(pmv);
+        }
+
+        handingOverPaymentMethodValues = pmvs;
+        // Now pmvs contains the total amounts for each payment method
+    }
+
     // <editor-fold defaultstate="collapsed" desc="Getters and Setters">
     public Bill getCurrentBill() {
         return currentBill;
@@ -3626,6 +3559,22 @@ public class FinancialTransactionController implements Serializable {
 
     public void setCashbookDepartments(List<Department> cashbookDepartments) {
         this.cashbookDepartments = cashbookDepartments;
+    }
+
+    public List<PaymentMethodValue> getHandingOverPaymentMethodValues() {
+        return handingOverPaymentMethodValues;
+    }
+
+    public void setHandingOverPaymentMethodValues(List<PaymentMethodValue> handingOverPaymentMethodValues) {
+        this.handingOverPaymentMethodValues = handingOverPaymentMethodValues;
+    }
+
+    public List<Bill> getHandovertBillsToReceive() {
+        return handovertBillsToReceive;
+    }
+
+    public void setHandovertBillsToReceive(List<Bill> handovertBillsToReceive) {
+        this.handovertBillsToReceive = handovertBillsToReceive;
     }
 
 }
