@@ -12143,52 +12143,50 @@ public class SearchController implements Serializable {
         }
 
         // Fill the sheet with bill data first, then bill item data in subsequent rows
-        for (BillItem bi : billItems) {
-            if (bi.getBill().equals(bill)) {
-                Row itemRow = sheet.createRow(rowIdx++);
-                // Leave bill details columns empty
-                for (int j = 0; j < 10; j++) {
-                    itemRow.createCell(j);
-                }
+        for (Bill bill : bills) {
+            Row billRow = sheet.createRow(rowIdx++);
+            int colIdx = 0;
+            billRow.createCell(colIdx++).setCellValue(bill.getId());
+            billRow.createCell(colIdx++).setCellValue(bill.getInstitution() != null ? bill.getInstitution().getName() : "");
+            billRow.createCell(colIdx++).setCellValue(bill.getDepartment() != null ? bill.getDepartment().getName() : "");
+            billRow.createCell(colIdx++).setCellValue(bill.getPatient() != null && bill.getPatient().getPerson() != null ? bill.getPatient().getPerson().getName() : "");
+            billRow.createCell(colIdx++).setCellValue(bill.getStaff() != null && bill.getStaff().getPerson() != null ? bill.getStaff().getPerson().getNameWithTitle() : "");
+            billRow.createCell(colIdx++).setCellValue(bill.getCreater() != null && bill.getCreater().getWebUserPerson().getName() != null ? bill.getCreater().getWebUserPerson().getName() : "");
+            billRow.createCell(colIdx++).setCellValue(bill.getBillType() != null ? bill.getBillType().getLabel() : "");
+            billRow.createCell(colIdx++).setCellValue(bill.getGrantTotal());
+            billRow.createCell(colIdx++).setCellValue(bill.getDiscount());
+            billRow.createCell(colIdx++).setCellValue(bill.getNetTotal());
+            billRow.createCell(colIdx++).setCellValue(bill.getPaymentMethod() != null ? bill.getPaymentMethod().getLabel() : "");
 
-                int itemColIdx = 10;
-                itemRow.createCell(itemColIdx++).setCellValue(
-                        bi != null && bi.getItem() != null && bi.getItem().getName() != null
-                        ? bi.getItem().getName()
-                        : ""
-                );
-                itemRow.createCell(itemColIdx++).setCellValue(
-                        bi != null && bi.getItem() != null && bi.getItem().getCode() != null
-                        ? bi.getItem().getCode()
-                        : ""
-                );
-                itemRow.createCell(itemColIdx++).setCellValue(
-                        bi != null && bi.getItem() != null && bi.getItem().getItemType() != null
-                        ? bi.getItem().getItemType().toString()
-                        : ""
-                );
-                itemRow.createCell(itemColIdx++).setCellValue(
-                        bi != null && bi.getQty() != null
-                        ? bi.getQty()
-                        : 0
-                );
-                itemRow.createCell(itemColIdx++).setCellValue(
-                        bi != null ? bi.getRate()
-                        : 0.0
-                );
-                itemRow.createCell(itemColIdx++).setCellValue(
-                        bi != null? bi.getGrossValue()
-                        : 0.0
-                );
-                itemRow.createCell(itemColIdx++).setCellValue(
-                        bi != null ? bi.getDiscount()
-                        : 0.0
-                );
-                itemRow.createCell(itemColIdx++).setCellValue(
-                        bi != null 
-                        ? bi.getNetValue()
-                        : 0.0
-                );
+            // Leave the bill item columns empty in the bill row
+            for (int j = 10; j < headers.length; j++) {
+                billRow.createCell(j);
+            }
+
+            // Fill in bill item data in subsequent rows
+            for (BillItem bi : billItems) {
+                if (bi.getBill().equals(bill)) {
+                    Row itemRow = sheet.createRow(rowIdx++);
+                    // Leave bill details columns empty
+                    for (int j = 0; j < 10; j++) {
+                        itemRow.createCell(j);
+                    }
+
+                    int itemColIdx = 10;
+                    try {
+                        itemRow.createCell(itemColIdx++).setCellValue(bi.getItem() != null ? bi.getItem().getName() : "");
+                        itemRow.createCell(itemColIdx++).setCellValue(bi.getItem() != null ? bi.getItem().getCode() : "");
+                        itemRow.createCell(itemColIdx++).setCellValue(bi.getItem() != null ? bi.getItem().getItemType().toString() : "");
+                        itemRow.createCell(itemColIdx++).setCellValue(bi.getQty());
+                        itemRow.createCell(itemColIdx++).setCellValue(bi.getRate());
+                        itemRow.createCell(itemColIdx++).setCellValue(bi.getGrossValue());
+                        itemRow.createCell(itemColIdx++).setCellValue(bi.getDiscount());
+                        itemRow.createCell(itemColIdx++).setCellValue(bi.getNetValue());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+                }
             }
         }
 
