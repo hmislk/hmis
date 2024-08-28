@@ -12175,7 +12175,7 @@ public class SearchController implements Serializable {
                     int itemColIdx = 10;
                     itemRow.createCell(itemColIdx++).setCellValue(bi.getItem() != null ? bi.getItem().getName() : "");
                     itemRow.createCell(itemColIdx++).setCellValue(bi.getItem() != null ? bi.getItem().getCode() : "");
-                    itemRow.createCell(itemColIdx++).setCellValue(bi.getItem() != null ? bi.getItem().getItemType().toString() : "");
+                    itemRow.createCell(itemColIdx++).setCellValue(bi.getItem().getItemType() != null ? bi.getItem().getItemType().toString() : "");
                     itemRow.createCell(itemColIdx++).setCellValue(bi.getQty());
                     itemRow.createCell(itemColIdx++).setCellValue(bi.getRate());
                     itemRow.createCell(itemColIdx++).setCellValue(bi.getGrossValue());

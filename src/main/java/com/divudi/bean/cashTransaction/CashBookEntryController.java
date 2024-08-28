@@ -17,7 +17,6 @@ import com.divudi.entity.Payment;
 import com.divudi.entity.cashTransaction.CashBook;
 import com.divudi.entity.cashTransaction.CashBookEntry;
 import com.divudi.facade.CashBookEntryFacade;
-import com.divudi.facade.CashBookFacade;
 import com.divudi.facade.PaymentFacade;
 import java.io.Serializable;
 import java.util.Date;
@@ -74,7 +73,70 @@ public class CashBookEntryController implements Serializable {
         current.setPayment(p);
         current.setCashBook(sessionController.getLoggedCashbook());
         current.setSite(sessionController.getDepartment().getSite());
+        updateBalances(p.getPaymentMethod(), p.getPaidValue(), current);
         cashbookEntryFacade.create(current);
+
+    }
+
+    public void updateBalances(PaymentMethod pm, Double Value, CashBookEntry cbe) {
+        Map m = new HashMap<>();
+        String jpql = "Select cbe from CashBookEntry cbe where "
+                + " cbe.paymentMethod=:pm";
+        
+        m.put("pm", pm);
+
+        if (cbe.getDepartment() != null) {
+            jpql += " and cbe.department=:dep ";
+            m.put("dep", cbe.getDepartment());
+        }
+        if (cbe.getInstitution() != null) {
+            jpql += " and cbe.institution=:ins ";
+            m.put("ins", cbe.getInstitution());
+        }
+        if (cbe.getDepartment() != null) {
+            jpql += " and cbe.site=:si ";
+            m.put("si", cbe.getSite());
+        }
+
+        jpql += "order by cbe.id desc";
+
+        CashBookEntry lastCashBookEntry = cashbookEntryFacade.findFirstByJpql(jpql, m);
+
+        Double lastDepartmentBalance;
+        Double lastInstitutionBalance;
+        Double lastSiteBalance;
+
+        if (lastCashBookEntry == null) {
+            lastDepartmentBalance = 0.0;
+            lastInstitutionBalance = 0.0;
+            lastSiteBalance = 0.0;
+        } else {
+            if (lastCashBookEntry.getDepartmentBalance() != null) {
+                lastDepartmentBalance = lastCashBookEntry.getDepartmentBalance();
+            } else {
+                lastDepartmentBalance = 0.0;
+            }
+
+            if (lastCashBookEntry.getInstitutionBalance() != null) {
+                lastInstitutionBalance = lastCashBookEntry.getInstitutionBalance();
+            } else {
+                lastInstitutionBalance = 0.0;
+            }
+
+            if (lastCashBookEntry.getSiteBalance() != null) {
+                lastSiteBalance = lastCashBookEntry.getSiteBalance();
+            } else {
+                lastSiteBalance = 0.0;
+            }
+        }
+
+        Double newDepartmentBalance = lastDepartmentBalance + Value;
+        Double newInstitutionBalance = lastInstitutionBalance + Value;
+        Double newSiteBalance = lastSiteBalance + Value;
+
+        cbe.setDepartmentBalance(newDepartmentBalance);
+        cbe.setInstitutionBalance(newInstitutionBalance);
+        cbe.setSiteBalance(newSiteBalance);
 
     }
 
@@ -160,7 +222,7 @@ public class CashBookEntryController implements Serializable {
         m.put("fromDate", fromDate);
         m.put("toDate", toDate);
         m.put("ret", false);
-        cashBookEntryList = cashbookEntryFacade.findByJpql(jpql, m,TemporalType.TIMESTAMP);
+        cashBookEntryList = cashbookEntryFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
         System.out.println("cashBookEntryList = " + cashBookEntryList.size());
         System.out.println("jpql = " + jpql);
         return cashBookEntryList;
