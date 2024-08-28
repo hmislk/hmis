@@ -10,19 +10,15 @@
                 <div >
                     <h:form>
                         <div class="row">
-                            <div class="col-12 p-2">
+                            <div class="col-12 d-flex gap-2 m-2">
 
-                                <p:commandButton 
-                                    value="Collect Samples" 
-                                    ajax="false" 
-                                    action="#{courierController.navigateToCourierCollectSamples}" 
-                                    icon="fa fa-box" styleClass="p-button-secondary m-2 ml-5" />
-                                <p:commandButton value="Handover Samples to Lab" ajax="false" action="#{courierController.navigateToCourierHandoverSamplesToLab}" icon="fa fa-handshake" styleClass="p-button-secondary m-2" />
-                                <p:commandButton value="Patient Sample Status" ajax="false" action="#{courierController.navigateToCourierViewReports}" icon="fa fa-file-alt" styleClass="p-button-secondary m-2" />
-                                <p:commandButton value="Print Lab Reports" ajax="false" action="#{courierController.navigateToCourierPrintReports}" icon="fa fa-print" styleClass="p-button-secondary m-2" />
-                                <p:commandButton value="View Statistics" ajax="false" action="#{courierController.navigateToCourierViewStatistics}" icon="fa fa-chart-bar" styleClass="p-button-secondary m-2" />
-                                <p:commandButton value="View Bill Reports" ajax="false" action="#{courierController.navigateToCourierViewBillReports}" icon="fa fa-receipt" styleClass="p-button-secondary m-2" />
-                                <p:commandButton value="View Payment Reports" ajax="false" action="#{courierController.navigateToCourierViewPaymentReports}" icon="fa fa-money-bill-wave" styleClass="p-button-secondary m-2" />
+                                <p:commandButton value="Collect Samples" ajax="false" action="#{courierController.navigateToCourierCollectSamples}" icon="fa fa-box" styleClass="p-button-secondary" />
+                                <p:commandButton value="Handover Samples to Lab" ajax="false" action="#{courierController.navigateToCourierHandoverSamplesToLab}" icon="fa fa-handshake" styleClass="p-button-secondary" />
+                                <p:commandButton value="Patient Sample Status" ajax="false" action="#{courierController.navigateToCourierViewReports}" icon="fa fa-file-alt" styleClass="p-button-secondary" />
+                                <p:commandButton value="Print Lab Reports" ajax="false" action="#{courierController.navigateToCourierPrintReports}" actionListener="#{searchController.makeNull()}" icon="fa fa-print" styleClass="p-button-secondary" />
+                                <p:commandButton value="View Statistics" ajax="false" action="#{courierController.navigateToCourierViewStatistics}" icon="fa fa-chart-bar" styleClass="p-button-secondary" />
+                                <p:commandButton value="View Bill Reports" ajax="false" action="#{courierController.navigateToCourierViewBillReports}" icon="fa fa-receipt" styleClass="p-button-secondary" />
+                                <p:commandButton value="View Payment Reports" ajax="false" action="#{courierController.navigateToCourierViewPaymentReports}" icon="fa fa-money-bill-wave" styleClass="p-button-secondary" />
 
                             </div>
                         </div>

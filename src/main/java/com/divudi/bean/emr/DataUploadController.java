@@ -709,6 +709,7 @@ public class DataUploadController implements Serializable {
         }
         pollActive = false;
     }
+
     
     public void uploadFeeListItemFees() {
         itemFees = new ArrayList<>();
@@ -873,6 +874,7 @@ public class DataUploadController implements Serializable {
         return itemFees;
        
     }
+
 
     private List<Consultant> readConsultantsFromExcel(InputStream inputStream) throws IOException {
         List<Consultant> cons = new ArrayList<>();

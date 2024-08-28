@@ -400,7 +400,7 @@
                     <p:menuitem 
                         ajax="false"
                         action="#{patientInvestigationController.navigateToGenerateBarcodes()}"
-                        value="Sample Management - Phlebotomy Room" 
+                        value="Sample Management" 
                         rendered="#{webUserController.hasPrivilege('LabSampleCollecting')}" ></p:menuitem>
                     <p:menuitem
                         ajax="false"  
@@ -1334,17 +1334,18 @@
                     </div>
 
                     <p:tooltip for="btnLogout" value="df"  >
-                        <h:panelGrid columns="3" >
-                            <h:outputText value="Institution" ></h:outputText>
-                            <p:spacer width="10" height="1" ></p:spacer>
-                            <h:outputText value="#{sessionController.loggedUser.institution.name}" ></h:outputText>
-                            <h:outputText value="Department" ></h:outputText>
-                            <p:spacer width="10" height="1" ></p:spacer>
-                            <h:outputText value="#{sessionController.loggedUser.department.name} " ></h:outputText>
-                            <h:outputText value="User" ></h:outputText>
-                            <p:spacer width="10" height="1" ></p:spacer>
-                            <h:outputText value="#{sessionController.loggedUser.webUserPerson.name}" ></h:outputText>
-                        </h:panelGrid>
+                        <p:panel header="Logging Details" style="height: 10em; width: 30em;">
+                            <p:panelGrid columns="2" class="w-100" >
+                                <h:outputText value="Institution" ></h:outputText>
+                                <h:outputText value="#{sessionController.institution.name}" ></h:outputText>
+                                <h:outputText value="Site" ></h:outputText>
+                                <h:outputText value="#{sessionController.loggedSite.name}" ></h:outputText>
+                                <h:outputText value="Department" ></h:outputText>
+                                <h:outputText value="#{sessionController.loggedUser.department.name} " ></h:outputText>
+                                <h:outputText value="User" ></h:outputText>
+                                <h:outputText value="#{sessionController.loggedUser.webUserPerson.name}" ></h:outputText>
+                            </p:panelGrid>
+                        </p:panel>
                     </p:tooltip>
                 </f:facet>
 
