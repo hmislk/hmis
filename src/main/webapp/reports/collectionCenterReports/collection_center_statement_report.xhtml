@@ -61,16 +61,18 @@
                                 <p:outputLabel value="Agent Name" />
                             </div>
                             <div class="col-md-4">
-                                <p:selectOneMenu 
-                                    style=" max-width: 100%; overflow-x: auto; "
-                                    class="w-100"
-                                    value="#{reportController.collectingCentre}"
-                                    filter="true">
-                                    <f:selectItem itemLabel="Select Agent"/>
-                                    <f:selectItems var="r" itemLabel="#{r.name}" 
-                                                   value="#{collectingCentreController.items}" 
-                                                   itemValue="#{r}" />
-                                </p:selectOneMenu>
+                                <p:autoComplete 
+                                    converter="deal" 
+                                    value="#{collectingCentreBillController.collectingCentre}" 
+                                    forceSelection="true" id="acColl"
+                                    completeMethod="#{institutionController.completeCollectingCenter}" 
+                                    var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" 
+                                    maxResults="15"
+                                    class="w-100 mb-1"
+                                    inputStyleClass="form-control">
+                                    <p:column style="padding: 6px;">#{vt.code}</p:column>
+                                    <p:column style="padding: 6px;">#{vt.name}</p:column>
+                                </p:autoComplete>
                             </div>
                         </div>
 
