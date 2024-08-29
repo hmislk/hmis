@@ -52,11 +52,8 @@
                                 itemValue="#{ix}" 
                                 size="30"  
                                 class="w-100"
-                                maxResults="15"
+                                maxResults="10"
                                 inputStyleClass="w-100">
-                                <p:column style="padding: 6px;">
-                                    #{ix.name}
-                                </p:column>
                                 <p:ajax event="itemSelect" 
                                         process="@this" 
                                         update="gpFees localFee foreignerFee" 
