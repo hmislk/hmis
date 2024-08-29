@@ -11524,11 +11524,101 @@ public class SearchController implements Serializable {
         bundle = new ReportTemplateRowBundle();
         String jpql = "select bi "
                 + " from BillItem bi "
-                + " where b.retired";
+                + " where bi.bill.retired=:br "
+                + " and bi.bill.billTypeAtomic in :bts "
+                + " and bi.createdAt between :fd and :td ";
         Map m = new HashMap();
-
+        m.put("br", false);
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("bts", billTypeAtomic);
+        List<BillTypeAtomic> btas = BillTypeAtomic.findByServiceTypeAndFinanceType(ServiceType.OPD, BillFinanceType.CASH_IN);
+        btas.addAll(BillTypeAtomic.findByServiceTypeAndFinanceType(ServiceType.OPD, BillFinanceType.CASH_OUT));
+        if (department != null) {
+            jpql += " and bi.bill.department=:dep ";
+            m.put("dep", department);
+        }
+        if (institution != null) {
+            jpql += " and bi.bill.department.institution=:ins ";
+            m.put("ins", institution);
+        }
+        if (site != null) {
+            jpql += " and bi.bill.site=:site ";
+            m.put("site", site);
+        }
+        System.out.println("btas = " + btas);
+        System.out.println("m = " + m);
+        System.out.println("jpql = " + jpql);
         List<BillItem> billItems = billItemFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
+        billItemsToBundleForOpd(bundle, billItems);
+    }
 
+    public void billItemsToBundleForOpd(ReportTemplateRowBundle rtrb, List<BillItem> billItems) {
+        Map<String, ReportTemplateRow> categoryMap = new HashMap<>();
+        Map<String, ReportTemplateRow> itemMap = new HashMap<>();
+        List<ReportTemplateRow> rowsToAdd = new ArrayList<>();
+
+        for (BillItem bi : billItems) {
+            String categoryName = bi.getItem() != null && bi.getItem().getCategory() != null ? bi.getItem().getCategory().getName() : "No Category";
+            String itemName = bi.getItem() != null ? bi.getItem().getName() : "No Item";
+            String itemKey = categoryName + "->" + itemName;
+
+            // Initialize or retrieve existing category row
+            if (!categoryMap.containsKey(categoryName)) {
+                ReportTemplateRow newRow = new ReportTemplateRow();
+                newRow.setCategory(bi.getItem() != null ? bi.getItem().getCategory() : null); // Set category to null if no category
+                categoryMap.put(categoryName, newRow);
+            }
+
+            // Initialize or retrieve existing item row
+            if (!itemMap.containsKey(itemKey)) {
+                ReportTemplateRow newRow = new ReportTemplateRow();
+                newRow.setItem(bi.getItem()); // Set item
+                itemMap.put(itemKey, newRow);
+            }
+
+            ReportTemplateRow categoryRow = categoryMap.get(categoryName);
+            ReportTemplateRow itemRow = itemMap.get(itemKey);
+
+            // Deciding whether to add or subtract based on the bill class type
+            switch (bi.getBill().getBillClassType()) {
+                case CancelledBill:
+                case RefundBill:
+                    updateRow(categoryRow, -1, -Math.abs(bi.getGrossValue()), -Math.abs(bi.getHospitalFee()), -Math.abs(bi.getDiscount()), -Math.abs(bi.getStaffFee()), -Math.abs(bi.getNetValue()));
+                    updateRow(itemRow, -1, -Math.abs(bi.getGrossValue()), -Math.abs(bi.getHospitalFee()), -Math.abs(bi.getDiscount()), -Math.abs(bi.getStaffFee()), -Math.abs(bi.getNetValue()));
+                    break;
+                case BilledBill:
+                case Bill:
+                    updateRow(categoryRow, 1, bi.getGrossValue(), bi.getHospitalFee(), bi.getDiscount(), bi.getStaffFee(), bi.getNetValue());
+                    updateRow(itemRow, 1, bi.getGrossValue(), bi.getHospitalFee(), bi.getDiscount(), bi.getStaffFee(), bi.getNetValue());
+                    break;
+                default:
+                    // Do nothing for other types of bills
+                    break;
+            }
+        }
+
+        // Populate the bundle with category rows and their corresponding item rows
+        for (ReportTemplateRow catRow : categoryMap.values()) {
+            rowsToAdd.add(catRow); // Add category row first
+            for (ReportTemplateRow itemRow : itemMap.values()) {
+                if (itemRow.getItem() != null && itemRow.getItem().getCategory() != null && itemRow.getItem().getCategory().getName().equals(catRow.getCategory().getName())) {
+                    rowsToAdd.add(itemRow); // Add item rows that belong to this category
+                }
+            }
+        }
+
+        // Assuming ReportTemplateRowBundle can accept a list of ReportTemplateRow
+        rtrb.getReportTemplateRows().addAll(rowsToAdd); // Add all rows at once to the report template row bundle
+    }
+
+    private void updateRow(ReportTemplateRow row, long count, double total, double hospitalFee, double discount, double professionalFee, double netTotal) {
+        row.setItemCount(row.getItemCount() + count);
+        row.setItemTotal(row.getItemTotal() + total);
+        row.setItemHospitalFee(row.getItemHospitalFee() + hospitalFee);
+        row.setItemDiscountAmount(row.getItemDiscountAmount() + discount);
+        row.setItemProfessionalFee(row.getItemProfessionalFee() + professionalFee);
+        row.setItemNetTotal(row.getItemNetTotal() + netTotal);
     }
 
     public void generateCashierSummary() {

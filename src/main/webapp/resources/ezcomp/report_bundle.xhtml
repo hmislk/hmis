@@ -14,63 +14,64 @@
     <!-- IMPLEMENTATION -->
     <cc:implementation>
 
-        <p:dataTable value="#{cc.attrs.bundle.reportTemplateRows}" var="row" >
-            <p:column >
-                <f:facet name="header" >
-                    <h:outputText value="Category" ></h:outputText>
-                </f:facet>
-            </p:column>
-            <p:column >
-                <f:facet name="header" >
-                    <h:outputText value="Item / Service" ></h:outputText>
-                </f:facet>
-            </p:column>
-            <p:column >
-                <f:facet name="header" >
-                    <h:outputText value="Billed Count" ></h:outputText>
-                </f:facet>
-            </p:column>
-            <p:column >
-                <f:facet name="header" >
-                    <h:outputText value="Cancelled Count" ></h:outputText>
-                </f:facet>
-            </p:column>
-            <p:column >
-                <f:facet name="header" >
-                    <h:outputText value="Returned Count" ></h:outputText>
-                </f:facet>
-            </p:column>
-            <p:column >
-                <f:facet name="header" >
-                    <h:outputText value="Net Count" ></h:outputText>
-                </f:facet>
-            </p:column>
-            <p:column >
-                <f:facet name="header" >
-                    <h:outputText value="Hospital Fee" ></h:outputText>
-                </f:facet>
-            </p:column>
-            <p:column >
-                <f:facet name="header" >
-                    <h:outputText value="Professional Fee" ></h:outputText>
-                </f:facet>
-            </p:column>
-            <p:column >
-                <f:facet name="header" >
-                    <h:outputText value="Discount" ></h:outputText>
-                </f:facet>
-            </p:column>
-            <p:column >
-                <f:facet name="header" >
-                    <h:outputText value="Net Amount" ></h:outputText>
-                </f:facet>
-            </p:column>
+        <!--<p:dataTable value="#{cc.attrs.bundle.reportTemplateRows}" var="row" ></p:dataTable>-->
+        <!--<p:dataTable value="#{cc.attrs.bundle.reportTemplateRows}" var="row" >-->
 
-
-
-
-
+        <p:dataTable value="#{searchController.bundle.reportTemplateRows}" var="row" >
+            <p:column>
+                <f:facet name="header">
+                    <h:outputText value="Category" />
+                </f:facet>
+                <h:outputText value="#{row.category.name}" rendered="#{row.rowType eq 'CategoryRow'}" />
+            </p:column>
+            <p:column>
+                <f:facet name="header">
+                    <h:outputText value="Item / Service" />
+                </f:facet>
+                <h:outputText value="#{row.item.name}" rendered="#{row.rowType eq 'ItemRow'}" />
+            </p:column>
+            <p:column>
+                <f:facet name="header">
+                    <h:outputText value="Count" />
+                </f:facet>
+                <h:outputText value="#{row.itemCount}">
+                    <f:convertNumber pattern="#,##0" />
+                </h:outputText>
+            </p:column>
+            <p:column>
+                <f:facet name="header">
+                    <h:outputText value="Hospital Fee" />
+                </f:facet>
+                <h:outputText value="#{row.itemHospitalFee}">
+                    <f:convertNumber pattern="#,##0.00" />
+                </h:outputText>
+            </p:column>
+            <p:column>
+                <f:facet name="header">
+                    <h:outputText value="Professional Fee" />
+                </f:facet>
+                <h:outputText value="#{row.itemProfessionalFee}">
+                    <f:convertNumber pattern="#,##0.00" />
+                </h:outputText>
+            </p:column>
+            <p:column>
+                <f:facet name="header">
+                    <h:outputText value="Discount" />
+                </f:facet>
+                <h:outputText value="#{row.itemDiscountAmount}">
+                    <f:convertNumber pattern="#,##0.00" />
+                </h:outputText>
+            </p:column>
+            <p:column>
+                <f:facet name="header">
+                    <h:outputText value="Net Amount" />
+                </f:facet>
+                <h:outputText value="#{row.itemNetTotal}">
+                    <f:convertNumber pattern="#,##0.00" />
+                </h:outputText>
+            </p:column>
         </p:dataTable>
+
 
 
     </cc:implementation>
