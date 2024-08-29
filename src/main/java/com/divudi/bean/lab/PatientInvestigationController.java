@@ -1219,7 +1219,7 @@ public class PatientInvestigationController implements Serializable {
         listBillsToGenerateBarcodes();
         return "/lab/generate_barcode_p?faces-redirect=true";
     }
-    
+
     public String navigateToGenerateBarcodesFromCourier() {
         boolean searchInvestigationsForLoggedInstitution = configOptionApplicationController.getBooleanValueByKey("For Lab Sample Barcode Generation, Search by Ordered Institution", false);
         if (searchInvestigationsForLoggedInstitution) {
@@ -1418,8 +1418,20 @@ public class PatientInvestigationController implements Serializable {
         Map<Long, PatientInvestigation> collectedPtixs = new HashMap<>();
         Map<Long, Bill> collectedBills = new HashMap<>();
 
+        for (PatientSample ps : selectedPatientSamples) {
+            if (ps.getStatus() != PatientInvestigationStatus.SAMPLE_GENERATED) {
+                JsfUtil.addErrorMessage("There are samples already colleted. Please unselect and click COllect again");
+                return;
+            }
+        }
+
         // Update sample collection details and gather associated patient investigations
         for (PatientSample ps : selectedPatientSamples) {
+
+            if (ps.getStatus() != PatientInvestigationStatus.SAMPLE_GENERATED) {
+
+            }
+
             ps.setSampleCollected(true);
             ps.setSampleCollectedAt(new Date());
             ps.setSampleCollectedDepartment(sessionController.getDepartment());
@@ -1463,9 +1475,16 @@ public class PatientInvestigationController implements Serializable {
         Map<Long, PatientInvestigation> samplePtixs = new HashMap<>();
         Map<Long, Bill> sampleBills = new HashMap<>();
 
+        for (PatientSample ps : selectedPatientSamples) {
+            if(ps.getStatus()!=PatientInvestigationStatus.SAMPLE_COLLECTED){
+                JsfUtil.addErrorMessage("There are samples which are yet to collect. Please select them and click the sent to lab button again");
+                return;
+            }
+        }
+        
         // Process each selected patient sample
         for (PatientSample ps : selectedPatientSamples) {
-            ps.setSampleTransportedToLabByStaff(sampleTransportedToLabByStaff); 
+            ps.setSampleTransportedToLabByStaff(sampleTransportedToLabByStaff);
             ps.setSampleSent(true);
             ps.setSampleSentBy(sessionController.getLoggedUser());
             ps.setSampleSentAt(new Date());
@@ -1496,16 +1515,12 @@ public class PatientInvestigationController implements Serializable {
 
         JsfUtil.addSuccessMessage("Selected Samples Sent to Lab");
     }
-    
-    
-    
-    
-    public void collectAndReceiveSamplesAtLab(){
+
+    public void collectAndReceiveSamplesAtLab() {
         collectSamples();
         sendSamplesToLab();
         receiveSamplesAtLab();
     }
-            
 
     public void receiveSamplesAtLab() {
         if (selectedPatientSamples == null || selectedPatientSamples.isEmpty()) {
@@ -2349,8 +2364,23 @@ public class PatientInvestigationController implements Serializable {
     }
 
     private List<BillBarcode> createBilBarcodeObjects(List<PatientInvestigation> ptis) {
+        if (ptis == null) {
+            JsfUtil.addErrorMessage("No Patient Investigations");
+            return new ArrayList<>();
+        }
+        if (ptis.isEmpty()) {
+            JsfUtil.addErrorMessage("No Patient Investigations");
+            return new ArrayList<>();
+        }
         Map<Bill, BillBarcode> billBarcodeMap = new HashMap<>();
         for (PatientInvestigation pi : ptis) {
+            if (pi.getBillItem() == null) {
+                continue;
+            }
+            if (pi.getBillItem().getBill() == null) {
+                continue;
+            }
+
             Bill b = pi.getBillItem().getBill();
             BillBarcode bb;
 
@@ -4160,7 +4190,4 @@ public class PatientInvestigationController implements Serializable {
         return iis;
     }
 
-    
-    
-    
 }
