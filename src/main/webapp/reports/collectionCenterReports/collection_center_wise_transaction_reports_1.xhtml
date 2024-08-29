@@ -103,14 +103,11 @@
                         <p:column headerText="S. No" >
                             <h:outputText value="#{bi.id}" ></h:outputText>
                         </p:column>
-                        <p:column headerText="Collecting center" >
-                            <h:outputText value="#{bi.bill.fromInstitution.name}" ></h:outputText>
+                        <p:column headerText="DOC No" >
+                            <h:outputText value="#{bi.bill.deptId}" ></h:outputText>
                         </p:column>
-                        <p:column headerText="Bill No" >
-                            <h:outputText value="#{bi.bill.id}" ></h:outputText>
-                        </p:column>
-                        <p:column headerText="Bill Type" >
-                            <h:outputText value="#{bi.bill.billTypeAtomic}" ></h:outputText>
+                        <p:column headerText="LEAF No" >
+                            <h:outputText value="#{bi.bill.agentRefNo}" ></h:outputText>
                         </p:column>
                         <p:column headerText="Before Balance" >
                             <h:outputText value="#{bi.balanceBeforeTransaction}" ></h:outputText>
