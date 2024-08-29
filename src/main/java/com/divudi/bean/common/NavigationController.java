@@ -154,7 +154,7 @@ public class NavigationController implements Serializable {
     }
     
     public String navigateToPaymentSchemeDiscountOpdBySite() {
-        return "/admin/pricing/payment_scheme_discount_opd_by_department?faces-redirect=true";
+        return "/admin/pricing/payment_scheme_discount_opd_by_site?faces-redirect=true";
     }
 
     public String navigateToPaymentSchemeDiscountOpdByItem() {
