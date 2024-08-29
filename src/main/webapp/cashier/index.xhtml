@@ -27,6 +27,24 @@
 
                                         <p:commandButton 
                                             class="my-1 w-100"
+                                            value="Shift Handover"
+                                            icon=""
+                                            ajax="false" 
+                                            action="#{financialTransactionController.navigateToHandoverCreateBill}" >
+                                        </p:commandButton>
+                                        
+                                         <p:badge severity="danger" value="#{financialTransactionController.fundTransferBillsToReceiveCount}">
+                                            <p:commandButton 
+                                                class="my-1 w-100"
+                                                value=" Handovers for me to Receive"
+                                                icon=""
+                                                ajax="false" 
+                                                action="#{financialTransactionController.navigateToReceiveHandoverBillsForMe()}" >
+                                            </p:commandButton>
+                                        </p:badge>
+
+                                        <p:commandButton 
+                                            class="my-1 w-100"
                                             value="Shift End Funds"
                                             icon=""
                                             ajax="false" 

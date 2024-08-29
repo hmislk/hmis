@@ -25,7 +25,6 @@
                                 value="#{searchController.fromDate}" 
                                 navigator="false" 
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
-                                <f:ajax event="dateSelect" execute="tblBills  cmbUser"  render="tblBills toDate fromDate"/>
                             </p:calendar>
 
                             <h:outputLabel value="To"/>                                
@@ -36,7 +35,6 @@
                                 value="#{searchController.toDate}" 
                                 navigator="false" 
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
-                                <f:ajax event="dateSelect" execute="tblBills cmbUser"  render="tblBills toDate fromDate"/>
                             </p:calendar>
 
                             <h:outputLabel value="Institution"/>                                
@@ -60,6 +58,19 @@
                                 forceSelection="true" 
                                 completeMethod="#{institutionController.completeSite}" 
                                 var="s" itemLabel="#{s.name}" 
+                                itemValue="#{s}"
+                                value="#{searchController.site}" >
+                            </p:autoComplete>
+
+                            <h:outputLabel value="Payment Method"/>
+                            <p:autoComplete
+                                class="w-100  "
+                                inputStyleClass="w-100"
+                                id="cmbPayment"
+                                placeholder="All Payment Method"
+                                forceSelection="true"
+                                completeMethod="#{institutionController.completeSite}"
+                                var="s" itemLabel="#{s.name}"
                                 itemValue="#{s}"
                                 value="#{searchController.site}" >
                             </p:autoComplete>
@@ -90,6 +101,18 @@
                                           filterBy="#{cb.site.name}" filterMatchMode="contains"
                                           sortBy="#{cb.site.name}">
                                     <p:outputLabel value="#{cb.site.name}" ></p:outputLabel>
+                                </p:column>
+
+                                <p:column rendered="false" headerText="Department Balance" style="text-align: left;">
+                                    <p:outputLabel value="#{cb.departmentBalance}" ></p:outputLabel>
+                                </p:column>
+
+                                <p:column rendered="false" headerText="Institution Balance" style="text-align: left;" >
+                                    <p:outputLabel value="#{cb.institutionBalance}" ></p:outputLabel>
+                                </p:column>
+
+                                <p:column rendered="false" headerText="Site Balance" style="text-align: left;">
+                                    <p:outputLabel value=" #{cb.siteBalance}" ></p:outputLabel>
                                 </p:column>
 
                                 <p:column headerText="Institution" sortBy="#{cb.institution}" style="text-align: right; padding-right: 20px;">

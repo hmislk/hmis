@@ -3124,7 +3124,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     public List<ItemLight> completeOpdItemsByWord(String query) {
         List<ItemLight> filteredItems = new ArrayList<>();
         Long defaultValue = 10l;
-        Long maxResultsLong = configOptionApplicationController.getLongValueByKey("OPD Bill Fees are the same for all departments, institutions and sites.",  defaultValue);
+        Long maxResultsLong = configOptionApplicationController.getLongValueByKey("Number of Maximum Results for Item Search in Autocompletes",  defaultValue);
         int maxResults = maxResultsLong.intValue();
         
         boolean addAllBillFees = configOptionApplicationController.getBooleanValueByKey("OPD Bill Fees are the same for all departments, institutions and sites.", true);
@@ -3337,7 +3337,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                 }
 
                 paymentFacade.create(p);
-                cashBookEntryController.writeCashBookEntry(p);
+                cashBookEntryController.writeCashBookEntryAtPaymentCreation(p);
                 ps.add(p);
             }
         } else {
@@ -3383,7 +3383,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
             p.setPaidValue(p.getBill().getNetTotal());
             paymentFacade.create(p);
-            cashBookEntryController.writeCashBookEntry(p);
+            cashBookEntryController.writeCashBookEntryAtPaymentCreation(p);
             ps.add(p);
         }
         return ps;

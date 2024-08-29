@@ -224,9 +224,15 @@
                                                                 <p:badge value="0" size="large" styleClass="mr-2" rendered="#{0 >= s.maxNo - ((s.bookedPatientCount + bookingControllerViewScope.totalReservedNumberCount(s)) - s.cancelPatientCount)}" severity="danger"></p:badge>
                                                             </h:panelGroup>                                  
                                                         </div>
-                                                        <div class="text-center">
+<!--                                                        <div class="text-center">
                                                             <h:outputLabel style="font-weight: bolder" value="N"/><br/>
                                                             <p:badge value="#{((s.bookedPatientCount + bookingControllerViewScope.totalReservedNumberCount(s)) - s.reservedBookingCount) + 1}" size="large" styleClass="mr-2"></p:badge>
+                                                        </div>-->
+                                                        <div class="text-center">
+                                                            <h:outputLabel style="font-weight: bolder" value="N"/><br/>
+                                                            <p:badge value="#{s.nextAvailableAppointmentNumber}" rendered="#{s.nextAvailableAppointmentNumber ne null}" size="large" styleClass="mr-2"></p:badge>
+                                                            <p:badge value="0" rendered="#{s.nextAvailableAppointmentNumber eq null and s.originatingSession.sessionStartingNumber eq null}" size="large" styleClass="mr-2"></p:badge>
+                                                            <p:badge value="#{s.originatingSession.sessionStartingNumber}" rendered="#{s.originatingSession.sessionStartingNumber ne null and s.nextAvailableAppointmentNumber eq null}" size="large" styleClass="mr-2"></p:badge>
                                                         </div>
                                                     </div>
 

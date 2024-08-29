@@ -419,6 +419,7 @@ public class BookingController implements Serializable, ControllerWithPatient, C
         balance = getTenderedAmount() - getFeeTotalForSelectedBill();
     }
 
+
 //    public double calculatRemainForMultiplePaymentTotal() {
 //        total = getFeeTotalForSelectedBill();
 //        if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
@@ -4692,6 +4693,7 @@ public class BookingController implements Serializable, ControllerWithPatient, C
     public double getTenderedAmount() {
         return tenderedAmount;
     }
+
 
     public void setTenderedAmount(double tenderedAmount) {
         this.tenderedAmount = tenderedAmount;

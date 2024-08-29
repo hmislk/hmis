@@ -59,6 +59,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.IntStream;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -1016,9 +1017,27 @@ public class ChannelScheduleController implements Serializable {
             current.setSessionNumberGenerator(ss);
         }
 
-        if (current.getEndingTime()==null) {
+        if (current.getEndingTime() == null) {
             JsfUtil.addErrorMessage("Can't save session without session endtime !");
             return;
+        }
+
+        if (current.getSessionStartingNumber() != null) {
+            if (!current.getSessionStartingNumber().trim().equals("")) {
+                int[] resnumbers = Arrays.stream(current.getReserveNumbers().split(","))
+                        .filter(s -> !s.isEmpty())
+                        .mapToInt(Integer::parseInt)
+                        .toArray();
+                System.out.println(Arrays.toString(resnumbers));
+                int sessStartnumber = Integer.valueOf(current.getSessionStartingNumber());
+                boolean allLower = IntStream.of(resnumbers).allMatch(n -> n < sessStartnumber);
+                System.out.println("All values are lower than " + sessStartnumber + ": " + allLower);
+                if (allLower) {
+                    JsfUtil.addErrorMessage("All reserveNumbers are lower than session starting number");
+                    return;
+                }
+
+            }
         }
 
         getCurrent().setStaff(currentStaff);
