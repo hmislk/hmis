@@ -352,6 +352,7 @@ public class AgentPaymentRecieveBillController implements Serializable {
         agentHistory.setCreatedAt(new Date());
         agentHistory.setCreater(getSessionController().getLoggedUser());
         agentHistory.setBill(bill);
+        agentHistory.setAgency(ins);
         agentHistory.setBalanceBeforeTransaction(ins.getBallance());
         agentHistory.setTransactionValue(transactionValue);
         agentHistory.setHistoryType(historyType);
@@ -471,7 +472,7 @@ public class AgentPaymentRecieveBillController implements Serializable {
 
             p.setPaidValue(p.getBill().getNetTotal());
             paymentFacade.create(p);
-            cashBookEntryController.writeCashBookEntry(p);
+            cashBookEntryController.writeCashBookEntryAtPaymentCreation(p);
             ps.add(p);
         }
         return ps;

@@ -57,6 +57,8 @@ public class Bill implements Serializable {
     static final long serialVersionUID = 1L;
 
     @ManyToOne
+    private Item item;
+    @ManyToOne
     private MembershipScheme membershipScheme;
     @OneToOne
     private CashTransaction cashTransaction;
@@ -370,6 +372,12 @@ public class Bill implements Serializable {
     private double totalHospitalFee;
     private double totalCenterFee;
     private double totalStaffFee;
+    
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date fromDate;
+    
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date toDate;
 
     @Enumerated(EnumType.ORDINAL)
     private PatientInvestigationStatus status;
@@ -2296,6 +2304,30 @@ public class Bill implements Serializable {
 
     public void setStatus(PatientInvestigationStatus status) {
         this.status = status;
+    }
+
+    public Item getItem() {
+        return item;
+    }
+
+    public void setItem(Item item) {
+        this.item = item;
+    }
+
+    public Date getFromDate() {
+        return fromDate;
+    }
+
+    public void setFromDate(Date fromDate) {
+        this.fromDate = fromDate;
+    }
+
+    public Date getToDate() {
+        return toDate;
+    }
+
+    public void setToDate(Date toDate) {
+        this.toDate = toDate;
     }
 
 }

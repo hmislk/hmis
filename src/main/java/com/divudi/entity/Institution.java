@@ -63,7 +63,7 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
     private Department labDepartment;
     @ManyToOne
     private Category feeListType;
-    
+
     @Lob
     String labBillHeading;
     @Lob
@@ -101,12 +101,12 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
     double opdBillDiscount;
     double inwardDiscount;
     double pharmacyDiscount;
-    
+
     double ballance;
-    
+
     private double companyBalance;
     private double agentBalance;
-    
+
     double allowedCredit;
     private double allowedCreditLimit;
     double maxCreditLimit;
@@ -179,7 +179,6 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
 //    public Institution() {
 //        split();
 //    }
-
     public String getDescreption() {
         return descreption;
     }
@@ -457,6 +456,13 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
     }
 
     public String getInstitutionCode() {
+        if (institutionCode == null || institutionCode.trim().isEmpty()) {
+            if (code != null && !code.trim().isEmpty()) {
+                institutionCode = code;
+            } else if (name != null && name.trim().length() >= 2) {
+                institutionCode = name.trim().substring(0, 2).toUpperCase(); // Extract the first two letters and make them uppercase
+            }
+        }
         return institutionCode;
     }
 
@@ -654,8 +660,6 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
     public Route getRoute() {
         return route;
     }
-    
-    
 
     public void setRoute(Route route) {
         this.route = route;
@@ -740,7 +744,5 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
     public void setAgentBalance(double agentBalance) {
         this.agentBalance = agentBalance;
     }
-    
-    
 
 }

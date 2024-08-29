@@ -163,6 +163,8 @@ public class PatientReport implements Serializable {
          if (status == null) {
             status = PatientInvestigationStatus.ORDERED;
         }
+         printed=false;
+         approved=false;
     }
     
     

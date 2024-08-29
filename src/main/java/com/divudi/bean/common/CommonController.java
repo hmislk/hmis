@@ -58,6 +58,18 @@ public class CommonController implements Serializable {
         DecimalFormat decimalFormat = new DecimalFormat(format);
         return decimalFormat.format(number);
     }
+    
+    public String formatToLongDate(Date date) {
+        if (date == null) {
+            return "";
+        }
+        
+        // Load the date format from session preferences
+        String dateFormat = sessionController.getApplicationPreference().getLongDateFormat();
+        SimpleDateFormat sdf = new SimpleDateFormat(dateFormat);
+        
+        return sdf.format(date);
+    }
 
     /**
      * Formats a Double value according to the given format string and returns
