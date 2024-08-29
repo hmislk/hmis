@@ -832,7 +832,7 @@ public class SearchController implements Serializable {
     public String navigatToAllCashierSummary() {
         return "/reports/cashier_reports/all_cashier_summary?faces-redirect=true";
     }
-    
+
     public String navigatToCashierSummary() {
         return "/reports/cashier_reports/cashier_summary?faces-redirect=true";
     }
@@ -11518,6 +11518,17 @@ public class SearchController implements Serializable {
 
     public void genarateCashBookEntries() {
         cashBookEntries = cashBookEntryController.genarateCashBookEntries(fromDate, toDate, site, institution, department);
+    }
+
+    public void generateDailyReturn() {
+        bundle = new ReportTemplateRowBundle();
+        String jpql = "select bi "
+                + " from BillItem bi "
+                + " where b.retired";
+        Map m = new HashMap();
+
+        List<BillItem> billItems = billItemFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
+
     }
 
     public void generateCashierSummary() {

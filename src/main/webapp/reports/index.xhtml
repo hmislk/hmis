@@ -11,10 +11,9 @@
     <ui:define name="content">
         <div class="p-1 w-100" >  
             <div class="row" >
-                <div class="col-md-3" >
+                <div class="col-md-2" >
                     <h:form class="w-100">
-
-                        <p:panel header="Reports" rendered="true">
+                        <p:panel header="Reports" rendered="true" class="m-1" >
                             <p:accordionPanel activeIndex="#{investigationCategoryController.manageItemIndex}" >
                                 <p:ajax process="@this" ></p:ajax>
                                 <p:tab title="Asset Reports">
@@ -337,7 +336,7 @@
                         </p:panel>
                     </h:form>
                 </div>
-                <div class="col-md-9" >
+                <div class="col-md-10" >
                     <ui:insert name="subcontent" class="w-100">
 
                     </ui:insert>
