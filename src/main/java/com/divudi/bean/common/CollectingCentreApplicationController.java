@@ -72,6 +72,7 @@ public class CollectingCentreApplicationController {
                 agentHistory.setCompanyBalanceAfter(collectingCentre.getCompanyBalance());
                 
                 agentHistory.setCompanyTransactionValue(valueWithoutccFee);
+                agentHistory.setTransactionValue(valueWithoutccFee);
                 
                 agentHistory.setCollectingCentertransactionValue(collectingCenterFeeValue);
                 agentHistoryFacade.create(agentHistory);
