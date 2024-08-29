@@ -59,6 +59,13 @@ public class AgentHistory implements Serializable {
     private WebUser creater;
     @ManyToOne
     Institution institution;
+    @ManyToOne
+    private Department department;
+    @ManyToOne
+    private Institution agency;
+    
+    
+    
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date createdAt;
     //Retairing properties
@@ -72,6 +79,7 @@ public class AgentHistory implements Serializable {
     String comment;
     @Transient
     double transCumilativeTotal;
+    
     
     
 
@@ -312,6 +320,22 @@ public class AgentHistory implements Serializable {
 
     public void setAgentBalanceAfter(double agentBalanceAfter) {
         this.agentBalanceAfter = agentBalanceAfter;
+    }
+
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
+    }
+
+    public Institution getAgency() {
+        return agency;
+    }
+
+    public void setAgency(Institution agency) {
+        this.agency = agency;
     }
 
 }
