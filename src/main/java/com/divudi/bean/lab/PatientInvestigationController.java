@@ -1325,6 +1325,11 @@ public class PatientInvestigationController implements Serializable {
             JsfUtil.addErrorMessage("No Bills Seelcted");
             return;
         }
+        
+        if(billForBarcode.getStatus() != patientInvestigationStatus.ORDERED){
+            JsfUtil.addErrorMessage("This Bill has has Already Barcode Genatared");
+            return;
+        }
 
         BillBarcode bb = new BillBarcode(billForBarcode);
         List<PatientSampleWrapper> psws = new ArrayList<>();
@@ -1359,7 +1364,14 @@ public class PatientInvestigationController implements Serializable {
             JsfUtil.addErrorMessage("No Patient Investigations are Selected");
             return;
         }
-
+        
+        for (PatientInvestigation pi : selectedItems) {
+            if(pi.getBillItem().getBill().getStatus() != patientInvestigationStatus.ORDERED){
+                JsfUtil.addErrorMessage("Barcode is already generated for Selected "+  pi.getBillItem().getItem().getName() + " Investigation");
+                return;
+            }
+        }
+        
         // Create a set to track unique bills
         Set<Bill> uniqueBills = new HashSet<>();
         Bill ptIxBill = null;
@@ -1370,7 +1382,7 @@ public class PatientInvestigationController implements Serializable {
             ptIxBill = b;
             uniqueBills.add(b);
         }
-
+        
         // Check if there is more than one distinct bill
         if (uniqueBills.size() > 1) {
             JsfUtil.addErrorMessage("Multiple bills detected. Barcodes cannot be generated.");
@@ -1476,12 +1488,12 @@ public class PatientInvestigationController implements Serializable {
         Map<Long, Bill> sampleBills = new HashMap<>();
 
         for (PatientSample ps : selectedPatientSamples) {
-            if(ps.getStatus()!=PatientInvestigationStatus.SAMPLE_COLLECTED){
+            if (ps.getStatus() != PatientInvestigationStatus.SAMPLE_COLLECTED) {
                 JsfUtil.addErrorMessage("There are samples which are yet to collect. Please select them and click the sent to lab button again");
                 return;
             }
         }
-        
+
         // Process each selected patient sample
         for (PatientSample ps : selectedPatientSamples) {
             ps.setSampleTransportedToLabByStaff(sampleTransportedToLabByStaff);
