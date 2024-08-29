@@ -11,6 +11,7 @@ import java.util.List;
  */
 public class ReportTemplateRowBundle {
 
+    private ReportTemplateRowBundle bundles;
     private ReportTemplate reportTemplate;
     private List<ReportTemplateRow> reportTemplateRows;
     private Double total;
@@ -178,6 +179,9 @@ public class ReportTemplateRowBundle {
         }
     }
 
+    
+    
+    
     private double safeDouble(Double value) {
         return value == null ? 0.0 : value;
     }
@@ -615,6 +619,14 @@ public class ReportTemplateRowBundle {
 
     public void setHasOnlineSettlementTransaction(boolean hasOnlineSettlementTransaction) {
         this.hasOnlineSettlementTransaction = hasOnlineSettlementTransaction;
+    }
+
+    public ReportTemplateRowBundle getBundles() {
+        return bundles;
+    }
+
+    public void setBundles(ReportTemplateRowBundle bundles) {
+        this.bundles = bundles;
     }
 
 }
