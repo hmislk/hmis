@@ -13,9 +13,6 @@
             <ui:define name="subcontent">
 
                 <h:form >
-
-
-
                     <h:panelGrid columns="2" class="w-100">
                         <h:outputLabel value="From"/>
                         <p:calendar 
@@ -49,18 +46,11 @@
                             <f:selectItems value="#{sessionController.loggableDepartments}" var="d" itemLabel="#{d.institution.name} - #{d.name}" itemValue="#{d}" ></f:selectItems>
                         </p:selectOneMenu>
 
-                        <h:outputLabel value="Site"/>                                
-                        <p:autoComplete 
-                            class="w-100  " 
-                            inputStyleClass="w-100" 
-                            id="cmbUser"  
-                            placeholder="All Sites"
-                            forceSelection="true" 
-                            completeMethod="#{institutionController.completeSite}" 
-                            var="s" itemLabel="#{s.name}" 
-                            itemValue="#{s}"
-                            value="#{searchController.site}" >
-                        </p:autoComplete>
+                        <h:outputLabel value="Site*"/>   
+                        <p:selectOneMenu class="w-100 "  value="#{searchController.site}" filter="true">
+                            <f:selectItem itemLabel="All Departments" ></f:selectItem>
+                            <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" ></f:selectItems>
+                        </p:selectOneMenu>
 
                         <h:outputLabel value="Payment Method"/>                                
                         <p:selectOneMenu class="w-100 " value="#{searchController.paymentMethod}" filter="true" >

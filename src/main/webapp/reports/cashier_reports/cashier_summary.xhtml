@@ -16,16 +16,17 @@
 
 
 
-                    <h:panelGrid columns="2" class="w-100">
+                    <p:panelGrid layout="tabular" columns="8" class="w-100">
                         <h:outputLabel value="From"/>
-                        <p:calendar 
+                        <p:datePicker 
                             class="w-100 " 
                             inputStyleClass="w-100" 
                             id="fromDate" 
                             value="#{searchController.fromDate}" 
-                            navigator="false" 
                             pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
-                        </p:calendar>
+                        </p:datePicker>
+
+                        <p:spacer width="2" ></p:spacer>
 
                         <h:outputLabel value="To"/>                                
                         <p:calendar 
@@ -37,11 +38,17 @@
                             pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                         </p:calendar>
 
+                        <p:spacer ></p:spacer>
+                        <p:spacer ></p:spacer>
+                        <p:spacer ></p:spacer>
+
                         <h:outputLabel value="Institution"/>                                
                         <p:selectOneMenu class="w-100 " value="#{searchController.institution}" filter="true" >
                             <f:selectItem itemLabel="All Institution" ></f:selectItem>
                             <f:selectItems value="#{sessionController.loggableInstitutions}" var="d" itemLabel="#{d.institution.name} - #{d.name}" itemValue="#{d}" ></f:selectItems>
                         </p:selectOneMenu>
+
+                        <p:spacer width="2" ></p:spacer>
 
                         <h:outputLabel value="Department"/>                                
                         <p:selectOneMenu class="w-100 "  value="#{searchController.department}" filter="true">
@@ -49,32 +56,17 @@
                             <f:selectItems value="#{sessionController.loggableDepartments}" var="d" itemLabel="#{d.institution.name} - #{d.name}" itemValue="#{d}" ></f:selectItems>
                         </p:selectOneMenu>
 
-                        <h:outputLabel value="Site"/>                                
-                        <p:autoComplete 
-                            class="w-100  " 
-                            inputStyleClass="w-100" 
-                            id="cmbUser"  
-                            placeholder="All Sites"
-                            forceSelection="true" 
-                            completeMethod="#{institutionController.completeSite}" 
-                            var="s" itemLabel="#{s.name}" 
-                            itemValue="#{s}"
-                            value="#{searchController.site}" >
-                        </p:autoComplete>
+                        <p:spacer width="2" ></p:spacer>
 
-                        <h:outputLabel value="Payment Method"/>
-                        <p:autoComplete
-                            class="w-100  "
-                            inputStyleClass="w-100"
-                            id="cmbPayment"
-                            placeholder="All Payment Method"
-                            forceSelection="true"
-                            completeMethod="#{institutionController.completeSite}"
-                            var="s" itemLabel="#{s.name}"
-                            itemValue="#{s}"
-                            value="#{searchController.site}" >
-                        </p:autoComplete>
-                    </h:panelGrid>
+                        <h:outputLabel value="Site*"/>   
+                        <p:selectOneMenu class="w-100 "  value="#{searchController.site}" filter="true">
+                            <f:selectItem itemLabel="All Departments" ></f:selectItem>
+                            <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" ></f:selectItems>
+                        </p:selectOneMenu>
+
+
+                     
+                    </p:panelGrid>
                     <h:panelGrid columns="3" class="my-2" >
 
                         <p:commandButton  

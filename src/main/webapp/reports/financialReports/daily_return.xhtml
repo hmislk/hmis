@@ -24,7 +24,7 @@
                                           pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
 
 
-                            <p:outputLabel value="Institution/Branch" for="institutionMenu"></p:outputLabel>
+                            <p:outputLabel value="Institution" for="institutionMenu"></p:outputLabel>
                             <p:selectOneMenu value="#{reportController.institution}" id="institutionMenu" required="true">
                                 <f:selectItem itemLabel="Select Institution Type"/>
                                 <f:selectItems value="#{institutionController.items}" var="i" itemLabel="#{i.name}" itemValue="#{i}"/>
