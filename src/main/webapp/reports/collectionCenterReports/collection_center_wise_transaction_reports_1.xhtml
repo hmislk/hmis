@@ -109,14 +109,17 @@
                         <p:column headerText="LEAF No" >
                             <h:outputText value="#{bi.bill.agentRefNo}" ></h:outputText>
                         </p:column>
-                        <p:column headerText="Before Balance" >
-                            <h:outputText value="#{bi.balanceBeforeTransaction}" ></h:outputText>
-                        </p:column>
-                        <p:column headerText="Transaction Value(Hospital Amount)" >
+                        <p:column headerText="Hospital Amount" >
                             <h:outputText value="#{bi.companyTransactionValue}" ></h:outputText>
                         </p:column>
                         <p:column headerText="CC Amount" >
                             <h:outputText value="#{bi.collectingCentertransactionValue}" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="Before Balance" >
+                            <h:outputText value="#{bi.balanceBeforeTransaction}" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="Transaction Value" >
+                            <h:outputText value="#{bi.transactionValue}" ></h:outputText>
                         </p:column>
                         <p:column headerText="After Balance" >
                             <h:outputText value="#{bi.balanceAfterTransaction}" ></h:outputText>
