@@ -2422,7 +2422,12 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             }
         }
 
-        if (!sessionController.getDepartmentPreference().isOpdSettleWithoutCashTendered()) {
+        boolean canSettleWithoutTenderedAmount;
+        canSettleWithoutTenderedAmount=sessionController.getDepartmentPreference().isOpdSettleWithoutCashTendered();
+        
+        canSettleWithoutTenderedAmount = configOptionApplicationController.getBooleanValueByKey("Tendered Amount is Required for OPD Cash Billing", false);
+        
+        if (canSettleWithoutTenderedAmount) {
             if (getPaymentMethod() == PaymentMethod.Cash) {
                 if (getStrTenderedValue() == null) {
                     JsfUtil.addErrorMessage("Please Enter Tenderd Amount");

@@ -111,6 +111,7 @@ public class UserPreference implements Serializable {
     private boolean depNumGenFromToDepartment;
     private boolean tranferNetTotalbyRetailRate;
     private boolean allowtoChangePaymentMethodDuringPayment;
+    @Deprecated
     private boolean opdSettleWithoutCashTendered;
     private boolean channelWithOutReferenceNumber;
     private boolean pharmayPurchaseWithLastRate;
@@ -385,10 +386,12 @@ public class UserPreference implements Serializable {
         this.allowtoChangePaymentMethodDuringPayment = allowtoChangePaymentMethodDuringPayment;
     }
 
+    @Deprecated
     public boolean isOpdSettleWithoutCashTendered() {
         return opdSettleWithoutCashTendered;
     }
 
+    @Deprecated
     public void setOpdSettleWithoutCashTendered(boolean opdSettleWithoutCashTendered) {
         this.opdSettleWithoutCashTendered = opdSettleWithoutCashTendered;
     }
