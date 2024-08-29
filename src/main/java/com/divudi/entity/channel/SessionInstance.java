@@ -223,6 +223,7 @@ public class SessionInstance implements Serializable {
     private Long reservedBookingCount;
     private Long cancelOnCallPatientCount;
     private Long cancelPaidPatientCount;
+    private Long nextAvailableAppointmentNumber;
     
     private boolean arrived;
     
@@ -1336,6 +1337,14 @@ public class SessionInstance implements Serializable {
 
     public void setCancelPaidPatientCount(Long cancelPaidPatientCount) {
         this.cancelPaidPatientCount = cancelPaidPatientCount;
+    }
+
+    public Long getNextAvailableAppointmentNumber() {
+        return nextAvailableAppointmentNumber;
+    }
+
+    public void setNextAvailableAppointmentNumber(Long nextAvailableAppointmentNumber) {
+        this.nextAvailableAppointmentNumber = nextAvailableAppointmentNumber;
     }
     
     
