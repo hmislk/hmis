@@ -58,6 +58,7 @@ import com.divudi.data.BillCategory;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillFinanceType;
 import com.divudi.data.BillTypeAtomic;
+import com.divudi.data.ReportTemplateRow;
 import com.divudi.data.ReportTemplateRowBundle;
 import com.divudi.data.ServiceType;
 import com.divudi.data.analytics.ReportTemplateType;
@@ -826,6 +827,14 @@ public class SearchController implements Serializable {
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
         return "/opd_search_professional_payment_due_1.xhtml?faces-redirect=true";
+    }
+
+    public String navigatToAllCashierSummary() {
+        return "/reports/cashier_reports/all_cashier_summary?faces-redirect=true";
+    }
+    
+    public String navigatToCashierSummary() {
+        return "/reports/cashier_reports/cashier_summary?faces-redirect=true";
     }
 
     public String navigatToReportDoctorPaymentOpd() {
@@ -11511,6 +11520,126 @@ public class SearchController implements Serializable {
         cashBookEntries = cashBookEntryController.genarateCashBookEntries(fromDate, toDate, site, institution, department);
     }
 
+    public void generateCashierSummary() {
+        Map<String, Object> parameters = new HashMap<>();
+        String jpql = "SELECT new com.divudi.data.ReportTemplateRow("
+                + "bill.department, FUNCTION('date', p.createdAt), p.creater, "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Cash THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Card THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.MultiplePaymentMethods THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Staff THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Credit THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Staff_Welfare THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Voucher THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.IOU THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Agent THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Cheque THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Slip THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.ewallet THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.PatientDeposit THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.PatientPoints THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.OnlineSettlement THEN p.paidValue ELSE 0 END)) "
+                + "FROM Payment p "
+                + "JOIN p.bill bill "
+                + "WHERE p.retired <> :bfr AND bill.retired <> :br ";
+
+        parameters.put("bfr", true);
+        parameters.put("br", true);
+
+        if (institution != null) {
+            jpql += "AND bill.department.institution = :ins ";
+            parameters.put("ins", institution);
+        }
+        if (department != null) {
+            jpql += "AND bill.department = :dep ";
+            parameters.put("dep", department);
+        }
+        if (site != null) {
+            jpql += "AND bill.department.site = :site ";
+            parameters.put("site", site);
+        }
+        if (webUser != null) {
+            jpql += "AND p.creater = :wu ";
+            parameters.put("wu", webUser);
+        }
+        if (paymentMethod != null) {
+            jpql += "AND p.paymentMethod = :pm ";
+            parameters.put("pm", paymentMethod);
+        }
+
+        jpql += "AND p.createdAt BETWEEN :fd AND :td ";
+        parameters.put("fd", fromDate);
+        parameters.put("td", toDate);
+
+        jpql += "GROUP BY bill.department, FUNCTION('date', p.createdAt), p.creater";
+
+        List<ReportTemplateRow> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+
+        bundle = new ReportTemplateRowBundle();
+        bundle.setReportTemplateRows(rs);
+        bundle.calculatePaymentMethodTotals();
+    }
+
+    public void generateAllCashierSummary() {
+        Map<String, Object> parameters = new HashMap<>();
+        String jpql = "SELECT new com.divudi.data.ReportTemplateRow("
+                + "bill.department, FUNCTION('date', p.createdAt), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Cash THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Card THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.MultiplePaymentMethods THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Staff THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Credit THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Staff_Welfare THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Voucher THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.IOU THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Agent THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Cheque THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Slip THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.ewallet THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.PatientDeposit THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.PatientPoints THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.OnlineSettlement THEN p.paidValue ELSE 0 END)) "
+                + "FROM Payment p "
+                + "JOIN p.bill bill "
+                + "WHERE p.retired <> :bfr AND bill.retired <> :br ";
+
+        parameters.put("bfr", true);
+        parameters.put("br", true);
+
+        if (institution != null) {
+            jpql += "AND bill.department.institution = :ins ";
+            parameters.put("ins", institution);
+        }
+        if (department != null) {
+            jpql += "AND bill.department = :dep ";
+            parameters.put("dep", department);
+        }
+        if (site != null) {
+            jpql += "AND bill.department.site = :site ";
+            parameters.put("site", site);
+        }
+        if (webUser != null) {
+            jpql += "AND p.creater = :wu ";
+            parameters.put("wu", webUser);
+        }
+        if (paymentMethod != null) {
+            jpql += "AND p.paymentMethod = :pm ";
+            parameters.put("pm", paymentMethod);
+        }
+
+        jpql += "AND p.createdAt BETWEEN :fd AND :td ";
+        parameters.put("fd", fromDate);
+        parameters.put("td", toDate);
+
+        jpql += "GROUP BY bill.department, FUNCTION('date', p.createdAt)";
+
+        List<ReportTemplateRow> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+
+        bundle = new ReportTemplateRowBundle();
+        bundle.setReportTemplateRows(rs);
+        bundle.calculatePaymentMethodTotals();
+    }
+
     public SearchController() {
     }
 
@@ -12143,52 +12272,50 @@ public class SearchController implements Serializable {
         }
 
         // Fill the sheet with bill data first, then bill item data in subsequent rows
-        for (BillItem bi : billItems) {
-            if (bi.getBill().equals(bill)) {
-                Row itemRow = sheet.createRow(rowIdx++);
-                // Leave bill details columns empty
-                for (int j = 0; j < 10; j++) {
-                    itemRow.createCell(j);
-                }
+        for (Bill bill : bills) {
+            Row billRow = sheet.createRow(rowIdx++);
+            int colIdx = 0;
+            billRow.createCell(colIdx++).setCellValue(bill.getId());
+            billRow.createCell(colIdx++).setCellValue(bill.getInstitution() != null ? bill.getInstitution().getName() : "");
+            billRow.createCell(colIdx++).setCellValue(bill.getDepartment() != null ? bill.getDepartment().getName() : "");
+            billRow.createCell(colIdx++).setCellValue(bill.getPatient() != null && bill.getPatient().getPerson() != null ? bill.getPatient().getPerson().getName() : "");
+            billRow.createCell(colIdx++).setCellValue(bill.getStaff() != null && bill.getStaff().getPerson() != null ? bill.getStaff().getPerson().getNameWithTitle() : "");
+            billRow.createCell(colIdx++).setCellValue(bill.getCreater() != null && bill.getCreater().getWebUserPerson().getName() != null ? bill.getCreater().getWebUserPerson().getName() : "");
+            billRow.createCell(colIdx++).setCellValue(bill.getBillType() != null ? bill.getBillType().getLabel() : "");
+            billRow.createCell(colIdx++).setCellValue(bill.getGrantTotal());
+            billRow.createCell(colIdx++).setCellValue(bill.getDiscount());
+            billRow.createCell(colIdx++).setCellValue(bill.getNetTotal());
+            billRow.createCell(colIdx++).setCellValue(bill.getPaymentMethod() != null ? bill.getPaymentMethod().getLabel() : "");
 
-                int itemColIdx = 10;
-                itemRow.createCell(itemColIdx++).setCellValue(
-                        bi != null && bi.getItem() != null && bi.getItem().getName() != null
-                        ? bi.getItem().getName()
-                        : ""
-                );
-                itemRow.createCell(itemColIdx++).setCellValue(
-                        bi != null && bi.getItem() != null && bi.getItem().getCode() != null
-                        ? bi.getItem().getCode()
-                        : ""
-                );
-                itemRow.createCell(itemColIdx++).setCellValue(
-                        bi != null && bi.getItem() != null && bi.getItem().getItemType() != null
-                        ? bi.getItem().getItemType().toString()
-                        : ""
-                );
-                itemRow.createCell(itemColIdx++).setCellValue(
-                        bi != null && bi.getQty() != null
-                        ? bi.getQty()
-                        : 0
-                );
-                itemRow.createCell(itemColIdx++).setCellValue(
-                        bi != null ? bi.getRate()
-                        : 0.0
-                );
-                itemRow.createCell(itemColIdx++).setCellValue(
-                        bi != null? bi.getGrossValue()
-                        : 0.0
-                );
-                itemRow.createCell(itemColIdx++).setCellValue(
-                        bi != null ? bi.getDiscount()
-                        : 0.0
-                );
-                itemRow.createCell(itemColIdx++).setCellValue(
-                        bi != null 
-                        ? bi.getNetValue()
-                        : 0.0
-                );
+            // Leave the bill item columns empty in the bill row
+            for (int j = 10; j < headers.length; j++) {
+                billRow.createCell(j);
+            }
+
+            // Fill in bill item data in subsequent rows
+            for (BillItem bi : billItems) {
+                if (bi.getBill().equals(bill)) {
+                    Row itemRow = sheet.createRow(rowIdx++);
+                    // Leave bill details columns empty
+                    for (int j = 0; j < 10; j++) {
+                        itemRow.createCell(j);
+                    }
+
+                    int itemColIdx = 10;
+                    try {
+                        itemRow.createCell(itemColIdx++).setCellValue(bi.getItem() != null ? bi.getItem().getName() : "");
+                        itemRow.createCell(itemColIdx++).setCellValue(bi.getItem() != null ? bi.getItem().getCode() : "");
+                        itemRow.createCell(itemColIdx++).setCellValue(bi.getItem() != null ? bi.getItem().getItemType().toString() : "");
+                        itemRow.createCell(itemColIdx++).setCellValue(bi.getQty());
+                        itemRow.createCell(itemColIdx++).setCellValue(bi.getRate());
+                        itemRow.createCell(itemColIdx++).setCellValue(bi.getGrossValue());
+                        itemRow.createCell(itemColIdx++).setCellValue(bi.getDiscount());
+                        itemRow.createCell(itemColIdx++).setCellValue(bi.getNetValue());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+                }
             }
         }
 

@@ -33,6 +33,7 @@ import com.divudi.entity.Category;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
+import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
 import com.divudi.facade.BillComponentFacade;
 import com.divudi.facade.PaymentMethodValueFacade;
@@ -2843,6 +2844,31 @@ public class FinancialTransactionController implements Serializable {
 
     }
 
+    
+    
+    public List<Bill> findHandoverCompletionBills(ReportTemplateRow row) {
+        String sql;
+        Staff forStaff = row.getUser().getStaff();
+        Date forDate = row.getDate();
+        Department forDepartment=row.getDepartment();
+        
+        List<Bill> bills;
+        Map tempMap = new HashMap();
+        sql = "select s "
+                + "from Bill s "
+                + "where s.retired=:ret "
+                + "and s.billType=:btype "
+                + "and s.toStaff=:logStaff "
+                + "and s.toStaff=:logStaff "
+                + "and s.referenceBill is null "
+                + "order by s.createdAt ";
+        tempMap.put("btype", BillType.CashHandoverAcceptBill);
+        tempMap.put("ret", false);
+        tempMap.put("logStaff", sessionController.getLoggedUser().getStaff());
+        bills = billFacade.findByJpql(sql, tempMap);
+        return bills;
+    }
+    
     public String settleFundTransferReceiveBill() {
         if (currentBill == null) {
             JsfUtil.addErrorMessage("Error");
