@@ -55,8 +55,13 @@
                                 </p:tab>
                                 <p:tab title="Cashier Reports">
                                     <div class="d-grid gap-2">
-                                        <p:commandButton   class="w-100"  ajax="false" value="1. All Cashier Summary" ></p:commandButton>
-                                        <p:commandButton   class="w-100"  ajax="false" value="2. Shift End Summary" ></p:commandButton>
+                                        <p:commandButton  
+                                            action="#{searchController.navigatToAllCashierSummary()}"
+                                            class="w-100"  ajax="false" value="1. All Cashier Summary" ></p:commandButton>
+                                            <p:commandButton  
+                                            action="#{searchController.navigatToCashierSummary()}"
+                                            class="w-100"  ajax="false" value="2. Cashier Summary" ></p:commandButton>
+                                        <p:commandButton   class="w-100"  ajax="false" value="3. Shift End Summary" ></p:commandButton>
 
                                     </div>
                                 </p:tab>
