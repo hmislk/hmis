@@ -11598,6 +11598,7 @@ public class SearchController implements Serializable {
         for (BillItem bi : bis) {
             System.out.println("bi = " + bi);
             double hosFee = 0.0;
+            double discount = 0.0;
             double staffFee = 0.0;
             double ccFee = 0.0;
             List<BillFee> bfs = billBean.findSavedBillFeefromBillItem(bi);
@@ -11616,15 +11617,11 @@ public class SearchController implements Serializable {
                     System.out.println("hosFee = " + hosFee);
                 }
             }
-            if (bi.getCollectingCentreFee() != 0.0) {
-                bi.setCollectingCentreFee(ccFee);
-            }
-            if (bi.getStaffFee() != 0.0) {
-                bi.setStaffFee(staffFee);
-            }
-            if (bi.getHospitalFee() != 0.0) {
-                bi.setHospitalFee(hosFee);
-            }
+
+            bi.setCollectingCentreFee(ccFee);
+            bi.setStaffFee(staffFee);
+            bi.setHospitalFee(hosFee-bi.getDiscount());
+
             billItemFacade.edit(bi);
         }
 
