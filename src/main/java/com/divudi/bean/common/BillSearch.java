@@ -2274,7 +2274,7 @@ public class BillSearch implements Serializable {
 
         billController.save(getBill());
         JsfUtil.addSuccessMessage("Cancelled");
-        collectingCentreApplicationController.updateBalance(collectingCenter, totalCCFee, (totalHosFee + totalStaffFee), b.getNetTotal(), HistoryType.CollectingCentreBilling, b, comment);
+        collectingCentreApplicationController.updateBalance(collectingCenter, getBill().getTotalCenterFee(), (getBill().getTotalHospitalFee() + getBill().getTotalStaffFee()), getBill().getNetTotal(), HistoryType.CollectingCentreBillingCancel, getBill(), comment);
         bill = billFacade.find(bill.getId());
         printPreview = true;
         comment = null;
