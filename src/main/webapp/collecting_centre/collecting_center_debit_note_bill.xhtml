@@ -16,20 +16,22 @@
                     <f:facet name="header" >
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <h:outputLabel value="Agent Debit Note" />
+                                <h:outputLabel value="Collecting Center Debit Note" />
                             </div>
                             <div>
                                 <h:panelGrid columns="4">
-                                     <p:commandButton id="btnSettle" value="Settle" action="#{agentPaymentRecieveBillController.collectingCenterDebitNoteSettleBill}" ajax="false"  style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;" >
-                            </p:commandButton> 
+                                    <p:commandButton value="New Bill" ajax="false" action="#{agentPaymentRecieveBillController.prepareNewBill()}" icon="fas fa-plus" > </p:commandButton> 
                             <p:defaultCommand target="btnSettle"/>
-
-                            <p:commandButton value="New Bill" ajax="false" action="#{agentPaymentRecieveBillController.prepareNewBill()}"  >
+                                <p:commandButton id="btnSettle" value="Settle" 
+                                                      action="#{agentPaymentRecieveBillController.collectingCenterDebitNoteSettleBill}" 
+                                                      ajax="false"
+                                                      icon="fas fa-check"
+                                                      class="ui-button-success mx-1" >
                             </p:commandButton>                     
                                 </h:panelGrid>
                             </div>
                         </div>
-
+                    </f:facet>
                     <p:panelGrid columns="6" style="min-width: 100%;">
                         <p:outputLabel value="Collecting Center" />
                         <p:outputLabel value=":" />
@@ -54,12 +56,12 @@
                     <f:facet name="header">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <h:outputLabel value="Agent Debit Note" />
+                                <h:outputLabel value="Collecting Center Debit Note" />
                             </div>
                             <div>
                                 <h:panelGrid columns="4">
                                      <p:commandButton value="New Bill" ajax="false" action="#{agentPaymentRecieveBillController.prepareNewBill()}"  >
-                </p:commandButton>
+                                    </p:commandButton>
                                       <p:commandButton value="Print" class="ui-button-info" icon="fas fa-print">
                                           <p:printer target="print" />
                                       </p:commandButton>
