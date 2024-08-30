@@ -77,8 +77,8 @@
                                 action="#{searchController.generateDailyReturn()}" 
                                 class="ui-button-success" icon="fas fa-cogs">
                             </p:commandButton>
-                            
-                             <p:commandButton  
+
+                            <p:commandButton  
                                 value="Update" 
                                 ajax="false"
                                 action="#{searchController.updateBillItenValues()}" 
@@ -87,19 +87,15 @@
 
                         </h:panelGrid>
 
-                      
 
 
-                        <!--<ez:category_and_item_summary bundle="#{searchController.bundle.bundleType}"/>-->
 
 
-                        <ui:repeat value="#{searchController.bundle.bundles}" var="bundle" >
-
-                            <h:panelGroup  >
-                                <ez:category_and_item_summary bundle="#{bundle}"/>
-                            </h:panelGroup>
-
-                        </ui:repeat>
+                        <p:dataTable value="#{searchController.bundle.bundles}" var="mybundle" >
+                            <p:column >
+                                <ez:category_and_item_summary bundle="#{mybundle}"/>
+                            </p:column>
+                        </p:dataTable>
 
 
                     </p:panel>

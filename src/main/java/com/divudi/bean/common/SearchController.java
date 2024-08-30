@@ -1747,13 +1747,8 @@ public class SearchController implements Serializable {
         this.category = category;
     }
 
-    public ReportTemplateRowBundle getBundle() {
-        return bundle;
-    }
-
-    public void setBundle(ReportTemplateRowBundle bundle) {
-        this.bundle = bundle;
-    }
+    
+    
 
     public List<CashBookEntry> getCashBookEntries() {
         return cashBookEntries;
@@ -1769,6 +1764,14 @@ public class SearchController implements Serializable {
 
     public void setSite(Institution site) {
         this.site = site;
+    }
+
+    public ReportTemplateRowBundle getBundle() {
+        return bundle;
+    }
+
+    public void setBundle(ReportTemplateRowBundle bundle) {
+        this.bundle = bundle;
     }
 
     public class billsWithbill {
@@ -11522,13 +11525,12 @@ public class SearchController implements Serializable {
 
     public void generateDailyReturn() {
         bundle = new ReportTemplateRowBundle();
-        
+
         ReportTemplateRowBundle opdBundle = new ReportTemplateRowBundle();
-        
+
         opdBundle.setName("OPD Services");
         opdBundle.setBundleType("CategoryAndItemSummary");
-        
-        
+
         String jpql = "select bi "
                 + " from BillItem bi "
                 + " where bi.bill.retired=:br "
@@ -11565,7 +11567,7 @@ public class SearchController implements Serializable {
         System.out.println("bis = " + bis);
         billItemsToBundleForOpd(opdBundle, bis);
         bundle.getBundles().add(opdBundle);
-        
+
     }
 
     public void updateBillItenValues() {
@@ -11629,7 +11631,7 @@ public class SearchController implements Serializable {
 
             bi.setCollectingCentreFee(ccFee);
             bi.setStaffFee(staffFee);
-            bi.setHospitalFee(hosFee-bi.getDiscount());
+            bi.setHospitalFee(hosFee - bi.getDiscount());
 
             billItemFacade.edit(bi);
         }
@@ -12466,6 +12468,8 @@ public class SearchController implements Serializable {
         return fileBillsAndBillItemsForDownload;
     }
 
+    
+    
     public List<BillTypeAtomic> prepareDistinctBillTypeAtomic() {
         String jpql = "SELECT DISTINCT b.billTypeAtomic FROM Bill b JOIN b.payments p";
         List<?> results = billFacade.findLightsByJpql(jpql);
