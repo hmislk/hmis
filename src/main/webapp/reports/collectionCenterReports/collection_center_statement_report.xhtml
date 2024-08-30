@@ -65,9 +65,10 @@
                                     style=" max-width: 100%; overflow-x: auto; "
                                     class="w-100"
                                     value="#{reportController.collectingCentre}"
-                                    filter="true">
+                                    filter="true"
+                                    filterMatchMode="contains">
                                     <f:selectItem itemLabel="Select Agent"/>
-                                    <f:selectItems var="r" itemLabel="#{r.name}" 
+                                    <f:selectItems var="r" itemLabel="#{r.name} - #{r.code}"  
                                                    value="#{collectingCentreController.items}" 
                                                    itemValue="#{r}" />
                                 </p:selectOneMenu>
