@@ -16,7 +16,7 @@
 
 
 
-                        <h:panelGrid columns="8" class="w-100">
+                        <h:panelGrid columns="2" class="w-100">
                             <h:outputLabel value="From"/>
                             <p:calendar 
                                 class="w-100 " 
@@ -38,25 +38,18 @@
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                             </p:calendar>
 
-                            <p:spacer ></p:spacer>
-                            <p:spacer ></p:spacer>
-                            <p:spacer ></p:spacer>
-
                             <h:outputLabel value="Institution"/>                                
                             <p:selectOneMenu class="w-100 " value="#{searchController.institution}" filter="true" >
                                 <f:selectItem itemLabel="All Institution" ></f:selectItem>
                                 <f:selectItems value="#{sessionController.loggableInstitutions}" var="d" itemLabel="#{d.institution.name} - #{d.name}" itemValue="#{d}" ></f:selectItems>
                             </p:selectOneMenu>
 
-                            <p:spacer width="20" ></p:spacer>
 
                             <h:outputLabel value="Department"/>                                
                             <p:selectOneMenu class="w-100 "  value="#{searchController.department}" filter="true">
                                 <f:selectItem itemLabel="All Departments" ></f:selectItem>
                                 <f:selectItems value="#{sessionController.loggableDepartments}" var="d" itemLabel="#{d.institution.name} - #{d.name}" itemValue="#{d}" ></f:selectItems>
                             </p:selectOneMenu>
-
-                            <p:spacer width="20" ></p:spacer>
 
                             <h:outputLabel value="Site*"/>   
                             <p:selectOneMenu class="w-100 "  value="#{searchController.site}" filter="true">
