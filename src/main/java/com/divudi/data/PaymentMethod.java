@@ -26,6 +26,7 @@ public enum PaymentMethod {
     PatientDeposit("Patient Deposit", PaymentContext.ACCEPTING_PAYMENTS, PaymentContext.ACCEPTING_PAYMENTS_FOR_CHANNELLING),
     PatientPoints("Patient Points", PaymentContext.ACCEPTING_PAYMENTS, PaymentContext.ACCEPTING_PAYMENTS_FOR_CHANNELLING, PaymentContext.CREDIT_SETTLEMENTS),
     OnlineSettlement("Online Settlement", PaymentContext.ACCEPTING_PAYMENTS),
+    None("None", PaymentContext.PURCHASES, PaymentContext.ACCEPTING_PAYMENTS, PaymentContext.CREDIT_SETTLEMENTS),
     
     @Deprecated
     YouOweMe("You Owe Me", PaymentContext.ACCEPTING_PAYMENTS);
