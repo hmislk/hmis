@@ -5,7 +5,7 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
-      xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp">
+      xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp/bundles">
 
     <h:body class="w-100 border">
 
@@ -90,13 +90,13 @@
                       
 
 
-                        <ez:report_bundle bundle="#{searchController.bundle.bundleType}"/>
+                        <!--<ez:category_and_item_summary bundle="#{searchController.bundle.bundleType}"/>-->
 
 
                         <ui:repeat value="#{searchController.bundle.bundles}" var="bundle" >
 
-                            <h:panelGroup rendered="#{bundle.bundleType eq ''}" >
-                                <ez:report_bundle bundle="#{bundle}"/>
+                            <h:panelGroup rendered="#{bundle.bundleType eq 'CategoryAndItemSummary'}" >
+                                <ez:category_and_item_summary bundle="#{bundle}"/>
                             </h:panelGroup>
 
                         </ui:repeat>
