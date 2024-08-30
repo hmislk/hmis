@@ -142,20 +142,16 @@
                                     </h:panelGrid>
                                     <h:panelGrid columns="1" class="w-100">
                                         <h:outputLabel class="w-100" value="By Collection Center"/>
-
                                         <p:selectOneMenu 
                                             value="#{patientInvestigationController.collectionCenter}" 
                                             filter="true"
-                                            required="true"
-                                            requiredMessage="Select the Collection Center"
-                                            style="max-width: 100%;"
-                                            class="w-100"
                                             filterMatchMode="contains">
+                                            <f:selectItem itemLabel="All" ></f:selectItem>
                                             <f:selectItems 
                                                 value="#{sessionController.loggableCollectingCentres}"
                                                 var="cc1" 
                                                 itemValue="#{cc1}" 
-                                                itemLabel="#{cc1.name}" >
+                                                itemLabel="#{cc1.code} - #{cc1.name}" >
                                             </f:selectItems>
                                         </p:selectOneMenu>
 
@@ -592,14 +588,14 @@
 
                                         <!-- Actions Column -->
                                         <p:column headerText="Actions" width="8em" style="vertical-align: top;">
-                                            
+
                                             <!-- Approved and Printed Icons -->
                                             <p:graphicImage 
                                                 id="imgApproved" 
                                                 library="image" 
                                                 name="approved_icon.png" 
                                                 style="height: 30px; width: 30px; #{dpr.approved ? '':'opacity: 0.1;'}" />
-                                            
+
                                             <!-- Print Report CommandLink 1 -->
                                             <p:commandLink 
                                                 id="cmdOldReportPrint1" 
