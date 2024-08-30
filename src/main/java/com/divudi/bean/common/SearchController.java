@@ -1747,13 +1747,8 @@ public class SearchController implements Serializable {
         this.category = category;
     }
 
-    public ReportTemplateRowBundle getBundle() {
-        return bundle;
-    }
-
-    public void setBundle(ReportTemplateRowBundle bundle) {
-        this.bundle = bundle;
-    }
+    
+    
 
     public List<CashBookEntry> getCashBookEntries() {
         return cashBookEntries;
@@ -1769,6 +1764,14 @@ public class SearchController implements Serializable {
 
     public void setSite(Institution site) {
         this.site = site;
+    }
+
+    public ReportTemplateRowBundle getBundle() {
+        return bundle;
+    }
+
+    public void setBundle(ReportTemplateRowBundle bundle) {
+        this.bundle = bundle;
     }
 
     public class billsWithbill {
@@ -5576,7 +5579,7 @@ public class SearchController implements Serializable {
         for (BillItem bi : results) {
 
             Bill b = bi.getBill();
-            List<BillFee> billFees = billBean.billFeefromBillItem(bi);
+            List<BillFee> billFees = billBean.findSavedBillFeefromBillItem(bi);
             for (BillFee bf : billFees) {
                 bf.getBill();
                 bf.getBillItem();
@@ -11522,6 +11525,12 @@ public class SearchController implements Serializable {
 
     public void generateDailyReturn() {
         bundle = new ReportTemplateRowBundle();
+
+        ReportTemplateRowBundle opdBundle = new ReportTemplateRowBundle();
+
+        opdBundle.setName("OPD Services");
+        opdBundle.setBundleType("CategoryAndItemSummary");
+
         String jpql = "select bi "
                 + " from BillItem bi "
                 + " where bi.bill.retired=:br "
@@ -11556,7 +11565,77 @@ public class SearchController implements Serializable {
         System.out.println("jpql = " + jpql);
         List<BillItem> bis = billItemFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
         System.out.println("bis = " + bis);
-        billItemsToBundleForOpd(bundle, bis);
+        billItemsToBundleForOpd(opdBundle, bis);
+        bundle.getBundles().add(opdBundle);
+
+    }
+
+    public void updateBillItenValues() {
+        bundle = new ReportTemplateRowBundle();
+        String jpql = "select bi "
+                + " from BillItem bi "
+                + " where bi.bill.retired=:br "
+                + " and bi.bill.createdAt between :fd and :td ";
+        Map m = new HashMap();
+        m.put("br", false);
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        List<BillTypeAtomic> btas = BillTypeAtomic.findByServiceType(ServiceType.OPD);
+        btas.addAll(BillTypeAtomic.findByServiceTypeAndFinanceType(ServiceType.OPD, BillFinanceType.CASH_OUT));
+        if (!btas.isEmpty()) {
+            jpql += " and bi.bill.billTypeAtomic in :bts ";
+            m.put("bts", btas);
+        } else {
+            // Handle the case where no bill types are found, perhaps by logging or throwing an exception
+        }
+
+        if (department != null) {
+            jpql += " and bi.bill.department=:dep ";
+            m.put("dep", department);
+        }
+        if (institution != null) {
+            jpql += " and bi.bill.department.institution=:ins ";
+            m.put("ins", institution);
+        }
+        if (site != null) {
+            jpql += " and bi.bill.site=:site ";
+            m.put("site", site);
+        }
+        System.out.println("btas = " + btas);
+        System.out.println("m = " + m);
+        System.out.println("jpql = " + jpql);
+        List<BillItem> bis = billItemFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
+        System.out.println("bis = " + bis);
+        for (BillItem bi : bis) {
+            System.out.println("bi = " + bi);
+            double hosFee = 0.0;
+            double discount = 0.0;
+            double staffFee = 0.0;
+            double ccFee = 0.0;
+            List<BillFee> bfs = billBean.findSavedBillFeefromBillItem(bi);
+            System.out.println("bfs = " + bfs);
+            for (BillFee bf : bfs) {
+                System.out.println("bf = " + bf);
+                System.out.println("bf value = " + bf.getFeeValue());
+                if (bf.getInstitution() != null && bf.getInstitution().getInstitutionType() == InstitutionType.CollectingCentre) {
+                    ccFee += bf.getFeeValue();
+                    System.out.println("ccFee = " + ccFee);
+                } else if (bf.getStaff() != null || bf.getSpeciality() != null) {
+                    staffFee += bf.getFeeValue();
+                    System.out.println("staffFee = " + staffFee);
+                } else {
+                    hosFee = bf.getFeeValue();
+                    System.out.println("hosFee = " + hosFee);
+                }
+            }
+
+            bi.setCollectingCentreFee(ccFee);
+            bi.setStaffFee(staffFee);
+            bi.setHospitalFee(hosFee - bi.getDiscount());
+
+            billItemFacade.edit(bi);
+        }
+
     }
 
     public void billItemsToBundleForOpd(ReportTemplateRowBundle rtrb, List<BillItem> billItems) {
@@ -11610,7 +11689,7 @@ public class SearchController implements Serializable {
                     // Do nothing for other types of bills
                     continue;  // Skip processing for unrecognized or unhandled bill types
             }
-
+            System.out.println("hospitalFee = " + hospitalFee);
             updateRow(categoryRow, countModifier, grossValue, hospitalFee, discount, staffFee, netValue);
             updateRow(itemRow, countModifier, grossValue, hospitalFee, discount, staffFee, netValue);
         }
@@ -12389,6 +12468,8 @@ public class SearchController implements Serializable {
         return fileBillsAndBillItemsForDownload;
     }
 
+    
+    
     public List<BillTypeAtomic> prepareDistinctBillTypeAtomic() {
         String jpql = "SELECT DISTINCT b.billTypeAtomic FROM Bill b JOIN b.payments p";
         List<?> results = billFacade.findLightsByJpql(jpql);

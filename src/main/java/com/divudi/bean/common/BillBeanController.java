@@ -2223,7 +2223,7 @@ public class BillBeanController implements Serializable {
         }
         for (BillItem fbi : billItems) {
             //System.out.println("Processing bill item: " + fbi);
-            List<BillFee> fbfs = billFeefromBillItem(fbi);
+            List<BillFee> fbfs = findSavedBillFeefromBillItem(fbi);
             //System.out.println("Fetched bill fees for item: " + fbfs);
             if (fbfs != null) {
                 fbi.setBillFees(fbfs);
@@ -3635,6 +3635,17 @@ public class BillBeanController implements Serializable {
         return baseBillFeefromBillItem(billItem);
     }
 
+    public List<BillFee> findSavedBillFeefromBillItem(BillItem billItem) {
+        String jpql = "select bf "
+                + "from BillFee bf "
+                + " where bf.retired=:ret "
+                + " and bf.billItem=:bi";
+        Map m = new HashMap();
+        m.put("bi", billItem);
+        m.put("ret", false);
+        return billFeeFacade.findByJpql(jpql, m);
+    }
+
     public List<BillFee> BillFeefromBillItemByForInstitution(BillItem billItem) {
         return forInstitutionBillFeefromBillItem(billItem, sessionController.getInstitution());
     }
@@ -4005,8 +4016,8 @@ public class BillBeanController implements Serializable {
             System.out.println("params = " + params);
             List<ItemFee> itemFees = getItemFeeFacade().findByJpql(jpql, params);
             System.out.println("1. CC itemFee from jpql= " + itemFees);
-            
-            itemFees = itemFeeManager.fillFees(billItem.getItem(), collectingCenter) ;
+
+            itemFees = itemFeeManager.fillFees(billItem.getItem(), collectingCenter);
 
             System.out.println("2. CC itemFee from Item Fee Manager = " + itemFees);
             if (itemFees == null || itemFees.isEmpty()) {
@@ -4024,7 +4035,7 @@ public class BillBeanController implements Serializable {
                 System.out.println("params = " + params);
                 itemFees = getItemFeeFacade().findByJpql(jpql, params);
                 System.out.println("3. CC itemFee Fees= " + itemFees);
-                itemFees = itemFeeManager.fillFees(billItem.getItem(), collectingCenter.getFeeListType()) ;
+                itemFees = itemFeeManager.fillFees(billItem.getItem(), collectingCenter.getFeeListType());
                 System.out.println("4. CC itemFee Fees from FeeManager= " + itemFees);
             }
 
@@ -4040,7 +4051,7 @@ public class BillBeanController implements Serializable {
                 System.out.println("originalFeeValue = " + originalFeeValue);
                 System.out.println("institutionFeeValue = " + institutionFeeValue);
                 System.out.println("collectingCenterFeeValue = " + collectingCenterFeeValue);
-                
+
                 feeForCollectingCenter = new BillFee();
                 feeForCollectingCenter.setFee(i);
                 feeForCollectingCenter.setFeeValue(collectingCenterFeeValue * billItem.getQty());
@@ -4277,12 +4288,11 @@ public class BillBeanController implements Serializable {
 
             System.out.println("params = " + params);
             System.out.println("jpql = " + jpql);
-            
+
             List<ItemFee> itemFee = getItemFeeFacade().findByJpql(jpql, params);
-            
+
             System.out.println("itemFee = " + itemFee);
-            
-            
+
             for (Fee i : itemFee) {
                 System.out.println("i = " + i);
                 f = new BillFee();

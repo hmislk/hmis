@@ -1269,7 +1269,7 @@ public class OpdTabPreBillController implements Serializable, ControllerWithPati
         BillEntry addingEntry = new BillEntry();
         addingEntry.setBillItem(getCurrentBillItem());
         addingEntry.setLstBillComponents(getBillBean().billComponentsFromBillItem(getCurrentBillItem()));
-        addingEntry.setLstBillFees(getBillBean().billFeefromBillItem(getCurrentBillItem()));
+        addingEntry.setLstBillFees(getBillBean().baseBillFeefromBillItem(getCurrentBillItem()));
 
         addStaffToBillFees(addingEntry.getLstBillFees());
 
