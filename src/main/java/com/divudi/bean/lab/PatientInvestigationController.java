@@ -1326,11 +1326,10 @@ public class PatientInvestigationController implements Serializable {
             return;
         }
 
-        if (billForBarcode.getStatus() != patientInvestigationStatus.ORDERED) {
-            JsfUtil.addErrorMessage("This Bill has has Already Barcode Genatared");
-            return;
-        }
-
+//        if (billForBarcode.getStatus() != patientInvestigationStatus.ORDERED) {
+//            JsfUtil.addErrorMessage("This Bill has has Already Barcode Genatared");
+//            return;
+//        }
         BillBarcode bb = new BillBarcode(billForBarcode);
         List<PatientSampleWrapper> psws = new ArrayList<>();
         List<PatientSample> pss = prepareSampleCollectionByBillsForPhlebotomyRoom(billForBarcode, sessionController.getLoggedUser());
@@ -1348,8 +1347,12 @@ public class PatientInvestigationController implements Serializable {
         }
 
         for (PatientInvestigationWrapper piw : bb.getPatientInvestigationWrappers()) {
-            piw.getPatientInvestigation().setBarcodeGenerated(true);
-            piw.getPatientInvestigation().setBarcodeGeneratedAt(new Date());
+            if (billForBarcode.getStatus() == patientInvestigationStatus.ORDERED) {
+                piw.getPatientInvestigation().setBarcodeGenerated(true);
+                piw.getPatientInvestigation().setBarcodeGeneratedAt(new Date());
+
+            }
+
             // Properly add unique sample IDs to PatientInvestigation
             String[] idsToAdd = sampleIDs.trim().split("\\s+");
             String existingSampleIds = piw.getPatientInvestigation().getSampleIds();
@@ -1358,13 +1361,18 @@ public class PatientInvestigationController implements Serializable {
                     existingSampleIds += " " + id;
                 }
             }
+            if (billForBarcode.getStatus() == patientInvestigationStatus.ORDERED) {
+                piw.getPatientInvestigation().setBarcodeGeneratedBy(sessionController.getLoggedUser());
+                piw.getPatientInvestigation().setStatus(PatientInvestigationStatus.SAMPLE_GENERATED);
+            }
             piw.getPatientInvestigation().setSampleIds(existingSampleIds.trim());
-            piw.getPatientInvestigation().setBarcodeGeneratedBy(sessionController.getLoggedUser());
-            piw.getPatientInvestigation().setStatus(PatientInvestigationStatus.SAMPLE_GENERATED);
+
             ejbFacade.edit(piw.getPatientInvestigation());
         }
+        if (billForBarcode.getStatus() == patientInvestigationStatus.ORDERED) {
+            billForBarcode.setStatus(PatientInvestigationStatus.SAMPLE_GENERATED);
+        }
 
-        billForBarcode.setStatus(PatientInvestigationStatus.SAMPLE_GENERATED);
         billFacade.edit(billForBarcode);
         bb.setPatientSampleWrappers(psws);
 
@@ -4115,13 +4123,16 @@ public class PatientInvestigationController implements Serializable {
                         pts.setBill(b.getBill());
                         pts.setInvestigationComponant(ixi.getSampleComponent());
                         pts.setBarcodeGenerated(true);
-                        pts.setBarcodeGeneratedDepartment(sessionController.getDepartment());
-                        pts.setBarcodeGeneratedInstitution(sessionController.getInstitution());
-                        pts.setBarcodeGenerator(sessionController.getLoggedUser());
-                        pts.setBarcodeGeneratedAt(new Date());
-                        pts.setStatus(PatientInvestigationStatus.SAMPLE_GENERATED);
-                        pts.setCreatedAt(new Date());
+
                         pts.setCreater(sessionController.getLoggedUser());
+                        if (pts.getPatientInvestigation().getBillItem().getBill().getStatus() == patientInvestigationStatus.ORDERED) {
+                            pts.setBarcodeGeneratedDepartment(sessionController.getDepartment());
+                            pts.setBarcodeGeneratedInstitution(sessionController.getInstitution());
+                            pts.setBarcodeGenerator(sessionController.getLoggedUser());
+                            pts.setBarcodeGeneratedAt(new Date());
+                            pts.setStatus(PatientInvestigationStatus.SAMPLE_GENERATED);
+                            pts.setCreatedAt(new Date());
+                        }
 
                         patientSampleFacade.create(pts);
                         System.out.println("new pts = " + pts);
@@ -4164,12 +4175,16 @@ public class PatientInvestigationController implements Serializable {
                         patientSampleComponantFacade.create(ptsc);
                     }
                 }
-                ptix.setSampleGenerated(true);
-                ptix.setSampleGeneratedAt(new Date());
-                ptix.setSampleGeneratedBy(sessionController.getLoggedUser());
-                ptix.setSampleDepartment(sessionController.getDepartment());
-                ptix.setSampleInstitution(sessionController.getInstitution());
-                ptix.setStatus(PatientInvestigationStatus.SAMPLE_GENERATED);
+
+                if (ptix.getBillItem().getBill().getStatus() == patientInvestigationStatus.ORDERED) {
+                    ptix.setSampleGenerated(true);
+                    ptix.setSampleGeneratedAt(new Date());
+                    ptix.setSampleGeneratedBy(sessionController.getLoggedUser());
+                    ptix.setSampleDepartment(sessionController.getDepartment());
+                    ptix.setSampleInstitution(sessionController.getInstitution());
+                    ptix.setStatus(PatientInvestigationStatus.SAMPLE_GENERATED);
+                }
+
                 ejbFacade.edit(ptix);
 
             }
