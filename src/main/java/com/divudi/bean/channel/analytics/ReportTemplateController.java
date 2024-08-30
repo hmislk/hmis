@@ -176,7 +176,7 @@ public class ReportTemplateController implements Serializable {
             Department paramDepartment,
             Institution site) {
         String jpql = "sele";
-        
+        return null;
         
     }
     

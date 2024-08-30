@@ -49,14 +49,14 @@ public enum PaymentMethod {
 
     public static List<PaymentMethod> getMethodsByContext(PaymentContext context) {
         return Arrays.stream(PaymentMethod.values())
-                     .filter(pm -> pm.contexts.contains(context) && !isDeprecated(pm))
-                     .collect(Collectors.toList());
+                .filter(pm -> pm.contexts.contains(context) && !isDeprecated(pm))
+                .collect(Collectors.toList());
     }
 
     public static List<PaymentMethod> getMethodsByType(PaymentType type) {
         return Arrays.stream(PaymentMethod.values())
-                     .filter(pm -> pm.paymentType == type)
-                     .collect(Collectors.toList());
+                .filter(pm -> pm.paymentType == type)
+                .collect(Collectors.toList());
     }
 
     private static boolean isDeprecated(PaymentMethod method) {
@@ -70,8 +70,8 @@ public enum PaymentMethod {
 
     public static List<PaymentMethod> getActivePaymentMethods() {
         return Arrays.stream(PaymentMethod.values())
-                     .filter(pm -> !isDeprecated(pm))
-                     .collect(Collectors.toList());
+                .filter(pm -> !isDeprecated(pm))
+                .collect(Collectors.toList());
     }
 
     public String getInHandLabel() {
@@ -100,4 +100,9 @@ public enum PaymentMethod {
                 return this.toString();
         }
     }
+
+    public static List<PaymentMethod> asList() {
+        return Arrays.asList(PaymentMethod.values());
+    }
+
 }
