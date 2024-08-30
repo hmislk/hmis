@@ -23,28 +23,28 @@
                             <p:outputLabel value="From Date" />
                             <p:outputLabel value=":" />
                             <p:datePicker
-                                    value="#{reportController.fromDate}" 
-                                    class="w-100"
-                                    showTime="true"
-                                    showButtonBar="true"
-                                    timeInput="true"
-                                    inputStyleClass="form-control"
-                                    maxdate="#{commonFunctionsController.endOfDay}"
-                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
-                                </p:datePicker>
+                                value="#{reportController.fromDate}" 
+                                class="w-100"
+                                showTime="true"
+                                showButtonBar="true"
+                                timeInput="true"
+                                inputStyleClass="form-control"
+                                maxdate="#{commonFunctionsController.endOfDay}"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                            </p:datePicker>
 
                             <p:outputLabel value="To Date" />
                             <p:outputLabel value=":" />
                             <p:datePicker 
-                                    class="w-100"
-                                    showTime="true"
-                                            showButtonBar="true"
-                                            timeInput="true"
-                                    inputStyleClass="form-control"
-                                     value="#{reportController.toDate}" 
-                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
-                                </p:datePicker>
-                            
+                                class="w-100"
+                                showTime="true"
+                                showButtonBar="true"
+                                timeInput="true"
+                                inputStyleClass="form-control"
+                                value="#{reportController.toDate}" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                            </p:datePicker>
+
 
                             <p:outputLabel value="Collection Center Name" />
                             <p:outputLabel value=":" />
@@ -52,9 +52,10 @@
                                 style=" max-width: 100%; overflow-x: auto; "
                                 class="w-100"
                                 value="#{reportController.collectingCentre}"
-                                filter="true">
+                                filter="true"
+                                filterMatchMode="contains">
                                 <f:selectItem itemLabel="Select Collecting Centre"/>
-                                <f:selectItems var="r" itemLabel="#{r.name}" 
+                                <f:selectItems var="r" itemLabel="#{r.name} - #{r.code}"  
                                                value="#{collectingCentreController.items}" 
                                                itemValue="#{r}" />
                             </p:selectOneMenu>
@@ -107,7 +108,7 @@
                             <h:outputText value="#{bi.bill.deptId}" ></h:outputText>
                         </p:column>
                         <p:column headerText="LEAF No" >
-                            <h:outputText value="#{bi.bill.agentRefNo}" ></h:outputText>
+                            <h:outputText value="#{bi.bill.referenceNumber}" ></h:outputText>
                         </p:column>
                         <p:column headerText="Hospital Amount" >
                             <h:outputText value="#{bi.companyTransactionValue}" ></h:outputText>
