@@ -235,6 +235,7 @@ public class AgentPaymentRecieveBillController implements Serializable {
         }
         getCurrent().setPaymentMethod(PaymentMethod.Slip);
         getCurrent().setNetTotal(getAmount());
+        getCurrent().setBillTypeAtomic(BillTypeAtomic.CC_CREDIT_NOTE);
         creditDebitNote(BillType.CollectingCentreCreditNoteBill, HistoryType.CollectingCentreCreditNote, HistoryType.CollectingCentreBalanceUpdateBill, BillNumberSuffix.CCCN);
 
     }
@@ -245,6 +246,7 @@ public class AgentPaymentRecieveBillController implements Serializable {
         }
         getCurrent().setPaymentMethod(PaymentMethod.Slip);
         getCurrent().setNetTotal(0 - getAmount());
+        getCurrent().setBillTypeAtomic(BillTypeAtomic.CC_DEBIT_NOTE);
         creditDebitNote(BillType.CollectingCentreDebitNoteBill, HistoryType.CollectingCentreDebitNote, HistoryType.CollectingCentreBalanceUpdateBill, BillNumberSuffix.CCDN);
 
     }

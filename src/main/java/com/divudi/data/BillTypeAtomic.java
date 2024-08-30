@@ -145,6 +145,8 @@ public enum BillTypeAtomic {
     CC_BILL_REFUND("Collecting Centre Bill Refund", BillCategory.REFUND, ServiceType.COLLECTING_CENTRE, BillFinanceType.CASH_OUT, CountedServiceType.COLLECTING_CENTRE),
     CC_PAYMENT_RECEIVED_BILL("Collecting Centre Payment Received Bill", BillCategory.BILL, ServiceType.COLLECTING_CENTRE, BillFinanceType.CASH_IN, CountedServiceType.COLLECTING_CENTRE),
     CC_PAYMENT_CANCELLATION_BILL("Collecting Centre Payment Cancellation Bill", BillCategory.CANCELLATION, ServiceType.COLLECTING_CENTRE, BillFinanceType.CASH_OUT, CountedServiceType.COLLECTING_CENTRE),
+    CC_CREDIT_NOTE("Collecting Centre Credit Note", BillCategory.BILL, ServiceType.COLLECTING_CENTRE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.COLLECTING_CENTRE),
+    CC_DEBIT_NOTE("Collecting Centre Debit Note", BillCategory.BILL, ServiceType.COLLECTING_CENTRE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.COLLECTING_CENTRE),
     // FLOAT TRANSACTIONS
     FUND_SHIFT_START_BILL("Shift Start Fund Bill", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.FLOAT_STARTING_BALANCE, CountedServiceType.OTHER),
     FUND_SHIFT_START_BILL_CANCELLED("Shift Start Fund Bill - Cancelled", BillCategory.CANCELLATION, ServiceType.OTHER, BillFinanceType.FLOAT_STARTING_BALANCE, CountedServiceType.OTHER),
