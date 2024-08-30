@@ -11525,15 +11525,20 @@ public class SearchController implements Serializable {
         String jpql = "select bi "
                 + " from BillItem bi "
                 + " where bi.bill.retired=:br "
-                + " and bi.bill.billTypeAtomic in :bts "
-                + " and bi.createdAt between :fd and :td ";
+                + " and bi.bill.createdAt between :fd and :td ";
         Map m = new HashMap();
         m.put("br", false);
         m.put("fd", fromDate);
         m.put("td", toDate);
-        m.put("bts", billTypeAtomic);
-        List<BillTypeAtomic> btas = BillTypeAtomic.findByServiceTypeAndFinanceType(ServiceType.OPD, BillFinanceType.CASH_IN);
+        List<BillTypeAtomic> btas = BillTypeAtomic.findByServiceType(ServiceType.OPD);
         btas.addAll(BillTypeAtomic.findByServiceTypeAndFinanceType(ServiceType.OPD, BillFinanceType.CASH_OUT));
+        if (!btas.isEmpty()) {
+            jpql += " and bi.bill.billTypeAtomic in :bts ";
+            m.put("bts", btas);
+        } else {
+            // Handle the case where no bill types are found, perhaps by logging or throwing an exception
+        }
+
         if (department != null) {
             jpql += " and bi.bill.department=:dep ";
             m.put("dep", department);
@@ -11549,8 +11554,9 @@ public class SearchController implements Serializable {
         System.out.println("btas = " + btas);
         System.out.println("m = " + m);
         System.out.println("jpql = " + jpql);
-        List<BillItem> billItems = billItemFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
-        billItemsToBundleForOpd(bundle, billItems);
+        List<BillItem> bis = billItemFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
+        System.out.println("bis = " + bis);
+        billItemsToBundleForOpd(bundle, bis);
     }
 
     public void billItemsToBundleForOpd(ReportTemplateRowBundle rtrb, List<BillItem> billItems) {
@@ -11559,66 +11565,113 @@ public class SearchController implements Serializable {
         List<ReportTemplateRow> rowsToAdd = new ArrayList<>();
 
         for (BillItem bi : billItems) {
+            System.out.println("Processing BillItem: " + bi);
             String categoryName = bi.getItem() != null && bi.getItem().getCategory() != null ? bi.getItem().getCategory().getName() : "No Category";
             String itemName = bi.getItem() != null ? bi.getItem().getName() : "No Item";
             String itemKey = categoryName + "->" + itemName;
 
-            // Initialize or retrieve existing category row
-            if (!categoryMap.containsKey(categoryName)) {
-                ReportTemplateRow newRow = new ReportTemplateRow();
-                newRow.setCategory(bi.getItem() != null ? bi.getItem().getCategory() : null); // Set category to null if no category
-                categoryMap.put(categoryName, newRow);
-            }
+            System.out.println("Item Key: " + itemKey);
+            System.out.println("Category: " + categoryName + ", Item: " + itemName);
 
-            // Initialize or retrieve existing item row
-            if (!itemMap.containsKey(itemKey)) {
-                ReportTemplateRow newRow = new ReportTemplateRow();
-                newRow.setItem(bi.getItem()); // Set item
-                itemMap.put(itemKey, newRow);
-            }
+            categoryMap.putIfAbsent(categoryName, new ReportTemplateRow());
+            itemMap.putIfAbsent(itemKey, new ReportTemplateRow());
 
             ReportTemplateRow categoryRow = categoryMap.get(categoryName);
             ReportTemplateRow itemRow = itemMap.get(itemKey);
 
-            // Deciding whether to add or subtract based on the bill class type
+            if (bi.getItem() != null) {
+                categoryRow.setCategory(bi.getItem().getCategory());
+                itemRow.setItem(bi.getItem());
+            }
+
+            long countModifier = 1;
+            double grossValue = bi.getGrossValue();
+            double hospitalFee = bi.getHospitalFee();
+            double discount = bi.getDiscount();
+            double staffFee = bi.getStaffFee();
+            double netValue = bi.getNetValue();
+
             switch (bi.getBill().getBillClassType()) {
                 case CancelledBill:
                 case RefundBill:
-                    updateRow(categoryRow, -1, -Math.abs(bi.getGrossValue()), -Math.abs(bi.getHospitalFee()), -Math.abs(bi.getDiscount()), -Math.abs(bi.getStaffFee()), -Math.abs(bi.getNetValue()));
-                    updateRow(itemRow, -1, -Math.abs(bi.getGrossValue()), -Math.abs(bi.getHospitalFee()), -Math.abs(bi.getDiscount()), -Math.abs(bi.getStaffFee()), -Math.abs(bi.getNetValue()));
+                    countModifier = -1;
+                    // Apply abs to ensure all values are positive before negating
+                    grossValue = -Math.abs(grossValue);
+                    hospitalFee = -Math.abs(hospitalFee);
+                    discount = -Math.abs(discount);
+                    staffFee = -Math.abs(staffFee);
+                    netValue = -Math.abs(netValue);
                     break;
                 case BilledBill:
                 case Bill:
-                    updateRow(categoryRow, 1, bi.getGrossValue(), bi.getHospitalFee(), bi.getDiscount(), bi.getStaffFee(), bi.getNetValue());
-                    updateRow(itemRow, 1, bi.getGrossValue(), bi.getHospitalFee(), bi.getDiscount(), bi.getStaffFee(), bi.getNetValue());
+                    // Positive adjustments, no need to change the sign or apply abs
                     break;
                 default:
                     // Do nothing for other types of bills
-                    break;
+                    continue;  // Skip processing for unrecognized or unhandled bill types
             }
+
+            updateRow(categoryRow, countModifier, grossValue, hospitalFee, discount, staffFee, netValue);
+            updateRow(itemRow, countModifier, grossValue, hospitalFee, discount, staffFee, netValue);
         }
 
-        // Populate the bundle with category rows and their corresponding item rows
-        for (ReportTemplateRow catRow : categoryMap.values()) {
-            rowsToAdd.add(catRow); // Add category row first
-            for (ReportTemplateRow itemRow : itemMap.values()) {
-                if (itemRow.getItem() != null && itemRow.getItem().getCategory() != null && itemRow.getItem().getCategory().getName().equals(catRow.getCategory().getName())) {
-                    rowsToAdd.add(itemRow); // Add item rows that belong to this category
-                }
-            }
-        }
+        // Only add rows that are properly initialized and grouped
+        categoryMap.forEach((categoryName, catRow) -> {
+            System.out.println("Adding category row to bundle: " + categoryName);
+            rowsToAdd.add(catRow);
+            itemMap.values().stream()
+                    .filter(iRow -> iRow.getItem() != null && iRow.getItem().getCategory() != null && iRow.getItem().getCategory().getName().equals(categoryName))
+                    .forEach(iRow -> {
+                        System.out.println("Adding item row to bundle under category " + categoryName + ": " + iRow.getItem().getName());
+                        rowsToAdd.add(iRow);
+                    });
+        });
 
-        // Assuming ReportTemplateRowBundle can accept a list of ReportTemplateRow
-        rtrb.getReportTemplateRows().addAll(rowsToAdd); // Add all rows at once to the report template row bundle
+        rtrb.getReportTemplateRows().addAll(rowsToAdd);
     }
 
     private void updateRow(ReportTemplateRow row, long count, double total, double hospitalFee, double discount, double professionalFee, double netTotal) {
+        if (row.getItemCount() == null) {
+            row.setItemCount(0L);
+        }
+        if (row.getItemTotal() == null) {
+            row.setItemTotal(0.0);
+        }
+        if (row.getItemHospitalFee() == null) {
+            row.setItemHospitalFee(0.0);
+        }
+        if (row.getItemDiscountAmount() == null) {
+            row.setItemDiscountAmount(0.0);
+        }
+        if (row.getItemProfessionalFee() == null) {
+            row.setItemProfessionalFee(0.0);
+        }
+        if (row.getItemNetTotal() == null) {
+            row.setItemNetTotal(0.0);
+        }
+
         row.setItemCount(row.getItemCount() + count);
         row.setItemTotal(row.getItemTotal() + total);
         row.setItemHospitalFee(row.getItemHospitalFee() + hospitalFee);
         row.setItemDiscountAmount(row.getItemDiscountAmount() + discount);
         row.setItemProfessionalFee(row.getItemProfessionalFee() + professionalFee);
         row.setItemNetTotal(row.getItemNetTotal() + netTotal);
+
+        // Check if 'row' itself is null
+        if (row != null) {
+            // Now check if 'row.getItem()' is null
+            if (row.getItem() != null) {
+                System.out.println("Updated row: " + row.getItem().getName()
+                        + ", Count: " + row.getItemCount()
+                        + ", Net Total: " + row.getItemNetTotal());
+            } else {
+                // Handle the case where 'row.getItem()' is null
+                System.out.println("Error: Item in the row is null.");
+            }
+        } else {
+            // Handle the case where 'row' itself is null
+            System.out.println("Error: The row is null.");
+        }
     }
 
     public void generateCashierSummary() {

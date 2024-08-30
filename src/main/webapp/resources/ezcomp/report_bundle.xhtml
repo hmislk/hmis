@@ -17,18 +17,18 @@
         <!--<p:dataTable value="#{cc.attrs.bundle.reportTemplateRows}" var="row" ></p:dataTable>-->
         <!--<p:dataTable value="#{cc.attrs.bundle.reportTemplateRows}" var="row" >-->
 
-        <p:dataTable value="#{searchController.bundle.reportTemplateRows}" var="row" >
+        <p:dataTable value="#{cc.attrs.bundle.reportTemplateRows}" var="row" >
             <p:column>
                 <f:facet name="header">
                     <h:outputText value="Category" />
                 </f:facet>
-                <h:outputText value="#{row.category.name}" rendered="#{row.rowType eq 'CategoryRow'}" />
+                <h:outputText value="#{row.category.name}"  />
             </p:column>
             <p:column>
                 <f:facet name="header">
                     <h:outputText value="Item / Service" />
                 </f:facet>
-                <h:outputText value="#{row.item.name}" rendered="#{row.rowType eq 'ItemRow'}" />
+                <h:outputText value="#{row.item.name}"  />
             </p:column>
             <p:column>
                 <f:facet name="header">

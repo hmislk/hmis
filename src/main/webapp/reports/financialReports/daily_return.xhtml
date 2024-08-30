@@ -80,14 +80,22 @@
 
                         </h:panelGrid>
 
+                        <h1>
+                            #{searchController.bundle.reportTemplateRows}
+                        </h1>
+
+
+                        <ez:report_bundle bundle="#{searchController.bundle}"/>
+
+
                         <ui:repeat value="#{searchController.bundle.bundles}" var="bundle" >
-                        
+
                             <h:panelGroup rendered="#{bundle}" >
 
                                 <ez:report_bundle/>
 
                             </h:panelGroup>
-                        
+
                         </ui:repeat>
 
 
