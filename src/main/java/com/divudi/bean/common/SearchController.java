@@ -63,6 +63,7 @@ import static com.divudi.data.BillClassType.RefundBill;
 import com.divudi.data.BillFinanceType;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.PaymentContext;
+import com.divudi.data.PaymentType;
 import com.divudi.data.ReportTemplateRow;
 import com.divudi.data.ReportTemplateRowBundle;
 import com.divudi.data.ServiceType;
@@ -11531,16 +11532,14 @@ public class SearchController implements Serializable {
         bundle.getBundles().add(opdServiceCollection);
 
         ReportTemplateRowBundle pharmacyCollection = new ReportTemplateRowBundle();
-        
-        
 
     }
-    
+
     public ReportTemplateRowBundle generateOpdServiceCollection() {
         ReportTemplateRowBundle pb = new ReportTemplateRowBundle();
-        List<BillTypeAtomic> pharmacyBillTypesAtomics=new ArrayList<>();
-        List<PaymentMethod> paymentMethods=PaymentMethod.getMethodsByContext(PaymentContext.PURCHASES);
-        
+        List<BillTypeAtomic> pharmacyBillTypesAtomics = BillTypeAtomic.findByServiceTypeAndFinanceType(ServiceType.PHARMACY, BillFinanceType.CASH_IN);
+        List<PaymentMethod> paymentMethods = PaymentMethod.getMethodsByType(PaymentType.NON_CREDIT);
+
         pb = reportTemplateController.generateReport(
                 pharmacyBillTypesAtomics,
                 paymentMethods,
