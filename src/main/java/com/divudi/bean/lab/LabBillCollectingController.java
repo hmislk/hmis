@@ -504,6 +504,7 @@ public class LabBillCollectingController implements Serializable {
         return false;
     }
 
+    @Deprecated
     public void addToBill() {
 
         if (getCurrentBillItem() == null) {

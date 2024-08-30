@@ -1291,11 +1291,11 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
         addingEntry.setLstBillComponents(getBillBean().billComponentsFromBillItem(getCurrentBillItem()));
         
         if (addAllBillFees) {
-            addingEntry.setLstBillFees(getBillBean().billFeefromBillItem(getCurrentBillItem()));
+            addingEntry.setLstBillFees(getBillBean().baseBillFeefromBillItem(getCurrentBillItem()));
         } else if (siteBasedBillFees) {
             addingEntry.setLstBillFees(getBillBean().forInstitutionBillFeefromBillItem(lastBillItem, sessionController.getDepartment().getSite()));
         } else {
-            addingEntry.setLstBillFees(getBillBean().billFeefromBillItem(getCurrentBillItem()));
+            addingEntry.setLstBillFees(getBillBean().baseBillFeefromBillItem(getCurrentBillItem()));
         }
         
         
